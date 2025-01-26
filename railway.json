@@ -1,0 +1,18 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "deploy": {
+    "healthcheckPath": "/health"
+  },
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile.railway",
+    "watchPatterns": [
+      ".dockerignore",
+      ".gitignore",
+      "Dockerfile.railway",
+      "package*.json",
+      "next*",
+      "src/**"
+    ]
+  }
+}
