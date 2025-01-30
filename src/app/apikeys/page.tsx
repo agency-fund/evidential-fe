@@ -98,7 +98,7 @@ const CreateApiKeyDialogs = ({dataSources}: { dataSources: Datasource[] }) => {
                             // TODO: error checking
                             event.preventDefault();
                             const fd = new FormData(event.currentTarget);
-                            const datasource_ids = fd.getAll("datasource_ids").map((s) => String(s));
+                            const datasource_ids = fd.getAll("datasource_ids").map(String);
                             triggerCreateApiKey({
                                 token: idToken!,
                                 datasource_ids
