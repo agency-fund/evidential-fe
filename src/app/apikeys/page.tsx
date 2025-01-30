@@ -23,18 +23,21 @@ import {deleteApiKeyFetcher, createApiKeyFetcher, ApiKey, Datasource} from "@/se
 import {AlertDialogTitle} from "@radix-ui/react-alert-dialog";
 
 
-const DatasourceBadges = ({datasourceIds}: {datasourceIds:string[]}) => {
+const DatasourceBadges = ({datasourceIds}: { datasourceIds: string[] }) => {
     return <Flex gap={"2"}>{datasourceIds.sort().map((item) => <Badge
         key={item}>{item}</Badge>)}</Flex>
 }
 
 
-const CreateApiKeyDialogs = ({dataSources}: {dataSources: Datasource[]}) => {
+const CreateApiKeyDialogs = ({dataSources}: { dataSources: Datasource[] }) => {
     const [state, setState] = useState<"presenting-form" | "presenting-results" | "presenting-button">("presenting-button");
     const {idToken} = useAuth();
-    const [createButtonDisabled, setCreateButtonDisabled] = useState(true);
     // TODO: make our global fetcher smarter and handle POST with automatically injected token.
-    const {data: createdKey, trigger: triggerCreateApiKey, isMutating} = useSWRMutation('m/apikeys', createApiKeyFetcher);
+    const {
+        data: createdKey,
+        trigger: triggerCreateApiKey,
+        isMutating
+    } = useSWRMutation('m/apikeys', createApiKeyFetcher);
 
     return <>
         {state === "presenting-results" &&
@@ -84,17 +87,14 @@ const CreateApiKeyDialogs = ({dataSources}: {dataSources: Datasource[]}) => {
         }
 
         {(state === "presenting-form" || state == "presenting-button") &&
-            <Dialog.Root onOpenChange={(open) => {
-                setState(open ? "presenting-form" : "presenting-button");
-                setCreateButtonDisabled(open);
-            }}>
+            <Dialog.Root onOpenChange={(open) => setState(open ? "presenting-form" : "presenting-button")}>
                 <Dialog.Trigger>
                     <Button><LockOpen2Icon/> Create API Key</Button>
                 </Dialog.Trigger>
 
                 <Dialog.Content maxWidth="450px">
                     {isMutating ? <Spinner/> :
-                        <form onSubmit={async (event) => {
+                        <form id="dialog-form" onSubmit={async (event) => {
                             // TODO: error checking
                             event.preventDefault();
                             const fd = new FormData(event.currentTarget);
@@ -116,8 +116,12 @@ const CreateApiKeyDialogs = ({dataSources}: {dataSources: Datasource[]}) => {
                                     </Text>
                                     <CheckboxGroup.Root defaultValue={[]} name="datasource_ids">
                                         {dataSources.map((item) =>
-                                            <CheckboxGroup.Item key={item.id} onChange={(event) => setCreateButtonDisabled(new FormData(event.currentTarget.form!).getAll("datasource_ids").length == 0)}
-                                                                value={item.id}>{item.id}</CheckboxGroup.Item>)}
+                                            <CheckboxGroup.Item
+                                                key={item.id}
+                                                onClick={(event) => {
+                                                    console.log("event", event);
+                                                }}
+                                                value={item.id}>{item.id}</CheckboxGroup.Item>)}
                                     </CheckboxGroup.Root>
                                 </label>
                             </Flex>
@@ -128,7 +132,7 @@ const CreateApiKeyDialogs = ({dataSources}: {dataSources: Datasource[]}) => {
                                         Cancel
                                     </Button>
                                 </Dialog.Close>
-                                <Button type={"submit"} disabled={createButtonDisabled}>Create</Button>
+                                <Button type={"submit"}>Create</Button>
                             </Flex>
                         </form>
                     }
@@ -138,7 +142,7 @@ const CreateApiKeyDialogs = ({dataSources}: {dataSources: Datasource[]}) => {
 }
 
 
-function ApiKeysTable({apiKeys}: {apiKeys: ApiKey[]}) {
+function ApiKeysTable({apiKeys}: { apiKeys: ApiKey[] }) {
     const [confirmingDeleteForKeyId, setConfirmingDeleteForKeyId] = useState<string | null>(null);
     const {idToken} = useAuth();
     const {trigger} = useSWRMutation('m/apikeys', deleteApiKeyFetcher);
