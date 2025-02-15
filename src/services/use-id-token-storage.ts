@@ -14,6 +14,11 @@ const subscribe = (callback: () => void) => {
 
 const getSnapshot = () => localStorage.getItem(ID_TOKEN_KEY);
 
+export const currentIdToken = () => {
+    const item = getSnapshot();
+    return typeof item === "string" ? JSON.parse(item) : null;
+}
+
 export const useIdTokenStorage = () => {
     const item = useSyncExternalStore(subscribe, getSnapshot, () => null);
     const value = typeof item === "string" ? JSON.parse(item) : null;

@@ -1,5 +1,6 @@
-export const API_URL = process.env.NEXT_PUBLIC_XNGIN_API_BASE_URL ?? 'http://localhost:8000';
-export const OIDC_BASE_URL = process.env.NEXT_PUBLIC_XNGIN_OIDC_BASE_URL ?? 'http://localhost:8000/a/oidc';
+import {FALLBACK_OIDC_BASE_URL} from "@/services/constants";
+
+export const OIDC_BASE_URL = process.env.NEXT_PUBLIC_XNGIN_OIDC_BASE_URL ?? FALLBACK_OIDC_BASE_URL;
 export const CLIENT_ID = process.env.NEXT_PUBLIC_XNGIN_GOOGLE_CLIENT_ID;
 export const REDIRECT_URI = process.env.NEXT_PUBLIC_XNGIN_OIDC_REDIRECT_URI;
 

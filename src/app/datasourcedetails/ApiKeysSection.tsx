@@ -1,11 +1,7 @@
 "use client";
-import {useAuth} from "@/app/auth-provider";
-import useSWR from "swr";
 import {
     AlertDialog,
-    Badge,
     Button,
-    CheckboxGroup,
     Code,
     DataList,
     Dialog,
@@ -18,29 +14,22 @@ import {
 } from "@radix-ui/themes";
 import {CopyIcon, LockOpen2Icon, TrashIcon} from "@radix-ui/react-icons";
 import {useState} from "react";
-import useSWRMutation from "swr/mutation";
-import {deleteApiKeyFetcher, createApiKeyFetcher, ApiKey, Datasource} from "@/services/fetcher";
-import {AlertDialogTitle} from "@radix-ui/react-alert-dialog";
+import {getListApiKeysKey, useCreateApiKey, useDeleteApiKey, useListApiKeys} from "@/api/admin";
+import {useAuth} from "@/app/auth-provider";
+import {ApiKeySummary} from "@/api/methods.schemas";
+import {isSuccessResponse} from "@/services/typehelper";
+import {mutate} from "swr";
 
-
-const DatasourceBadges = ({datasourceIds}: { datasourceIds: string[] }) => {
-    return <Flex gap={"2"}>{datasourceIds.sort().map((item) => <Badge
-        key={item}>{item}</Badge>)}</Flex>
-}
-
-
-const CreateApiKeyDialogs = ({dataSources}: { dataSources: Datasource[] }) => {
+const CreateApiKeyDialog = ({datasourceId}: { datasourceId: string }) => {
     const [state, setState] = useState<"presenting-form" | "presenting-results" | "presenting-button">("presenting-button");
-    const {idToken} = useAuth();
-    // TODO: make our global fetcher smarter and handle POST with automatically injected token.
     const {
         data: createdKey,
         trigger: triggerCreateApiKey,
         isMutating
-    } = useSWRMutation('m/apikeys', createApiKeyFetcher);
+    } = useCreateApiKey();
 
     return <>
-        {state === "presenting-results" &&
+        {state === "presenting-results" && isSuccessResponse(createdKey) &&
             <Dialog.Root defaultOpen={true}
                          onOpenChange={(open) => setState(open ? "presenting-results" : "presenting-button")}>
                 <Dialog.Content>
@@ -50,28 +39,24 @@ const CreateApiKeyDialogs = ({dataSources}: { dataSources: Datasource[] }) => {
                         <DataList.Root>
                             <DataList.Item>
                                 <DataList.Label minWidth="88px">ID</DataList.Label>
-                                <DataList.Value><Code variant="ghost">{createdKey!.id}</Code></DataList.Value>
+                                <DataList.Value><Code variant="ghost">{createdKey.data.id}</Code></DataList.Value>
                             </DataList.Item>
                             <DataList.Item>
                                 <DataList.Label minWidth="88px">Key</DataList.Label>
                                 <DataList.Value>
                                     <Flex align="center" gap="2">
-                                        <Code variant="ghost">{createdKey!.key}</Code>
+                                        <Code variant="ghost">{createdKey.data.key}</Code>
                                         <IconButton
                                             size="1"
                                             aria-label="Copy value"
                                             color="gray"
                                             variant="ghost"
                                         >
-                                            <CopyIcon onClick={() => navigator.clipboard.writeText(createdKey!.key)}/>
+                                            <CopyIcon
+                                                onClick={() => navigator.clipboard.writeText(createdKey.data.key)}/>
                                         </IconButton>
                                     </Flex>
                                 </DataList.Value>
-                            </DataList.Item>
-                            <DataList.Item>
-                                <DataList.Label minWidth="88px">Datasources</DataList.Label>
-                                <DataList.Value><Flex gap={"2"}>{createdKey!.datasource_ids.map((item) => <Badge
-                                    key={item}>{item}</Badge>)}</Flex></DataList.Value>
                             </DataList.Item>
                         </DataList.Root>
                     </Flex>
@@ -92,39 +77,19 @@ const CreateApiKeyDialogs = ({dataSources}: { dataSources: Datasource[] }) => {
                     <Button><LockOpen2Icon/> Create API Key</Button>
                 </Dialog.Trigger>
 
-                <Dialog.Content maxWidth="450px">
+                <Dialog.Content>
                     {isMutating ? <Spinner/> :
-                        <form id="dialog-form" onSubmit={async (event) => {
-                            // TODO: error checking
+                        <form onSubmit={async (event) => {
                             event.preventDefault();
-                            const fd = new FormData(event.currentTarget);
-                            const datasource_ids = fd.getAll("datasource_ids").map(String);
-                            triggerCreateApiKey({
-                                token: idToken!,
-                                datasource_ids
-                            }).then(() => setState("presenting-results"));
+                            await triggerCreateApiKey({
+                                datasource_id: datasourceId
+                            });
+                            setState("presenting-results");
                         }}>
-                            <Dialog.Title>Create API key.</Dialog.Title>
+                            <Dialog.Title>Create API key</Dialog.Title>
                             <Dialog.Description size="2" mb="4">
-                                Create a new API key for one or more datasources.
+                                Create a new API key for this datasource.
                             </Dialog.Description>
-
-                            <Flex direction="column" gap="3">
-                                <label>
-                                    <Text as="div" size="2" mb="1" weight="bold">
-                                        Datasources
-                                    </Text>
-                                    <CheckboxGroup.Root defaultValue={[]} name="datasource_ids">
-                                        {dataSources.map((item) =>
-                                            <CheckboxGroup.Item
-                                                key={item.id}
-                                                onClick={(event) => {
-                                                    console.log("event", event);
-                                                }}
-                                                value={item.id}>{item.id}</CheckboxGroup.Item>)}
-                                    </CheckboxGroup.Root>
-                                </label>
-                            </Flex>
 
                             <Flex gap="3" mt="4" justify="end">
                                 <Dialog.Close>
@@ -132,7 +97,7 @@ const CreateApiKeyDialogs = ({dataSources}: { dataSources: Datasource[] }) => {
                                         Cancel
                                     </Button>
                                 </Dialog.Close>
-                                <Button type={"submit"}>Create</Button>
+                                <Button type="submit">Create</Button>
                             </Flex>
                         </form>
                     }
@@ -141,17 +106,16 @@ const CreateApiKeyDialogs = ({dataSources}: { dataSources: Datasource[] }) => {
         }</>;
 }
 
-
-function ApiKeysTable({apiKeys}: { apiKeys: ApiKey[] }) {
+function ApiKeysTable({apiKeys}: { apiKeys: ApiKeySummary[] }) {
     const [confirmingDeleteForKeyId, setConfirmingDeleteForKeyId] = useState<string | null>(null);
     const {idToken} = useAuth();
-    const {trigger} = useSWRMutation('m/apikeys', deleteApiKeyFetcher);
+    const {trigger} = useDeleteApiKey(confirmingDeleteForKeyId ?? "", );
 
     return <Flex direction="column" gap="3">
         <AlertDialog.Root open={confirmingDeleteForKeyId !== null}
                           onOpenChange={() => setConfirmingDeleteForKeyId(null)}>
             <AlertDialog.Content>
-                <AlertDialogTitle>Delete API key: {confirmingDeleteForKeyId}</AlertDialogTitle>
+                <AlertDialog.Title>Delete API key: {confirmingDeleteForKeyId}</AlertDialog.Title>
                 <AlertDialog.Description size="2">
                     Are you sure? This API key will no longer be usable.
                 </AlertDialog.Description>
@@ -172,10 +136,8 @@ function ApiKeysTable({apiKeys}: { apiKeys: ApiKey[] }) {
                                 if (confirmingDeleteForKeyId === null || idToken === null) {
                                     throw Error("invalid state");
                                 }
-                                await trigger({
-                                    token: idToken,
-                                    apikey_id: confirmingDeleteForKeyId
-                                });
+                                await trigger();
+                                await mutate(getListApiKeysKey());
                                 return setConfirmingDeleteForKeyId(null);
                             }}>
                                 Revoke access
@@ -189,7 +151,6 @@ function ApiKeysTable({apiKeys}: { apiKeys: ApiKey[] }) {
             <Table.Header>
                 <Table.Row>
                     <Table.ColumnHeaderCell>Key ID</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Datasources</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
                 </Table.Row>
             </Table.Header>
@@ -197,8 +158,11 @@ function ApiKeysTable({apiKeys}: { apiKeys: ApiKey[] }) {
                 {apiKeys.map((item) => {
                     return <Table.Row key={item.id}>
                         <Table.Cell>{item.id}</Table.Cell>
-                        <Table.Cell><DatasourceBadges datasourceIds={item.datasource_ids}/></Table.Cell>
-                        <Table.Cell><TrashIcon onClick={() => setConfirmingDeleteForKeyId(item.id)}/></Table.Cell>
+                        <Table.Cell>
+                            <IconButton color="red" variant="soft" onClick={() => setConfirmingDeleteForKeyId(item.id)}>
+                                <TrashIcon/>
+                            </IconButton>
+                        </Table.Cell>
                     </Table.Row>
                 })}
             </Table.Body>
@@ -206,25 +170,35 @@ function ApiKeysTable({apiKeys}: { apiKeys: ApiKey[] }) {
     </Flex>;
 }
 
-
-export default function Page() {
-    const {data: apiKeys, isLoading: apiKeysLoading, error: apiKeysError} = useSWR<ApiKey[]>("m/apikeys");
+export const ApiKeysSection = ({datasourceId}: { datasourceId: string }) => {
+    const {idToken} = useAuth();
     const {
-        data: dataSources,
-        isLoading: dataSourcesLoading,
-        error: dataSourcesError
-    } = useSWR<Datasource[]>("m/datasources");
+        data: apiKeys,
+        isLoading,
+        error
+    } = useListApiKeys({
+        swr: {
+            enabled: idToken !== null,
+        }
+    });
 
-    if (apiKeysLoading || dataSourcesLoading) {
-        return <Spinner/>
+    if (isLoading) {
+        return <Spinner/>;
     }
-    if (apiKeysError || dataSourcesError) {
-        return <Text>Error: {JSON.stringify({apiKeysError, dataSourcesError})}</Text>
+
+    if (error || !isSuccessResponse(apiKeys)) {
+        return <Text>Error loading API keys: {JSON.stringify(error)}</Text>;
     }
-    console.log({apiKeys, dataSources});
-    return <>
-        <Heading>Manage API Keys</Heading>
-        <CreateApiKeyDialogs dataSources={dataSources!}/>
-        <ApiKeysTable apiKeys={apiKeys!}/>
-    </>;
-}
+
+    const filteredApiKeys = apiKeys.data.items.filter(key => key.datasource_id === datasourceId);
+
+    return (
+        <Flex direction="column" gap="3">
+            <Flex justify="between" align="center">
+                <Heading size="4">API Keys</Heading>
+                <CreateApiKeyDialog datasourceId={datasourceId}/>
+            </Flex>
+            <ApiKeysTable apiKeys={filteredApiKeys}/>
+        </Flex>
+    );
+};

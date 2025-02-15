@@ -2,12 +2,13 @@
 
 import {Geist, Geist_Mono} from "next/font/google";
 import "./globals.css";
-import {Container, Flex, Heading, Separator, Theme} from "@radix-ui/themes";
+import {Container, Flex, Theme} from "@radix-ui/themes";
 import "@radix-ui/themes/styles.css";
 import GoogleAuthProvider from "@/app/auth-provider";
 import OurSwrConfig from "@/services/our-swr-config";
-import Link from "next/link";
 import {Suspense} from "react";
+import {NavigationBar} from "@/app/NavigationBar";
+import {HeaderBar} from "@/app/HeaderBar";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -31,15 +32,17 @@ export default function RootLayout({
             <Suspense>
                 <GoogleAuthProvider>
                     <OurSwrConfig>
-                        <Container>
-                            <Flex direction="column" gap={"3"}>
-                                <Heading asChild><Link href={"/"}>xngin admin</Link></Heading>
-                                <Separator/>
-                                <Suspense>
-                                    {children}
-                                </Suspense>
+                        <Flex direction="column" minHeight={"100vh"}>
+                            <HeaderBar/>
+                            <Flex>
+                                <NavigationBar/>
+                                <Container p={"16px"} minWidth={"65vw"}>
+                                    <Suspense>
+                                        {children}
+                                    </Suspense>
+                                </Container>
                             </Flex>
-                        </Container>
+                        </Flex>
                     </OurSwrConfig>
                 </GoogleAuthProvider>
             </Suspense>
