@@ -15,7 +15,8 @@ ENV NPM_CONFIG_FUND=false
 ENV NPM_CONFIG_UPDATE_NOTIFIER=false
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+# Note: Railway builders will error if the id= is set via build variables.
+RUN --mount=type=cache,id=s/c2dbd22d-5c79-4173-be42-e99daa009a7c-/root/.npm,target=/root/.npm npm ci
 COPY next.config.ts tsconfig.json ./
 COPY src ./src
 COPY public ./public
