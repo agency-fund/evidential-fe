@@ -2,7 +2,6 @@
 import {Callout, Code, Flex, Heading, Spinner, Table, Text} from "@radix-ui/themes";
 import {ApiKeysSection} from "./ApiKeysSection";
 import {DeleteParticipantTypeDialog} from "./DeleteParticipantTypeDialog";
-import {useAuth} from "@/app/auth-provider";
 import {useGetDatasource, useInspectDatasource, useListParticipantTypes,} from "@/api/admin";
 import {useSearchParams} from "next/navigation";
 import Link from "next/link";
@@ -54,14 +53,13 @@ function ParticipantTypesTable({datasourceId}: { datasourceId: string }) {
 export default function Page() {
     const searchParams = useSearchParams();
     const datasourceId = searchParams.get('id');
-    const {idToken} = useAuth();
 
     const {
         data: datasourceDetails,
         isLoading: datasourceDetailsLoading,
     } = useGetDatasource(datasourceId!, {
         swr: {
-            enabled: datasourceId !== null && idToken !== null,
+            enabled: datasourceId !== null,
         }
     });
 
@@ -70,17 +68,18 @@ export default function Page() {
         isLoading: inspectDatasourceLoading,
     } = useInspectDatasource(datasourceId!, {
         swr: {
-            enabled: datasourceId !== null && idToken !== null,
+            enabled: datasourceId !== null,
         }
     });
 
     const isLoading = inspectDatasourceLoading || datasourceDetailsLoading;
 
-    if (isLoading || idToken === null) {
+    if (isLoading) {
         return <Spinner/>
     }
     if (data === undefined || !isSuccessResponse(data) || !isSuccessResponse(datasourceDetails) || datasourceId === null) {
-        return <Text>Error</Text>;
+        // TODO
+        return <Text>Error: <Code>{JSON.stringify(data!.data)}</Code></Text>;
     }
 
     const datasourceName = datasourceDetails.data.name;

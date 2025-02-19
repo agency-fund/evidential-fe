@@ -1,6 +1,5 @@
 "use client";
 import {Flex, Heading, Spinner, Table, Text} from "@radix-ui/themes";
-import {useAuth} from "@/app/auth-provider";
 import {useGetOrganization} from "@/api/admin";
 import {useSearchParams} from "next/navigation";
 import Link from "next/link";
@@ -83,7 +82,6 @@ function DatasourcesTable({datasources, organizationId}: {
 export default function Page() {
     const searchParams = useSearchParams();
     const organizationId = searchParams.get('id');
-    const {idToken} = useAuth();
 
     const {
         data,
@@ -93,7 +91,7 @@ export default function Page() {
         organizationId!,
         {
             swr: {
-                enabled: idToken !== null && organizationId !== null,
+                enabled: organizationId !== null,
             }
         }
     );
@@ -102,7 +100,7 @@ export default function Page() {
         return <Text>Error: Missing organization ID</Text>;
     }
 
-    if (isLoading || idToken === null) {
+    if (isLoading) {
         return <Spinner/>;
     }
 

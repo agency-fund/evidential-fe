@@ -1,6 +1,5 @@
 "use client";
 import {Button, Flex, Heading, Spinner, Table, Text, TextField} from "@radix-ui/themes";
-import {useAuth} from "@/app/auth-provider";
 import {useGetParticipantTypes, useUpdateParticipantType,} from "@/api/admin";
 import {useSearchParams} from "next/navigation";
 import {useEffect, useState} from "react";
@@ -117,7 +116,6 @@ export default function Page() {
     const searchParams = useSearchParams();
     const datasourceId = searchParams.get('datasource_id');
     const participantType = searchParams.get('participant_type');
-    const {idToken} = useAuth();
     const [editedDef, setEditedDef] = useState<ParticipantsDef | null>(null);
 
     const {
@@ -126,13 +124,7 @@ export default function Page() {
         error
     } = useGetParticipantTypes(
         datasourceId!,
-        participantType!,
-        {
-            swr: {
-                enabled: idToken !== null,
-            }
-        }
-    );
+        participantType!);
 
     const {trigger: updateParticipantType} = useUpdateParticipantType(
         datasourceId!,
@@ -143,7 +135,7 @@ export default function Page() {
         return <Text>Error: Missing required parameters</Text>;
     }
 
-    if (isLoading || idToken === null) {
+    if (isLoading) {
         return <Spinner/>;
     }
 

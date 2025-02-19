@@ -5,9 +5,9 @@ import {useAuth} from "@/app/auth-provider";
 import {ExitIcon} from "@radix-ui/react-icons";
 
 export const HeaderBar = () => {
-    const {logout, isAuthenticated} = useAuth();
+    const auth = useAuth();
 
-    if (!isAuthenticated) return null;
+    if (!auth.isAuthenticated) return null;
 
     return (
         <Flex
@@ -25,7 +25,7 @@ export const HeaderBar = () => {
             <Link href="/">
                 <Heading>xngin admin</Heading>
             </Link>
-            <Button variant="soft" onClick={logout}>
+            <Button variant="soft" onClick={auth.logout}>
                 <ExitIcon/> Logout
             </Button>
         </Flex>

@@ -8,14 +8,20 @@ import {useIdTokenStorage} from "@/services/use-id-token-storage";
 import {API_BASE_URL} from "@/services/constants";
 
 
-// TODO: reduce the # of states { idToken: string, userEmai: String, isAuthenticated: true, logout: ... } | {isAuthenticated: false, startLogin}
-interface AuthContext {
-    idToken: string | null
-    userEmail: string | null
-    isAuthenticated: boolean
-    startLogin: () => void
+interface AuthenticatedState {
+    isAuthenticated: true
+    idToken: string
+    userEmail: string
     logout: () => void
 }
+
+interface UnauthenticatedState {
+    isAuthenticated: false
+    startLogin: () => void
+    reset: () => void
+}
+
+type AuthContext = AuthenticatedState | UnauthenticatedState
 
 const GoogleAuthContext = createContext<AuthContext | null>(null);
 
@@ -111,13 +117,18 @@ export default function GoogleAuthProvider({children}: PropsWithChildren) {
         return () => clearInterval(interval);
     }, [idToken, logout]);
 
-    const contextValue: AuthContext = {
-        idToken,
-        userEmail,
-        isAuthenticated: idToken !== null,
-        startLogin,
-        logout
-    }
+    const contextValue: AuthContext = idToken && userEmail
+        ? {
+            isAuthenticated: true,
+            idToken,
+            userEmail,
+            logout
+        }
+        : {
+            isAuthenticated: false,
+            startLogin,
+            reset: logout
+        };
 
     return fetching ? <Spinner/> :
         <GoogleAuthContext.Provider value={contextValue}>{children}</GoogleAuthContext.Provider>;

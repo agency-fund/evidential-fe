@@ -1,6 +1,5 @@
 "use client";
 import {Button, Dialog, Flex, Heading, Spinner, Table, Text, TextField} from "@radix-ui/themes";
-import {useAuth} from "@/app/auth-provider";
 import {useCreateOrganizations, useListOrganizations} from "@/api/admin";
 import {PlusIcon} from "@radix-ui/react-icons";
 import {OrganizationSummary} from "@/api/methods.schemas";
@@ -92,18 +91,13 @@ function OrganizationsTable({organizations}: { organizations: OrganizationSummar
 }
 
 export default function Page() {
-    const {idToken} = useAuth();
     const {
         data,
         isLoading,
         error
-    } = useListOrganizations({
-        swr: {
-            enabled: idToken !== null,
-        }
-    });
+    } = useListOrganizations();
 
-    if (isLoading || idToken === null || data === undefined) {
+    if (isLoading || data === undefined) {
         return <Spinner/>
     }
     if (error) {

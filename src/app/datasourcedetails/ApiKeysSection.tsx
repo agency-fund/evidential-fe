@@ -15,7 +15,6 @@ import {
 import {CopyIcon, LockOpen2Icon, TrashIcon} from "@radix-ui/react-icons";
 import {useState} from "react";
 import {getListApiKeysKey, useCreateApiKey, useDeleteApiKey, useListApiKeys} from "@/api/admin";
-import {useAuth} from "@/app/auth-provider";
 import {ApiKeySummary} from "@/api/methods.schemas";
 import {isSuccessResponse} from "@/services/typehelper";
 import {mutate} from "swr";
@@ -108,7 +107,6 @@ const CreateApiKeyDialog = ({datasourceId}: { datasourceId: string }) => {
 
 function ApiKeysTable({apiKeys}: { apiKeys: ApiKeySummary[] }) {
     const [confirmingDeleteForKeyId, setConfirmingDeleteForKeyId] = useState<string | null>(null);
-    const {idToken} = useAuth();
     const {trigger} = useDeleteApiKey(confirmingDeleteForKeyId ?? "", );
 
     return <Flex direction="column" gap="3">
@@ -133,7 +131,7 @@ function ApiKeysTable({apiKeys}: { apiKeys: ApiKeySummary[] }) {
                         </AlertDialog.Cancel>
                         <AlertDialog.Action onClick={(event) => event.preventDefault()}>
                             <Button variant="solid" color="red" onClick={async () => {
-                                if (confirmingDeleteForKeyId === null || idToken === null) {
+                                if (confirmingDeleteForKeyId === null) {
                                     throw Error("invalid state");
                                 }
                                 await trigger();
@@ -171,16 +169,11 @@ function ApiKeysTable({apiKeys}: { apiKeys: ApiKeySummary[] }) {
 }
 
 export const ApiKeysSection = ({datasourceId}: { datasourceId: string }) => {
-    const {idToken} = useAuth();
     const {
         data: apiKeys,
         isLoading,
         error
-    } = useListApiKeys({
-        swr: {
-            enabled: idToken !== null,
-        }
-    });
+    } = useListApiKeys();
 
     if (isLoading) {
         return <Spinner/>;

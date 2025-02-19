@@ -1,4 +1,3 @@
-import {useAuth} from "@/app/auth-provider";
 import {useCreateParticipantType, useInspectDatasource, useInspectTableInDatasource} from "@/api/admin";
 import {useEffect, useState} from "react";
 import {FieldDescriptor, FieldMetadata} from "@/api/methods.schemas";
@@ -226,19 +225,15 @@ const AddParticipantTypeDialogInner = (
 }
 
 export const AddParticipantTypeDialog = ({datasourceId}: { datasourceId: string }) => {
-    const {idToken} = useAuth();
     const {
         data,
         isLoading,
-    } = useInspectDatasource(datasourceId, {
-        swr: {
-            enabled: idToken !== null,
-        }
-    });
-    if (isLoading || idToken === null) {
+    } = useInspectDatasource(datasourceId);
+    if (isLoading) {
         return <Spinner/>
     }
     if (!isSuccessResponse(data)) {
+        // TODO
         return <></>;
     }
     return <AddParticipantTypeDialogInner datasourceId={datasourceId} tables={data!.data.tables}/>;
