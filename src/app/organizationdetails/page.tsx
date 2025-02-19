@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { DeleteUserDialog } from '@/app/organizationdetails/DeleteUserDialog';
 import { DeleteDatasourceDialog } from '@/app/organizationdetails/DeleteDatasourceDialog';
+import { EditDatasourceDialog } from '@/app/organizationdetails/EditDatasourceDialog';
 import { AddUserDialog } from '@/app/organizationdetails/AddUserDialog';
 import { AddDatasourceDialog } from '@/app/organizationdetails/AddDatasourceDialog';
 import { isSuccessResponse } from '@/services/typehelper';
@@ -71,6 +72,7 @@ function DatasourcesTable({
             <Table.Cell>
               <Flex gap="2">
                 <DeleteDatasourceDialog organizationId={organizationId} datasourceId={datasource.id} />
+                <EditDatasourceDialog organizationId={organizationId} datasourceId={datasource.id} />
               </Flex>
             </Table.Cell>
           </Table.Row>
