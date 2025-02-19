@@ -64,13 +64,7 @@ export const AddDatasourceDialog = ({ organizationId }: { organizationId: string
                   dbname: fd.get('database') as string,
                   user: fd.get('user') as string,
                   password: fd.get('password') as string,
-                  sslmode: fd.get('sslmode') as
-                    | 'disable'
-                    | 'allow'
-                    | 'prefer'
-                    | 'require'
-                    | 'verify-ca'
-                    | 'verify-full',
+                  sslmode: fd.get('sslmode') as 'disable' | 'allow' | 'prefer' | 'require',
                   search_path: (fd.get('search_path') as string) || null,
                 };
               } else {

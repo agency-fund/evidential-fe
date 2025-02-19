@@ -43,7 +43,13 @@ export const AddUserDialog = ({ organizationId }: { organizationId: string }) =>
                 <Text as="div" size="2" mb="1" weight="bold">
                   Email
                 </Text>
-                <TextField.Root name="email" type="email" placeholder="Enter member email" required></TextField.Root>
+                <TextField.Root
+                  name="email"
+                  type="email"
+                  placeholder="Enter member email"
+                  required
+                  autoComplete={'off'}
+                ></TextField.Root>
               </label>
             </Flex>
 
