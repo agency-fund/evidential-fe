@@ -1,8 +1,4 @@
-import {FALLBACK_OIDC_BASE_URL} from "@/services/constants";
-
-export const OIDC_BASE_URL = process.env.NEXT_PUBLIC_XNGIN_OIDC_BASE_URL ?? FALLBACK_OIDC_BASE_URL;
-export const CLIENT_ID = process.env.NEXT_PUBLIC_XNGIN_GOOGLE_CLIENT_ID;
-export const REDIRECT_URI = process.env.NEXT_PUBLIC_XNGIN_OIDC_REDIRECT_URI;
+import {OIDC_CLIENT_ID, OIDC_BASE_URL, OIDC_REDIRECT_URI} from "@/services/constants";
 
 // Google's OAuth login endpoint is declared in https://accounts.google.com/.well-known/openid-configuration.
 const GOOGLE_AUTHORIZATION_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -33,17 +29,17 @@ const createCodeChallenge = async (codeVerifier: string) => {
  * https://developers.google.com/identity/openid-connect/openid-connect#authenticationuriparameters
  */
 const createGoogleLoginUrl = (code_challenge: string) => {
-    if (!CLIENT_ID) {
+    if (!OIDC_CLIENT_ID) {
         throw new Error("NEXT_PUBLIC_XNGIN_GOOGLE_CLIENT_ID is not set.")
     }
-    if (!REDIRECT_URI) {
+    if (!OIDC_REDIRECT_URI) {
         throw new Error("NEXT_PUBLIC_XNGIN_OIDC_REDIRECT_URI is unset.")
     }
     const params = {
-        "client_id": CLIENT_ID,
+        "client_id": OIDC_CLIENT_ID,
         "code_challenge": code_challenge,
         "code_challenge_method": "S256",
-        "redirect_uri": REDIRECT_URI,
+        "redirect_uri": OIDC_REDIRECT_URI,
         "response_type": "code",
         "scope": "openid email",
     }

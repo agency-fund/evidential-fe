@@ -1,5 +1,5 @@
 import {currentIdToken} from "@/services/use-id-token-storage";
-import {FALLBACK_API_BASE_URL} from "@/services/constants";
+import {API_BASE_URL} from "@/services/constants";
 
 const getBody = <T>(c: Response | Request): Promise<T> => {
     const contentType = c.headers.get('content-type');
@@ -12,14 +12,6 @@ const getBody = <T>(c: Response | Request): Promise<T> => {
     return c.text() as Promise<T>;
 };
 
-const getUrl = (methodUrl: string): string => {
-    const baseUrl =
-        process.env.NODE_ENV === 'production'
-            ? process.env.NEXT_PUBLIC_XNGIN_API_BASE_URL
-            : FALLBACK_API_BASE_URL;
-    return new URL(methodUrl, baseUrl).toString();
-};
-
 const getHeaders = (options: RequestInit) => {
     const idToken = currentIdToken();
     return {
@@ -30,10 +22,10 @@ const getHeaders = (options: RequestInit) => {
 };
 
 export const orvalFetch = async <T>(
-    url: string,
+    path: string,
     options: RequestInit,
 ): Promise<T> => {
-    const requestUrl = getUrl(url);
+    const requestUrl = new URL(path, API_BASE_URL);
     const requestHeaders = getHeaders(options);
     const requestInit: RequestInit = {
         ...options,

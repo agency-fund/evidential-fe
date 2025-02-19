@@ -1,11 +1,9 @@
 'use client';
 import {Box, Button, Card, Flex, Heading, Text} from "@radix-ui/themes";
 import {useAuth} from "@/app/auth-provider";
-import {useCallerIdentity} from "@/api/admin";
 
 export default function Home() {
-    const {startLogin, isAuthenticated} = useAuth();
-    const {data} = useCallerIdentity();
+    const {startLogin, isAuthenticated, userEmail} = useAuth();
 
     if (!isAuthenticated) {
         return (
@@ -28,7 +26,7 @@ export default function Home() {
                 <Flex direction="column" gap="2">
                     <Text>Logged in as:</Text>
                     <Box>
-                        <Text weight="bold">{data?.data.email}</Text>
+                        <Text weight="bold">{userEmail}</Text>
                     </Box>
                 </Flex>
             </Card>
