@@ -9,6 +9,7 @@ import { API_BASE_URL } from '@/services/constants';
 import { useCustomEventListener } from '@/services/use-custom-event-handler';
 
 export const API_401_EVENT = 'api_returned_401';
+const CODE_VERIFIER_KEY = 'code_verifier';
 
 interface AuthenticatedState {
   isAuthenticated: true;
@@ -44,7 +45,6 @@ const checkCallerIdentity = async (idToken: string) => {
   });
 };
 
-const CODE_VERIFIER_KEY = 'code_verifier';
 export default function GoogleAuthProvider({ children }: PropsWithChildren) {
   const router = useRouter();
   const searchParams = useSearchParams();
