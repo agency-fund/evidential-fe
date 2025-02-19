@@ -6,6 +6,9 @@ import { exchangeCodeForTokens, generatePkceLoginInfo } from '@/services/pkce';
 import { Spinner } from '@radix-ui/themes';
 import { useIdTokenStorage } from '@/services/use-id-token-storage';
 import { API_BASE_URL } from '@/services/constants';
+import { useCustomEventListener } from '@/services/use-custom-event-handler';
+
+export const API_401_EVENT = 'api_returned_401';
 
 interface AuthenticatedState {
   isAuthenticated: true;
@@ -57,6 +60,8 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
     setUserEmail(null);
     router.push('/');
   }, [setIdToken, router]);
+
+  useCustomEventListener(API_401_EVENT, logout);
 
   const startLogin = useCallback(async () => {
     const { codeVerifier, loginUrl } = await generatePkceLoginInfo();
