@@ -12,13 +12,10 @@ export function useLocalStorage<T>(key: string) {
     };
   };
 
-  const getSnapshot = () => localStorage.getItem(key);
+  const getSnapshot = () => window.localStorage.getItem(key);
 
   const item = useSyncExternalStore(subscribe, getSnapshot, () => null);
   const value = typeof item === 'string' ? JSON.parse(item) : null;
-  if (value !== null && typeof value !== 'object') {
-    throw new Error('localStorage corrupted');
-  }
 
   const setValue = useCallback(
     (newValue: T | null) => {
