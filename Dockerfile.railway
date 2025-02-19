@@ -3,7 +3,7 @@ FROM docker.io/joseluisq/static-web-server:2-debian AS sws
 
 # Performs an optimized build of the NextJS application and exports it as a static bundle. This application has no
 # server-side JavaScript component.
-FROM docker.io/node:22.13-bookworm AS build
+FROM docker.io/node:22.14-bookworm AS build
 # These variables must be defined in the Railway settings with values appropriate for the deployment environment.
 # The default values are used when running this image for local development.
 ARG NEXT_PUBLIC_XNGIN_GOOGLE_CLIENT_ID=222213100775-qa1ajcrk48il70itcbdcvgr9ib5t08uf.apps.googleusercontent.com
