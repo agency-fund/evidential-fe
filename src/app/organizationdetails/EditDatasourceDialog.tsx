@@ -1,6 +1,6 @@
 'use client';
 import { Button, Dialog, Flex, IconButton, Text, TextField } from '@radix-ui/themes';
-import { Pencil2Icon } from '@radix-ui/react-icons';
+import { EyeClosedIcon, EyeOpenIcon, Pencil2Icon } from '@radix-ui/react-icons';
 import { useGetDatasource, useUpdateDatasource } from '@/api/admin';
 import { useState } from 'react';
 import { mutate } from 'swr';
@@ -16,6 +16,7 @@ export const EditDatasourceDialog = ({ organizationId, datasourceId }: EditDatas
   const { trigger: updateDatasource } = useUpdateDatasource(datasourceId);
   const { data, isLoading } = useGetDatasource(datasourceId);
   const [open, setOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   if (isLoading || !data || !isSuccessResponse(data)) {
     return null;
@@ -139,7 +140,12 @@ export const EditDatasourceDialog = ({ organizationId, datasourceId }: EditDatas
                   <Text as="div" size="2" mb="1" weight="bold">
                     Password
                   </Text>
-                  <TextField.Root name="password" type="password" defaultValue={config.dwh.password} required />
+                  <Flex gap="2">
+                    <TextField.Root name="password" type={showPassword ? "text" : "password"} defaultValue={config.dwh.password} required />
+                    <Button type="button" variant="soft" onClick={() => setShowPassword(!showPassword)}>
+                      {showPassword ? <EyeClosedIcon /> : <EyeOpenIcon />}
+                    </Button>
+                  </Flex>
                 </label>
                 <label>
                   <Text as="div" size="2" mb="1" weight="bold">
