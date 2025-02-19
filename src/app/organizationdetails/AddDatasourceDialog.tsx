@@ -1,7 +1,7 @@
 import { getGetOrganizationKey, getListDatasourcesKey, useCreateDatasource } from '@/api/admin';
 import { useState } from 'react';
 import { Button, Dialog, Flex, RadioGroup, Spinner, Text, TextArea, TextField } from '@radix-ui/themes';
-import { PlusIcon } from '@radix-ui/react-icons';
+import { EyeClosedIcon, EyeOpenIcon, PlusIcon } from '@radix-ui/react-icons';
 import { BqDsnInput, Dsn } from '@/api/methods.schemas';
 import { mutate } from 'swr';
 
@@ -10,6 +10,7 @@ export const AddDatasourceDialog = ({ organizationId }: { organizationId: string
   const [open, setOpen] = useState(false);
   const [dwhType, setDwhType] = useState<'postgres' | 'bigquery'>('postgres');
   const [projectId, setProjectId] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const validateJson = (jsonString: string): boolean => {
     try {
@@ -159,7 +160,12 @@ export const AddDatasourceDialog = ({ organizationId }: { organizationId: string
                     <Text as="div" size="2" mb="1" weight="bold">
                       Password
                     </Text>
-                    <TextField.Root name="password" type="password" required />
+                    <Flex gap="2">
+                      <TextField.Root name="password" type={showPassword ? "text" : "password"} required />
+                      <Button type="button" variant="soft" onClick={() => setShowPassword(!showPassword)}>
+                        {showPassword ? <EyeClosedIcon /> : <EyeOpenIcon />}
+                      </Button>
+                    </Flex>
                   </label>
                   <label>
                     <Text as="div" size="2" mb="1" weight="bold">
