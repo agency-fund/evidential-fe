@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from 'react';
 
-const ID_TOKEN_KEY = 'id_token_';
+const ID_TOKEN_KEY = 'xu';
 const ID_TOKEN_EVENT = 'id_token_event';
 
 const subscribe = (callback: () => void) => {
@@ -17,20 +17,25 @@ const getSnapshot = () => localStorage.getItem(ID_TOKEN_KEY);
 // Exposes the current authentication token to code outside of the React context.
 export const currentIdToken = () => {
   const item = getSnapshot();
-  return typeof item === 'string' ? JSON.parse(item) : null;
+  return typeof item === 'string' ? (JSON.parse(item) as IdTokenStored).idToken : null;
 };
 
-const setIdToken = (newValue: string | null) => {
+const setIdToken = (newValue: IdTokenStored | null) => {
   localStorage.setItem(ID_TOKEN_KEY, JSON.stringify(newValue));
   window.dispatchEvent(new StorageEvent(ID_TOKEN_EVENT));
 };
 
-export const useIdTokenStorage = () => {
+interface IdTokenStored {
+  idToken: string;
+  email: string;
+}
+
+export const useAuthStorage = () => {
   const item = useSyncExternalStore(subscribe, getSnapshot, () => null);
   const value = typeof item === 'string' ? JSON.parse(item) : null;
-  if (value !== null && typeof value !== 'string') {
+  if (value !== null && typeof value !== 'object') {
     throw new Error('localStorage corrupted');
   }
 
-  return [value, setIdToken] as const;
+  return [value as IdTokenStored | null, setIdToken] as const;
 };

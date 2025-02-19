@@ -4,7 +4,7 @@ import { createContext, PropsWithChildren, useCallback, useContext, useEffect, u
 import { useRouter, useSearchParams } from 'next/navigation';
 import { exchangeCodeForTokens, generatePkceLoginInfo } from '@/services/pkce';
 import { Spinner } from '@radix-ui/themes';
-import { useIdTokenStorage } from '@/services/use-id-token-storage';
+import { useAuthStorage } from '@/services/use-auth-storage';
 import { API_BASE_URL } from '@/services/constants';
 import { useCustomEventListener } from '@/services/use-custom-event-handler';
 
@@ -44,28 +44,26 @@ const checkCallerIdentity = async (idToken: string) => {
   });
 };
 
+const CODE_VERIFIER_KEY = 'code_verifier';
 export default function GoogleAuthProvider({ children }: PropsWithChildren) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  // TODO: consolidate idToken and userEmail
-  const [idToken, setIdToken] = useIdTokenStorage();
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [user, setUser] = useAuthStorage();
   const [fetching, setFetching] = useState<boolean>(false);
-  const isGoogleLoginRedirect = idToken === null && searchParams.has('code') && searchParams.has('scope');
+  const isGoogleLoginRedirect = user === null && searchParams.has('code') && searchParams.has('scope');
 
   const logout = useCallback(() => {
     console.log('logout');
-    localStorage.removeItem('code_verifier');
-    setIdToken(null);
-    setUserEmail(null);
+    localStorage.removeItem(CODE_VERIFIER_KEY);
+    setUser(null);
     router.push('/');
-  }, [setIdToken, router]);
+  }, [setUser, router]);
 
   useCustomEventListener(API_401_EVENT, logout);
 
   const startLogin = useCallback(async () => {
     const { codeVerifier, loginUrl } = await generatePkceLoginInfo();
-    localStorage.setItem('code_verifier', codeVerifier);
+    localStorage.setItem(CODE_VERIFIER_KEY, codeVerifier);
     router.push(loginUrl);
   }, [router]);
 
@@ -76,9 +74,9 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
     (async () => {
       setFetching(true);
       try {
-        const codeVerifier = localStorage.getItem('code_verifier');
+        const codeVerifier = localStorage.getItem(CODE_VERIFIER_KEY);
         const tokens = await exchangeCodeForTokens(searchParams.get('code') as string, codeVerifier!);
-        localStorage.removeItem('code_verifier');
+        localStorage.removeItem(CODE_VERIFIER_KEY);
         const newToken = tokens.id_token ?? null;
         if (newToken === null) {
           console.log('backend failed to return a usable token');
@@ -87,8 +85,7 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
         }
         const response = await checkCallerIdentity(newToken);
         if (response.status === 200) {
-          setIdToken(newToken);
-          setUserEmail((await response.json())['email']);
+          setUser({ idToken: newToken, email: (await response.json())['email'] });
           router.push('/');
         } else {
           console.log('checkCallerIdentity failed');
@@ -99,12 +96,13 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
         setFetching(false);
       }
     })();
-  }, [router, searchParams, setIdToken, isGoogleLoginRedirect, logout]);
+  }, [router, searchParams, setUser, isGoogleLoginRedirect, logout]);
 
   useEffect(() => {
-    if (!idToken) {
+    if (!user) {
       return;
     }
+    const idToken = user.idToken;
     const validateToken = async () => {
       console.log('Validating token');
       try {
@@ -119,21 +117,20 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
     };
     const interval = setInterval(validateToken, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [idToken, logout]);
+  }, [user, logout]);
 
-  const contextValue: AuthContext =
-    idToken && userEmail
-      ? {
-          isAuthenticated: true,
-          idToken,
-          userEmail,
-          logout,
-        }
-      : {
-          isAuthenticated: false,
-          startLogin,
-          reset: logout,
-        };
+  const contextValue: AuthContext = user
+    ? {
+        isAuthenticated: true,
+        idToken: user.idToken,
+        userEmail: user.email,
+        logout,
+      }
+    : {
+        isAuthenticated: false,
+        startLogin,
+        reset: logout,
+      };
 
   return fetching ? (
     <Spinner />
