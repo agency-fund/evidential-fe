@@ -4,76 +4,70 @@
  * xngin: Experiments API
  * OpenAPI spec version: 0.9.0
  */
-import useSwr from 'swr'
+import useSwr from "swr";
+import type { Key, SWRConfiguration } from "swr";
+import { orvalFetch } from "../services/orval-fetch";
 import type {
-  Key,
-  SWRConfiguration
-} from 'swr'
-import type {
-  AuthCallbackParams,
-  CallbackResponse,
-  HTTPValidationError
-} from './methods.schemas'
-import { orvalFetch } from '../services/orval-fetch';
+	AuthCallbackParams,
+	CallbackResponse,
+	HTTPValidationError,
+} from "./methods.schemas";
 
-
-
-  
-  type SecondParameter<T extends (...args: any) => any> = Parameters<T>[1];
+type SecondParameter<T extends (...args: any) => any> = Parameters<T>[1];
 
 /**
  * @summary Index
  */
 export type indexResponse = {
-  data: unknown;
-  status: number;
-  headers: Headers;
-}
+	data: unknown;
+	status: number;
+	headers: Headers;
+};
 
 export const getIndexUrl = () => {
+	return `/v1/a/oidc/`;
+};
 
-
-  return `/v1/a/oidc/`
-}
-
-export const index = async ( options?: RequestInit): Promise<indexResponse> => {
-  
-  return orvalFetch<indexResponse>(getIndexUrl(),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
-
-
-
+export const index = async (options?: RequestInit): Promise<indexResponse> => {
+	return orvalFetch<indexResponse>(getIndexUrl(), {
+		...options,
+		method: "GET",
+	});
+};
 
 export const getIndexKey = () => [`/v1/a/oidc/`] as const;
 
-export type IndexQueryResult = NonNullable<Awaited<ReturnType<typeof index>>>
-export type IndexQueryError = unknown
+export type IndexQueryResult = NonNullable<Awaited<ReturnType<typeof index>>>;
+export type IndexQueryError = unknown;
 
 /**
  * @summary Index
  */
-export const useIndex = <TError = unknown>(
-   options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof index>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
-) => {
-  const {swr: swrOptions, request: requestOptions} = options ?? {}
+export const useIndex = <TError = unknown>(options?: {
+	swr?: SWRConfiguration<Awaited<ReturnType<typeof index>>, TError> & {
+		swrKey?: Key;
+		enabled?: boolean;
+	};
+	request?: SecondParameter<typeof orvalFetch>;
+}) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
 
-  const isEnabled = swrOptions?.enabled !== false
-  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getIndexKey() : null);
-  const swrFn = () => index(requestOptions)
+	const isEnabled = swrOptions?.enabled !== false;
+	const swrKey =
+		swrOptions?.swrKey ?? (() => (isEnabled ? getIndexKey() : null));
+	const swrFn = () => index(requestOptions);
 
-  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
+		swrKey,
+		swrFn,
+		swrOptions,
+	);
 
-  return {
-    swrKey,
-    ...query
-  }
-}
+	return {
+		swrKey,
+		...query,
+	};
+};
 /**
  * OAuth callback endpoint that exchanges the authorization code for tokens, and returns the id_token to the client.
 
@@ -81,59 +75,72 @@ Only relevant for PKCE.
  * @summary Auth Callback
  */
 export type authCallbackResponse = {
-  data: CallbackResponse | HTTPValidationError;
-  status: number;
-  headers: Headers;
-}
+	data: CallbackResponse | HTTPValidationError;
+	status: number;
+	headers: Headers;
+};
 
-export const getAuthCallbackUrl = (params: AuthCallbackParams,) => {
-  const normalizedParams = new URLSearchParams();
+export const getAuthCallbackUrl = (params: AuthCallbackParams) => {
+	const normalizedParams = new URLSearchParams();
 
-  Object.entries(params || {}).forEach(([key, value]) => {
-    
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
-    }
-  });
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
 
-  return normalizedParams.size ? `/v1/a/oidc/callback?${normalizedParams.toString()}` : `/v1/a/oidc/callback`
-}
+	return normalizedParams.size
+		? `/v1/a/oidc/callback?${normalizedParams.toString()}`
+		: `/v1/a/oidc/callback`;
+};
 
-export const authCallback = async (params: AuthCallbackParams, options?: RequestInit): Promise<authCallbackResponse> => {
-  
-  return orvalFetch<authCallbackResponse>(getAuthCallbackUrl(params),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
+export const authCallback = async (
+	params: AuthCallbackParams,
+	options?: RequestInit,
+): Promise<authCallbackResponse> => {
+	return orvalFetch<authCallbackResponse>(getAuthCallbackUrl(params), {
+		...options,
+		method: "GET",
+	});
+};
 
+export const getAuthCallbackKey = (params: AuthCallbackParams) =>
+	[`/v1/a/oidc/callback`, ...(params ? [params] : [])] as const;
 
-
-
-export const getAuthCallbackKey = (params: AuthCallbackParams,) => [`/v1/a/oidc/callback`, ...(params ? [params]: [])] as const;
-
-export type AuthCallbackQueryResult = NonNullable<Awaited<ReturnType<typeof authCallback>>>
-export type AuthCallbackQueryError = HTTPValidationError
+export type AuthCallbackQueryResult = NonNullable<
+	Awaited<ReturnType<typeof authCallback>>
+>;
+export type AuthCallbackQueryError = HTTPValidationError;
 
 /**
  * @summary Auth Callback
  */
 export const useAuthCallback = <TError = HTTPValidationError>(
-  params: AuthCallbackParams, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof authCallback>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
+	params: AuthCallbackParams,
+	options?: {
+		swr?: SWRConfiguration<Awaited<ReturnType<typeof authCallback>>, TError> & {
+			swrKey?: Key;
+			enabled?: boolean;
+		};
+		request?: SecondParameter<typeof orvalFetch>;
+	},
 ) => {
-  const {swr: swrOptions, request: requestOptions} = options ?? {}
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
 
-  const isEnabled = swrOptions?.enabled !== false
-  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getAuthCallbackKey(params) : null);
-  const swrFn = () => authCallback(params, requestOptions)
+	const isEnabled = swrOptions?.enabled !== false;
+	const swrKey =
+		swrOptions?.swrKey ??
+		(() => (isEnabled ? getAuthCallbackKey(params) : null));
+	const swrFn = () => authCallback(params, requestOptions);
 
-  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
+		swrKey,
+		swrFn,
+		swrOptions,
+	);
 
-  return {
-    swrKey,
-    ...query
-  }
-}
+	return {
+		swrKey,
+		...query,
+	};
+};

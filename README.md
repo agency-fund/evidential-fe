@@ -14,11 +14,13 @@ You may also want to install [Task](https://taskfile.dev/).
 
 ## How is it built?
 
-| Capability    | Libraries                                                                                                                     |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Framework     | NextJS, TypeScript                                                                                                            |
-| UI Components | [Radix UI](https://www.radix-ui.com/)                                                                                         |
-| API Client    | [SWR](https://swr.vercel.app/), [Orval](https://github.com/orval-labs/orval), [custom fetcher](./src/services/orval-fetch.ts) |
+| Capability               | Libraries                                                                                                                     |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| Framework                | NextJS, TypeScript                                                                                                            |
+| UI Components            | [Radix UI](https://www.radix-ui.com/)                                                                                         |
+| API Client               | [SWR](https://swr.vercel.app/), [Orval](https://github.com/orval-labs/orval), [custom fetcher](./src/services/orval-fetch.ts) |
+| Code Formatting          | The Orval-generated code in src/api is formatted with biome.                                                                  |
+| Documentation Formatting | mdformat                                                                                                                      |
 
 Most of the UI was generated using [Aider](https://aider.chat/) and Anthropic Claude.
 

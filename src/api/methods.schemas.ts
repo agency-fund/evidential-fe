@@ -5,14 +5,14 @@
  * OpenAPI spec version: 0.9.0
  */
 export interface AddMemberToOrganizationRequest {
-  email: string;
+	email: string;
 }
 
 export interface ApiKeySummary {
-  id: string;
-  datasource_id: string;
-  organization_id: string;
-  organization_name: string;
+	id: string;
+	datasource_id: string;
+	organization_id: string;
+	organization_name: string;
 }
 
 export type ArmArmDescription = string | null;
@@ -21,65 +21,65 @@ export type ArmArmDescription = string | null;
  * Describes an experiment treatment arm.
  */
 export interface Arm {
-  arm_id: string;
-  arm_name: string;
-  arm_description?: ArmArmDescription;
+	arm_id: string;
+	arm_name: string;
+	arm_description?: ArmArmDescription;
 }
 
 export interface ArmUpdate {
-  /**
-   * New experiment arm name to be updated.
-   * @minLength 1
-   */
-  arm_name: string;
-  /** The id originally assigned to this arm by the user. */
-  arm_id: string;
+	/**
+	 * New experiment arm name to be updated.
+	 * @minLength 1
+	 */
+	arm_name: string;
+	/** The id originally assigned to this arm by the user. */
+	arm_id: string;
 }
 
 export interface AssignRequest {
-  design_spec: DesignSpec;
-  audience_spec: AudienceSpec;
+	design_spec: DesignSpec;
+	audience_spec: AudienceSpec;
 }
 
 /**
  * Describes assignments for all participants and balance test results.
  */
 export interface AssignResponseInput {
-  balance_check: BalanceCheck;
-  experiment_id: string;
-  sample_size: number;
-  /** Name of the datasource field used as the unique identifier for the participant_id value stored in each Assignment, as configured in the datasource settings. Included for frontend convenience. */
-  unique_id_field: string;
-  assignments: Assignment[];
+	balance_check: BalanceCheck;
+	experiment_id: string;
+	sample_size: number;
+	/** Name of the datasource field used as the unique identifier for the participant_id value stored in each Assignment, as configured in the datasource settings. Included for frontend convenience. */
+	unique_id_field: string;
+	assignments: Assignment[];
 }
 
 /**
  * Describes assignments for all participants and balance test results.
  */
 export interface AssignResponseOutput {
-  balance_check: BalanceCheck;
-  experiment_id: string;
-  sample_size: number;
-  /** Name of the datasource field used as the unique identifier for the participant_id value stored in each Assignment, as configured in the datasource settings. Included for frontend convenience. */
-  unique_id_field: string;
-  assignments: Assignment[];
+	balance_check: BalanceCheck;
+	experiment_id: string;
+	sample_size: number;
+	/** Name of the datasource field used as the unique identifier for the participant_id value stored in each Assignment, as configured in the datasource settings. Included for frontend convenience. */
+	unique_id_field: string;
+	assignments: Assignment[];
 }
 
 /**
  * Describes treatment assignment for an experiment participant.
  */
 export interface Assignment {
-  participant_id: string;
-  treatment_assignment: string;
-  strata: Strata[];
+	participant_id: string;
+	treatment_assignment: string;
+	strata: Strata[];
 }
 
 /**
  * Defines target participants for an experiment using filters.
  */
 export interface AudienceSpec {
-  participant_type: string;
-  filters: AudienceSpecFilter[];
+	participant_type: string;
+	filters: AudienceSpecFilter[];
 }
 
 export type AudienceSpecFilterValueAnyOfItem = number | null;
@@ -90,7 +90,11 @@ export type AudienceSpecFilterValueAnyOfThreeItem = string | null;
 
 export type AudienceSpecFilterValueAnyOfFourItem = boolean | null;
 
-export type AudienceSpecFilterValue = AudienceSpecFilterValueAnyOfItem[] | AudienceSpecFilterValueAnyOfTwoItem[] | AudienceSpecFilterValueAnyOfThreeItem[] | AudienceSpecFilterValueAnyOfFourItem[];
+export type AudienceSpecFilterValue =
+	| AudienceSpecFilterValueAnyOfItem[]
+	| AudienceSpecFilterValueAnyOfTwoItem[]
+	| AudienceSpecFilterValueAnyOfThreeItem[]
+	| AudienceSpecFilterValueAnyOfFourItem[];
 
 /**
  * Defines criteria for filtering rows by value.
@@ -132,69 +136,69 @@ Values must be expressed as ISO8601 datetime strings compatible with Python's da
 If a timezone is provided, it must be UTC.
  */
 export interface AudienceSpecFilter {
-  /** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-  field_name: string;
-  relation: Relation;
-  value: AudienceSpecFilterValue;
+	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	field_name: string;
+	relation: Relation;
+	value: AudienceSpecFilterValue;
 }
 
 /**
  * Describes balance test results for treatment assignment.
  */
 export interface BalanceCheck {
-  f_statistic: number;
-  numerator_df: number;
-  denominator_df: number;
-  p_value: number;
-  balance_ok: boolean;
+	f_statistic: number;
+	numerator_df: number;
+	denominator_df: number;
+	p_value: number;
+	balance_ok: boolean;
 }
 
-export type BqDsnInputDriver = typeof BqDsnInputDriver[keyof typeof BqDsnInputDriver];
-
+export type BqDsnInputDriver =
+	(typeof BqDsnInputDriver)[keyof typeof BqDsnInputDriver];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const BqDsnInputDriver = {
-  bigquery: 'bigquery',
+	bigquery: "bigquery",
 } as const;
 
 /**
  * Describes a BigQuery connection.
  */
 export interface BqDsnInput {
-  driver: BqDsnInputDriver;
-  /** The Google Cloud Project ID containing the dataset. */
-  project_id: string;
-  /** The dataset name. */
-  dataset_id: string;
-  credentials: GcpCredentials;
+	driver: BqDsnInputDriver;
+	/** The Google Cloud Project ID containing the dataset. */
+	project_id: string;
+	/** The dataset name. */
+	dataset_id: string;
+	credentials: GcpCredentials;
 }
 
-export type BqDsnOutputDriver = typeof BqDsnOutputDriver[keyof typeof BqDsnOutputDriver];
-
+export type BqDsnOutputDriver =
+	(typeof BqDsnOutputDriver)[keyof typeof BqDsnOutputDriver];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const BqDsnOutputDriver = {
-  bigquery: 'bigquery',
+	bigquery: "bigquery",
 } as const;
 
 /**
  * Describes a BigQuery connection.
  */
 export interface BqDsnOutput {
-  driver: BqDsnOutputDriver;
-  /** The Google Cloud Project ID containing the dataset. */
-  project_id: string;
-  /** The dataset name. */
-  dataset_id: string;
-  credentials: GcpCredentials;
+	driver: BqDsnOutputDriver;
+	/** The Google Cloud Project ID containing the dataset. */
+	project_id: string;
+	/** The dataset name. */
+	dataset_id: string;
+	credentials: GcpCredentials;
 }
 
 /**
  * The credentials returned to the SPA.
  */
 export interface CallbackResponse {
-  /** The ID token as generated by Google. Represents a successful authentication. */
-  id_token: string;
+	/** The ID token as generated by Google. Represents a successful authentication. */
+	id_token: string;
 }
 
 /**
@@ -206,115 +210,114 @@ export type CommitRequestPowerAnalyses = PowerResponseInput | null;
  * The complete experiment configuration to persist in an experiment registry.
  */
 export interface CommitRequest {
-  design_spec: DesignSpec;
-  audience_spec: AudienceSpec;
-  /** Optionally include the power analyses of your tracking metrics if performed. */
-  power_analyses?: CommitRequestPowerAnalyses;
-  experiment_assignment: AssignResponseInput;
+	design_spec: DesignSpec;
+	audience_spec: AudienceSpec;
+	/** Optionally include the power analyses of your tracking metrics if performed. */
+	power_analyses?: CommitRequestPowerAnalyses;
+	experiment_assignment: AssignResponseInput;
 }
 
 export interface CreateApiKeyRequest {
-  datasource_id: string;
+	datasource_id: string;
 }
 
 export interface CreateApiKeyResponse {
-  id: string;
-  datasource_id: string;
-  key: string;
+	id: string;
+	datasource_id: string;
+	key: string;
 }
 
 export interface CreateDatasourceRequest {
-  organization_id: string;
-  name: string;
-  dwh: DwhInput;
+	organization_id: string;
+	name: string;
+	dwh: DwhInput;
 }
 
 export interface CreateDatasourceResponse {
-  id: string;
+	id: string;
 }
 
 export interface CreateOrganizationRequest {
-  name: string;
+	name: string;
 }
 
 export interface CreateOrganizationResponse {
-  id: string;
+	id: string;
 }
 
 export interface CreateParticipantsTypeRequest {
-  participant_type: string;
-  schema_def: ParticipantsSchemaInput;
+	participant_type: string;
+	schema_def: ParticipantsSchemaInput;
 }
 
 export interface CreateParticipantsTypeResponse {
-  participant_type: string;
-  schema_def: ParticipantsSchemaOutput;
+	participant_type: string;
+	schema_def: ParticipantsSchemaOutput;
 }
 
 /**
  * Defines the supported data types for fields in the data source.
  */
-export type DataType = typeof DataType[keyof typeof DataType];
-
+export type DataType = (typeof DataType)[keyof typeof DataType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DataType = {
-  boolean: 'boolean',
-  character_varying: 'character varying',
-  date: 'date',
-  integer: 'integer',
-  double_precision: 'double precision',
-  numeric: 'numeric',
-  timestamp_without_time_zone: 'timestamp without time zone',
-  bigint: 'bigint',
+	boolean: "boolean",
+	character_varying: "character varying",
+	date: "date",
+	integer: "integer",
+	double_precision: "double precision",
+	numeric: "numeric",
+	timestamp_without_time_zone: "timestamp without time zone",
+	bigint: "bigint",
 } as const;
 
 export type DatasourceConfig = RemoteDatabaseConfig | SqliteLocalConfig;
 
 export interface DatasourceSummary {
-  id: string;
-  name: string;
-  driver: string;
-  type: string;
-  organization_id: string;
-  organization_name: string;
+	id: string;
+	name: string;
+	driver: string;
+	type: string;
+	organization_id: string;
+	organization_name: string;
 }
 
 /**
  * Experiment design parameters for power calculations and treatment assignment.
  */
 export interface DesignSpec {
-  experiment_id: string;
-  experiment_name: string;
-  description: string;
-  start_date: string;
-  end_date: string;
-  /** @minItems 2 */
-  arms: Arm[];
-  strata_field_names: string[];
-  /**
-   * Primary and optional secondary metrics to target.
-   * @minItems 1
-   */
-  metrics: DesignSpecMetricRequest[];
-  /**
-   * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
-   * @minimum 0
-   * @maximum 1
-   */
-  power?: number;
-  /**
-   * The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.
-   * @minimum 0
-   * @maximum 1
-   */
-  alpha?: number;
-  /**
-   * Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".
-   * @minimum 0
-   * @maximum 1
-   */
-  fstat_thresh?: number;
+	experiment_id: string;
+	experiment_name: string;
+	description: string;
+	start_date: string;
+	end_date: string;
+	/** @minItems 2 */
+	arms: Arm[];
+	strata_field_names: string[];
+	/**
+	 * Primary and optional secondary metrics to target.
+	 * @minItems 1
+	 */
+	metrics: DesignSpecMetricRequest[];
+	/**
+	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
+	 * @minimum 0
+	 * @maximum 1
+	 */
+	power?: number;
+	/**
+	 * The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.
+	 * @minimum 0
+	 * @maximum 1
+	 */
+	alpha?: number;
+	/**
+	 * Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".
+	 * @minimum 0
+	 * @maximum 1
+	 */
+	fstat_thresh?: number;
 }
 
 /**
@@ -356,22 +359,22 @@ export type DesignSpecMetricAvailableN = number | null;
  * Defines a metric to measure in an experiment with its baseline stats.
  */
 export interface DesignSpecMetric {
-  /** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-  field_name: string;
-  /** Percent change target relative to the metric_baseline. */
-  metric_pct_change?: DesignSpecMetricMetricPctChange;
-  /** Absolute target value = metric_baseline*(1 + metric_pct_change) */
-  metric_target?: DesignSpecMetricMetricTarget;
-  /** Inferred from dwh type. */
-  metric_type?: DesignSpecMetricMetricType;
-  /** Mean of the tracked metric. */
-  metric_baseline?: DesignSpecMetricMetricBaseline;
-  /** Standard deviation is set only for metric_type.NUMERIC metrics. */
-  metric_stddev?: DesignSpecMetricMetricStddev;
-  /** The number of participants meeting the filtering criteria with a *non-null* value for this metric. */
-  available_nonnull_n?: DesignSpecMetricAvailableNonnullN;
-  /** The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n. */
-  available_n?: DesignSpecMetricAvailableN;
+	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	field_name: string;
+	/** Percent change target relative to the metric_baseline. */
+	metric_pct_change?: DesignSpecMetricMetricPctChange;
+	/** Absolute target value = metric_baseline*(1 + metric_pct_change) */
+	metric_target?: DesignSpecMetricMetricTarget;
+	/** Inferred from dwh type. */
+	metric_type?: DesignSpecMetricMetricType;
+	/** Mean of the tracked metric. */
+	metric_baseline?: DesignSpecMetricMetricBaseline;
+	/** Standard deviation is set only for metric_type.NUMERIC metrics. */
+	metric_stddev?: DesignSpecMetricMetricStddev;
+	/** The number of participants meeting the filtering criteria with a *non-null* value for this metric. */
+	available_nonnull_n?: DesignSpecMetricAvailableNonnullN;
+	/** The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n. */
+	available_n?: DesignSpecMetricAvailableN;
 }
 
 /**
@@ -388,24 +391,30 @@ export type DesignSpecMetricRequestMetricTarget = number | null;
  * Defines a request to look up baseline stats for a metric to measure in an experiment.
  */
 export interface DesignSpecMetricRequest {
-  /** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-  field_name: string;
-  /** Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target. */
-  metric_pct_change?: DesignSpecMetricRequestMetricPctChange;
-  /** Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change. */
-  metric_target?: DesignSpecMetricRequestMetricTarget;
+	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	field_name: string;
+	/** Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target. */
+	metric_pct_change?: DesignSpecMetricRequestMetricPctChange;
+	/** Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change. */
+	metric_target?: DesignSpecMetricRequestMetricTarget;
 }
 
-export type DsnDriver = typeof DsnDriver[keyof typeof DsnDriver];
-
+export type DsnDriver = (typeof DsnDriver)[keyof typeof DsnDriver];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DsnDriver = {
-  'postgresql+psycopg': 'postgresql+psycopg',
-  'postgresql+psycopg2': 'postgresql+psycopg2',
+	"postgresql+psycopg": "postgresql+psycopg",
+	"postgresql+psycopg2": "postgresql+psycopg2",
 } as const;
 
-export type DsnSslmode = 'disable' | 'allow' | 'prefer' | 'require' | 'verify-ca' | 'verify-full' | null;
+export type DsnSslmode =
+	| "disable"
+	| "allow"
+	| "prefer"
+	| "require"
+	| "verify-ca"
+	| "verify-full"
+	| null;
 
 export type DsnSearchPath = string | null;
 
@@ -413,22 +422,22 @@ export type DsnSearchPath = string | null;
  * Describes a set of parameters suitable for connecting to most types of remote databases.
  */
 export interface Dsn {
-  driver: DsnDriver;
-  host: string;
-  /** */
-  port?: number;
-  user: string;
-  password: string;
-  dbname: string;
-  sslmode?: DsnSslmode;
-  search_path?: DsnSearchPath;
+	driver: DsnDriver;
+	host: string;
+	/** */
+	port?: number;
+	user: string;
+	password: string;
+	dbname: string;
+	sslmode?: DsnSslmode;
+	search_path?: DsnSearchPath;
 }
 
 export type DwhInput = Dsn | BqDsnInput;
 
 export type DwhOutput = Dsn | BqDsnOutput;
 
-export type FieldDescriptorExtraAnyOf = {[key: string]: string};
+export type FieldDescriptorExtraAnyOf = { [key: string]: string };
 
 /**
  * Additional field metadata
@@ -436,82 +445,82 @@ export type FieldDescriptorExtraAnyOf = {[key: string]: string};
 export type FieldDescriptorExtra = FieldDescriptorExtraAnyOf | null;
 
 export interface FieldDescriptor {
-  /** Name of the field in the data source */
-  field_name: string;
-  /** The data type of this field */
-  data_type: DataType;
-  /** Human-readable description of the field */
-  description: string;
-  /** Whether this field uniquely identifies records */
-  is_unique_id: boolean;
-  /** Whether this field should be used for stratification */
-  is_strata: boolean;
-  /** Whether this field can be used as a filter */
-  is_filter: boolean;
-  /** Whether this field can be used as a metric */
-  is_metric: boolean;
-  /** Additional field metadata */
-  extra?: FieldDescriptorExtra;
+	/** Name of the field in the data source */
+	field_name: string;
+	/** The data type of this field */
+	data_type: DataType;
+	/** Human-readable description of the field */
+	description: string;
+	/** Whether this field uniquely identifies records */
+	is_unique_id: boolean;
+	/** Whether this field should be used for stratification */
+	is_strata: boolean;
+	/** Whether this field can be used as a filter */
+	is_filter: boolean;
+	/** Whether this field can be used as a metric */
+	is_metric: boolean;
+	/** Additional field metadata */
+	extra?: FieldDescriptorExtra;
 }
 
 /**
  * Concise summary of fields in the table.
  */
 export interface FieldMetadata {
-  field_name: string;
-  data_type: DataType;
-  description: string;
+	field_name: string;
+	data_type: DataType;
+	description: string;
 }
 
 export type GcpCredentials = GcpServiceAccountInfo | GcpServiceAccountFile;
 
-export type GcpServiceAccountFileType = typeof GcpServiceAccountFileType[keyof typeof GcpServiceAccountFileType];
-
+export type GcpServiceAccountFileType =
+	(typeof GcpServiceAccountFileType)[keyof typeof GcpServiceAccountFileType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const GcpServiceAccountFileType = {
-  serviceaccountfile: 'serviceaccountfile',
+	serviceaccountfile: "serviceaccountfile",
 } as const;
 
 /**
  * Describes a file path to a Google Cloud Service Account credential file.
  */
 export interface GcpServiceAccountFile {
-  type: GcpServiceAccountFileType;
-  /** The path to the service account credentials file containing the credentials in canonical JSON form. */
-  path: string;
+	type: GcpServiceAccountFileType;
+	/** The path to the service account credentials file containing the credentials in canonical JSON form. */
+	path: string;
 }
 
-export type GcpServiceAccountInfoType = typeof GcpServiceAccountInfoType[keyof typeof GcpServiceAccountInfoType];
-
+export type GcpServiceAccountInfoType =
+	(typeof GcpServiceAccountInfoType)[keyof typeof GcpServiceAccountInfoType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const GcpServiceAccountInfoType = {
-  serviceaccountinfo: 'serviceaccountinfo',
+	serviceaccountinfo: "serviceaccountinfo",
 } as const;
 
 /**
  * Describes a Google Cloud Service Account credential.
  */
 export interface GcpServiceAccountInfo {
-  type: GcpServiceAccountInfoType;
-  /** The base64-encoded service account info in the canonical JSON form. */
-  content_base64: string;
+	type: GcpServiceAccountInfoType;
+	/** The base64-encoded service account info in the canonical JSON form. */
+	content_base64: string;
 }
 
 export interface GetDatasourceResponse {
-  id: string;
-  name: string;
-  config: DatasourceConfig;
-  organization_id: string;
-  organization_name: string;
+	id: string;
+	name: string;
+	config: DatasourceConfig;
+	organization_id: string;
+	organization_name: string;
 }
 
 /**
  * Response model for the /filters endpoint.
  */
 export interface GetFiltersResponse {
-  results: GetFiltersResponseElement[];
+	results: GetFiltersResponseElement[];
 }
 
 /**
@@ -523,20 +532,22 @@ export type GetFiltersResponseDiscreteDistinctValues = string[] | null;
  * Describes a discrete filter variable.
  */
 export interface GetFiltersResponseDiscrete {
-  /**
-   * Name of the field.
-   * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
-   */
-  field_name: string;
-  data_type: DataType;
-  /** @minItems 1 */
-  relations: Relation[];
-  description: string;
-  /** Sorted list of unique values. */
-  distinct_values: GetFiltersResponseDiscreteDistinctValues;
+	/**
+	 * Name of the field.
+	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
+	 */
+	field_name: string;
+	data_type: DataType;
+	/** @minItems 1 */
+	relations: Relation[];
+	description: string;
+	/** Sorted list of unique values. */
+	distinct_values: GetFiltersResponseDiscreteDistinctValues;
 }
 
-export type GetFiltersResponseElement = GetFiltersResponseNumeric | GetFiltersResponseDiscrete;
+export type GetFiltersResponseElement =
+	| GetFiltersResponseNumeric
+	| GetFiltersResponseDiscrete;
 
 /**
  * The minimum observed value.
@@ -552,111 +563,112 @@ export type GetFiltersResponseNumericMax = number | number | null;
  * Describes a numeric filter variable.
  */
 export interface GetFiltersResponseNumeric {
-  /**
-   * Name of the field.
-   * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
-   */
-  field_name: string;
-  data_type: DataType;
-  /** @minItems 1 */
-  relations: Relation[];
-  description: string;
-  /** The minimum observed value. */
-  min: GetFiltersResponseNumericMin;
-  /** The maximum observed value. */
-  max: GetFiltersResponseNumericMax;
+	/**
+	 * Name of the field.
+	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
+	 */
+	field_name: string;
+	data_type: DataType;
+	/** @minItems 1 */
+	relations: Relation[];
+	description: string;
+	/** The minimum observed value. */
+	min: GetFiltersResponseNumericMin;
+	/** The maximum observed value. */
+	max: GetFiltersResponseNumericMax;
 }
 
 /**
  * Response model for the /metrics endpoint.
  */
 export interface GetMetricsResponse {
-  results: GetMetricsResponseElement[];
+	results: GetMetricsResponseElement[];
 }
 
 /**
  * Describes a metric.
  */
 export interface GetMetricsResponseElement {
-  /** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-  field_name: string;
-  data_type: DataType;
-  description: string;
+	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	field_name: string;
+	data_type: DataType;
+	description: string;
 }
 
 export interface GetOrganizationResponse {
-  id: string;
-  name: string;
-  users: UserSummary[];
-  datasources: DatasourceSummary[];
+	id: string;
+	name: string;
+	users: UserSummary[];
+	datasources: DatasourceSummary[];
 }
 
 /**
  * Response model for the /strata endpoint.
  */
 export interface GetStrataResponse {
-  results: GetStrataResponseElement[];
+	results: GetStrataResponseElement[];
 }
 
-export type GetStrataResponseElementExtraAnyOf = {[key: string]: string};
+export type GetStrataResponseElementExtraAnyOf = { [key: string]: string };
 
-export type GetStrataResponseElementExtra = GetStrataResponseElementExtraAnyOf | null;
+export type GetStrataResponseElementExtra =
+	GetStrataResponseElementExtraAnyOf | null;
 
 /**
  * Describes a stratification variable.
  */
 export interface GetStrataResponseElement {
-  data_type: DataType;
-  /** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-  field_name: string;
-  description: string;
-  extra?: GetStrataResponseElementExtra;
+	data_type: DataType;
+	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	field_name: string;
+	description: string;
+	extra?: GetStrataResponseElementExtra;
 }
 
 export interface HTTPValidationError {
-  detail?: ValidationError[];
+	detail?: ValidationError[];
 }
 
-export type HttpMethodTypes = typeof HttpMethodTypes[keyof typeof HttpMethodTypes];
-
+export type HttpMethodTypes =
+	(typeof HttpMethodTypes)[keyof typeof HttpMethodTypes];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const HttpMethodTypes = {
-  GET: 'GET',
-  POST: 'POST',
-  PUT: 'PUT',
-  PATCH: 'PATCH',
-  DELETE: 'DELETE',
+	GET: "GET",
+	POST: "POST",
+	PUT: "PUT",
+	PATCH: "PATCH",
+	DELETE: "DELETE",
 } as const;
 
 export interface InspectDatasourceResponse {
-  tables: string[];
+	tables: string[];
 }
 
 /**
  * Describes a table in the datasource.
  */
 export interface InspectDatasourceTableResponse {
-  /** Fields that are possibly candidates for unique IDs. */
-  detected_unique_id_fields: string[];
-  /** Fields in the table. */
-  fields: FieldMetadata[];
+	/** Fields that are possibly candidates for unique IDs. */
+	detected_unique_id_fields: string[];
+	/** Fields in the table. */
+	fields: FieldMetadata[];
 }
 
 export interface ListApiKeysResponse {
-  items: ApiKeySummary[];
+	items: ApiKeySummary[];
 }
 
 export interface ListDatasourcesResponse {
-  items: DatasourceSummary[];
+	items: DatasourceSummary[];
 }
 
 export interface ListOrganizationsResponse {
-  items: OrganizationSummary[];
+	items: OrganizationSummary[];
 }
 
 export interface ListParticipantsTypeResponse {
-  items: ParticipantsConfig[];
+	items: ParticipantsConfig[];
 }
 
 /**
@@ -688,17 +700,17 @@ export type MetricAnalysisInputMsg = MetricAnalysisMessage | null;
  * Describes analysis results of a single metric.
  */
 export interface MetricAnalysisInput {
-  metric_spec: DesignSpecMetric;
-  /** Minimum sample size needed to meet the design specs. */
-  target_n?: MetricAnalysisInputTargetN;
-  /** Whether or not there are enough available units to sample from to meet target_n. */
-  sufficient_n?: MetricAnalysisInputSufficientN;
-  /** If there is an insufficient sample size to meet the desired metric_target, we report what is possible given the available_n. This value is equivalent to the relative pct_change_possible. This is None when there is a sufficient sample size to detect the desired change. */
-  target_possible?: MetricAnalysisInputTargetPossible;
-  /** If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change. */
-  pct_change_possible?: MetricAnalysisInputPctChangePossible;
-  /** Human friendly message about the above results. */
-  msg?: MetricAnalysisInputMsg;
+	metric_spec: DesignSpecMetric;
+	/** Minimum sample size needed to meet the design specs. */
+	target_n?: MetricAnalysisInputTargetN;
+	/** Whether or not there are enough available units to sample from to meet target_n. */
+	sufficient_n?: MetricAnalysisInputSufficientN;
+	/** If there is an insufficient sample size to meet the desired metric_target, we report what is possible given the available_n. This value is equivalent to the relative pct_change_possible. This is None when there is a sufficient sample size to detect the desired change. */
+	target_possible?: MetricAnalysisInputTargetPossible;
+	/** If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change. */
+	pct_change_possible?: MetricAnalysisInputPctChangePossible;
+	/** Human friendly message about the above results. */
+	msg?: MetricAnalysisInputMsg;
 }
 
 /**
@@ -730,115 +742,117 @@ export type MetricAnalysisOutputMsg = MetricAnalysisMessage | null;
  * Describes analysis results of a single metric.
  */
 export interface MetricAnalysisOutput {
-  metric_spec: DesignSpecMetric;
-  /** Minimum sample size needed to meet the design specs. */
-  target_n?: MetricAnalysisOutputTargetN;
-  /** Whether or not there are enough available units to sample from to meet target_n. */
-  sufficient_n?: MetricAnalysisOutputSufficientN;
-  /** If there is an insufficient sample size to meet the desired metric_target, we report what is possible given the available_n. This value is equivalent to the relative pct_change_possible. This is None when there is a sufficient sample size to detect the desired change. */
-  target_possible?: MetricAnalysisOutputTargetPossible;
-  /** If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change. */
-  pct_change_possible?: MetricAnalysisOutputPctChangePossible;
-  /** Human friendly message about the above results. */
-  msg?: MetricAnalysisOutputMsg;
+	metric_spec: DesignSpecMetric;
+	/** Minimum sample size needed to meet the design specs. */
+	target_n?: MetricAnalysisOutputTargetN;
+	/** Whether or not there are enough available units to sample from to meet target_n. */
+	sufficient_n?: MetricAnalysisOutputSufficientN;
+	/** If there is an insufficient sample size to meet the desired metric_target, we report what is possible given the available_n. This value is equivalent to the relative pct_change_possible. This is None when there is a sufficient sample size to detect the desired change. */
+	target_possible?: MetricAnalysisOutputTargetPossible;
+	/** If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change. */
+	pct_change_possible?: MetricAnalysisOutputPctChangePossible;
+	/** Human friendly message about the above results. */
+	msg?: MetricAnalysisOutputMsg;
 }
 
-export type MetricAnalysisMessageValuesAnyOf = {[key: string]: number | number};
+export type MetricAnalysisMessageValuesAnyOf = {
+	[key: string]: number | number;
+};
 
-export type MetricAnalysisMessageValues = MetricAnalysisMessageValuesAnyOf | null;
+export type MetricAnalysisMessageValues =
+	MetricAnalysisMessageValuesAnyOf | null;
 
 /**
  * Describes interpretation of analysis results.
  */
 export interface MetricAnalysisMessage {
-  type: MetricAnalysisMessageType;
-  /** Main analysis result stated in human-friendly English. */
-  msg: string;
-  /** Analysis result formatted as a template string with curly-braced {} named placeholders. Use with the dictionary of values to support localization of messages. */
-  source_msg: string;
-  values?: MetricAnalysisMessageValues;
+	type: MetricAnalysisMessageType;
+	/** Main analysis result stated in human-friendly English. */
+	msg: string;
+	/** Analysis result formatted as a template string with curly-braced {} named placeholders. Use with the dictionary of values to support localization of messages. */
+	source_msg: string;
+	values?: MetricAnalysisMessageValues;
 }
 
 /**
  * Classifies metric analysis results.
  */
-export type MetricAnalysisMessageType = typeof MetricAnalysisMessageType[keyof typeof MetricAnalysisMessageType];
-
+export type MetricAnalysisMessageType =
+	(typeof MetricAnalysisMessageType)[keyof typeof MetricAnalysisMessageType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MetricAnalysisMessageType = {
-  sufficient: 'sufficient',
-  insufficient: 'insufficient',
-  no_baseline: 'no baseline',
+	sufficient: "sufficient",
+	insufficient: "insufficient",
+	no_baseline: "no baseline",
 } as const;
 
 /**
  * Classifies metrics by their value type.
  */
-export type MetricType = typeof MetricType[keyof typeof MetricType];
-
+export type MetricType = (typeof MetricType)[keyof typeof MetricType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MetricType = {
-  binary: 'binary',
-  numeric: 'numeric',
+	binary: "binary",
+	numeric: "numeric",
 } as const;
 
 export interface OrganizationSummary {
-  id: string;
-  name: string;
+	id: string;
+	name: string;
 }
 
 export type ParticipantsConfig = SheetParticipantsRef | ParticipantsDef;
 
-export type ParticipantsDefType = typeof ParticipantsDefType[keyof typeof ParticipantsDefType];
-
+export type ParticipantsDefType =
+	(typeof ParticipantsDefType)[keyof typeof ParticipantsDefType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ParticipantsDefType = {
-  schema: 'schema',
+	schema: "schema",
 } as const;
 
 export interface ParticipantsDef {
-  /** Name of the table in the data warehouse */
-  table_name: string;
-  /** List of fields available in this table */
-  fields: FieldDescriptor[];
-  participant_type: string;
-  type: ParticipantsDefType;
+	/** Name of the table in the data warehouse */
+	table_name: string;
+	/** List of fields available in this table */
+	fields: FieldDescriptor[];
+	participant_type: string;
+	type: ParticipantsDefType;
 }
 
 /**
  * Represents a single worksheet describing metadata about a type of Participant.
  */
 export interface ParticipantsSchemaInput {
-  /** Name of the table in the data warehouse */
-  table_name: string;
-  /** List of fields available in this table */
-  fields: FieldDescriptor[];
+	/** Name of the table in the data warehouse */
+	table_name: string;
+	/** List of fields available in this table */
+	fields: FieldDescriptor[];
 }
 
 /**
  * Represents a single worksheet describing metadata about a type of Participant.
  */
 export interface ParticipantsSchemaOutput {
-  /** Name of the table in the data warehouse */
-  table_name: string;
-  /** List of fields available in this table */
-  fields: FieldDescriptor[];
+	/** Name of the table in the data warehouse */
+	table_name: string;
+	/** List of fields available in this table */
+	fields: FieldDescriptor[];
 }
 
 export interface PowerRequest {
-  design_spec: DesignSpec;
-  audience_spec: AudienceSpec;
+	design_spec: DesignSpec;
+	audience_spec: AudienceSpec;
 }
 
 export interface PowerResponseInput {
-  analyses: MetricAnalysisInput[];
+	analyses: MetricAnalysisInput[];
 }
 
 export interface PowerResponseOutput {
-  analyses: MetricAnalysisOutput[];
+	analyses: MetricAnalysisOutput[];
 }
 
 /**
@@ -852,68 +866,67 @@ EXCLUDES matches when the value does not match any of the provided values. For C
 
 BETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.
  */
-export type Relation = typeof Relation[keyof typeof Relation];
-
+export type Relation = (typeof Relation)[keyof typeof Relation];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const Relation = {
-  includes: 'includes',
-  excludes: 'excludes',
-  between: 'between',
+	includes: "includes",
+	excludes: "excludes",
+	between: "between",
 } as const;
 
 export type RemoteDatabaseConfigWebhookConfig = WebhookConfig | null;
 
-export type RemoteDatabaseConfigType = typeof RemoteDatabaseConfigType[keyof typeof RemoteDatabaseConfigType];
-
+export type RemoteDatabaseConfigType =
+	(typeof RemoteDatabaseConfigType)[keyof typeof RemoteDatabaseConfigType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const RemoteDatabaseConfigType = {
-  remote: 'remote',
+	remote: "remote",
 } as const;
 
 /**
  * RemoteDatabaseConfig defines a configuration for a remote data warehouse.
  */
 export interface RemoteDatabaseConfig {
-  participants: ParticipantsConfig[];
-  webhook_config?: RemoteDatabaseConfigWebhookConfig;
-  type: RemoteDatabaseConfigType;
-  dwh: DwhOutput;
+	participants: ParticipantsConfig[];
+	webhook_config?: RemoteDatabaseConfigWebhookConfig;
+	type: RemoteDatabaseConfigType;
+	dwh: DwhOutput;
 }
 
-export type SheetParticipantsRefType = typeof SheetParticipantsRefType[keyof typeof SheetParticipantsRefType];
-
+export type SheetParticipantsRefType =
+	(typeof SheetParticipantsRefType)[keyof typeof SheetParticipantsRefType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const SheetParticipantsRefType = {
-  sheet: 'sheet',
+	sheet: "sheet",
 } as const;
 
 export interface SheetParticipantsRef {
-  participant_type: string;
-  type: SheetParticipantsRefType;
-  table_name: string;
-  sheet: SheetRef;
+	participant_type: string;
+	type: SheetParticipantsRefType;
+	table_name: string;
+	sheet: SheetRef;
 }
 
 export interface SheetRef {
-  url: string;
-  worksheet: string;
+	url: string;
+	worksheet: string;
 }
 
-export type SqliteLocalConfigType = typeof SqliteLocalConfigType[keyof typeof SqliteLocalConfigType];
-
+export type SqliteLocalConfigType =
+	(typeof SqliteLocalConfigType)[keyof typeof SqliteLocalConfigType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const SqliteLocalConfigType = {
-  sqlite_local: 'sqlite_local',
+	sqlite_local: "sqlite_local",
 } as const;
 
 export interface SqliteLocalConfig {
-  participants: ParticipantsConfig[];
-  type: SqliteLocalConfigType;
-  sqlite_filename: string;
+	participants: ParticipantsConfig[];
+	type: SqliteLocalConfigType;
+	sqlite_filename: string;
 }
 
 export type StrataStrataValue = string | null;
@@ -922,16 +935,16 @@ export type StrataStrataValue = string | null;
  * Describes stratification for an experiment participant.
  */
 export interface Strata {
-  /** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-  field_name: string;
-  strata_value?: StrataStrataValue;
+	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	field_name: string;
+	strata_value?: StrataStrataValue;
 }
 
 export interface TokenInfo {
-  email: string;
-  iss: string;
-  sub: string;
-  hd: string;
+	email: string;
+	iss: string;
+	sub: string;
+	hd: string;
 }
 
 export type UpdateDatasourceRequestName = string | null;
@@ -939,34 +952,34 @@ export type UpdateDatasourceRequestName = string | null;
 export type UpdateDatasourceRequestDwh = DwhInput | null;
 
 export interface UpdateDatasourceRequest {
-  name?: UpdateDatasourceRequestName;
-  dwh?: UpdateDatasourceRequestDwh;
+	name?: UpdateDatasourceRequestName;
+	dwh?: UpdateDatasourceRequestDwh;
 }
 
 /**
  * WIP to alternate interface to updating an experiment name & description.
  */
 export interface UpdateExperimentDescriptionsRequest {
-  update_type: 'description';
-  /**
-   * New experiment name.
-   * @minLength 1
-   */
-  experiment_name: string;
-  /**
-   * New experiment description.
-   * @minLength 1
-   */
-  description: string;
+	update_type: "description";
+	/**
+	 * New experiment name.
+	 * @minLength 1
+	 */
+	experiment_name: string;
+	/**
+	 * New experiment description.
+	 * @minLength 1
+	 */
+	description: string;
 }
 
 /**
  * WIP to alternate interface to updating an experiment
  */
 export interface UpdateExperimentStartEndRequest {
-  update_type: 'timestamps';
-  start_date: string;
-  end_date: string;
+	update_type: "timestamps";
+	start_date: string;
+	end_date: string;
 }
 
 export type UpdateParticipantsTypeRequestParticipantType = string | null;
@@ -976,28 +989,28 @@ export type UpdateParticipantsTypeRequestTableName = string | null;
 export type UpdateParticipantsTypeRequestFields = FieldDescriptor[] | null;
 
 export interface UpdateParticipantsTypeRequest {
-  participant_type?: UpdateParticipantsTypeRequestParticipantType;
-  table_name?: UpdateParticipantsTypeRequestTableName;
-  fields?: UpdateParticipantsTypeRequestFields;
+	participant_type?: UpdateParticipantsTypeRequestParticipantType;
+	table_name?: UpdateParticipantsTypeRequestTableName;
+	fields?: UpdateParticipantsTypeRequestFields;
 }
 
 export interface UpdateParticipantsTypeResponse {
-  participant_type: string;
-  table_name: string;
-  fields: FieldDescriptor[];
+	participant_type: string;
+	table_name: string;
+	fields: FieldDescriptor[];
 }
 
 export interface UserSummary {
-  id: string;
-  email: string;
+	id: string;
+	email: string;
 }
 
 export type ValidationErrorLocItem = string | number;
 
 export interface ValidationError {
-  loc: ValidationErrorLocItem[];
-  msg: string;
-  type: string;
+	loc: ValidationErrorLocItem[];
+	msg: string;
+	type: string;
 }
 
 export type WebhookActionsCommit = WebhookUrl | null;
@@ -1012,10 +1025,10 @@ export type WebhookActionsUpdateDescription = WebhookUrl | null;
  * The set of supported actions that trigger a user callback.
  */
 export interface WebhookActions {
-  commit?: WebhookActionsCommit;
-  assignment_file?: WebhookActionsAssignmentFile;
-  update_timestamps?: WebhookActionsUpdateTimestamps;
-  update_description?: WebhookActionsUpdateDescription;
+	commit?: WebhookActionsCommit;
+	assignment_file?: WebhookActionsAssignmentFile;
+	update_timestamps?: WebhookActionsUpdateTimestamps;
+	update_description?: WebhookActionsUpdateDescription;
 }
 
 export type WebhookCommonHeadersAuthorization = string | null;
@@ -1024,151 +1037,154 @@ export type WebhookCommonHeadersAuthorization = string | null;
  * Enumerates supported headers to attach to all webhook requests.
  */
 export interface WebhookCommonHeaders {
-  authorization: WebhookCommonHeadersAuthorization;
+	authorization: WebhookCommonHeadersAuthorization;
 }
 
 /**
  * Top-level configuration object for user-defined webhooks.
  */
 export interface WebhookConfig {
-  actions: WebhookActions;
-  common_headers: WebhookCommonHeaders;
+	actions: WebhookActions;
+	common_headers: WebhookCommonHeaders;
 }
 
 /**
  * Generic wrapper around upstream webhook responses.
  */
 export interface WebhookResponse {
-  /** HTTP status code we received from the webhook's server. */
-  status_code: number;
-  /** HTTP body (if any) we received from the webhook's server. May be empty. */
-  body: string;
+	/** HTTP status code we received from the webhook's server. */
+	status_code: number;
+	/** HTTP body (if any) we received from the webhook's server. May be empty. */
+	body: string;
 }
 
-export type WebhookUpdateCommitRequestUpdateJson = WebhookUpdateTimestampsRequest | WebhookUpdateDescriptionRequest;
+export type WebhookUpdateCommitRequestUpdateJson =
+	| WebhookUpdateTimestampsRequest
+	| WebhookUpdateDescriptionRequest;
 
 /**
  * Request structure for supported types of experiment updates.
  */
 export interface WebhookUpdateCommitRequest {
-  update_json: WebhookUpdateCommitRequestUpdateJson;
+	update_json: WebhookUpdateCommitRequestUpdateJson;
 }
 
 /**
  * Describes how to update an experiment description and/or the names of its arms.
  */
 export interface WebhookUpdateDescriptionRequest {
-  /** ID of the experiment to update. */
-  experiment_id: string;
-  /**
-   * New experiment name.
-   * @minLength 1
-   */
-  experiment_name: string;
-  /**
-   * New experiment description.
-   * @minLength 1
-   */
-  description: string;
-  /** All arms as saved in the original DesignSpec must be present here, even if you don't intend to change the arm_name */
-  arms: ArmUpdate[];
+	/** ID of the experiment to update. */
+	experiment_id: string;
+	/**
+	 * New experiment name.
+	 * @minLength 1
+	 */
+	experiment_name: string;
+	/**
+	 * New experiment description.
+	 * @minLength 1
+	 */
+	description: string;
+	/** All arms as saved in the original DesignSpec must be present here, even if you don't intend to change the arm_name */
+	arms: ArmUpdate[];
 }
 
 /**
  * Describes how to update an experiment's start and/or end dates.
  */
 export interface WebhookUpdateTimestampsRequest {
-  /** ID of the experiment to update. */
-  experiment_id: string;
-  /** New or the same start date to update with. */
-  start_date: string;
-  /** New or the same end date to update with. Must be later than start_date. */
-  end_date: string;
+	/** ID of the experiment to update. */
+	experiment_id: string;
+	/** New or the same start date to update with. */
+	start_date: string;
+	/** New or the same end date to update with. Must be later than start_date. */
+	end_date: string;
 }
 
 /**
  * Represents a url and HTTP method to use with it.
  */
 export interface WebhookUrl {
-  method: HttpMethodTypes;
-  url: string;
+	method: HttpMethodTypes;
+	url: string;
 }
 
 export type GetStrataParams = {
-/**
- * Unit of analysis for experiment.
- */
-participant_type: string;
-/**
- * Refresh the cache.
- */
-refresh?: boolean;
+	/**
+	 * Unit of analysis for experiment.
+	 */
+	participant_type: string;
+	/**
+	 * Refresh the cache.
+	 */
+	refresh?: boolean;
 };
 
 export type GetFiltersParams = {
-/**
- * Unit of analysis for experiment.
- */
-participant_type: string;
-/**
- * Refresh the cache.
- */
-refresh?: boolean;
+	/**
+	 * Unit of analysis for experiment.
+	 */
+	participant_type: string;
+	/**
+	 * Refresh the cache.
+	 */
+	refresh?: boolean;
 };
 
 export type GetMetricsParams = {
-/**
- * Unit of analysis for experiment.
- */
-participant_type: string;
-/**
- * Refresh the cache.
- */
-refresh?: boolean;
+	/**
+	 * Unit of analysis for experiment.
+	 */
+	participant_type: string;
+	/**
+	 * Refresh the cache.
+	 */
+	refresh?: boolean;
 };
 
 export type AssignTreatmentParams = {
-/**
- * Number of participants to assign.
- */
-chosen_n: number;
-/**
- * Refresh the cache.
- */
-refresh?: boolean;
+	/**
+	 * Number of participants to assign.
+	 */
+	chosen_n: number;
+	/**
+	 * Refresh the cache.
+	 */
+	refresh?: boolean;
 };
 
 export type AssignmentFileParams = {
-/**
- * ID of the experiment whose assignments we wish to fetch.
- */
-experiment_id: string;
+	/**
+	 * ID of the experiment whose assignments we wish to fetch.
+	 */
+	experiment_id: string;
 };
 
 export type CommitExperimentParams = {
-user_id: string;
+	user_id: string;
 };
 
 export type UpdateExperimentParams = {
-/**
- * The type of experiment metadata update to perform
- */
-update_type: UpdateExperimentUpdateType;
+	/**
+	 * The type of experiment metadata update to perform
+	 */
+	update_type: UpdateExperimentUpdateType;
 };
 
-export type UpdateExperimentUpdateType = typeof UpdateExperimentUpdateType[keyof typeof UpdateExperimentUpdateType];
-
+export type UpdateExperimentUpdateType =
+	(typeof UpdateExperimentUpdateType)[keyof typeof UpdateExperimentUpdateType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const UpdateExperimentUpdateType = {
-  timestamps: 'timestamps',
-  description: 'description',
+	timestamps: "timestamps",
+	description: "description",
 } as const;
 
-export type AltUpdateExperimentBody = UpdateExperimentStartEndRequest | UpdateExperimentDescriptionsRequest;
+export type AltUpdateExperimentBody =
+	| UpdateExperimentStartEndRequest
+	| UpdateExperimentDescriptionsRequest;
 
 export type AuthCallbackParams = {
-code: string;
-code_verifier: string;
+	code: string;
+	code_verifier: string;
 };
-
