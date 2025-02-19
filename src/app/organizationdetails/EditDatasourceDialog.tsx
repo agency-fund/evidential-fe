@@ -1,5 +1,5 @@
 'use client';
-import { Button, Dialog, Flex, IconButton, Text, TextField } from '@radix-ui/themes';
+import { Button, Dialog, Flex, IconButton, Text, TextField, TextArea } from '@radix-ui/themes';
 import { EyeClosedIcon, EyeOpenIcon, Pencil2Icon } from '@radix-ui/react-icons';
 import { useGetDatasource, useUpdateDatasource } from '@/api/admin';
 import { useState } from 'react';
@@ -17,6 +17,28 @@ export const EditDatasourceDialog = ({ organizationId, datasourceId }: EditDatas
   const { data, isLoading } = useGetDatasource(datasourceId);
   const [open, setOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [projectId, setProjectId] = useState('');
+
+  const validateJson = (jsonString: string): boolean => {
+    try {
+      JSON.parse(jsonString);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const handleCredentialsPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const pastedText = e.clipboardData.getData('text');
+    try {
+      const parsedJson = JSON.parse(pastedText);
+      if (typeof parsedJson.project_id === 'string') {
+        setProjectId(parsedJson.project_id);
+      }
+    } catch {
+      // If JSON parsing fails, do nothing
+    }
+  };
 
   if (isLoading || !data || !isSuccessResponse(data)) {
     return null;
@@ -173,7 +195,13 @@ export const EditDatasourceDialog = ({ organizationId, datasourceId }: EditDatas
                   <Text as="div" size="2" mb="1" weight="bold">
                     Project ID
                   </Text>
-                  <TextField.Root name="project_id" defaultValue={config.dwh.project_id} required />
+                  <TextField.Root
+                    name="project_id"
+                    defaultValue={config.dwh.project_id}
+                    value={projectId || config.dwh.project_id}
+                    onChange={(e) => setProjectId(e.target.value)}
+                    required
+                  />
                 </label>
                 <label>
                   <Text as="div" size="2" mb="1" weight="bold">
@@ -185,10 +213,17 @@ export const EditDatasourceDialog = ({ organizationId, datasourceId }: EditDatas
                   <Text as="div" size="2" mb="1" weight="bold">
                     Service Account JSON
                   </Text>
-                  <TextField.Root
+                  <TextArea
                     name="credentials_json"
                     defaultValue={atob(config.dwh.credentials.content_base64)}
+                    placeholder="Paste your service account JSON here"
                     required
+                    style={{ height: '200px' }}
+                    onChange={(e) => {
+                      const isValid = validateJson(e.target.value);
+                      e.target.setCustomValidity(isValid ? '' : 'Please enter valid JSON');
+                    }}
+                    onPaste={handleCredentialsPaste}
                   />
                 </label>
               </>
