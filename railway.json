@@ -6,13 +6,6 @@
   "build": {
     "builder": "DOCKERFILE",
     "dockerfilePath": "Dockerfile.railway",
-    "watchPatterns": [
-      ".dockerignore",
-      ".gitignore",
-      "Dockerfile.railway",
-      "package*.json",
-      "next*",
-      "src/**"
-    ]
+    "watchPatterns": [".dockerignore", ".gitignore", "Dockerfile.railway", "package*.json", "next*", "src/**"]
   }
 }

@@ -1,24 +1,25 @@
-import {OIDC_CLIENT_ID, OIDC_BASE_URL, OIDC_REDIRECT_URI} from "@/services/constants";
+import { OIDC_CLIENT_ID, OIDC_BASE_URL, OIDC_REDIRECT_URI } from '@/services/constants';
 
 // Google's OAuth login endpoint is declared in https://accounts.google.com/.well-known/openid-configuration.
-const GOOGLE_AUTHORIZATION_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
+const GOOGLE_AUTHORIZATION_ENDPOINT = 'https://accounts.google.com/o/oauth2/v2/auth';
 
-const base64urlEncode = (buffer: ArrayBuffer | Uint8Array) => btoa(String.fromCharCode(...new Uint8Array(buffer)))
+const base64urlEncode = (buffer: ArrayBuffer | Uint8Array) =>
+  btoa(String.fromCharCode(...new Uint8Array(buffer)))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '');
 
 const createCodeVerifier = () => {
-    const array = new Uint8Array(56);
-    crypto.getRandomValues(array);
-    return base64urlEncode(array);
+  const array = new Uint8Array(56);
+  crypto.getRandomValues(array);
+  return base64urlEncode(array);
 };
 
 const createCodeChallenge = async (codeVerifier: string) => {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(codeVerifier);
-    const digest = await crypto.subtle.digest('SHA-256', data);
-    return base64urlEncode(digest);
+  const encoder = new TextEncoder();
+  const data = encoder.encode(codeVerifier);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  return base64urlEncode(digest);
 };
 
 /**
@@ -29,34 +30,32 @@ const createCodeChallenge = async (codeVerifier: string) => {
  * https://developers.google.com/identity/openid-connect/openid-connect#authenticationuriparameters
  */
 const createGoogleLoginUrl = (code_challenge: string) => {
-    if (!OIDC_CLIENT_ID) {
-        throw new Error("NEXT_PUBLIC_XNGIN_GOOGLE_CLIENT_ID is not set.")
-    }
-    if (!OIDC_REDIRECT_URI) {
-        throw new Error("NEXT_PUBLIC_XNGIN_OIDC_REDIRECT_URI is unset.")
-    }
-    const params = {
-        "client_id": OIDC_CLIENT_ID,
-        "code_challenge": code_challenge,
-        "code_challenge_method": "S256",
-        "redirect_uri": OIDC_REDIRECT_URI,
-        "response_type": "code",
-        "scope": "openid email",
-    }
-    const url = new URL(GOOGLE_AUTHORIZATION_ENDPOINT);
-    url.search = new URLSearchParams(params).toString();
-    return url.toString();
-}
+  if (!OIDC_CLIENT_ID) {
+    throw new Error('NEXT_PUBLIC_XNGIN_GOOGLE_CLIENT_ID is not set.');
+  }
+  if (!OIDC_REDIRECT_URI) {
+    throw new Error('NEXT_PUBLIC_XNGIN_OIDC_REDIRECT_URI is unset.');
+  }
+  const params = {
+    client_id: OIDC_CLIENT_ID,
+    code_challenge: code_challenge,
+    code_challenge_method: 'S256',
+    redirect_uri: OIDC_REDIRECT_URI,
+    response_type: 'code',
+    scope: 'openid email',
+  };
+  const url = new URL(GOOGLE_AUTHORIZATION_ENDPOINT);
+  url.search = new URLSearchParams(params).toString();
+  return url.toString();
+};
 
 export async function generatePkceLoginInfo() {
-    const codeVerifier = createCodeVerifier();
-    const codeChallenge = await createCodeChallenge(codeVerifier);
-    return {codeVerifier, loginUrl: createGoogleLoginUrl(codeChallenge)};
+  const codeVerifier = createCodeVerifier();
+  const codeChallenge = await createCodeChallenge(codeVerifier);
+  return { codeVerifier, loginUrl: createGoogleLoginUrl(codeChallenge) };
 }
 
 export async function exchangeCodeForTokens(authCode: string, codeVerifier: string) {
-    const response = await fetch(
-        `${OIDC_BASE_URL}/callback?code=${authCode}&code_verifier=${codeVerifier}`
-    );
-    return await response.json();
+  const response = await fetch(`${OIDC_BASE_URL}/callback?code=${authCode}&code_verifier=${codeVerifier}`);
+  return await response.json();
 }

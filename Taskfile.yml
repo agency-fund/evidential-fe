@@ -6,9 +6,6 @@ tasks:
       || curl --max-time 3 -o /tmp/apispec.json https://main.dev.agencyfund.org/openapi.json
     jq . /tmp/apispec.json > openapi.json
     npx orval --config orval.config.ts
-  lint:
-    npx next lint
-  build:
-    npm run build
-  railway-build:
-    docker build -t xngin-dash -f Dockerfile.railway .
+  lint: npx next lint
+  build: npm run build
+  railway-build: docker build -t xngin-dash -f Dockerfile.railway .

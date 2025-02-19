@@ -1,2 +1,1 @@
-
-export const unimplemented = () => alert("unimplemented");
+export const unimplemented = () => alert('unimplemented');

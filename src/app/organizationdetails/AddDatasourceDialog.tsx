@@ -1,217 +1,244 @@
-import {getGetOrganizationKey, getListDatasourcesKey, useCreateDatasource} from "@/api/admin";
-import {useState} from "react";
-import {Button, Dialog, Flex, RadioGroup, Spinner, Text, TextArea, TextField} from "@radix-ui/themes";
-import {PlusIcon} from "@radix-ui/react-icons";
-import {BqDsnInput, Dsn} from "@/api/methods.schemas";
-import {mutate} from "swr";
+import { getGetOrganizationKey, getListDatasourcesKey, useCreateDatasource } from '@/api/admin';
+import { useState } from 'react';
+import { Button, Dialog, Flex, RadioGroup, Spinner, Text, TextArea, TextField } from '@radix-ui/themes';
+import { PlusIcon } from '@radix-ui/react-icons';
+import { BqDsnInput, Dsn } from '@/api/methods.schemas';
+import { mutate } from 'swr';
 
-export const AddDatasourceDialog = ({organizationId}: { organizationId: string }) => {
-    const {trigger, isMutating} = useCreateDatasource();
-    const [open, setOpen] = useState(false);
-    const [dwhType, setDwhType] = useState<'postgres' | 'bigquery'>('postgres');
-    const [projectId, setProjectId] = useState('');
+export const AddDatasourceDialog = ({ organizationId }: { organizationId: string }) => {
+  const { trigger, isMutating } = useCreateDatasource();
+  const [open, setOpen] = useState(false);
+  const [dwhType, setDwhType] = useState<'postgres' | 'bigquery'>('postgres');
+  const [projectId, setProjectId] = useState('');
 
-    const validateJson = (jsonString: string): boolean => {
-        try {
-            JSON.parse(jsonString);
-            return true;
-        } catch {
-            return false;
-        }
-    };
+  const validateJson = (jsonString: string): boolean => {
+    try {
+      JSON.parse(jsonString);
+      return true;
+    } catch {
+      return false;
+    }
+  };
 
-    const handleCredentialsPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-        const pastedText = e.clipboardData.getData('text');
-        try {
-            const parsedJson = JSON.parse(pastedText);
-            if (typeof parsedJson.project_id === 'string') {
-                setProjectId(parsedJson.project_id);
-            }
-        } catch {
-            // If JSON parsing fails, do nothing
-        }
-    };
+  const handleCredentialsPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const pastedText = e.clipboardData.getData('text');
+    try {
+      const parsedJson = JSON.parse(pastedText);
+      if (typeof parsedJson.project_id === 'string') {
+        setProjectId(parsedJson.project_id);
+      }
+    } catch {
+      // If JSON parsing fails, do nothing
+    }
+  };
 
-    const visibilityToggle = (open: boolean) => {
-        setDwhType("postgres");
-        setOpen(open);
-    };
+  const visibilityToggle = (open: boolean) => {
+    setDwhType('postgres');
+    setOpen(open);
+  };
 
-    return (
-        <Dialog.Root open={open} onOpenChange={visibilityToggle}>
-            <Dialog.Trigger>
-                <Button>
-                    <PlusIcon/> Add Datasource
+  return (
+    <Dialog.Root open={open} onOpenChange={visibilityToggle}>
+      <Dialog.Trigger>
+        <Button>
+          <PlusIcon /> Add Datasource
+        </Button>
+      </Dialog.Trigger>
+
+      <Dialog.Content>
+        {isMutating ? (
+          <Spinner />
+        ) : (
+          <form
+            onSubmit={async (event) => {
+              event.preventDefault();
+              const fd = new FormData(event.currentTarget);
+              const name = fd.get('name') as string;
+
+              let dwh: Dsn | BqDsnInput;
+              if (dwhType === 'postgres') {
+                dwh = {
+                  driver: 'postgresql+psycopg',
+                  host: fd.get('host') as string,
+                  port: parseInt(fd.get('port') as string),
+                  dbname: fd.get('database') as string,
+                  user: fd.get('user') as string,
+                  password: fd.get('password') as string,
+                  sslmode: fd.get('sslmode') as
+                    | 'disable'
+                    | 'allow'
+                    | 'prefer'
+                    | 'require'
+                    | 'verify-ca'
+                    | 'verify-full',
+                  search_path: (fd.get('search_path') as string) || null,
+                };
+              } else {
+                dwh = {
+                  driver: 'bigquery',
+                  project_id: fd.get('project_id') as string,
+                  dataset_id: fd.get('dataset') as string,
+                  credentials: {
+                    type: 'serviceaccountinfo',
+                    content_base64: btoa(fd.get('credentials_json') as string),
+                  },
+                };
+              }
+
+              await trigger({
+                organization_id: organizationId,
+                name,
+                dwh,
+              });
+              mutate(getListDatasourcesKey());
+              mutate(getGetOrganizationKey(organizationId));
+              setDwhType('postgres');
+              setOpen(false);
+            }}
+          >
+            <Dialog.Title>Add Datasource</Dialog.Title>
+            <Dialog.Description size="2" mb="4">
+              Add a datasource to this organization.
+            </Dialog.Description>
+
+            <Flex direction="column" gap="3">
+              <label>
+                <Text as="div" size="2" mb="1" weight="bold">
+                  Name
+                </Text>
+                <TextField.Root name="name" placeholder="Enter datasource name" required></TextField.Root>
+              </label>
+
+              <label>
+                <Text as="div" size="2" mb="1" weight="bold">
+                  Type
+                </Text>
+                <RadioGroup.Root
+                  defaultValue="postgres"
+                  onValueChange={(value) => {
+                    setDwhType(value as 'postgres' | 'bigquery');
+                    setProjectId(''); // Reset projectId when switching form types
+                  }}
+                >
+                  <Flex gap="2" direction="column">
+                    <Text as="label" size="2">
+                      <Flex gap="2">
+                        <RadioGroup.Item value="postgres" /> Postgres
+                      </Flex>
+                    </Text>
+                    <Text as="label" size="2">
+                      <Flex gap="2">
+                        <RadioGroup.Item value="bigquery" /> BigQuery
+                      </Flex>
+                    </Text>
+                  </Flex>
+                </RadioGroup.Root>
+              </label>
+
+              {dwhType === 'postgres' ? (
+                <>
+                  <label>
+                    <Text as="div" size="2" mb="1" weight="bold">
+                      Host
+                    </Text>
+                    <TextField.Root name="host" required />
+                  </label>
+                  <label>
+                    <Text as="div" size="2" mb="1" weight="bold">
+                      Port
+                    </Text>
+                    <TextField.Root name="port" type="number" defaultValue="5432" required />
+                  </label>
+                  <label>
+                    <Text as="div" size="2" mb="1" weight="bold">
+                      Database
+                    </Text>
+                    <TextField.Root name="database" required />
+                  </label>
+                  <label>
+                    <Text as="div" size="2" mb="1" weight="bold">
+                      User
+                    </Text>
+                    <TextField.Root name="user" required />
+                  </label>
+                  <label>
+                    <Text as="div" size="2" mb="1" weight="bold">
+                      Password
+                    </Text>
+                    <TextField.Root name="password" type="password" required />
+                  </label>
+                  <label>
+                    <Text as="div" size="2" mb="1" weight="bold">
+                      SSL Mode
+                    </Text>
+                    <select name="sslmode" defaultValue="prefer">
+                      <option value="disable">disable</option>
+                      <option value="allow">allow</option>
+                      <option value="prefer">prefer</option>
+                      <option value="require">require</option>
+                      <option value="verify-ca">verify-ca</option>
+                      <option value="verify-full">verify-full</option>
+                    </select>
+                  </label>
+                  <label>
+                    <Text as="div" size="2" mb="1" weight="bold">
+                      Search Path
+                    </Text>
+                    <TextField.Root name="search_path" />
+                  </label>
+                </>
+              ) : (
+                <>
+                  <label>
+                    <Text as="div" size="2" mb="1" weight="bold">
+                      Project ID
+                    </Text>
+                    <TextField.Root
+                      key={'project_id'}
+                      name="project_id"
+                      required
+                      value={projectId}
+                      onChange={(e) => setProjectId(e.target.value)}
+                    />
+                  </label>
+                  <label>
+                    <Text as="div" size="2" mb="1" weight="bold">
+                      Dataset
+                    </Text>
+                    <TextField.Root name="dataset" required key={'dataset'} />
+                  </label>
+                  <label>
+                    <Text as="div" size="2" mb="1" weight="bold">
+                      Service Account JSON
+                    </Text>
+                    <TextArea
+                      key={'credentials_json'}
+                      name="credentials_json"
+                      placeholder="Paste your service account JSON here"
+                      required
+                      style={{ height: '200px' }}
+                      onChange={(e) => {
+                        const isValid = validateJson(e.target.value);
+                        e.target.setCustomValidity(isValid ? '' : 'Please enter valid JSON');
+                      }}
+                      onPaste={handleCredentialsPaste}
+                    />
+                  </label>
+                </>
+              )}
+            </Flex>
+
+            <Flex gap="3" mt="4" justify="end">
+              <Dialog.Close>
+                <Button variant="soft" color="gray">
+                  Cancel
                 </Button>
-            </Dialog.Trigger>
-
-            <Dialog.Content>
-                {isMutating ? <Spinner/> :
-                    <form onSubmit={async (event) => {
-                        event.preventDefault();
-                        const fd = new FormData(event.currentTarget);
-                        const name = fd.get("name") as string;
-
-                        let dwh: Dsn | BqDsnInput;
-                        if (dwhType === 'postgres') {
-                            dwh = {
-                                driver: "postgresql+psycopg",
-                                host: fd.get("host") as string,
-                                port: parseInt(fd.get("port") as string),
-                                dbname: fd.get("database") as string,
-                                user: fd.get("user") as string,
-                                password: fd.get("password") as string,
-                                sslmode: fd.get("sslmode") as "disable" | "allow" | "prefer" | "require" | "verify-ca" | "verify-full",
-                                search_path: fd.get("search_path") as string || null
-                            };
-                        } else {
-                            dwh = {
-                                driver: "bigquery",
-                                project_id: fd.get("project_id") as string,
-                                dataset_id: fd.get("dataset") as string,
-                                credentials: {
-                                    type: "serviceaccountinfo",
-                                    content_base64: btoa(fd.get("credentials_json") as string)
-                                }
-                            };
-                        }
-
-                        await trigger({
-                            organization_id: organizationId,
-                            name,
-                            dwh
-                        });
-                        mutate(getListDatasourcesKey());
-                        mutate(getGetOrganizationKey(organizationId));
-                        setDwhType("postgres")
-                        setOpen(false);
-                    }}>
-                        <Dialog.Title>Add Datasource</Dialog.Title>
-                        <Dialog.Description size="2" mb="4">
-                            Add a datasource to this organization.
-                        </Dialog.Description>
-
-                        <Flex direction="column" gap="3">
-                            <label>
-                                <Text as="div" size="2" mb="1" weight="bold">
-                                    Name
-                                </Text>
-                                <TextField.Root
-                                    name="name"
-                                    placeholder="Enter datasource name"
-                                    required>
-                                </TextField.Root>
-                            </label>
-
-                            <label>
-                                <Text as="div" size="2" mb="1" weight="bold">
-                                    Type
-                                </Text>
-                                <RadioGroup.Root defaultValue="postgres"
-                                                 onValueChange={(value) => {
-                                                     setDwhType(value as 'postgres' | 'bigquery');
-                                                     setProjectId(''); // Reset projectId when switching form types
-                                                 }}>
-                                    <Flex gap="2" direction="column">
-                                        <Text as="label" size="2">
-                                            <Flex gap="2">
-                                                <RadioGroup.Item value="postgres"/> Postgres
-                                            </Flex>
-                                        </Text>
-                                        <Text as="label" size="2">
-                                            <Flex gap="2">
-                                                <RadioGroup.Item value="bigquery"/> BigQuery
-                                            </Flex>
-                                        </Text>
-                                    </Flex>
-                                </RadioGroup.Root>
-                            </label>
-
-                            {dwhType === 'postgres' ? (
-                                <>
-                                    <label>
-                                        <Text as="div" size="2" mb="1" weight="bold">Host</Text>
-                                        <TextField.Root name="host" required/>
-                                    </label>
-                                    <label>
-                                        <Text as="div" size="2" mb="1" weight="bold">Port</Text>
-                                        <TextField.Root name="port" type="number" defaultValue="5432" required/>
-                                    </label>
-                                    <label>
-                                        <Text as="div" size="2" mb="1" weight="bold">Database</Text>
-                                        <TextField.Root name="database" required/>
-                                    </label>
-                                    <label>
-                                        <Text as="div" size="2" mb="1" weight="bold">User</Text>
-                                        <TextField.Root name="user" required/>
-                                    </label>
-                                    <label>
-                                        <Text as="div" size="2" mb="1" weight="bold">Password</Text>
-                                        <TextField.Root name="password" type="password" required/>
-                                    </label>
-                                    <label>
-                                        <Text as="div" size="2" mb="1" weight="bold">SSL Mode</Text>
-                                        <select name="sslmode" defaultValue="prefer">
-                                            <option value="disable">disable</option>
-                                            <option value="allow">allow</option>
-                                            <option value="prefer">prefer</option>
-                                            <option value="require">require</option>
-                                            <option value="verify-ca">verify-ca</option>
-                                            <option value="verify-full">verify-full</option>
-                                        </select>
-                                    </label>
-                                    <label>
-                                        <Text as="div" size="2" mb="1" weight="bold">Search Path</Text>
-                                        <TextField.Root name="search_path"/>
-                                    </label>
-                                </>
-                            ) : (
-                                <>
-                                    <label>
-                                        <Text as="div" size="2" mb="1" weight="bold">Project ID</Text>
-                                        <TextField.Root key={"project_id"}
-                                            name="project_id"
-                                            required
-                                            value={projectId}
-                                            onChange={(e) => setProjectId(e.target.value)}
-                                        />
-                                    </label>
-                                    <label>
-                                        <Text as="div" size="2" mb="1" weight="bold">Dataset</Text>
-                                        <TextField.Root name="dataset" required key={"dataset"}/>
-                                    </label>
-                                    <label>
-                                        <Text as="div" size="2" mb="1" weight="bold">Service Account JSON</Text>
-                                        <TextArea
-                                            key={"credentials_json"}
-                                            name="credentials_json"
-                                            placeholder="Paste your service account JSON here"
-                                            required
-                                            style={{height: '200px'}}
-                                            onChange={(e) => {
-                                                const isValid = validateJson(e.target.value);
-                                                e.target.setCustomValidity(
-                                                    isValid ? '' : 'Please enter valid JSON'
-                                                );
-                                            }}
-                                            onPaste={handleCredentialsPaste}
-                                        />
-                                    </label>
-                                </>
-                            )}
-                        </Flex>
-
-                        <Flex gap="3" mt="4" justify="end">
-                            <Dialog.Close>
-                                <Button variant="soft" color="gray">
-                                    Cancel
-                                </Button>
-                            </Dialog.Close>
-                            <Button type="submit">Add Datasource</Button>
-                        </Flex>
-                    </form>
-                }
-            </Dialog.Content>
-        </Dialog.Root>
-    );
-}
+              </Dialog.Close>
+              <Button type="submit">Add Datasource</Button>
+            </Flex>
+          </form>
+        )}
+      </Dialog.Content>
+    </Dialog.Root>
+  );
+};
