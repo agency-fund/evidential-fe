@@ -3,7 +3,7 @@ import { DropdownMenu, Flex, Heading, Link } from '@radix-ui/themes';
 import { useAuth } from '@/app/auth-provider';
 import { AvatarIcon, ExitIcon, GearIcon, RocketIcon } from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
-import { XNGIN_API_DOCS_LINK } from '@/services/constants';
+import { PRODUCT_NAME, XNGIN_API_DOCS_LINK } from '@/services/constants';
 
 export function HeaderBar() {
   const auth = useAuth();
@@ -25,7 +25,7 @@ export function HeaderBar() {
       }}
     >
       <Link href="/">
-        <Heading>xngin admin</Heading>
+        <Heading>{PRODUCT_NAME}</Heading>
       </Link>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger>
@@ -36,7 +36,7 @@ export function HeaderBar() {
             <GearIcon /> Organizations
           </DropdownMenu.Item>
           <DropdownMenu.Separator />
-          <DropdownMenu.Item onClick={() => window.open(XNGIN_API_DOCS_LINK, '_blank')}>
+          <DropdownMenu.Item onClick={() => window.open(XNGIN_API_DOCS_LINK, '_blank', 'noopener')}>
             <RocketIcon />
             API Documentation
           </DropdownMenu.Item>
