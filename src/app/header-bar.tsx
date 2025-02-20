@@ -1,7 +1,7 @@
 'use client';
 import { DropdownMenu, Flex, Heading, Link } from '@radix-ui/themes';
 import { useAuth } from '@/app/auth-provider';
-import { AvatarIcon, ExitIcon, GearIcon, RocketIcon } from '@radix-ui/react-icons';
+import { AvatarIcon, ExclamationTriangleIcon, ExitIcon, GearIcon, RocketIcon } from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
 import { PRODUCT_NAME, XNGIN_API_DOCS_LINK } from '@/services/constants';
 
@@ -39,6 +39,11 @@ export function HeaderBar() {
           <DropdownMenu.Item onClick={() => window.open(XNGIN_API_DOCS_LINK, '_blank', 'noopener')}>
             <RocketIcon />
             API Documentation
+          </DropdownMenu.Item>
+          <DropdownMenu.Separator />
+          <DropdownMenu.Item onClick={() => eval('undefinedFunction()')}>
+            <ExclamationTriangleIcon />
+            Trigger error
           </DropdownMenu.Item>
           <DropdownMenu.Separator />
           <DropdownMenu.Item color="red" onClick={auth.logout}>
