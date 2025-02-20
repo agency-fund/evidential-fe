@@ -9,7 +9,7 @@ interface DeleteUserDialogProps {
   userId: string;
 }
 
-export const DeleteUserDialog = ({ organizationId, userId }: DeleteUserDialogProps) => {
+export function DeleteUserDialog({ organizationId, userId }: DeleteUserDialogProps) {
   const { trigger } = useRemoveMemberFromOrganization(organizationId, userId);
 
   return (

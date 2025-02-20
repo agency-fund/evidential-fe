@@ -4,7 +4,7 @@ import { Button, Dialog, Flex, Spinner, Text, TextField } from '@radix-ui/themes
 import { PlusIcon } from '@radix-ui/react-icons';
 import { mutate } from 'swr';
 
-export const AddUserDialog = ({ organizationId }: { organizationId: string }) => {
+export function AddUserDialog({ organizationId }: { organizationId: string }) {
   const { trigger, isMutating } = useAddMemberToOrganization(organizationId);
   const [open, setOpen] = useState(false);
 

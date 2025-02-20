@@ -5,7 +5,7 @@ import { useAuth } from '@/app/auth-provider';
 import { ExitIcon, GearIcon } from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
 
-export const HeaderBar = () => {
+export function HeaderBar() {
   const auth = useAuth();
   const router = useRouter();
 

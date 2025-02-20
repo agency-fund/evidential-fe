@@ -5,7 +5,7 @@ import { EyeClosedIcon, EyeOpenIcon, PlusIcon } from '@radix-ui/react-icons';
 import { BqDsnInput, Dsn } from '@/api/methods.schemas';
 import { mutate } from 'swr';
 
-export const AddDatasourceDialog = ({ organizationId }: { organizationId: string }) => {
+export function AddDatasourceDialog({ organizationId }: { organizationId: string }) {
   const { trigger, isMutating } = useCreateDatasource();
   const [open, setOpen] = useState(false);
   const [dwhType, setDwhType] = useState<'postgres' | 'bigquery'>('postgres');

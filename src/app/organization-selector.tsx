@@ -3,7 +3,7 @@ import { useLocalStorage } from '@/services/use-local-storage';
 import { Flex, Select, Text } from '@radix-ui/themes';
 import { useRouter } from 'next/navigation';
 
-export const OrganizationSelector = () => {
+export function OrganizationSelector() {
   const router = useRouter();
   const { data: orgsResponse, isLoading } = useListOrganizations();
   const [orgId, setOrgId] = useLocalStorage<string>('org_id');

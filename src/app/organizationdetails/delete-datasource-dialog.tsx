@@ -9,7 +9,7 @@ interface DeleteDatasourceDialogProps {
   datasourceId: string;
 }
 
-export const DeleteDatasourceDialog = ({ organizationId, datasourceId }: DeleteDatasourceDialogProps) => {
+export function DeleteDatasourceDialog({ organizationId, datasourceId }: DeleteDatasourceDialogProps) {
   const { trigger } = useDeleteDatasource(datasourceId);
 
   return (

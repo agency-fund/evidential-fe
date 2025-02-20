@@ -1,13 +1,14 @@
 import { Flex, Table } from '@radix-ui/themes';
 import { DeleteUserDialog } from '@/app/organizationdetails/delete-user-dialog';
 
-export const UsersTable = ({
+export function UsersTable({
   users,
   organizationId,
 }: {
   users: { id: string; email: string }[];
   organizationId: string;
-}) => (
+}) {
+  return (
   <Table.Root variant="surface">
     <Table.Header>
       <Table.Row>
@@ -28,4 +29,5 @@ export const UsersTable = ({
       ))}
     </Table.Body>
   </Table.Root>
-);
+  );
+}

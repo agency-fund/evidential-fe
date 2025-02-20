@@ -78,7 +78,7 @@ function ApiKeysTable({ apiKeys }: { apiKeys: ApiKeySummary[] }) {
   );
 }
 
-export const ApiKeysSection = ({ datasourceId }: { datasourceId: string }) => {
+export function ApiKeysSection({ datasourceId }: { datasourceId: string }) {
   const { data: apiKeys, isLoading, error } = useListApiKeys();
 
   if (isLoading) {
@@ -100,4 +100,4 @@ export const ApiKeysSection = ({ datasourceId }: { datasourceId: string }) => {
       <ApiKeysTable apiKeys={filteredApiKeys} />
     </Flex>
   );
-};
+}
