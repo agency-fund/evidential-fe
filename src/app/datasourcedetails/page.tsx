@@ -1,50 +1,14 @@
 'use client';
-import { Callout, Code, Flex, Heading, Spinner, Table, Text } from '@radix-ui/themes';
+import { Callout, Code, Flex, Heading, Spinner, Text } from '@radix-ui/themes';
 import { ApiKeysSection } from './api-keys-section';
-import { DeleteParticipantTypeDialog } from './delete-participant-type-dialog';
-import { useGetDatasource, useInspectDatasource, useListParticipantTypes } from '@/api/admin';
+import { useGetDatasource, useInspectDatasource } from '@/api/admin';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { AddParticipantTypeDialog } from '@/app/datasourcedetails/add-participant-type-dialog';
 import { UpdateDatasourceDialog } from '@/app/datasourcedetails/update-datasource-dialog';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { isSuccessResponse } from '@/services/typehelper';
-
-function ParticipantTypesTable({ datasourceId }: { datasourceId: string }) {
-  const { data, isLoading, error } = useListParticipantTypes(datasourceId);
-
-  if (isLoading) return <Spinner />;
-  if (error || !isSuccessResponse(data)) return <Text>Error loading participant types: {JSON.stringify(error)}</Text>;
-
-  return (
-    <Table.Root variant="surface">
-      <Table.Header>
-        <Table.Row>
-          <Table.ColumnHeaderCell>Participant Type</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Table Name</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
-        </Table.Row>
-      </Table.Header>
-      <Table.Body>
-        {data.data.items?.map((item) => (
-          <Table.Row key={item.participant_type}>
-            <Table.Cell>
-              <Link
-                href={`/participanttypedetails?datasource_id=${datasourceId}&participant_type=${item.participant_type}`}
-              >
-                {item.participant_type}
-              </Link>
-            </Table.Cell>
-            <Table.Cell>{item.table_name}</Table.Cell>
-            <Table.Cell>
-              <DeleteParticipantTypeDialog datasourceId={datasourceId} participantType={item.participant_type} />
-            </Table.Cell>
-          </Table.Row>
-        ))}
-      </Table.Body>
-    </Table.Root>
-  );
-}
+import { ParticipantTypesTable } from '@/app/datasourcedetails/participant-types-table';
 
 export default function Page() {
   const searchParams = useSearchParams();
