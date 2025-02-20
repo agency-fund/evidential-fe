@@ -2,8 +2,7 @@ version: '3'
 output: prefixed
 tasks:
   update-api-spec: |
-    curl --max-time 3 -o /tmp/apispec.json http://localhost:8000/openapi.json \
-      || curl --max-time 3 -o /tmp/apispec.json https://main.dev.agencyfund.org/openapi.json
+    curl --max-time 3 -o /tmp/apispec.json http://localhost:8000/openapi.json
     jq . /tmp/apispec.json > openapi.json
     npx orval --config orval.config.ts
   lint: npx next lint
