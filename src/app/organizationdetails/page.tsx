@@ -1,5 +1,6 @@
 'use client';
-import { Flex, Heading, Spinner, Text } from '@radix-ui/themes';
+import { Flex, Heading, Text } from '@radix-ui/themes';
+import { XSpinner } from '../components/x-spinner';
 import { useGetOrganization } from '@/api/admin';
 import { useSearchParams } from 'next/navigation';
 import { AddUserDialog } from '@/app/organizationdetails/add-user-dialog';
@@ -23,7 +24,7 @@ export default function Page() {
   }
 
   if (isLoading) {
-    return <Spinner />;
+    return <XSpinner message="Loading organization details..." />;
   }
 
   if (error || !isHttpOk(data)) {

@@ -3,7 +3,8 @@ import { useGetParticipantTypes, useUpdateParticipantType } from '@/api/admin';
 import { ParticipantsDef } from '@/api/methods.schemas';
 import { ParticipantDefEditor } from '@/app/participanttypedetails/edit-participant-def';
 import { isHttpOk } from '@/services/typehelper';
-import { Button, Flex, Heading, Spinner, Text } from '@radix-ui/themes';
+import { Button, Flex, Heading, Text } from '@radix-ui/themes';
+import { XSpinner } from '../components/x-spinner';
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
@@ -22,7 +23,7 @@ export default function Page() {
   }
 
   if (isLoading) {
-    return <Spinner />;
+    return <XSpinner message="Loading participant type details..." />;
   }
 
   if (error || !isHttpOk(data)) {

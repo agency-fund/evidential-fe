@@ -1,7 +1,8 @@
 'use client';
 import { getGetOrganizationKey, getListDatasourcesKey, useCreateDatasource } from '@/api/admin';
 import { useState } from 'react';
-import { Button, Dialog, Flex, RadioGroup, Spinner, Text, TextArea, TextField } from '@radix-ui/themes';
+import { Button, Dialog, Flex, RadioGroup, Text, TextArea, TextField } from '@radix-ui/themes';
+import { XSpinner } from '../components/x-spinner';
 import { EyeClosedIcon, EyeOpenIcon, PlusIcon } from '@radix-ui/react-icons';
 import { BqDsnInput, Dsn } from '@/api/methods.schemas';
 import { mutate } from 'swr';
@@ -49,7 +50,7 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
 
       <Dialog.Content>
         {isMutating ? (
-          <Spinner />
+          <XSpinner message="Adding datasource..." />
         ) : (
           <form
             onSubmit={async (event) => {

@@ -3,7 +3,7 @@
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { exchangeCodeForTokens, generatePkceLoginInfo } from '@/services/pkce';
-import { Spinner } from '@radix-ui/themes';
+import { XSpinner } from './components/x-spinner';
 import { useAuthStorage } from '@/services/use-auth-storage';
 import { API_BASE_URL } from '@/services/constants';
 import { useCustomEventListener } from '@/services/use-custom-event-handler';
@@ -133,7 +133,7 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
       };
 
   return fetching ? (
-    <Spinner />
+    <XSpinner message="Authenticating..." />
   ) : (
     <GoogleAuthContext.Provider value={contextValue}>{children}</GoogleAuthContext.Provider>
   );

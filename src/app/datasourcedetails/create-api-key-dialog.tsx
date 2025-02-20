@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useCreateApiKey } from '@/api/admin';
 import { isHttpOk } from '@/services/typehelper';
-import { Button, Code, DataList, Dialog, Flex, IconButton, Spinner } from '@radix-ui/themes';
+import { Button, Code, DataList, Dialog, Flex, IconButton } from '@radix-ui/themes';
+import { XSpinner } from '../components/x-spinner';
 import { CopyIcon, LockOpen2Icon } from '@radix-ui/react-icons';
 import { API_BASE_URL } from '@/services/constants';
 
@@ -72,7 +73,7 @@ export const CreateApiKeyDialog = ({ datasourceId }: { datasourceId: string }) =
 
           <Dialog.Content>
             {isMutating ? (
-              <Spinner />
+              <XSpinner message="Creating API key..." />
             ) : (
               <form
                 onSubmit={async (event) => {

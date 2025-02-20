@@ -1,7 +1,8 @@
 import { getInspectDatasourceKey, useUpdateDatasource } from '@/api/admin';
 import { useState } from 'react';
-import { Button, Dialog, Flex, Spinner, Text, TextField } from '@radix-ui/themes';
+import { Button, Dialog, Flex, Text, TextField } from '@radix-ui/themes';
 import { mutate } from 'swr';
+import { XSpinner } from '@/app/components/x-spinner';
 
 export const UpdateDatasourceDialog = ({
   datasourceId,
@@ -23,7 +24,7 @@ export const UpdateDatasourceDialog = ({
 
       <Dialog.Content>
         {isMutating ? (
-          <Spinner />
+          <XSpinner message="Creating participant type..." />
         ) : (
           <form
             onSubmit={async (event) => {

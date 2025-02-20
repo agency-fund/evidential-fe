@@ -3,6 +3,7 @@ import { FieldDescriptor, FieldMetadata } from '@/api/methods.schemas';
 import { isHttpOk } from '@/services/typehelper';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { Button, Dialog, Flex, IconButton, Spinner, Switch, Table, Text, TextField } from '@radix-ui/themes';
+import { XSpinner } from '../components/x-spinner';
 import { useEffect, useState } from 'react';
 
 const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId: string; tables: string[] }) => {
@@ -68,7 +69,7 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
 
       <Dialog.Content minWidth={'800px'} maxWidth={'90vw'} maxHeight={'90vh'}>
         {isMutating ? (
-          <Spinner />
+          <XSpinner message="Creating participant type..." />
         ) : (
           <form
             onSubmit={async (event) => {
@@ -111,7 +112,7 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
                   Table Name
                 </Text>
                 {!tables ? (
-                  <Spinner />
+                  <XSpinner message="Loading table data..." />
                 ) : (
                   <select
                     name="table_name"
@@ -130,7 +131,7 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
               </label>
 
               {loadingTableData ? (
-                <Spinner />
+                <XSpinner message="Loading table data..." />
               ) : selectedTable === '' ? (
                 <Text>Please select a table.</Text>
               ) : (

@@ -1,5 +1,6 @@
 'use client';
-import { Callout, Flex, Heading, Spinner, Text } from '@radix-ui/themes';
+import { Callout, Flex, Heading, Text } from '@radix-ui/themes';
+import { XSpinner } from '../components/x-spinner';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { ApiKeysSection } from './api-keys-section';
 import { useGetDatasource, useInspectDatasource } from '@/api/admin';
@@ -27,7 +28,7 @@ export default function Page() {
   });
   const isLoading = inspectDatasourceLoading || datasourceDetailsLoading;
   if (isLoading) {
-    return <Spinner />;
+    return <XSpinner message="Loading datasource details..." />;
   }
   if (!datasourceId) {
     return <Text>missing parameter</Text>;

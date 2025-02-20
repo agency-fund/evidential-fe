@@ -1,7 +1,8 @@
 'use client';
 import { useCreateOrganizations } from '@/api/admin';
 import { useState } from 'react';
-import { Button, Dialog, Flex, Spinner, Text, TextField } from '@radix-ui/themes';
+import { Button, Dialog, Flex, Text, TextField } from '@radix-ui/themes';
+import { XSpinner } from '../components/x-spinner';
 import { PlusIcon } from '@radix-ui/react-icons';
 
 export function CreateOrganizationDialog() {
@@ -20,7 +21,7 @@ export function CreateOrganizationDialog() {
 
       <Dialog.Content>
         {isMutating ? (
-          <Spinner />
+          <XSpinner message="Creating organization..." />
         ) : (
           <form
             onSubmit={async (event) => {

@@ -1,7 +1,8 @@
 'use client';
 import { getGetOrganizationKey, useAddMemberToOrganization } from '@/api/admin';
 import { useState } from 'react';
-import { Button, Dialog, Flex, Spinner, Text, TextField } from '@radix-ui/themes';
+import { Button, Dialog, Flex, Text, TextField } from '@radix-ui/themes';
+import { XSpinner } from '../components/x-spinner';
 import { PlusIcon } from '@radix-ui/react-icons';
 import { mutate } from 'swr';
 
@@ -20,7 +21,7 @@ export function AddUserDialog({ organizationId }: { organizationId: string }) {
 
       <Dialog.Content>
         {isMutating ? (
-          <Spinner />
+          <XSpinner message="Adding user..." />
         ) : (
           <form
             onSubmit={async (event) => {

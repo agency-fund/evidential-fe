@@ -1,5 +1,6 @@
 'use client';
-import { Flex, Heading, Spinner, Text } from '@radix-ui/themes';
+import { Flex, Heading, Text } from '@radix-ui/themes';
+import { XSpinner } from '../components/x-spinner';
 import { useListOrganizations } from '@/api/admin';
 import { CreateOrganizationDialog } from '@/app/organizations/create-organization-dialog';
 import { OrganizationsTable } from '@/app/organizations/organizations-table';
@@ -8,7 +9,7 @@ export default function Page() {
   const { data, isLoading, error } = useListOrganizations();
 
   if (isLoading || data === undefined) {
-    return <Spinner />;
+    return <XSpinner message="Loading organizations..." />;
   }
   if (error) {
     return <Text>Error: {JSON.stringify(error)}</Text>;
