@@ -1,8 +1,10 @@
 'use client';
-import { Box, Flex, Heading, Separator } from '@radix-ui/themes';
+import { Box, Flex, Heading, Separator, IconButton } from '@radix-ui/themes';
+import { GearIcon } from '@radix-ui/react-icons';
 import Link from 'next/link';
 import { useAuth } from '@/app/auth-provider';
 import { usePathname } from 'next/navigation';
+import { OrganizationSelector } from '@/app/OrganizationSelector';
 
 export const NavigationBar = () => {
   const { isAuthenticated } = useAuth();
@@ -21,8 +23,9 @@ export const NavigationBar = () => {
       p="4"
       style={{ borderRight: '1px solid var(--gray-5)' }}
     >
-      <Heading size="4">Navigation</Heading>
+      <OrganizationSelector />
       <Separator size="4" />
+      <Heading size="4">Experiments</Heading>
       <Flex direction="column" gap="2">
         <Link href="/">
           <Box

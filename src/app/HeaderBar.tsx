@@ -1,11 +1,13 @@
 'use client';
-import { Button, Flex, Heading } from '@radix-ui/themes';
+import { DropdownMenu, Flex, Heading } from '@radix-ui/themes';
 import Link from 'next/link';
 import { useAuth } from '@/app/auth-provider';
-import { ExitIcon } from '@radix-ui/react-icons';
+import { ExitIcon, GearIcon } from '@radix-ui/react-icons';
+import { useRouter } from 'next/navigation';
 
 export const HeaderBar = () => {
   const auth = useAuth();
+  const router = useRouter();
 
   if (!auth.isAuthenticated) return null;
 
@@ -25,9 +27,21 @@ export const HeaderBar = () => {
       <Link href="/">
         <Heading>xngin admin</Heading>
       </Link>
-      <Button variant="soft" onClick={auth.logout}>
-        <ExitIcon /> Logout
-      </Button>
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger>
+          <GearIcon width="24" height="24" />
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Content>
+          <DropdownMenu.Item onClick={() => router.push('/organizations')}>
+            Manage Organizations
+          </DropdownMenu.Item>
+          <DropdownMenu.Separator />
+          <DropdownMenu.Item color="red" onClick={auth.logout}>
+            <ExitIcon />
+            Logout
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Root>
     </Flex>
   );
 };
