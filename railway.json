@@ -6,6 +6,17 @@
   "build": {
     "builder": "DOCKERFILE",
     "dockerfilePath": "Dockerfile.railway",
-    "watchPatterns": [".dockerignore", ".gitignore", "Dockerfile.railway", "package*.json", "next*", "src/**"]
+    "watchPatterns": [
+      ".dockerignore",
+      ".gitignore",
+      "Dockerfile.railway",
+      "next*",
+      "orval.config.ts",
+      "package*.json",
+      "public",
+      "sentry*",
+      "tsconfig.json",
+      "src/**"
+    ]
   }
 }
