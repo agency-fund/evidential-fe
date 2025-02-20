@@ -35,17 +35,22 @@ export const EditDatasourceDialog = ({ organizationId, datasourceId }: EditDatas
       setName(datasource.name);
       if (datasource.config.type === 'remote') {
         const dwh = datasource.config.dwh;
+
         if (dwh.driver === 'bigquery') {
+          if (dwh.credentials.type !== 'serviceaccountinfo') {
+            throw new Error('only serviceaccountinfo is supported');
+          }
           setProjectId(dwh.project_id);
           setDataset(dwh.dataset_id);
           setCredentialsJson(atob(dwh.credentials.content_base64));
         } else {
           setHost(dwh.host);
-          setPort(dwh.port.toString());
+          setPort(dwh.port ? dwh.port.toString() : '5432');
           setDbname(dwh.dbname);
           setUser(dwh.user);
           setPassword(dwh.password);
-          setSslmode(dwh.sslmode || 'prefer');
+          // TODO: support the extra modes
+          setSslmode((dwh.sslmode || 'prefer') as 'disable' | 'allow' | 'prefer' | 'require');
           setSearchPath(dwh.search_path || '');
         }
       }
@@ -141,12 +146,7 @@ export const EditDatasourceDialog = ({ organizationId, datasourceId }: EditDatas
               <Text as="div" size="2" mb="1" weight="bold">
                 Name
               </Text>
-              <TextField.Root 
-                name="name" 
-                value={name} 
-                onChange={(e) => setName(e.target.value)} 
-                required 
-              />
+              <TextField.Root name="name" value={name} onChange={(e) => setName(e.target.value)} required />
             </label>
 
             {config.dwh.driver !== 'bigquery' && (
@@ -155,46 +155,31 @@ export const EditDatasourceDialog = ({ organizationId, datasourceId }: EditDatas
                   <Text as="div" size="2" mb="1" weight="bold">
                     Host
                   </Text>
-                  <TextField.Root 
-                    name="host" 
-                    value={host} 
-                    onChange={(e) => setHost(e.target.value)} 
-                    required 
-                  />
+                  <TextField.Root name="host" value={host} onChange={(e) => setHost(e.target.value)} required />
                 </label>
                 <label>
                   <Text as="div" size="2" mb="1" weight="bold">
                     Port
                   </Text>
-                  <TextField.Root 
-                    name="port" 
-                    type="number" 
-                    value={port} 
-                    onChange={(e) => setPort(e.target.value)} 
-                    required 
+                  <TextField.Root
+                    name="port"
+                    type="number"
+                    value={port}
+                    onChange={(e) => setPort(e.target.value)}
+                    required
                   />
                 </label>
                 <label>
                   <Text as="div" size="2" mb="1" weight="bold">
                     Database
                   </Text>
-                  <TextField.Root 
-                    name="dbname" 
-                    value={dbname} 
-                    onChange={(e) => setDbname(e.target.value)} 
-                    required 
-                  />
+                  <TextField.Root name="dbname" value={dbname} onChange={(e) => setDbname(e.target.value)} required />
                 </label>
                 <label>
                   <Text as="div" size="2" mb="1" weight="bold">
                     User
                   </Text>
-                  <TextField.Root 
-                    name="user" 
-                    value={user} 
-                    onChange={(e) => setUser(e.target.value)} 
-                    required 
-                  />
+                  <TextField.Root name="user" value={user} onChange={(e) => setUser(e.target.value)} required />
                 </label>
                 <label>
                   <Text as="div" size="2" mb="1" weight="bold">
@@ -217,8 +202,8 @@ export const EditDatasourceDialog = ({ organizationId, datasourceId }: EditDatas
                   <Text as="div" size="2" mb="1" weight="bold">
                     SSL Mode
                   </Text>
-                  <select 
-                    name="sslmode" 
+                  <select
+                    name="sslmode"
                     value={sslmode}
                     onChange={(e) => setSslmode(e.target.value as 'disable' | 'allow' | 'prefer' | 'require')}
                   >
@@ -232,10 +217,10 @@ export const EditDatasourceDialog = ({ organizationId, datasourceId }: EditDatas
                   <Text as="div" size="2" mb="1" weight="bold">
                     Search Path
                   </Text>
-                  <TextField.Root 
-                    name="search_path" 
-                    value={searchPath} 
-                    onChange={(e) => setSearchPath(e.target.value)} 
+                  <TextField.Root
+                    name="search_path"
+                    value={searchPath}
+                    onChange={(e) => setSearchPath(e.target.value)}
                   />
                 </label>
               </>
@@ -258,11 +243,11 @@ export const EditDatasourceDialog = ({ organizationId, datasourceId }: EditDatas
                   <Text as="div" size="2" mb="1" weight="bold">
                     Dataset
                   </Text>
-                  <TextField.Root 
-                    name="dataset" 
-                    value={dataset} 
-                    onChange={(e) => setDataset(e.target.value)} 
-                    required 
+                  <TextField.Root
+                    name="dataset"
+                    value={dataset}
+                    onChange={(e) => setDataset(e.target.value)}
+                    required
                   />
                 </label>
                 <label>
