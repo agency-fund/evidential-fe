@@ -14,7 +14,7 @@ export default withSentryConfig(nextConfig, {
 
   org: 'agency-fund',
   project: 'xngin-dash',
-  silent: !process.env.CI || process.env.SENTRY_CONFIG_SILENT === 'true',
+  silent: !process.env.CI,
   widenClientFileUpload: true,
   reactComponentAnnotation: {
     enabled: true,
