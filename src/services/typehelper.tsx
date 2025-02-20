@@ -1,6 +1,6 @@
 import { HTTPValidationError } from '@/api/methods.schemas';
 
-export function isSuccessResponse<T>(response?: {
+export function isHttpOk<T>(response?: {
   data: T | HTTPValidationError;
   status: number;
 }): response is { data: T; status: number } {

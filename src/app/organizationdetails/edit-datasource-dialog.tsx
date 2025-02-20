@@ -1,17 +1,23 @@
 'use client';
 import { Button, Dialog, Flex, IconButton, Text, TextArea, TextField } from '@radix-ui/themes';
 import { EyeClosedIcon, EyeOpenIcon, GearIcon, Pencil2Icon } from '@radix-ui/react-icons';
-import { getGetOrganizationKey, getInspectDatasourceKey, useGetDatasource, useUpdateDatasource } from '@/api/admin';
+import {
+  getGetDatasourceKey,
+  getGetOrganizationKey,
+  getInspectDatasourceKey,
+  useGetDatasource,
+  useUpdateDatasource,
+} from '@/api/admin';
 import { useEffect, useState } from 'react';
 import { mutate } from 'swr';
-import { isSuccessResponse } from '@/services/typehelper';
+import { isHttpOk } from '@/services/typehelper';
 import { DsnDriver, UpdateDatasourceRequest } from '@/api/methods.schemas';
 
-export const EditDatasourceDialog = ({ 
-  organizationId, 
+export const EditDatasourceDialog = ({
+  organizationId,
   datasourceId,
-  variant = 'icon'
-}: { 
+  variant = 'icon',
+}: {
   organizationId?: string;
   datasourceId: string;
   variant?: 'icon' | 'button';
@@ -33,7 +39,7 @@ export const EditDatasourceDialog = ({
   const [credentialsJson, setCredentialsJson] = useState('');
 
   useEffect(() => {
-    if (open && data && isSuccessResponse(data)) {
+    if (open && data && isHttpOk(data)) {
       const datasource = data.data;
       setName(datasource.name);
       if (datasource.config.type === 'remote') {
@@ -81,7 +87,7 @@ export const EditDatasourceDialog = ({
     }
   };
 
-  if (isLoading || !data || !isSuccessResponse(data)) {
+  if (isLoading || !data || !isHttpOk(data)) {
     return null;
   }
 
@@ -141,7 +147,10 @@ export const EditDatasourceDialog = ({
             }
 
             await updateDatasource(updateData);
-            await mutate(getGetOrganizationKey(organizationId));
+            if (organizationId) {
+              await mutate(getGetOrganizationKey(organizationId));
+            }
+            await mutate(getGetDatasourceKey(datasourceId));
             await mutate(getInspectDatasourceKey(datasourceId));
             setOpen(false);
           }}

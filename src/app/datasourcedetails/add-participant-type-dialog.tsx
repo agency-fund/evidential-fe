@@ -1,6 +1,6 @@
 import { useCreateParticipantType, useInspectDatasource, useInspectTableInDatasource } from '@/api/admin';
 import { FieldDescriptor, FieldMetadata } from '@/api/methods.schemas';
-import { isSuccessResponse } from '@/services/typehelper';
+import { isHttpOk } from '@/services/typehelper';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { Button, Dialog, Flex, IconButton, Spinner, Table, Text, TextField } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
@@ -24,7 +24,7 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
   };
 
   useEffect(() => {
-    if (!isSuccessResponse(tableData)) {
+    if (!isHttpOk(tableData)) {
       return;
     }
     const probable_unique_id_field = tableData.data.detected_unique_id_fields?.pop();
@@ -252,7 +252,7 @@ export const AddParticipantTypeDialog = ({ datasourceId }: { datasourceId: strin
   if (isLoading) {
     return <Spinner />;
   }
-  if (!isSuccessResponse(data)) {
+  if (!isHttpOk(data)) {
     // TODO
     return <></>;
   }

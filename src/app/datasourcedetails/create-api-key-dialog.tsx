@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useCreateApiKey } from '@/api/admin';
-import { isSuccessResponse } from '@/services/typehelper';
+import { isHttpOk } from '@/services/typehelper';
 import { Button, Code, DataList, Dialog, Flex, IconButton, Spinner } from '@radix-ui/themes';
 import { CopyIcon, LockOpen2Icon } from '@radix-ui/react-icons';
 
@@ -12,7 +12,7 @@ export const CreateApiKeyDialog = ({ datasourceId }: { datasourceId: string }) =
 
   return (
     <>
-      {state === 'presenting-results' && isSuccessResponse(createdKey) && (
+      {state === 'presenting-results' && isHttpOk(createdKey) && (
         <Dialog.Root
           defaultOpen={true}
           onOpenChange={(open) => setState(open ? 'presenting-results' : 'presenting-button')}

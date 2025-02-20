@@ -2,7 +2,7 @@
 import { useGetParticipantTypes, useUpdateParticipantType } from '@/api/admin';
 import { ParticipantsDef } from '@/api/methods.schemas';
 import { ParticipantDefEditor } from '@/app/participanttypedetails/edit-participant-def';
-import { isSuccessResponse } from '@/services/typehelper';
+import { isHttpOk } from '@/services/typehelper';
 import { Button, Flex, Heading, Spinner, Text } from '@radix-ui/themes';
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
@@ -25,7 +25,7 @@ export default function Page() {
     return <Spinner />;
   }
 
-  if (error || !isSuccessResponse(data)) {
+  if (error || !isHttpOk(data)) {
     return <Text>Error: {JSON.stringify(error)}</Text>;
   }
 

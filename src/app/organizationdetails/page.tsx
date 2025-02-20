@@ -4,7 +4,7 @@ import { useGetOrganization } from '@/api/admin';
 import { useSearchParams } from 'next/navigation';
 import { AddUserDialog } from '@/app/organizationdetails/add-user-dialog';
 import { AddDatasourceDialog } from '@/app/organizationdetails/add-datasource-dialog';
-import { isSuccessResponse } from '@/services/typehelper';
+import { isHttpOk } from '@/services/typehelper';
 import { DatasourcesTable } from '@/app/organizationdetails/datasources-table';
 import { UsersTable } from '@/app/organizationdetails/users-table';
 
@@ -26,7 +26,7 @@ export default function Page() {
     return <Spinner />;
   }
 
-  if (error || !isSuccessResponse(data)) {
+  if (error || !isHttpOk(data)) {
     return <Text>Error: {JSON.stringify(error)}</Text>;
   }
 

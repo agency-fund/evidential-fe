@@ -1,7 +1,7 @@
 'use client';
 import { Flex, Heading, Spinner, Text } from '@radix-ui/themes';
 import { useListApiKeys } from '@/api/admin';
-import { isSuccessResponse } from '@/services/typehelper';
+import { isHttpOk } from '@/services/typehelper';
 import { CreateApiKeyDialog } from '@/app/datasourcedetails/create-api-key-dialog';
 import { ApiKeysTable } from '@/app/datasourcedetails/api-keys-table';
 
@@ -12,7 +12,7 @@ export function ApiKeysSection({ datasourceId }: { datasourceId: string }) {
     return <Spinner />;
   }
 
-  if (error || !isSuccessResponse(apiKeys)) {
+  if (error || !isHttpOk(apiKeys)) {
     return <Text>Error loading API keys: {JSON.stringify(error)}</Text>;
   }
 

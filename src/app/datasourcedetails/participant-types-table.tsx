@@ -1,7 +1,7 @@
 'use client';
 import { useListParticipantTypes } from '@/api/admin';
 import { Spinner, Table, Text } from '@radix-ui/themes';
-import { isSuccessResponse } from '@/services/typehelper';
+import { isHttpOk } from '@/services/typehelper';
 import Link from 'next/link';
 import { DeleteParticipantTypeDialog } from '@/app/datasourcedetails/delete-participant-type-dialog';
 
@@ -9,7 +9,7 @@ export function ParticipantTypesTable({ datasourceId }: { datasourceId: string }
   const { data, isLoading, error } = useListParticipantTypes(datasourceId);
 
   if (isLoading) return <Spinner />;
-  if (error || !isSuccessResponse(data)) return <Text>Error loading participant types: {JSON.stringify(error)}</Text>;
+  if (error || !isHttpOk(data)) return <Text>Error loading participant types: {JSON.stringify(error)}</Text>;
 
   return (
     <Table.Root variant="surface">
