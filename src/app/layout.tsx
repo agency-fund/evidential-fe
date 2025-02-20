@@ -8,8 +8,8 @@ import '@radix-ui/themes/styles.css';
 import GoogleAuthProvider from '@/app/auth-provider';
 import OurSwrConfig from '@/services/our-swr-config';
 import { Suspense } from 'react';
-import { NavigationBar } from '@/app/NavigationBar';
-import { HeaderBar } from '@/app/HeaderBar';
+import { NavigationBar } from '@/app/navigation-bar';
+import { HeaderBar } from '@/app/header-bar';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -35,13 +35,13 @@ export default function RootLayout({
               <OurSwrConfig>
                 <OrganizationProvider>
                   <Flex direction="column" minHeight={'100vh'}>
-                  <HeaderBar />
-                  <Flex>
-                    <NavigationBar />
-                    <Container p={'16px'} minWidth={'65vw'}>
-                      <Suspense>{children}</Suspense>
-                    </Container>
-                  </Flex>
+                    <HeaderBar />
+                    <Flex>
+                      <NavigationBar />
+                      <Container p={'16px'} minWidth={'65vw'}>
+                        <Suspense>{children}</Suspense>
+                      </Container>
+                    </Flex>
                   </Flex>
                 </OrganizationProvider>
               </OurSwrConfig>

@@ -5,8 +5,8 @@ import { PlusIcon } from '@radix-ui/react-icons';
 import { OrganizationSummary } from '@/api/methods.schemas';
 import { useState } from 'react';
 import Link from 'next/link';
-import { AddUserDialog } from '@/app/organizationdetails/AddUserDialog';
-import { AddDatasourceDialog } from '@/app/organizationdetails/AddDatasourceDialog';
+import { AddUserDialog } from '@/app/organizationdetails/add-user-dialog';
+import { AddDatasourceDialog } from '@/app/organizationdetails/add-datasource-dialog';
 
 const CreateOrganizationDialog = () => {
   const { trigger, isMutating } = useCreateOrganizations();

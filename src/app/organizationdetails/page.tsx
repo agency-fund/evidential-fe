@@ -2,13 +2,11 @@
 import { Flex, Heading, Spinner, Table, Text } from '@radix-ui/themes';
 import { useGetOrganization } from '@/api/admin';
 import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { DeleteUserDialog } from '@/app/organizationdetails/DeleteUserDialog';
-import { DeleteDatasourceDialog } from '@/app/organizationdetails/DeleteDatasourceDialog';
-import { EditDatasourceDialog } from '@/app/organizationdetails/EditDatasourceDialog';
-import { AddUserDialog } from '@/app/organizationdetails/AddUserDialog';
-import { AddDatasourceDialog } from '@/app/organizationdetails/AddDatasourceDialog';
+import { DeleteUserDialog } from '@/app/organizationdetails/delete-user-dialog';
+import { AddUserDialog } from '@/app/organizationdetails/add-user-dialog';
+import { AddDatasourceDialog } from '@/app/organizationdetails/add-datasource-dialog';
 import { isSuccessResponse } from '@/services/typehelper';
+import { DatasourcesTable } from '@/app/organizationdetails/datasources-table';
 
 function UsersTable({ users, organizationId }: { users: { id: string; email: string }[]; organizationId: string }) {
   return (
@@ -28,51 +26,6 @@ function UsersTable({ users, organizationId }: { users: { id: string; email: str
             <Table.Cell>
               <Flex gap="2">
                 <DeleteUserDialog organizationId={organizationId} userId={user.id} />
-              </Flex>
-            </Table.Cell>
-          </Table.Row>
-        ))}
-      </Table.Body>
-    </Table.Root>
-  );
-}
-
-function DatasourcesTable({
-  datasources,
-  organizationId,
-}: {
-  datasources: {
-    id: string;
-    name: string;
-    driver: string;
-    type: string;
-  }[];
-  organizationId: string;
-}) {
-  return (
-    <Table.Root variant="surface">
-      <Table.Header>
-        <Table.Row>
-          <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Datasource ID</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Driver</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
-        </Table.Row>
-      </Table.Header>
-      <Table.Body>
-        {datasources.map((datasource) => (
-          <Table.Row key={datasource.id}>
-            <Table.Cell>
-              <Link href={`/datasourcedetails?id=${datasource.id}`}>{datasource.name}</Link>
-            </Table.Cell>
-            <Table.Cell>{datasource.id}</Table.Cell>
-            <Table.Cell>{datasource.driver}</Table.Cell>
-            <Table.Cell>{datasource.type}</Table.Cell>
-            <Table.Cell>
-              <Flex gap="2">
-                <DeleteDatasourceDialog organizationId={organizationId} datasourceId={datasource.id} />
-                <EditDatasourceDialog organizationId={organizationId} datasourceId={datasource.id} />
               </Flex>
             </Table.Cell>
           </Table.Row>

@@ -3,7 +3,7 @@ import { Box, Flex, Heading, Separator } from '@radix-ui/themes';
 import Link from 'next/link';
 import { useAuth } from '@/app/auth-provider';
 import { usePathname } from 'next/navigation';
-import { OrganizationSelector } from '@/app/OrganizationSelector';
+import { OrganizationSelector } from '@/app/organization-selector';
 import { useCurrentOrganization } from '@/app/organization-provider';
 
 export const NavigationBar = () => {

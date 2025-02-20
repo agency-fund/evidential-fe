@@ -1,7 +1,7 @@
 'use client';
 import { useGetParticipantTypes, useUpdateParticipantType } from '@/api/admin';
 import { ParticipantsDef } from '@/api/methods.schemas';
-import { ParticipantDefEditor } from '@/app/participanttypedetails/EditParticipantDef';
+import { ParticipantDefEditor } from '@/app/participanttypedetails/edit-participant-def';
 import { isSuccessResponse } from '@/services/typehelper';
 import { Button, Flex, Heading, Spinner, Text } from '@radix-ui/themes';
 import { useSearchParams } from 'next/navigation';

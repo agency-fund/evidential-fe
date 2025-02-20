@@ -1,12 +1,12 @@
 'use client';
 import { Callout, Code, Flex, Heading, Spinner, Table, Text } from '@radix-ui/themes';
-import { ApiKeysSection } from './ApiKeysSection';
-import { DeleteParticipantTypeDialog } from './DeleteParticipantTypeDialog';
+import { ApiKeysSection } from './api-keys-section';
+import { DeleteParticipantTypeDialog } from './delete-participant-type-dialog';
 import { useGetDatasource, useInspectDatasource, useListParticipantTypes } from '@/api/admin';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { AddParticipantTypeDialog } from '@/app/datasourcedetails/AddParticipantTypeDialog';
-import { UpdateDatasourceDialog } from '@/app/datasourcedetails/UpdateDatasourceDialog';
+import { AddParticipantTypeDialog } from '@/app/datasourcedetails/add-participant-type-dialog';
+import { UpdateDatasourceDialog } from '@/app/datasourcedetails/update-datasource-dialog';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { isSuccessResponse } from '@/services/typehelper';
 
