@@ -118,12 +118,12 @@ export const AddDatasourceDialog = ({ organizationId }: { organizationId: string
                   <Flex gap="2" direction="column">
                     <Text as="label" size="2">
                       <Flex gap="2">
-                        <RadioGroup.Item value="postgres" /> Postgres
+                        <RadioGroup.Item value="postgres" /> PostgreSQL
                       </Flex>
                     </Text>
                     <Text as="label" size="2">
                       <Flex gap="2">
-                        <RadioGroup.Item value="bigquery" /> BigQuery
+                        <RadioGroup.Item value="bigquery" /> Google BigQuery
                       </Flex>
                     </Text>
                   </Flex>
@@ -161,7 +161,7 @@ export const AddDatasourceDialog = ({ organizationId }: { organizationId: string
                       Password
                     </Text>
                     <Flex gap="2">
-                      <TextField.Root name="password" type={showPassword ? "text" : "password"} required />
+                      <TextField.Root name="password" type={showPassword ? 'text' : 'password'} required />
                       <Button type="button" variant="soft" onClick={() => setShowPassword(!showPassword)}>
                         {showPassword ? <EyeClosedIcon /> : <EyeOpenIcon />}
                       </Button>

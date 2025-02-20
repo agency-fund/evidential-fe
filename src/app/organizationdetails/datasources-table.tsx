@@ -1,5 +1,5 @@
-import { Button, Code, Flex, IconButton, Table, Tooltip } from '@radix-ui/themes';
-import { ClipboardCopyIcon, CopyIcon } from '@radix-ui/react-icons';
+import { Code, Flex, IconButton, Table } from '@radix-ui/themes';
+import { CopyIcon } from '@radix-ui/react-icons';
 import Link from 'next/link';
 import { DeleteDatasourceDialog } from '@/app/organizationdetails/delete-datasource-dialog';
 import { EditDatasourceDialog } from '@/app/organizationdetails/edit-datasource-dialog';
@@ -12,7 +12,6 @@ export function DatasourcesTable({
     id: string;
     name: string;
     driver: string;
-    type: string;
   }[];
   organizationId: string;
 }) {
@@ -23,7 +22,6 @@ export function DatasourcesTable({
           <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>Datasource ID</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>Driver</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
         </Table.Row>
       </Table.Header>
@@ -41,8 +39,11 @@ export function DatasourcesTable({
                 </IconButton>
               </Flex>
             </Table.Cell>
-            <Table.Cell>{datasource.driver}</Table.Cell>
-            <Table.Cell>{datasource.type}</Table.Cell>
+            <Table.Cell>
+              {datasource.driver === 'bigquery' ? 'Google BigQuery' :
+               datasource.driver === 'postgresql+psycopg' ? 'PostgreSQL' :
+               datasource.driver}
+            </Table.Cell>
             <Table.Cell>
               <Flex gap="2">
                 <DeleteDatasourceDialog organizationId={organizationId} datasourceId={datasource.id} />
