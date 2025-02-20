@@ -43,3 +43,6 @@ dist
 .aider*
 CONVENTIONS.md
 openapi.json
+
+# Sentry Config File
+.env.sentry-build-plugin
