@@ -1,8 +1,9 @@
 'use client';
 import { DropdownMenu, Flex, Heading, Link } from '@radix-ui/themes';
 import { useAuth } from '@/app/auth-provider';
-import { ExitIcon, GearIcon } from '@radix-ui/react-icons';
+import { AvatarIcon, ExitIcon, GearIcon, RocketIcon } from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
+import { XNGIN_API_DOCS_LINK } from '@/services/constants';
 
 export function HeaderBar() {
   const auth = useAuth();
@@ -28,12 +29,15 @@ export function HeaderBar() {
       </Link>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger>
-          <GearIcon width="24" height="24" />
+          <AvatarIcon width="24" height="24" />
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DropdownMenu.Item onClick={() => router.push('/organizations')}>Manage Organizations</DropdownMenu.Item>
+          <DropdownMenu.Item onClick={() => router.push('/organizations')}>
+            <GearIcon /> Organizations
+          </DropdownMenu.Item>
           <DropdownMenu.Separator />
-          <DropdownMenu.Item onClick={() => window.open('https://main.dev.agencyfund.org/docs', '_blank')}>
+          <DropdownMenu.Item onClick={() => window.open(XNGIN_API_DOCS_LINK, '_blank')}>
+            <RocketIcon />
             API Documentation
           </DropdownMenu.Item>
           <DropdownMenu.Separator />
