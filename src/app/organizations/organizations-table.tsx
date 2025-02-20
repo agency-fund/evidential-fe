@@ -1,3 +1,4 @@
+'use client';
 import { OrganizationSummary } from '@/api/methods.schemas';
 import { Flex, Table } from '@radix-ui/themes';
 import Link from 'next/link';

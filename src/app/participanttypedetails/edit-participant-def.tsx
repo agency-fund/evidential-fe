@@ -1,3 +1,4 @@
+'use client';
 import { FieldDescriptor, ParticipantsDef } from '@/api/methods.schemas';
 import { Flex, Table, TextField } from '@radix-ui/themes';
 

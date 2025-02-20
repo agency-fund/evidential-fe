@@ -1,3 +1,4 @@
+'use client';
 import { useListParticipantTypes } from '@/api/admin';
 import { Spinner, Table, Text } from '@radix-ui/themes';
 import { isSuccessResponse } from '@/services/typehelper';

@@ -1,3 +1,4 @@
+'use client';
 import { Flex, Table } from '@radix-ui/themes';
 import { DeleteUserDialog } from '@/app/organizationdetails/delete-user-dialog';
 

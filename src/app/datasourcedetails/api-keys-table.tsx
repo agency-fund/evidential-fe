@@ -1,3 +1,4 @@
+'use client';
 import { ApiKeySummary } from '@/api/methods.schemas';
 import { useState } from 'react';
 import { getListApiKeysKey, useDeleteApiKey } from '@/api/admin';
