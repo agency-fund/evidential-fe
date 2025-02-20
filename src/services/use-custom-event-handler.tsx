@@ -1,3 +1,4 @@
+'use client';
 import { useEffect } from 'react';
 
 export const useCustomEventListener = (eventName: string, handler: () => void) => {

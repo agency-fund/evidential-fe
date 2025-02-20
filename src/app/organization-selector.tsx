@@ -1,3 +1,4 @@
+'use client';
 import { useListOrganizations } from '@/api/admin';
 import { useLocalStorage } from '@/services/use-local-storage';
 import { Flex, Select, Text } from '@radix-ui/themes';
@@ -55,4 +56,4 @@ export function OrganizationSelector() {
       </Select.Root>
     </Flex>
   );
-};
+}

@@ -36,6 +36,7 @@ export const useAuthStorage = () => {
   if (value !== null && typeof value !== 'object') {
     throw new Error('localStorage corrupted');
   }
+  console.log('useAuthStorage: ', value);
 
   return [value as IdTokenStored | null, setIdToken] as const;
 };

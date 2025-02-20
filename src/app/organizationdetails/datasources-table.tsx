@@ -1,3 +1,4 @@
+'use client';
 import { Code, Flex, IconButton, Table } from '@radix-ui/themes';
 import { CopyIcon } from '@radix-ui/react-icons';
 import Link from 'next/link';
@@ -40,9 +41,11 @@ export function DatasourcesTable({
               </Flex>
             </Table.Cell>
             <Table.Cell>
-              {datasource.driver === 'bigquery' ? 'Google BigQuery' :
-               datasource.driver === 'postgresql+psycopg' ? 'PostgreSQL' :
-               datasource.driver}
+              {datasource.driver === 'bigquery'
+                ? 'Google BigQuery'
+                : datasource.driver === 'postgresql+psycopg'
+                  ? 'PostgreSQL'
+                  : datasource.driver}
             </Table.Cell>
             <Table.Cell>
               <Flex gap="2">

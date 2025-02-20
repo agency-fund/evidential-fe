@@ -1,3 +1,4 @@
+'use client';
 import { useCreateOrganizations } from '@/api/admin';
 import { useState } from 'react';
 import { Button, Dialog, Flex, Spinner, Text, TextField } from '@radix-ui/themes';

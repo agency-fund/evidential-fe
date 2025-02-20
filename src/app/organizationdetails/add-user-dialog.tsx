@@ -1,3 +1,4 @@
+'use client';
 import { getGetOrganizationKey, useAddMemberToOrganization } from '@/api/admin';
 import { useState } from 'react';
 import { Button, Dialog, Flex, Spinner, Text, TextField } from '@radix-ui/themes';
@@ -66,4 +67,4 @@ export function AddUserDialog({ organizationId }: { organizationId: string }) {
       </Dialog.Content>
     </Dialog.Root>
   );
-};
+}

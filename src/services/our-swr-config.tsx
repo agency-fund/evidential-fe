@@ -1,3 +1,4 @@
+'use client';
 import { PropsWithChildren } from 'react';
 import { SWRConfig } from 'swr';
 import { useAuth } from '@/app/auth-provider';

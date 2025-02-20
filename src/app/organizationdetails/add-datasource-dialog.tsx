@@ -1,3 +1,4 @@
+'use client';
 import { getGetOrganizationKey, getListDatasourcesKey, useCreateDatasource } from '@/api/admin';
 import { useState } from 'react';
 import { Button, Dialog, Flex, RadioGroup, Spinner, Text, TextArea, TextField } from '@radix-ui/themes';
@@ -241,4 +242,4 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
       </Dialog.Content>
     </Dialog.Root>
   );
-};
+}

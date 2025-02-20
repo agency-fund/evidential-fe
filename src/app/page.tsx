@@ -21,14 +21,9 @@ export default function Home() {
     );
   }
 
-  if (org === null) {
-    // TODO
-    return <Text>Welcome back. Your organization has been removed.</Text>;
-  }
-
   return (
     <Flex direction="column" gap="3">
-      <Heading>{org.current.name}</Heading>
+      {org && <Heading>{org.current.name}</Heading>}
       <Card>
         <Flex direction="column" gap="2">
           <Text>Logged in as:</Text>

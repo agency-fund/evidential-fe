@@ -27,11 +27,7 @@ const CURRENT_ORG_ID_KEY = 'org_id' as const;
 
 export function OrganizationProvider({ children }: PropsWithChildren) {
   const auth = useAuth();
-  const {
-    data: orgsList,
-    isLoading,
-    error,
-  } = useListOrganizations({
+  const { data: orgsList, error } = useListOrganizations({
     swr: {
       enabled: auth.isAuthenticated,
     },
@@ -48,14 +44,7 @@ export function OrganizationProvider({ children }: PropsWithChildren) {
     if (storedOrgExists) return;
     setOrgId(organizations[0].id);
   }, [orgsList, orgId, setOrgId]);
-  if (isLoading) {
-    return (
-      <Flex direction="column" gap="3" align="center">
-        <Spinner />
-        <Text size="2">Loading organization information...</Text>
-      </Flex>
-    );
-  }
+
   if (error) {
     console.error('Error loading organizations', error);
     return (
