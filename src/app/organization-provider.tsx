@@ -5,8 +5,10 @@ import { createContext, PropsWithChildren, useContext, useEffect } from 'react';
 import { useListOrganizations } from '@/api/admin';
 import { useAuth } from './auth-provider';
 import { useLocalStorage } from '@/services/use-local-storage';
-import { Button, Flex, Spinner, Text } from '@radix-ui/themes';
+import { Button, Flex, Text } from '@radix-ui/themes';
 import { isHttpOk } from '@/services/typehelper';
+
+const CURRENT_ORG_ID_KEY = 'org_id' as const;
 
 type OrganizationContext = {
   current: OrganizationSummary;
@@ -22,8 +24,6 @@ export function useCurrentOrganization() {
   }
   return context;
 }
-
-const CURRENT_ORG_ID_KEY = 'org_id' as const;
 
 export function OrganizationProvider({ children }: PropsWithChildren) {
   const auth = useAuth();
