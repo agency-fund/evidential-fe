@@ -1,16 +1,17 @@
 'use client';
-import { Box, Flex, Heading, Separator, IconButton } from '@radix-ui/themes';
-import { GearIcon } from '@radix-ui/react-icons';
+import { Box, Flex, Heading, Separator } from '@radix-ui/themes';
 import Link from 'next/link';
 import { useAuth } from '@/app/auth-provider';
 import { usePathname } from 'next/navigation';
 import { OrganizationSelector } from '@/app/OrganizationSelector';
+import { useCurrentOrganization } from '@/app/organization-provider';
 
 export const NavigationBar = () => {
   const { isAuthenticated } = useAuth();
   const pathname = usePathname();
+  const { current } = useCurrentOrganization();
 
-  const isActive = (path: string) => pathname === path;
+  const isActive = (path: string) => pathname.match(path);
 
   if (!isAuthenticated) return null;
 
@@ -32,21 +33,32 @@ export const NavigationBar = () => {
             p="2"
             style={{
               borderRadius: 'var(--radius-2)',
-              backgroundColor: isActive('/') ? 'var(--gray-3)' : 'transparent',
+              backgroundColor: isActive('/$') ? 'var(--gray-3)' : 'transparent',
             }}
           >
             Dashboard
           </Box>
         </Link>
-        <Link href="/organizations">
+        <Link href={`/organizationdetails?id=${current.id}`}>
           <Box
             p="2"
             style={{
               borderRadius: 'var(--radius-2)',
-              backgroundColor: isActive('/organizations') ? 'var(--gray-3)' : 'transparent',
+              backgroundColor: isActive(`/organizationdetails`) ? 'var(--gray-3)' : 'transparent',
             }}
           >
-            Organizations
+            Settings
+          </Box>
+        </Link>
+        <Link href={`/experiments`}>
+          <Box
+            p="2"
+            style={{
+              borderRadius: 'var(--radius-2)',
+              backgroundColor: isActive(`/experiments`) ? 'var(--gray-3)' : 'transparent',
+            }}
+          >
+            Experiments
           </Box>
         </Link>
       </Flex>

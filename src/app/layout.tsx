@@ -3,6 +3,7 @@
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Container, Flex, Theme } from '@radix-ui/themes';
+import { OrganizationProvider } from './organization-provider';
 import '@radix-ui/themes/styles.css';
 import GoogleAuthProvider from '@/app/auth-provider';
 import OurSwrConfig from '@/services/our-swr-config';
@@ -32,7 +33,8 @@ export default function RootLayout({
           <Suspense>
             <GoogleAuthProvider>
               <OurSwrConfig>
-                <Flex direction="column" minHeight={'100vh'}>
+                <OrganizationProvider>
+                  <Flex direction="column" minHeight={'100vh'}>
                   <HeaderBar />
                   <Flex>
                     <NavigationBar />
@@ -40,7 +42,8 @@ export default function RootLayout({
                       <Suspense>{children}</Suspense>
                     </Container>
                   </Flex>
-                </Flex>
+                  </Flex>
+                </OrganizationProvider>
               </OurSwrConfig>
             </GoogleAuthProvider>
           </Suspense>

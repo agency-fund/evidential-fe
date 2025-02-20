@@ -108,7 +108,7 @@ export default function Page() {
 
   return (
     <Flex direction="column" gap="3">
-      <Heading>Organization Details: {organization.name}</Heading>
+      <Heading>Settings for: {organization.name}</Heading>
 
       <Flex direction="column" gap="3">
         <Flex justify="between" align="center">

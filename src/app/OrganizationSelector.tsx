@@ -1,11 +1,17 @@
 import { useListOrganizations } from '@/api/admin';
 import { useLocalStorage } from '@/services/use-local-storage';
-import { Flex, Select, Separator, Text } from '@radix-ui/themes';
+import { Flex, Select, Text } from '@radix-ui/themes';
+import { useRouter } from 'next/navigation';
 
 export const OrganizationSelector = () => {
+  const router = useRouter();
   const { data: orgsResponse, isLoading } = useListOrganizations();
   const [orgId, setOrgId] = useLocalStorage<string>('org_id');
-  console.log('orgId', orgId);
+
+  const updateOrgId = (orgId: string) => {
+    setOrgId(orgId);
+    router.push('/');
+  };
 
   if (isLoading) {
     return (
@@ -37,7 +43,7 @@ export const OrganizationSelector = () => {
       <Text size="2" weight="bold">
         Organization:
       </Text>
-      <Select.Root value={selectedOrg} onValueChange={setOrgId}>
+      <Select.Root value={selectedOrg} onValueChange={updateOrgId}>
         <Select.Trigger />
         <Select.Content>
           {organizations.map((org) => (
