@@ -12,7 +12,7 @@ export const CreateApiKeyDialog = ({ datasourceId }: { datasourceId: string }) =
   const { data: createdKey, trigger: triggerCreateApiKey, isMutating } = useCreateApiKey();
 
   const exampleCurlSnippet = isHttpOk(createdKey)
-    ? `curl -H "Authorization: Bearer ${createdKey.data.key}" -H "Datasource-ID: ${datasourceId}" ${API_BASE_URL}/v1/_authcheck`
+    ? `curl -H "X-API-Key: ${createdKey.data.key}" -H "Datasource-ID: ${datasourceId}" ${API_BASE_URL}/v1/_authcheck`
     : '';
   return (
     <>
