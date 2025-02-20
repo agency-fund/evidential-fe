@@ -4,7 +4,7 @@ import { OrganizationSummary } from '@/api/methods.schemas';
 import { createContext, PropsWithChildren, useContext, useEffect } from 'react';
 import { useListOrganizations } from '@/api/admin';
 import { useAuth } from './auth-provider';
-import { useLocalStorage } from '@/services/use-local-storage';
+import { useLocalStorage } from '@/app/providers/use-local-storage';
 import { Button, Flex, Text } from '@radix-ui/themes';
 import { isHttpOk } from '@/services/typehelper';
 

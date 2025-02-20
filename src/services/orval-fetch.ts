@@ -1,4 +1,4 @@
-import { currentIdToken } from '@/services/use-auth-storage';
+import { currentIdToken } from '@/app/providers/use-auth-storage';
 import { API_BASE_URL } from '@/services/constants';
 import { API_401_EVENT } from '@/app/auth-provider';
 

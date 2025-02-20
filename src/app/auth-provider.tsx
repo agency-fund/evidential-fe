@@ -4,9 +4,9 @@ import { createContext, PropsWithChildren, useCallback, useContext, useEffect, u
 import { useRouter, useSearchParams } from 'next/navigation';
 import { exchangeCodeForTokens, generatePkceLoginInfo } from '@/services/pkce';
 import { XSpinner } from './components/x-spinner';
-import { useAuthStorage } from '@/services/use-auth-storage';
+import { useAuthStorage } from '@/app/providers/use-auth-storage';
 import { API_BASE_URL } from '@/services/constants';
-import { useCustomEventListener } from '@/services/use-custom-event-handler';
+import { useCustomEventListener } from '@/app/providers/use-custom-event-handler';
 
 export const API_401_EVENT = 'api_returned_401';
 const CODE_VERIFIER_KEY = 'code_verifier';

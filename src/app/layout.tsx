@@ -6,7 +6,7 @@ import { Container, Flex, Theme } from '@radix-ui/themes';
 import { OrganizationProvider } from './organization-provider';
 import '@radix-ui/themes/styles.css';
 import GoogleAuthProvider from '@/app/auth-provider';
-import OurSwrConfig from '@/services/our-swr-config';
+import OurSwrConfig from '@/app/providers/our-swr-config';
 import { Suspense } from 'react';
 import { NavigationBar } from '@/app/navigation-bar';
 import { HeaderBar } from '@/app/header-bar';
