@@ -11,7 +11,6 @@ export function OrganizationsTable({ organizations }: { organizations: Organizat
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Organization ID</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
         </Table.Row>
       </Table.Header>
@@ -21,7 +20,6 @@ export function OrganizationsTable({ organizations }: { organizations: Organizat
             <Table.Cell>
               <Link href={`/organizationdetails?id=${item.id}`}>{item.name}</Link>
             </Table.Cell>
-            <Table.Cell>{item.id}</Table.Cell>
             <Table.Cell>
               <Flex gap="2">
                 <AddUserDialog organizationId={item.id} />
