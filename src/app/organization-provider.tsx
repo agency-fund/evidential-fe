@@ -12,11 +12,11 @@ type OrganizationContext = {
   available: OrganizationSummary[];
 } | null;
 
-const CurrentOrganizationContext = createContext<OrganizationContext>(null);
+const CurrentOrganizationContext = createContext<OrganizationContext | undefined>(undefined);
 
 export function useCurrentOrganization() {
   const context = useContext(CurrentOrganizationContext);
-  if (context === null) {
+  if (context === undefined) {
     throw new Error('useCurrentOrganization must be used within an OrganizationProvider');
   }
   return context;

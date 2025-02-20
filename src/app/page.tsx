@@ -5,7 +5,7 @@ import { useCurrentOrganization } from '@/app/organization-provider';
 
 export default function Home() {
   const auth = useAuth();
-  const { current } = useCurrentOrganization();
+  const org = useCurrentOrganization();
 
   if (!auth.isAuthenticated) {
     return (
@@ -21,9 +21,14 @@ export default function Home() {
     );
   }
 
+  if (org === null) {
+    // TODO
+    return <Text>Welcome back. Your organization has been removed.</Text>;
+  }
+
   return (
     <Flex direction="column" gap="3">
-      <Heading>{current.name}</Heading>
+      <Heading>{org.current.name}</Heading>
       <Card>
         <Flex direction="column" gap="2">
           <Text>Logged in as:</Text>

@@ -9,11 +9,11 @@ import { useCurrentOrganization } from '@/app/organization-provider';
 export const NavigationBar = () => {
   const { isAuthenticated } = useAuth();
   const pathname = usePathname();
-  const { current } = useCurrentOrganization();
+  const org = useCurrentOrganization();
 
   const isActive = (path: string) => pathname.match(path);
 
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated || org === null) return null;
 
   return (
     <Flex
@@ -39,7 +39,7 @@ export const NavigationBar = () => {
             Dashboard
           </Box>
         </Link>
-        <Link href={`/organizationdetails?id=${current.id}`}>
+        <Link href={`/organizationdetails?id=${org.current.id}`}>
           <Box
             p="2"
             style={{
