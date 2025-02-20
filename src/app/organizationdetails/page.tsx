@@ -1,39 +1,12 @@
 'use client';
-import { Flex, Heading, Spinner, Table, Text } from '@radix-ui/themes';
+import { Flex, Heading, Spinner, Text } from '@radix-ui/themes';
 import { useGetOrganization } from '@/api/admin';
 import { useSearchParams } from 'next/navigation';
-import { DeleteUserDialog } from '@/app/organizationdetails/delete-user-dialog';
 import { AddUserDialog } from '@/app/organizationdetails/add-user-dialog';
 import { AddDatasourceDialog } from '@/app/organizationdetails/add-datasource-dialog';
 import { isSuccessResponse } from '@/services/typehelper';
 import { DatasourcesTable } from '@/app/organizationdetails/datasources-table';
-
-function UsersTable({ users, organizationId }: { users: { id: string; email: string }[]; organizationId: string }) {
-  return (
-    <Table.Root variant="surface">
-      <Table.Header>
-        <Table.Row>
-          <Table.ColumnHeaderCell>Email</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>User ID</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
-        </Table.Row>
-      </Table.Header>
-      <Table.Body>
-        {users.map((user) => (
-          <Table.Row key={user.id}>
-            <Table.Cell>{user.email}</Table.Cell>
-            <Table.Cell>{user.id}</Table.Cell>
-            <Table.Cell>
-              <Flex gap="2">
-                <DeleteUserDialog organizationId={organizationId} userId={user.id} />
-              </Flex>
-            </Table.Cell>
-          </Table.Row>
-        ))}
-      </Table.Body>
-    </Table.Root>
-  );
-}
+import { UsersTable } from '@/app/organizationdetails/users-table';
 
 export default function Page() {
   const searchParams = useSearchParams();
