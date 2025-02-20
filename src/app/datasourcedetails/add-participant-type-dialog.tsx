@@ -2,7 +2,7 @@ import { useCreateParticipantType, useInspectDatasource, useInspectTableInDataso
 import { FieldDescriptor, FieldMetadata } from '@/api/methods.schemas';
 import { isHttpOk } from '@/services/typehelper';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
-import { Button, Dialog, Flex, IconButton, Spinner, Table, Text, TextField } from '@radix-ui/themes';
+import { Button, Dialog, Flex, IconButton, Spinner, Switch, Table, Text, TextField } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
 
 const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId: string; tables: string[] }) => {
@@ -10,6 +10,7 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
   const [open, setOpen] = useState(false);
   const [selectedTable, setSelectedTable] = useState<string>('');
   const [fields, setFields] = useState<FieldDescriptor[]>([]);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const tableIsSelected = selectedTable !== '';
   const { data: tableData, isLoading: loadingTableData } = useInspectTableInDatasource(datasourceId, selectedTable, {
@@ -137,6 +138,10 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
                   <Text as="div" size="2" mb="1" weight="bold">
                     Fields
                   </Text>
+                  <Flex align="center" gap="2">
+                    <Switch checked={showAdvanced} onCheckedChange={setShowAdvanced} />
+                    <Text size="2">Show Advanced Options</Text>
+                  </Flex>
                   <Table.Root>
                     <Table.Header>
                       <Table.Row>
@@ -144,10 +149,10 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
                         <Table.ColumnHeaderCell>Data Type</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell justify={'center'}>Unique ID</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell justify={'center'}>Strata</Table.ColumnHeaderCell>
+                        {showAdvanced && <Table.ColumnHeaderCell justify={'center'}>Strata</Table.ColumnHeaderCell>}
                         <Table.ColumnHeaderCell justify={'center'}>Filter</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell justify={'center'}>Metric</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell justify={'center'}>Actions</Table.ColumnHeaderCell>
+                        {showAdvanced && <Table.ColumnHeaderCell justify={'center'}>Actions</Table.ColumnHeaderCell>}
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
@@ -183,18 +188,20 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
                               }}
                             />
                           </Table.Cell>
-                          <Table.Cell justify={'center'}>
-                            <input
-                              type="checkbox"
-                              checked={field.is_strata}
-                              onChange={(e) =>
-                                updateField(index, {
-                                  ...field,
-                                  is_strata: e.target.checked,
-                                } as FieldDescriptor)
-                              }
-                            />
-                          </Table.Cell>
+                          {showAdvanced && (
+                            <Table.Cell justify={'center'}>
+                              <input
+                                type="checkbox"
+                                checked={field.is_strata}
+                                onChange={(e) =>
+                                  updateField(index, {
+                                    ...field,
+                                    is_strata: e.target.checked,
+                                  } as FieldDescriptor)
+                                }
+                              />
+                            </Table.Cell>
+                          )}
                           <Table.Cell justify={'center'}>
                             <input
                               type="checkbox"
@@ -219,11 +226,13 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
                               }
                             />
                           </Table.Cell>
-                          <Table.Cell>
-                            <IconButton onClick={() => removeField(index)}>
-                              <TrashIcon />
-                            </IconButton>
-                          </Table.Cell>
+                          {showAdvanced && (
+                            <Table.Cell justify={'center'}>
+                              <IconButton onClick={() => removeField(index)}>
+                                <TrashIcon />
+                              </IconButton>
+                            </Table.Cell>
+                          )}
                         </Table.Row>
                       ))}
                     </Table.Body>

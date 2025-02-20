@@ -1,6 +1,7 @@
 'use client';
 import { FieldDescriptor, ParticipantsDef } from '@/api/methods.schemas';
-import { Flex, Table, TextField } from '@radix-ui/themes';
+import { Flex, Switch, Table, Text, TextField } from '@radix-ui/themes';
+import { useState } from 'react';
 
 export function ParticipantDefEditor({
   participantDef,
@@ -9,6 +10,7 @@ export function ParticipantDefEditor({
   participantDef: ParticipantsDef;
   onUpdate: (updated: ParticipantsDef) => void;
 }) {
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const updateField = (index: number, field: FieldDescriptor) => {
     const newFields = [...participantDef.fields];
     newFields[index] = field;
@@ -17,9 +19,12 @@ export function ParticipantDefEditor({
       fields: newFields,
     });
   };
-
   return (
     <Flex direction="column" gap="3">
+      <Flex align="center" gap="2">
+        <Switch checked={showAdvanced} onCheckedChange={setShowAdvanced} />
+        <Text size="2">Show Advanced Options</Text>
+      </Flex>
       <Table.Root>
         <Table.Header>
           <Table.Row>
@@ -27,7 +32,7 @@ export function ParticipantDefEditor({
             <Table.ColumnHeaderCell>Data Type</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell justify="center">Unique ID</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell justify="center">Strata</Table.ColumnHeaderCell>
+            {showAdvanced && <Table.ColumnHeaderCell justify="center">Strata</Table.ColumnHeaderCell>}
             <Table.ColumnHeaderCell justify="center">Filter</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell justify="center">Metric</Table.ColumnHeaderCell>
           </Table.Row>
@@ -68,18 +73,20 @@ export function ParticipantDefEditor({
                   }}
                 />
               </Table.Cell>
-              <Table.Cell style={{ textAlign: 'center' }}>
-                <input
-                  type="checkbox"
-                  checked={field.is_strata}
-                  onChange={(e) =>
-                    updateField(index, {
-                      ...field,
-                      is_strata: e.target.checked,
-                    })
-                  }
-                />
-              </Table.Cell>
+              {showAdvanced && (
+                <Table.Cell style={{ textAlign: 'center' }}>
+                  <input
+                    type="checkbox"
+                    checked={field.is_strata}
+                    onChange={(e) =>
+                      updateField(index, {
+                        ...field,
+                        is_strata: e.target.checked,
+                      })
+                    }
+                  />
+                </Table.Cell>
+              )}
               <Table.Cell style={{ textAlign: 'center' }}>
                 <input
                   type="checkbox"
