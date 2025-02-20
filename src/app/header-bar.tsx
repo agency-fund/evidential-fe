@@ -1,5 +1,5 @@
 'use client';
-import { DropdownMenu, Flex, Heading, Link } from '@radix-ui/themes';
+import { DropdownMenu, Flex, Heading, Link as RadixLink } from '@radix-ui/themes';
 import { useAuth } from '@/app/auth-provider';
 import { AvatarIcon, ExclamationTriangleIcon, ExitIcon, GearIcon, RocketIcon } from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
@@ -24,9 +24,7 @@ export function HeaderBar() {
         zIndex: 10,
       }}
     >
-      <Link href="/">
-        <Heading>{PRODUCT_NAME}</Heading>
-      </Link>
+      <Heading onClick={() => router.push('/')}>{PRODUCT_NAME}</Heading>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger>
           <AvatarIcon width="24" height="24" />
