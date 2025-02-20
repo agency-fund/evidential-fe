@@ -3,6 +3,7 @@ import { useCreateApiKey } from '@/api/admin';
 import { isHttpOk } from '@/services/typehelper';
 import { Button, Code, DataList, Dialog, Flex, IconButton, Spinner } from '@radix-ui/themes';
 import { CopyIcon, LockOpen2Icon } from '@radix-ui/react-icons';
+import { API_BASE_URL } from '@/services/constants';
 
 export const CreateApiKeyDialog = ({ datasourceId }: { datasourceId: string }) => {
   const [state, setState] = useState<'presenting-form' | 'presenting-results' | 'presenting-button'>(
@@ -10,6 +11,9 @@ export const CreateApiKeyDialog = ({ datasourceId }: { datasourceId: string }) =
   );
   const { data: createdKey, trigger: triggerCreateApiKey, isMutating } = useCreateApiKey();
 
+  const exampleCurlSnippet = isHttpOk(createdKey)
+    ? `curl -H "Authorization: Bearer ${createdKey.data.key}" -H "Datasource-ID: ${datasourceId}" ${API_BASE_URL}/_authcheck`
+    : '';
   return (
     <>
       {state === 'presenting-results' && isHttpOk(createdKey) && (
@@ -19,28 +23,34 @@ export const CreateApiKeyDialog = ({ datasourceId }: { datasourceId: string }) =
         >
           <Dialog.Content>
             <Dialog.Title>Created API key</Dialog.Title>
-            <Dialog.Description>The API key has been created. It will only be shown once.</Dialog.Description>
-            <Flex direction="column" gap="3">
-              <DataList.Root>
-                <DataList.Item>
-                  <DataList.Label minWidth="88px">ID</DataList.Label>
-                  <DataList.Value>
-                    <Code variant="ghost">{createdKey.data.id}</Code>
-                  </DataList.Value>
-                </DataList.Item>
-                <DataList.Item>
-                  <DataList.Label minWidth="88px">Key</DataList.Label>
-                  <DataList.Value>
-                    <Flex align="center" gap="2">
-                      <Code variant="ghost">{createdKey.data.key}</Code>
-                      <IconButton size="1" aria-label="Copy value" color="gray" variant="ghost">
-                        <CopyIcon onClick={() => navigator.clipboard.writeText(createdKey.data.key)} />
-                      </IconButton>
-                    </Flex>
-                  </DataList.Value>
-                </DataList.Item>
-              </DataList.Root>
-            </Flex>
+            <Dialog.Description size="2" mb="4">
+              The API key has been created. It will only be shown once. You can use it to make API calls.
+            </Dialog.Description>
+            <DataList.Root>
+              <DataList.Item>
+                <DataList.Label minWidth="88px">Key</DataList.Label>
+                <DataList.Value>
+                  <Flex align="center" gap="2">
+                    <Code variant="ghost">{createdKey.data.key}</Code>
+                    <IconButton size="1" aria-label="Copy value" color="gray" variant="ghost">
+                      <CopyIcon onClick={() => navigator.clipboard.writeText(createdKey.data.key)} />
+                    </IconButton>
+                  </Flex>
+                </DataList.Value>
+              </DataList.Item>
+              <DataList.Item>
+                <DataList.Label>Example</DataList.Label>
+                <DataList.Value>
+                  {/* TODO: replace with a more useful API call */}
+                  <Flex align={'center'} gap={'2'}>
+                    <Code variant="ghost">{exampleCurlSnippet}</Code>
+                    <IconButton size="1" aria-label="Copy value" color="gray" variant="ghost">
+                      <CopyIcon onClick={() => navigator.clipboard.writeText(exampleCurlSnippet)} />
+                    </IconButton>
+                  </Flex>
+                </DataList.Value>
+              </DataList.Item>
+            </DataList.Root>
             <Flex gap="3" mt="4" justify="end">
               <Dialog.Close>
                 <Button variant="soft" color="gray">
