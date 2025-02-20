@@ -1,6 +1,5 @@
 'use client';
-import { DropdownMenu, Flex, Heading } from '@radix-ui/themes';
-import Link from 'next/link';
+import { DropdownMenu, Flex, Heading, Link } from '@radix-ui/themes';
 import { useAuth } from '@/app/auth-provider';
 import { ExitIcon, GearIcon } from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
@@ -32,8 +31,10 @@ export function HeaderBar() {
           <GearIcon width="24" height="24" />
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DropdownMenu.Item onClick={() => router.push('/organizations')}>
-            Manage Organizations
+          <DropdownMenu.Item onClick={() => router.push('/organizations')}>Manage Organizations</DropdownMenu.Item>
+          <DropdownMenu.Separator />
+          <DropdownMenu.Item onClick={() => window.open('https://main.dev.agencyfund.org/docs', '_blank')}>
+            API Documentation
           </DropdownMenu.Item>
           <DropdownMenu.Separator />
           <DropdownMenu.Item color="red" onClick={auth.logout}>
@@ -44,4 +45,4 @@ export function HeaderBar() {
       </DropdownMenu.Root>
     </Flex>
   );
-};
+}
