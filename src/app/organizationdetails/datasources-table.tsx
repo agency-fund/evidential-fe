@@ -46,8 +46,8 @@ export function DatasourcesTable({
             </Table.Cell>
             <Table.Cell>
               <Flex gap="2">
-                <DeleteDatasourceDialog organizationId={organizationId} datasourceId={datasource.id} />
                 <EditDatasourceDialog organizationId={organizationId} datasourceId={datasource.id} />
+                <DeleteDatasourceDialog organizationId={organizationId} datasourceId={datasource.id} />
               </Flex>
             </Table.Cell>
           </Table.Row>

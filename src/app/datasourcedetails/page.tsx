@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { AddParticipantTypeDialog } from '@/app/datasourcedetails/add-participant-type-dialog';
 import { UpdateDatasourceDialog } from '@/app/datasourcedetails/update-datasource-dialog';
+import { EditDatasourceDialog } from '@/app/organizationdetails/edit-datasource-dialog';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { isSuccessResponse } from '@/services/typehelper';
 import { ParticipantTypesTable } from '@/app/datasourcedetails/participant-types-table';
@@ -71,7 +72,10 @@ export default function Page() {
           <Callout.Text>Successfully connected to datasource ({data.data.tables.length} tables)</Callout.Text>
         </Callout.Root>
       )}
-      <UpdateDatasourceDialog datasourceId={datasourceId} currentName={datasourceName || ''} />
+      <Flex gap="3">
+        <UpdateDatasourceDialog datasourceId={datasourceId} currentName={datasourceName || ''} />
+        <EditDatasourceDialog datasourceId={datasourceId} variant="button" />
+      </Flex>
 
       <Flex justify="between" align="center">
         <Heading size="4">Participant Types</Heading>

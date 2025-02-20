@@ -1,18 +1,21 @@
 'use client';
 import { Button, Dialog, Flex, IconButton, Text, TextArea, TextField } from '@radix-ui/themes';
-import { EyeClosedIcon, EyeOpenIcon, Pencil2Icon } from '@radix-ui/react-icons';
+import { EyeClosedIcon, EyeOpenIcon, GearIcon, Pencil2Icon } from '@radix-ui/react-icons';
 import { getGetOrganizationKey, getInspectDatasourceKey, useGetDatasource, useUpdateDatasource } from '@/api/admin';
 import { useEffect, useState } from 'react';
 import { mutate } from 'swr';
 import { isSuccessResponse } from '@/services/typehelper';
 import { DsnDriver, UpdateDatasourceRequest } from '@/api/methods.schemas';
 
-interface EditDatasourceDialogProps {
-  organizationId: string;
+export const EditDatasourceDialog = ({ 
+  organizationId, 
+  datasourceId,
+  variant = 'icon'
+}: { 
+  organizationId?: string;
   datasourceId: string;
-}
-
-export const EditDatasourceDialog = ({ organizationId, datasourceId }: EditDatasourceDialogProps) => {
+  variant?: 'icon' | 'button';
+}) => {
   const { trigger: updateDatasource } = useUpdateDatasource(datasourceId);
   const { data, isLoading } = useGetDatasource(datasourceId);
   const [open, setOpen] = useState(false);
@@ -94,9 +97,16 @@ export const EditDatasourceDialog = ({ organizationId, datasourceId }: EditDatas
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger>
-        <IconButton color="gray" variant="soft">
-          <Pencil2Icon />
-        </IconButton>
+        {variant === 'icon' ? (
+          <IconButton color="gray" variant="soft">
+            <Pencil2Icon />
+          </IconButton>
+        ) : (
+          <Button>
+            <GearIcon />
+            Configure Connection
+          </Button>
+        )}
       </Dialog.Trigger>
 
       <Dialog.Content>
