@@ -3,7 +3,7 @@
 ## Getting Started
 
 1. Start your xngin apiserver backend.
-2. Run the frontend development server with:
+1. Run the frontend development server with:
 
 ```bash
 npm run dev

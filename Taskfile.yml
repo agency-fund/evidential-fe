@@ -8,3 +8,4 @@ tasks:
   lint: npx next lint
   build: npm run build
   railway-build: docker build -t xngin-dash -f Dockerfile.railway .
+  railway-run: docker run --rm -it -p 3000:3000 xngin-dash

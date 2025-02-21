@@ -2,9 +2,7 @@ import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  // App is only exported as a static bundle; we aren't using any server-side NextJS features.
-  output: 'export',
-  distDir: 'dist',
+  output: 'standalone',
 };
 
 export default withSentryConfig(nextConfig, {
