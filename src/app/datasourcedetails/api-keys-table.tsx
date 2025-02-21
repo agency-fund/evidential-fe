@@ -2,9 +2,9 @@
 import { ApiKeySummary } from '@/api/methods.schemas';
 import { useState } from 'react';
 import { getListApiKeysKey, useDeleteApiKey } from '@/api/admin';
-import { AlertDialog, Button, Flex, IconButton, Table } from '@radix-ui/themes';
+import { AlertDialog, Button, Flex, IconButton, Table, Text, Tooltip } from '@radix-ui/themes';
 import { mutate } from 'swr';
-import { TrashIcon } from '@radix-ui/react-icons';
+import { InfoCircledIcon, TrashIcon } from '@radix-ui/react-icons';
 
 export function ApiKeysTable({ apiKeys }: { apiKeys: ApiKeySummary[] }) {
   const [confirmingDeleteForKeyId, setConfirmingDeleteForKeyId] = useState<string | null>(null);
@@ -53,7 +53,14 @@ export function ApiKeysTable({ apiKeys }: { apiKeys: ApiKeySummary[] }) {
       <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeaderCell>Key ID</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>
+              <Tooltip content="Use key IDs to distinguish API keys from one another.">
+                <Text>
+                  Key ID
+                  <InfoCircledIcon style={{ verticalAlign: 'middle', marginLeft: '0.25rem' }} />
+                </Text>
+              </Tooltip>
+            </Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>

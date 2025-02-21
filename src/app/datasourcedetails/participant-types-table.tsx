@@ -1,6 +1,6 @@
 'use client';
 import { useListParticipantTypes } from '@/api/admin';
-import { Table, Text } from '@radix-ui/themes';
+import { Container, Table, Text } from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
 import { isHttpOk } from '@/services/typehelper';
 import Link from 'next/link';

@@ -36,11 +36,10 @@ export default function Page() {
 
   return (
     <Flex direction="column" gap="3">
-      <Flex justify="between" align="center">
-        <Heading>{organization.name}</Heading>
+      <Heading>{organization.name}</Heading>
+      <Flex gap={'3'}>
         <RenameOrganizationDialog organizationId={organizationId} currentName={organization.name} />
       </Flex>
-
       <Flex direction="column" gap="3">
         <Flex justify="between" align="center">
           <Heading size="4">Users</Heading>

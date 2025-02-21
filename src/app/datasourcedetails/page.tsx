@@ -1,5 +1,5 @@
 'use client';
-import { Callout, Flex, Heading, Text } from '@radix-ui/themes';
+import { Callout, Container, Flex, Heading, Text } from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { ApiKeysSection } from './api-keys-section';
@@ -12,6 +12,7 @@ import { EditDatasourceDialog } from '@/app/organizationdetails/edit-datasource-
 import { isHttpOk } from '@/services/typehelper';
 import { ParticipantTypesTable } from '@/app/datasourcedetails/participant-types-table';
 import { FailedToConnectToDatasource } from '@/app/datasourcedetails/failed-to-connect-to-datasource';
+import { ParticipantTypesSection } from '@/app/datasourcedetails/participant-types-section';
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -63,8 +64,11 @@ export default function Page() {
     <Flex direction="column" gap="3">
       <Heading>Datasource Details: {datasourceName}</Heading>
       <Text>
-        Back to organization <Link href={`/organizationdetails?id=${organizationId}`}>{organizationName}</Link>
+        Back to: <Link href={`/organizationdetails?id=${organizationId}`}>{organizationName}</Link>
       </Text>
+      <Flex gap="3">
+        <EditDatasourceDialog datasourceId={datasourceId} variant="button" />
+      </Flex>
       {inspectDatasourceData.status !== 200 ? (
         <FailedToConnectToDatasource data={inspectDatasourceData} datasourceId={datasourceId} />
       ) : (
@@ -77,16 +81,8 @@ export default function Page() {
           </Callout.Text>
         </Callout.Root>
       )}
-      <Flex gap="3">
-        <UpdateDatasourceDialog datasourceId={datasourceId} currentName={datasourceName || ''} />
-        <EditDatasourceDialog datasourceId={datasourceId} variant="button" />
-      </Flex>
 
-      <Flex justify="between" align="center">
-        <Heading size="4">Participant Types</Heading>
-        <AddParticipantTypeDialog datasourceId={datasourceId} />
-      </Flex>
-      <ParticipantTypesTable datasourceId={datasourceId} />
+      <ParticipantTypesSection datasourceId={datasourceId} />
       <ApiKeysSection datasourceId={datasourceId} />
     </Flex>
   );

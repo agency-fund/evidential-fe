@@ -3,10 +3,16 @@ import { getGetOrganizationKey, getListOrganizationsKey, useUpdateOrganization }
 import { useState } from 'react';
 import { Button, Dialog, Flex, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
-import { Pencil2Icon } from '@radix-ui/react-icons';
+import { GearIcon, Pencil2Icon } from '@radix-ui/react-icons';
 import { mutate } from 'swr';
 
-export function RenameOrganizationDialog({ organizationId, currentName }: { organizationId: string; currentName: string }) {
+export function RenameOrganizationDialog({
+  organizationId,
+  currentName,
+}: {
+  organizationId: string;
+  currentName: string;
+}) {
   const { trigger, isMutating } = useUpdateOrganization(organizationId);
   const [open, setOpen] = useState(false);
 
@@ -14,8 +20,8 @@ export function RenameOrganizationDialog({ organizationId, currentName }: { orga
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger>
         <Button>
-          <Pencil2Icon />
-          Rename Organization
+          <GearIcon />
+          Rename
         </Button>
       </Dialog.Trigger>
 

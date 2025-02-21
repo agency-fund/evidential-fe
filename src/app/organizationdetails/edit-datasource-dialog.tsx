@@ -67,7 +67,6 @@ export const EditDatasourceDialog = ({
     }
   }, [open, data]);
 
-
   if (isLoading || !data || !isHttpOk(data)) {
     return null;
   }
@@ -91,7 +90,7 @@ export const EditDatasourceDialog = ({
         ) : (
           <Button>
             <GearIcon />
-            Configure Connection
+            Configure
           </Button>
         )}
       </Dialog.Trigger>

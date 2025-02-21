@@ -20,7 +20,7 @@ export function ApiKeysSection({ datasourceId }: { datasourceId: string }) {
 
   return (
     <Flex direction="column" gap="3">
-      <Flex justify="between" align="center">
+      <Flex justify="between">
         <Heading size="4">API Keys</Heading>
         <CreateApiKeyDialog datasourceId={datasourceId} />
       </Flex>
