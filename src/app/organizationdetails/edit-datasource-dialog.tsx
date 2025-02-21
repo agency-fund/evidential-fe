@@ -1,5 +1,6 @@
 'use client';
-import { Button, Dialog, Flex, IconButton, Text, TextArea, TextField } from '@radix-ui/themes';
+import { Button, Dialog, Flex, IconButton, Text, TextField } from '@radix-ui/themes';
+import { ServiceAccountJsonField } from '@/app/components/service-account-json-field';
 import { EyeClosedIcon, EyeOpenIcon, GearIcon, Pencil2Icon } from '@radix-ui/react-icons';
 import {
   getGetDatasourceKey,
@@ -66,26 +67,6 @@ export const EditDatasourceDialog = ({
     }
   }, [open, data]);
 
-  const validateJson = (jsonString: string): boolean => {
-    try {
-      JSON.parse(jsonString);
-      return true;
-    } catch {
-      return false;
-    }
-  };
-
-  const handleCredentialsPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    const pastedText = e.clipboardData.getData('text');
-    try {
-      const parsedJson = JSON.parse(pastedText);
-      if (typeof parsedJson.project_id === 'string') {
-        setProjectId(parsedJson.project_id);
-      }
-    } catch {
-      // If JSON parsing fails, do nothing
-    }
-  };
 
   if (isLoading || !data || !isHttpOk(data)) {
     return null;
@@ -269,24 +250,11 @@ export const EditDatasourceDialog = ({
                     required
                   />
                 </label>
-                <label>
-                  <Text as="div" size="2" mb="1" weight="bold">
-                    Service Account JSON
-                  </Text>
-                  <TextArea
-                    name="credentials_json"
-                    value={credentialsJson}
-                    onChange={(e) => {
-                      setCredentialsJson(e.target.value);
-                      const isValid = validateJson(e.target.value);
-                      e.target.setCustomValidity(isValid ? '' : 'Please enter valid JSON');
-                    }}
-                    placeholder="Paste your service account JSON here"
-                    required
-                    style={{ height: '200px' }}
-                    onPaste={handleCredentialsPaste}
-                  />
-                </label>
+                <ServiceAccountJsonField
+                  value={credentialsJson}
+                  onChange={setCredentialsJson}
+                  onProjectIdFound={setProjectId}
+                />
               </>
             )}
           </Flex>

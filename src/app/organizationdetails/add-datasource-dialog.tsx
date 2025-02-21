@@ -1,7 +1,8 @@
 'use client';
 import { getGetOrganizationKey, getListDatasourcesKey, useCreateDatasource } from '@/api/admin';
 import { useState } from 'react';
-import { Button, Dialog, Flex, RadioGroup, Text, TextArea, TextField } from '@radix-ui/themes';
+import { Button, Dialog, Flex, RadioGroup, Text, TextField } from '@radix-ui/themes';
+import { ServiceAccountJsonField } from '@/app/components/service-account-json-field';
 import { XSpinner } from '../components/x-spinner';
 import { EyeClosedIcon, EyeOpenIcon, PlusIcon } from '@radix-ui/react-icons';
 import { BqDsnInput, Dsn } from '@/api/methods.schemas';
@@ -13,27 +14,7 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
   const [dwhType, setDwhType] = useState<'postgres' | 'bigquery'>('postgres');
   const [projectId, setProjectId] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-
-  const validateJson = (jsonString: string): boolean => {
-    try {
-      JSON.parse(jsonString);
-      return true;
-    } catch {
-      return false;
-    }
-  };
-
-  const handleCredentialsPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    const pastedText = e.clipboardData.getData('text');
-    try {
-      const parsedJson = JSON.parse(pastedText);
-      if (typeof parsedJson.project_id === 'string') {
-        setProjectId(parsedJson.project_id);
-      }
-    } catch {
-      // If JSON parsing fails, do nothing
-    }
-  };
+  const [credentialsJson, setCredentialsJson] = useState('');
 
   const visibilityToggle = (open: boolean) => {
     setDwhType('postgres');
@@ -209,23 +190,11 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                     </Text>
                     <TextField.Root name="dataset" required key={'dataset'} />
                   </label>
-                  <label>
-                    <Text as="div" size="2" mb="1" weight="bold">
-                      Service Account JSON
-                    </Text>
-                    <TextArea
-                      key={'credentials_json'}
-                      name="credentials_json"
-                      placeholder="Paste your service account JSON here"
-                      required
-                      style={{ height: '200px' }}
-                      onChange={(e) => {
-                        const isValid = validateJson(e.target.value);
-                        e.target.setCustomValidity(isValid ? '' : 'Please enter valid JSON');
-                      }}
-                      onPaste={handleCredentialsPaste}
-                    />
-                  </label>
+                  <ServiceAccountJsonField
+                    value={credentialsJson}
+                    onChange={setCredentialsJson}
+                    onProjectIdFound={setProjectId}
+                  />
                 </>
               )}
             </Flex>
