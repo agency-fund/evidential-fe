@@ -35,16 +35,14 @@ export default function RootLayout({
               <OurSwrConfig>
                 <OrganizationProvider>
                   <Flex direction="column" height={'100vh'}>
-                    <Box position={'sticky'} top={'0'}>
-                      <HeaderBar />
-                    </Box>
-                    <Flex flexGrow={'1'}>
+                    <HeaderBar />
+                    <Flex flexGrow={'1'} overflow={'hidden'}>
                       <NavigationBar />
-                      <Box flexGrow={'1'}>
+                      <Flex flexGrow={'1'} overflow={'auto'}>
                         <Container p={'4'}>
                           <Suspense>{children}</Suspense>
                         </Container>
-                      </Box>
+                      </Flex>
                     </Flex>
                   </Flex>
                 </OrganizationProvider>
