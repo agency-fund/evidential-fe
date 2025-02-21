@@ -31,6 +31,7 @@ import type {
 	ParticipantsConfig,
 	TokenInfo,
 	UpdateDatasourceRequest,
+	UpdateOrganizationRequest,
 	UpdateParticipantsTypeRequest,
 	UpdateParticipantsTypeResponse,
 } from "./methods.schemas";
@@ -388,6 +389,90 @@ export const useRemoveMemberFromOrganization = <TError = HTTPValidationError>(
 	const swrFn = getRemoveMemberFromOrganizationMutationFetcher(
 		organizationId,
 		userId,
+		requestOptions,
+	);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * Updates an organization's properties.
+
+The authenticated user must be a member of the organization.
+Currently only supports updating the organization name.
+ * @summary Update Organization
+ */
+export type updateOrganizationResponse = {
+	data: HTTPValidationError;
+	status: number;
+	headers: Headers;
+};
+
+export const getUpdateOrganizationUrl = (organizationId: string) => {
+	return `/v1/m/organizations/${organizationId}`;
+};
+
+export const updateOrganization = async (
+	organizationId: string,
+	updateOrganizationRequest: UpdateOrganizationRequest,
+	options?: RequestInit,
+): Promise<updateOrganizationResponse> => {
+	return orvalFetch<updateOrganizationResponse>(
+		getUpdateOrganizationUrl(organizationId),
+		{
+			...options,
+			method: "PATCH",
+			headers: { "Content-Type": "application/json", ...options?.headers },
+			body: JSON.stringify(updateOrganizationRequest),
+		},
+	);
+};
+
+export const getUpdateOrganizationMutationFetcher = (
+	organizationId: string,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (
+		_: Key,
+		{ arg }: { arg: UpdateOrganizationRequest },
+	): Promise<updateOrganizationResponse> => {
+		return updateOrganization(organizationId, arg, options);
+	};
+};
+export const getUpdateOrganizationMutationKey = (organizationId: string) =>
+	[`/v1/m/organizations/${organizationId}`] as const;
+
+export type UpdateOrganizationMutationResult = NonNullable<
+	Awaited<ReturnType<typeof updateOrganization>>
+>;
+export type UpdateOrganizationMutationError = HTTPValidationError;
+
+/**
+ * @summary Update Organization
+ */
+export const useUpdateOrganization = <TError = HTTPValidationError>(
+	organizationId: string,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof updateOrganization>>,
+			TError,
+			Key,
+			UpdateOrganizationRequest,
+			Awaited<ReturnType<typeof updateOrganization>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey =
+		swrOptions?.swrKey ?? getUpdateOrganizationMutationKey(organizationId);
+	const swrFn = getUpdateOrganizationMutationFetcher(
+		organizationId,
 		requestOptions,
 	);
 

@@ -982,6 +982,12 @@ export interface UpdateExperimentStartEndRequest {
 	end_date: string;
 }
 
+export type UpdateOrganizationRequestName = string | null;
+
+export interface UpdateOrganizationRequest {
+	name?: UpdateOrganizationRequestName;
+}
+
 export type UpdateParticipantsTypeRequestParticipantType = string | null;
 
 export type UpdateParticipantsTypeRequestTableName = string | null;

@@ -1,5 +1,6 @@
 'use client';
 import { Flex, Heading, Text } from '@radix-ui/themes';
+import { RenameOrganizationDialog } from './rename-organization-dialog';
 import { XSpinner } from '../components/x-spinner';
 import { useGetOrganization } from '@/api/admin';
 import { useSearchParams } from 'next/navigation';
@@ -35,7 +36,10 @@ export default function Page() {
 
   return (
     <Flex direction="column" gap="3">
-      <Heading>Settings for: {organization.name}</Heading>
+      <Flex justify="between" align="center">
+        <Heading>{organization.name}</Heading>
+        <RenameOrganizationDialog organizationId={organizationId} currentName={organization.name} />
+      </Flex>
 
       <Flex direction="column" gap="3">
         <Flex justify="between" align="center">

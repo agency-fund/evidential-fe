@@ -2,7 +2,7 @@
 import '@radix-ui/themes/styles.css';
 
 import { Geist, Geist_Mono } from 'next/font/google';
-import { Box, Container, Flex, Theme } from '@radix-ui/themes';
+import { Container, Flex, Theme } from '@radix-ui/themes';
 import { OrganizationProvider } from './providers/organization-provider';
 
 import GoogleAuthProvider from '@/app/providers/auth-provider';
