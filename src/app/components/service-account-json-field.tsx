@@ -1,5 +1,8 @@
 'use client';
-import { Text, TextArea } from '@radix-ui/themes';
+import { Text, TextArea, Callout } from '@radix-ui/themes';
+import { gcpServiceAccountSchema } from '@/services/gcp-schema';
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
+import { useState } from 'react';
 
 interface ServiceAccountJsonFieldProps {
   value: string;
@@ -8,11 +11,21 @@ interface ServiceAccountJsonFieldProps {
 }
 
 export function ServiceAccountJsonField({ value, onChange, onProjectIdFound }: ServiceAccountJsonFieldProps) {
+  const [validationError, setValidationError] = useState<string | null>(null);
+
   const validateJson = (jsonString: string): boolean => {
     try {
-      JSON.parse(jsonString);
+      const parsed = JSON.parse(jsonString);
+      const result = gcpServiceAccountSchema.safeParse(parsed);
+      if (!result.success) {
+        const errors = result.error.errors.map(err => `${err.path.join('.')}: ${err.message}`).join(', ');
+        setValidationError('Invalid service account key format: ' + errors);
+        return false;
+      }
+      setValidationError(null);
       return true;
-    } catch {
+    } catch (e) {
+      setValidationError('Invalid JSON format');
       return false;
     }
   };
@@ -34,6 +47,14 @@ export function ServiceAccountJsonField({ value, onChange, onProjectIdFound }: S
       <Text as="div" size="2" mb="1" weight="bold">
         Service Account JSON
       </Text>
+      {validationError && (
+        <Callout.Root color="red" mb="2">
+          <Callout.Icon>
+            <ExclamationTriangleIcon />
+          </Callout.Icon>
+          <Callout.Text>{validationError}</Callout.Text>
+        </Callout.Root>
+      )}
       <TextArea
         name="credentials_json"
         value={value}
