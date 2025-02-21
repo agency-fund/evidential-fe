@@ -2,12 +2,23 @@
 
 ## Getting Started
 
-1. Start your xngin apiserver backend.
-1. Run the frontend development server with:
+1. Install dependencies with:
+    ```bash
+    npm install
+    ```
 
-```bash
-npm run dev
-```
+1. Start your xngin apiserver backend with env vars `ENABLE_OIDC=1 ENABLE_ADMIN=1
+GOOGLE_OIDC_CLIENT_ID=... GOOGLE_OIDC_CLIENT_SECRET=... GOOGLE_OIDC_REDIRECT_URI=<same as NEXT_PUBLIC_XNGIN_OIDC_REDIRECT_URI>`. For more info, see the backend repo's docs
+on the [Admin API & OIDC](https://github.com/agency-fund/xngin?tab=readme-ov-file#admin-api).
+
+1. Export a number of variables for the frontend; see [`.env.example`](.env.example). If you're
+using a different redirect URI, be sure that it's also authorized in the [GCP
+console](https://console.cloud.google.com/auth/clients/) for your project.
+
+1. Run the frontend development server with:
+    ```bash
+    npm run dev
+    ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
