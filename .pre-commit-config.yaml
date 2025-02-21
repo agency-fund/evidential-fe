@@ -11,10 +11,11 @@ repos:
       - id: check-case-conflict
       - id: destroyed-symlinks
       - id: detect-private-key
+        exclude: "^src/services/gcp-schema.ts$"
       - id: end-of-file-fixer
-        exclude: ^(src/api/|public/).*$
+        exclude: "^(src/api/|public/).*$"
       - id: trailing-whitespace
-        exclude: ^(src/api/|public/).*$
+        exclude: "^(src/api/|public/).*$"
       - id: check-added-large-files
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.8.4
