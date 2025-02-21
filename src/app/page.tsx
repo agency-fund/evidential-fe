@@ -1,7 +1,7 @@
 'use client';
 import { Box, Button, Card, Flex, Heading, Text } from '@radix-ui/themes';
-import { useAuth } from '@/app/auth-provider';
-import { useCurrentOrganization } from '@/app/organization-provider';
+import { useAuth } from '@/app/providers/auth-provider';
+import { useCurrentOrganization } from '@/app/providers/organization-provider';
 
 export default function Home() {
   const auth = useAuth();

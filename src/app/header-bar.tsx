@@ -1,6 +1,6 @@
 'use client';
 import { DropdownMenu, Flex, Heading } from '@radix-ui/themes';
-import { useAuth } from '@/app/auth-provider';
+import { useAuth } from '@/app/providers/auth-provider';
 import { AvatarIcon, ExclamationTriangleIcon, ExitIcon, GearIcon, RocketIcon } from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
 import { PRODUCT_NAME, XNGIN_API_DOCS_LINK } from '@/services/constants';

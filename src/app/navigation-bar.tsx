@@ -1,10 +1,10 @@
 'use client';
 import { Box, Flex, Heading, Separator } from '@radix-ui/themes';
 import Link from 'next/link';
-import { useAuth } from '@/app/auth-provider';
+import { useAuth } from '@/app/providers/auth-provider';
 import { usePathname } from 'next/navigation';
-import { OrganizationSelector } from '@/app/organization-selector';
-import { useCurrentOrganization } from '@/app/organization-provider';
+import { OrganizationSelector } from '@/app/components/organization-selector';
+import { useCurrentOrganization } from '@/app/providers/organization-provider';
 
 export const NavigationBar = () => {
   const { isAuthenticated } = useAuth();

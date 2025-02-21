@@ -3,9 +3,9 @@
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Container, Flex, Theme } from '@radix-ui/themes';
-import { OrganizationProvider } from './organization-provider';
+import { OrganizationProvider } from './providers/organization-provider';
 import '@radix-ui/themes/styles.css';
-import GoogleAuthProvider from '@/app/auth-provider';
+import GoogleAuthProvider from '@/app/providers/auth-provider';
 import OurSwrConfig from '@/app/providers/our-swr-config';
 import { Suspense } from 'react';
 import { NavigationBar } from '@/app/navigation-bar';

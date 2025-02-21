@@ -1,7 +1,7 @@
 'use client';
 import { PropsWithChildren } from 'react';
 import { SWRConfig } from 'swr';
-import { useAuth } from '@/app/auth-provider';
+import { useAuth } from '@/app/providers/auth-provider';
 
 export default function OurSwrConfig({ children }: PropsWithChildren) {
   const auth = useAuth();

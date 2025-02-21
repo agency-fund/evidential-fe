@@ -1,6 +1,6 @@
 import { currentIdToken } from '@/app/providers/use-auth-storage';
 import { API_BASE_URL } from '@/services/constants';
-import { API_401_EVENT } from '@/app/auth-provider';
+import { API_401_EVENT } from '@/app/providers/auth-provider';
 
 const getBody = <T>(c: Response | Request): Promise<T> => {
   const contentType = c.headers.get('content-type');
