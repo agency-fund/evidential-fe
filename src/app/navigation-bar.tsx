@@ -1,5 +1,5 @@
 'use client';
-import { Box, Flex, Heading, Separator } from '@radix-ui/themes';
+import { Box, Flex, Heading, Separator, Text } from '@radix-ui/themes';
 import Link from 'next/link';
 import { useAuth } from '@/app/providers/auth-provider';
 import { usePathname } from 'next/navigation';
@@ -36,7 +36,7 @@ export const NavigationBar = () => {
               backgroundColor: isActive('/$') ? 'var(--gray-3)' : 'transparent',
             }}
           >
-            Dashboard
+            <Text>Dashboard</Text>
           </Box>
         </Link>
         <Link href={`/organizationdetails?id=${org.current.id}`}>
@@ -47,7 +47,7 @@ export const NavigationBar = () => {
               backgroundColor: isActive(`/organizationdetails`) ? 'var(--gray-3)' : 'transparent',
             }}
           >
-            Settings
+            <Text>Settings</Text>
           </Box>
         </Link>
         <Link href={`/experiments`}>
@@ -58,7 +58,7 @@ export const NavigationBar = () => {
               backgroundColor: isActive(`/experiments`) ? 'var(--gray-3)' : 'transparent',
             }}
           >
-            Experiments
+            <Text>Experiments</Text>
           </Box>
         </Link>
       </Flex>
