@@ -18,13 +18,13 @@ export function ServiceAccountJsonField({ value, onChange, onProjectIdFound }: S
       const parsed = JSON.parse(jsonString);
       const result = gcpServiceAccountSchema.safeParse(parsed);
       if (!result.success) {
-        const errors = result.error.errors.map(err => `${err.path.join('.')}: ${err.message}`).join(', ');
+        const errors = result.error.errors.map((err) => `${err.path.join('.')}: ${err.message}`).join(', ');
         setValidationError('Invalid service account key format: ' + errors);
         return false;
       }
       setValidationError(null);
       return true;
-    } catch (e) {
+    } catch {
       setValidationError('Invalid JSON format');
       return false;
     }

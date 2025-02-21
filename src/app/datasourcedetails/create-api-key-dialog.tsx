@@ -3,7 +3,7 @@ import { useCreateApiKey } from '@/api/admin';
 import { isHttpOk } from '@/services/typehelper';
 import { Button, Code, DataList, Dialog, Flex, IconButton } from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
-import { CopyIcon, LockOpen2Icon, PlusIcon } from '@radix-ui/react-icons';
+import { CopyIcon, PlusIcon } from '@radix-ui/react-icons';
 import { API_BASE_URL } from '@/services/constants';
 
 export const CreateApiKeyDialog = ({ datasourceId }: { datasourceId: string }) => {

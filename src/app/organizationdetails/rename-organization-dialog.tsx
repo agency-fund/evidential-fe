@@ -3,7 +3,7 @@ import { getGetOrganizationKey, getListOrganizationsKey, useUpdateOrganization }
 import { useState } from 'react';
 import { Button, Dialog, Flex, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
-import { GearIcon, Pencil2Icon } from '@radix-ui/react-icons';
+import { GearIcon } from '@radix-ui/react-icons';
 import { mutate } from 'swr';
 
 export function RenameOrganizationDialog({

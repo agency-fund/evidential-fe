@@ -1,16 +1,13 @@
 'use client';
-import { Callout, Container, Flex, Heading, Text } from '@radix-ui/themes';
+import { Callout, Flex, Heading, Text } from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { ApiKeysSection } from './api-keys-section';
 import { useGetDatasource, useInspectDatasource } from '@/api/admin';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { AddParticipantTypeDialog } from '@/app/datasourcedetails/add-participant-type-dialog';
-import { UpdateDatasourceDialog } from '@/app/datasourcedetails/update-datasource-dialog';
 import { EditDatasourceDialog } from '@/app/organizationdetails/edit-datasource-dialog';
 import { isHttpOk } from '@/services/typehelper';
-import { ParticipantTypesTable } from '@/app/datasourcedetails/participant-types-table';
 import { FailedToConnectToDatasource } from '@/app/datasourcedetails/failed-to-connect-to-datasource';
 import { ParticipantTypesSection } from '@/app/datasourcedetails/participant-types-section';
 
