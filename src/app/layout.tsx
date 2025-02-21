@@ -1,10 +1,10 @@
 'use client';
+import '@radix-ui/themes/styles.css';
 
 import { Geist, Geist_Mono } from 'next/font/google';
-import './globals.css';
-import { Container, Flex, Theme } from '@radix-ui/themes';
+import { Box, Container, Flex, Theme } from '@radix-ui/themes';
 import { OrganizationProvider } from './providers/organization-provider';
-import '@radix-ui/themes/styles.css';
+
 import GoogleAuthProvider from '@/app/providers/auth-provider';
 import OurSwrConfig from '@/app/providers/our-swr-config';
 import { Suspense } from 'react';
@@ -28,19 +28,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${geistSans.variable} ${geistMono.variable}`} style={{ margin: 0, padding: 0 }}>
         <Theme>
           <Suspense>
             <GoogleAuthProvider>
               <OurSwrConfig>
                 <OrganizationProvider>
-                  <Flex direction="column" minHeight={'100vh'}>
-                    <HeaderBar />
-                    <Flex>
+                  <Flex direction="column" height={'100vh'}>
+                    <Box position={'sticky'} top={'0'}>
+                      <HeaderBar />
+                    </Box>
+                    <Flex flexGrow={'1'}>
                       <NavigationBar />
-                      <Container p={'16px'} minWidth={'65vw'}>
-                        <Suspense>{children}</Suspense>
-                      </Container>
+                      <Box flexGrow={'1'}>
+                        <Container p={'4'}>
+                          <Suspense>{children}</Suspense>
+                        </Container>
+                      </Box>
                     </Flex>
                   </Flex>
                 </OrganizationProvider>

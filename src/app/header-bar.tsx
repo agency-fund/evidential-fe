@@ -15,13 +15,9 @@ export function HeaderBar() {
     <Flex
       justify="between"
       align="center"
+      p={'4'}
       style={{
         borderBottom: '1px solid var(--gray-5)',
-        padding: '16px',
-        position: 'sticky',
-        top: 0,
-        backgroundColor: 'var(--color-page-background)',
-        zIndex: 10,
       }}
     >
       <Heading onClick={() => router.push('/')}>{PRODUCT_NAME}</Heading>

@@ -20,7 +20,7 @@ export const NavigationBar = () => {
       direction="column"
       gap="3"
       width="200px"
-      height="100vh"
+      height="100%"
       p="4"
       style={{ borderRight: '1px solid var(--gray-5)' }}
     >
