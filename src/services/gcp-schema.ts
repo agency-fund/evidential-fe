@@ -2,9 +2,9 @@ import { z } from 'zod';
 
 export const gcpServiceAccountSchema = z.object({
   type: z.literal('service_account'),
-  project_id: z.string().min(1, 'Project ID cannot be empty'),
+  project_id: z.string().min(1),
   private_key_id: z.string(),
-  private_key: z.string().startsWith('-----BEGIN PRIVATE KEY-----').endsWith('-----END PRIVATE KEY-----'),
+  private_key: z.string().startsWith('-----BEGIN PRIVATE KEY-----').trim().endsWith('-----END PRIVATE KEY-----'),
   client_email: z.string().email(),
   client_id: z.string(),
   auth_uri: z.string().url(),
