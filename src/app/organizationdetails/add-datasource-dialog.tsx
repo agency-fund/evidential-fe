@@ -146,7 +146,7 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                     <Flex gap="2">
                       <TextField.Root name="password" type={showPassword ? 'text' : 'password'} required />
                       <Button type="button" variant="soft" onClick={() => setShowPassword(!showPassword)}>
-                        {showPassword ? <EyeClosedIcon /> : <EyeOpenIcon />}
+                        {showPassword ? <EyeOpenIcon /> : <EyeClosedIcon />}
                       </Button>
                     </Flex>
                   </label>

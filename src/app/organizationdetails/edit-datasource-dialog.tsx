@@ -193,7 +193,7 @@ export const EditDatasourceDialog = ({
                       required
                     />
                     <Button type="button" variant="soft" onClick={() => setShowPassword(!showPassword)}>
-                      {showPassword ? <EyeClosedIcon /> : <EyeOpenIcon />}
+                      {showPassword ? <EyeOpenIcon /> : <EyeClosedIcon />}
                     </Button>
                   </Flex>
                 </label>
