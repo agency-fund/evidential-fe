@@ -2,39 +2,24 @@
 
 ## Getting Started
 
-1. Install dependencies with:
+1. Install [Task](https://taskfile.dev/).
 
-   ```bash
-   npm install
+1. Start the server:
+
+   ```shell
+   task start
    ```
-
-1. Start your xngin apiserver backend with env vars
-   `ENABLE_OIDC=1 ENABLE_ADMIN=1 GOOGLE_OIDC_CLIENT_ID=... GOOGLE_OIDC_CLIENT_SECRET=... GOOGLE_OIDC_REDIRECT_URI=<same as NEXT_PUBLIC_XNGIN_OIDC_REDIRECT_URI>`.
-   For more info, see the backend repo's docs on the
-   [Admin API & OIDC](https://github.com/agency-fund/xngin?tab=readme-ov-file#admin-api).
-
-1. Export a number of variables for the frontend; see [`.env.example`](.env.example). If you're using a different
-   redirect URI, be sure that it's also authorized in the [GCP console](https://console.cloud.google.com/auth/clients/)
-   for your project.
-
-1. Run the frontend development server with:
-
-   ```bash
-   npm run dev
-   ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You may also want to install [Task](https://taskfile.dev/).
+   
+1. Open [http://localhost:3000](http://localhost:3000) with your browser.
 
 ## How is it built?
 
 | Capability               | Libraries                                                                                                                     |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| Framework                | NextJS, TypeScript                                                                                                            |
+| Framework                | NextJS (client only), TypeScript                                                                                              |
 | UI Components            | [Radix UI](https://www.radix-ui.com/)                                                                                         |
 | API Client               | [SWR](https://swr.vercel.app/), [Orval](https://github.com/orval-labs/orval), [custom fetcher](./src/services/orval-fetch.ts) |
-| Code Formatting          | The Orval-generated code in src/api is formatted with biome.                                                                  |
+| Code Formatting          | The Orval-generated code in src/api is formatted with biome. Use prettier for the rest.                                       |
 | Documentation Formatting | mdformat                                                                                                                      |
 
 Most of the UI was generated using [Aider](https://aider.chat/) and Anthropic Claude.
@@ -48,5 +33,5 @@ If the API changes, you can update the generated clients by running the followin
 from your local development server:
 
 ```bash
-task update-api-spec
+task genapiclient
 ```
