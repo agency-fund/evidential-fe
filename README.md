@@ -9,7 +9,7 @@
    ```shell
    task start
    ```
-   
+
 1. Open [http://localhost:3000](http://localhost:3000) with your browser.
 
 ## How is it built?

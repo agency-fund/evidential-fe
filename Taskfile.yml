@@ -16,9 +16,9 @@ env:
   NEXT_PUBLIC_XNGIN_OIDC_REDIRECT_URI: http://localhost:3000/
 tasks:
   nodedeps:
-    cmd: |            
-      CURRENT_NODE_VERSION=$(node --version | sed 's/v//')    
-      REQUIRED_NODE_VERSION=$(cat .nvmrc)            
+    cmd: |
+      CURRENT_NODE_VERSION=$(node --version | sed 's/v//')
+      REQUIRED_NODE_VERSION=$(cat .nvmrc)
       if [ "$CURRENT_NODE_VERSION" != "$REQUIRED_NODE_VERSION" ]; then
         echo "Error: node --version of $CURRENT_NODE_VERSION does not match required version $REQUIRED_NODE_VERSION from .nvmrc"
         echo "Tip: Use 'nvm use' to switch to the correct version"
@@ -30,7 +30,7 @@ tasks:
     interactive: true
     deps:
       - nodedeps
-    cmd: |      
+    cmd: |
       npm run dev
   genapiclient:
     desc: "Updates the generated API client from the apiserver running at http://localhost:8000"
