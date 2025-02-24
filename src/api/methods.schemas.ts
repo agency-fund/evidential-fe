@@ -70,7 +70,11 @@ export interface AssignResponseOutput {
  */
 export interface Assignment {
 	participant_id: string;
-	treatment_assignment: string;
+	/** UUID of the arm this participant was assigned to. Same as Arm.arm_id. */
+	arm_id: string;
+	/** The arm this participant was assigned to. Same as Arm.arm_name. */
+	arm_name: string;
+	/** List of properties and their values for this participant used for stratification or tracking metrics. */
 	strata: Strata[];
 }
 
@@ -655,6 +659,15 @@ export interface InspectDatasourceTableResponse {
 	fields: FieldMetadata[];
 }
 
+/**
+ * Describes a participant type's strata, metrics, and filters (including exemplar values).
+ */
+export interface InspectParticipantTypesResponse {
+	filters: GetFiltersResponseElement[];
+	metrics: GetMetricsResponseElement[];
+	strata: GetStrataResponseElement[];
+}
+
 export interface ListApiKeysResponse {
 	items: ApiKeySummary[];
 }
@@ -956,32 +969,6 @@ export interface UpdateDatasourceRequest {
 	dwh?: UpdateDatasourceRequestDwh;
 }
 
-/**
- * WIP to alternate interface to updating an experiment name & description.
- */
-export interface UpdateExperimentDescriptionsRequest {
-	update_type: "description";
-	/**
-	 * New experiment name.
-	 * @minLength 1
-	 */
-	experiment_name: string;
-	/**
-	 * New experiment description.
-	 * @minLength 1
-	 */
-	description: string;
-}
-
-/**
- * WIP to alternate interface to updating an experiment
- */
-export interface UpdateExperimentStartEndRequest {
-	update_type: "timestamps";
-	start_date: string;
-	end_date: string;
-}
-
 export type UpdateOrganizationRequestName = string | null;
 
 export interface UpdateOrganizationRequest {
@@ -1148,6 +1135,13 @@ export type GetMetricsParams = {
 	refresh?: boolean;
 };
 
+export type PowercheckParams = {
+	/**
+	 * Refresh the cache.
+	 */
+	refresh?: boolean;
+};
+
 export type AssignTreatmentParams = {
 	/**
 	 * Number of participants to assign.
@@ -1185,10 +1179,6 @@ export const UpdateExperimentUpdateType = {
 	timestamps: "timestamps",
 	description: "description",
 } as const;
-
-export type AltUpdateExperimentBody =
-	| UpdateExperimentStartEndRequest
-	| UpdateExperimentDescriptionsRequest;
 
 export type AuthCallbackParams = {
 	code: string;

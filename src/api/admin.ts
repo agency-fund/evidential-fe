@@ -24,6 +24,7 @@ import type {
 	HTTPValidationError,
 	InspectDatasourceResponse,
 	InspectDatasourceTableResponse,
+	InspectParticipantTypesResponse,
 	ListApiKeysResponse,
 	ListDatasourcesResponse,
 	ListOrganizationsResponse,
@@ -1189,6 +1190,88 @@ export const useCreateParticipantType = <TError = HTTPValidationError>(
 	);
 
 	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * Inspects the fields of a participant type in a datasource, returning exemplar values.
+ * @summary Inspect Participant Types
+ */
+export type inspectParticipantTypesResponse = {
+	data: InspectParticipantTypesResponse | HTTPValidationError;
+	status: number;
+	headers: Headers;
+};
+
+export const getInspectParticipantTypesUrl = (
+	datasourceId: string,
+	participantId: string,
+) => {
+	return `/v1/m/datasources/${datasourceId}/participants/${participantId}/inspect`;
+};
+
+export const inspectParticipantTypes = async (
+	datasourceId: string,
+	participantId: string,
+	options?: RequestInit,
+): Promise<inspectParticipantTypesResponse> => {
+	return orvalFetch<inspectParticipantTypesResponse>(
+		getInspectParticipantTypesUrl(datasourceId, participantId),
+		{
+			...options,
+			method: "GET",
+		},
+	);
+};
+
+export const getInspectParticipantTypesKey = (
+	datasourceId: string,
+	participantId: string,
+) =>
+	[
+		`/v1/m/datasources/${datasourceId}/participants/${participantId}/inspect`,
+	] as const;
+
+export type InspectParticipantTypesQueryResult = NonNullable<
+	Awaited<ReturnType<typeof inspectParticipantTypes>>
+>;
+export type InspectParticipantTypesQueryError = HTTPValidationError;
+
+/**
+ * @summary Inspect Participant Types
+ */
+export const useInspectParticipantTypes = <TError = HTTPValidationError>(
+	datasourceId: string,
+	participantId: string,
+	options?: {
+		swr?: SWRConfiguration<
+			Awaited<ReturnType<typeof inspectParticipantTypes>>,
+			TError
+		> & { swrKey?: Key; enabled?: boolean };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const isEnabled =
+		swrOptions?.enabled !== false && !!(datasourceId && participantId);
+	const swrKey =
+		swrOptions?.swrKey ??
+		(() =>
+			isEnabled
+				? getInspectParticipantTypesKey(datasourceId, participantId)
+				: null);
+	const swrFn = () =>
+		inspectParticipantTypes(datasourceId, participantId, requestOptions);
+
+	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
+		swrKey,
+		swrFn,
+		swrOptions,
+	);
 
 	return {
 		swrKey,

@@ -10,13 +10,9 @@ import useSWRMutation from "swr/mutation";
 import type { SWRMutationConfiguration } from "swr/mutation";
 import { orvalFetch } from "../services/orval-fetch";
 import type {
-	AltUpdateExperimentBody,
 	AssignRequest,
 	AssignResponseOutput,
 	AssignTreatmentParams,
-	AssignmentFileParams,
-	CommitExperimentParams,
-	CommitRequest,
 	GetFiltersParams,
 	GetFiltersResponse,
 	GetMetricsParams,
@@ -26,9 +22,7 @@ import type {
 	HTTPValidationError,
 	PowerRequest,
 	PowerResponseOutput,
-	UpdateExperimentParams,
-	WebhookResponse,
-	WebhookUpdateCommitRequest,
+	PowercheckParams,
 } from "./methods.schemas";
 
 type SecondParameter<T extends (...args: any) => any> = Parameters<T>[1];
@@ -261,15 +255,26 @@ export type powercheckResponse = {
 	headers: Headers;
 };
 
-export const getPowercheckUrl = () => {
-	return `/v1/power`;
+export const getPowercheckUrl = (params?: PowercheckParams) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	return normalizedParams.size
+		? `/v1/power?${normalizedParams.toString()}`
+		: `/v1/power`;
 };
 
 export const powercheck = async (
 	powerRequest: PowerRequest,
+	params?: PowercheckParams,
 	options?: RequestInit,
 ): Promise<powercheckResponse> => {
-	return orvalFetch<powercheckResponse>(getPowercheckUrl(), {
+	return orvalFetch<powercheckResponse>(getPowercheckUrl(params), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
@@ -278,16 +283,18 @@ export const powercheck = async (
 };
 
 export const getPowercheckMutationFetcher = (
+	params?: PowercheckParams,
 	options?: SecondParameter<typeof orvalFetch>,
 ) => {
 	return (
 		_: Key,
 		{ arg }: { arg: PowerRequest },
 	): Promise<powercheckResponse> => {
-		return powercheck(arg, options);
+		return powercheck(arg, params, options);
 	};
 };
-export const getPowercheckMutationKey = () => [`/v1/power`] as const;
+export const getPowercheckMutationKey = (params?: PowercheckParams) =>
+	[`/v1/power`, ...(params ? [params] : [])] as const;
 
 export type PowercheckMutationResult = NonNullable<
 	Awaited<ReturnType<typeof powercheck>>
@@ -297,20 +304,23 @@ export type PowercheckMutationError = HTTPValidationError;
 /**
  * @summary Check power given an experiment and audience specification.
  */
-export const usePowercheck = <TError = HTTPValidationError>(options?: {
-	swr?: SWRMutationConfiguration<
-		Awaited<ReturnType<typeof powercheck>>,
-		TError,
-		Key,
-		PowerRequest,
-		Awaited<ReturnType<typeof powercheck>>
-	> & { swrKey?: string };
-	request?: SecondParameter<typeof orvalFetch>;
-}) => {
+export const usePowercheck = <TError = HTTPValidationError>(
+	params?: PowercheckParams,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof powercheck>>,
+			TError,
+			Key,
+			PowerRequest,
+			Awaited<ReturnType<typeof powercheck>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
 	const { swr: swrOptions, request: requestOptions } = options ?? {};
 
-	const swrKey = swrOptions?.swrKey ?? getPowercheckMutationKey();
-	const swrFn = getPowercheckMutationFetcher(requestOptions);
+	const swrKey = swrOptions?.swrKey ?? getPowercheckMutationKey(params);
+	const swrFn = getPowercheckMutationFetcher(params, requestOptions);
 
 	const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
@@ -394,341 +404,6 @@ export const useAssignTreatment = <TError = HTTPValidationError>(
 
 	const swrKey = swrOptions?.swrKey ?? getAssignTreatmentMutationKey(params);
 	const swrFn = getAssignTreatmentMutationFetcher(params, requestOptions);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-/**
- * @summary Retrieve all participant assignments for the given experiment_id.
- */
-export type assignmentFileResponse = {
-	data: WebhookResponse | HTTPValidationError | WebhookResponse;
-	status: number;
-	headers: Headers;
-};
-
-export const getAssignmentFileUrl = (params: AssignmentFileParams) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
-
-	return normalizedParams.size
-		? `/v1/assignment-file?${normalizedParams.toString()}`
-		: `/v1/assignment-file`;
-};
-
-export const assignmentFile = async (
-	params: AssignmentFileParams,
-	options?: RequestInit,
-): Promise<assignmentFileResponse> => {
-	return orvalFetch<assignmentFileResponse>(getAssignmentFileUrl(params), {
-		...options,
-		method: "GET",
-	});
-};
-
-export const getAssignmentFileKey = (params: AssignmentFileParams) =>
-	[`/v1/assignment-file`, ...(params ? [params] : [])] as const;
-
-export type AssignmentFileQueryResult = NonNullable<
-	Awaited<ReturnType<typeof assignmentFile>>
->;
-export type AssignmentFileQueryError = HTTPValidationError | WebhookResponse;
-
-/**
- * @summary Retrieve all participant assignments for the given experiment_id.
- */
-export const useAssignmentFile = <
-	TError = HTTPValidationError | WebhookResponse,
->(
-	params: AssignmentFileParams,
-	options?: {
-		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof assignmentFile>>,
-			TError
-		> & { swrKey?: Key; enabled?: boolean };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled = swrOptions?.enabled !== false;
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() => (isEnabled ? getAssignmentFileKey(params) : null));
-	const swrFn = () => assignmentFile(params, requestOptions);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-/**
- * @summary Commit an experiment to the database.
- */
-export type commitExperimentResponse = {
-	data: WebhookResponse | HTTPValidationError | WebhookResponse;
-	status: number;
-	headers: Headers;
-};
-
-export const getCommitExperimentUrl = (params: CommitExperimentParams) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
-
-	return normalizedParams.size
-		? `/v1/commit?${normalizedParams.toString()}`
-		: `/v1/commit`;
-};
-
-export const commitExperiment = async (
-	commitRequest: CommitRequest,
-	params: CommitExperimentParams,
-	options?: RequestInit,
-): Promise<commitExperimentResponse> => {
-	return orvalFetch<commitExperimentResponse>(getCommitExperimentUrl(params), {
-		...options,
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(commitRequest),
-	});
-};
-
-export const getCommitExperimentMutationFetcher = (
-	params: CommitExperimentParams,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (
-		_: Key,
-		{ arg }: { arg: CommitRequest },
-	): Promise<commitExperimentResponse> => {
-		return commitExperiment(arg, params, options);
-	};
-};
-export const getCommitExperimentMutationKey = (
-	params: CommitExperimentParams,
-) => [`/v1/commit`, ...(params ? [params] : [])] as const;
-
-export type CommitExperimentMutationResult = NonNullable<
-	Awaited<ReturnType<typeof commitExperiment>>
->;
-export type CommitExperimentMutationError =
-	| HTTPValidationError
-	| WebhookResponse;
-
-/**
- * @summary Commit an experiment to the database.
- */
-export const useCommitExperiment = <
-	TError = HTTPValidationError | WebhookResponse,
->(
-	params: CommitExperimentParams,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof commitExperiment>>,
-			TError,
-			Key,
-			CommitRequest,
-			Awaited<ReturnType<typeof commitExperiment>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey = swrOptions?.swrKey ?? getCommitExperimentMutationKey(params);
-	const swrFn = getCommitExperimentMutationFetcher(params, requestOptions);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-/**
- * @summary Update an existing experiment's timestamps or description (experiment and arms)
- */
-export type updateExperimentResponse = {
-	data: WebhookResponse | HTTPValidationError | WebhookResponse;
-	status: number;
-	headers: Headers;
-};
-
-export const getUpdateExperimentUrl = (params: UpdateExperimentParams) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
-
-	return normalizedParams.size
-		? `/v1/update-commit?${normalizedParams.toString()}`
-		: `/v1/update-commit`;
-};
-
-export const updateExperiment = async (
-	webhookUpdateCommitRequest: WebhookUpdateCommitRequest,
-	params: UpdateExperimentParams,
-	options?: RequestInit,
-): Promise<updateExperimentResponse> => {
-	return orvalFetch<updateExperimentResponse>(getUpdateExperimentUrl(params), {
-		...options,
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(webhookUpdateCommitRequest),
-	});
-};
-
-export const getUpdateExperimentMutationFetcher = (
-	params: UpdateExperimentParams,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (
-		_: Key,
-		{ arg }: { arg: WebhookUpdateCommitRequest },
-	): Promise<updateExperimentResponse> => {
-		return updateExperiment(arg, params, options);
-	};
-};
-export const getUpdateExperimentMutationKey = (
-	params: UpdateExperimentParams,
-) => [`/v1/update-commit`, ...(params ? [params] : [])] as const;
-
-export type UpdateExperimentMutationResult = NonNullable<
-	Awaited<ReturnType<typeof updateExperiment>>
->;
-export type UpdateExperimentMutationError =
-	| HTTPValidationError
-	| WebhookResponse;
-
-/**
- * @summary Update an existing experiment's timestamps or description (experiment and arms)
- */
-export const useUpdateExperiment = <
-	TError = HTTPValidationError | WebhookResponse,
->(
-	params: UpdateExperimentParams,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof updateExperiment>>,
-			TError,
-			Key,
-			WebhookUpdateCommitRequest,
-			Awaited<ReturnType<typeof updateExperiment>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey = swrOptions?.swrKey ?? getUpdateExperimentMutationKey(params);
-	const swrFn = getUpdateExperimentMutationFetcher(params, requestOptions);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-/**
- * @summary Update an existing experiment. (limited update capabilities)
- */
-export type altUpdateExperimentResponse = {
-	data: WebhookResponse | HTTPValidationError | WebhookResponse;
-	status: number;
-	headers: Headers;
-};
-
-export const getAltUpdateExperimentUrl = (experimentId: string) => {
-	return `/v1/experiment/${experimentId}`;
-};
-
-export const altUpdateExperiment = async (
-	experimentId: string,
-	altUpdateExperimentBody: AltUpdateExperimentBody,
-	options?: RequestInit,
-): Promise<altUpdateExperimentResponse> => {
-	return orvalFetch<altUpdateExperimentResponse>(
-		getAltUpdateExperimentUrl(experimentId),
-		{
-			...options,
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...options?.headers },
-			body: JSON.stringify(altUpdateExperimentBody),
-		},
-	);
-};
-
-export const getAltUpdateExperimentMutationFetcher = (
-	experimentId: string,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (
-		_: Key,
-		{ arg }: { arg: AltUpdateExperimentBody },
-	): Promise<altUpdateExperimentResponse> => {
-		return altUpdateExperiment(experimentId, arg, options);
-	};
-};
-export const getAltUpdateExperimentMutationKey = (experimentId: string) =>
-	[`/v1/experiment/${experimentId}`] as const;
-
-export type AltUpdateExperimentMutationResult = NonNullable<
-	Awaited<ReturnType<typeof altUpdateExperiment>>
->;
-export type AltUpdateExperimentMutationError =
-	| HTTPValidationError
-	| WebhookResponse;
-
-/**
- * @summary Update an existing experiment. (limited update capabilities)
- */
-export const useAltUpdateExperiment = <
-	TError = HTTPValidationError | WebhookResponse,
->(
-	experimentId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof altUpdateExperiment>>,
-			TError,
-			Key,
-			AltUpdateExperimentBody,
-			Awaited<ReturnType<typeof altUpdateExperiment>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ?? getAltUpdateExperimentMutationKey(experimentId);
-	const swrFn = getAltUpdateExperimentMutationFetcher(
-		experimentId,
-		requestOptions,
-	);
 
 	const query = useSWRMutation(swrKey, swrFn, swrOptions);
 

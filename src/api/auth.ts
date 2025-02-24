@@ -16,59 +16,6 @@ import type {
 type SecondParameter<T extends (...args: any) => any> = Parameters<T>[1];
 
 /**
- * @summary Index
- */
-export type indexResponse = {
-	data: unknown;
-	status: number;
-	headers: Headers;
-};
-
-export const getIndexUrl = () => {
-	return `/v1/a/oidc/`;
-};
-
-export const index = async (options?: RequestInit): Promise<indexResponse> => {
-	return orvalFetch<indexResponse>(getIndexUrl(), {
-		...options,
-		method: "GET",
-	});
-};
-
-export const getIndexKey = () => [`/v1/a/oidc/`] as const;
-
-export type IndexQueryResult = NonNullable<Awaited<ReturnType<typeof index>>>;
-export type IndexQueryError = unknown;
-
-/**
- * @summary Index
- */
-export const useIndex = <TError = unknown>(options?: {
-	swr?: SWRConfiguration<Awaited<ReturnType<typeof index>>, TError> & {
-		swrKey?: Key;
-		enabled?: boolean;
-	};
-	request?: SecondParameter<typeof orvalFetch>;
-}) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled = swrOptions?.enabled !== false;
-	const swrKey =
-		swrOptions?.swrKey ?? (() => (isEnabled ? getIndexKey() : null));
-	const swrFn = () => index(requestOptions);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-/**
  * OAuth callback endpoint that exchanges the authorization code for tokens, and returns the id_token to the client.
 
 Only relevant for PKCE.
