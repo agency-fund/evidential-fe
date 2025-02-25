@@ -1,5 +1,11 @@
 'use client';
-import { useGetParticipantTypes, useInspectParticipantTypes, useUpdateParticipantType } from '@/api/admin';
+import {
+  getGetParticipantTypesKey,
+  getInspectParticipantTypesKey,
+  useGetParticipantTypes,
+  useInspectParticipantTypes,
+  useUpdateParticipantType,
+} from '@/api/admin';
 import { ParticipantsDef } from '@/api/methods.schemas';
 import { ParticipantDefEditor } from '@/app/participanttypedetails/edit-participant-def';
 import { isHttpOk } from '@/services/typehelper';
@@ -8,6 +14,7 @@ import { XSpinner } from '../components/x-spinner';
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { InspectParticipantTypesSummary } from '@/app/participanttypedetails/inspect-participant-types-summary';
+import { mutate } from 'swr';
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -21,8 +28,14 @@ export default function Page() {
       enabled: datasourceId !== null && participantType !== null,
     },
   });
-  const { data: inspectData } = useInspectParticipantTypes(datasourceId!, participantType!, {
-    swr: { enabled: datasourceId !== null && participantType !== null, revalidateOnFocus: false },
+  const {
+    data: inspectData,
+    isLoading: inspectLoading,
+    isValidating: inspectValidating,
+  } = useInspectParticipantTypes(datasourceId!, participantType!, {
+    swr: {
+      enabled: datasourceId !== null && participantType !== null,
+    },
   });
   const { trigger: updateParticipantType } = useUpdateParticipantType(datasourceId!, participantType!);
 
@@ -62,9 +75,11 @@ export default function Page() {
   const handleSave = async () => {
     if (!editedDef) return;
 
-    await updateParticipantType({
+    updateParticipantType({
       fields: editedDef.fields,
-    });
+    })
+      .then(() => mutate(getGetParticipantTypesKey(datasourceId!, participantType!)))
+      .then(() => mutate(getInspectParticipantTypesKey(datasourceId!, participantType!)));
   };
 
   return (
@@ -76,7 +91,11 @@ export default function Page() {
         </Flex>
       </Text>
 
-      <InspectParticipantTypesSummary data={inspectData} />
+      {inspectLoading || inspectValidating ? (
+        <XSpinner message={`Inspecting participant type ${participantType}...`} />
+      ) : (
+        <InspectParticipantTypesSummary data={inspectData} />
+      )}
 
       {showEditor && (
         <>

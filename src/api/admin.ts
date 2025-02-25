@@ -1197,7 +1197,7 @@ export const useCreateParticipantType = <TError = HTTPValidationError>(
 	};
 };
 /**
- * Inspects the fields of a participant type in a datasource, returning exemplar values.
+ * Returns filter, strata, and metric field metadata for a participant type, including exemplars for filter fields.
  * @summary Inspect Participant Types
  */
 export type inspectParticipantTypesResponse = {

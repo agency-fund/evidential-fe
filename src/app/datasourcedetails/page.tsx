@@ -69,16 +69,25 @@ export default function Page() {
       {inspectDatasourceData.status !== 200 ? (
         <FailedToConnectToDatasource data={inspectDatasourceData} datasourceId={datasourceId} />
       ) : (
-        <Callout.Root color={'green'}>
-          <Callout.Icon>
-            <InfoCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>
-            Successfully connected to datasource ({inspectDatasourceData.data.tables.length} tables)
-          </Callout.Text>
-        </Callout.Root>
+        <>
+          <Callout.Root color={'green'}>
+            <Callout.Icon>
+              <InfoCircledIcon />
+            </Callout.Icon>
+            <Callout.Text>
+              Successfully connected to datasource ({inspectDatasourceData.data.tables.length} tables)
+            </Callout.Text>
+          </Callout.Root>
+          {inspectDatasourceData.data.tables.length == 0 && (
+            <Callout.Root color={'red'}>
+              <Callout.Icon>
+                <InfoCircledIcon />
+              </Callout.Icon>
+              <Callout.Text>Note: Expecting some tables? Check your connection settings.</Callout.Text>
+            </Callout.Root>
+          )}
+        </>
       )}
-
       <ParticipantTypesSection datasourceId={datasourceId} />
       <ApiKeysSection datasourceId={datasourceId} />
     </Flex>
