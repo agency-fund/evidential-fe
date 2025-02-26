@@ -22,9 +22,12 @@ import type {
 	GetDatasourceResponse,
 	GetOrganizationResponse,
 	HTTPValidationError,
+	InspectDatasourceParams,
 	InspectDatasourceResponse,
 	InspectDatasourceTableResponse,
+	InspectParticipantTypesParams,
 	InspectParticipantTypesResponse,
+	InspectTableInDatasourceParams,
 	ListApiKeysResponse,
 	ListDatasourcesResponse,
 	ListOrganizationsResponse,
@@ -914,16 +917,30 @@ export type inspectDatasourceResponse = {
 	headers: Headers;
 };
 
-export const getInspectDatasourceUrl = (datasourceId: string) => {
-	return `/v1/m/datasources/${datasourceId}/inspect`;
+export const getInspectDatasourceUrl = (
+	datasourceId: string,
+	params?: InspectDatasourceParams,
+) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	return normalizedParams.size
+		? `/v1/m/datasources/${datasourceId}/inspect?${normalizedParams.toString()}`
+		: `/v1/m/datasources/${datasourceId}/inspect`;
 };
 
 export const inspectDatasource = async (
 	datasourceId: string,
+	params?: InspectDatasourceParams,
 	options?: RequestInit,
 ): Promise<inspectDatasourceResponse> => {
 	return orvalFetch<inspectDatasourceResponse>(
-		getInspectDatasourceUrl(datasourceId),
+		getInspectDatasourceUrl(datasourceId, params),
 		{
 			...options,
 			method: "GET",
@@ -931,8 +948,14 @@ export const inspectDatasource = async (
 	);
 };
 
-export const getInspectDatasourceKey = (datasourceId: string) =>
-	[`/v1/m/datasources/${datasourceId}/inspect`] as const;
+export const getInspectDatasourceKey = (
+	datasourceId: string,
+	params?: InspectDatasourceParams,
+) =>
+	[
+		`/v1/m/datasources/${datasourceId}/inspect`,
+		...(params ? [params] : []),
+	] as const;
 
 export type InspectDatasourceQueryResult = NonNullable<
 	Awaited<ReturnType<typeof inspectDatasource>>
@@ -944,6 +967,7 @@ export type InspectDatasourceQueryError = HTTPValidationError;
  */
 export const useInspectDatasource = <TError = HTTPValidationError>(
 	datasourceId: string,
+	params?: InspectDatasourceParams,
 	options?: {
 		swr?: SWRConfiguration<
 			Awaited<ReturnType<typeof inspectDatasource>>,
@@ -957,8 +981,8 @@ export const useInspectDatasource = <TError = HTTPValidationError>(
 	const isEnabled = swrOptions?.enabled !== false && !!datasourceId;
 	const swrKey =
 		swrOptions?.swrKey ??
-		(() => (isEnabled ? getInspectDatasourceKey(datasourceId) : null));
-	const swrFn = () => inspectDatasource(datasourceId, requestOptions);
+		(() => (isEnabled ? getInspectDatasourceKey(datasourceId, params) : null));
+	const swrFn = () => inspectDatasource(datasourceId, params, requestOptions);
 
 	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
 		swrKey,
@@ -984,17 +1008,29 @@ export type inspectTableInDatasourceResponse = {
 export const getInspectTableInDatasourceUrl = (
 	datasourceId: string,
 	tableName: string,
+	params?: InspectTableInDatasourceParams,
 ) => {
-	return `/v1/m/datasources/${datasourceId}/inspect/${tableName}`;
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	return normalizedParams.size
+		? `/v1/m/datasources/${datasourceId}/inspect/${tableName}?${normalizedParams.toString()}`
+		: `/v1/m/datasources/${datasourceId}/inspect/${tableName}`;
 };
 
 export const inspectTableInDatasource = async (
 	datasourceId: string,
 	tableName: string,
+	params?: InspectTableInDatasourceParams,
 	options?: RequestInit,
 ): Promise<inspectTableInDatasourceResponse> => {
 	return orvalFetch<inspectTableInDatasourceResponse>(
-		getInspectTableInDatasourceUrl(datasourceId, tableName),
+		getInspectTableInDatasourceUrl(datasourceId, tableName, params),
 		{
 			...options,
 			method: "GET",
@@ -1005,7 +1041,12 @@ export const inspectTableInDatasource = async (
 export const getInspectTableInDatasourceKey = (
 	datasourceId: string,
 	tableName: string,
-) => [`/v1/m/datasources/${datasourceId}/inspect/${tableName}`] as const;
+	params?: InspectTableInDatasourceParams,
+) =>
+	[
+		`/v1/m/datasources/${datasourceId}/inspect/${tableName}`,
+		...(params ? [params] : []),
+	] as const;
 
 export type InspectTableInDatasourceQueryResult = NonNullable<
 	Awaited<ReturnType<typeof inspectTableInDatasource>>
@@ -1018,6 +1059,7 @@ export type InspectTableInDatasourceQueryError = HTTPValidationError;
 export const useInspectTableInDatasource = <TError = HTTPValidationError>(
 	datasourceId: string,
 	tableName: string,
+	params?: InspectTableInDatasourceParams,
 	options?: {
 		swr?: SWRConfiguration<
 			Awaited<ReturnType<typeof inspectTableInDatasource>>,
@@ -1034,10 +1076,10 @@ export const useInspectTableInDatasource = <TError = HTTPValidationError>(
 		swrOptions?.swrKey ??
 		(() =>
 			isEnabled
-				? getInspectTableInDatasourceKey(datasourceId, tableName)
+				? getInspectTableInDatasourceKey(datasourceId, tableName, params)
 				: null);
 	const swrFn = () =>
-		inspectTableInDatasource(datasourceId, tableName, requestOptions);
+		inspectTableInDatasource(datasourceId, tableName, params, requestOptions);
 
 	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
 		swrKey,
@@ -1209,17 +1251,29 @@ export type inspectParticipantTypesResponse = {
 export const getInspectParticipantTypesUrl = (
 	datasourceId: string,
 	participantId: string,
+	params?: InspectParticipantTypesParams,
 ) => {
-	return `/v1/m/datasources/${datasourceId}/participants/${participantId}/inspect`;
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	return normalizedParams.size
+		? `/v1/m/datasources/${datasourceId}/participants/${participantId}/inspect?${normalizedParams.toString()}`
+		: `/v1/m/datasources/${datasourceId}/participants/${participantId}/inspect`;
 };
 
 export const inspectParticipantTypes = async (
 	datasourceId: string,
 	participantId: string,
+	params?: InspectParticipantTypesParams,
 	options?: RequestInit,
 ): Promise<inspectParticipantTypesResponse> => {
 	return orvalFetch<inspectParticipantTypesResponse>(
-		getInspectParticipantTypesUrl(datasourceId, participantId),
+		getInspectParticipantTypesUrl(datasourceId, participantId, params),
 		{
 			...options,
 			method: "GET",
@@ -1230,9 +1284,11 @@ export const inspectParticipantTypes = async (
 export const getInspectParticipantTypesKey = (
 	datasourceId: string,
 	participantId: string,
+	params?: InspectParticipantTypesParams,
 ) =>
 	[
 		`/v1/m/datasources/${datasourceId}/participants/${participantId}/inspect`,
+		...(params ? [params] : []),
 	] as const;
 
 export type InspectParticipantTypesQueryResult = NonNullable<
@@ -1246,6 +1302,7 @@ export type InspectParticipantTypesQueryError = HTTPValidationError;
 export const useInspectParticipantTypes = <TError = HTTPValidationError>(
 	datasourceId: string,
 	participantId: string,
+	params?: InspectParticipantTypesParams,
 	options?: {
 		swr?: SWRConfiguration<
 			Awaited<ReturnType<typeof inspectParticipantTypes>>,
@@ -1262,10 +1319,15 @@ export const useInspectParticipantTypes = <TError = HTTPValidationError>(
 		swrOptions?.swrKey ??
 		(() =>
 			isEnabled
-				? getInspectParticipantTypesKey(datasourceId, participantId)
+				? getInspectParticipantTypesKey(datasourceId, participantId, params)
 				: null);
 	const swrFn = () =>
-		inspectParticipantTypes(datasourceId, participantId, requestOptions);
+		inspectParticipantTypes(
+			datasourceId,
+			participantId,
+			params,
+			requestOptions,
+		);
 
 	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
 		swrKey,
