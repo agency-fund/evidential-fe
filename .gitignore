@@ -40,8 +40,14 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 dist
+
+# AI noise
 .aider*
 CONVENTIONS.md
+*.context
+prompts/
+
+# OpenAPI specs fetched from the apiserver backend (`task genapiclient`)
 openapi.json
 
 # Sentry Config File
