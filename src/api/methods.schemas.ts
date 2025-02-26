@@ -550,23 +550,33 @@ export interface GetFiltersResponseDiscrete {
 }
 
 export type GetFiltersResponseElement =
-	| GetFiltersResponseNumeric
+	| GetFiltersResponseNumericOrDate
 	| GetFiltersResponseDiscrete;
 
 /**
  * The minimum observed value.
  */
-export type GetFiltersResponseNumericMin = number | number | null;
+export type GetFiltersResponseNumericOrDateMin =
+	| string
+	| string
+	| number
+	| number
+	| null;
 
 /**
  * The maximum observed value.
  */
-export type GetFiltersResponseNumericMax = number | number | null;
+export type GetFiltersResponseNumericOrDateMax =
+	| string
+	| string
+	| number
+	| number
+	| null;
 
 /**
- * Describes a numeric filter variable.
+ * Describes a numeric or date filter variable.
  */
-export interface GetFiltersResponseNumeric {
+export interface GetFiltersResponseNumericOrDate {
 	/**
 	 * Name of the field.
 	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
@@ -577,9 +587,9 @@ export interface GetFiltersResponseNumeric {
 	relations: Relation[];
 	description: string;
 	/** The minimum observed value. */
-	min: GetFiltersResponseNumericMin;
+	min: GetFiltersResponseNumericOrDateMin;
 	/** The maximum observed value. */
-	max: GetFiltersResponseNumericMax;
+	max: GetFiltersResponseNumericOrDateMax;
 }
 
 /**
@@ -1183,4 +1193,25 @@ export const UpdateExperimentUpdateType = {
 export type AuthCallbackParams = {
 	code: string;
 	code_verifier: string;
+};
+
+export type InspectDatasourceParams = {
+	/**
+	 * Refresh the cache.
+	 */
+	refresh?: boolean;
+};
+
+export type InspectTableInDatasourceParams = {
+	/**
+	 * Refresh the cache.
+	 */
+	refresh?: boolean;
+};
+
+export type InspectParticipantTypesParams = {
+	/**
+	 * Refresh the cache.
+	 */
+	refresh?: boolean;
 };

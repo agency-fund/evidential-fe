@@ -19,11 +19,15 @@ export default function Page() {
       enabled: datasourceId !== null,
     },
   });
-  const { data: inspectDatasourceData, isLoading: inspectDatasourceLoading } = useInspectDatasource(datasourceId!, {
-    swr: {
-      enabled: datasourceId !== null,
+  const { data: inspectDatasourceData, isLoading: inspectDatasourceLoading } = useInspectDatasource(
+    datasourceId!,
+    {},
+    {
+      swr: {
+        enabled: datasourceId !== null,
+      },
     },
-  });
+  );
   const isLoading = inspectDatasourceLoading || datasourceDetailsLoading;
   if (isLoading) {
     return <XSpinner message="Loading datasource details..." />;

@@ -32,11 +32,16 @@ export default function Page() {
     data: inspectData,
     isLoading: inspectLoading,
     isValidating: inspectValidating,
-  } = useInspectParticipantTypes(datasourceId!, participantType!, {
-    swr: {
-      enabled: datasourceId !== null && participantType !== null,
+  } = useInspectParticipantTypes(
+    datasourceId!,
+    participantType!,
+    {},
+    {
+      swr: {
+        enabled: datasourceId !== null && participantType !== null,
+      },
     },
-  });
+  );
   const { trigger: updateParticipantType } = useUpdateParticipantType(datasourceId!, participantType!);
 
   if (!datasourceId || !participantType) {

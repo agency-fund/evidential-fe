@@ -14,11 +14,16 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const tableIsSelected = selectedTable !== '';
-  const { data: tableData, isLoading: loadingTableData } = useInspectTableInDatasource(datasourceId, selectedTable, {
-    swr: {
-      enabled: tableIsSelected,
+  const { data: tableData, isLoading: loadingTableData } = useInspectTableInDatasource(
+    datasourceId,
+    selectedTable,
+    {},
+    {
+      swr: {
+        enabled: tableIsSelected,
+      },
     },
-  });
+  );
 
   const updateSelectedTable = (table: string) => {
     setSelectedTable(table);
