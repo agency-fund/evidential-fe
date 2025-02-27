@@ -131,7 +131,7 @@ export const EditDatasourceDialog = ({
               await mutate(getGetOrganizationKey(organizationId));
             }
             await mutate(getGetDatasourceKey(datasourceId));
-            await mutate(getInspectDatasourceKey(datasourceId));
+            await mutate(getInspectDatasourceKey(datasourceId, {}));
             setOpen(false);
           }}
         >

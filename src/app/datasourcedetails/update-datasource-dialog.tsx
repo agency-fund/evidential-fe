@@ -34,7 +34,7 @@ export const UpdateDatasourceDialog = ({
               await trigger({
                 name,
               });
-              await mutate(getInspectDatasourceKey(datasourceId));
+              await mutate(getInspectDatasourceKey(datasourceId, {}));
               setOpen(false);
             }}
           >

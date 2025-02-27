@@ -84,7 +84,7 @@ export default function Page() {
       fields: editedDef.fields,
     })
       .then(() => mutate(getGetParticipantTypesKey(datasourceId!, participantType!)))
-      .then(() => mutate(getInspectParticipantTypesKey(datasourceId!, participantType!)));
+      .then(() => mutate(getInspectParticipantTypesKey(datasourceId!, participantType!, {})));
   };
 
   return (
