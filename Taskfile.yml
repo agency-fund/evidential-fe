@@ -5,6 +5,10 @@ env:
   NPM_CONFIG_FUND: "false"
   NPM_CONFIG_UPDATE_NOTIFIER: "false"
 
+  # Sentry doesn't work with Turbopack but we don't care because we don't use Sentry in local development and Turbopack
+  # is only being used in local dev. This silences some warnings.
+  SENTRY_SUPPRESS_TURBOPACK_WARNING: "1"
+
   # The OAuth Client Credentials Client ID for handling Google signins on this application.
   NEXT_PUBLIC_XNGIN_GOOGLE_CLIENT_ID: 222213100775-qa1ajcrk48il70itcbdcvgr9ib5t08uf.apps.googleusercontent.com
   # The base URL of the xngin API server. Code will append the paths to the API endpoints (e.g. v1/m/apikeys, filters).
