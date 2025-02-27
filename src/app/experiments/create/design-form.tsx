@@ -5,6 +5,7 @@ import {
   Card,
   Flex,
   Heading,
+  HoverCard,
   SegmentedControl,
   Select,
   Spinner,
@@ -185,10 +186,9 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
                     .filter((m) => m.field_name !== formData.primaryMetric)
                     .map((metric) => {
                       const isSelected = formData.secondaryMetrics.includes(metric.field_name);
-                      return (
+                      const badge = (
                         <Badge
                           size={'3'}
-                          key={metric.field_name}
                           variant={isSelected ? 'solid' : 'outline'}
                           color={isSelected ? 'blue' : 'gray'}
                           style={{ cursor: 'pointer' }}
@@ -205,6 +205,18 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
                           {metric.field_name}
                         </Badge>
                       );
+                      if (metric.description) {
+                        return (
+                          <HoverCard.Root key={metric.field_name}>
+                            <HoverCard.Trigger>{badge}</HoverCard.Trigger>
+                            <HoverCard.Content maxWidth="300px">
+                              <Flex gap="4">{metric.description}</Flex>
+                            </HoverCard.Content>
+                          </HoverCard.Root>
+                        );
+                      } else {
+                        return <Text key={metric.field_name}>{badge}</Text>;
+                      }
                     })}
                 </Flex>
               )}
