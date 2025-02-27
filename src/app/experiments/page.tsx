@@ -1,8 +1,7 @@
 'use client';
-import { Button, Flex, Heading, Table } from '@radix-ui/themes';
+import { Badge, Button, Flex, Heading, Table } from '@radix-ui/themes';
 import Link from 'next/link';
-import { PlusIcon } from '@radix-ui/react-icons';
-import { Badge } from '@radix-ui/themes';
+import { DownloadIcon, PlusIcon } from '@radix-ui/react-icons';
 
 // Mock data for experiments
 const experiments = [
@@ -98,9 +97,15 @@ export default function Page() {
               <Table.Cell>{experiment.endDate}</Table.Cell>
               <Table.Cell>{experiment.hypothesis}</Table.Cell>
               <Table.Cell>
-                <Button variant="soft" size="1">
-                  View
-                </Button>
+                <Flex direction={'row'} gap={'2'}>
+                  <Button variant="soft" size="1">
+                    View
+                  </Button>
+                  <Button variant="soft" size="1">
+                    <DownloadIcon />
+                    CSV
+                  </Button>
+                </Flex>
               </Table.Cell>
             </Table.Row>
           ))}
