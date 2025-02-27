@@ -234,7 +234,12 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
                           </Table.Cell>
                           {showAdvanced && (
                             <Table.Cell justify={'center'}>
-                              <IconButton onClick={() => removeField(index)}>
+                              <IconButton
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  removeField(index);
+                                }}
+                              >
                                 <TrashIcon />
                               </IconButton>
                             </Table.Cell>
