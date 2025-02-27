@@ -5,6 +5,7 @@ import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { Button, Dialog, Flex, IconButton, Spinner, Switch, Table, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
 import { useEffect, useState } from 'react';
+import { GenericErrorCallout } from '@/app/components/generic-error';
 
 const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId: string; tables: string[] }) => {
   const { trigger, isMutating } = useCreateParticipantType(datasourceId);
@@ -12,6 +13,7 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
   const [selectedTable, setSelectedTable] = useState<string>('');
   const [fields, setFields] = useState<FieldDescriptor[]>([]);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [error, setError] = useState<string>('');
 
   const tableIsSelected = selectedTable !== '';
   const { data: tableData, isLoading: loadingTableData } = useInspectTableInDatasource(
@@ -28,6 +30,7 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
   const updateSelectedTable = (table: string) => {
     setSelectedTable(table);
     setFields([]);
+    setError('');
   };
 
   useEffect(() => {
@@ -82,22 +85,29 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
               const fd = new FormData(event.currentTarget);
               const participant_type = fd.get('participant_type') as string;
               const table_name = fd.get('table_name') as string;
-
-              await trigger({
+              setError('');
+              const response = await trigger({
                 participant_type,
                 schema_def: {
                   table_name,
                   fields: fields,
                 },
               });
-              setOpen(false);
-              setFields([]);
+              if (response.status === 200) {
+                setOpen(false);
+                setFields([]);
+                setError('');
+              } else {
+                setError(JSON.stringify(response.data));
+              }
             }}
           >
             <Dialog.Title>Add Participant Type</Dialog.Title>
             <Dialog.Description size="2" mb="4">
               Define a new participant type for this datasource.
             </Dialog.Description>
+
+            {error !== '' && <GenericErrorCallout title={'Failed to save participant type'} message={error} />}
 
             <Flex direction="column" gap="3">
               <label>
