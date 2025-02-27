@@ -14,7 +14,7 @@ import {
   TextField,
 } from '@radix-ui/themes';
 import { ExperimentFormData } from './page';
-import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
+import { LightningBoltIcon, PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { useInspectParticipantTypes } from '@/api/admin';
 import { isHttpOk } from '@/services/typehelper';
 import {
@@ -25,6 +25,7 @@ import {
   GetMetricsResponseElement,
   Relation,
 } from '@/api/methods.schemas';
+import { PowerCheckSection } from '@/app/experiments/create/power-check-section';
 
 // TODO: booleans should only offer a tri-state (Null, True, False) for values
 const TEXT_BOX_TYPES: string[] = [
@@ -404,6 +405,13 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
               />
             </Flex>
           </Flex>
+        </Card>
+
+        <Card>
+          <Heading size="4" mb="4">
+            <LightningBoltIcon /> Power Check
+          </Heading>
+          <PowerCheckSection />
         </Card>
 
         <Flex gap="3" justify="end">
