@@ -1,8 +1,8 @@
 'use client';
-import { Button, Card, Flex, Heading, Table, Text } from '@radix-ui/themes';
+import { Button, Callout, Card, Flex, Heading, Table, Text } from '@radix-ui/themes';
 import { ExperimentFormData } from './page';
-import { DownloadIcon } from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
+import { InfoCircledIcon } from '@radix-ui/react-icons';
 
 interface ConfirmationFormProps {
   formData: ExperimentFormData;
@@ -127,10 +127,12 @@ export function ConfirmationForm({ formData, onBack }: ConfirmationFormProps) {
         </Table.Root>
       </Card>
       <Flex gap="3" justify="between">
-        <Button variant="soft">
-          <DownloadIcon />
-          Export assignments
-        </Button>
+        <Callout.Root variant={'soft'}>
+          <Callout.Icon>
+            <InfoCircledIcon />
+          </Callout.Icon>
+          <Callout.Text>Assignments will be downloadable after the experiment is saved.</Callout.Text>
+        </Callout.Root>
         <Flex gap="3">
           <Button variant="soft" onClick={onBack}>
             Back
