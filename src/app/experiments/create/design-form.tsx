@@ -348,7 +348,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
           <Heading size="4" mb="4">
             Experiment Parameters
           </Heading>
-          <Flex direction="column" gap="3">
+          <Flex direction="row" gap="3">
             <Flex direction="column" gap="2">
               <Text as="label" size="2" weight="bold">
                 Confidence (%)
