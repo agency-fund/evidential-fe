@@ -85,64 +85,64 @@ export function InitialForm({ formData, onFormDataChange, onNext }: InitialFormP
 
   return (
     <form onSubmit={handleSubmit}>
-      <Card>
-        <Flex direction="column" gap="3">
-          <Text as="label" size="2" weight="bold">
-            Data Source & Participants Type
-          </Text>
+      <Flex direction="column" gap="4">
+        <Card>
+          <Flex direction="column" gap="3">
+            <Text as="label" size="2" weight="bold">
+              Data Source & Participants Type
+            </Text>
 
-          {!datasourcesData || !isHttpOk(datasourcesData) ? (
-            <Text color="gray">Loading datasources...</Text>
-          ) : (
-            <Flex direction="row" gap="2">
-              <Select.Root value={selectedDatasource} onValueChange={setSelectedDatasource}>
-                <Select.Trigger placeholder="Select a datasource" />
-                <Select.Content>
-                  {datasourcesData.data.items
-                    .filter((ds) => org && ds.organization_id === org.current.id)
-                    .map((datasource) => (
-                      <Select.Item key={datasource.id} value={datasource.id}>
-                        {datasource.name} ({datasource.driver === 'bigquery' ? 'Google BigQuery' : 'PostgreSQL'})
-                      </Select.Item>
-                    ))}
-                </Select.Content>
-              </Select.Root>
-
-              {selectedDatasource &&
-                (loadingParticipantTypes ? (
-                  <Flex align="center" gap="2">
-                    <Spinner size="1" />
-                    <Text size="2">Loading participant types...</Text>
-                  </Flex>
-                ) : !participantTypesData || !isHttpOk(participantTypesData) ? (
-                  <Text color="gray">No participant types available</Text>
-                ) : (
-                  <Select.Root
-                    value={formData.participantType || ''}
-                    onValueChange={(value) =>
-                      onFormDataChange({
-                        ...formData,
-                        datasourceId: selectedDatasource,
-                        participantType: value,
-                      })
-                    }
-                  >
-                    <Select.Trigger placeholder="Select a participant type" />
-                    <Select.Content>
-                      {participantTypesData.data.items.map((pt) => (
-                        <Select.Item key={pt.participant_type} value={pt.participant_type}>
-                          {pt.participant_type}
+            {!datasourcesData || !isHttpOk(datasourcesData) ? (
+              <Text color="gray">Loading datasources...</Text>
+            ) : (
+              <Flex direction="row" gap="2">
+                <Select.Root value={selectedDatasource} onValueChange={setSelectedDatasource}>
+                  <Select.Trigger placeholder="Select a datasource" />
+                  <Select.Content>
+                    {datasourcesData.data.items
+                      .filter((ds) => org && ds.organization_id === org.current.id)
+                      .map((datasource) => (
+                        <Select.Item key={datasource.id} value={datasource.id}>
+                          {datasource.name} ({datasource.driver === 'bigquery' ? 'Google BigQuery' : 'PostgreSQL'})
                         </Select.Item>
                       ))}
-                    </Select.Content>
-                  </Select.Root>
-                ))}
-            </Flex>
-          )}
-        </Flex>
-      </Card>
+                  </Select.Content>
+                </Select.Root>
 
-      <Flex direction="column" gap="4">
+                {selectedDatasource &&
+                  (loadingParticipantTypes ? (
+                    <Flex align="center" gap="2">
+                      <Spinner size="1" />
+                      <Text size="2">Loading participant types...</Text>
+                    </Flex>
+                  ) : !participantTypesData || !isHttpOk(participantTypesData) ? (
+                    <Text color="gray">No participant types available</Text>
+                  ) : (
+                    <Select.Root
+                      value={formData.participantType || ''}
+                      onValueChange={(value) =>
+                        onFormDataChange({
+                          ...formData,
+                          datasourceId: selectedDatasource,
+                          participantType: value,
+                        })
+                      }
+                    >
+                      <Select.Trigger placeholder="Select a participant type" />
+                      <Select.Content>
+                        {participantTypesData.data.items.map((pt) => (
+                          <Select.Item key={pt.participant_type} value={pt.participant_type}>
+                            {pt.participant_type}
+                          </Select.Item>
+                        ))}
+                      </Select.Content>
+                    </Select.Root>
+                  ))}
+              </Flex>
+            )}
+          </Flex>
+        </Card>
+
         <Card>
           <Flex direction="column" gap="2">
             <Text as="label" size="2" weight="bold">
