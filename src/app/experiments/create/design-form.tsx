@@ -1,5 +1,6 @@
 'use client';
 import {
+  Badge,
   Button,
   Card,
   Flex,
@@ -179,26 +180,33 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
                   No metrics available for this participant type
                 </Text>
               ) : (
-                <Select.Root
-                  value={formData.secondaryMetrics[0] || ''}
-                  onValueChange={(value) => {
-                    onFormDataChange({
-                      ...formData,
-                      secondaryMetrics: value ? [value] : [],
-                    });
-                  }}
-                >
-                  <Select.Trigger placeholder="Select a metric" />
-                  <Select.Content>
-                    {metricFields
-                      .filter((m) => m.field_name !== formData.primaryMetric)
-                      .map((metric) => (
-                        <Select.Item key={metric.field_name} value={metric.field_name}>
-                          {metric.field_name} ({metric.data_type})
-                        </Select.Item>
-                      ))}
-                  </Select.Content>
-                </Select.Root>
+                <Flex gap="2" wrap="wrap">
+                  {metricFields
+                    .filter((m) => m.field_name !== formData.primaryMetric)
+                    .map((metric) => {
+                      const isSelected = formData.secondaryMetrics.includes(metric.field_name);
+                      return (
+                        <Badge
+                          size={'3'}
+                          key={metric.field_name}
+                          variant={isSelected ? 'solid' : 'outline'}
+                          color={isSelected ? 'blue' : 'gray'}
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => {
+                            const newSecondaryMetrics = isSelected
+                              ? formData.secondaryMetrics.filter((m) => m !== metric.field_name)
+                              : [...formData.secondaryMetrics, metric.field_name];
+                            onFormDataChange({
+                              ...formData,
+                              secondaryMetrics: newSecondaryMetrics,
+                            });
+                          }}
+                        >
+                          {metric.field_name}
+                        </Badge>
+                      );
+                    })}
+                </Flex>
               )}
             </Flex>
           </Flex>
