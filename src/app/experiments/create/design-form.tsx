@@ -151,19 +151,21 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
                   No metrics available for this participant type
                 </Text>
               ) : (
-                <Select.Root
-                  value={formData.primaryMetric}
-                  onValueChange={(value) => onFormDataChange({ ...formData, primaryMetric: value })}
-                >
-                  <Select.Trigger placeholder="Select a metric" />
-                  <Select.Content>
-                    {metricFields.map((metric) => (
-                      <Select.Item key={metric.field_name} value={metric.field_name}>
-                        {metric.field_name} ({metric.data_type})
-                      </Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Root>
+                <Flex>
+                  <Select.Root
+                    value={formData.primaryMetric}
+                    onValueChange={(value) => onFormDataChange({ ...formData, primaryMetric: value })}
+                  >
+                    <Select.Trigger placeholder="Select a metric" />
+                    <Select.Content>
+                      {metricFields.map((metric) => (
+                        <Select.Item key={metric.field_name} value={metric.field_name}>
+                          {metric.field_name} ({metric.data_type})
+                        </Select.Item>
+                      ))}
+                    </Select.Content>
+                  </Select.Root>
+                </Flex>
               )}
             </Flex>
 
