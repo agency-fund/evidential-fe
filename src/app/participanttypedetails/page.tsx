@@ -1,27 +1,17 @@
 'use client';
-import {
-  getGetParticipantTypesKey,
-  getInspectParticipantTypesKey,
-  useGetParticipantTypes,
-  useInspectParticipantTypes,
-  useUpdateParticipantType,
-} from '@/api/admin';
-import { ParticipantsDef } from '@/api/methods.schemas';
-import { ParticipantDefEditor } from '@/app/participanttypedetails/edit-participant-def';
+import { useGetParticipantTypes, useInspectParticipantTypes } from '@/api/admin';
 import { isHttpOk } from '@/services/typehelper';
-import { Button, Flex, Heading, Switch, Text } from '@radix-ui/themes';
+import { Flex, Heading, Text } from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
 import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
 import { InspectParticipantTypesSummary } from '@/app/participanttypedetails/inspect-participant-types-summary';
-import { mutate } from 'swr';
+import Link from 'next/link';
+import { EditParticipantTypeDialog } from '@/app/participanttypedetails/edit-participant-type-dialog';
 
 export default function Page() {
   const searchParams = useSearchParams();
   const datasourceId = searchParams.get('datasource_id');
   const participantType = searchParams.get('participant_type');
-  const [editedDef, setEditedDef] = useState<ParticipantsDef | null>(null);
-  const [showEditor, setShowEditor] = useState(false);
 
   const { data, isLoading, error } = useGetParticipantTypes(datasourceId!, participantType!, {
     swr: {
@@ -42,7 +32,6 @@ export default function Page() {
       },
     },
   );
-  const { trigger: updateParticipantType } = useUpdateParticipantType(datasourceId!, participantType!);
 
   if (!datasourceId || !participantType) {
     return <Text>Error: Missing required parameters</Text>;
@@ -77,41 +66,23 @@ export default function Page() {
     );
   }
 
-  const handleSave = async () => {
-    if (!editedDef) return;
-
-    updateParticipantType({
-      fields: editedDef.fields,
-    })
-      .then(() => mutate(getGetParticipantTypesKey(datasourceId!, participantType!)))
-      .then(() => mutate(getInspectParticipantTypesKey(datasourceId!, participantType!, {})));
-  };
-
   return (
     <Flex direction="column" gap="3">
       <Heading>Participant Type Details: {participantType}</Heading>
-      <Text as="label" size="2">
-        <Flex gap="2">
-          <Switch size="1" checked={showEditor} onCheckedChange={setShowEditor} /> Show participant type editor
-        </Flex>
+      <Text>
+        Back to <Link href={`/datasourcedetails?id=${datasourceId}`}>Datasource</Link>
       </Text>
-
+      <Flex gap={'3'}>
+        <EditParticipantTypeDialog
+          datasourceId={datasourceId}
+          participantType={participantType}
+          participantConfig={participantConfig}
+        />
+      </Flex>
       {inspectLoading || inspectValidating ? (
         <XSpinner message={`Inspecting participant type ${participantType}...`} />
       ) : (
         <InspectParticipantTypesSummary data={inspectData} />
-      )}
-
-      {showEditor && (
-        <>
-          <Button onClick={handleSave} disabled={!editedDef}>
-            Save Changes
-          </Button>
-          <ParticipantDefEditor
-            participantDef={editedDef || (participantConfig as ParticipantsDef)}
-            onUpdate={setEditedDef}
-          />
-        </>
       )}
     </Flex>
   );
