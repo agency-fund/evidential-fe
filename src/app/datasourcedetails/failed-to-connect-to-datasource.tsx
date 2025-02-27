@@ -3,7 +3,10 @@ import { CopyIcon, InfoCircledIcon } from '@radix-ui/react-icons';
 import { EditDatasourceDialog } from '@/app/organizationdetails/edit-datasource-dialog';
 
 export function FailedToConnectToDatasource({ data, datasourceId }: { data: { data: unknown }; datasourceId: string }) {
-  const debugValue = JSON.stringify(data.data);
+  let debugValue = JSON.stringify(data.data, null, 2);
+  if (data.data !== null && typeof data.data === 'object' && 'detail' in data.data) {
+    debugValue = String(data.data['detail']);
+  }
   return (
     <Flex direction="column" gap="3">
       <Callout.Root color={'red'}>
