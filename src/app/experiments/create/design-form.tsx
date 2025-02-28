@@ -15,12 +15,14 @@ import {
 } from '@radix-ui/themes';
 import { ExperimentFormData } from './page';
 import { LightningBoltIcon, PlusIcon, TrashIcon } from '@radix-ui/react-icons';
-import { useInspectParticipantTypes } from '@/api/admin';
+import { useCreateExperimentWithAssignment, useInspectParticipantTypes } from '@/api/admin';
 import { isHttpOk } from '@/services/typehelper';
 import {
   AudienceSpecFilter,
-  AudienceSpecFilterValue,
+  CreateExperimentRequest,
   DataType,
+  DesignSpecMetricRequest,
+  FilterValueTypes,
   GetFiltersResponseElement,
   GetMetricsResponseElement,
   Relation,
@@ -44,6 +46,31 @@ interface DesignFormProps {
   onBack: () => void;
 }
 
+const convertFormDataToCreateExperimentRequest = (formData: ExperimentFormData): CreateExperimentRequest => {
+  return {
+    design_spec: {
+      experiment_name: formData.name,
+      arms: Array.from(formData.arms.map((arm) => ({ ...arm, arm_id: null }))),
+      end_date: formData.endDate,
+      start_date: formData.startDate,
+      description: formData.hypothesis,
+      metrics: [...formData.primaryMetric!, ...formData.secondaryMetrics].map(
+        (field_name): DesignSpecMetricRequest => ({
+          field_name: field_name,
+          metric_pct_change: 1, // TODO
+        }),
+      ),
+      strata_field_names: [],
+      experiment_id: null,
+    },
+    audience_spec: {
+      participant_type: formData.participantType!,
+      filters: formData.filters,
+    },
+    power_analyses: null, // TODO
+  };
+};
+
 export function DesignForm({ formData, onFormDataChange, onNext, onBack }: DesignFormProps) {
   const { data: participantTypesData, isLoading: loadingParticipantTypes } = useInspectParticipantTypes(
     formData.datasourceId || '',
@@ -55,6 +82,9 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
       },
     },
   );
+  const { trigger } = useCreateExperimentWithAssignment(formData.datasourceId!, {
+    chosen_n: 1000, // TODO
+  });
 
   // Extract metrics and filters from the API response
   const metricFields: GetMetricsResponseElement[] = isHttpOk(participantTypesData)
@@ -88,7 +118,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
   const updateFilter = (
     index: number,
     field: keyof AudienceSpecFilter,
-    value: Relation | AudienceSpecFilterValue | string,
+    value: Relation | FilterValueTypes | string,
   ) => {
     const newFilters = [...formData.filters];
     newFilters[index] = { ...newFilters[index], [field]: value };
@@ -107,7 +137,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
 
   const addFilterValue = (filterIndex: number) => {
     const newFilters = [...formData.filters];
-    newFilters[filterIndex].value = [...newFilters[filterIndex].value, ''] as AudienceSpecFilterValue;
+    newFilters[filterIndex].value = [...newFilters[filterIndex].value, ''] as FilterValueTypes;
     onFormDataChange({ ...formData, filters: newFilters });
   };
 
@@ -115,7 +145,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
     const newFilters = [...formData.filters];
     newFilters[filterIndex].value = newFilters[filterIndex].value.filter(
       (_, i) => i !== valueIndex,
-    ) as AudienceSpecFilterValue;
+    ) as FilterValueTypes;
     onFormDataChange({ ...formData, filters: newFilters });
   };
 
@@ -125,9 +155,16 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
     onFormDataChange({ ...formData, filters: newFilters });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onNext();
+
+    const request = convertFormDataToCreateExperimentRequest(formData);
+    const response = await trigger(request);
+    console.log('response', response);
+    if (false) {
+      // TODO
+      onNext();
+    }
   };
 
   return (

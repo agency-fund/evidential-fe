@@ -1,57 +1,28 @@
 'use client';
-import { Badge, Button, Flex, Heading, Table } from '@radix-ui/themes';
+import { Badge, Button, Flex, Heading, Table, Text } from '@radix-ui/themes';
 import Link from 'next/link';
 import { DownloadIcon, PlusIcon } from '@radix-ui/react-icons';
-
-// Mock data for experiments
-const experiments = [
-  {
-    id: '1',
-    name: 'Sourdough Fermentation Time',
-    status: 'ongoing',
-    startDate: '2024-01-01',
-    endDate: '2024-03-31',
-    hypothesis: 'Extended fermentation times (24h vs 12h) will result in more complex flavor development',
-  },
-  {
-    id: '2',
-    name: 'Coffee Bean Roasting Temperature',
-    status: 'completed',
-    startDate: '2023-11-15',
-    endDate: '2024-01-15',
-    hypothesis: 'Higher roasting temperatures will produce more bitter compounds in light roast coffee',
-  },
-  {
-    id: '3',
-    name: 'Miso Aging Duration',
-    status: 'ongoing',
-    startDate: '2023-12-01',
-    endDate: '2024-06-01',
-    hypothesis: 'Longer aging periods will increase umami flavor compounds in miso paste',
-  },
-  {
-    id: '4',
-    name: 'Pizza Dough Hydration',
-    status: 'pending',
-    startDate: '2024-03-01',
-    endDate: '2024-04-01',
-    hypothesis: 'Higher hydration levels will improve crust texture in wood-fired pizza',
-  },
-  {
-    id: '5',
-    name: 'Chocolate Tempering Method',
-    status: 'completed',
-    startDate: '2023-10-01',
-    endDate: '2023-12-31',
-    hypothesis: 'Seeding method produces more consistent crystal formation than tabling method',
-  },
-];
+import { useListDatasources, useListExperiments } from '@/api/admin';
+import { XSpinner } from '@/app/components/x-spinner';
+import { isHttpOk } from '@/services/typehelper';
+import { GenericErrorCallout } from '@/app/components/generic-error';
+import { useState } from 'react';
+import { DatasourceSelector } from '@/app/experiments/datasource-selector';
 
 const StatusBadge = ({ status }: { status: string }) => {
-  const colorMap: Record<string, { color: 'orange' | 'green' | 'gray'; variant?: 'soft' | 'outline' }> = {
+  const colorMap: Record<
+    string,
+    { color: 'orange' | 'green' | 'gray' | 'blue' | 'red'; variant?: 'soft' | 'outline' }
+  > = {
     ongoing: { color: 'orange' },
     completed: { color: 'green' },
     pending: { color: 'gray', variant: 'outline' },
+    // ExperimentState types below
+    designing: { color: 'blue', variant: 'soft' },
+    assigned: { color: 'blue' },
+    abandoned: { color: 'red', variant: 'outline' },
+    committed: { color: 'green', variant: 'outline' },
+    aborted: { color: 'red' },
   };
 
   const { color, variant = 'soft' } = colorMap[status];
@@ -63,8 +34,34 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 export default function Page() {
+  const { data: datasourcesData, isLoading: datasourcesIsLoading, error: datasourcesError } = useListDatasources();
+  const [selectedDatasource, setSelectedDatasource] = useState<string>('');
+  const {
+    data: experimentsData,
+    isLoading: experimentsIsLoading,
+    error: experimentsError,
+  } = useListExperiments(selectedDatasource!, {
+    swr: { enabled: selectedDatasource !== '' },
+  });
+
+  if (datasourcesError || (datasourcesData !== undefined && !isHttpOk(datasourcesData))) {
+    return <GenericErrorCallout title={'Error with experiments list'} message={JSON.stringify(datasourcesData)} />;
+  }
+
+  if (experimentsError || (experimentsData !== undefined && !isHttpOk(experimentsData))) {
+    return <GenericErrorCallout title={'Error with experiments list'} message={JSON.stringify(experimentsData)} />;
+  }
+
   return (
     <Flex direction="column" gap="3">
+      {datasourcesIsLoading && <XSpinner message={'Datasources list loading...'} />}
+      {datasourcesData && isHttpOk(datasourcesData) && (
+        <DatasourceSelector
+          selectedDatasource={selectedDatasource}
+          setSelectedDatasource={setSelectedDatasource}
+          datasourcesData={datasourcesData}
+        />
+      )}
       <Flex justify="between" align="center">
         <Heading>Experiments</Heading>
         <Button asChild>
@@ -73,44 +70,59 @@ export default function Page() {
           </Link>
         </Button>
       </Flex>
+      {experimentsIsLoading && (
+        <Flex>
+          <XSpinner message={'Loading experiments list...'} />
+        </Flex>
+      )}
+      {experimentsData !== undefined && isHttpOk(experimentsData) && (
+        <Flex>
+          {experimentsData.data.items.length === 0 && (
+            <Flex>
+              <Text>There are no experiments. Create one!</Text>
+            </Flex>
+          )}
+          {experimentsData.data.items.length ? (
+            <Table.Root>
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Start Date</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>End Date</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell width="30%">Hypothesis</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
+                </Table.Row>
+              </Table.Header>
 
-      <Table.Root>
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Start Date</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>End Date</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell width="30%">Hypothesis</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
-          </Table.Row>
-        </Table.Header>
-
-        <Table.Body>
-          {experiments.map((experiment) => (
-            <Table.Row key={experiment.id}>
-              <Table.Cell>{experiment.name}</Table.Cell>
-              <Table.Cell>
-                <StatusBadge status={experiment.status} />
-              </Table.Cell>
-              <Table.Cell>{experiment.startDate}</Table.Cell>
-              <Table.Cell>{experiment.endDate}</Table.Cell>
-              <Table.Cell>{experiment.hypothesis}</Table.Cell>
-              <Table.Cell>
-                <Flex direction={'row'} gap={'2'}>
-                  <Button variant="soft" size="1">
-                    View
-                  </Button>
-                  <Button variant="soft" size="1">
-                    <DownloadIcon />
-                    CSV
-                  </Button>
-                </Flex>
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.Root>
+              <Table.Body>
+                {experimentsData.data.items.map((experiment) => (
+                  <Table.Row key={experiment.design_spec.experiment_id}>
+                    <Table.Cell>{experiment.design_spec.experiment_name}</Table.Cell>
+                    <Table.Cell>
+                      <StatusBadge status={experiment.state} />
+                    </Table.Cell>
+                    <Table.Cell>{experiment.design_spec.start_date}</Table.Cell>
+                    <Table.Cell>{experiment.design_spec.end_date}</Table.Cell>
+                    <Table.Cell>{experiment.design_spec.description}</Table.Cell>
+                    <Table.Cell>
+                      <Flex direction={'row'} gap={'2'}>
+                        <Button variant="soft" size="1">
+                          View
+                        </Button>
+                        <Button variant="soft" size="1">
+                          <DownloadIcon />
+                          CSV
+                        </Button>
+                      </Flex>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Root>
+          ) : null}
+        </Flex>
+      )}
     </Flex>
   );
 }
