@@ -64,8 +64,8 @@ export default function Page() {
       )}
       <Flex justify="between" align="center">
         <Heading>Experiments</Heading>
-        <Button asChild>
-          <Link href="/experiments/create">
+        <Button asChild disabled={selectedDatasource === ''}>
+          <Link href={`/experiments/create?datasource_id=${selectedDatasource}`}>
             <PlusIcon /> Create Experiment
           </Link>
         </Button>
