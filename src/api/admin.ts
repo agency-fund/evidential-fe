@@ -52,95 +52,6 @@ import { orvalFetch } from "../services/orval-fetch";
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 /**
- * @summary Commit Experiment
- */
-export type commitExperimentResponse200 = {
-	data: unknown;
-	status: 200;
-};
-
-export type commitExperimentResponse422 = {
-	data: HTTPValidationError;
-	status: 422;
-};
-
-export type commitExperimentResponseComposite =
-	| commitExperimentResponse200
-	| commitExperimentResponse422;
-
-export type commitExperimentResponse = commitExperimentResponseComposite & {
-	headers: Headers;
-};
-
-export const getCommitExperimentUrl = (experimentId: string) => {
-	return `/v1/m/experiments/${experimentId}/commit`;
-};
-
-export const commitExperiment = async (
-	experimentId: string,
-	options?: RequestInit,
-): Promise<commitExperimentResponse> => {
-	return orvalFetch<commitExperimentResponse>(
-		getCommitExperimentUrl(experimentId),
-		{
-			...options,
-			method: "POST",
-		},
-	);
-};
-
-export const getCommitExperimentMutationFetcher = (
-	experimentId: string,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (
-		_: Key,
-		__: { arg: Arguments },
-	): Promise<commitExperimentResponse> => {
-		return commitExperiment(experimentId, options);
-	};
-};
-export const getCommitExperimentMutationKey = (experimentId: string) =>
-	[`/v1/m/experiments/${experimentId}/commit`] as const;
-
-export type CommitExperimentMutationResult = NonNullable<
-	Awaited<ReturnType<typeof commitExperiment>>
->;
-export type CommitExperimentMutationError = HTTPValidationError;
-
-/**
- * @summary Commit Experiment
- */
-export const useCommitExperiment = <TError = HTTPValidationError>(
-	experimentId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof commitExperiment>>,
-			TError,
-			Key,
-			Arguments,
-			Awaited<ReturnType<typeof commitExperiment>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ?? getCommitExperimentMutationKey(experimentId);
-	const swrFn = getCommitExperimentMutationFetcher(
-		experimentId,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-/**
  * Returns basic metadata about the authenticated caller of this method.
  * @summary Caller Identity
  */
@@ -2267,6 +2178,95 @@ export const useCreateExperimentWithAssignment = <TError = HTTPValidationError>(
 	const swrFn = getCreateExperimentWithAssignmentMutationFetcher(
 		datasourceId,
 		params,
+		requestOptions,
+	);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * @summary Commit Experiment
+ */
+export type commitExperimentResponse200 = {
+	data: unknown;
+	status: 200;
+};
+
+export type commitExperimentResponse422 = {
+	data: HTTPValidationError;
+	status: 422;
+};
+
+export type commitExperimentResponseComposite =
+	| commitExperimentResponse200
+	| commitExperimentResponse422;
+
+export type commitExperimentResponse = commitExperimentResponseComposite & {
+	headers: Headers;
+};
+
+export const getCommitExperimentUrl = (experimentId: string) => {
+	return `/v1/m/experiments/${experimentId}/commit`;
+};
+
+export const commitExperiment = async (
+	experimentId: string,
+	options?: RequestInit,
+): Promise<commitExperimentResponse> => {
+	return orvalFetch<commitExperimentResponse>(
+		getCommitExperimentUrl(experimentId),
+		{
+			...options,
+			method: "POST",
+		},
+	);
+};
+
+export const getCommitExperimentMutationFetcher = (
+	experimentId: string,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (
+		_: Key,
+		__: { arg: Arguments },
+	): Promise<commitExperimentResponse> => {
+		return commitExperiment(experimentId, options);
+	};
+};
+export const getCommitExperimentMutationKey = (experimentId: string) =>
+	[`/v1/m/experiments/${experimentId}/commit`] as const;
+
+export type CommitExperimentMutationResult = NonNullable<
+	Awaited<ReturnType<typeof commitExperiment>>
+>;
+export type CommitExperimentMutationError = HTTPValidationError;
+
+/**
+ * @summary Commit Experiment
+ */
+export const useCommitExperiment = <TError = HTTPValidationError>(
+	experimentId: string,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof commitExperiment>>,
+			TError,
+			Key,
+			Arguments,
+			Awaited<ReturnType<typeof commitExperiment>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey =
+		swrOptions?.swrKey ?? getCommitExperimentMutationKey(experimentId);
+	const swrFn = getCommitExperimentMutationFetcher(
+		experimentId,
 		requestOptions,
 	);
 

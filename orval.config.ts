@@ -4,6 +4,10 @@ export default defineConfig({
   xnginapi: {
     input: {
       target: 'openapi.json',
+      filters: {
+        mode: 'include',
+        tags: ['Admin'],
+      },
     },
     output: {
       client: 'swr',
