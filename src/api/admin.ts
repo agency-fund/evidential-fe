@@ -2677,7 +2677,7 @@ export type powerCheckResponse = powerCheckResponseComposite & {
 };
 
 export const getPowerCheckUrl = (datasourceId: string) => {
-	return `/v1/m/datasources/${datasourceId}/balance`;
+	return `/v1/m/datasources/${datasourceId}/power`;
 };
 
 export const powerCheck = async (
@@ -2705,7 +2705,7 @@ export const getPowerCheckMutationFetcher = (
 	};
 };
 export const getPowerCheckMutationKey = (datasourceId: string) =>
-	[`/v1/m/datasources/${datasourceId}/balance`] as const;
+	[`/v1/m/datasources/${datasourceId}/power`] as const;
 
 export type PowerCheckMutationResult = NonNullable<
 	Awaited<ReturnType<typeof powerCheck>>
