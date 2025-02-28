@@ -2209,16 +2209,20 @@ export type commitExperimentResponse = commitExperimentResponseComposite & {
 	headers: Headers;
 };
 
-export const getCommitExperimentUrl = (experimentId: string) => {
-	return `/v1/m/experiments/${experimentId}/commit`;
+export const getCommitExperimentUrl = (
+	datasourceId: string,
+	experimentId: string,
+) => {
+	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/commit`;
 };
 
 export const commitExperiment = async (
+	datasourceId: string,
 	experimentId: string,
 	options?: RequestInit,
 ): Promise<commitExperimentResponse> => {
 	return orvalFetch<commitExperimentResponse>(
-		getCommitExperimentUrl(experimentId),
+		getCommitExperimentUrl(datasourceId, experimentId),
 		{
 			...options,
 			method: "POST",
@@ -2227,6 +2231,7 @@ export const commitExperiment = async (
 };
 
 export const getCommitExperimentMutationFetcher = (
+	datasourceId: string,
 	experimentId: string,
 	options?: SecondParameter<typeof orvalFetch>,
 ) => {
@@ -2234,11 +2239,16 @@ export const getCommitExperimentMutationFetcher = (
 		_: Key,
 		__: { arg: Arguments },
 	): Promise<commitExperimentResponse> => {
-		return commitExperiment(experimentId, options);
+		return commitExperiment(datasourceId, experimentId, options);
 	};
 };
-export const getCommitExperimentMutationKey = (experimentId: string) =>
-	[`/v1/m/experiments/${experimentId}/commit`] as const;
+export const getCommitExperimentMutationKey = (
+	datasourceId: string,
+	experimentId: string,
+) =>
+	[
+		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/commit`,
+	] as const;
 
 export type CommitExperimentMutationResult = NonNullable<
 	Awaited<ReturnType<typeof commitExperiment>>
@@ -2249,6 +2259,7 @@ export type CommitExperimentMutationError = HTTPValidationError;
  * @summary Commit Experiment
  */
 export const useCommitExperiment = <TError = HTTPValidationError>(
+	datasourceId: string,
 	experimentId: string,
 	options?: {
 		swr?: SWRMutationConfiguration<
@@ -2264,8 +2275,10 @@ export const useCommitExperiment = <TError = HTTPValidationError>(
 	const { swr: swrOptions, request: requestOptions } = options ?? {};
 
 	const swrKey =
-		swrOptions?.swrKey ?? getCommitExperimentMutationKey(experimentId);
+		swrOptions?.swrKey ??
+		getCommitExperimentMutationKey(datasourceId, experimentId);
 	const swrFn = getCommitExperimentMutationFetcher(
+		datasourceId,
 		experimentId,
 		requestOptions,
 	);
@@ -2298,16 +2311,20 @@ export type abandonExperimentResponse = abandonExperimentResponseComposite & {
 	headers: Headers;
 };
 
-export const getAbandonExperimentUrl = (experimentId: string) => {
-	return `/v1/m/experiments/${experimentId}/abandon`;
+export const getAbandonExperimentUrl = (
+	datasourceId: string,
+	experimentId: string,
+) => {
+	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/abandon`;
 };
 
 export const abandonExperiment = async (
+	datasourceId: string,
 	experimentId: string,
 	options?: RequestInit,
 ): Promise<abandonExperimentResponse> => {
 	return orvalFetch<abandonExperimentResponse>(
-		getAbandonExperimentUrl(experimentId),
+		getAbandonExperimentUrl(datasourceId, experimentId),
 		{
 			...options,
 			method: "POST",
@@ -2316,6 +2333,7 @@ export const abandonExperiment = async (
 };
 
 export const getAbandonExperimentMutationFetcher = (
+	datasourceId: string,
 	experimentId: string,
 	options?: SecondParameter<typeof orvalFetch>,
 ) => {
@@ -2323,11 +2341,16 @@ export const getAbandonExperimentMutationFetcher = (
 		_: Key,
 		__: { arg: Arguments },
 	): Promise<abandonExperimentResponse> => {
-		return abandonExperiment(experimentId, options);
+		return abandonExperiment(datasourceId, experimentId, options);
 	};
 };
-export const getAbandonExperimentMutationKey = (experimentId: string) =>
-	[`/v1/m/experiments/${experimentId}/abandon`] as const;
+export const getAbandonExperimentMutationKey = (
+	datasourceId: string,
+	experimentId: string,
+) =>
+	[
+		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/abandon`,
+	] as const;
 
 export type AbandonExperimentMutationResult = NonNullable<
 	Awaited<ReturnType<typeof abandonExperiment>>
@@ -2338,6 +2361,7 @@ export type AbandonExperimentMutationError = HTTPValidationError;
  * @summary Abandon Experiment
  */
 export const useAbandonExperiment = <TError = HTTPValidationError>(
+	datasourceId: string,
 	experimentId: string,
 	options?: {
 		swr?: SWRMutationConfiguration<
@@ -2353,8 +2377,10 @@ export const useAbandonExperiment = <TError = HTTPValidationError>(
 	const { swr: swrOptions, request: requestOptions } = options ?? {};
 
 	const swrKey =
-		swrOptions?.swrKey ?? getAbandonExperimentMutationKey(experimentId);
+		swrOptions?.swrKey ??
+		getAbandonExperimentMutationKey(datasourceId, experimentId);
 	const swrFn = getAbandonExperimentMutationFetcher(
+		datasourceId,
 		experimentId,
 		requestOptions,
 	);
@@ -2389,7 +2415,7 @@ export type listExperimentsResponse = listExperimentsResponseComposite & {
 };
 
 export const getListExperimentsUrl = (datasourceId: string) => {
-	return `/v1/m/experiments/${datasourceId}`;
+	return `/v1/m/datasources/${datasourceId}/experiments`;
 };
 
 export const listExperiments = async (
@@ -2406,7 +2432,7 @@ export const listExperiments = async (
 };
 
 export const getListExperimentsKey = (datasourceId: string) =>
-	[`/v1/m/experiments/${datasourceId}`] as const;
+	[`/v1/m/datasources/${datasourceId}/experiments`] as const;
 
 export type ListExperimentsQueryResult = NonNullable<
 	Awaited<ReturnType<typeof listExperiments>>
@@ -2467,22 +2493,31 @@ export type getExperimentResponse = getExperimentResponseComposite & {
 	headers: Headers;
 };
 
-export const getGetExperimentUrl = (experimentId: string) => {
-	return `/v1/m/experiments/${experimentId}`;
+export const getGetExperimentUrl = (
+	datasourceId: string,
+	experimentId: string,
+) => {
+	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}`;
 };
 
 export const getExperiment = async (
+	datasourceId: string,
 	experimentId: string,
 	options?: RequestInit,
 ): Promise<getExperimentResponse> => {
-	return orvalFetch<getExperimentResponse>(getGetExperimentUrl(experimentId), {
-		...options,
-		method: "GET",
-	});
+	return orvalFetch<getExperimentResponse>(
+		getGetExperimentUrl(datasourceId, experimentId),
+		{
+			...options,
+			method: "GET",
+		},
+	);
 };
 
-export const getGetExperimentKey = (experimentId: string) =>
-	[`/v1/m/experiments/${experimentId}`] as const;
+export const getGetExperimentKey = (
+	datasourceId: string,
+	experimentId: string,
+) => [`/v1/m/datasources/${datasourceId}/experiments/${experimentId}`] as const;
 
 export type GetExperimentQueryResult = NonNullable<
 	Awaited<ReturnType<typeof getExperiment>>
@@ -2493,6 +2528,7 @@ export type GetExperimentQueryError = HTTPValidationError;
  * @summary Get Experiment
  */
 export const useGetExperiment = <TError = HTTPValidationError>(
+	datasourceId: string,
 	experimentId: string,
 	options?: {
 		swr?: SWRConfiguration<
@@ -2504,11 +2540,13 @@ export const useGetExperiment = <TError = HTTPValidationError>(
 ) => {
 	const { swr: swrOptions, request: requestOptions } = options ?? {};
 
-	const isEnabled = swrOptions?.enabled !== false && !!experimentId;
+	const isEnabled =
+		swrOptions?.enabled !== false && !!(datasourceId && experimentId);
 	const swrKey =
 		swrOptions?.swrKey ??
-		(() => (isEnabled ? getGetExperimentKey(experimentId) : null));
-	const swrFn = () => getExperiment(experimentId, requestOptions);
+		(() =>
+			isEnabled ? getGetExperimentKey(datasourceId, experimentId) : null);
+	const swrFn = () => getExperiment(datasourceId, experimentId, requestOptions);
 
 	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
 		swrKey,
@@ -2543,16 +2581,20 @@ export type getExperimentAssignmentsResponse =
 		headers: Headers;
 	};
 
-export const getGetExperimentAssignmentsUrl = (experimentId: string) => {
-	return `/v1/m/experiments/${experimentId}/assignments`;
+export const getGetExperimentAssignmentsUrl = (
+	datasourceId: string,
+	experimentId: string,
+) => {
+	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments`;
 };
 
 export const getExperimentAssignments = async (
+	datasourceId: string,
 	experimentId: string,
 	options?: RequestInit,
 ): Promise<getExperimentAssignmentsResponse> => {
 	return orvalFetch<getExperimentAssignmentsResponse>(
-		getGetExperimentAssignmentsUrl(experimentId),
+		getGetExperimentAssignmentsUrl(datasourceId, experimentId),
 		{
 			...options,
 			method: "GET",
@@ -2560,8 +2602,13 @@ export const getExperimentAssignments = async (
 	);
 };
 
-export const getGetExperimentAssignmentsKey = (experimentId: string) =>
-	[`/v1/m/experiments/${experimentId}/assignments`] as const;
+export const getGetExperimentAssignmentsKey = (
+	datasourceId: string,
+	experimentId: string,
+) =>
+	[
+		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments`,
+	] as const;
 
 export type GetExperimentAssignmentsQueryResult = NonNullable<
 	Awaited<ReturnType<typeof getExperimentAssignments>>
@@ -2572,6 +2619,7 @@ export type GetExperimentAssignmentsQueryError = HTTPValidationError;
  * @summary Get Experiment Assignments
  */
 export const useGetExperimentAssignments = <TError = HTTPValidationError>(
+	datasourceId: string,
 	experimentId: string,
 	options?: {
 		swr?: SWRConfiguration<
@@ -2583,11 +2631,16 @@ export const useGetExperimentAssignments = <TError = HTTPValidationError>(
 ) => {
 	const { swr: swrOptions, request: requestOptions } = options ?? {};
 
-	const isEnabled = swrOptions?.enabled !== false && !!experimentId;
+	const isEnabled =
+		swrOptions?.enabled !== false && !!(datasourceId && experimentId);
 	const swrKey =
 		swrOptions?.swrKey ??
-		(() => (isEnabled ? getGetExperimentAssignmentsKey(experimentId) : null));
-	const swrFn = () => getExperimentAssignments(experimentId, requestOptions);
+		(() =>
+			isEnabled
+				? getGetExperimentAssignmentsKey(datasourceId, experimentId)
+				: null);
+	const swrFn = () =>
+		getExperimentAssignments(datasourceId, experimentId, requestOptions);
 
 	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
 		swrKey,
