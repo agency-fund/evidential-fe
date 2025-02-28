@@ -2,7 +2,7 @@
 import { FieldDescriptor, ParticipantsDef } from '@/api/methods.schemas';
 import { Flex, Switch, Table, Text, TextField } from '@radix-ui/themes';
 import { useState } from 'react';
-import { isNumericDataType } from '@/services/genapi-helpers';
+import { isEligibleForUseAsMetric } from '@/services/genapi-helpers';
 
 export function ParticipantDefEditor({
   participantDef,
@@ -103,7 +103,7 @@ export function ParticipantDefEditor({
               <Table.Cell style={{ textAlign: 'center' }}>
                 <input
                   type="checkbox"
-                  disabled={!isNumericDataType(field.data_type)}
+                  disabled={!isEligibleForUseAsMetric(field.data_type)}
                   checked={field.is_metric}
                   onChange={(e) =>
                     updateField(index, {

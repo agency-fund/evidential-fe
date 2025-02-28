@@ -6,7 +6,7 @@ import { Button, Dialog, Flex, IconButton, Spinner, Switch, Table, Text, TextFie
 import { XSpinner } from '../components/x-spinner';
 import { useEffect, useState } from 'react';
 import { GenericErrorCallout } from '@/app/components/generic-error';
-import { isNumericDataType } from '@/services/genapi-helpers';
+import { isEligibleForUseAsMetric } from '@/services/genapi-helpers';
 
 const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId: string; tables: string[] }) => {
   const { trigger, isMutating } = useCreateParticipantType(datasourceId);
@@ -234,7 +234,7 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
                           <Table.Cell justify={'center'}>
                             <input
                               type="checkbox"
-                              disabled={!isNumericDataType(field.data_type)}
+                              disabled={!isEligibleForUseAsMetric(field.data_type)}
                               checked={field.is_metric}
                               onChange={(e) =>
                                 updateField(index, {
