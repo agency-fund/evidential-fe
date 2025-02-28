@@ -19,15 +19,14 @@ import { useCreateExperimentWithAssignment, useInspectParticipantTypes } from '@
 import { isHttpOk } from '@/services/typehelper';
 import {
   AudienceSpecFilter,
-  CreateExperimentRequest,
   DataType,
-  DesignSpecMetricRequest,
   FilterValueTypes,
   GetFiltersResponseElement,
   GetMetricsResponseElement,
   Relation,
 } from '@/api/methods.schemas';
 import { PowerCheckSection } from '@/app/experiments/create/power-check-section';
+import { convertFormDataToCreateExperimentRequest } from '@/app/experiments/create/helpers';
 
 // TODO: booleans should only offer a tri-state (Null, True, False) for values
 const TEXT_BOX_TYPES: string[] = [
@@ -45,33 +44,6 @@ interface DesignFormProps {
   onNext: () => void;
   onBack: () => void;
 }
-
-const convertFormDataToCreateExperimentRequest = (formData: ExperimentFormData): CreateExperimentRequest => {
-  return {
-    design_spec: {
-      experiment_name: formData.name,
-      arms: Array.from(formData.arms.map((arm) => ({ ...arm, arm_id: null }))),
-      end_date: formData.endDate,
-      start_date: formData.startDate,
-      description: formData.hypothesis,
-      metrics: [formData.primaryMetric!, ...formData.secondaryMetrics].map(
-        (field_name): DesignSpecMetricRequest => ({
-          field_name: field_name,
-          metric_pct_change: Number(formData.effectPctChange) / 100.0, // TODO: populate with effect % change
-        }),
-      ),
-      strata_field_names: [],
-      power: Number(formData.power) / 100.0,
-      alpha: 1 - Number(formData.confidence) / 100.0,
-      experiment_id: null,
-    },
-    audience_spec: {
-      participant_type: formData.participantType!,
-      filters: formData.filters,
-    },
-    power_analyses: null, // TODO
-  };
-};
 
 export function DesignForm({ formData, onFormDataChange, onNext, onBack }: DesignFormProps) {
   const { data: participantTypesData, isLoading: loadingParticipantTypes } = useInspectParticipantTypes(
@@ -163,11 +135,21 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
     const request = convertFormDataToCreateExperimentRequest(formData);
     const response = await trigger(request);
     console.log('response', response);
-    if (false) {
-      // TODO
+    if (isHttpOk(response)) {
+      // TODO: save any new data from response and call onNext
+      const newExperimentId = response.data.design_spec.experiment_id;
+      if (!newExperimentId) {
+        // TODO
+        throw new Error('No experiment ID returned from server');
+      }
+      onFormDataChange({ ...formData, experimentId: newExperimentId });
       onNext();
+    } else {
+      // TODO: handle error
     }
   };
+
+  const isNextButtonDisabled = formData.powerCheckResponse === undefined;
 
   return (
     <form onSubmit={handleSubmit}>
@@ -450,14 +432,16 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
           <Heading size="4" mb="4">
             <LightningBoltIcon /> Power Check
           </Heading>
-          <PowerCheckSection />
+          <PowerCheckSection formData={formData} onFormDataChange={onFormDataChange} />
         </Card>
 
         <Flex gap="3" justify="end">
           <Button type="button" variant="soft" onClick={onBack}>
             Back
           </Button>
-          <Button type="submit">Next</Button>
+          <Button type="submit" disabled={isNextButtonDisabled}>
+            Next
+          </Button>
         </Flex>
       </Flex>
     </form>

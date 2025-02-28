@@ -3,13 +3,30 @@ import { Button, Callout, Card, Flex, Heading, Table, Text } from '@radix-ui/the
 import { ExperimentFormData } from './page';
 import { useRouter } from 'next/navigation';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
+import { useAbandonExperiment, useCommitExperiment } from '@/api/admin';
 
 interface ConfirmationFormProps {
   formData: ExperimentFormData;
   onBack: () => void;
+  onFormDataChange: (data: ExperimentFormData) => void;
 }
 
-export function ConfirmationForm({ formData, onBack }: ConfirmationFormProps) {
+export function ConfirmationForm({ formData, onBack, onFormDataChange }: ConfirmationFormProps) {
+  const { trigger: abandon } = useAbandonExperiment(formData.datasourceId!, formData.experimentId!);
+  const { trigger: commit } = useCommitExperiment(formData.datasourceId!, formData.experimentId!);
+
+  const handleSaveCommit = async () => {
+    await commit();
+    router.push('/experiments');
+  };
+
+  const handleAbandonCommit = async () => {
+    await abandon();
+    // TODO: move these state resets to CreateExperimentPage so that all page-to-page state transitions are in one place
+    onFormDataChange({ ...formData, powerCheckResponse: undefined, experimentId: undefined });
+    onBack();
+  };
+
   const router = useRouter();
   return (
     <Flex direction="column" gap="4">
@@ -134,10 +151,10 @@ export function ConfirmationForm({ formData, onBack }: ConfirmationFormProps) {
           <Callout.Text>Assignments will be downloadable after the experiment is saved.</Callout.Text>
         </Callout.Root>
         <Flex gap="3">
-          <Button variant="soft" onClick={onBack}>
+          <Button variant="soft" onClick={handleAbandonCommit}>
             Back
           </Button>
-          <Button onClick={() => router.push('/experiments')}>Save Experiment</Button>
+          <Button onClick={handleSaveCommit}>Save Experiment</Button>
         </Flex>
       </Flex>
     </Flex>

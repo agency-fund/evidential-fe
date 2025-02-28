@@ -15,9 +15,8 @@ import {
 import { ExperimentFormData } from './page';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
-import { useListDatasources, useListParticipantTypes } from '@/api/admin';
+import { useListParticipantTypes } from '@/api/admin';
 import { isHttpOk } from '@/services/typehelper';
-import { useCurrentOrganization } from '@/app/providers/organization-provider';
 
 interface InitialFormProps {
   formData: ExperimentFormData;
@@ -26,14 +25,11 @@ interface InitialFormProps {
 }
 
 export function InitialForm({ formData, onFormDataChange, onNext }: InitialFormProps) {
-  const org = useCurrentOrganization();
-  const { data: datasourcesData } = useListDatasources();
-  const [selectedDatasource, setSelectedDatasource] = useState<string>('');
   const { data: participantTypesData, isLoading: loadingParticipantTypes } = useListParticipantTypes(
-    selectedDatasource,
+    formData.datasourceId || '',
     {
       swr: {
-        enabled: !!selectedDatasource,
+        enabled: !!formData.datasourceId,
       },
     },
   );
@@ -63,17 +59,6 @@ export function InitialForm({ formData, onFormDataChange, onNext }: InitialFormP
     setShowArmsError(formData.arms.length < 2);
   }, [formData.arms]);
 
-  // Set the first datasource as default when data loads
-  useEffect(() => {
-    if (datasourcesData && isHttpOk(datasourcesData) && datasourcesData.data.items.length > 0 && !selectedDatasource) {
-      // Filter datasources to only those in the current organization
-      const orgDatasources = datasourcesData.data.items.filter((ds) => org && ds.organization_id === org.current.id);
-      if (orgDatasources.length > 0) {
-        setSelectedDatasource(orgDatasources[0].id);
-      }
-    }
-  }, [datasourcesData, selectedDatasource, org]);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.arms.length < 2) {
@@ -92,54 +77,36 @@ export function InitialForm({ formData, onFormDataChange, onNext }: InitialFormP
               Data Source & Participants Type
             </Text>
 
-            {!datasourcesData || !isHttpOk(datasourcesData) ? (
-              <Text color="gray">Loading datasources...</Text>
-            ) : (
-              <Flex direction="row" gap="2">
-                <Select.Root value={selectedDatasource} onValueChange={setSelectedDatasource}>
-                  <Select.Trigger placeholder="Select a datasource" />
-                  <Select.Content>
-                    {datasourcesData.data.items
-                      .filter((ds) => org && ds.organization_id === org.current.id)
-                      .map((datasource) => (
-                        <Select.Item key={datasource.id} value={datasource.id}>
-                          {datasource.name} ({datasource.driver === 'bigquery' ? 'Google BigQuery' : 'PostgreSQL'})
+            <Flex direction="row" gap="2">
+              {formData.datasourceId &&
+                (loadingParticipantTypes ? (
+                  <Flex align="center" gap="2">
+                    <Spinner size="1" />
+                    <Text size="2">Loading participant types...</Text>
+                  </Flex>
+                ) : !participantTypesData || !isHttpOk(participantTypesData) ? (
+                  <Text color="gray">No participant types available</Text>
+                ) : (
+                  <Select.Root
+                    value={formData.participantType || ''}
+                    onValueChange={(value) =>
+                      onFormDataChange({
+                        ...formData,
+                        participantType: value,
+                      })
+                    }
+                  >
+                    <Select.Trigger placeholder="Select a participant type" />
+                    <Select.Content>
+                      {participantTypesData.data.items.map((pt) => (
+                        <Select.Item key={pt.participant_type} value={pt.participant_type}>
+                          {pt.participant_type}
                         </Select.Item>
                       ))}
-                  </Select.Content>
-                </Select.Root>
-
-                {selectedDatasource &&
-                  (loadingParticipantTypes ? (
-                    <Flex align="center" gap="2">
-                      <Spinner size="1" />
-                      <Text size="2">Loading participant types...</Text>
-                    </Flex>
-                  ) : !participantTypesData || !isHttpOk(participantTypesData) ? (
-                    <Text color="gray">No participant types available</Text>
-                  ) : (
-                    <Select.Root
-                      value={formData.participantType || ''}
-                      onValueChange={(value) =>
-                        onFormDataChange({
-                          ...formData,
-                          datasourceId: selectedDatasource,
-                          participantType: value,
-                        })
-                      }
-                    >
-                      <Select.Trigger placeholder="Select a participant type" />
-                      <Select.Content>
-                        {participantTypesData.data.items.map((pt) => (
-                          <Select.Item key={pt.participant_type} value={pt.participant_type}>
-                            {pt.participant_type}
-                          </Select.Item>
-                        ))}
-                      </Select.Content>
-                    </Select.Root>
-                  ))}
-              </Flex>
-            )}
+                    </Select.Content>
+                  </Select.Root>
+                ))}
+            </Flex>
           </Flex>
         </Card>
 

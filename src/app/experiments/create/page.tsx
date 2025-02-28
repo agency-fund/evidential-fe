@@ -4,9 +4,8 @@ import { InitialForm } from './initial-form';
 import { DesignForm } from './design-form';
 import { ConfirmationForm } from './confirmation-form';
 import { Box, Container, Flex, Heading } from '@radix-ui/themes';
-import { AudienceSpecFilter } from '@/api/methods.schemas';
-
-import { Arm } from '@/api/methods.schemas';
+import { Arm, AudienceSpecFilter, PowerResponseOutput } from '@/api/methods.schemas';
+import { useSearchParams } from 'next/navigation';
 
 export type ExperimentFormData = {
   name: string;
@@ -22,6 +21,10 @@ export type ExperimentFormData = {
   confidence: number;
   power: number;
   effectPctChange: number;
+  // Populated when user clicks "Power Check" on DesignForm
+  powerCheckResponse?: PowerResponseOutput;
+  // Populated when assignments are created by pressing "Next" on DesignForm
+  experimentId?: string;
 };
 
 const reasonableStartDate = () => {
@@ -40,8 +43,10 @@ const reasonableEndDate = () => {
 
 export default function CreateExperimentPage() {
   const [currentStep, setCurrentStep] = useState(1);
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState<ExperimentFormData>({
     name: 'My Experiment',
+    datasourceId: searchParams.get('datasource_id') || '',
     hypothesis: 'To the moon!',
     startDate: reasonableStartDate(),
     endDate: reasonableEndDate(),
@@ -55,6 +60,7 @@ export default function CreateExperimentPage() {
     power: 80,
     effectPctChange: 10,
   });
+  console.log('formData', formData);
 
   const handleNext = () => {
     setCurrentStep(currentStep + 1);
@@ -73,7 +79,9 @@ export default function CreateExperimentPage() {
           {currentStep === 2 && (
             <DesignForm formData={formData} onFormDataChange={setFormData} onNext={handleNext} onBack={handleBack} />
           )}
-          {currentStep === 3 && <ConfirmationForm formData={formData} onBack={handleBack} />}
+          {currentStep === 3 && (
+            <ConfirmationForm formData={formData} onFormDataChange={setFormData} onBack={handleBack} />
+          )}
         </Box>
       </Flex>
     </Container>

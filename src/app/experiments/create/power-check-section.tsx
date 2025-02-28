@@ -1,71 +1,58 @@
-import { MetricAnalysisOutput, PowerResponseOutput } from '@/api/methods.schemas';
-import { useState } from 'react';
 import { Button, Callout, Card, Flex, Spinner, Table, Text, TextField } from '@radix-ui/themes';
 import { CheckCircledIcon, CrossCircledIcon } from '@radix-ui/react-icons';
+import { ExperimentFormData } from '@/app/experiments/create/page';
+import { usePowerCheck } from '@/api/admin';
+import { convertFormDataToCreateExperimentRequest } from '@/app/experiments/create/helpers';
+import { isHttpOk } from '@/services/typehelper';
 
-const EXAMPLE_METRIC_ANALYSIS_OUTPUT: MetricAnalysisOutput = {
-  metric_spec: {
-    field_name: 'total_visits',
-  },
-  target_n: 1200,
-  sufficient_n: true,
-  target_possible: 0.08,
-  pct_change_possible: 12.5,
-  msg: {
-    type: 'sufficient',
-    msg: 'The experiment has sufficient power to detect the target effect size.',
-    source_msg: '_',
-    values: {
-      current_n: 1500,
-      required_n: 1200,
-    },
-  },
-};
-const EXAMPLE_POWER_CHECK_OUTPUT: PowerResponseOutput = {
-  analyses: [EXAMPLE_METRIC_ANALYSIS_OUTPUT],
-};
+interface PowerCheckSectionProps {
+  formData: ExperimentFormData;
+  onFormDataChange: (data: ExperimentFormData) => void;
+}
 
-// TODO: Accept a DesignSpec and AudienceSpec as props.
-export function PowerCheckSection() {
-  // TODO: This is a placeholder to simulate the API request. Replace with new powercheck API.
-  const [state, setState] = useState<'initial' | 'loading' | 'error' | 'success'>('initial');
+export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSectionProps) {
+  const { trigger, data, isMutating } = usePowerCheck(formData.datasourceId!);
+  console.log('powercheck', data);
 
-  const handlePowerCheck = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handlePowerCheck = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    setState('loading');
-    // Simulate API call
-    setTimeout(() => {
-      setState('success');
-    }, 1000);
+    const { design_spec, audience_spec } = convertFormDataToCreateExperimentRequest(formData);
+    const response = await trigger({
+      design_spec,
+      audience_spec,
+    });
+    if (isHttpOk(response)) {
+      onFormDataChange({ ...formData, powerCheckResponse: response.data });
+    }
   };
 
   return (
     <Flex direction="column" gap="3">
       <Flex direction={'row'} gap={'3'}>
-        <Button disabled={state === 'loading'} onClick={handlePowerCheck}>
-          {state === 'loading' ? 'Checking...' : 'Run Power Check'}
+        <Button disabled={isMutating} onClick={handlePowerCheck}>
+          {isMutating ? 'Checking...' : 'Run Power Check'}
         </Button>
-        {state === 'success' && (
+        {isHttpOk(data) && (
           <>
             <Text>N: </Text>
             <TextField.Root
               type="number"
-              value={EXAMPLE_POWER_CHECK_OUTPUT.analyses[0].target_n || ''}
-              onChange={() => {}}
+              value={data.data.analyses[0].target_n || 0}
+              onChange={() => onFormDataChange({ ...formData })}
             />
           </>
         )}
       </Flex>
 
-      {state === 'loading' && (
+      {isMutating && (
         <Flex align="center" gap="2">
           <Spinner size="1" />
           <Text>Analyzing metrics and population data...</Text>
         </Flex>
       )}
 
-      {state === 'success' &&
-        EXAMPLE_POWER_CHECK_OUTPUT.analyses.map((metricAnalysis, i) => (
+      {isHttpOk(data) &&
+        data.data.analyses.map((metricAnalysis, i) => (
           <Card key={i}>
             <Flex direction="column" gap="3">
               <Text weight={'bold'}>{metricAnalysis.metric_spec.field_name}</Text>
