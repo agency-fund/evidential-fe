@@ -11,8 +11,6 @@ import type { SWRMutationConfiguration } from "swr/mutation";
 import { orvalFetch } from "../services/orval-fetch";
 import type {
 	AssignmentFileParams,
-	CommitExperimentParams,
-	CommitRequest,
 	HTTPValidationError,
 	UpdateExperimentParams,
 	WebhookResponse,
@@ -90,94 +88,6 @@ export const useAssignmentFile = <
 		swrFn,
 		swrOptions,
 	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-/**
- * @summary Commit an experiment to the database.
- */
-export type commitExperimentResponse = {
-	data: WebhookResponse | HTTPValidationError | WebhookResponse;
-	status: number;
-	headers: Headers;
-};
-
-export const getCommitExperimentUrl = (params: CommitExperimentParams) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
-
-	return normalizedParams.size
-		? `/v1/commit?${normalizedParams.toString()}`
-		: `/v1/commit`;
-};
-
-export const commitExperiment = async (
-	commitRequest: CommitRequest,
-	params: CommitExperimentParams,
-	options?: RequestInit,
-): Promise<commitExperimentResponse> => {
-	return orvalFetch<commitExperimentResponse>(getCommitExperimentUrl(params), {
-		...options,
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(commitRequest),
-	});
-};
-
-export const getCommitExperimentMutationFetcher = (
-	params: CommitExperimentParams,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (
-		_: Key,
-		{ arg }: { arg: CommitRequest },
-	): Promise<commitExperimentResponse> => {
-		return commitExperiment(arg, params, options);
-	};
-};
-export const getCommitExperimentMutationKey = (
-	params: CommitExperimentParams,
-) => [`/v1/commit`, ...(params ? [params] : [])] as const;
-
-export type CommitExperimentMutationResult = NonNullable<
-	Awaited<ReturnType<typeof commitExperiment>>
->;
-export type CommitExperimentMutationError =
-	| HTTPValidationError
-	| WebhookResponse;
-
-/**
- * @summary Commit an experiment to the database.
- */
-export const useCommitExperiment = <
-	TError = HTTPValidationError | WebhookResponse,
->(
-	params: CommitExperimentParams,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof commitExperiment>>,
-			TError,
-			Key,
-			CommitRequest,
-			Awaited<ReturnType<typeof commitExperiment>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey = swrOptions?.swrKey ?? getCommitExperimentMutationKey(params);
-	const swrFn = getCommitExperimentMutationFetcher(params, requestOptions);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
 	return {
 		swrKey,

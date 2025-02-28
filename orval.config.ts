@@ -11,6 +11,7 @@ export default defineConfig({
       mode: 'tags',
       target: './src/api/methods.ts',
       biome: true,
+      clean: true,
       override: {
         mutator: {
           path: './src/services/orval-fetch.ts',

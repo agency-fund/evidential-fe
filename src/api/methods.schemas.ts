@@ -15,13 +15,19 @@ export interface ApiKeySummary {
 	organization_name: string;
 }
 
+/**
+ * UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
+ */
+export type ArmArmId = string | null;
+
 export type ArmArmDescription = string | null;
 
 /**
  * Describes an experiment treatment arm.
  */
 export interface Arm {
-	arm_id: string;
+	/** UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
+	arm_id: ArmArmId;
 	arm_name: string;
 	arm_description?: ArmArmDescription;
 }
@@ -38,7 +44,7 @@ export interface ArmUpdate {
 
 export interface AssignRequest {
 	design_spec: DesignSpec;
-	audience_spec: AudienceSpec;
+	audience_spec: AudienceSpecInput;
 }
 
 /**
@@ -66,6 +72,14 @@ export interface AssignResponseOutput {
 }
 
 /**
+ * Key pieces of an AssignResponse without the assignments.
+ */
+export interface AssignSummary {
+	balance_check: BalanceCheck;
+	sample_size: number;
+}
+
+/**
  * Describes treatment assignment for an experiment participant.
  */
 export interface Assignment {
@@ -81,37 +95,35 @@ export interface Assignment {
 /**
  * Defines target participants for an experiment using filters.
  */
-export interface AudienceSpec {
+export interface AudienceSpecInput {
 	participant_type: string;
 	filters: AudienceSpecFilter[];
 }
 
-export type AudienceSpecFilterValueAnyOfItem = number | null;
-
-export type AudienceSpecFilterValueAnyOfTwoItem = number | null;
-
-export type AudienceSpecFilterValueAnyOfThreeItem = string | null;
-
-export type AudienceSpecFilterValueAnyOfFourItem = boolean | null;
-
-export type AudienceSpecFilterValue =
-	| AudienceSpecFilterValueAnyOfItem[]
-	| AudienceSpecFilterValueAnyOfTwoItem[]
-	| AudienceSpecFilterValueAnyOfThreeItem[]
-	| AudienceSpecFilterValueAnyOfFourItem[];
+/**
+ * Defines target participants for an experiment using filters.
+ */
+export interface AudienceSpecOutput {
+	participant_type: string;
+	filters: AudienceSpecFilter[];
+}
 
 /**
  * Defines criteria for filtering rows by value.
 
 ## Examples
 
-| Relation | Value       | Result                         |
-|----------|-------------|--------------------------------|
-| INCLUDES | ["a"]       | Match when `x IN ("a")`        |
-| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`   |
-| EXCLUDES | ["a", "b"]  | Match `x NOT IN ("a", "b")`    |
-| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`        |
-| BETWEEN  | ["a", None] | Match `x >= "a"`               |
+| Relation | Value       | logical Result                                    |
+|----------|-------------|---------------------------------------------------|
+| INCLUDES | [None]      | Match when `x IS NULL`                            |
+| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |
+| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |
+| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |
+| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |
+| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |
+| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |
+| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |
+| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |
 
 String comparisons are case-sensitive.
 
@@ -132,7 +144,7 @@ Note: CSV field comparisons are case-insensitive.
 
 ## Handling of datetime and timestamp values
 
-DATETIME or TIMESTAMP-type columns support only the BETWEEN relation.
+DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.
 
 Values must be expressed as ISO8601 datetime strings compatible with Python's datetime.fromisoformat()
 (https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).
@@ -143,7 +155,7 @@ export interface AudienceSpecFilter {
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
 	relation: Relation;
-	value: AudienceSpecFilterValue;
+	value: FilterValueTypes;
 }
 
 /**
@@ -215,7 +227,7 @@ export type CommitRequestPowerAnalyses = PowerResponseInput | null;
  */
 export interface CommitRequest {
 	design_spec: DesignSpec;
-	audience_spec: AudienceSpec;
+	audience_spec: AudienceSpecInput;
 	/** Optionally include the power analyses of your tracking metrics if performed. */
 	power_analyses?: CommitRequestPowerAnalyses;
 	experiment_assignment: AssignResponseInput;
@@ -239,6 +251,30 @@ export interface CreateDatasourceRequest {
 
 export interface CreateDatasourceResponse {
 	id: string;
+}
+
+export type CreateExperimentRequestPowerAnalyses = PowerResponseInput | null;
+
+export interface CreateExperimentRequest {
+	design_spec: DesignSpec;
+	audience_spec: AudienceSpecInput;
+	power_analyses?: CreateExperimentRequestPowerAnalyses;
+}
+
+export type CreateExperimentWithAssignmentResponsePowerAnalyses =
+	PowerResponseOutput | null;
+
+/**
+ * Same as the request but with uuids filled for the experiment and arms, and summary info on the assignment.
+ */
+export interface CreateExperimentWithAssignmentResponse {
+	datasource_id: string;
+	/** Current state of this experiment. */
+	state: ExperimentState;
+	design_spec: DesignSpec;
+	audience_spec: AudienceSpecOutput;
+	power_analyses: CreateExperimentWithAssignmentResponsePowerAnalyses;
+	assign_summary: AssignSummary;
 }
 
 export interface CreateOrganizationRequest {
@@ -288,10 +324,16 @@ export interface DatasourceSummary {
 }
 
 /**
+ * UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
+ */
+export type DesignSpecExperimentId = string | null;
+
+/**
  * Experiment design parameters for power calculations and treatment assignment.
  */
 export interface DesignSpec {
-	experiment_id: string;
+	/** UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
+	experiment_id: DesignSpecExperimentId;
 	experiment_name: string;
 	description: string;
 	start_date: string;
@@ -428,7 +470,10 @@ export type DsnSearchPath = string | null;
 export interface Dsn {
 	driver: DsnDriver;
 	host: string;
-	/** */
+	/**
+	 * @minimum 1024
+	 * @maximum 65535
+	 */
 	port?: number;
 	user: string;
 	password: string;
@@ -440,6 +485,39 @@ export interface Dsn {
 export type DwhInput = Dsn | BqDsnInput;
 
 export type DwhOutput = Dsn | BqDsnOutput;
+
+export type ExperimentConfigPowerAnalyses = PowerResponseOutput | null;
+
+/**
+ * Representation of our stored Experiment information.
+ */
+export interface ExperimentConfig {
+	datasource_id: string;
+	/** Current state of this experiment. */
+	state: ExperimentState;
+	design_spec: DesignSpec;
+	audience_spec: AudienceSpecOutput;
+	power_analyses: ExperimentConfigPowerAnalyses;
+	assign_summary: AssignSummary;
+}
+
+/**
+ * Experiment lifecycle states.
+
+note: [starting state], [[terminal state]]
+[DESIGNING]->[ASSIGNED]->{[[ABANDONED]], COMMITTED}->[[ABORTED]]
+ */
+export type ExperimentState =
+	(typeof ExperimentState)[keyof typeof ExperimentState];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ExperimentState = {
+	designing: "designing",
+	assigned: "assigned",
+	abandoned: "abandoned",
+	committed: "committed",
+	aborted: "aborted",
+} as const;
 
 export type FieldDescriptorExtraAnyOf = { [key: string]: string };
 
@@ -475,6 +553,20 @@ export interface FieldMetadata {
 	data_type: DataType;
 	description: string;
 }
+
+export type FilterValueTypesAnyOfItem = number | null;
+
+export type FilterValueTypesAnyOfTwoItem = number | null;
+
+export type FilterValueTypesAnyOfThreeItem = string | null;
+
+export type FilterValueTypesAnyOfFourItem = boolean | null;
+
+export type FilterValueTypes =
+	| FilterValueTypesAnyOfItem[]
+	| FilterValueTypesAnyOfTwoItem[]
+	| FilterValueTypesAnyOfThreeItem[]
+	| FilterValueTypesAnyOfFourItem[];
 
 export type GcpCredentials = GcpServiceAccountInfo | GcpServiceAccountFile;
 
@@ -518,6 +610,31 @@ export interface GetDatasourceResponse {
 	config: DatasourceConfig;
 	organization_id: string;
 	organization_name: string;
+}
+
+/**
+ * Describes assignments for all participants and balance test results.
+ */
+export interface GetExperimentAssigmentsResponse {
+	balance_check: BalanceCheck;
+	experiment_id: string;
+	sample_size: number;
+	assignments: Assignment[];
+}
+
+export type GetExperimentResponsePowerAnalyses = PowerResponseOutput | null;
+
+/**
+ * An experiment configuration capturing all info at design time when assignment was made.
+ */
+export interface GetExperimentResponse {
+	datasource_id: string;
+	/** Current state of this experiment. */
+	state: ExperimentState;
+	design_spec: DesignSpec;
+	audience_spec: AudienceSpecOutput;
+	power_analyses: GetExperimentResponsePowerAnalyses;
+	assign_summary: AssignSummary;
 }
 
 /**
@@ -684,6 +801,10 @@ export interface ListApiKeysResponse {
 
 export interface ListDatasourcesResponse {
 	items: DatasourceSummary[];
+}
+
+export interface ListExperimentsResponse {
+	items: ExperimentConfig[];
 }
 
 export interface ListOrganizationsResponse {
@@ -867,7 +988,7 @@ export interface ParticipantsSchemaOutput {
 
 export interface PowerRequest {
 	design_spec: DesignSpec;
-	audience_spec: AudienceSpec;
+	audience_spec: AudienceSpecInput;
 }
 
 export interface PowerResponseInput {
@@ -881,11 +1002,14 @@ export interface PowerResponseOutput {
 /**
  * Defines operators for filtering values.
 
-INCLUDES matches when the value matches any of the provided values. For CSV fields
-(i.e. experiment_ids), any value in the CSV that matches the provided values will match.
+INCLUDES matches when the value matches any of the provided values, including null if explicitly
+specified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided
+values will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).
 
-EXCLUDES matches when the value does not match any of the provided values. For CSV fields
-(i.e. experiment_ids), the match will fail if any of the provided values are present in the value.
+EXCLUDES matches when the value does not match any of the provided values, including null if
+explicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV
+fields (i.e. experiment_ids), the match will fail if any of the provided values are present
+in the value, but nulls are unsupported.
 
 BETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.
  */
@@ -1163,6 +1287,17 @@ export type AssignTreatmentParams = {
 	refresh?: boolean;
 };
 
+export type CreateExperimentWithAssignmentSlParams = {
+	/**
+	 * Number of participants to assign.
+	 */
+	chosen_n: number;
+	/**
+	 * Refresh the cache.
+	 */
+	refresh?: boolean;
+};
+
 export type AssignmentFileParams = {
 	/**
 	 * ID of the experiment whose assignments we wish to fetch.
@@ -1214,4 +1349,11 @@ export type InspectParticipantTypesParams = {
 	 * Refresh the cache.
 	 */
 	refresh?: boolean;
+};
+
+export type CreateExperimentWithAssignmentParams = {
+	/**
+	 * Number of participants to assign.
+	 */
+	chosen_n: number;
 };
