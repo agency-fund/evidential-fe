@@ -40,6 +40,8 @@ import type {
 	ListOrganizationsResponse,
 	ListParticipantsTypeResponse,
 	ParticipantsConfig,
+	PowerRequest,
+	PowerResponseOutput,
 	TokenInfo,
 	UpdateDatasourceRequest,
 	UpdateOrganizationRequest,
@@ -2647,6 +2649,91 @@ export const useGetExperimentAssignments = <TError = HTTPValidationError>(
 		swrFn,
 		swrOptions,
 	);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * @summary Power Check
+ */
+export type powerCheckResponse200 = {
+	data: PowerResponseOutput;
+	status: 200;
+};
+
+export type powerCheckResponse422 = {
+	data: HTTPValidationError;
+	status: 422;
+};
+
+export type powerCheckResponseComposite =
+	| powerCheckResponse200
+	| powerCheckResponse422;
+
+export type powerCheckResponse = powerCheckResponseComposite & {
+	headers: Headers;
+};
+
+export const getPowerCheckUrl = (datasourceId: string) => {
+	return `/v1/m/datasources/${datasourceId}/balance`;
+};
+
+export const powerCheck = async (
+	datasourceId: string,
+	powerRequest: PowerRequest,
+	options?: RequestInit,
+): Promise<powerCheckResponse> => {
+	return orvalFetch<powerCheckResponse>(getPowerCheckUrl(datasourceId), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(powerRequest),
+	});
+};
+
+export const getPowerCheckMutationFetcher = (
+	datasourceId: string,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (
+		_: Key,
+		{ arg }: { arg: PowerRequest },
+	): Promise<powerCheckResponse> => {
+		return powerCheck(datasourceId, arg, options);
+	};
+};
+export const getPowerCheckMutationKey = (datasourceId: string) =>
+	[`/v1/m/datasources/${datasourceId}/balance`] as const;
+
+export type PowerCheckMutationResult = NonNullable<
+	Awaited<ReturnType<typeof powerCheck>>
+>;
+export type PowerCheckMutationError = HTTPValidationError;
+
+/**
+ * @summary Power Check
+ */
+export const usePowerCheck = <TError = HTTPValidationError>(
+	datasourceId: string,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof powerCheck>>,
+			TError,
+			Key,
+			PowerRequest,
+			Awaited<ReturnType<typeof powerCheck>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey = swrOptions?.swrKey ?? getPowerCheckMutationKey(datasourceId);
+	const swrFn = getPowerCheckMutationFetcher(datasourceId, requestOptions);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
 	return {
 		swrKey,
