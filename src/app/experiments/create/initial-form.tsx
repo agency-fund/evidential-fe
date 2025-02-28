@@ -55,6 +55,13 @@ export function InitialForm({ formData, onFormDataChange, onNext }: InitialFormP
 
   const [showArmsError, setShowArmsError] = useState(false);
 
+  // Set dropdown initial value
+  useEffect(() => {
+    if (isHttpOk(participantTypesData) && participantTypesData.data.items.length > 0 && !formData.participantType) {
+      onFormDataChange({ ...formData, participantType: participantTypesData.data.items[0].participant_type });
+    }
+  }, [formData, participantTypesData, onFormDataChange]);
+
   useEffect(() => {
     setShowArmsError(formData.arms.length < 2);
   }, [formData.arms]);
