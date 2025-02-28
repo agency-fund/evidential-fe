@@ -74,7 +74,7 @@ export function InitialForm({ formData, onFormDataChange, onNext }: InitialFormP
         <Card>
           <Flex direction="column" gap="3">
             <Text as="label" size="2" weight="bold">
-              Data Source & Participants Type
+              Choose Participants
             </Text>
 
             <Flex direction="row" gap="2">
