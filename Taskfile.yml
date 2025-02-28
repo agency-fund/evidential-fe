@@ -42,9 +42,13 @@ tasks:
       curl --max-time 3 -o /tmp/apispec.json http://localhost:8000/openapi.json
       jq . /tmp/apispec.json > openapi.json
       npx orval --config orval.config.ts
+  lint-next: npx next lint
+  lint-tsc: npx tsc --noemit
   lint:
+    deps:
+      - lint-tsc
+      - lint-next
     desc: "Runs the NextJS-managed linter"
-    cmd: npx next lint
   build:
     desc: "Production build of the NextJS application"
     cmd: npm run build
