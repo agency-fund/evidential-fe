@@ -2191,9 +2191,9 @@ export const useCreateExperimentWithAssignment = <TError = HTTPValidationError>(
 /**
  * @summary Commit Experiment
  */
-export type commitExperimentResponse200 = {
-	data: unknown;
-	status: 200;
+export type commitExperimentResponse204 = {
+	data: void;
+	status: 204;
 };
 
 export type commitExperimentResponse422 = {
@@ -2202,7 +2202,7 @@ export type commitExperimentResponse422 = {
 };
 
 export type commitExperimentResponseComposite =
-	| commitExperimentResponse200
+	| commitExperimentResponse204
 	| commitExperimentResponse422;
 
 export type commitExperimentResponse = commitExperimentResponseComposite & {
@@ -2293,9 +2293,9 @@ export const useCommitExperiment = <TError = HTTPValidationError>(
 /**
  * @summary Abandon Experiment
  */
-export type abandonExperimentResponse200 = {
-	data: unknown;
-	status: 200;
+export type abandonExperimentResponse204 = {
+	data: void;
+	status: 204;
 };
 
 export type abandonExperimentResponse422 = {
@@ -2304,7 +2304,7 @@ export type abandonExperimentResponse422 = {
 };
 
 export type abandonExperimentResponseComposite =
-	| abandonExperimentResponse200
+	| abandonExperimentResponse204
 	| abandonExperimentResponse422;
 
 export type abandonExperimentResponse = abandonExperimentResponseComposite & {
