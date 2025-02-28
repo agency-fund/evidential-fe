@@ -6,7 +6,7 @@ import { useListDatasources, useListExperiments } from '@/api/admin';
 import { XSpinner } from '@/app/components/x-spinner';
 import { isHttpOk } from '@/services/typehelper';
 import { GenericErrorCallout } from '@/app/components/generic-error';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DatasourceSelector } from '@/app/experiments/datasource-selector';
 
 const StatusBadge = ({ status }: { status: string }) => {
@@ -43,6 +43,18 @@ export default function Page() {
   } = useListExperiments(selectedDatasource!, {
     swr: { enabled: selectedDatasource !== '' },
   });
+
+  // Set the selected datasource to the first one in the list when data loads
+  useEffect(() => {
+    if (
+      datasourcesData &&
+      isHttpOk(datasourcesData) &&
+      datasourcesData.data.items.length > 0 &&
+      selectedDatasource === ''
+    ) {
+      setSelectedDatasource(datasourcesData.data.items[0].id);
+    }
+  }, [datasourcesData, selectedDatasource]);
 
   if (datasourcesError || (datasourcesData !== undefined && !isHttpOk(datasourcesData))) {
     return <GenericErrorCallout title={'Error with experiments list'} message={JSON.stringify(datasourcesData)} />;
