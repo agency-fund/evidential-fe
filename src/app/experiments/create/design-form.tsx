@@ -56,7 +56,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
       },
     },
   );
-  const { trigger } = useCreateExperimentWithAssignment(formData.datasourceId!, {
+  const { trigger: triggerCreateAssignment, isMutating } = useCreateExperimentWithAssignment(formData.datasourceId!, {
     chosen_n: formData.chosenN!,
   });
 
@@ -133,23 +133,20 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
     e.preventDefault();
 
     const request = convertFormDataToCreateExperimentRequest(formData);
-    const response = await trigger(request);
-    console.log('response', response);
+    const response = await triggerCreateAssignment(request);
     if (isHttpOk(response)) {
-      // TODO: save any new data from response and call onNext
       const newExperimentId = response.data.design_spec.experiment_id;
       if (!newExperimentId) {
-        // TODO
         throw new Error('No experiment ID returned from server');
       }
       onFormDataChange({ ...formData, experimentId: newExperimentId, assignSummary: response.data.assign_summary });
       onNext();
     } else {
-      // TODO: handle error
+      throw new Error('failed to create experiment');
     }
   };
 
-  const isNextButtonDisabled = formData.powerCheckResponse === undefined;
+  const isNextButtonDisabled = formData.powerCheckResponse === undefined || isMutating;
 
   return (
     <form onSubmit={handleSubmit}>
@@ -440,6 +437,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
             Back
           </Button>
           <Button type="submit" disabled={isNextButtonDisabled}>
+            {isMutating && <Spinner size="1" />}
             Next
           </Button>
         </Flex>
