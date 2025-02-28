@@ -22,7 +22,11 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
       audience_spec,
     });
     if (isHttpOk(response)) {
-      onFormDataChange({ ...formData, powerCheckResponse: response.data });
+      onFormDataChange({
+        ...formData,
+        powerCheckResponse: response.data,
+        chosenN: response.data.analyses[0].target_n!,
+      });
     }
   };
 
@@ -37,8 +41,8 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
             <Text>N: </Text>
             <TextField.Root
               type="number"
-              value={data.data.analyses[0].target_n || 0}
-              onChange={() => onFormDataChange({ ...formData })}
+              value={formData.chosenN}
+              onChange={(e) => onFormDataChange({ ...formData, chosenN: Number(e.target.value) })}
             />
           </>
         )}

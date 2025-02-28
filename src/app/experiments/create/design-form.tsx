@@ -57,7 +57,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
     },
   );
   const { trigger } = useCreateExperimentWithAssignment(formData.datasourceId!, {
-    chosen_n: 1000, // TODO
+    chosen_n: formData.chosenN!,
   });
 
   // Extract metrics and filters from the API response
@@ -142,7 +142,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
         // TODO
         throw new Error('No experiment ID returned from server');
       }
-      onFormDataChange({ ...formData, experimentId: newExperimentId });
+      onFormDataChange({ ...formData, experimentId: newExperimentId, assignSummary: response.data.assign_summary });
       onNext();
     } else {
       // TODO: handle error

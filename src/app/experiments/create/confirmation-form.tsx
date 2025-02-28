@@ -37,6 +37,10 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
         <Table.Root>
           <Table.Body>
             <Table.Row>
+              <Table.RowHeaderCell>Experiment ID</Table.RowHeaderCell>
+              <Table.Cell>{formData.experimentId}</Table.Cell>
+            </Table.Row>
+            <Table.Row>
               <Table.RowHeaderCell>Name</Table.RowHeaderCell>
               <Table.Cell>{formData.name}</Table.Cell>
             </Table.Row>
@@ -122,27 +126,75 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
           <Text color="gray">No filters defined</Text>
         )}
       </Card>
-      <Card>
-        <Heading size="4" mb="4">
-          Parameters
-        </Heading>
-        <Table.Root>
-          <Table.Body>
-            <Table.Row>
-              <Table.RowHeaderCell>Confidence</Table.RowHeaderCell>
-              <Table.Cell>{formData.confidence}%</Table.Cell>
-            </Table.Row>
-            <Table.Row>
-              <Table.RowHeaderCell>Power</Table.RowHeaderCell>
-              <Table.Cell>{formData.power}%</Table.Cell>
-            </Table.Row>
-            <Table.Row>
-              <Table.RowHeaderCell>Effect % Change</Table.RowHeaderCell>
-              <Table.Cell>{formData.effectPctChange}%</Table.Cell>
-            </Table.Row>
-          </Table.Body>
-        </Table.Root>
-      </Card>
+      <Flex direction={'row'} gap={'3'}>
+        <Card>
+          <Heading size="4" mb="4">
+            Parameters
+          </Heading>
+          <Table.Root>
+            <Table.Body>
+              <Table.Row>
+                <Table.RowHeaderCell>Confidence</Table.RowHeaderCell>
+                <Table.Cell>{formData.confidence}%</Table.Cell>
+              </Table.Row>
+              <Table.Row>
+                <Table.RowHeaderCell>Power</Table.RowHeaderCell>
+                <Table.Cell>{formData.power}%</Table.Cell>
+              </Table.Row>
+              <Table.Row>
+                <Table.RowHeaderCell>Effect % Change</Table.RowHeaderCell>
+                <Table.Cell>{formData.effectPctChange}%</Table.Cell>
+              </Table.Row>
+            </Table.Body>
+          </Table.Root>
+        </Card>
+        <Card>
+          <Heading size="4" mb="4">
+            Power
+          </Heading>
+          <Table.Root>
+            <Table.Body>
+              <Table.Row>
+                <Table.RowHeaderCell>Chosen N</Table.RowHeaderCell>
+                <Table.Cell>{formData.chosenN}</Table.Cell>
+              </Table.Row>
+            </Table.Body>
+          </Table.Root>
+        </Card>
+        <Card>
+          <Heading size="4" mb="4">
+            Statistics
+          </Heading>
+          <Table.Root>
+            <Table.Body>
+              <Table.Row>
+                <Table.RowHeaderCell>Sample Size</Table.RowHeaderCell>
+                <Table.Cell>{formData.assignSummary?.sample_size}</Table.Cell>
+              </Table.Row>
+              <Table.Row>
+                <Table.RowHeaderCell>F Statistic</Table.RowHeaderCell>
+                <Table.Cell>{formData.assignSummary?.balance_check.f_statistic}</Table.Cell>
+              </Table.Row>
+              <Table.Row>
+                <Table.RowHeaderCell>Numerator DF</Table.RowHeaderCell>
+                <Table.Cell>{formData.assignSummary?.balance_check.numerator_df}</Table.Cell>
+              </Table.Row>
+              <Table.Row>
+                <Table.RowHeaderCell>Denominator DF</Table.RowHeaderCell>
+                <Table.Cell>{formData.assignSummary?.balance_check.denominator_df}</Table.Cell>
+              </Table.Row>
+              <Table.Row>
+                <Table.RowHeaderCell>P-Value</Table.RowHeaderCell>
+                <Table.Cell>{formData.assignSummary?.balance_check.p_value}</Table.Cell>
+              </Table.Row>
+              <Table.Row>
+                <Table.RowHeaderCell>Balance OK?</Table.RowHeaderCell>
+                <Table.Cell>{formData.assignSummary?.balance_check.balance_ok ? 'Yes' : 'No'}</Table.Cell>
+              </Table.Row>
+            </Table.Body>
+          </Table.Root>
+        </Card>
+      </Flex>
       <Flex gap="3" justify="between">
         <Callout.Root variant={'soft'}>
           <Callout.Icon>
