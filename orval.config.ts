@@ -15,13 +15,29 @@ export default defineConfig({
       mode: 'tags',
       target: './src/api/methods.ts',
       biome: true,
-      clean: true,
       override: {
         mutator: {
           path: './src/services/orval-fetch.ts',
           name: 'orvalFetch',
         },
       },
+    },
+  },
+  xnginapiZod: {
+    input: {
+      target: 'openapi.json',
+      filters: {
+        mode: 'include',
+        tags: ['Admin'],
+      },
+    },
+    output: {
+      client: 'zod',
+      httpClient: 'fetch',
+      mode: 'tags',
+      target: './src/api/methods.ts',
+      fileExtension: '.zod.ts',
+      biome: true,
     },
   },
 });
