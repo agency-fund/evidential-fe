@@ -304,6 +304,7 @@ export type DataType = (typeof DataType)[keyof typeof DataType];
 export const DataType = {
 	boolean: "boolean",
 	character_varying: "character varying",
+	uuid: "uuid",
 	date: "date",
 	integer: "integer",
 	double_precision: "double precision",
