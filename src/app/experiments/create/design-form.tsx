@@ -135,11 +135,11 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
     const request = convertFormDataToCreateExperimentRequest(formData);
     const response = await triggerCreateAssignment(request);
     if (isHttpOk(response)) {
-      const newExperimentId = response.data.design_spec.experiment_id;
-      if (!newExperimentId) {
-        throw new Error('No experiment ID returned from server');
-      }
-      onFormDataChange({ ...formData, experimentId: newExperimentId, assignSummary: response.data.assign_summary });
+      onFormDataChange({
+        ...formData,
+        experimentId: response.data.design_spec.experiment_id!,
+        createExperimentResponse: response.data,
+      });
       onNext();
     } else {
       throw new Error('failed to create experiment');
