@@ -4,7 +4,12 @@ import { InitialForm } from './initial-form';
 import { DesignForm } from './design-form';
 import { ConfirmationForm } from './confirmation-form';
 import { Box, Container, Flex, Heading } from '@radix-ui/themes';
-import { Arm, AssignSummary, AudienceSpecFilter, PowerResponseOutput } from '@/api/methods.schemas';
+import {
+  Arm,
+  AudienceSpecFilter,
+  CreateExperimentWithAssignmentResponse,
+  PowerResponseOutput,
+} from '@/api/methods.schemas';
 import { useSearchParams } from 'next/navigation';
 
 export type ExperimentFormData = {
@@ -26,7 +31,7 @@ export type ExperimentFormData = {
   powerCheckResponse?: PowerResponseOutput;
   // Populated when assignments are created by pressing "Next" on DesignForm
   experimentId?: string;
-  assignSummary?: AssignSummary;
+  createExperimentResponse?: CreateExperimentWithAssignmentResponse;
 };
 
 const reasonableStartDate = () => {
