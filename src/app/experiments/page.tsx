@@ -1,5 +1,5 @@
 'use client';
-import { Badge, Button, Flex, Heading, Table, Text } from '@radix-ui/themes';
+import { Button, Flex, Heading, Table, Text } from '@radix-ui/themes';
 import Link from 'next/link';
 import { DownloadIcon, PlusIcon } from '@radix-ui/react-icons';
 import { useListDatasources, useListExperiments } from '@/api/admin';
@@ -8,30 +8,7 @@ import { isHttpOk } from '@/services/typehelper';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 import { useEffect, useState } from 'react';
 import { DatasourceSelector } from '@/app/experiments/datasource-selector';
-
-const StatusBadge = ({ status }: { status: string }) => {
-  const colorMap: Record<
-    string,
-    { color: 'orange' | 'green' | 'gray' | 'blue' | 'red'; variant?: 'soft' | 'outline' }
-  > = {
-    ongoing: { color: 'orange' },
-    completed: { color: 'green' },
-    pending: { color: 'gray', variant: 'outline' },
-    // ExperimentState types below
-    designing: { color: 'blue', variant: 'soft' },
-    assigned: { color: 'blue' },
-    abandoned: { color: 'red', variant: 'outline' },
-    committed: { color: 'green', variant: 'outline' },
-    aborted: { color: 'red' },
-  };
-
-  const { color, variant = 'soft' } = colorMap[status];
-  return (
-    <Badge color={color} variant={variant}>
-      {status}
-    </Badge>
-  );
-};
+import { ExperimentStatusBadge } from '@/app/experiments/experiment-status-badge';
 
 export default function Page() {
   const { data: datasourcesData, isLoading: datasourcesIsLoading, error: datasourcesError } = useListDatasources();
@@ -112,7 +89,7 @@ export default function Page() {
                   <Table.Row key={experiment.design_spec.experiment_id}>
                     <Table.Cell>{experiment.design_spec.experiment_name}</Table.Cell>
                     <Table.Cell>
-                      <StatusBadge status={experiment.state} />
+                      <ExperimentStatusBadge status={experiment.state} />
                     </Table.Cell>
                     <Table.Cell>{experiment.design_spec.start_date}</Table.Cell>
                     <Table.Cell>{experiment.design_spec.end_date}</Table.Cell>
