@@ -73,15 +73,15 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
                 <Table.Body>
                   <Table.Row>
                     <Table.RowHeaderCell>Required Sample Size</Table.RowHeaderCell>
-                    <Table.Cell>{metricAnalysis.target_n}</Table.Cell>
+                    <Table.Cell>{metricAnalysis.target_n || '?'}</Table.Cell>
                   </Table.Row>
                   <Table.Row>
                     <Table.RowHeaderCell>Available Sample Size</Table.RowHeaderCell>
-                    <Table.Cell>{metricAnalysis.msg?.values?.current_n || 'Unknown'}</Table.Cell>
+                    <Table.Cell>{metricAnalysis.metric_spec.available_n === null ? '?' : metricAnalysis.metric_spec.available_n}</Table.Cell>
                   </Table.Row>
                   <Table.Row>
                     <Table.RowHeaderCell>Minimum Detectable Effect</Table.RowHeaderCell>
-                    <Table.Cell>{metricAnalysis.pct_change_possible}%</Table.Cell>
+                    <Table.Cell>{metricAnalysis.pct_change_possible || '?'}%</Table.Cell>
                   </Table.Row>
                 </Table.Body>
               </Table.Root>
