@@ -3,6 +3,7 @@ import { Button, Flex, Heading, Table, Text } from '@radix-ui/themes';
 import Link from 'next/link';
 import { DownloadIcon, PlusIcon } from '@radix-ui/react-icons';
 import { useListDatasources, useListExperiments } from '@/api/admin';
+import { DeleteExperimentButton } from './delete-experiment-button';
 import { XSpinner } from '@/app/components/x-spinner';
 import { isHttpOk } from '@/services/typehelper';
 import { GenericErrorCallout } from '@/app/components/generic-error';
@@ -103,6 +104,10 @@ export default function Page() {
                           <DownloadIcon />
                           CSV
                         </Button>
+                        <DeleteExperimentButton
+                          datasourceId={selectedDatasource}
+                          experimentId={experiment.design_spec.experiment_id!}
+                        />
                       </Flex>
                     </Table.Cell>
                   </Table.Row>
