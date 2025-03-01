@@ -42,6 +42,9 @@ tasks:
       curl --max-time 3 -o /tmp/apispec.json http://localhost:8000/openapi.json
       jq . /tmp/apispec.json > openapi.json
       npx orval --config orval.config.ts
+      if [ $? -eq 0 ]; then
+        echo '👉 Run `task lint` to catch any typechecking errors the API changes may have introduced.'
+      fi
   lint-next: npx next lint
   lint-tsc: npx tsc --noemit
   lint:
