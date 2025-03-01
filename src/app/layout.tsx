@@ -36,7 +36,7 @@ export default function RootLayout({
                 <OrganizationProvider>
                   <Flex direction="column" height={'100vh'}>
                     <HeaderBar />
-                    <Flex flexGrow={'1'} overflow={'hidden'}>
+                    <Flex flexGrow={'1'} overflow={'hidden'} pb={'4'}>
                       <NavigationBar />
                       <Flex flexGrow={'1'} overflow={'auto'}>
                         <Container p={'4'}>
