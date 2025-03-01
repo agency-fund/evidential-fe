@@ -2562,6 +2562,106 @@ export const useGetExperiment = <TError = HTTPValidationError>(
 	};
 };
 /**
+ * Deletes the experiment with the specified ID.
+ * @summary Delete Experiment
+ */
+export type deleteExperimentResponse204 = {
+	data: void;
+	status: 204;
+};
+
+export type deleteExperimentResponse422 = {
+	data: HTTPValidationError;
+	status: 422;
+};
+
+export type deleteExperimentResponseComposite =
+	| deleteExperimentResponse204
+	| deleteExperimentResponse422;
+
+export type deleteExperimentResponse = deleteExperimentResponseComposite & {
+	headers: Headers;
+};
+
+export const getDeleteExperimentUrl = (
+	datasourceId: string,
+	experimentId: string,
+) => {
+	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}`;
+};
+
+export const deleteExperiment = async (
+	datasourceId: string,
+	experimentId: string,
+	options?: RequestInit,
+): Promise<deleteExperimentResponse> => {
+	return orvalFetch<deleteExperimentResponse>(
+		getDeleteExperimentUrl(datasourceId, experimentId),
+		{
+			...options,
+			method: "DELETE",
+		},
+	);
+};
+
+export const getDeleteExperimentMutationFetcher = (
+	datasourceId: string,
+	experimentId: string,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (
+		_: Key,
+		__: { arg: Arguments },
+	): Promise<deleteExperimentResponse> => {
+		return deleteExperiment(datasourceId, experimentId, options);
+	};
+};
+export const getDeleteExperimentMutationKey = (
+	datasourceId: string,
+	experimentId: string,
+) => [`/v1/m/datasources/${datasourceId}/experiments/${experimentId}`] as const;
+
+export type DeleteExperimentMutationResult = NonNullable<
+	Awaited<ReturnType<typeof deleteExperiment>>
+>;
+export type DeleteExperimentMutationError = HTTPValidationError;
+
+/**
+ * @summary Delete Experiment
+ */
+export const useDeleteExperiment = <TError = HTTPValidationError>(
+	datasourceId: string,
+	experimentId: string,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof deleteExperiment>>,
+			TError,
+			Key,
+			Arguments,
+			Awaited<ReturnType<typeof deleteExperiment>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey =
+		swrOptions?.swrKey ??
+		getDeleteExperimentMutationKey(datasourceId, experimentId);
+	const swrFn = getDeleteExperimentMutationFetcher(
+		datasourceId,
+		experimentId,
+		requestOptions,
+	);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
  * @summary Get Experiment Assignments
  */
 export type getExperimentAssignmentsResponse200 = {
