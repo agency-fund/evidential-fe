@@ -30,10 +30,12 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
     }
   };
 
+  const isButtonDisabled = isMutating || formData.primaryMetric === undefined;
   return (
     <Flex direction="column" gap="3">
       <Flex direction={'row'} gap={'3'}>
-        <Button disabled={isMutating} onClick={handlePowerCheck}>
+        <Button disabled={isButtonDisabled} onClick={handlePowerCheck}>
+          {isMutating && <Spinner size="1" />}
           {isMutating ? 'Checking...' : 'Run Power Check'}
         </Button>
         {isHttpOk(data) && (
