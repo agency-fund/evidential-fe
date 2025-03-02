@@ -55,11 +55,9 @@ export function FilterRow({ filter, availableFields, onChange, onRemove }: Filte
           {availableFields.map((field) => (
             <Select.Item key={field.field_name} value={field.field_name}>
               <Text>{field.field_name}</Text>
-              {field.description && (
-                <Text size="1" color="gray">
-                  ({field.description})
-                </Text>
-              )}
+              <Text size="1" color="gray">
+                {field.data_type}
+              </Text>
             </Select.Item>
           ))}
         </Select.Content>
