@@ -71,46 +71,6 @@ export function operatorToRelation(operator: string): 'includes' | 'excludes' | 
   }
 }
 
-// Get the appropriate operator based on the current filter configuration
-export function getOperatorFromFilter(filter: AudienceSpecFilterInput, dataType: DataType): string {
-  const { relation, value } = filter;
-
-  if (dataType === 'boolean') {
-    return value[0] === true ? 'is-true' : 'is-false';
-  }
-
-  if (relation === 'includes' && value.length === 1) {
-    return dataType.includes('date') || dataType.includes('timestamp') ? 'on' : 'equals';
-  }
-
-  if (relation === 'excludes' && value.length === 1) {
-    return 'not-equals';
-  }
-
-  if (relation === 'between') {
-    if (value[0] !== null && value[1] === null) {
-      return dataType.includes('date') || dataType.includes('timestamp') ? 'after' : 'greater-than';
-    }
-
-    if (value[0] === null && value[1] !== null) {
-      return dataType.includes('date') || dataType.includes('timestamp') ? 'before' : 'less-than';
-    }
-
-    return 'between';
-  }
-
-  if (relation === 'includes' && value.length > 1) {
-    return 'in-list';
-  }
-
-  if (relation === 'excludes' && value.length > 1) {
-    return 'not-in-list';
-  }
-
-  // Default fallback
-  return dataType.includes('date') || dataType.includes('timestamp') ? 'on' : 'equals';
-}
-
 // Create a default value array based on operator and data type
 export function createDefaultValueForOperator(operator: string, dataType: DataType): FilterValueTypes {
   switch (operator) {

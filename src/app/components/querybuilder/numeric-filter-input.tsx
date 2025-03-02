@@ -3,8 +3,8 @@
 import { Button, Checkbox, Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 import { AudienceSpecFilterInput, DataType } from '@/api/methods.schemas';
-import { createDefaultValueForOperator, getOperatorFromFilter, operatorToRelation } from './utils';
-import React from 'react';
+import { createDefaultValueForOperator, operatorToRelation } from './utils';
+import React, { useState, useEffect } from 'react';
 
 export interface NumericFilterInputProps {
   filter: AudienceSpecFilterInput;
@@ -13,10 +13,24 @@ export interface NumericFilterInputProps {
 }
 
 export function NumericFilterInput({ filter, onChange, dataType }: NumericFilterInputProps) {
-  const operator = getOperatorFromFilter(filter, dataType);
+  // Initialize operator state based on filter configuration
+  const [operator, setOperator] = useState(() => {
+    if (filter.relation === 'between') {
+      if (filter.value[0] !== null && filter.value[1] === null) return 'greater-than';
+      if (filter.value[0] === null && filter.value[1] !== null) return 'less-than';
+      return 'between';
+    }
+    if (filter.relation === 'excludes') {
+      return filter.value.length > 1 ? 'not-in-list' : 'not-equals';
+    }
+    // Default for includes relation
+    return filter.value.length > 1 ? 'in-list' : 'equals';
+  });
+  
   const includesNull = filter.value.includes(null);
 
   const handleOperatorChange = (newOperator: string) => {
+    setOperator(newOperator);
     const relation = operatorToRelation(newOperator);
     const defaultValue = createDefaultValueForOperator(newOperator, dataType);
 

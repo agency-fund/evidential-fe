@@ -2,6 +2,7 @@
 
 import { Checkbox, Flex, Select, Text } from '@radix-ui/themes';
 import { AudienceSpecFilterInput } from '@/api/methods.schemas';
+import { useState } from 'react';
 
 export interface BooleanFilterInputProps {
   filter: AudienceSpecFilterInput;
@@ -9,10 +10,16 @@ export interface BooleanFilterInputProps {
 }
 
 export function BooleanFilterInput({ filter, onChange }: BooleanFilterInputProps) {
+  // For boolean, we just need to track if it's true or false
+  const [isTrue, setIsTrue] = useState(() => {
+    const nonNullValue = filter.value.find(v => v !== null);
+    return nonNullValue === true;
+  });
+  
   const includesNull = filter.value.includes(null);
-  const value = filter.value.find((v) => v !== null);
 
   const handleValueChange = (newValue: boolean) => {
+    setIsTrue(newValue);
     onChange({
       ...filter,
       relation: 'includes',
@@ -23,7 +30,7 @@ export function BooleanFilterInput({ filter, onChange }: BooleanFilterInputProps
   const handleNullChange = (includeNull: boolean) => {
     onChange({
       ...filter,
-      value: includeNull ? [value === undefined ? true : value, null] : [value === undefined ? true : value],
+      value: includeNull ? [isTrue, null] : [isTrue],
     });
   };
 

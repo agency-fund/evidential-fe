@@ -3,7 +3,8 @@
 import { Button, Checkbox, Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 import { AudienceSpecFilterInput, DataType } from '@/api/methods.schemas';
-import { createDefaultValueForOperator, getOperatorFromFilter, operatorToRelation } from './utils';
+import { createDefaultValueForOperator, operatorToRelation } from './utils';
+import { useState } from 'react';
 
 export interface DateFilterInputProps {
   filter: AudienceSpecFilterInput;
@@ -12,10 +13,24 @@ export interface DateFilterInputProps {
 }
 
 export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputProps) {
-  const operator = getOperatorFromFilter(filter, dataType);
+  // Initialize operator state based on filter configuration
+  const [operator, setOperator] = useState(() => {
+    if (filter.relation === 'between') {
+      if (filter.value[0] !== null && filter.value[1] === null) return 'after';
+      if (filter.value[0] === null && filter.value[1] !== null) return 'before';
+      return 'between';
+    }
+    if (filter.relation === 'excludes') {
+      return filter.value.length > 1 ? 'not-in-list' : 'not-equals';
+    }
+    // Default for includes relation
+    return filter.value.length > 1 ? 'in-list' : 'on';
+  });
+  
   const includesNull = filter.value.includes(null);
 
   const handleOperatorChange = (newOperator: string) => {
+    setOperator(newOperator);
     const relation = operatorToRelation(newOperator);
     const defaultValue = createDefaultValueForOperator(newOperator, dataType);
 
