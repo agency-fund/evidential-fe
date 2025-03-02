@@ -28,11 +28,21 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
   };
 
   const parseValue = (inputValue: string): number => {
-    if (dataType === 'integer' || dataType === 'bigint') {
-      return parseInt(inputValue, 10);
-    } else {
-      return parseFloat(inputValue);
+    // Check if the input is a valid number string (allowing for empty decimal points, etc.)
+    const isValidNumber = /^-?\d*\.?\d*$/.test(inputValue) && inputValue.trim() !== '';
+    
+    if (!isValidNumber) {
+      // Return the current value or 0 if there isn't one
+      const currentValue = filter.value[0];
+      return typeof currentValue === 'number' && !isNaN(currentValue) ? currentValue : 0;
     }
+    
+    const parsedValue = dataType === 'integer' || dataType === 'bigint' 
+      ? parseInt(inputValue, 10) 
+      : parseFloat(inputValue);
+      
+    // If parsing resulted in NaN, return 0 as a fallback
+    return isNaN(parsedValue) ? 0 : parsedValue;
   };
 
   const getStepAttribute = (): string => {
@@ -45,12 +55,15 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
 
   const handleValueChange = (index: number, newValue: string) => {
     const parsedValue = parseValue(newValue);
-    const newValues = [...filter.value];
-    newValues[index] = parsedValue;
-    onChange({
-      ...filter,
-      value: newValues,
-    });
+    // Ensure we never set NaN values in the filter
+    if (!isNaN(parsedValue)) {
+      const newValues = [...filter.value];
+      newValues[index] = parsedValue;
+      onChange({
+        ...filter,
+        value: newValues,
+      });
+    }
   };
 
   const addValue = (e: React.MouseEvent) => {
@@ -110,7 +123,9 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
             value={filter.value[0] as number}
             onChange={(e) => {
               const value = parseValue(e.target.value);
-              onChange({ ...filter, value: [value, null] });
+              if (!isNaN(value)) {
+                onChange({ ...filter, value: [value, null] });
+              }
             }}
           />
         );
@@ -123,7 +138,9 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
             value={filter.value[1] as number}
             onChange={(e) => {
               const value = parseValue(e.target.value);
-              onChange({ ...filter, value: [null, value] });
+              if (!isNaN(value)) {
+                onChange({ ...filter, value: [null, value] });
+              }
             }}
           />
         );
@@ -137,7 +154,9 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
               value={filter.value[0] as number}
               onChange={(e) => {
                 const min = parseValue(e.target.value);
-                onChange({ ...filter, value: [min, filter.value[1]] });
+                if (!isNaN(min)) {
+                  onChange({ ...filter, value: [min, filter.value[1]] });
+                }
               }}
             />
             <Text>and</Text>
@@ -147,7 +166,9 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
               value={filter.value[1] as number}
               onChange={(e) => {
                 const max = parseValue(e.target.value);
-                onChange({ ...filter, value: [filter.value[0], max] });
+                if (!isNaN(max)) {
+                  onChange({ ...filter, value: [filter.value[0], max] });
+                }
               }}
             />
           </Flex>

@@ -15,7 +15,7 @@ export function getDefaultFilterForType(fieldName: string, dataType: DataType): 
       return {
         field_name: fieldName,
         relation: 'includes',
-        value: [0],
+        value: [0], // Ensure this is a number, not a string
       };
 
     case 'double precision':
@@ -23,7 +23,7 @@ export function getDefaultFilterForType(fieldName: string, dataType: DataType): 
       return {
         field_name: fieldName,
         relation: 'includes',
-        value: [0.0],
+        value: [0.0], // Ensure this is a number, not a string
       };
 
     case 'date':

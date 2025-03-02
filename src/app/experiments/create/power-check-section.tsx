@@ -5,6 +5,7 @@ import { usePowerCheck } from '@/api/admin';
 import { convertFormDataToCreateExperimentRequest } from '@/app/experiments/create/helpers';
 import { isHttpOk } from '@/services/typehelper';
 import { GenericErrorCallout } from '@/app/components/generic-error';
+import { useState } from 'react';
 
 interface PowerCheckSectionProps {
   formData: ExperimentFormData;
@@ -13,11 +14,12 @@ interface PowerCheckSectionProps {
 
 export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSectionProps) {
   const { trigger, data, isMutating } = usePowerCheck(formData.datasourceId!);
-  console.log('powercheck', data);
+  const [error, setError] = useState(false);
 
   const handlePowerCheck = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     const { design_spec, audience_spec } = convertFormDataToCreateExperimentRequest(formData);
+    setError(false);
     const response = await trigger({
       design_spec,
       audience_spec,
@@ -28,6 +30,8 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
         powerCheckResponse: response.data,
         chosenN: response.data.analyses[0].target_n!,
       });
+    } else {
+      setError(true);
     }
   };
 
@@ -51,7 +55,7 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
         )}
       </Flex>
 
-      {!isHttpOk(data) && (
+      {!isHttpOk(data) && error && (
         <Flex align="center" gap="2">
           <GenericErrorCallout title={'Power check failed'} message={data ? JSON.stringify(data.data) : 'unknown'} />
         </Flex>
