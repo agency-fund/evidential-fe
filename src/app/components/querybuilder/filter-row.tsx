@@ -27,20 +27,23 @@ export function FilterRow({ filter, availableFields, onChange, onRemove }: Filte
 
     // Reset the filter with appropriate defaults for the new field type
     const defaultFilter = getDefaultFilterForType(fieldName, newField.data_type);
-    
+
     // Ensure numeric fields have numeric values
-    if (newField.data_type === 'integer' || newField.data_type === 'bigint' || 
-        newField.data_type === 'double precision' || newField.data_type === 'numeric') {
-      
+    if (
+      newField.data_type === 'integer' ||
+      newField.data_type === 'bigint' ||
+      newField.data_type === 'double precision' ||
+      newField.data_type === 'numeric'
+    ) {
       // Make sure the value is a number, not a string
-      const numericValues = defaultFilter.value.map(val => {
+      const numericValues = defaultFilter.value.map((val) => {
         if (val === null) return null;
         return typeof val === 'number' ? val : 0;
       });
-      
+
       defaultFilter.value = numericValues;
     }
-    
+
     onChange(defaultFilter);
   };
 
@@ -52,9 +55,11 @@ export function FilterRow({ filter, availableFields, onChange, onRemove }: Filte
           {availableFields.map((field) => (
             <Select.Item key={field.field_name} value={field.field_name}>
               <Text>{field.field_name}</Text>
-              <Text size="1" color="gray">
-                ({field.description})
-              </Text>
+              {field.description && (
+                <Text size="1" color="gray">
+                  ({field.description})
+                </Text>
+              )}
             </Select.Item>
           ))}
         </Select.Content>
