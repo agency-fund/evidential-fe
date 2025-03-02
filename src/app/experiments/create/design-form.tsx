@@ -1,42 +1,18 @@
 'use client';
-import {
-  Badge,
-  Button,
-  Card,
-  Flex,
-  Heading,
-  HoverCard,
-  SegmentedControl,
-  Select,
-  Spinner,
-  Switch,
-  Text,
-  TextField,
-} from '@radix-ui/themes';
+import { Badge, Button, Card, Flex, Heading, HoverCard, Select, Spinner, Text, TextField } from '@radix-ui/themes';
 import { ExperimentFormData } from './page';
-import { LightningBoltIcon, PlusIcon, TrashIcon } from '@radix-ui/react-icons';
+import { LightningBoltIcon, PlusIcon } from '@radix-ui/react-icons';
 import { useCreateExperimentWithAssignment, useInspectParticipantTypes } from '@/api/admin';
-import { isHttpOk } from '@/services/typehelper';
+import { ArrayElement, isHttpOk, ValueOf } from '@/services/typehelper';
 import {
-  AudienceSpecFilter,
-  DataType,
+  AudienceSpecFilterInput,
   FilterValueTypes,
   GetFiltersResponseElement,
   GetMetricsResponseElement,
-  Relation,
 } from '@/api/methods.schemas';
 import { PowerCheckSection } from '@/app/experiments/create/power-check-section';
 import { convertFormDataToCreateExperimentRequest } from '@/app/experiments/create/helpers';
-
-// TODO: booleans should only offer a tri-state (Null, True, False) for values
-const TEXT_BOX_TYPES: string[] = [
-  DataType.bigint,
-  DataType.character_varying,
-  DataType.double_precision,
-  DataType.integer,
-  DataType.numeric,
-  DataType.timestamp_without_time_zone,
-];
+import { FilterField } from '@/app/experiments/create/filter-field';
 
 interface DesignFormProps {
   formData: ExperimentFormData;
@@ -91,8 +67,8 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
 
   const updateFilter = (
     index: number,
-    field: keyof AudienceSpecFilter,
-    value: Relation | FilterValueTypes | string,
+    field: keyof AudienceSpecFilterInput,
+    value: ValueOf<AudienceSpecFilterInput>,
   ) => {
     const newFilters = [...formData.filters];
     newFilters[index] = { ...newFilters[index], [field]: value };
@@ -123,7 +99,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
     onFormDataChange({ ...formData, filters: newFilters });
   };
 
-  const updateFilterValue = (filterIndex: number, valueIndex: number, value: string | null | boolean) => {
+  const updateFilterValue = (filterIndex: number, valueIndex: number, value: ArrayElement<FilterValueTypes>) => {
     const newFilters = [...formData.filters];
     newFilters[filterIndex].value[valueIndex] = value;
     onFormDataChange({ ...formData, filters: newFilters });
@@ -252,129 +228,17 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
           <Flex direction="column" gap="3">
             {formData.filters.map((filter, index) => (
               <Card key={index}>
-                <Flex direction="column" gap="3">
-                  <Flex justify="between" align="center">
-                    <Text size="2" weight="bold">
-                      Filter {index + 1}
-                    </Text>
-                    <Button type="button" color="red" variant="soft" onClick={() => removeFilter(index)}>
-                      <TrashIcon />
-                    </Button>
-                  </Flex>
-
-                  <Flex gap="3">
-                    {loadingParticipantTypes ? (
-                      <Flex align="center" gap="2" flexGrow="1">
-                        <Spinner size="1" />
-                        <Text size="2">Loading fields...</Text>
-                      </Flex>
-                    ) : filterFields.length === 0 ? (
-                      <Text>There are no filterable fields.</Text>
-                    ) : (
-                      <Select.Root
-                        value={filter.field_name}
-                        onValueChange={(value) => updateFilter(index, 'field_name', value)}
-                      >
-                        <Select.Trigger placeholder="Select a field" />
-                        <Select.Content>
-                          {filterFields.map((field) => (
-                            <Select.Item key={field.field_name} value={field.field_name}>
-                              {field.field_name} ({field.data_type})
-                            </Select.Item>
-                          ))}
-                        </Select.Content>
-                      </Select.Root>
-                    )}
-
-                    <SegmentedControl.Root
-                      value={filter.relation}
-                      size="1"
-                      onValueChange={(value) => updateFilter(index, 'relation', value as Relation)}
-                    >
-                      <SegmentedControl.Item value="includes">Includes</SegmentedControl.Item>
-                      <SegmentedControl.Item value="excludes">Excludes</SegmentedControl.Item>
-                      {TEXT_BOX_TYPES.includes(
-                        filterFields.find((mf) => mf.field_name === filter.field_name)?.data_type ||
-                          'character varying',
-                      ) ? (
-                        <SegmentedControl.Item value="between">Between</SegmentedControl.Item>
-                      ) : (
-                        <></>
-                      )}
-                    </SegmentedControl.Root>
-                  </Flex>
-
-                  <Flex gap="2" align="start">
-                    <Flex gap="2" wrap="wrap" flexGrow="1">
-                      {filter.value.map((value, valueIndex) => (
-                        <Flex key={valueIndex} gap="3">
-                          <Flex direction="row" gap="1">
-                            <Flex align="center" gap="1">
-                              {TEXT_BOX_TYPES.includes(
-                                filterFields.find((mf) => mf.field_name === filter.field_name)?.data_type ||
-                                  'character varying',
-                              ) ? (
-                                <TextField.Root
-                                  disabled={value === null}
-                                  placeholder={
-                                    filter.relation === 'between'
-                                      ? valueIndex === 0
-                                        ? 'Lower bound'
-                                        : 'Upper bound'
-                                      : 'Value'
-                                  }
-                                  value={(value || '') as string} // TODO hack
-                                  onChange={(e) => updateFilterValue(index, valueIndex, e.target.value)}
-                                />
-                              ) : (
-                                <>
-                                  <Switch
-                                    disabled={value === null}
-                                    size={'1'}
-                                    checked={value === true}
-                                    onCheckedChange={(checked) => updateFilterValue(index, valueIndex, checked)}
-                                  />
-                                  {value === true ? <Text size={'1'}>TRUE</Text> : <Text size={'1'}>FALSE</Text>}
-                                </>
-                              )}
-                              <Switch
-                                size="1"
-                                checked={value === null}
-                                onCheckedChange={(checked) => {
-                                  updateFilterValue(index, valueIndex, checked ? null : '');
-                                }}
-                              />
-                              <Text size="1">NULL</Text>
-                            </Flex>
-
-                            {filter.relation !== 'between' && (
-                              <Button
-                                type="button"
-                                color="red"
-                                variant="soft"
-                                disabled={filter.value.length === 1}
-                                onClick={() => removeFilterValue(index, valueIndex)}
-                              >
-                                <TrashIcon />
-                              </Button>
-                            )}
-                          </Flex>
-                          {(filter.relation === 'includes' || filter.relation === 'excludes') &&
-                            valueIndex === filter.value.length - 1 && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => addFilterValue(index)}
-                                disabled={filter.value.length === 0 || filter.value[filter.value.length - 1] === ''}
-                              >
-                                <PlusIcon /> Add Value
-                              </Button>
-                            )}
-                        </Flex>
-                      ))}
-                    </Flex>
-                  </Flex>
-                </Flex>
+                <FilterField
+                  filter={filter}
+                  index={index}
+                  filterFieldsLoading={loadingParticipantTypes}
+                  filterFields={filterFields}
+                  updateFilter={(...args) => updateFilter(index, ...args)}
+                  updateFilterValue={(...args) => updateFilterValue(index, ...args)}
+                  removeFilter={() => removeFilter(index)}
+                  removeFilterValue={(...args) => removeFilterValue(index, ...args)}
+                  addFilterValue={() => addFilterValue(index)}
+                />
               </Card>
             ))}
             <Flex justify="end" mt="4">

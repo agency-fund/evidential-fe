@@ -6,7 +6,7 @@ import { ConfirmationForm } from './confirmation-form';
 import { Box, Container, Flex, Heading } from '@radix-ui/themes';
 import {
   Arm,
-  AudienceSpecFilter,
+  AudienceSpecFilterInput,
   CreateExperimentWithAssignmentResponse,
   PowerResponseOutput,
 } from '@/api/methods.schemas';
@@ -22,7 +22,7 @@ export type ExperimentFormData = {
   participantType?: string;
   primaryMetric?: string;
   secondaryMetrics: string[];
-  filters: AudienceSpecFilter[];
+  filters: AudienceSpecFilterInput[];
   confidence: number;
   power: number;
   effectPctChange: number;
