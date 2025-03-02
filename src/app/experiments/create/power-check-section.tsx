@@ -4,6 +4,7 @@ import { ExperimentFormData } from '@/app/experiments/create/page';
 import { usePowerCheck } from '@/api/admin';
 import { convertFormDataToCreateExperimentRequest } from '@/app/experiments/create/helpers';
 import { isHttpOk } from '@/services/typehelper';
+import { GenericErrorCallout } from '@/app/components/generic-error';
 
 interface PowerCheckSectionProps {
   formData: ExperimentFormData;
@@ -49,6 +50,12 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
           </>
         )}
       </Flex>
+
+      {!isHttpOk(data) && (
+        <Flex align="center" gap="2">
+          <GenericErrorCallout title={'Power check failed'} message={data ? JSON.stringify(data.data) : 'unknown'} />
+        </Flex>
+      )}
 
       {isMutating && (
         <Flex align="center" gap="2">
