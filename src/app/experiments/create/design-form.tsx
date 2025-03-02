@@ -1,18 +1,13 @@
 'use client';
 import { Badge, Button, Card, Flex, Heading, HoverCard, Select, Spinner, Text, TextField } from '@radix-ui/themes';
 import { ExperimentFormData } from './page';
-import { LightningBoltIcon, PlusIcon } from '@radix-ui/react-icons';
+import { LightningBoltIcon } from '@radix-ui/react-icons';
 import { useCreateExperimentWithAssignment, useInspectParticipantTypes } from '@/api/admin';
-import { ArrayElement, isHttpOk, ValueOf } from '@/services/typehelper';
-import {
-  AudienceSpecFilterInput,
-  FilterValueTypes,
-  GetFiltersResponseElement,
-  GetMetricsResponseElement,
-} from '@/api/methods.schemas';
+import { isHttpOk } from '@/services/typehelper';
+import { AudienceSpecFilterInput, GetFiltersResponseElement, GetMetricsResponseElement } from '@/api/methods.schemas';
 import { PowerCheckSection } from '@/app/experiments/create/power-check-section';
 import { convertFormDataToCreateExperimentRequest } from '@/app/experiments/create/helpers';
-import { FilterField } from '@/app/experiments/create/filter-field';
+import { FilterBuilder } from '@/app/components/querybuilder/filter-builder';
 
 interface DesignFormProps {
   formData: ExperimentFormData;
@@ -44,66 +39,6 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
   const filterFields: GetFiltersResponseElement[] = isHttpOk(participantTypesData)
     ? participantTypesData.data.filters
     : [];
-  const addFilter = () => {
-    onFormDataChange({
-      ...formData,
-      filters: [
-        ...formData.filters,
-        {
-          field_name: '',
-          relation: 'includes',
-          value: [''],
-        },
-      ],
-    });
-  };
-
-  const removeFilter = (index: number) => {
-    onFormDataChange({
-      ...formData,
-      filters: formData.filters.filter((_, i) => i !== index),
-    });
-  };
-
-  const updateFilter = (
-    index: number,
-    field: keyof AudienceSpecFilterInput,
-    value: ValueOf<AudienceSpecFilterInput>,
-  ) => {
-    const newFilters = [...formData.filters];
-    newFilters[index] = { ...newFilters[index], [field]: value };
-
-    // Reset values when operator changes
-    if (field === 'relation') {
-      if (value === 'between') {
-        newFilters[index].value = ['', ''];
-      } else {
-        newFilters[index].value = [''];
-      }
-    }
-
-    onFormDataChange({ ...formData, filters: newFilters });
-  };
-
-  const addFilterValue = (filterIndex: number) => {
-    const newFilters = [...formData.filters];
-    newFilters[filterIndex].value = [...newFilters[filterIndex].value, ''] as FilterValueTypes;
-    onFormDataChange({ ...formData, filters: newFilters });
-  };
-
-  const removeFilterValue = (filterIndex: number, valueIndex: number) => {
-    const newFilters = [...formData.filters];
-    newFilters[filterIndex].value = newFilters[filterIndex].value.filter(
-      (_, i) => i !== valueIndex,
-    ) as FilterValueTypes;
-    onFormDataChange({ ...formData, filters: newFilters });
-  };
-
-  const updateFilterValue = (filterIndex: number, valueIndex: number, value: ArrayElement<FilterValueTypes>) => {
-    const newFilters = [...formData.filters];
-    newFilters[filterIndex].value[valueIndex] = value;
-    onFormDataChange({ ...formData, filters: newFilters });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -226,26 +161,11 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
             Filters
           </Heading>
           <Flex direction="column" gap="3">
-            {formData.filters.map((filter, index) => (
-              <Card key={index}>
-                <FilterField
-                  filter={filter}
-                  index={index}
-                  filterFieldsLoading={loadingParticipantTypes}
-                  filterFields={filterFields}
-                  updateFilter={(...args) => updateFilter(index, ...args)}
-                  updateFilterValue={(...args) => updateFilterValue(index, ...args)}
-                  removeFilter={() => removeFilter(index)}
-                  removeFilterValue={(...args) => removeFilterValue(index, ...args)}
-                  addFilterValue={() => addFilterValue(index)}
-                />
-              </Card>
-            ))}
-            <Flex justify="end" mt="4">
-              <Button type="button" onClick={addFilter}>
-                <PlusIcon /> Add Filter
-              </Button>
-            </Flex>
+            <FilterBuilder
+              availableFields={filterFields}
+              filters={formData.filters}
+              onChange={(filters: AudienceSpecFilterInput[]) => onFormDataChange({ ...formData, filters })}
+            />
           </Flex>
         </Card>
 
