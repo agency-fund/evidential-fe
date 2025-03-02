@@ -21,7 +21,7 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
     // Default for includes relation
     return filter.value.length > 1 ? 'in-list' : 'equals';
   });
-  
+
   const includesNull = filter.value.includes(null);
 
   const handleOperatorChange = (newOperator: string) => {
@@ -123,8 +123,8 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
           <Select.Item value="not-equals">Not equals</Select.Item>
           {!isUuid && (
             <>
-              <Select.Item value="in-list">Contains any of</Select.Item>
-              <Select.Item value="not-in-list">Does not contain any of</Select.Item>
+              <Select.Item value="in-list">Is one of</Select.Item>
+              <Select.Item value="not-in-list">Is not one of</Select.Item>
             </>
           )}
         </Select.Content>
