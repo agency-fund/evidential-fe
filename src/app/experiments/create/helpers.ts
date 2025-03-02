@@ -13,7 +13,7 @@ export const convertFormDataToCreateExperimentRequest = (formData: ExperimentFor
       metrics: [formData.primaryMetric!, ...formData.secondaryMetrics].map(
         (field_name): DesignSpecMetricRequest => ({
           field_name: field_name,
-          metric_pct_change: Number(formData.effectPctChange) / 100.0, // TODO: populate with effect % change
+          metric_pct_change: Number(formData.effectPctChange) / 100.0,
         }),
       ),
       strata_field_names: [],
