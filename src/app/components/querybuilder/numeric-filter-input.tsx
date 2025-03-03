@@ -3,8 +3,8 @@
 import { Button, Checkbox, Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 import { AudienceSpecFilter, DataType } from '@/api/methods.schemas';
-import { TypedFilter, createDefaultValueForOperator, operatorToRelation } from './utils';
-import React, { useState } from 'react';
+import { createDefaultValueForOperator, operatorToRelation, TypedFilter } from './utils';
+import React, { useEffect, useState } from 'react';
 
 export interface NumericFilterInputProps {
   filter: AudienceSpecFilter & TypedFilter<number>;
@@ -27,6 +27,36 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
     return filter.value.length > 1 ? 'in-list' : 'equals';
   });
 
+  // String-based input states for each possible input field
+  const [equalsValue, setEqualsValue] = useState(() => 
+    filter.value[0] !== null ? String(filter.value[0]) : '');
+  const [greaterThanValue, setGreaterThanValue] = useState(() => 
+    filter.value[0] !== null ? String(filter.value[0]) : '');
+  const [lessThanValue, setLessThanValue] = useState(() => 
+    filter.value[1] !== null ? String(filter.value[1]) : '');
+  const [betweenMinValue, setBetweenMinValue] = useState(() => 
+    filter.value[0] !== null ? String(filter.value[0]) : '');
+  const [betweenMaxValue, setBetweenMaxValue] = useState(() => 
+    filter.value[1] !== null ? String(filter.value[1]) : '');
+  const [listValues, setListValues] = useState<string[]>(() => 
+    filter.value.filter(v => v !== null).map(v => String(v)));
+
+  // Update string states when filter changes externally
+  useEffect(() => {
+    if (operator === 'equals' || operator === 'not-equals') {
+      setEqualsValue(filter.value[0] !== null ? String(filter.value[0]) : '');
+    } else if (operator === 'greater-than') {
+      setGreaterThanValue(filter.value[0] !== null ? String(filter.value[0]) : '');
+    } else if (operator === 'less-than') {
+      setLessThanValue(filter.value[1] !== null ? String(filter.value[1]) : '');
+    } else if (operator === 'between') {
+      setBetweenMinValue(filter.value[0] !== null ? String(filter.value[0]) : '');
+      setBetweenMaxValue(filter.value[1] !== null ? String(filter.value[1]) : '');
+    } else if (operator === 'in-list' || operator === 'not-in-list') {
+      setListValues(filter.value.filter(v => v !== null).map(v => String(v)));
+    }
+  }, [filter.value, operator]);
+
   const includesNull = filter.value.includes(null);
 
   const handleOperatorChange = (newOperator: string) => {
@@ -41,21 +71,23 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
     });
   };
 
-  const parseValue = (inputValue: string): number => {
-    // Check if the input is a valid number string (allowing for empty decimal points, etc.)
-    const isValidNumber = /^-?\d*\.?\d*$/.test(inputValue) && inputValue.trim() !== '';
+  const parseValue = (inputValue: string): number | null => {
+    // Allow empty string to be treated as a special case
+    if (inputValue.trim() === '' || inputValue === '-') {
+      return null;
+    }
 
+    // Check if the input is a valid number string
+    const isValidNumber = /^-?\d*\.?\d*$/.test(inputValue);
     if (!isValidNumber) {
-      // Return the current value or 0 if there isn't one
-      const currentValue = filter.value[0];
-      return typeof currentValue === 'number' && !isNaN(currentValue) ? currentValue : 0;
+      return null;
     }
 
     const parsedValue =
       dataType === 'integer' || dataType === 'bigint' ? parseInt(inputValue, 10) : parseFloat(inputValue);
 
-    // If parsing resulted in NaN, return 0 as a fallback
-    return isNaN(parsedValue) ? 0 : parsedValue;
+    // If parsing resulted in NaN, return null
+    return isNaN(parsedValue) ? null : parsedValue;
   };
 
   const getStepAttribute = (): string => {
@@ -66,12 +98,41 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
     }
   };
 
-  const handleValueChange = (index: number, newValue: string) => {
-    const parsedValue = parseValue(newValue);
-    // Ensure we never set NaN values in the filter
-    if (!isNaN(parsedValue)) {
-      const newValues = [...filter.value];
+  const updateFilterValue = (index: number, value: number | null) => {
+    const newValues = [...filter.value];
+    
+    // If value is null and we're not already tracking nulls, use 0 as fallback
+    if (value === null && !includesNull) {
+      const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
+      newValues[index] = defaultValue;
+    } else {
+      newValues[index] = value;
+    }
+    
+    onChange({
+      ...filter,
+      value: newValues,
+    });
+  };
+
+  const handleListValueChange = (index: number, inputValue: string) => {
+    // Update the string state
+    const newListValues = [...listValues];
+    newListValues[index] = inputValue;
+    setListValues(newListValues);
+    
+    // Parse and update the actual filter if valid
+    const parsedValue = parseValue(inputValue);
+    if (parsedValue !== null) {
+      const nonNullValues = filter.value.filter(v => v !== null);
+      const newValues = [...nonNullValues];
       newValues[index] = parsedValue;
+      
+      // Preserve null if it was there
+      if (includesNull) {
+        newValues.push(null);
+      }
+      
       onChange({
         ...filter,
         value: newValues,
@@ -82,6 +143,11 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
   const addValue = (e: React.MouseEvent) => {
     e.preventDefault();
     const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
+    
+    // Update string state
+    setListValues([...listValues, String(defaultValue)]);
+    
+    // Update filter
     onChange({
       ...filter,
       value: [...filter.value.filter((v) => v !== null), defaultValue, ...(includesNull ? [null] : [])],
@@ -89,12 +155,22 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
   };
 
   const removeValue = (index: number) => {
-    const newValues = filter.value.filter((_, i) => i !== index);
+    // Update string state
+    const newListValues = listValues.filter((_, i) => i !== index);
+    setListValues(newListValues);
+    
+    // Update filter
+    const newValues = filter.value.filter((_, i) => 
+      i !== filter.value.findIndex((v, idx) => v !== null && idx === index)
+    );
+    
     if (newValues.length === 0 || (newValues.length === 1 && newValues[0] === null)) {
       // Don't allow removing all non-null values - add a default one
       const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
       newValues.unshift(defaultValue);
+      setListValues([String(defaultValue)]);
     }
+    
     onChange({
       ...filter,
       value: newValues,
@@ -121,23 +197,52 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
       case 'not-equals':
         return (
           <TextField.Root
-            type="number"
+            type="text"
+            inputMode="decimal"
             step={getStepAttribute()}
-            value={filter.value[0] as number}
-            onChange={(e) => handleValueChange(0, e.target.value)}
+            value={equalsValue}
+            onChange={(e) => {
+              const inputValue = e.target.value;
+              setEqualsValue(inputValue);
+              
+              const parsedValue = parseValue(inputValue);
+              if (parsedValue !== null) {
+                updateFilterValue(0, parsedValue);
+              }
+            }}
+            onBlur={() => {
+              // On blur, if the field is empty, set a default value
+              if (equalsValue.trim() === '' || equalsValue === '-') {
+                const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
+                setEqualsValue(String(defaultValue));
+                updateFilterValue(0, defaultValue);
+              }
+            }}
           />
         );
 
       case 'greater-than':
         return (
           <TextField.Root
-            type="number"
+            type="text"
+            inputMode="decimal"
             step={getStepAttribute()}
-            value={filter.value[0] as number}
+            value={greaterThanValue}
             onChange={(e) => {
-              const value = parseValue(e.target.value);
-              if (!isNaN(value)) {
-                onChange({ ...filter, value: [value, null] });
+              const inputValue = e.target.value;
+              setGreaterThanValue(inputValue);
+              
+              const parsedValue = parseValue(inputValue);
+              if (parsedValue !== null) {
+                onChange({ ...filter, value: [parsedValue, null] });
+              }
+            }}
+            onBlur={() => {
+              // On blur, if the field is empty, set a default value
+              if (greaterThanValue.trim() === '' || greaterThanValue === '-') {
+                const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
+                setGreaterThanValue(String(defaultValue));
+                onChange({ ...filter, value: [defaultValue, null] });
               }
             }}
           />
@@ -146,13 +251,25 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
       case 'less-than':
         return (
           <TextField.Root
-            type="number"
+            type="text"
+            inputMode="decimal"
             step={getStepAttribute()}
-            value={filter.value[1] as number}
+            value={lessThanValue}
             onChange={(e) => {
-              const value = parseValue(e.target.value);
-              if (!isNaN(value)) {
-                onChange({ ...filter, value: [null, value] });
+              const inputValue = e.target.value;
+              setLessThanValue(inputValue);
+              
+              const parsedValue = parseValue(inputValue);
+              if (parsedValue !== null) {
+                onChange({ ...filter, value: [null, parsedValue] });
+              }
+            }}
+            onBlur={() => {
+              // On blur, if the field is empty, set a default value
+              if (lessThanValue.trim() === '' || lessThanValue === '-') {
+                const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
+                setLessThanValue(String(defaultValue));
+                onChange({ ...filter, value: [null, defaultValue] });
               }
             }}
           />
@@ -162,25 +279,49 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
         return (
           <Flex gap="2" align="center">
             <TextField.Root
-              type="number"
+              type="text"
+              inputMode="decimal"
               step={getStepAttribute()}
-              value={filter.value[0] as number}
+              value={betweenMinValue}
               onChange={(e) => {
-                const min = parseValue(e.target.value);
-                if (!isNaN(min)) {
-                  onChange({ ...filter, value: [min, filter.value[1]] });
+                const inputValue = e.target.value;
+                setBetweenMinValue(inputValue);
+                
+                const parsedValue = parseValue(inputValue);
+                if (parsedValue !== null) {
+                  onChange({ ...filter, value: [parsedValue, filter.value[1]] });
+                }
+              }}
+              onBlur={() => {
+                // On blur, if the field is empty, set a default value
+                if (betweenMinValue.trim() === '' || betweenMinValue === '-') {
+                  const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
+                  setBetweenMinValue(String(defaultValue));
+                  onChange({ ...filter, value: [defaultValue, filter.value[1]] });
                 }
               }}
             />
             <Text>and</Text>
             <TextField.Root
-              type="number"
+              type="text"
+              inputMode="decimal"
               step={getStepAttribute()}
-              value={filter.value[1] as number}
+              value={betweenMaxValue}
               onChange={(e) => {
-                const max = parseValue(e.target.value);
-                if (!isNaN(max)) {
-                  onChange({ ...filter, value: [filter.value[0], max] });
+                const inputValue = e.target.value;
+                setBetweenMaxValue(inputValue);
+                
+                const parsedValue = parseValue(inputValue);
+                if (parsedValue !== null) {
+                  onChange({ ...filter, value: [filter.value[0], parsedValue] });
+                }
+              }}
+              onBlur={() => {
+                // On blur, if the field is empty, set a default value
+                if (betweenMaxValue.trim() === '' || betweenMaxValue === '-') {
+                  const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
+                  setBetweenMaxValue(String(defaultValue));
+                  onChange({ ...filter, value: [filter.value[0], defaultValue] });
                 }
               }}
             />
@@ -193,13 +334,30 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
 
         return (
           <Flex direction="column" gap="1">
-            {nonNullValues.map((val, idx) => (
+            {listValues.map((val, idx) => (
               <Flex key={idx} gap="1" align="center">
                 <TextField.Root
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
                   step={getStepAttribute()}
-                  value={val as number}
-                  onChange={(e) => handleValueChange(idx, e.target.value)}
+                  value={val}
+                  onChange={(e) => handleListValueChange(idx, e.target.value)}
+                  onBlur={() => {
+                    // On blur, if the field is empty, set a default value
+                    if (listValues[idx].trim() === '' || listValues[idx] === '-') {
+                      const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
+                      const newListValues = [...listValues];
+                      newListValues[idx] = String(defaultValue);
+                      setListValues(newListValues);
+                      
+                      const newFilterValues = [...nonNullValues];
+                      newFilterValues[idx] = defaultValue;
+                      onChange({
+                        ...filter,
+                        value: [...newFilterValues, ...(includesNull ? [null] : [])],
+                      });
+                    }
+                  }}
                 />
                 {nonNullValues.length > 1 && (
                   <IconButton
