@@ -57,7 +57,10 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
 
       {!isHttpOk(data) && error && (
         <Flex align="center" gap="2">
-          <GenericErrorCallout title={'Power check failed'} message={data ? JSON.stringify(data.data) : 'unknown'} />
+          <GenericErrorCallout
+            title={'Power check failed'}
+            message={data ? JSON.stringify(data.data, null, 2) : 'unknown'}
+          />
         </Flex>
       )}
 
@@ -90,7 +93,9 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
                   </Table.Row>
                   <Table.Row>
                     <Table.RowHeaderCell>Available Sample Size</Table.RowHeaderCell>
-                    <Table.Cell>{metricAnalysis.metric_spec.available_n === null ? '?' : metricAnalysis.metric_spec.available_n}</Table.Cell>
+                    <Table.Cell>
+                      {metricAnalysis.metric_spec.available_n === null ? '?' : metricAnalysis.metric_spec.available_n}
+                    </Table.Cell>
                   </Table.Row>
                   <Table.Row>
                     <Table.RowHeaderCell>Minimum Detectable Effect</Table.RowHeaderCell>
