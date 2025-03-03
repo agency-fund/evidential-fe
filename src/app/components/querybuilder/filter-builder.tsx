@@ -128,9 +128,11 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
           onRemove={() => removeFilter(index)}
         />
       ))}
-      <Button onClick={addFilter} variant="soft" size="2">
-        <PlusIcon /> Add Filter
-      </Button>
+      <Flex>
+        <Button onClick={addFilter} variant="soft" size="2">
+          <PlusIcon /> Add Filter
+        </Button>
+      </Flex>
     </Flex>
   );
 }
