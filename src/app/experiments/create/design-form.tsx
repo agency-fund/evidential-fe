@@ -4,7 +4,7 @@ import { ExperimentFormData } from './page';
 import { LightningBoltIcon } from '@radix-ui/react-icons';
 import { useCreateExperimentWithAssignment, useInspectParticipantTypes } from '@/api/admin';
 import { isHttpOk } from '@/services/typehelper';
-import { AudienceSpecFilterInput, GetFiltersResponseElement, GetMetricsResponseElement } from '@/api/methods.schemas';
+import { AudienceSpecFilter, GetFiltersResponseElement, GetMetricsResponseElement } from '@/api/methods.schemas';
 import { PowerCheckSection } from '@/app/experiments/create/power-check-section';
 import { convertFormDataToCreateExperimentRequest } from '@/app/experiments/create/helpers';
 import { FilterBuilder } from '@/app/components/querybuilder/filter-builder';
@@ -164,7 +164,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
             <FilterBuilder
               availableFields={filterFields}
               filters={formData.filters}
-              onChange={(filters: AudienceSpecFilterInput[]) => onFormDataChange({ ...formData, filters })}
+              onChange={(filters: AudienceSpecFilter[]) => onFormDataChange({ ...formData, filters })}
             />
           </Flex>
         </Card>

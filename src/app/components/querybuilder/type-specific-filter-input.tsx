@@ -1,7 +1,7 @@
 'use client';
 
 import { Text } from '@radix-ui/themes';
-import { AudienceSpecFilterInput, DataType } from '@/api/methods.schemas';
+import { AudienceSpecFilter, DataType } from '@/api/methods.schemas';
 import { BooleanFilterInput } from './boolean-filter-input';
 import { StringFilterInput } from './string-filter-input';
 import { NumericFilterInput } from './numeric-filter-input';
@@ -9,8 +9,8 @@ import { DateFilterInput } from './date-filter-input';
 
 export interface TypeSpecificFilterInputProps {
   dataType: DataType;
-  filter: AudienceSpecFilterInput;
-  onChange: (filter: AudienceSpecFilterInput) => void;
+  filter: AudienceSpecFilter;
+  onChange: (filter: AudienceSpecFilter) => void;
 }
 
 export function TypeSpecificFilterInput({ dataType, filter, onChange }: TypeSpecificFilterInputProps) {

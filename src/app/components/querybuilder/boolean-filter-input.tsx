@@ -1,11 +1,11 @@
 'use client';
 
 import { Checkbox, Flex, Select, Text } from '@radix-ui/themes';
-import { AudienceSpecFilterInput } from '@/api/methods.schemas';
+import { AudienceSpecFilter } from '@/api/methods.schemas';
 
 export interface BooleanFilterInputProps {
-  filter: AudienceSpecFilterInput;
-  onChange: (filter: AudienceSpecFilterInput) => void;
+  filter: AudienceSpecFilter;
+  onChange: (filter: AudienceSpecFilter) => void;
 }
 
 export function BooleanFilterInput({ filter, onChange }: BooleanFilterInputProps) {

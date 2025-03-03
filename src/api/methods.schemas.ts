@@ -97,7 +97,7 @@ export interface Assignment {
  */
 export interface AudienceSpecInput {
 	participant_type: string;
-	filters: AudienceSpecFilterInput[];
+	filters: AudienceSpecFilter[];
 }
 
 /**
@@ -105,7 +105,7 @@ export interface AudienceSpecInput {
  */
 export interface AudienceSpecOutput {
 	participant_type: string;
-	filters: AudienceSpecFilterOutput[];
+	filters: AudienceSpecFilter[];
 }
 
 /**
@@ -151,57 +151,7 @@ Values must be expressed as ISO8601 datetime strings compatible with Python's da
 
 If a timezone is provided, it must be UTC.
  */
-export interface AudienceSpecFilterInput {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-	field_name: string;
-	relation: Relation;
-	value: FilterValueTypes;
-}
-
-/**
- * Defines criteria for filtering rows by value.
-
-## Examples
-
-| Relation | Value       | logical Result                                    |
-|----------|-------------|---------------------------------------------------|
-| INCLUDES | [None]      | Match when `x IS NULL`                            |
-| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |
-| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |
-| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |
-| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |
-| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |
-| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |
-| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |
-| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |
-
-String comparisons are case-sensitive.
-
-## Special Handling for Comma-Separated Fields
-
-When the filter name ends in "experiment_ids", the filter is interpreted as follows:
-
-| Value | Filter         | Result   |
-|-------|----------------|----------|
-| "a,b" | INCLUDES ["a"] | Match    |
-| "a,b" | INCLUDES ["d"] | No match |
-| "a,b" | EXCLUDES ["d"] | Match    |
-| "a,b" | EXCLUDES ["b"] | No match |
-
-Note: The BETWEEN relation is not supported for comma-separated values.
-
-Note: CSV field comparisons are case-insensitive.
-
-## Handling of datetime and timestamp values
-
-DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.
-
-Values must be expressed as ISO8601 datetime strings compatible with Python's datetime.fromisoformat()
-(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).
-
-If a timezone is provided, it must be UTC.
- */
-export interface AudienceSpecFilterOutput {
+export interface AudienceSpecFilter {
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
 	relation: Relation;
@@ -218,10 +168,6 @@ export interface BalanceCheck {
 	p_value: number;
 	balance_ok: boolean;
 }
-
-export type BoolArrayItem = boolean | null;
-
-export type BoolArray = BoolArrayItem[];
 
 export type BqDsnInputDriver =
 	(typeof BqDsnInputDriver)[keyof typeof BqDsnInputDriver];
@@ -609,11 +555,19 @@ export interface FieldMetadata {
 	description: string;
 }
 
-export type FilterValueTypes = IntArray | FloatArray | StringArray | BoolArray;
+export type FilterValueTypesAnyOfItem = number | null;
 
-export type FloatArrayItem = number | null;
+export type FilterValueTypesAnyOfTwoItem = number | null;
 
-export type FloatArray = FloatArrayItem[];
+export type FilterValueTypesAnyOfThreeItem = string | null;
+
+export type FilterValueTypesAnyOfFourItem = boolean | null;
+
+export type FilterValueTypes =
+	| FilterValueTypesAnyOfItem[]
+	| FilterValueTypesAnyOfTwoItem[]
+	| FilterValueTypesAnyOfThreeItem[]
+	| FilterValueTypesAnyOfFourItem[];
 
 export type GcpCredentials = GcpServiceAccountInfo | GcpServiceAccountFile;
 
@@ -841,10 +795,6 @@ export interface InspectParticipantTypesResponse {
 	metrics: GetMetricsResponseElement[];
 	strata: GetStrataResponseElement[];
 }
-
-export type IntArrayItem = number | null;
-
-export type IntArray = IntArrayItem[];
 
 export interface ListApiKeysResponse {
 	items: ApiKeySummary[];
@@ -1137,10 +1087,6 @@ export interface Strata {
 	field_name: string;
 	strata_value?: StrataStrataValue;
 }
-
-export type StringArrayItem = string | null;
-
-export type StringArray = StringArrayItem[];
 
 export interface TokenInfo {
 	email: string;

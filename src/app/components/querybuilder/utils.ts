@@ -1,7 +1,7 @@
-import { AudienceSpecFilterInput, DataType, FilterValueTypes } from '@/api/methods.schemas';
+import { AudienceSpecFilter, DataType, FilterValueTypes } from '@/api/methods.schemas';
 
 // Get default filter configuration for a given field type
-export function getDefaultFilterForType(fieldName: string, dataType: DataType): AudienceSpecFilterInput {
+export function getDefaultFilterForType(fieldName: string, dataType: DataType): AudienceSpecFilter {
   switch (dataType) {
     case 'boolean':
       return {
