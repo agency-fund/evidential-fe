@@ -106,7 +106,7 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
       field?.data_type === 'numeric';
 
     if (isNumeric) {
-      const sanitizedValues = filter.value.map((val) => (val === null ? null : isNaN(val as number) ? 0 : val));
+      const sanitizedValues = filter.value.map((val) => (val === null ? null : isNaN(val as number) ? 0 : Number(val)));
       return { ...filter, value: sanitizedValues };
     }
     return filter;
