@@ -2756,6 +2756,100 @@ export const useGetExperimentAssignments = <TError = HTTPValidationError>(
 	};
 };
 /**
+ * @summary Export experiment assignments as CSV file; BalanceCheck not included. csv header form: participant_id,arm_id,arm_name,strata_name1,strata_name2,...
+ */
+export type getExperimentAssignmentsAsCsvResponse200 = {
+	data: unknown;
+	status: 200;
+};
+
+export type getExperimentAssignmentsAsCsvResponse422 = {
+	data: HTTPValidationError;
+	status: 422;
+};
+
+export type getExperimentAssignmentsAsCsvResponseComposite =
+	| getExperimentAssignmentsAsCsvResponse200
+	| getExperimentAssignmentsAsCsvResponse422;
+
+export type getExperimentAssignmentsAsCsvResponse =
+	getExperimentAssignmentsAsCsvResponseComposite & {
+		headers: Headers;
+	};
+
+export const getGetExperimentAssignmentsAsCsvUrl = (
+	datasourceId: string,
+	experimentId: string,
+) => {
+	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments/csv`;
+};
+
+export const getExperimentAssignmentsAsCsv = async (
+	datasourceId: string,
+	experimentId: string,
+	options?: RequestInit,
+): Promise<getExperimentAssignmentsAsCsvResponse> => {
+	return orvalFetch<getExperimentAssignmentsAsCsvResponse>(
+		getGetExperimentAssignmentsAsCsvUrl(datasourceId, experimentId),
+		{
+			...options,
+			method: "GET",
+		},
+	);
+};
+
+export const getGetExperimentAssignmentsAsCsvKey = (
+	datasourceId: string,
+	experimentId: string,
+) =>
+	[
+		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments/csv`,
+	] as const;
+
+export type GetExperimentAssignmentsAsCsvQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getExperimentAssignmentsAsCsv>>
+>;
+export type GetExperimentAssignmentsAsCsvQueryError = HTTPValidationError;
+
+/**
+ * @summary Export experiment assignments as CSV file; BalanceCheck not included. csv header form: participant_id,arm_id,arm_name,strata_name1,strata_name2,...
+ */
+export const useGetExperimentAssignmentsAsCsv = <TError = HTTPValidationError>(
+	datasourceId: string,
+	experimentId: string,
+	options?: {
+		swr?: SWRConfiguration<
+			Awaited<ReturnType<typeof getExperimentAssignmentsAsCsv>>,
+			TError
+		> & { swrKey?: Key; enabled?: boolean };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const isEnabled =
+		swrOptions?.enabled !== false && !!(datasourceId && experimentId);
+	const swrKey =
+		swrOptions?.swrKey ??
+		(() =>
+			isEnabled
+				? getGetExperimentAssignmentsAsCsvKey(datasourceId, experimentId)
+				: null);
+	const swrFn = () =>
+		getExperimentAssignmentsAsCsv(datasourceId, experimentId, requestOptions);
+
+	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
+		swrKey,
+		swrFn,
+		swrOptions,
+	);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
  * @summary Power Check
  */
 export type powerCheckResponse200 = {

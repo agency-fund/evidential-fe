@@ -1612,6 +1612,16 @@ export const getExperimentAssignmentsResponse = zod.object({
 });
 
 /**
+ * @summary Export experiment assignments as CSV file; BalanceCheck not included. csv header form: participant_id,arm_id,arm_name,strata_name1,strata_name2,...
+ */
+export const getExperimentAssignmentsAsCsvParams = zod.object({
+	datasource_id: zod.string(),
+	experiment_id: zod.string(),
+});
+
+export const getExperimentAssignmentsAsCsvResponse = zod.any();
+
+/**
  * @summary Power Check
  */
 export const powerCheckParams = zod.object({
