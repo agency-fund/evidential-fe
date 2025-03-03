@@ -2,7 +2,6 @@
 
 import { Checkbox, Flex, Select, Text } from '@radix-ui/themes';
 import { AudienceSpecFilterInput } from '@/api/methods.schemas';
-import { useState } from 'react';
 
 export interface BooleanFilterInputProps {
   filter: AudienceSpecFilterInput;
@@ -10,33 +9,29 @@ export interface BooleanFilterInputProps {
 }
 
 export function BooleanFilterInput({ filter, onChange }: BooleanFilterInputProps) {
-  // For boolean, we just need to track if it's true or false
-  const [isTrue, setIsTrue] = useState(() => {
-    const nonNullValue = filter.value.find(v => v !== null);
-    return nonNullValue === true;
-  });
-  
-  const includesNull = filter.value.includes(null);
+  const hasTrue = filter.value.some((v) => v === true);
+  const hasNull = filter.value.some((v) => v === null);
 
   const handleValueChange = (newValue: boolean) => {
-    setIsTrue(newValue);
     onChange({
       ...filter,
       relation: 'includes',
-      value: includesNull ? [newValue, null] : [newValue],
+      value: hasNull ? [newValue, null] : [newValue],
     });
   };
 
   const handleNullChange = (includeNull: boolean) => {
+    const value = filter.value.filter((v) => v !== null);
+    const newValue = includeNull ? [...value, null] : value;
     onChange({
       ...filter,
-      value: includeNull ? [isTrue, null] : [isTrue],
+      value: newValue,
     });
   };
 
   return (
     <Flex gap="2" align="center">
-      <Select.Root value={String(value)} onValueChange={(v) => handleValueChange(v === 'true')}>
+      <Select.Root value={hasTrue ? 'true' : 'false'} onValueChange={(v) => handleValueChange(v === 'true')}>
         <Select.Trigger />
         <Select.Content>
           <Select.Item value="true">Is True</Select.Item>
@@ -45,7 +40,7 @@ export function BooleanFilterInput({ filter, onChange }: BooleanFilterInputProps
       </Select.Root>
 
       <Flex gap="1" align="center">
-        <Checkbox checked={includesNull} onCheckedChange={(checked) => handleNullChange(!!checked)} />
+        <Checkbox checked={hasNull} onCheckedChange={(checked) => handleNullChange(checked === true)} />
         <Text size="2">Include NULL values</Text>
       </Flex>
     </Flex>
