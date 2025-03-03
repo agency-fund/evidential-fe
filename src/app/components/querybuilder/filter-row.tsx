@@ -1,8 +1,8 @@
 'use client';
 
-import { Flex, IconButton, Select, Text } from '@radix-ui/themes';
+import { Badge, Flex, Grid, IconButton, Select, Text } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
-import { AudienceSpecFilterInput, DataType } from '../../../api/methods.schemas';
+import { AudienceSpecFilterInput, DataType } from '@/api/methods.schemas';
 import { TypeSpecificFilterInput } from './type-specific-filter-input';
 import { getDefaultFilterForType } from './utils';
 
@@ -48,33 +48,37 @@ export function FilterRow({ filter, availableFields, onChange, onRemove }: Filte
   };
 
   return (
-    <Flex gap="2" align="center">
-      <Select.Root value={filter.field_name} onValueChange={handleFieldChange}>
-        <Select.Trigger />
-        <Select.Content>
-          {availableFields.map((field) => (
-            <Select.Item key={field.field_name} value={field.field_name}>
-              <Text>{field.field_name}</Text>
-              <Text size="1" color="gray">
-                {field.data_type}
-              </Text>
-            </Select.Item>
-          ))}
-        </Select.Content>
-      </Select.Root>
+    <Grid columns={'2'} width={'auto'} gap={'3'}>
+      <Flex gap={'2'} align={'center'}>
+        <IconButton
+          variant="soft"
+          color="red"
+          onClick={(e) => {
+            e.preventDefault();
+            onRemove();
+          }}
+        >
+          <TrashIcon />
+        </IconButton>
 
-      {dataType && <TypeSpecificFilterInput dataType={dataType} filter={filter} onChange={onChange} />}
+        <Select.Root value={filter.field_name} onValueChange={handleFieldChange}>
+          <Select.Trigger />
+          <Select.Content>
+            {availableFields.map((field) => (
+              <Select.Item key={field.field_name} value={field.field_name}>
+                <Flex gap={'2'}>
+                  <Text>{field.field_name}</Text>
+                  <Badge size={'1'}>{field.data_type}</Badge>
+                </Flex>
+              </Select.Item>
+            ))}
+          </Select.Content>
+        </Select.Root>
+      </Flex>
 
-      <IconButton
-        variant="soft"
-        color="red"
-        onClick={(e) => {
-          e.preventDefault();
-          onRemove();
-        }}
-      >
-        <TrashIcon />
-      </IconButton>
-    </Flex>
+      <Flex gap={'2'} align={'center'}>
+        {dataType ? <TypeSpecificFilterInput dataType={dataType} filter={filter} onChange={onChange} /> : <Flex></Flex>}
+      </Flex>
+    </Grid>
   );
 }
