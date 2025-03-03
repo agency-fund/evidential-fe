@@ -4,7 +4,7 @@ import { Button, Checkbox, Flex, IconButton, Select, Text, TextField } from '@ra
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 import { AudienceSpecFilterInput, DataType } from '@/api/methods.schemas';
 import { createDefaultValueForOperator, operatorToRelation } from './utils';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 export interface NumericFilterInputProps {
   filter: AudienceSpecFilterInput;
@@ -26,7 +26,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
     // Default for includes relation
     return filter.value.length > 1 ? 'in-list' : 'equals';
   });
-  
+
   const includesNull = filter.value.includes(null);
 
   const handleOperatorChange = (newOperator: string) => {
@@ -44,17 +44,16 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
   const parseValue = (inputValue: string): number => {
     // Check if the input is a valid number string (allowing for empty decimal points, etc.)
     const isValidNumber = /^-?\d*\.?\d*$/.test(inputValue) && inputValue.trim() !== '';
-    
+
     if (!isValidNumber) {
       // Return the current value or 0 if there isn't one
       const currentValue = filter.value[0];
       return typeof currentValue === 'number' && !isNaN(currentValue) ? currentValue : 0;
     }
-    
-    const parsedValue = dataType === 'integer' || dataType === 'bigint' 
-      ? parseInt(inputValue, 10) 
-      : parseFloat(inputValue);
-      
+
+    const parsedValue =
+      dataType === 'integer' || dataType === 'bigint' ? parseInt(inputValue, 10) : parseFloat(inputValue);
+
     // If parsing resulted in NaN, return 0 as a fallback
     return isNaN(parsedValue) ? 0 : parsedValue;
   };
