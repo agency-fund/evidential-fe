@@ -1,7 +1,8 @@
 'use client';
 import { Button, Flex, Heading, Table, Text } from '@radix-ui/themes';
 import Link from 'next/link';
-import { DownloadIcon, PlusIcon } from '@radix-ui/react-icons';
+import { PlusIcon } from '@radix-ui/react-icons';
+import { DownloadAssignmentsCsvButton } from './download-assignments-csv-button';
 import { useListDatasources, useListExperiments } from '@/api/admin';
 import { DeleteExperimentButton } from './delete-experiment-button';
 import { XSpinner } from '@/app/components/x-spinner';
@@ -100,10 +101,10 @@ export default function Page() {
                         <Button variant="soft" size="1">
                           View
                         </Button>
-                        <Button variant="soft" size="1">
-                          <DownloadIcon />
-                          CSV
-                        </Button>
+                        <DownloadAssignmentsCsvButton
+                          datasourceId={selectedDatasource}
+                          experimentId={experiment.design_spec.experiment_id!}
+                        />
                         <DeleteExperimentButton
                           datasourceId={selectedDatasource}
                           experimentId={experiment.design_spec.experiment_id!}
