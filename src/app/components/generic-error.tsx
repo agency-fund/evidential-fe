@@ -1,23 +1,18 @@
-import { Callout, Flex, IconButton, Text, TextArea } from '@radix-ui/themes';
-import { CopyIcon, InfoCircledIcon } from '@radix-ui/react-icons';
+import { Callout, Code, Flex } from '@radix-ui/themes';
+import { InfoCircledIcon } from '@radix-ui/react-icons';
 
 export function GenericErrorCallout({ title, message }: { title: string; message: string }) {
   return (
-    <Callout.Root color={'red'}>
-      <Callout.Icon>
-        <InfoCircledIcon />
-      </Callout.Icon>
-      <Callout.Text>
-        <Flex direction="column" gap="3">
-          <Text>{title}</Text>
-          <Flex gap="2">
-            <TextArea variant="soft" readOnly={true} value={message} style={{ width: '80vw' }} />
-            <IconButton size="2" variant="soft" onClick={() => navigator.clipboard.writeText(message)}>
-              <CopyIcon />
-            </IconButton>
-          </Flex>
-        </Flex>
-      </Callout.Text>
-    </Callout.Root>
+    <Flex gap={'3'} direction={'column'} width={'100%'}>
+      <Callout.Root color={'red'}>
+        <Callout.Icon>
+          <InfoCircledIcon />
+        </Callout.Icon>
+        <Callout.Text>{title}</Callout.Text>
+      </Callout.Root>
+      <Code style={{ whiteSpace: 'pre', fontFamily: 'monospace' }} variant={'outline'} m={'3'}>
+        {message}
+      </Code>
+    </Flex>
   );
 }
