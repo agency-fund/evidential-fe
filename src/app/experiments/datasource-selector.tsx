@@ -10,21 +10,27 @@ export function DatasourceSelector({
   setSelectedDatasource: (value: string) => void;
   datasourcesData: listDatasourcesResponse;
 }) {
+  const hasDataSources = datasourcesData.data.items.length > 0;
+
   return (
     <Flex align="center" gap="2">
       <Text size="2" weight="bold">
         Data Source:
       </Text>
-      <Select.Root value={selectedDatasource} onValueChange={setSelectedDatasource}>
-        <Select.Trigger placeholder="Select a datasource" />
-        <Select.Content>
-          {datasourcesData.data.items.map((datasource) => (
-            <Select.Item key={datasource.id} value={datasource.id}>
-              {datasource.name}
-            </Select.Item>
-          ))}
-        </Select.Content>
-      </Select.Root>
+      {hasDataSources ? (
+        <Select.Root value={selectedDatasource} onValueChange={setSelectedDatasource}>
+          <Select.Trigger placeholder="Select a datasource" />
+          <Select.Content>
+            {datasourcesData.data.items.map((datasource) => (
+              <Select.Item key={datasource.id} value={datasource.id}>
+                {datasource.name}
+              </Select.Item>
+            ))}
+          </Select.Content>
+        </Select.Root>
+      ) : (
+        <Text color="gray">No datasources available</Text>
+      )}
     </Flex>
   );
 }

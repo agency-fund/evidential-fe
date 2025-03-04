@@ -320,6 +320,9 @@ export const getDatasourceResponse = zod.object({
 									"numeric",
 									"timestamp without time zone",
 									"bigint",
+									"UNSUPPORTED",
+									"UNSUPPORTED",
+									"UNSUPPORTED",
 								]),
 								description: zod.string(),
 								is_unique_id: zod.boolean(),
@@ -445,6 +448,9 @@ export const getDatasourceResponse = zod.object({
 									"numeric",
 									"timestamp without time zone",
 									"bigint",
+									"UNSUPPORTED",
+									"UNSUPPORTED",
+									"UNSUPPORTED",
 								]),
 								description: zod.string(),
 								is_unique_id: zod.boolean(),
@@ -528,6 +534,9 @@ export const inspectTableInDatasourceResponse = zod.object({
 				"numeric",
 				"timestamp without time zone",
 				"bigint",
+				"UNSUPPORTED",
+				"UNSUPPORTED",
+				"UNSUPPORTED",
 			]),
 			description: zod.string(),
 		}),
@@ -568,6 +577,9 @@ export const listParticipantTypesResponse = zod.object({
 							"numeric",
 							"timestamp without time zone",
 							"bigint",
+							"UNSUPPORTED",
+							"UNSUPPORTED",
+							"UNSUPPORTED",
 						]),
 						description: zod.string(),
 						is_unique_id: zod.boolean(),
@@ -611,6 +623,9 @@ export const createParticipantTypeBody = zod.object({
 					"numeric",
 					"timestamp without time zone",
 					"bigint",
+					"UNSUPPORTED",
+					"UNSUPPORTED",
+					"UNSUPPORTED",
 				]),
 				description: zod.string(),
 				is_unique_id: zod.boolean(),
@@ -640,6 +655,9 @@ export const createParticipantTypeResponse = zod.object({
 					"numeric",
 					"timestamp without time zone",
 					"bigint",
+					"UNSUPPORTED",
+					"UNSUPPORTED",
+					"UNSUPPORTED",
 				]),
 				description: zod.string(),
 				is_unique_id: zod.boolean(),
@@ -693,6 +711,9 @@ export const inspectParticipantTypesResponse = zod.object({
 					"numeric",
 					"timestamp without time zone",
 					"bigint",
+					"UNSUPPORTED",
+					"UNSUPPORTED",
+					"UNSUPPORTED",
 				]),
 				relations: zod
 					.array(zod.enum(["includes", "excludes", "between"]))
@@ -730,6 +751,9 @@ export const inspectParticipantTypesResponse = zod.object({
 						"numeric",
 						"timestamp without time zone",
 						"bigint",
+						"UNSUPPORTED",
+						"UNSUPPORTED",
+						"UNSUPPORTED",
 					]),
 					relations: zod
 						.array(zod.enum(["includes", "excludes", "between"]))
@@ -754,6 +778,9 @@ export const inspectParticipantTypesResponse = zod.object({
 				"numeric",
 				"timestamp without time zone",
 				"bigint",
+				"UNSUPPORTED",
+				"UNSUPPORTED",
+				"UNSUPPORTED",
 			]),
 			description: zod.string(),
 		}),
@@ -770,6 +797,9 @@ export const inspectParticipantTypesResponse = zod.object({
 				"numeric",
 				"timestamp without time zone",
 				"bigint",
+				"UNSUPPORTED",
+				"UNSUPPORTED",
+				"UNSUPPORTED",
 			]),
 			field_name: zod
 				.string()
@@ -813,6 +843,9 @@ export const getParticipantTypesResponse = zod.discriminatedUnion("type", [
 					"numeric",
 					"timestamp without time zone",
 					"bigint",
+					"UNSUPPORTED",
+					"UNSUPPORTED",
+					"UNSUPPORTED",
 				]),
 				description: zod.string(),
 				is_unique_id: zod.boolean(),
@@ -852,6 +885,9 @@ export const updateParticipantTypeBody = zod.object({
 					"numeric",
 					"timestamp without time zone",
 					"bigint",
+					"UNSUPPORTED",
+					"UNSUPPORTED",
+					"UNSUPPORTED",
 				]),
 				description: zod.string(),
 				is_unique_id: zod.boolean(),
@@ -881,6 +917,9 @@ export const updateParticipantTypeResponse = zod.object({
 				"numeric",
 				"timestamp without time zone",
 				"bigint",
+				"UNSUPPORTED",
+				"UNSUPPORTED",
+				"UNSUPPORTED",
 			]),
 			description: zod.string(),
 			is_unique_id: zod.boolean(),
@@ -1243,6 +1282,26 @@ export const createExperimentWithAssignmentResponse = zod.object({
 		sample_size: zod.number(),
 	}),
 });
+
+/**
+ * @summary Analyze Experiment
+ */
+export const analyzeExperimentParams = zod.object({
+	datasource_id: zod.string(),
+	experiment_id: zod.string(),
+});
+
+export const analyzeExperimentResponseItem = zod.object({
+	metric_name: zod.string(),
+	arm_ids: zod.array(zod.string().uuid()),
+	coefficients: zod.array(zod.number()),
+	pvalues: zod.array(zod.number()),
+	tstats: zod.array(zod.number()),
+	std_errors: zod.array(zod.number()),
+});
+export const analyzeExperimentResponse = zod.array(
+	analyzeExperimentResponseItem,
+);
 
 /**
  * @summary Commit Experiment

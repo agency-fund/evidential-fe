@@ -1,9 +1,9 @@
 'use client';
-import { Button, Flex, Heading, Table, Text } from '@radix-ui/themes';
+import { Button, Flex, Heading, Table, Text, TextArea } from '@radix-ui/themes';
 import Link from 'next/link';
 import { PlusIcon } from '@radix-ui/react-icons';
 import { DownloadAssignmentsCsvButton } from './download-assignments-csv-button';
-import { useListOrganizationDatasources, useListExperiments } from '@/api/admin';
+import { useListOrganizationDatasources, useListExperiments, analyzeExperiment } from '@/api/admin';
 import { DeleteExperimentButton } from './delete-experiment-button';
 import { XSpinner } from '@/app/components/x-spinner';
 import { isHttpOk } from '@/services/typehelper';
@@ -22,8 +22,7 @@ export default function Page() {
   const {
     data: datasourcesData,
     isLoading: datasourcesIsLoading,
-    error: datasourcesError,
-    mutate: refreshDatasources
+    error: datasourcesError
   } = useListOrganizationDatasources(currentOrgId!, {
     swr: {
       enabled: !!currentOrgId,
@@ -40,6 +39,11 @@ export default function Page() {
     swr: { enabled: selectedDatasource !== '' },
   });
 
+  // State for analysis results
+  const [analysisResults, setAnalysisResults] = useState<string>('');
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
+
   // Set the selected datasource to the first one in the list when data loads
   useEffect(() => {
     if (
@@ -52,14 +56,68 @@ export default function Page() {
     }
   }, [datasourcesData, selectedDatasource]);
 
-  // Refresh datasources when organization changes
-  useEffect(() => {
-    if (currentOrgId) {
-      refreshDatasources();
-      // Reset selected datasource when org changes
-      setSelectedDatasource('');
+  // Function to handle the Peek button click
+  const handlePeekClick = async (experimentId: string) => {
+    setIsAnalyzing(true);
+    setAnalyzeError(null);
+    setAnalysisResults(''); // Clear previous results
+
+    // Find the experiment to check its state
+    const experiment = experimentsData && isHttpOk(experimentsData)
+      ? experimentsData.data.items.find(
+          (exp) => exp.design_spec.experiment_id === experimentId
+        )
+      : undefined;
+
+    if (experiment) {
+      console.log(`Experiment state: ${experiment.state}`);
+
+      // Check if experiment is in a state that can be analyzed
+      if (experiment.state === 'designing') {
+        setAnalyzeError("Cannot analyze experiment in DESIGNING state. The experiment must be running or completed.");
+        setIsAnalyzing(false);
+        return;
+      }
     }
-  }, [currentOrgId, refreshDatasources]);
+
+    try {
+      console.log(`Analyzing experiment: ${experimentId} for datasource: ${selectedDatasource}`);
+      const response = await analyzeExperiment(selectedDatasource, experimentId);
+      console.log('Analysis response:', response);
+
+      if (isHttpOk(response)) {
+        if (Array.isArray(response.data) && response.data.length === 0) {
+          setAnalyzeError("No analysis results available. The experiment may not have enough data yet.");
+        } else {
+          setAnalysisResults(JSON.stringify(response.data, null, 2));
+        }
+      } else {
+        console.error('Non-OK response:', response);
+        setAnalyzeError(`Error: ${JSON.stringify(response)}`);
+      }
+    } catch (error) {
+      console.error('Analysis error:', error);
+      // Try to extract more detailed error information
+      let errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Check for specific error cases
+      if (errorMessage.includes('500')) {
+        errorMessage = "Server error (500): The server encountered an internal error. This could be due to:";
+        errorMessage += "\n- Insufficient data for analysis";
+        errorMessage += "\n- Invalid experiment configuration";
+        errorMessage += "\n- Server-side processing issue";
+        errorMessage += "\n\nPlease check that your experiment has collected enough data and try again later.";
+      } else if (errorMessage.includes('no data')) {
+        errorMessage = "No data available for analysis. The experiment may not have collected enough data yet.";
+      } else if (errorMessage.includes('permission')) {
+        errorMessage = "You don't have permission to analyze this experiment.";
+      }
+
+      setAnalyzeError(`Error: ${errorMessage}`);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   if (datasourcesError || (datasourcesData !== undefined && !isHttpOk(datasourcesData))) {
     return <GenericErrorCallout title={'Error with experiments list'} message={JSON.stringify(datasourcesData)} />;
@@ -93,7 +151,7 @@ export default function Page() {
         </Flex>
       )}
       {experimentsData !== undefined && isHttpOk(experimentsData) && (
-        <Flex>
+        <Flex direction="column" gap="3">
           {experimentsData.data.items.length === 0 && (
             <Flex>
               <Text>There are no experiments. Create one!</Text>
@@ -135,6 +193,15 @@ export default function Page() {
                           datasourceId={selectedDatasource}
                           experimentId={experiment.design_spec.experiment_id!}
                         />
+                        <Button
+                          color="green"
+                          variant="soft"
+                          size="1"
+                          onClick={() => handlePeekClick(experiment.design_spec.experiment_id!)}
+                          disabled={isAnalyzing}
+                        >
+                          {isAnalyzing ? 'Analyzing...' : 'Peek'}
+                        </Button>
                       </Flex>
                     </Table.Cell>
                   </Table.Row>
@@ -142,6 +209,44 @@ export default function Page() {
               </Table.Body>
             </Table.Root>
           ) : null}
+
+          {/* Analysis Results Section */}
+          {isAnalyzing && <XSpinner message="Analyzing experiment..." />}
+          {analyzeError && <GenericErrorCallout title="Analysis Error" message={analyzeError} />}
+          {analysisResults && (
+            <Flex direction="column" gap="2">
+              <Flex justify="between" align="center">
+                <Heading size="3">Analysis Results</Heading>
+                <Button
+                  size="1"
+                  variant="soft"
+                  onClick={() => {
+                    navigator.clipboard.writeText(analysisResults);
+                    // Could add a toast notification here if you have a toast component
+                  }}
+                >
+                  Copy to Clipboard
+                </Button>
+              </Flex>
+              <TextArea
+                readOnly
+                value={analysisResults}
+                style={{
+                  fontFamily: 'monospace',
+                  height: '400px',
+                  width: '100%',
+                  whiteSpace: 'pre',
+                  overflowX: 'auto',
+                  padding: '12px',
+                  fontSize: '14px',
+                  lineHeight: '1.5',
+                  backgroundColor: '#f5f5f5',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '4px'
+                }}
+              />
+            </Flex>
+          )}
         </Flex>
       )}
     </Flex>

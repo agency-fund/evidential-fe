@@ -23,6 +23,7 @@ import type {
 	CreateOrganizationResponse,
 	CreateParticipantsTypeRequest,
 	CreateParticipantsTypeResponse,
+	ExperimentAnalysis,
 	ExperimentConfig,
 	GetDatasourceResponse,
 	GetExperimentAssigmentsResponse,
@@ -2266,6 +2267,97 @@ export const useCreateExperimentWithAssignment = <TError = HTTPValidationError>(
 	);
 
 	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * @summary Analyze Experiment
+ */
+export type analyzeExperimentResponse200 = {
+	data: ExperimentAnalysis[];
+	status: 200;
+};
+
+export type analyzeExperimentResponse422 = {
+	data: HTTPValidationError;
+	status: 422;
+};
+
+export type analyzeExperimentResponseComposite =
+	| analyzeExperimentResponse200
+	| analyzeExperimentResponse422;
+
+export type analyzeExperimentResponse = analyzeExperimentResponseComposite & {
+	headers: Headers;
+};
+
+export const getAnalyzeExperimentUrl = (
+	datasourceId: string,
+	experimentId: string,
+) => {
+	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/analyze`;
+};
+
+export const analyzeExperiment = async (
+	datasourceId: string,
+	experimentId: string,
+	options?: RequestInit,
+): Promise<analyzeExperimentResponse> => {
+	return orvalFetch<analyzeExperimentResponse>(
+		getAnalyzeExperimentUrl(datasourceId, experimentId),
+		{
+			...options,
+			method: "GET",
+		},
+	);
+};
+
+export const getAnalyzeExperimentKey = (
+	datasourceId: string,
+	experimentId: string,
+) =>
+	[
+		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/analyze`,
+	] as const;
+
+export type AnalyzeExperimentQueryResult = NonNullable<
+	Awaited<ReturnType<typeof analyzeExperiment>>
+>;
+export type AnalyzeExperimentQueryError = HTTPValidationError;
+
+/**
+ * @summary Analyze Experiment
+ */
+export const useAnalyzeExperiment = <TError = HTTPValidationError>(
+	datasourceId: string,
+	experimentId: string,
+	options?: {
+		swr?: SWRConfiguration<
+			Awaited<ReturnType<typeof analyzeExperiment>>,
+			TError
+		> & { swrKey?: Key; enabled?: boolean };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const isEnabled =
+		swrOptions?.enabled !== false && !!(datasourceId && experimentId);
+	const swrKey =
+		swrOptions?.swrKey ??
+		(() =>
+			isEnabled ? getAnalyzeExperimentKey(datasourceId, experimentId) : null);
+	const swrFn = () =>
+		analyzeExperiment(datasourceId, experimentId, requestOptions);
+
+	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
+		swrKey,
+		swrFn,
+		swrOptions,
+	);
 
 	return {
 		swrKey,

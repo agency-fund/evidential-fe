@@ -8,6 +8,11 @@ export interface AddMemberToOrganizationRequest {
 	email: string;
 }
 
+export interface AnalysisRequest {
+	design: DesignSpec;
+	assignment: AssignResponseInput;
+}
+
 export interface ApiKeySummary {
 	id: string;
 	datasource_id: string;
@@ -311,6 +316,7 @@ export const DataType = {
 	numeric: "numeric",
 	timestamp_without_time_zone: "timestamp without time zone",
 	bigint: "bigint",
+	UNSUPPORTED: "UNSUPPORTED",
 } as const;
 
 export type DatasourceConfig = RemoteDatabaseConfig | SqliteLocalConfig;
@@ -486,6 +492,20 @@ export interface Dsn {
 export type DwhInput = Dsn | BqDsnInput;
 
 export type DwhOutput = Dsn | BqDsnOutput;
+
+export interface ExperimentAnalysis {
+	/** The field_name from the datasource which this analysis models as the dependent variable (y). */
+	metric_name: string;
+	arm_ids: string[];
+	/** Estimates for each arm in the model, the first element is the baseline estimate (intercept) of the first arm_id, the latter two are coefficients estimated against that baseline. */
+	coefficients: number[];
+	/** P-values corresponding to each coefficient estimate for arm_ids, starting with the intercept (arm_ids[0]). */
+	pvalues: number[];
+	/** Corresponding t-stats for the pvalues and coefficients for each arm_id. */
+	tstats: number[];
+	/** Corresponding standard errors for the pvalues and coefficients for each arm_id. */
+	std_errors: number[];
+}
 
 export type ExperimentConfigPowerAnalyses = PowerResponseOutput | null;
 
