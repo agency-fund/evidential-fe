@@ -17,20 +17,20 @@ export default function Page() {
   // Get the current organization from context
   const orgContext = useCurrentOrganization();
   const currentOrgId = orgContext?.current?.id;
-  
+
   // Fetch datasources for the current organization
-  const { 
-    data: datasourcesData, 
-    isLoading: datasourcesIsLoading, 
+  const {
+    data: datasourcesData,
+    isLoading: datasourcesIsLoading,
     error: datasourcesError,
-    mutate: refreshDatasources 
+    mutate: refreshDatasources
   } = useListOrganizationDatasources(currentOrgId!, {
-    swr: { 
+    swr: {
       enabled: !!currentOrgId,
       revalidateOnFocus: true
     }
   });
-  
+
   const [selectedDatasource, setSelectedDatasource] = useState<string>('');
   const {
     data: experimentsData,

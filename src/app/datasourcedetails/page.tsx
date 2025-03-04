@@ -20,13 +20,13 @@ export default function Page() {
   const orgContext = useCurrentOrganization();
   const currentOrgId = orgContext?.current?.id;
   const router = useRouter();
-  
+
   const { data: datasourceMetadata, isLoading: datasourceDetailsLoading } = useGetDatasource(datasourceId!, {
     swr: {
       enabled: datasourceId !== null,
     },
   });
-  
+
   const { data: inspectDatasourceData, isLoading: inspectDatasourceLoading } = useInspectDatasource(
     datasourceId!,
     {},
@@ -36,20 +36,20 @@ export default function Page() {
       },
     },
   );
-  
+
   // Redirect if datasource doesn't belong to current organization
   useEffect(() => {
     if (
-      currentOrgId && 
-      datasourceMetadata && 
-      isHttpOk(datasourceMetadata) && 
+      currentOrgId &&
+      datasourceMetadata &&
+      isHttpOk(datasourceMetadata) &&
       datasourceMetadata.data.organization_id !== currentOrgId
     ) {
       // Redirect to home if datasource doesn't belong to current org
       router.push('/');
     }
   }, [currentOrgId, datasourceMetadata, router]);
-  
+
   const isLoading = inspectDatasourceLoading || datasourceDetailsLoading;
   if (isLoading) {
     return <XSpinner message="Loading datasource details..." />;
