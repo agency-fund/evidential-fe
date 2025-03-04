@@ -8,6 +8,7 @@ import {
   IdCardIcon,
   LapTimerIcon,
   TextIcon,
+  QuestionMarkCircledIcon,
 } from '@radix-ui/react-icons';
 import { Badge, Flex } from '@radix-ui/themes';
 import { DataType } from '@/api/methods.schemas';
@@ -25,6 +26,7 @@ const dataTypeConfig: Record<
   'timestamp without time zone': { color: 'crimson', icon: <ClockIcon /> },
   bigint: { color: 'purple', icon: <LapTimerIcon /> },
   uuid: { color: 'purple', icon: <IdCardIcon /> },
+  unsupported: { color: 'orange', icon: <QuestionMarkCircledIcon /> },
 };
 
 export function DataTypeBadge({ type }: { type: DataType }) {
