@@ -52,15 +52,6 @@ export default function Page() {
     }
   }, [datasourcesData, selectedDatasource]);
 
-  // Refresh datasources when organization changes
-  useEffect(() => {
-    if (currentOrgId) {
-      refreshDatasources();
-      // Reset selected datasource when org changes
-      setSelectedDatasource('');
-    }
-  }, [currentOrgId, refreshDatasources]);
-
   if (datasourcesError || (datasourcesData !== undefined && !isHttpOk(datasourcesData))) {
     return <GenericErrorCallout title={'Error with experiments list'} message={JSON.stringify(datasourcesData)} />;
   }
