@@ -641,6 +641,88 @@ export const useGetOrganization = <TError = HTTPValidationError>(
 	};
 };
 /**
+ * Returns a list of datasources accessible to the authenticated user for an org.
+ * @summary List Organization Datasources
+ */
+export type listOrganizationDatasourcesResponse200 = {
+	data: ListDatasourcesResponse;
+	status: 200;
+};
+
+export type listOrganizationDatasourcesResponse422 = {
+	data: HTTPValidationError;
+	status: 422;
+};
+
+export type listOrganizationDatasourcesResponseComposite =
+	| listOrganizationDatasourcesResponse200
+	| listOrganizationDatasourcesResponse422;
+
+export type listOrganizationDatasourcesResponse =
+	listOrganizationDatasourcesResponseComposite & {
+		headers: Headers;
+	};
+
+export const getListOrganizationDatasourcesUrl = (organizationId: string) => {
+	return `/v1/m/organizations/${organizationId}/datasources`;
+};
+
+export const listOrganizationDatasources = async (
+	organizationId: string,
+	options?: RequestInit,
+): Promise<listOrganizationDatasourcesResponse> => {
+	return orvalFetch<listOrganizationDatasourcesResponse>(
+		getListOrganizationDatasourcesUrl(organizationId),
+		{
+			...options,
+			method: "GET",
+		},
+	);
+};
+
+export const getListOrganizationDatasourcesKey = (organizationId: string) =>
+	[`/v1/m/organizations/${organizationId}/datasources`] as const;
+
+export type ListOrganizationDatasourcesQueryResult = NonNullable<
+	Awaited<ReturnType<typeof listOrganizationDatasources>>
+>;
+export type ListOrganizationDatasourcesQueryError = HTTPValidationError;
+
+/**
+ * @summary List Organization Datasources
+ */
+export const useListOrganizationDatasources = <TError = HTTPValidationError>(
+	organizationId: string,
+	options?: {
+		swr?: SWRConfiguration<
+			Awaited<ReturnType<typeof listOrganizationDatasources>>,
+			TError
+		> & { swrKey?: Key; enabled?: boolean };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const isEnabled = swrOptions?.enabled !== false && !!organizationId;
+	const swrKey =
+		swrOptions?.swrKey ??
+		(() =>
+			isEnabled ? getListOrganizationDatasourcesKey(organizationId) : null);
+	const swrFn = () =>
+		listOrganizationDatasources(organizationId, requestOptions);
+
+	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
+		swrKey,
+		swrFn,
+		swrOptions,
+	);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
  * Returns a list of datasources accessible to the authenticated user.
  * @summary List Datasources
  */

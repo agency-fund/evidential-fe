@@ -3,7 +3,7 @@ import { Button, Flex, Heading, Table, Text } from '@radix-ui/themes';
 import Link from 'next/link';
 import { PlusIcon } from '@radix-ui/react-icons';
 import { DownloadAssignmentsCsvButton } from './download-assignments-csv-button';
-import { useListDatasources, useListExperiments } from '@/api/admin';
+import { useListOrganizationDatasources, useListExperiments } from '@/api/admin';
 import { DeleteExperimentButton } from './delete-experiment-button';
 import { XSpinner } from '@/app/components/x-spinner';
 import { isHttpOk } from '@/services/typehelper';
@@ -11,14 +11,31 @@ import { GenericErrorCallout } from '@/app/components/generic-error';
 import { useEffect, useState } from 'react';
 import { DatasourceSelector } from '@/app/experiments/datasource-selector';
 import { ExperimentStatusBadge } from '@/app/experiments/experiment-status-badge';
+import { useCurrentOrganization } from '@/app/providers/organization-provider';
 
 export default function Page() {
-  const { data: datasourcesData, isLoading: datasourcesIsLoading, error: datasourcesError } = useListDatasources();
+  // Get the current organization from context
+  const orgContext = useCurrentOrganization();
+  const currentOrgId = orgContext?.current?.id;
+  
+  // Fetch datasources for the current organization
+  const { 
+    data: datasourcesData, 
+    isLoading: datasourcesIsLoading, 
+    error: datasourcesError,
+    mutate: refreshDatasources 
+  } = useListOrganizationDatasources(currentOrgId!, {
+    swr: { 
+      enabled: !!currentOrgId,
+      revalidateOnFocus: true
+    }
+  });
+  
   const [selectedDatasource, setSelectedDatasource] = useState<string>('');
   const {
     data: experimentsData,
     isLoading: experimentsIsLoading,
-    error: experimentsError,
+    error: experimentsError
   } = useListExperiments(selectedDatasource!, {
     swr: { enabled: selectedDatasource !== '' },
   });
@@ -34,6 +51,15 @@ export default function Page() {
       setSelectedDatasource(datasourcesData.data.items[0].id);
     }
   }, [datasourcesData, selectedDatasource]);
+
+  // Refresh datasources when organization changes
+  useEffect(() => {
+    if (currentOrgId) {
+      refreshDatasources();
+      // Reset selected datasource when org changes
+      setSelectedDatasource('');
+    }
+  }, [currentOrgId, refreshDatasources]);
 
   if (datasourcesError || (datasourcesData !== undefined && !isHttpOk(datasourcesData))) {
     return <GenericErrorCallout title={'Error with experiments list'} message={JSON.stringify(datasourcesData)} />;
