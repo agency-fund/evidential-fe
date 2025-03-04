@@ -316,7 +316,7 @@ export const DataType = {
 	numeric: "numeric",
 	timestamp_without_time_zone: "timestamp without time zone",
 	bigint: "bigint",
-	UNSUPPORTED: "UNSUPPORTED",
+	unsupported: "unsupported",
 } as const;
 
 export type DatasourceConfig = RemoteDatabaseConfig | SqliteLocalConfig;
