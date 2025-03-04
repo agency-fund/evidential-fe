@@ -118,6 +118,27 @@ export const getOrganizationResponse = zod.object({
 });
 
 /**
+ * Returns a list of datasources accessible to the authenticated user for an org.
+ * @summary List Organization Datasources
+ */
+export const listOrganizationDatasourcesParams = zod.object({
+	organization_id: zod.string(),
+});
+
+export const listOrganizationDatasourcesResponse = zod.object({
+	items: zod.array(
+		zod.object({
+			id: zod.string(),
+			name: zod.string(),
+			driver: zod.string(),
+			type: zod.string(),
+			organization_id: zod.string(),
+			organization_name: zod.string(),
+		}),
+	),
+});
+
+/**
  * Returns a list of datasources accessible to the authenticated user.
  * @summary List Datasources
  */

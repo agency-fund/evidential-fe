@@ -10,15 +10,23 @@ import { EditDatasourceDialog } from '@/app/organizationdetails/edit-datasource-
 import { isHttpOk } from '@/services/typehelper';
 import { FailedToConnectToDatasource } from '@/app/datasourcedetails/failed-to-connect-to-datasource';
 import { ParticipantTypesSection } from '@/app/datasourcedetails/participant-types-section';
+import { useCurrentOrganization } from '@/app/providers/organization-provider';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Page() {
   const searchParams = useSearchParams();
   const datasourceId = searchParams.get('id');
+  const orgContext = useCurrentOrganization();
+  const currentOrgId = orgContext?.current?.id;
+  const router = useRouter();
+
   const { data: datasourceMetadata, isLoading: datasourceDetailsLoading } = useGetDatasource(datasourceId!, {
     swr: {
       enabled: datasourceId !== null,
     },
   });
+
   const { data: inspectDatasourceData, isLoading: inspectDatasourceLoading } = useInspectDatasource(
     datasourceId!,
     {},
@@ -28,6 +36,20 @@ export default function Page() {
       },
     },
   );
+
+  // Redirect if datasource doesn't belong to current organization
+  useEffect(() => {
+    if (
+      currentOrgId &&
+      datasourceMetadata &&
+      isHttpOk(datasourceMetadata) &&
+      datasourceMetadata.data.organization_id !== currentOrgId
+    ) {
+      // Redirect to home if datasource doesn't belong to current org
+      router.push('/');
+    }
+  }, [currentOrgId, datasourceMetadata, router]);
+
   const isLoading = inspectDatasourceLoading || datasourceDetailsLoading;
   if (isLoading) {
     return <XSpinner message="Loading datasource details..." />;
