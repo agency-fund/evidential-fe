@@ -36,10 +36,19 @@ export const orvalFetch = async <T>(path: string, options: RequestInit): Promise
   const request = new Request(requestUrl, requestInit);
   const response = await fetch(request);
   const data = await getBody<T>(response);
+  
   if (request.headers.has('Authorization') && response.status === 401) {
     // Orval doesn't allow us to pass through context so we cannot invoke the logout() handler directly; instead,
     // we trigger a custom event which auth-provider will react to.
     sendCustomLogoutEvent();
   }
-  return { status: response.status, data, headers: response.headers } as T;
+  
+  const result = { status: response.status, data, headers: response.headers } as T;
+  
+  // Throw an error for non-2xx responses
+  if (response.status < 200 || response.status >= 300) {
+    throw result;
+  }
+  
+  return result;
 };

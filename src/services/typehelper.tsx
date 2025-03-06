@@ -12,5 +12,7 @@ export function isHttpOk<T>(response?: {
   data: T | HTTPValidationError;
   status: number;
 }): response is { data: T; status: number } {
-  return response !== undefined && response.status === 200;
+  // With the new orvalFetch implementation, non-2xx responses are thrown as errors
+  // This function now just needs to check if the response exists
+  return response !== undefined;
 }
