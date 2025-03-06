@@ -21,20 +21,20 @@ export default function Page() {
   const currentOrgId = orgContext?.current?.id;
   const router = useRouter();
 
-  const { 
-    data: datasourceMetadata, 
+  const {
+    data: datasourceMetadata,
     isLoading: datasourceDetailsLoading,
-    error: datasourceError 
+    error: datasourceError
   } = useGetDatasource(datasourceId!, {
     swr: {
       enabled: datasourceId !== null,
     },
   });
 
-  const { 
-    data: inspectDatasourceData, 
+  const {
+    data: inspectDatasourceData,
     isLoading: inspectDatasourceLoading,
-    error: inspectError 
+    error: inspectError
   } = useInspectDatasource(
     datasourceId!,
     {},
@@ -73,7 +73,7 @@ export default function Page() {
       </Flex>
     );
   }
-  
+
   if (datasourceError) {
     return (
       <Flex direction="column" gap="3">
@@ -81,14 +81,6 @@ export default function Page() {
         <FailedToConnectToDatasource data={datasourceError} datasourceId={datasourceId!} />
       </Flex>
     );
-  }
-  
-  if (datasourceMetadata === undefined) {
-    return <Text>Unknown error reading datasource metadata.</Text>;
-  }
-  
-  if (inspectDatasourceData === undefined) {
-    return <Text>Unknown error inspecting the datasource.</Text>;
   }
 
   // We can safely use data properties now that we've handled all error cases

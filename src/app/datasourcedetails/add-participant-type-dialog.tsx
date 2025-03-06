@@ -87,19 +87,20 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
               const participant_type = fd.get('participant_type') as string;
               const table_name = fd.get('table_name') as string;
               setError('');
-              const response = await trigger({
-                participant_type,
-                schema_def: {
-                  table_name,
-                  fields: fields,
-                },
-              });
-              if (response.status === 200) {
+              try {
+                await trigger({
+                  participant_type,
+                  schema_def: {
+                    table_name,
+                    fields: fields,
+                  },
+                });
                 setOpen(false);
                 setFields([]);
                 setError('');
-              } else {
-                setError(JSON.stringify(response.data));
+              } catch (error) {
+                console.error('Failed to create participant type:', error);
+                setError(error instanceof Error ? error.message : JSON.stringify(error));
               }
             }}
           >
