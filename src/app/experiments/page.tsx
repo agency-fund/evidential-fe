@@ -85,15 +85,10 @@ export default function Page() {
       const response = await analyzeExperiment(selectedDatasource, experimentId);
       console.log('Analysis response:', response);
 
-      if (isHttpOk(response)) {
-        if (Array.isArray(response.data) && response.data.length === 0) {
-          setAnalyzeError("No analysis results available. The experiment may not have enough data yet.");
-        } else {
-          setAnalysisResults(JSON.stringify(response.data, null, 2));
-        }
+      if (Array.isArray(response.data) && response.data.length === 0) {
+        setAnalyzeError("No analysis results available. The experiment may not have enough data yet.");
       } else {
-        console.error('Non-OK response:', response);
-        setAnalyzeError(`Error: ${JSON.stringify(response)}`);
+        setAnalysisResults(JSON.stringify(response.data, null, 2));
       }
     } catch (error) {
       console.error('Analysis error:', error);
