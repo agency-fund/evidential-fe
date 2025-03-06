@@ -21,13 +21,21 @@ export default function Page() {
   const currentOrgId = orgContext?.current?.id;
   const router = useRouter();
 
-  const { data: datasourceMetadata, isLoading: datasourceDetailsLoading } = useGetDatasource(datasourceId!, {
+  const { 
+    data: datasourceMetadata, 
+    isLoading: datasourceDetailsLoading,
+    error: datasourceError 
+  } = useGetDatasource(datasourceId!, {
     swr: {
       enabled: datasourceId !== null,
     },
   });
 
-  const { data: inspectDatasourceData, isLoading: inspectDatasourceLoading } = useInspectDatasource(
+  const { 
+    data: inspectDatasourceData, 
+    isLoading: inspectDatasourceLoading,
+    error: inspectError 
+  } = useInspectDatasource(
     datasourceId!,
     {},
     {
@@ -57,29 +65,33 @@ export default function Page() {
   if (!datasourceId) {
     return <Text>missing parameter</Text>;
   }
-  if (datasourceMetadata === undefined) {
-    return <Text>Unknown error reading datasource metadata.</Text>;
-  }
-  if (inspectDatasourceData === undefined) {
-    return <Text>Unknown error inspecting the datasource.</Text>;
-  }
-  if (!isHttpOk(inspectDatasourceData)) {
+  if (inspectError) {
     return (
       <Flex direction="column" gap="3">
         <Heading>Error fetching datasource metadata</Heading>
-        <FailedToConnectToDatasource data={inspectDatasourceData!} datasourceId={datasourceId!} />
+        <FailedToConnectToDatasource data={inspectError} datasourceId={datasourceId!} />
       </Flex>
     );
   }
-  if (!isHttpOk(datasourceMetadata)) {
+  
+  if (datasourceError) {
     return (
       <Flex direction="column" gap="3">
         <Heading>Error reading tables from datasource</Heading>
-        <FailedToConnectToDatasource data={datasourceMetadata} datasourceId={datasourceId!} />
+        <FailedToConnectToDatasource data={datasourceError} datasourceId={datasourceId!} />
       </Flex>
     );
   }
+  
+  if (datasourceMetadata === undefined) {
+    return <Text>Unknown error reading datasource metadata.</Text>;
+  }
+  
+  if (inspectDatasourceData === undefined) {
+    return <Text>Unknown error inspecting the datasource.</Text>;
+  }
 
+  // We can safely use data properties now that we've handled all error cases
   const datasourceName = datasourceMetadata.data.name;
   const organizationName = datasourceMetadata.data.organization_name;
   const organizationId = datasourceMetadata.data.organization_id;
@@ -92,9 +104,7 @@ export default function Page() {
       <Flex gap="3">
         <EditDatasourceDialog datasourceId={datasourceId} variant="button" />
       </Flex>
-      {inspectDatasourceData.status !== 200 ? (
-        <FailedToConnectToDatasource data={inspectDatasourceData} datasourceId={datasourceId} />
-      ) : (
+      {(
         <>
           <Callout.Root color={'green'}>
             <Callout.Icon>
