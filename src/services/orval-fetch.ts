@@ -44,6 +44,9 @@ const getBody = (c: Response) => {
   if (contentType && contentType.includes('text/csv')) {
     return c.text();
   }
+  if (c.status === 204) {
+    return null;
+  }
   throw Error('Backend returned unsupported content-type.');
 };
 

@@ -1,16 +1,16 @@
 'use client';
 import { useListParticipantTypes } from '@/api/admin';
-import { Table, Text } from '@radix-ui/themes';
+import { Table } from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
-import { isHttpOk } from '@/services/typehelper';
 import Link from 'next/link';
 import { DeleteParticipantTypeDialog } from '@/app/datasourcedetails/delete-participant-type-dialog';
+import { GenericErrorCallout } from '@/app/components/generic-error';
 
 export function ParticipantTypesTable({ datasourceId }: { datasourceId: string }) {
   const { data, isLoading, error } = useListParticipantTypes(datasourceId);
 
   if (isLoading) return <XSpinner message="Loading participant types..." />;
-  if (error || !isHttpOk(data)) return <Text>Error loading participant types: {JSON.stringify(error)}</Text>;
+  if (error) return <GenericErrorCallout title={'Failed to load participant types'} error={error} />;
 
   return (
     <Table.Root variant="surface">
@@ -22,7 +22,7 @@ export function ParticipantTypesTable({ datasourceId }: { datasourceId: string }
         </Table.Row>
       </Table.Header>
       <Table.Body>
-        {data.items?.map((item) => (
+        {data?.items?.map((item) => (
           <Table.Row key={item.participant_type}>
             <Table.Cell>
               <Link

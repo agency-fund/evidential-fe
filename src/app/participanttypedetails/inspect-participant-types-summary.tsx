@@ -1,4 +1,3 @@
-import { isHttpOk } from '@/services/typehelper';
 import { Button, Card, DataList, Flex, Grid, Heading, Text } from '@radix-ui/themes';
 import { InspectParticipantTypesResponse } from '@/api/methods.schemas';
 import { useState } from 'react';
@@ -11,7 +10,7 @@ export function InspectParticipantTypesSummary({ data }: { data: InspectParticip
   const [showFilters, setShowFilters] = useState(true);
 
   if (!data) return null;
-  if (!isHttpOk(data)) return <Text>Error: {JSON.stringify(data)}</Text>;
+
   return (
     <Flex direction="column" gap="4">
       <Flex align="center" gap="2" mb="2">

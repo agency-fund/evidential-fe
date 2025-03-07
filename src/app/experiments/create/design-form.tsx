@@ -3,7 +3,6 @@ import { Badge, Button, Card, Flex, Heading, HoverCard, Select, Spinner, Text, T
 import { ExperimentFormData } from './page';
 import { LightningBoltIcon } from '@radix-ui/react-icons';
 import { useCreateExperimentWithAssignment, useInspectParticipantTypes } from '@/api/admin';
-import { isHttpOk } from '@/services/typehelper';
 import { AudienceSpecFilter, GetFiltersResponseElement, GetMetricsResponseElement } from '@/api/methods.schemas';
 import { PowerCheckSection } from '@/app/experiments/create/power-check-section';
 import { convertFormDataToCreateExperimentRequest } from '@/app/experiments/create/helpers';
@@ -32,9 +31,11 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
   });
 
   // Extract metrics and filters from the API response
-  const metricFields: GetMetricsResponseElement[] = isHttpOk(participantTypesData) ? participantTypesData.metrics : [];
+  const metricFields: GetMetricsResponseElement[] =
+    participantTypesData !== undefined ? participantTypesData.metrics : [];
 
-  const filterFields: GetFiltersResponseElement[] = isHttpOk(participantTypesData) ? participantTypesData.filters : [];
+  const filterFields: GetFiltersResponseElement[] =
+    participantTypesData !== undefined ? participantTypesData.filters : [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

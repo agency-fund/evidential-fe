@@ -1,12 +1,12 @@
 'use client';
 import { useGetParticipantTypes, useInspectParticipantTypes } from '@/api/admin';
-import { isHttpOk } from '@/services/typehelper';
 import { Flex, Heading, Text } from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
 import { useSearchParams } from 'next/navigation';
 import { InspectParticipantTypesSummary } from '@/app/participanttypedetails/inspect-participant-types-summary';
 import Link from 'next/link';
 import { EditParticipantTypeDialog } from '@/app/participanttypedetails/edit-participant-type-dialog';
+import { GenericErrorCallout } from '@/app/components/generic-error';
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -39,8 +39,11 @@ export default function Page() {
   if (isLoading) {
     return <XSpinner message="Loading participant type details..." />;
   }
-  if (error || !isHttpOk(data)) {
-    return <Text>Error: {JSON.stringify(error)}</Text>;
+  if (error) {
+    return <GenericErrorCallout title={'Failed to fetch participant type details'} error={error} />;
+  }
+  if (!data) {
+    return <GenericErrorCallout title={'Failed to fetch participant type details'} message={'data is missing'} />;
   }
 
   // Sort fields only in the initial config, putting unique_id field at top

@@ -3,7 +3,6 @@ import { CheckCircledIcon, CrossCircledIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData } from '@/app/experiments/create/page';
 import { usePowerCheck } from '@/api/admin';
 import { convertFormDataToCreateExperimentRequest } from '@/app/experiments/create/helpers';
-import { isHttpOk } from '@/services/typehelper';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 
 interface PowerCheckSectionProps {
@@ -41,7 +40,7 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
           {isMutating && <Spinner size="1" />}
           {isMutating ? 'Checking...' : 'Run Power Check'}
         </Button>
-        {isHttpOk(data) && (
+        {data !== undefined && (
           <>
             <Text>N: </Text>
             <TextField.Root
@@ -69,7 +68,7 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
         </Flex>
       )}
 
-      {isHttpOk(data) &&
+      {data !== undefined &&
         data.analyses.map((metricAnalysis, i) => (
           <Card key={i}>
             <Flex direction="column" gap="3">

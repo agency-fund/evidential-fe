@@ -6,7 +6,6 @@ import { DownloadAssignmentsCsvButton } from './download-assignments-csv-button'
 import { analyzeExperiment, useListExperiments, useListOrganizationDatasources } from '@/api/admin';
 import { DeleteExperimentButton } from './delete-experiment-button';
 import { XSpinner } from '@/app/components/x-spinner';
-import { isHttpOk } from '@/services/typehelper';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 import { useEffect, useState } from 'react';
 import { DatasourceSelector } from '@/app/experiments/datasource-selector';
@@ -46,7 +45,12 @@ export default function Page() {
 
   // Set the selected datasource to the first one in the list when data loads
   useEffect(() => {
-    if (datasourcesData && isHttpOk(datasourcesData) && datasourcesData.items.length > 0 && selectedDatasource === '') {
+    if (
+      datasourcesData &&
+      datasourcesData !== undefined &&
+      datasourcesData.items.length > 0 &&
+      selectedDatasource === ''
+    ) {
       setSelectedDatasource(datasourcesData.items[0].id);
     }
   }, [datasourcesData, selectedDatasource]);
@@ -59,7 +63,7 @@ export default function Page() {
 
     // Find the experiment to check its state
     const experiment =
-      experimentsData && isHttpOk(experimentsData)
+      experimentsData && experimentsData !== undefined
         ? experimentsData.items.find((exp) => exp.design_spec.experiment_id === experimentId)
         : undefined;
 
@@ -108,18 +112,18 @@ export default function Page() {
     }
   };
 
-  if (datasourcesError || (datasourcesData !== undefined && !isHttpOk(datasourcesData))) {
+  if (datasourcesError || (datasourcesData !== undefined && !(datasourcesData !== undefined))) {
     return <GenericErrorCallout title={'Error with experiments list'} message={JSON.stringify(datasourcesData)} />;
   }
 
-  if (experimentsError || (experimentsData !== undefined && !isHttpOk(experimentsData))) {
+  if (experimentsError || (experimentsData !== undefined && !(experimentsData !== undefined))) {
     return <GenericErrorCallout title={'Error with experiments list'} message={JSON.stringify(experimentsData)} />;
   }
 
   return (
     <Flex direction="column" gap="3">
       {datasourcesIsLoading && <XSpinner message={'Datasources list loading...'} />}
-      {datasourcesData && isHttpOk(datasourcesData) && (
+      {datasourcesData && datasourcesData !== undefined && (
         <DatasourceSelector
           selectedDatasource={selectedDatasource}
           setSelectedDatasource={setSelectedDatasource}
@@ -139,7 +143,7 @@ export default function Page() {
           <XSpinner message={'Loading experiments list...'} />
         </Flex>
       )}
-      {experimentsData !== undefined && isHttpOk(experimentsData) && (
+      {experimentsData !== undefined && experimentsData !== undefined && (
         <Flex direction="column" gap="3">
           {experimentsData.items.length === 0 && (
             <Flex>

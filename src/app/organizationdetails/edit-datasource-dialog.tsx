@@ -11,7 +11,6 @@ import {
 } from '@/api/admin';
 import { useEffect, useState } from 'react';
 import { mutate } from 'swr';
-import { isHttpOk } from '@/services/typehelper';
 import { DsnDriver, UpdateDatasourceRequest } from '@/api/methods.schemas';
 
 export const EditDatasourceDialog = ({
@@ -40,7 +39,7 @@ export const EditDatasourceDialog = ({
   const [credentialsJson, setCredentialsJson] = useState('');
 
   useEffect(() => {
-    if (open && data && isHttpOk(data)) {
+    if (open && data) {
       const datasource = data;
       setName(datasource.name);
       if (datasource.config.type === 'remote') {

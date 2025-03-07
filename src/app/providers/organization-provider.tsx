@@ -6,7 +6,6 @@ import { useListOrganizations } from '@/api/admin';
 import { useAuth } from './auth-provider';
 import { useLocalStorage } from '@/app/providers/use-local-storage';
 import { Button, Flex, Text } from '@radix-ui/themes';
-import { isHttpOk } from '@/services/typehelper';
 
 const CURRENT_ORG_ID_KEY = 'org_id' as const;
 
@@ -37,7 +36,7 @@ export function OrganizationProvider({ children }: PropsWithChildren) {
   // If the localstorage org_id refers to an org that the user doesn't have access to, update it to be the first one
   // that they do have access to.
   useEffect(() => {
-    if (!isHttpOk(orgsList) || !orgsList.items.length) return;
+    if (orgsList === undefined || !orgsList.items.length) return;
 
     const organizations = orgsList.items;
     const storedOrgExists = organizations.some((org) => org.id === orgId);
@@ -54,7 +53,7 @@ export function OrganizationProvider({ children }: PropsWithChildren) {
       </Flex>
     );
   }
-  if (!auth.isAuthenticated || !isHttpOk(orgsList)) {
+  if (!auth.isAuthenticated || !(orgsList !== undefined)) {
     return <CurrentOrganizationContext.Provider value={null}>{children}</CurrentOrganizationContext.Provider>;
   }
 

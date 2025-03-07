@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { useCreateApiKey } from '@/api/admin';
-import { isHttpOk } from '@/services/typehelper';
 import { Button, Code, DataList, Dialog, Flex, IconButton } from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
 import { CopyIcon, PlusIcon } from '@radix-ui/react-icons';
 import { API_BASE_URL } from '@/services/constants';
+import { GenericErrorCallout } from '@/app/components/generic-error';
 
 export const CreateApiKeyDialog = ({ datasourceId }: { datasourceId: string }) => {
   const [state, setState] = useState<'presenting-form' | 'presenting-results' | 'presenting-button'>(
     'presenting-button',
   );
-  const { data: createdKey, trigger: triggerCreateApiKey, isMutating } = useCreateApiKey();
+  const { data: createdKey, trigger: triggerCreateApiKey, isMutating, error, reset } = useCreateApiKey();
 
   const exampleCurlSnippet =
     createdKey !== undefined
@@ -18,7 +18,7 @@ export const CreateApiKeyDialog = ({ datasourceId }: { datasourceId: string }) =
       : '';
   return (
     <>
-      {state === 'presenting-results' && isHttpOk(createdKey) && (
+      {state === 'presenting-results' && createdKey !== undefined && (
         <Dialog.Root
           defaultOpen={true}
           onOpenChange={(open) => setState(open ? 'presenting-results' : 'presenting-button')}
@@ -65,43 +65,56 @@ export const CreateApiKeyDialog = ({ datasourceId }: { datasourceId: string }) =
       )}
 
       {(state === 'presenting-form' || state == 'presenting-button') && (
-        <Dialog.Root onOpenChange={(open) => setState(open ? 'presenting-form' : 'presenting-button')}>
-          <Dialog.Trigger>
-            <Button>
-              <PlusIcon /> Create API Key
-            </Button>
-          </Dialog.Trigger>
+        <>
+          <Dialog.Root onOpenChange={(open) => setState(open ? 'presenting-form' : 'presenting-button')}>
+            <Dialog.Trigger>
+              <Button>
+                <PlusIcon /> Create API Key
+              </Button>
+            </Dialog.Trigger>
 
-          <Dialog.Content>
-            {isMutating ? (
-              <XSpinner message="Creating API key..." />
-            ) : (
-              <form
-                onSubmit={async (event) => {
-                  event.preventDefault();
-                  await triggerCreateApiKey({
-                    datasource_id: datasourceId,
-                  });
-                  setState('presenting-results');
-                }}
-              >
-                <Dialog.Title>Create API key</Dialog.Title>
-                <Dialog.Description size="2" mb="4">
-                  Create a new API key for this datasource.
-                </Dialog.Description>
+            <Dialog.Content>
+              {isMutating ? (
+                <XSpinner message="Creating API key..." />
+              ) : (
+                <>
+                  <form
+                    onSubmit={async (event) => {
+                      event.preventDefault();
+                      try {
+                        await triggerCreateApiKey({
+                          datasource_id: datasourceId,
+                        });
+                        setState('presenting-results');
+                      } catch (_handled_by_swr) {}
+                    }}
+                  >
+                    <Dialog.Title>Create API key</Dialog.Title>
+                    <Dialog.Description size="2" mb="4">
+                      Create a new API key for this datasource.
+                    </Dialog.Description>
 
-                <Flex gap="3" mt="4" justify="end">
-                  <Dialog.Close>
-                    <Button variant="soft" color="gray">
-                      Cancel
-                    </Button>
-                  </Dialog.Close>
-                  <Button type="submit">Create</Button>
-                </Flex>
-              </form>
-            )}
-          </Dialog.Content>
-        </Dialog.Root>
+                    {error && (
+                      <GenericErrorCallout
+                        title={'There was a problem creating the API key. Please try again.'}
+                        error={error}
+                      />
+                    )}
+
+                    <Flex gap="3" mt="4" justify="end">
+                      <Dialog.Close onClick={() => reset()}>
+                        <Button variant="soft" color="gray">
+                          Cancel
+                        </Button>
+                      </Dialog.Close>
+                      <Button type="submit">Create</Button>
+                    </Flex>
+                  </form>
+                </>
+              )}
+            </Dialog.Content>
+          </Dialog.Root>
+        </>
       )}
     </>
   );
