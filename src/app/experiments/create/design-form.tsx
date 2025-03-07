@@ -32,28 +32,33 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
   });
 
   // Extract metrics and filters from the API response
-  const metricFields: GetMetricsResponseElement[] = isHttpOk(participantTypesData)
-    ? participantTypesData.data.metrics
-    : [];
+  const metricFields: GetMetricsResponseElement[] = isHttpOk(participantTypesData) ? participantTypesData.metrics : [];
 
-  const filterFields: GetFiltersResponseElement[] = isHttpOk(participantTypesData)
-    ? participantTypesData.data.filters
-    : [];
+  const filterFields: GetFiltersResponseElement[] = isHttpOk(participantTypesData) ? participantTypesData.filters : [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const request = convertFormDataToCreateExperimentRequest(formData);
-    const response = await triggerCreateAssignment(request);
-    if (isHttpOk(response)) {
+    try {
+      const request = convertFormDataToCreateExperimentRequest(formData);
+      const response = await triggerCreateAssignment(request);
       onFormDataChange({
         ...formData,
-        experimentId: response.data.design_spec.experiment_id!,
-        createExperimentResponse: response.data,
+        experimentId: response.design_spec.experiment_id!,
+        createExperimentResponse: response,
       });
       onNext();
-    } else {
-      throw new Error('failed to create experiment');
+    } catch (error) {
+      console.error('Failed to create experiment:', error);
+      // You could add a toast notification or error display here
+
+      // Use the ApiError class for better error handling
+      if (error instanceof Error) {
+        const errorMessage = error.message;
+        alert('Failed to create experiment: ' + errorMessage);
+      } else {
+        alert('Failed to create experiment: An unknown error occurred');
+      }
     }
   };
 

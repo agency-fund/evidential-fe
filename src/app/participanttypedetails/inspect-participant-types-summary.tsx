@@ -1,4 +1,3 @@
-import { inspectParticipantTypesResponse } from '@/api/admin';
 import { isHttpOk } from '@/services/typehelper';
 import { Button, Card, DataList, Flex, Grid, Heading, Text } from '@radix-ui/themes';
 import { InspectParticipantTypesResponse } from '@/api/methods.schemas';
@@ -6,15 +5,13 @@ import { useState } from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@radix-ui/react-icons';
 import { DataTypeBadge } from '@/app/components/data-type-badge';
 
-export function InspectParticipantTypesSummary({ data }: { data: inspectParticipantTypesResponse | undefined }) {
+export function InspectParticipantTypesSummary({ data }: { data: InspectParticipantTypesResponse | undefined }) {
   const [showStrata, setShowStrata] = useState(true);
   const [showMetrics, setShowMetrics] = useState(true);
   const [showFilters, setShowFilters] = useState(true);
 
   if (!data) return null;
   if (!isHttpOk(data)) return <Text>Error: {JSON.stringify(data)}</Text>;
-  const inspectionData: InspectParticipantTypesResponse = data.data;
-
   return (
     <Flex direction="column" gap="4">
       <Flex align="center" gap="2" mb="2">
@@ -24,11 +21,11 @@ export function InspectParticipantTypesSummary({ data }: { data: inspectParticip
         <Heading size="4">Strata Fields</Heading>
       </Flex>
       {showStrata &&
-        (inspectionData.strata.length === 0 ? (
+        (data.strata.length === 0 ? (
           <Text>There are no strata fields defined.</Text>
         ) : (
           <Grid columns="3" gap="4">
-            {inspectionData.strata.map((field) => (
+            {data.strata.map((field) => (
               <Card key={field.field_name}>
                 <DataList.Root key={field.field_name}>
                   <DataList.Item>
@@ -57,11 +54,11 @@ export function InspectParticipantTypesSummary({ data }: { data: inspectParticip
         <Heading size="4">Metrics Fields</Heading>
       </Flex>
       {showMetrics &&
-        (inspectionData.metrics.length === 0 ? (
+        (data.metrics.length === 0 ? (
           <Text>There are no metrics defined.</Text>
         ) : (
           <Grid columns="3" gap="4" width={'auto'}>
-            {inspectionData.metrics.map((field) => (
+            {data.metrics.map((field) => (
               <Card key={field.field_name}>
                 <DataList.Root>
                   <DataList.Item>
@@ -91,11 +88,11 @@ export function InspectParticipantTypesSummary({ data }: { data: inspectParticip
         <Heading size="4">Filter Fields</Heading>
       </Flex>
       {showFilters &&
-        (inspectionData.filters.length === 0 ? (
+        (data.filters.length === 0 ? (
           <Text>There are no filters defined.</Text>
         ) : (
           <Grid columns="3" gap="4">
-            {inspectionData.filters.map((field) => (
+            {data.filters.map((field) => (
               <Card key={field.field_name}>
                 <DataList.Root key={field.field_name}>
                   <DataList.Item>

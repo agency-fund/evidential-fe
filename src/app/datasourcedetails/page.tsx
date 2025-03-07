@@ -4,15 +4,13 @@ import { XSpinner } from '../components/x-spinner';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { ApiKeysSection } from './api-keys-section';
 import { useGetDatasource, useInspectDatasource } from '@/api/admin';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { EditDatasourceDialog } from '@/app/organizationdetails/edit-datasource-dialog';
-import { isHttpOk } from '@/services/typehelper';
 import { FailedToConnectToDatasource } from '@/app/datasourcedetails/failed-to-connect-to-datasource';
 import { ParticipantTypesSection } from '@/app/datasourcedetails/participant-types-section';
 import { useCurrentOrganization } from '@/app/providers/organization-provider';
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -24,7 +22,7 @@ export default function Page() {
   const {
     data: datasourceMetadata,
     isLoading: datasourceDetailsLoading,
-    error: datasourceError
+    error: datasourceError,
   } = useGetDatasource(datasourceId!, {
     swr: {
       enabled: datasourceId !== null,
@@ -34,7 +32,7 @@ export default function Page() {
   const {
     data: inspectDatasourceData,
     isLoading: inspectDatasourceLoading,
-    error: inspectError
+    error: inspectError,
   } = useInspectDatasource(
     datasourceId!,
     {},
@@ -47,12 +45,7 @@ export default function Page() {
 
   // Redirect if datasource doesn't belong to current organization
   useEffect(() => {
-    if (
-      currentOrgId &&
-      datasourceMetadata &&
-      isHttpOk(datasourceMetadata) &&
-      datasourceMetadata.data.organization_id !== currentOrgId
-    ) {
+    if (currentOrgId && datasourceMetadata && datasourceMetadata.organization_id !== currentOrgId) {
       // Redirect to home if datasource doesn't belong to current org
       router.push('/');
     }
@@ -69,7 +62,7 @@ export default function Page() {
     return (
       <Flex direction="column" gap="3">
         <Heading>Error fetching datasource metadata</Heading>
-        <FailedToConnectToDatasource data={inspectError} datasourceId={datasourceId!} />
+        <FailedToConnectToDatasource error={inspectError} datasourceId={datasourceId!} />
       </Flex>
     );
   }
@@ -78,15 +71,19 @@ export default function Page() {
     return (
       <Flex direction="column" gap="3">
         <Heading>Error reading tables from datasource</Heading>
-        <FailedToConnectToDatasource data={datasourceError} datasourceId={datasourceId!} />
+        <FailedToConnectToDatasource error={datasourceError} datasourceId={datasourceId!} />
       </Flex>
     );
   }
 
+  if (!datasourceMetadata || !inspectDatasourceData) {
+    return <Text>Error: Missing datasource metadata</Text>;
+  }
+
   // We can safely use data properties now that we've handled all error cases
-  const datasourceName = datasourceMetadata.data.name;
-  const organizationName = datasourceMetadata.data.organization_name;
-  const organizationId = datasourceMetadata.data.organization_id;
+  const datasourceName = datasourceMetadata.name;
+  const organizationName = datasourceMetadata.organization_name;
+  const organizationId = datasourceMetadata.organization_id;
   return (
     <Flex direction="column" gap="3">
       <Heading>Datasource Details: {datasourceName}</Heading>
@@ -96,17 +93,17 @@ export default function Page() {
       <Flex gap="3">
         <EditDatasourceDialog datasourceId={datasourceId} variant="button" />
       </Flex>
-      {(
+      {
         <>
           <Callout.Root color={'green'}>
             <Callout.Icon>
               <InfoCircledIcon />
             </Callout.Icon>
             <Callout.Text>
-              Successfully connected to datasource ({inspectDatasourceData.data.tables.length} tables)
+              Successfully connected to datasource ({inspectDatasourceData.tables.length} tables)
             </Callout.Text>
           </Callout.Root>
-          {inspectDatasourceData.data.tables.length == 0 && (
+          {inspectDatasourceData.tables.length == 0 && (
             <Callout.Root color={'red'}>
               <Callout.Icon>
                 <InfoCircledIcon />
@@ -115,7 +112,7 @@ export default function Page() {
             </Callout.Root>
           )}
         </>
-      )}
+      }
       <ParticipantTypesSection datasourceId={datasourceId} />
       <ApiKeysSection datasourceId={datasourceId} />
     </Flex>

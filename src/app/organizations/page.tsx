@@ -21,7 +21,7 @@ export default function Page() {
         <Heading size="4">Organizations</Heading>
         <CreateOrganizationDialog />
       </Flex>
-      <OrganizationsTable organizations={data.data.items} />
+      <OrganizationsTable organizations={data.items} />
     </Flex>
   );
 }

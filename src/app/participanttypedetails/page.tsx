@@ -43,25 +43,23 @@ export default function Page() {
     return <Text>Error: {JSON.stringify(error)}</Text>;
   }
 
-  const participantConfig = data.data;
-
   // Sort fields only in the initial config, putting unique_id field at top
-  if (participantConfig.type !== 'sheet') {
-    const sortedFields = [...participantConfig.fields].sort((a, b) => {
+  if (data.type !== 'sheet') {
+    const sortedFields = [...data.fields].sort((a, b) => {
       if (a.is_unique_id === b.is_unique_id) {
         return a.field_name.localeCompare(b.field_name);
       }
       return a.is_unique_id ? -1 : 1;
     });
-    participantConfig.fields = sortedFields;
+    data.fields = sortedFields;
   }
 
-  if (participantConfig.type === 'sheet') {
+  if (data.type === 'sheet') {
     return (
       <Flex direction="column" gap="3">
         <Heading>Participant Type Details: {participantType}</Heading>
         <Text>Sheet Reference Configuration:</Text>
-        <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(participantConfig, null, 2)}</pre>
+        <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(data, null, 2)}</pre>
       </Flex>
     );
   }
@@ -76,7 +74,7 @@ export default function Page() {
         <EditParticipantTypeDialog
           datasourceId={datasourceId}
           participantType={participantType}
-          participantConfig={participantConfig}
+          participantConfig={data}
         />
       </Flex>
       {inspectLoading || inspectValidating ? (

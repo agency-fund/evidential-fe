@@ -41,7 +41,7 @@ export const EditDatasourceDialog = ({
 
   useEffect(() => {
     if (open && data && isHttpOk(data)) {
-      const datasource = data.data;
+      const datasource = data;
       setName(datasource.name);
       if (datasource.config.type === 'remote') {
         const dwh = datasource.config.dwh;
@@ -67,12 +67,11 @@ export const EditDatasourceDialog = ({
     }
   }, [open, data]);
 
-  if (isLoading || !data || !isHttpOk(data)) {
+  if (isLoading || !data) {
     return null;
   }
 
-  const datasource = data.data;
-  const config = datasource.config;
+  const config = data.config;
 
   if (config.type !== 'remote') {
     return null;

@@ -1,6 +1,5 @@
 import { useCreateParticipantType, useInspectDatasource, useInspectTableInDatasource } from '@/api/admin';
 import { FieldDescriptor, FieldMetadata } from '@/api/methods.schemas';
-import { isHttpOk } from '@/services/typehelper';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { Button, Dialog, Flex, IconButton, Spinner, Switch, Table, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
@@ -35,11 +34,11 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
   };
 
   useEffect(() => {
-    if (!isHttpOk(tableData)) {
+    if (tableData === undefined) {
       return;
     }
-    const probable_unique_id_field = tableData.data.detected_unique_id_fields?.pop();
-    const sortedFields = tableData.data.fields
+    const probable_unique_id_field = tableData.detected_unique_id_fields?.pop();
+    const sortedFields = tableData.fields
       .map(
         (field: FieldMetadata): FieldDescriptor => ({
           is_unique_id: field.field_name == probable_unique_id_field,
@@ -100,7 +99,13 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
                 setError('');
               } catch (error) {
                 console.error('Failed to create participant type:', error);
-                setError(error instanceof Error ? error.message : JSON.stringify(error));
+
+                // Use the ApiError class for better error handling
+                if (error instanceof Error) {
+                  setError(error.message);
+                } else {
+                  setError('An unknown error occurred');
+                }
               }
             }}
           >
@@ -285,9 +290,9 @@ export const AddParticipantTypeDialog = ({ datasourceId }: { datasourceId: strin
   if (isLoading) {
     return <Spinner />;
   }
-  if (!isHttpOk(data)) {
+  if (!data) {
     // TODO
     return <></>;
   }
-  return <AddParticipantTypeDialogInner datasourceId={datasourceId} tables={data!.data.tables} />;
+  return <AddParticipantTypeDialogInner datasourceId={datasourceId} tables={data.tables} />;
 };

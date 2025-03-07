@@ -44,7 +44,13 @@ export function EditParticipantTypeDialog({
       ]);
     } catch (error) {
       console.error('Failed to update participant type:', error);
-      setError(error instanceof Error ? error.message : JSON.stringify(error));
+      
+      // Use the ApiError class for better error handling
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An unknown error occurred');
+      }
     }
   };
 

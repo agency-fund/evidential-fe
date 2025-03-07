@@ -14,7 +14,11 @@ export default function Page() {
   const searchParams = useSearchParams();
   const organizationId = searchParams.get('id');
 
-  const { data, isLoading, error } = useGetOrganization(organizationId!, {
+  const {
+    data: organization,
+    isLoading,
+    error,
+  } = useGetOrganization(organizationId!, {
     swr: {
       enabled: organizationId !== null,
     },
@@ -28,11 +32,9 @@ export default function Page() {
     return <XSpinner message="Loading organization details..." />;
   }
 
-  if (error || !isHttpOk(data)) {
+  if (error || !isHttpOk(organization)) {
     return <Text>Error: {JSON.stringify(error)}</Text>;
   }
-
-  const organization = data?.data;
 
   return (
     <Flex direction="column" gap="3">

@@ -37,9 +37,9 @@ export function OrganizationProvider({ children }: PropsWithChildren) {
   // If the localstorage org_id refers to an org that the user doesn't have access to, update it to be the first one
   // that they do have access to.
   useEffect(() => {
-    if (!isHttpOk(orgsList) || !orgsList.data.items.length) return;
+    if (!isHttpOk(orgsList) || !orgsList.items.length) return;
 
-    const organizations = orgsList.data.items;
+    const organizations = orgsList.items;
     const storedOrgExists = organizations.some((org) => org.id === orgId);
     if (storedOrgExists) return;
     setOrgId(organizations[0].id);
@@ -58,7 +58,7 @@ export function OrganizationProvider({ children }: PropsWithChildren) {
     return <CurrentOrganizationContext.Provider value={null}>{children}</CurrentOrganizationContext.Provider>;
   }
 
-  const organizations = orgsList.data.items;
+  const organizations = orgsList.items;
   if (organizations.length === 0) {
     return <Text>Sorry, you are not a member of any organizations.</Text>;
   }

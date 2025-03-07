@@ -18,9 +18,9 @@ export function DownloadAssignmentsCsvButton({ datasourceId, experimentId }: Dow
     try {
       const response = await getExperimentAssignmentsAsCsv(datasourceId, experimentId);
 
-      if (response && response.status === 200 && response.data) {
+      if (response) {
         // Create a blob from the CSV data (typing is a hack)
-        const blob = new Blob([response.data as BlobPart], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob([response as BlobPart], { type: 'text/csv;charset=utf-8;' });
 
         // Create a download link
         const url = URL.createObjectURL(blob);

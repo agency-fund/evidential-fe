@@ -16,6 +16,9 @@ export default defineConfig({
       target: './src/api/methods.ts',
       biome: true,
       override: {
+        fetch: {
+          includeHttpResponseReturnType: false,
+        },
         mutator: {
           path: './src/services/orval-fetch.ts',
           name: 'orvalFetch',

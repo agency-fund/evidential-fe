@@ -22,7 +22,7 @@ export function ParticipantTypesTable({ datasourceId }: { datasourceId: string }
         </Table.Row>
       </Table.Header>
       <Table.Body>
-        {data.data.items?.map((item) => (
+        {data.items?.map((item) => (
           <Table.Row key={item.participant_type}>
             <Table.Cell>
               <Link

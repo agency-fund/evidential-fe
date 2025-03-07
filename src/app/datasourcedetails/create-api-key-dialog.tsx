@@ -12,9 +12,10 @@ export const CreateApiKeyDialog = ({ datasourceId }: { datasourceId: string }) =
   );
   const { data: createdKey, trigger: triggerCreateApiKey, isMutating } = useCreateApiKey();
 
-  const exampleCurlSnippet = isHttpOk(createdKey)
-    ? `curl -H "X-API-Key: ${createdKey.data.key}" -H "Datasource-ID: ${datasourceId}" ${API_BASE_URL}/v1/_authcheck`
-    : '';
+  const exampleCurlSnippet =
+    createdKey !== undefined
+      ? `curl -H "X-API-Key: ${createdKey.key}" -H "Datasource-ID: ${datasourceId}" ${API_BASE_URL}/v1/_authcheck`
+      : '';
   return (
     <>
       {state === 'presenting-results' && isHttpOk(createdKey) && (
@@ -32,9 +33,9 @@ export const CreateApiKeyDialog = ({ datasourceId }: { datasourceId: string }) =
                 <DataList.Label minWidth="88px">Key</DataList.Label>
                 <DataList.Value>
                   <Flex align="center" gap="2">
-                    <Code variant="ghost">{createdKey.data.key}</Code>
+                    <Code variant="ghost">{createdKey.key}</Code>
                     <IconButton size="1" aria-label="Copy value" color="gray" variant="ghost">
-                      <CopyIcon onClick={() => navigator.clipboard.writeText(createdKey.data.key)} />
+                      <CopyIcon onClick={() => navigator.clipboard.writeText(createdKey.key)} />
                     </IconButton>
                   </Flex>
                 </DataList.Value>

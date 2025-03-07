@@ -1,5 +1,5 @@
-import { listDatasourcesResponse } from '@/api/admin';
 import { Flex, Select, Text } from '@radix-ui/themes';
+import { ListDatasourcesResponse } from '@/api/methods.schemas';
 
 export function DatasourceSelector({
   selectedDatasource,
@@ -8,9 +8,9 @@ export function DatasourceSelector({
 }: {
   selectedDatasource: string;
   setSelectedDatasource: (value: string) => void;
-  datasourcesData: listDatasourcesResponse;
+  datasourcesData: ListDatasourcesResponse;
 }) {
-  const hasDataSources = datasourcesData.data.items.length > 0;
+  const hasDataSources = datasourcesData.items.length > 0;
 
   return (
     <Flex align="center" gap="2">
@@ -21,7 +21,7 @@ export function DatasourceSelector({
         <Select.Root value={selectedDatasource} onValueChange={setSelectedDatasource}>
           <Select.Trigger placeholder="Select a datasource" />
           <Select.Content>
-            {datasourcesData.data.items.map((datasource) => (
+            {datasourcesData.items.map((datasource) => (
               <Select.Item key={datasource.id} value={datasource.id}>
                 {datasource.name}
               </Select.Item>

@@ -2,15 +2,49 @@ import { currentIdToken } from '@/app/providers/use-auth-storage';
 import { API_BASE_URL } from '@/services/constants';
 import { API_401_EVENT } from '@/app/providers/auth-provider';
 
-const getBody = <T>(c: Response | Request): Promise<T> => {
+export class Error422<P> extends Error {
+  public readonly data: P;
+  public readonly headers: Headers;
+  public readonly status: 422;
+
+  constructor(response: { status: 422; data: P; headers: Headers }) {
+    super(`API 422 Error: ${response.status}`);
+    Object.setPrototypeOf(this, GenericApiError.prototype);
+    this.data = response.data;
+    this.status = response.status;
+    this.headers = response.headers;
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, GenericApiError);
+    }
+    this.name = 'Error422';
+  }
+}
+/**
+ * Custom API error class that provides structured error information
+ */
+export class GenericApiError extends Error {
+  public readonly response: unknown;
+
+  constructor(response: unknown) {
+    super(`API Error: ${response}`);
+    Object.setPrototypeOf(this, GenericApiError.prototype);
+    this.response = response;
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, GenericApiError);
+    }
+    this.name = 'GenericApiError';
+  }
+}
+
+const getBody = (c: Response) => {
   const contentType = c.headers.get('content-type');
   if (contentType && contentType.includes('application/json')) {
     return c.json();
   }
-  if (contentType && contentType.includes('application/pdf')) {
-    return c.blob() as Promise<T>;
+  if (contentType && contentType.includes('text/csv')) {
+    return c.text();
   }
-  return c.text() as Promise<T>;
+  throw Error('Backend returned unsupported content-type.');
 };
 
 const getHeaders = (options: RequestInit) => {
@@ -35,20 +69,20 @@ export const orvalFetch = async <T>(path: string, options: RequestInit): Promise
   };
   const request = new Request(requestUrl, requestInit);
   const response = await fetch(request);
-  const data = await getBody<T>(response);
-  
+  const data = await getBody(response);
+
   if (request.headers.has('Authorization') && response.status === 401) {
     // Orval doesn't allow us to pass through context so we cannot invoke the logout() handler directly; instead,
     // we trigger a custom event which auth-provider will react to.
     sendCustomLogoutEvent();
   }
-  
-  const result = { status: response.status, data, headers: response.headers } as T;
-  
-  // Throw an error for non-2xx responses
-  if (response.status < 200 || response.status >= 300) {
-    throw result;
+  const result = { status: response.status, data: data, headers: response.headers };
+  if (result.status === 422) {
+    throw new Error422({ ...result, status: 422 });
+  } else if (response.status < 200 || response.status >= 300) {
+    throw new GenericApiError(result);
   }
-  
-  return result;
+  return data;
 };
+
+export type ErrorType<GeneratedErrorPayload> = Error | Error422<GeneratedErrorPayload> | GenericApiError;

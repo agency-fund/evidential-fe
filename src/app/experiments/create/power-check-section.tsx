@@ -5,7 +5,6 @@ import { usePowerCheck } from '@/api/admin';
 import { convertFormDataToCreateExperimentRequest } from '@/app/experiments/create/helpers';
 import { isHttpOk } from '@/services/typehelper';
 import { GenericErrorCallout } from '@/app/components/generic-error';
-import { useState } from 'react';
 
 interface PowerCheckSectionProps {
   formData: ExperimentFormData;
@@ -13,25 +12,24 @@ interface PowerCheckSectionProps {
 }
 
 export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSectionProps) {
-  const { trigger, data, isMutating } = usePowerCheck(formData.datasourceId!);
-  const [error, setError] = useState(false);
+  const { trigger, data, isMutating, error } = usePowerCheck(formData.datasourceId!);
 
   const handlePowerCheck = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     const { design_spec, audience_spec } = convertFormDataToCreateExperimentRequest(formData);
-    setError(false);
-    const response = await trigger({
-      design_spec,
-      audience_spec,
-    });
-    if (isHttpOk(response)) {
+    try {
+      const response = await trigger({
+        design_spec,
+        audience_spec,
+      });
       onFormDataChange({
         ...formData,
-        powerCheckResponse: response.data,
-        chosenN: response.data.analyses[0].target_n!,
+        powerCheckResponse: response,
+        chosenN: response.analyses[0].target_n!,
       });
-    } else {
-      setError(true);
+    } catch {
+      // error is caught by SWR and reported in the error variable.
+      return;
     }
   };
 
@@ -55,11 +53,11 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
         )}
       </Flex>
 
-      {!isHttpOk(data) && error && (
+      {error && (
         <Flex align="center" gap="2">
           <GenericErrorCallout
             title={'Power check failed'}
-            message={data ? JSON.stringify(data.data, null, 2) : 'unknown'}
+            message={error ? JSON.stringify(error, null, 2) : 'unknown'}
           />
         </Flex>
       )}
@@ -72,7 +70,7 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
       )}
 
       {isHttpOk(data) &&
-        data.data.analyses.map((metricAnalysis, i) => (
+        data.analyses.map((metricAnalysis, i) => (
           <Card key={i}>
             <Flex direction="column" gap="3">
               <Text weight={'bold'}>{metricAnalysis.metric_spec.field_name}</Text>
