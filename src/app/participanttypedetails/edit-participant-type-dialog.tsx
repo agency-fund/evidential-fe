@@ -17,7 +17,12 @@ export function EditParticipantTypeDialog({
   participantType: string;
   participantConfig: ParticipantsDef;
 }) {
-  const { trigger: updateParticipantType, isMutating } = useUpdateParticipantType(datasourceId, participantType, {
+  const {
+    trigger: updateParticipantType,
+    isMutating,
+    error,
+    reset,
+  } = useUpdateParticipantType(datasourceId, participantType, {
     swr: {
       onSuccess: () => {
         setOpen(false);
@@ -26,13 +31,12 @@ export function EditParticipantTypeDialog({
   });
   const [editedDef, setEditedDef] = useState<ParticipantsDef | null>(null);
   const [open, setOpen] = useState(false);
-  const [error, setError] = useState<string>('');
 
   const handleSave = async () => {
     if (!editedDef) return;
 
     // Clear any previous errors
-    setError('');
+    reset();
 
     try {
       await updateParticipantType({
@@ -42,26 +46,20 @@ export function EditParticipantTypeDialog({
         mutate(getGetParticipantTypesKey(datasourceId, participantType)),
         mutate(getInspectParticipantTypesKey(datasourceId, participantType, {})),
       ]);
-    } catch (error) {
-      console.error('Failed to update participant type:', error);
-      
-      // Use the ApiError class for better error handling
-      if (error instanceof Error) {
-        setError(error.message);
-      } else {
-        setError('An unknown error occurred');
-      }
-    }
+    } catch (_handled_by_swr) {}
   };
 
   return (
-    <Dialog.Root open={open} onOpenChange={(isOpen) => {
-      setOpen(isOpen);
-      if (!isOpen) {
-        // Clear error state when dialog is closed
-        setError('');
-      }
-    }}>
+    <Dialog.Root
+      open={open}
+      onOpenChange={(isOpen) => {
+        setOpen(isOpen);
+        if (!isOpen) {
+          // Clear error state when dialog is closed
+          reset();
+        }
+      }}
+    >
       <Dialog.Trigger>
         <Button>
           <Pencil2Icon /> Edit Participant Type
@@ -75,16 +73,20 @@ export function EditParticipantTypeDialog({
           <>
             {error && (
               <Flex mb="4">
-                <GenericErrorCallout title="Failed to update participant type" message={error} />
+                <GenericErrorCallout title="Failed to update participant type" error={error} />
               </Flex>
             )}
             <ParticipantDefEditor participantDef={editedDef || participantConfig} onUpdate={setEditedDef} />
             <Flex gap="3" mt="4" justify="end">
               <Dialog.Close>
-                <Button variant="soft" color="gray" onClick={() => {
-                  setEditedDef(null);
-                  setError('');
-                }}>
+                <Button
+                  variant="soft"
+                  color="gray"
+                  onClick={() => {
+                    setEditedDef(null);
+                    reset();
+                  }}
+                >
                   Cancel
                 </Button>
               </Dialog.Close>
