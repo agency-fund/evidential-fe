@@ -1,10 +1,10 @@
 import { Callout, Code, Flex, Text } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
-import { Error422, GenericApiError } from '@/services/orval-fetch';
+import { ApiError, ApiValidationError } from '@/services/orval-fetch';
 import { HTTPValidationError } from '@/api/methods.schemas';
 
 const FormattedError = ({ error }: { error: Error }) => {
-  if (error instanceof GenericApiError && error.response) {
+  if (error instanceof ApiError && error.response) {
     const response = error.response as { status: number; data: unknown };
     return (
       <Flex direction="column" gap="2">
@@ -21,7 +21,7 @@ const FormattedError = ({ error }: { error: Error }) => {
     );
   }
 
-  if (error instanceof Error422) {
+  if (error instanceof ApiValidationError) {
     const validationError = error.data as HTTPValidationError;
     return (
       <Flex direction="column" gap="2">
@@ -44,7 +44,7 @@ const FormattedError = ({ error }: { error: Error }) => {
     );
   }
 
-  // Default case for standard errors
+  // Default case for other errors
   return (
     <Flex direction="column" gap="1">
       <Text weight="bold">{error.name || 'Error'}</Text>
