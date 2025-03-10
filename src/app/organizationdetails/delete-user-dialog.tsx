@@ -1,7 +1,7 @@
 'use client';
 import { AlertDialog, Button, Flex, IconButton } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
-import { useRemoveMemberFromOrganization } from '@/api/admin';
+import { getGetOrganizationKey, useRemoveMemberFromOrganization } from '@/api/admin';
 import { mutate } from 'swr';
 
 interface DeleteUserDialogProps {
@@ -11,7 +11,7 @@ interface DeleteUserDialogProps {
 
 export function DeleteUserDialog({ organizationId, userId }: DeleteUserDialogProps) {
   const { trigger } = useRemoveMemberFromOrganization(organizationId, userId, {
-    swr: { onSuccess: () => mutate([`/v1/m/organizations/${organizationId}`]) },
+    swr: { onSuccess: () => mutate(getGetOrganizationKey(organizationId)) },
   });
 
   return (

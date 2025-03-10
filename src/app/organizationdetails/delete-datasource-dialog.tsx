@@ -1,7 +1,7 @@
 'use client';
 import { AlertDialog, Button, Flex, IconButton } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
-import { useDeleteDatasource } from '@/api/admin';
+import { getGetOrganizationKey, useDeleteDatasource } from '@/api/admin';
 import { mutate } from 'swr';
 
 interface DeleteDatasourceDialogProps {
@@ -12,7 +12,7 @@ interface DeleteDatasourceDialogProps {
 export function DeleteDatasourceDialog({ organizationId, datasourceId }: DeleteDatasourceDialogProps) {
   const { trigger } = useDeleteDatasource(datasourceId, {
     swr: {
-      onSuccess: () => mutate([`/v1/m/organizations/${organizationId}`]),
+      onSuccess: () => mutate(getGetOrganizationKey(organizationId)),
     },
   });
 

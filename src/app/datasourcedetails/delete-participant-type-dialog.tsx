@@ -1,7 +1,7 @@
 'use client';
 import { AlertDialog, Button, Flex, IconButton } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
-import { useDeleteParticipant } from '@/api/admin';
+import { getListParticipantTypesKey, useDeleteParticipant } from '@/api/admin';
 import { mutate } from 'swr';
 
 interface DeleteParticipantTypeDialogProps {
@@ -11,7 +11,7 @@ interface DeleteParticipantTypeDialogProps {
 
 export const DeleteParticipantTypeDialog = ({ datasourceId, participantType }: DeleteParticipantTypeDialogProps) => {
   const { trigger } = useDeleteParticipant(datasourceId, participantType, {
-    swr: { onSuccess: () => mutate([`/v1/m/datasources/${datasourceId}/participants`]) },
+    swr: { onSuccess: () => mutate(getListParticipantTypesKey(datasourceId)) },
   });
 
   return (
