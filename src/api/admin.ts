@@ -50,8 +50,8 @@ import type {
 	UpdateParticipantsTypeResponse,
 } from "./methods.schemas";
 
-import { orvalFetch } from "../services/orval-fetch";
-import type { ErrorType } from "../services/orval-fetch";
+import { orvalFetch } from "@/services/orval-fetch";
+import type { ErrorType } from "@/services/orval-fetch";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 

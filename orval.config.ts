@@ -1,5 +1,20 @@
 import { defineConfig } from 'orval';
 
+// Rewrites orvalFetch imports to use @/ instead of relative paths.
+const rewriteImports = (filenames: string[]) => {
+  const fs = require('fs');
+
+  for (const filename of filenames) {
+    const content = fs.readFileSync(filename, 'utf8');
+    if (!content.includes('orvalFetch')) {
+      continue;
+    }
+    const updated = content.replace(/["'][.][.][/]services[/]orval-fetch['"]/g, '"@/services/orval-fetch"');
+    fs.writeFileSync(filename, updated, 'utf8');
+    console.log(`Updated custom fetcher import in ${filename}`);
+  }
+};
+
 export default defineConfig({
   xnginapi: {
     input: {
@@ -8,6 +23,9 @@ export default defineConfig({
         mode: 'include',
         tags: ['Admin'],
       },
+    },
+    hooks: {
+      afterAllFilesWrite: [rewriteImports],
     },
     output: {
       client: 'swr',
