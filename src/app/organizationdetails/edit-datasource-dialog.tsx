@@ -12,6 +12,7 @@ import {
 import { useEffect, useState } from 'react';
 import { mutate } from 'swr';
 import { DsnDriver, UpdateDatasourceRequest } from '@/api/methods.schemas';
+import { GenericErrorCallout } from '@/app/components/generic-error';
 
 export const EditDatasourceDialog = ({
   organizationId,
@@ -22,7 +23,7 @@ export const EditDatasourceDialog = ({
   datasourceId: string;
   variant?: 'icon' | 'button';
 }) => {
-  const { trigger: updateDatasource } = useUpdateDatasource(datasourceId);
+  const { trigger: updateDatasource, error, reset } = useUpdateDatasource(datasourceId);
   const { data, isLoading } = useGetDatasource(datasourceId);
   const [open, setOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -79,7 +80,15 @@ export const EditDatasourceDialog = ({
   const isBigQuery = config.dwh.driver === 'bigquery';
 
   return (
-    <Dialog.Root open={open} onOpenChange={setOpen}>
+    <Dialog.Root
+      open={open}
+      onOpenChange={(op) => {
+        setOpen(op);
+        if (!op) {
+          reset();
+        }
+      }}
+    >
       <Dialog.Trigger>
         {variant === 'icon' ? (
           <IconButton color="gray" variant="soft">
@@ -124,19 +133,23 @@ export const EditDatasourceDialog = ({
               };
             }
 
-            await updateDatasource(updateData);
-            if (organizationId) {
-              await mutate(getGetOrganizationKey(organizationId));
-            }
-            await mutate(getGetDatasourceKey(datasourceId));
-            await mutate(getInspectDatasourceKey(datasourceId, {}));
-            setOpen(false);
+            try {
+              await updateDatasource(updateData);
+              if (organizationId) {
+                await mutate(getGetOrganizationKey(organizationId));
+              }
+              await mutate(getGetDatasourceKey(datasourceId));
+              await mutate(getInspectDatasourceKey(datasourceId, {}));
+              setOpen(false);
+            } catch (_handled_by_swr) {}
           }}
         >
           <Dialog.Title>Edit Datasource</Dialog.Title>
           <Dialog.Description size="2" mb="4">
             Update the datasource settings.
           </Dialog.Description>
+
+          {error && <GenericErrorCallout title={'Failed to update datasource'} error={error} />}
 
           <Flex direction="column" gap="3">
             <label>
