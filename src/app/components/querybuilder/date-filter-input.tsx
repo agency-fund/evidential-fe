@@ -61,8 +61,8 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
 
   const removeValue = (index: number) => {
     const newValues = filter.value.filter((_, i) => i !== index);
-    if (newValues.length === 0 || (newValues.length === 1 && newValues[0] === null)) {
-      // Don't allow removing all non-null values - add a default one
+    if (newValues.length === 0) {
+      // Don't allow removing all values - add a default one. A single null is allowed.
       const today = new Date().toISOString().split('T')[0];
       newValues.unshift(today);
     }
@@ -153,7 +153,9 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
                   value={val as string}
                   onChange={(e) => handleValueChange(idx, e.target.value)}
                 />
-                {nonNullValues.length > 1 && (
+                {/* Only show the remove button if there are multiple non-null values or if null
+                    is included, since we allow a single null value. */}
+                {(nonNullValues.length > 1 || includesNull) && (
                   <IconButton
                     variant="soft"
                     size="1"
@@ -195,7 +197,7 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
 
       {renderValueInputs()}
 
-      {(operator === 'on' || operator === 'in-list') && (
+      {(operator === 'on' || operator === 'in-list' || operator === 'not-in-list') && (
         <Flex gap="1" align="center">
           <Checkbox checked={includesNull} onCheckedChange={(checked) => handleNullChange(!!checked)} />
           <Text size="2">Include NULL</Text>
