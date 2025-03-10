@@ -7,10 +7,10 @@ import { useGetDatasource, useInspectDatasource } from '@/api/admin';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { EditDatasourceDialog } from '@/app/organizationdetails/edit-datasource-dialog';
-import { FailedToConnectToDatasource } from '@/app/datasourcedetails/failed-to-connect-to-datasource';
 import { ParticipantTypesSection } from '@/app/datasourcedetails/participant-types-section';
 import { useCurrentOrganization } from '@/app/providers/organization-provider';
 import { useEffect } from 'react';
+import { GenericErrorCallout } from '@/app/components/generic-error';
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -60,19 +60,19 @@ export default function Page() {
   }
   if (inspectError) {
     return (
-      <Flex direction="column" gap="3">
-        <Heading>Error fetching datasource metadata</Heading>
-        <FailedToConnectToDatasource error={inspectError} datasourceId={datasourceId!} />
-      </Flex>
+      <>
+        <GenericErrorCallout title={'Failed to fetch datasource metadata'} error={inspectError} />
+        <EditDatasourceDialog datasourceId={datasourceId} variant="button" />
+      </>
     );
   }
 
   if (datasourceError) {
     return (
-      <Flex direction="column" gap="3">
-        <Heading>Error reading tables from datasource</Heading>
-        <FailedToConnectToDatasource error={datasourceError} datasourceId={datasourceId!} />
-      </Flex>
+      <>
+        <GenericErrorCallout title={'Failed to fetch datasource metadata'} error={datasourceError} />
+        <EditDatasourceDialog datasourceId={datasourceId} variant="button" />
+      </>
     );
   }
 

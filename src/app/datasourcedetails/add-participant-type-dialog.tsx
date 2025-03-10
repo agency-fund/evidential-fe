@@ -67,7 +67,15 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
   };
 
   return (
-    <Dialog.Root open={open} onOpenChange={setOpen}>
+    <Dialog.Root
+      open={open}
+      onOpenChange={(op) => {
+        setOpen(op);
+        if (!op) {
+          reset();
+        }
+      }}
+    >
       <Dialog.Trigger>
         <Button>
           <PlusIcon /> Add Participant Type
@@ -84,7 +92,6 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
               const fd = new FormData(event.currentTarget);
               const participant_type = fd.get('participant_type') as string;
               const table_name = fd.get('table_name') as string;
-              reset();
               try {
                 await trigger({
                   participant_type,
@@ -260,7 +267,7 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
             </Flex>
 
             <Flex gap="3" mt="4" justify="end">
-              <Dialog.Close onClick={() => reset()}>
+              <Dialog.Close>
                 <Button variant="soft" color="gray">
                   Cancel
                 </Button>
