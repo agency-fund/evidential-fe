@@ -47,12 +47,10 @@ export function RenameOrganizationDialog({
               event.preventDefault();
               const fd = new FormData(event.currentTarget);
               const name = fd.get('name') as string;
-              try {
-                await trigger({
-                  name,
-                });
-                setOpen(false);
-              } catch (_handled_by_swr) {}
+              await trigger({
+                name,
+              });
+              setOpen(false);
             }}
           >
             <Dialog.Title>Rename Organization</Dialog.Title>

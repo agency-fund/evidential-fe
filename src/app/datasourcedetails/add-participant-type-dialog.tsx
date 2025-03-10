@@ -92,17 +92,15 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
               const fd = new FormData(event.currentTarget);
               const participant_type = fd.get('participant_type') as string;
               const table_name = fd.get('table_name') as string;
-              try {
-                await trigger({
-                  participant_type,
-                  schema_def: {
-                    table_name,
-                    fields: fields,
-                  },
-                });
-                setOpen(false);
-                setFields([]);
-              } catch (_handled_by_swr) {}
+              await trigger({
+                participant_type,
+                schema_def: {
+                  table_name,
+                  fields: fields,
+                },
+              });
+              setOpen(false);
+              setFields([]);
             }}
           >
             <Dialog.Title>Add Participant Type</Dialog.Title>

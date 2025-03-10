@@ -16,17 +16,15 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
   const handlePowerCheck = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     const { design_spec, audience_spec } = convertFormDataToCreateExperimentRequest(formData);
-    try {
-      const response = await trigger({
-        design_spec,
-        audience_spec,
-      });
-      onFormDataChange({
-        ...formData,
-        powerCheckResponse: response,
-        chosenN: response.analyses[0].target_n!,
-      });
-    } catch (_handled_by_swr) {}
+    const response = await trigger({
+      design_spec,
+      audience_spec,
+    });
+    onFormDataChange({
+      ...formData,
+      powerCheckResponse: response,
+      chosenN: response.analyses[0].target_n!,
+    });
   };
 
   const isButtonDisabled = isMutating || formData.primaryMetric === undefined;

@@ -146,10 +146,8 @@ export const EditDatasourceDialog = ({
               };
             }
 
-            try {
-              await updateDatasource(updateData);
-              setOpen(false);
-            } catch (_handled_by_swr) {}
+            await updateDatasource(updateData);
+            setOpen(false);
           }}
         >
           <Dialog.Title>Edit Datasource</Dialog.Title>

@@ -81,12 +81,10 @@ export const CreateApiKeyDialog = ({ datasourceId }: { datasourceId: string }) =
                   <form
                     onSubmit={async (event) => {
                       event.preventDefault();
-                      try {
-                        await triggerCreateApiKey({
-                          datasource_id: datasourceId,
-                        });
-                        setState('presenting-results');
-                      } catch (_handled_by_swr) {}
+                      await triggerCreateApiKey({
+                        datasource_id: datasourceId,
+                      });
+                      setState('presenting-results');
                     }}
                   >
                     <Dialog.Title>Create API key</Dialog.Title>
