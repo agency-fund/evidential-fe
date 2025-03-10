@@ -13,11 +13,12 @@ interface DeleteExperimentButtonProps {
 
 export function DeleteExperimentButton({ datasourceId, experimentId }: DeleteExperimentButtonProps) {
   const [open, setOpen] = useState(false);
-  const { trigger, isMutating } = useDeleteExperiment(datasourceId, experimentId);
+  const { trigger, isMutating } = useDeleteExperiment(datasourceId, experimentId, {
+    swr: { onSuccess: () => mutate(getListExperimentsKey(datasourceId)) },
+  });
 
   const handleDelete = async () => {
     await trigger({});
-    await mutate(getListExperimentsKey(datasourceId));
     setOpen(false);
   };
 

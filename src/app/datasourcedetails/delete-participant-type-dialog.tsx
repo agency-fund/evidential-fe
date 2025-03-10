@@ -10,7 +10,9 @@ interface DeleteParticipantTypeDialogProps {
 }
 
 export const DeleteParticipantTypeDialog = ({ datasourceId, participantType }: DeleteParticipantTypeDialogProps) => {
-  const { trigger } = useDeleteParticipant(datasourceId, participantType);
+  const { trigger } = useDeleteParticipant(datasourceId, participantType, {
+    swr: { onSuccess: () => mutate([`/v1/m/datasources/${datasourceId}/participants`]) },
+  });
 
   return (
     <AlertDialog.Root>
@@ -36,7 +38,6 @@ export const DeleteParticipantTypeDialog = ({ datasourceId, participantType }: D
               color="red"
               onClick={async () => {
                 await trigger();
-                await mutate([`/v1/m/datasources/${datasourceId}/participants`]);
               }}
             >
               Delete

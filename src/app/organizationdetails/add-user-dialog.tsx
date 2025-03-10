@@ -7,7 +7,9 @@ import { PlusIcon } from '@radix-ui/react-icons';
 import { mutate } from 'swr';
 
 export function AddUserDialog({ organizationId }: { organizationId: string }) {
-  const { trigger, isMutating } = useAddMemberToOrganization(organizationId);
+  const { trigger, isMutating } = useAddMemberToOrganization(organizationId, {
+    swr: { onSuccess: () => mutate(getGetOrganizationKey(organizationId)) },
+  });
   const [open, setOpen] = useState(false);
 
   return (
@@ -31,7 +33,6 @@ export function AddUserDialog({ organizationId }: { organizationId: string }) {
               await trigger({
                 email,
               });
-              await mutate(getGetOrganizationKey(organizationId));
               setOpen(false);
             }}
           >

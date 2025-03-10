@@ -10,7 +10,9 @@ interface DeleteUserDialogProps {
 }
 
 export function DeleteUserDialog({ organizationId, userId }: DeleteUserDialogProps) {
-  const { trigger } = useRemoveMemberFromOrganization(organizationId, userId);
+  const { trigger } = useRemoveMemberFromOrganization(organizationId, userId, {
+    swr: { onSuccess: () => mutate([`/v1/m/organizations/${organizationId}`]) },
+  });
 
   return (
     <AlertDialog.Root>
@@ -36,7 +38,6 @@ export function DeleteUserDialog({ organizationId, userId }: DeleteUserDialogPro
               color="red"
               onClick={async () => {
                 await trigger();
-                await mutate([`/v1/m/organizations/${organizationId}`]);
               }}
             >
               Remove
@@ -46,4 +47,4 @@ export function DeleteUserDialog({ organizationId, userId }: DeleteUserDialogPro
       </AlertDialog.Content>
     </AlertDialog.Root>
   );
-};
+}

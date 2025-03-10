@@ -23,7 +23,20 @@ export const EditDatasourceDialog = ({
   datasourceId: string;
   variant?: 'icon' | 'button';
 }) => {
-  const { trigger: updateDatasource, error, reset } = useUpdateDatasource(datasourceId);
+  const {
+    trigger: updateDatasource,
+    error,
+    reset,
+  } = useUpdateDatasource(datasourceId, {
+    swr: {
+      onSuccess: () =>
+        Promise.all([
+          mutate(getGetDatasourceKey(datasourceId)),
+          mutate(getInspectDatasourceKey(datasourceId, {})),
+          ...(organizationId ? [mutate(getGetOrganizationKey(organizationId))] : []),
+        ]),
+    },
+  });
   const { data, isLoading } = useGetDatasource(datasourceId);
   const [open, setOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -135,11 +148,6 @@ export const EditDatasourceDialog = ({
 
             try {
               await updateDatasource(updateData);
-              if (organizationId) {
-                await mutate(getGetOrganizationKey(organizationId));
-              }
-              await mutate(getGetDatasourceKey(datasourceId));
-              await mutate(getInspectDatasourceKey(datasourceId, {}));
               setOpen(false);
             } catch (_handled_by_swr) {}
           }}

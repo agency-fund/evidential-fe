@@ -10,7 +10,11 @@ interface DeleteDatasourceDialogProps {
 }
 
 export function DeleteDatasourceDialog({ organizationId, datasourceId }: DeleteDatasourceDialogProps) {
-  const { trigger } = useDeleteDatasource(datasourceId);
+  const { trigger } = useDeleteDatasource(datasourceId, {
+    swr: {
+      onSuccess: () => mutate([`/v1/m/organizations/${organizationId}`]),
+    },
+  });
 
   return (
     <AlertDialog.Root>
@@ -36,7 +40,6 @@ export function DeleteDatasourceDialog({ organizationId, datasourceId }: DeleteD
               color="red"
               onClick={async () => {
                 await trigger();
-                await mutate([`/v1/m/organizations/${organizationId}`]);
               }}
             >
               Delete
@@ -46,4 +49,4 @@ export function DeleteDatasourceDialog({ organizationId, datasourceId }: DeleteD
       </AlertDialog.Content>
     </AlertDialog.Root>
   );
-};
+}

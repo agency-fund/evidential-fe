@@ -24,8 +24,12 @@ export function EditParticipantTypeDialog({
     reset,
   } = useUpdateParticipantType(datasourceId, participantType, {
     swr: {
-      onSuccess: () => {
+      onSuccess: async () => {
         setOpen(false);
+        await Promise.all([
+          mutate(getGetParticipantTypesKey(datasourceId, participantType)),
+          mutate(getInspectParticipantTypesKey(datasourceId, participantType, {})),
+        ]);
       },
     },
   });
@@ -38,15 +42,9 @@ export function EditParticipantTypeDialog({
     // Clear any previous errors
     reset();
 
-    try {
-      await updateParticipantType({
-        fields: editedDef.fields,
-      });
-      await Promise.all([
-        mutate(getGetParticipantTypesKey(datasourceId, participantType)),
-        mutate(getInspectParticipantTypesKey(datasourceId, participantType, {})),
-      ]);
-    } catch (_handled_by_swr) {}
+    await updateParticipantType({
+      fields: editedDef.fields,
+    });
   };
 
   return (
