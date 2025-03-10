@@ -114,7 +114,7 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
               Define a new participant type for this datasource.
             </Dialog.Description>
 
-            {error !== '' && <GenericErrorCallout title={'Failed to save participant type'} message={error} />}
+            {error !== '' && <GenericErrorCallout title={'Failed to save participant type'} error={error} />}
 
             <Flex direction="column" gap="3">
               <label>
