@@ -50,16 +50,9 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
       });
       onNext();
     } catch (error) {
+      // TODO
       console.error('Failed to create experiment:', error);
-      // You could add a toast notification or error display here
-
-      // Use the ApiError class for better error handling
-      if (error instanceof Error) {
-        const errorMessage = error.message;
-        alert('Failed to create experiment: ' + errorMessage);
-      } else {
-        alert('Failed to create experiment: An unknown error occurred');
-      }
+      throw new Error('failed to create experiment');
     }
   };
 

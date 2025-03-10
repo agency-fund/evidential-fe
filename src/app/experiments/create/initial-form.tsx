@@ -90,7 +90,7 @@ export function InitialForm({ formData, onFormDataChange, onNext }: InitialFormP
                     <Spinner size="1" />
                     <Text size="2">Loading participant types...</Text>
                   </Flex>
-                ) : !participantTypesData || !(participantTypesData !== undefined) ? (
+                ) : !participantTypesData ? (
                   <Text color="gray">No participant types available</Text>
                 ) : (
                   <Select.Root

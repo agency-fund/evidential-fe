@@ -38,10 +38,9 @@ export function OrganizationProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     if (orgsList === undefined || !orgsList.items.length) return;
 
-    const organizations = orgsList.items;
-    const storedOrgExists = organizations.some((org) => org.id === orgId);
+    const storedOrgExists = orgsList.items.some((org) => org.id === orgId);
     if (storedOrgExists) return;
-    setOrgId(organizations[0].id);
+    setOrgId(orgsList.items[0].id);
   }, [orgsList, orgId, setOrgId]);
 
   if (error) {
@@ -53,7 +52,7 @@ export function OrganizationProvider({ children }: PropsWithChildren) {
       </Flex>
     );
   }
-  if (!auth.isAuthenticated || !(orgsList !== undefined)) {
+  if (!auth.isAuthenticated || orgsList === undefined) {
     return <CurrentOrganizationContext.Provider value={null}>{children}</CurrentOrganizationContext.Provider>;
   }
 

@@ -26,10 +26,7 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
         powerCheckResponse: response,
         chosenN: response.analyses[0].target_n!,
       });
-    } catch {
-      // error is caught by SWR and reported in the error variable.
-      return;
-    }
+    } catch (_handled_by_swr) {}
   };
 
   const isButtonDisabled = isMutating || formData.primaryMetric === undefined;

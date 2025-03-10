@@ -48,13 +48,12 @@ export default function Page() {
 
   // Sort fields only in the initial config, putting unique_id field at top
   if (data.type !== 'sheet') {
-    const sortedFields = [...data.fields].sort((a, b) => {
+    data.fields = [...data.fields].sort((a, b) => {
       if (a.is_unique_id === b.is_unique_id) {
         return a.field_name.localeCompare(b.field_name);
       }
       return a.is_unique_id ? -1 : 1;
     });
-    data.fields = sortedFields;
   }
 
   if (data.type === 'sheet') {
