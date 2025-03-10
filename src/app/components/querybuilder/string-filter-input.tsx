@@ -87,7 +87,9 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
         {nonNullValues.map((val, idx) => (
           <Flex key={idx} gap="1" align="center">
             <TextField.Root value={val as string} onChange={(e) => handleValueChange(idx, e.target.value)} />
-            {nonNullValues.length > 1 && (
+            {/* Only show the remove button if there are multiple non-null values or if null
+                is included, since we allow a single null value. */}
+            {(nonNullValues.length > 1 || includesNull) && (
               <IconButton
                 variant="soft"
                 size="1"
@@ -132,7 +134,9 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
 
       {renderValueInputs()}
 
-      {(operator === 'equals' || operator === 'in-list') && (
+      {(operator === 'equals' ||
+        operator === 'in-list' ||
+        operator === 'not-in-list') && (
         <Flex gap="1" align="center">
           <Checkbox checked={includesNull} onCheckedChange={(checked) => handleNullChange(!!checked)} />
           <Text size="2">Include NULL</Text>
