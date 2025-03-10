@@ -8,12 +8,11 @@ import { GenericErrorCallout } from '@/app/components/generic-error';
 import { isEligibleForUseAsMetric } from '@/services/genapi-helpers';
 
 const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId: string; tables: string[] }) => {
-  const { trigger, isMutating } = useCreateParticipantType(datasourceId);
+  const { trigger, isMutating, error, reset } = useCreateParticipantType(datasourceId);
   const [open, setOpen] = useState(false);
   const [selectedTable, setSelectedTable] = useState<string>('');
   const [fields, setFields] = useState<FieldDescriptor[]>([]);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [error, setError] = useState<string>('');
 
   const tableIsSelected = selectedTable !== '';
   const { data: tableData, isLoading: loadingTableData } = useInspectTableInDatasource(
@@ -30,7 +29,7 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
   const updateSelectedTable = (table: string) => {
     setSelectedTable(table);
     setFields([]);
-    setError('');
+    reset();
   };
 
   useEffect(() => {
@@ -85,7 +84,7 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
               const fd = new FormData(event.currentTarget);
               const participant_type = fd.get('participant_type') as string;
               const table_name = fd.get('table_name') as string;
-              setError('');
+              reset();
               try {
                 await trigger({
                   participant_type,
@@ -96,17 +95,7 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
                 });
                 setOpen(false);
                 setFields([]);
-                setError('');
-              } catch (error) {
-                console.error('Failed to create participant type:', error);
-
-                // Use the ApiError class for better error handling
-                if (error instanceof Error) {
-                  setError(error.message);
-                } else {
-                  setError('An unknown error occurred');
-                }
-              }
+              } catch (_handled_by_swr) {}
             }}
           >
             <Dialog.Title>Add Participant Type</Dialog.Title>
@@ -114,7 +103,7 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
               Define a new participant type for this datasource.
             </Dialog.Description>
 
-            {error !== '' && <GenericErrorCallout title={'Failed to save participant type'} error={error} />}
+            {error && <GenericErrorCallout title={'Failed to save participant type'} error={error} />}
 
             <Flex direction="column" gap="3">
               <label>
@@ -271,7 +260,7 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
             </Flex>
 
             <Flex gap="3" mt="4" justify="end">
-              <Dialog.Close>
+              <Dialog.Close onClick={() => reset()}>
                 <Button variant="soft" color="gray">
                   Cancel
                 </Button>
