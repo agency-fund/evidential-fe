@@ -1,7 +1,7 @@
 'use client';
 import { AlertDialog, Button, Flex, IconButton } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
-import { useRemoveMemberFromOrganization } from '@/api/admin';
+import { getGetOrganizationKey, useRemoveMemberFromOrganization } from '@/api/admin';
 import { mutate } from 'swr';
 
 interface DeleteUserDialogProps {
@@ -10,7 +10,9 @@ interface DeleteUserDialogProps {
 }
 
 export function DeleteUserDialog({ organizationId, userId }: DeleteUserDialogProps) {
-  const { trigger } = useRemoveMemberFromOrganization(organizationId, userId);
+  const { trigger } = useRemoveMemberFromOrganization(organizationId, userId, {
+    swr: { onSuccess: () => mutate(getGetOrganizationKey(organizationId)) },
+  });
 
   return (
     <AlertDialog.Root>
@@ -36,7 +38,6 @@ export function DeleteUserDialog({ organizationId, userId }: DeleteUserDialogPro
               color="red"
               onClick={async () => {
                 await trigger();
-                await mutate([`/v1/m/organizations/${organizationId}`]);
               }}
             >
               Remove
@@ -46,4 +47,4 @@ export function DeleteUserDialog({ organizationId, userId }: DeleteUserDialogPro
       </AlertDialog.Content>
     </AlertDialog.Root>
   );
-};
+}

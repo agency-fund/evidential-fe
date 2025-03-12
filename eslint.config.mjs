@@ -15,6 +15,16 @@ const eslintConfig = [
   {
     ignores: ['src/api/**/*'],
   },
+  {
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+    },
+  },
 ];
 
 export default eslintConfig;

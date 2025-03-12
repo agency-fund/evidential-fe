@@ -1,6 +1,5 @@
 import { useCreateParticipantType, useInspectDatasource, useInspectTableInDatasource } from '@/api/admin';
 import { FieldDescriptor, FieldMetadata } from '@/api/methods.schemas';
-import { isHttpOk } from '@/services/typehelper';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { Button, Dialog, Flex, IconButton, Spinner, Switch, Table, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
@@ -9,12 +8,11 @@ import { GenericErrorCallout } from '@/app/components/generic-error';
 import { isEligibleForUseAsMetric } from '@/services/genapi-helpers';
 
 const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId: string; tables: string[] }) => {
-  const { trigger, isMutating } = useCreateParticipantType(datasourceId);
+  const { trigger, isMutating, error, reset } = useCreateParticipantType(datasourceId);
   const [open, setOpen] = useState(false);
   const [selectedTable, setSelectedTable] = useState<string>('');
   const [fields, setFields] = useState<FieldDescriptor[]>([]);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [error, setError] = useState<string>('');
 
   const tableIsSelected = selectedTable !== '';
   const { data: tableData, isLoading: loadingTableData } = useInspectTableInDatasource(
@@ -31,15 +29,15 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
   const updateSelectedTable = (table: string) => {
     setSelectedTable(table);
     setFields([]);
-    setError('');
+    reset();
   };
 
   useEffect(() => {
-    if (!isHttpOk(tableData)) {
+    if (tableData === undefined) {
       return;
     }
-    const probable_unique_id_field = tableData.data.detected_unique_id_fields?.pop();
-    const sortedFields = tableData.data.fields
+    const probable_unique_id_field = tableData.detected_unique_id_fields?.pop();
+    const sortedFields = tableData.fields
       .map(
         (field: FieldMetadata): FieldDescriptor => ({
           is_unique_id: field.field_name == probable_unique_id_field,
@@ -69,7 +67,15 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
   };
 
   return (
-    <Dialog.Root open={open} onOpenChange={setOpen}>
+    <Dialog.Root
+      open={open}
+      onOpenChange={(op) => {
+        setOpen(op);
+        if (!op) {
+          reset();
+        }
+      }}
+    >
       <Dialog.Trigger>
         <Button>
           <PlusIcon /> Add Participant Type
@@ -86,21 +92,15 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
               const fd = new FormData(event.currentTarget);
               const participant_type = fd.get('participant_type') as string;
               const table_name = fd.get('table_name') as string;
-              setError('');
-              const response = await trigger({
+              await trigger({
                 participant_type,
                 schema_def: {
                   table_name,
                   fields: fields,
                 },
               });
-              if (response.status === 200) {
-                setOpen(false);
-                setFields([]);
-                setError('');
-              } else {
-                setError(JSON.stringify(response.data));
-              }
+              setOpen(false);
+              setFields([]);
             }}
           >
             <Dialog.Title>Add Participant Type</Dialog.Title>
@@ -108,7 +108,7 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
               Define a new participant type for this datasource.
             </Dialog.Description>
 
-            {error !== '' && <GenericErrorCallout title={'Failed to save participant type'} message={error} />}
+            {error && <GenericErrorCallout title={'Failed to save participant type'} error={error} />}
 
             <Flex direction="column" gap="3">
               <label>
@@ -284,9 +284,9 @@ export const AddParticipantTypeDialog = ({ datasourceId }: { datasourceId: strin
   if (isLoading) {
     return <Spinner />;
   }
-  if (!isHttpOk(data)) {
+  if (!data) {
     // TODO
     return <></>;
   }
-  return <AddParticipantTypeDialogInner datasourceId={datasourceId} tables={data!.data.tables} />;
+  return <AddParticipantTypeDialogInner datasourceId={datasourceId} tables={data.tables} />;
 };

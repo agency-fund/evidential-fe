@@ -9,7 +9,11 @@ import { BqDsnInput, Dsn } from '@/api/methods.schemas';
 import { mutate } from 'swr';
 
 export function AddDatasourceDialog({ organizationId }: { organizationId: string }) {
-  const { trigger, isMutating } = useCreateDatasource();
+  const { trigger, isMutating } = useCreateDatasource({
+    swr: {
+      onSuccess: () => Promise.all([mutate(getListDatasourcesKey()), mutate(getGetOrganizationKey(organizationId))]),
+    },
+  });
   const [open, setOpen] = useState(false);
   const [dwhType, setDwhType] = useState<'postgres' | 'bigquery'>('postgres');
   const [projectId, setProjectId] = useState('');
@@ -68,8 +72,6 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                 name,
                 dwh,
               });
-              mutate(getListDatasourcesKey());
-              mutate(getGetOrganizationKey(organizationId));
               setDwhType('postgres');
               setOpen(false);
             }}

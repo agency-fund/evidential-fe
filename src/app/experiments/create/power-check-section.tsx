@@ -3,9 +3,7 @@ import { CheckCircledIcon, CrossCircledIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData } from '@/app/experiments/create/page';
 import { usePowerCheck } from '@/api/admin';
 import { convertFormDataToCreateExperimentRequest } from '@/app/experiments/create/helpers';
-import { isHttpOk } from '@/services/typehelper';
 import { GenericErrorCallout } from '@/app/components/generic-error';
-import { useState } from 'react';
 
 interface PowerCheckSectionProps {
   formData: ExperimentFormData;
@@ -13,26 +11,20 @@ interface PowerCheckSectionProps {
 }
 
 export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSectionProps) {
-  const { trigger, data, isMutating } = usePowerCheck(formData.datasourceId!);
-  const [error, setError] = useState(false);
+  const { trigger, data, isMutating, error } = usePowerCheck(formData.datasourceId!);
 
   const handlePowerCheck = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     const { design_spec, audience_spec } = convertFormDataToCreateExperimentRequest(formData);
-    setError(false);
     const response = await trigger({
       design_spec,
       audience_spec,
     });
-    if (isHttpOk(response)) {
-      onFormDataChange({
-        ...formData,
-        powerCheckResponse: response.data,
-        chosenN: response.data.analyses[0].target_n!,
-      });
-    } else {
-      setError(true);
-    }
+    onFormDataChange({
+      ...formData,
+      powerCheckResponse: response,
+      chosenN: response.analyses[0].target_n!,
+    });
   };
 
   const isButtonDisabled = isMutating || formData.primaryMetric === undefined;
@@ -43,7 +35,7 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
           {isMutating && <Spinner size="1" />}
           {isMutating ? 'Checking...' : 'Run Power Check'}
         </Button>
-        {isHttpOk(data) && (
+        {data !== undefined && (
           <>
             <Text>N: </Text>
             <TextField.Root
@@ -55,11 +47,11 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
         )}
       </Flex>
 
-      {!isHttpOk(data) && error && (
+      {error && (
         <Flex align="center" gap="2">
           <GenericErrorCallout
             title={'Power check failed'}
-            message={data ? JSON.stringify(data.data, null, 2) : 'unknown'}
+            message={error ? JSON.stringify(error, null, 2) : 'unknown'}
           />
         </Flex>
       )}
@@ -71,8 +63,8 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
         </Flex>
       )}
 
-      {isHttpOk(data) &&
-        data.data.analyses.map((metricAnalysis, i) => (
+      {data !== undefined &&
+        data.analyses.map((metricAnalysis, i) => (
           <Card key={i}>
             <Flex direction="column" gap="3">
               <Text weight={'bold'}>{metricAnalysis.metric_spec.field_name}</Text>

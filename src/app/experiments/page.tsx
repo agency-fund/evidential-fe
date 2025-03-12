@@ -3,10 +3,9 @@ import { Button, Flex, Heading, Table, Text, TextArea } from '@radix-ui/themes';
 import Link from 'next/link';
 import { PlusIcon } from '@radix-ui/react-icons';
 import { DownloadAssignmentsCsvButton } from './download-assignments-csv-button';
-import { useListOrganizationDatasources, useListExperiments, analyzeExperiment } from '@/api/admin';
+import { analyzeExperiment, useListExperiments, useListOrganizationDatasources } from '@/api/admin';
 import { DeleteExperimentButton } from './delete-experiment-button';
 import { XSpinner } from '@/app/components/x-spinner';
-import { isHttpOk } from '@/services/typehelper';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 import { useEffect, useState } from 'react';
 import { DatasourceSelector } from '@/app/experiments/datasource-selector';
@@ -22,19 +21,19 @@ export default function Page() {
   const {
     data: datasourcesData,
     isLoading: datasourcesIsLoading,
-    error: datasourcesError
+    error: datasourcesError,
   } = useListOrganizationDatasources(currentOrgId!, {
     swr: {
       enabled: !!currentOrgId,
-      revalidateOnFocus: true
-    }
+      revalidateOnFocus: true,
+    },
   });
 
   const [selectedDatasource, setSelectedDatasource] = useState<string>('');
   const {
     data: experimentsData,
     isLoading: experimentsIsLoading,
-    error: experimentsError
+    error: experimentsError,
   } = useListExperiments(selectedDatasource!, {
     swr: { enabled: selectedDatasource !== '' },
   });
@@ -46,13 +45,8 @@ export default function Page() {
 
   // Set the selected datasource to the first one in the list when data loads
   useEffect(() => {
-    if (
-      datasourcesData &&
-      isHttpOk(datasourcesData) &&
-      datasourcesData.data.items.length > 0 &&
-      selectedDatasource === ''
-    ) {
-      setSelectedDatasource(datasourcesData.data.items[0].id);
+    if (datasourcesData && datasourcesData.items.length > 0 && selectedDatasource === '') {
+      setSelectedDatasource(datasourcesData.items[0].id);
     }
   }, [datasourcesData, selectedDatasource]);
 
@@ -63,10 +57,8 @@ export default function Page() {
     setAnalysisResults(''); // Clear previous results
 
     // Find the experiment to check its state
-    const experiment = experimentsData && isHttpOk(experimentsData)
-      ? experimentsData.data.items.find(
-          (exp) => exp.design_spec.experiment_id === experimentId
-        )
+    const experiment = experimentsData
+      ? experimentsData.items.find((exp) => exp.design_spec.experiment_id === experimentId)
       : undefined;
 
     if (experiment) {
@@ -74,7 +66,7 @@ export default function Page() {
 
       // Check if experiment is in a state that can be analyzed
       if (experiment.state === 'designing') {
-        setAnalyzeError("Cannot analyze experiment in DESIGNING state. The experiment must be running or completed.");
+        setAnalyzeError('Cannot analyze experiment in DESIGNING state. The experiment must be running or completed.');
         setIsAnalyzing(false);
         return;
       }
@@ -85,15 +77,10 @@ export default function Page() {
       const response = await analyzeExperiment(selectedDatasource, experimentId);
       console.log('Analysis response:', response);
 
-      if (isHttpOk(response)) {
-        if (Array.isArray(response.data) && response.data.length === 0) {
-          setAnalyzeError("No analysis results available. The experiment may not have enough data yet.");
-        } else {
-          setAnalysisResults(JSON.stringify(response.data, null, 2));
-        }
+      if (Array.isArray(response) && response.length === 0) {
+        setAnalyzeError('No analysis results available. The experiment may not have enough data yet.');
       } else {
-        console.error('Non-OK response:', response);
-        setAnalyzeError(`Error: ${JSON.stringify(response)}`);
+        setAnalysisResults(JSON.stringify(response, null, 2));
       }
     } catch (error) {
       console.error('Analysis error:', error);
@@ -102,13 +89,13 @@ export default function Page() {
 
       // Check for specific error cases
       if (errorMessage.includes('500')) {
-        errorMessage = "Server error (500): The server encountered an internal error. This could be due to:";
-        errorMessage += "\n- Insufficient data for analysis";
-        errorMessage += "\n- Invalid experiment configuration";
-        errorMessage += "\n- Server-side processing issue";
-        errorMessage += "\n\nPlease check that your experiment has collected enough data and try again later.";
+        errorMessage = 'Server error (500): The server encountered an internal error. This could be due to:';
+        errorMessage += '\n- Insufficient data for analysis';
+        errorMessage += '\n- Invalid experiment configuration';
+        errorMessage += '\n- Server-side processing issue';
+        errorMessage += '\n\nPlease check that your experiment has collected enough data and try again later.';
       } else if (errorMessage.includes('no data')) {
-        errorMessage = "No data available for analysis. The experiment may not have collected enough data yet.";
+        errorMessage = 'No data available for analysis. The experiment may not have collected enough data yet.';
       } else if (errorMessage.includes('permission')) {
         errorMessage = "You don't have permission to analyze this experiment.";
       }
@@ -119,18 +106,18 @@ export default function Page() {
     }
   };
 
-  if (datasourcesError || (datasourcesData !== undefined && !isHttpOk(datasourcesData))) {
-    return <GenericErrorCallout title={'Error with experiments list'} message={JSON.stringify(datasourcesData)} />;
+  if (datasourcesError) {
+    return <GenericErrorCallout title={'Error with experiments list'} error={datasourcesError} />;
   }
 
-  if (experimentsError || (experimentsData !== undefined && !isHttpOk(experimentsData))) {
-    return <GenericErrorCallout title={'Error with experiments list'} message={JSON.stringify(experimentsData)} />;
+  if (experimentsError) {
+    return <GenericErrorCallout title={'Error with experiments list'} error={experimentsError} />;
   }
 
   return (
     <Flex direction="column" gap="3">
       {datasourcesIsLoading && <XSpinner message={'Datasources list loading...'} />}
-      {datasourcesData && isHttpOk(datasourcesData) && (
+      {datasourcesData && (
         <DatasourceSelector
           selectedDatasource={selectedDatasource}
           setSelectedDatasource={setSelectedDatasource}
@@ -150,14 +137,14 @@ export default function Page() {
           <XSpinner message={'Loading experiments list...'} />
         </Flex>
       )}
-      {experimentsData !== undefined && isHttpOk(experimentsData) && (
+      {experimentsData !== undefined && (
         <Flex direction="column" gap="3">
-          {experimentsData.data.items.length === 0 && (
+          {experimentsData.items.length === 0 && (
             <Flex>
               <Text>There are no experiments. Create one!</Text>
             </Flex>
           )}
-          {experimentsData.data.items.length ? (
+          {experimentsData.items.length ? (
             <Table.Root>
               <Table.Header>
                 <Table.Row>
@@ -171,7 +158,7 @@ export default function Page() {
               </Table.Header>
 
               <Table.Body>
-                {experimentsData.data.items.map((experiment) => (
+                {experimentsData.items.map((experiment) => (
                   <Table.Row key={experiment.design_spec.experiment_id}>
                     <Table.Cell>{experiment.design_spec.experiment_name}</Table.Cell>
                     <Table.Cell>
@@ -242,7 +229,7 @@ export default function Page() {
                   lineHeight: '1.5',
                   backgroundColor: '#f5f5f5',
                   border: '1px solid #e0e0e0',
-                  borderRadius: '4px'
+                  borderRadius: '4px',
                 }}
               />
             </Flex>

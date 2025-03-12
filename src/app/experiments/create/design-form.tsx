@@ -3,7 +3,6 @@ import { Badge, Button, Card, Flex, Heading, HoverCard, Select, Spinner, Text, T
 import { ExperimentFormData } from './page';
 import { LightningBoltIcon } from '@radix-ui/react-icons';
 import { useCreateExperimentWithAssignment, useInspectParticipantTypes } from '@/api/admin';
-import { isHttpOk } from '@/services/typehelper';
 import { AudienceSpecFilter, GetFiltersResponseElement, GetMetricsResponseElement } from '@/api/methods.schemas';
 import { PowerCheckSection } from '@/app/experiments/create/power-check-section';
 import { convertFormDataToCreateExperimentRequest } from '@/app/experiments/create/helpers';
@@ -32,27 +31,27 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
   });
 
   // Extract metrics and filters from the API response
-  const metricFields: GetMetricsResponseElement[] = isHttpOk(participantTypesData)
-    ? participantTypesData.data.metrics
-    : [];
+  const metricFields: GetMetricsResponseElement[] =
+    participantTypesData !== undefined ? participantTypesData.metrics : [];
 
-  const filterFields: GetFiltersResponseElement[] = isHttpOk(participantTypesData)
-    ? participantTypesData.data.filters
-    : [];
+  const filterFields: GetFiltersResponseElement[] =
+    participantTypesData !== undefined ? participantTypesData.filters : [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const request = convertFormDataToCreateExperimentRequest(formData);
-    const response = await triggerCreateAssignment(request);
-    if (isHttpOk(response)) {
+    try {
+      const request = convertFormDataToCreateExperimentRequest(formData);
+      const response = await triggerCreateAssignment(request);
       onFormDataChange({
         ...formData,
-        experimentId: response.data.design_spec.experiment_id!,
-        createExperimentResponse: response.data,
+        experimentId: response.design_spec.experiment_id!,
+        createExperimentResponse: response,
       });
       onNext();
-    } else {
+    } catch (error) {
+      // TODO
+      console.error('Failed to create experiment:', error);
       throw new Error('failed to create experiment');
     }
   };

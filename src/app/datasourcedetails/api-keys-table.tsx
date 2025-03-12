@@ -8,7 +8,9 @@ import { InfoCircledIcon, TrashIcon } from '@radix-ui/react-icons';
 
 export function ApiKeysTable({ apiKeys }: { apiKeys: ApiKeySummary[] }) {
   const [confirmingDeleteForKeyId, setConfirmingDeleteForKeyId] = useState<string | null>(null);
-  const { trigger } = useDeleteApiKey(confirmingDeleteForKeyId ?? '');
+  const { trigger } = useDeleteApiKey(confirmingDeleteForKeyId ?? '', {
+    swr: { onSuccess: () => mutate(getListApiKeysKey()) },
+  });
 
   return (
     <Flex direction="column" gap="3">
@@ -39,7 +41,6 @@ export function ApiKeysTable({ apiKeys }: { apiKeys: ApiKeySummary[] }) {
                       throw Error('invalid state');
                     }
                     await trigger();
-                    await mutate(getListApiKeysKey());
                     return setConfirmingDeleteForKeyId(null);
                   }}
                 >

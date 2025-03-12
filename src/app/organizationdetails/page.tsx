@@ -6,15 +6,19 @@ import { useGetOrganization } from '@/api/admin';
 import { useSearchParams } from 'next/navigation';
 import { AddUserDialog } from '@/app/organizationdetails/add-user-dialog';
 import { AddDatasourceDialog } from '@/app/organizationdetails/add-datasource-dialog';
-import { isHttpOk } from '@/services/typehelper';
 import { DatasourcesTable } from '@/app/organizationdetails/datasources-table';
 import { UsersTable } from '@/app/organizationdetails/users-table';
+import { GenericErrorCallout } from '@/app/components/generic-error';
 
 export default function Page() {
   const searchParams = useSearchParams();
   const organizationId = searchParams.get('id');
 
-  const { data, isLoading, error } = useGetOrganization(organizationId!, {
+  const {
+    data: organization,
+    isLoading,
+    error,
+  } = useGetOrganization(organizationId!, {
     swr: {
       enabled: organizationId !== null,
     },
@@ -28,11 +32,9 @@ export default function Page() {
     return <XSpinner message="Loading organization details..." />;
   }
 
-  if (error || !isHttpOk(data)) {
-    return <Text>Error: {JSON.stringify(error)}</Text>;
+  if (error || !(organization !== undefined)) {
+    return <GenericErrorCallout title={'Failed to fetch organizations'} error={error} />;
   }
-
-  const organization = data?.data;
 
   return (
     <Flex direction="column" gap="3">

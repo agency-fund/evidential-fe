@@ -22,11 +22,11 @@ export function OrganizationSelector() {
     );
   }
 
-  if (!orgsResponse?.data.items.length) {
+  if (!orgsResponse?.items.length) {
     return <Text>No organizations available.</Text>;
   }
 
-  const organizations = orgsResponse.data.items;
+  const organizations = orgsResponse.items;
 
   // If there's only one organization, just show its name
   if (organizations.length === 1) {

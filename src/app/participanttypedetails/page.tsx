@@ -1,12 +1,12 @@
 'use client';
 import { useGetParticipantTypes, useInspectParticipantTypes } from '@/api/admin';
-import { isHttpOk } from '@/services/typehelper';
 import { Flex, Heading, Text } from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
 import { useSearchParams } from 'next/navigation';
 import { InspectParticipantTypesSummary } from '@/app/participanttypedetails/inspect-participant-types-summary';
 import Link from 'next/link';
 import { EditParticipantTypeDialog } from '@/app/participanttypedetails/edit-participant-type-dialog';
+import { GenericErrorCallout } from '@/app/components/generic-error';
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -39,29 +39,29 @@ export default function Page() {
   if (isLoading) {
     return <XSpinner message="Loading participant type details..." />;
   }
-  if (error || !isHttpOk(data)) {
-    return <Text>Error: {JSON.stringify(error)}</Text>;
+  if (error) {
+    return <GenericErrorCallout title={'Failed to fetch participant type details'} error={error} />;
+  }
+  if (!data) {
+    return <GenericErrorCallout title={'Failed to fetch participant type details'} message={'data is missing'} />;
   }
 
-  const participantConfig = data.data;
-
   // Sort fields only in the initial config, putting unique_id field at top
-  if (participantConfig.type !== 'sheet') {
-    const sortedFields = [...participantConfig.fields].sort((a, b) => {
+  if (data.type !== 'sheet') {
+    data.fields = [...data.fields].sort((a, b) => {
       if (a.is_unique_id === b.is_unique_id) {
         return a.field_name.localeCompare(b.field_name);
       }
       return a.is_unique_id ? -1 : 1;
     });
-    participantConfig.fields = sortedFields;
   }
 
-  if (participantConfig.type === 'sheet') {
+  if (data.type === 'sheet') {
     return (
       <Flex direction="column" gap="3">
         <Heading>Participant Type Details: {participantType}</Heading>
         <Text>Sheet Reference Configuration:</Text>
-        <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(participantConfig, null, 2)}</pre>
+        <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(data, null, 2)}</pre>
       </Flex>
     );
   }
@@ -76,7 +76,7 @@ export default function Page() {
         <EditParticipantTypeDialog
           datasourceId={datasourceId}
           participantType={participantType}
-          participantConfig={participantConfig}
+          participantConfig={data}
         />
       </Flex>
       {inspectLoading || inspectValidating ? (

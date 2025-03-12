@@ -5,6 +5,7 @@ import { Button, Dialog, Flex, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
 import { GearIcon } from '@radix-ui/react-icons';
 import { mutate } from 'swr';
+import { GenericErrorCallout } from '@/app/components/generic-error';
 
 export function RenameOrganizationDialog({
   organizationId,
@@ -13,11 +14,23 @@ export function RenameOrganizationDialog({
   organizationId: string;
   currentName: string;
 }) {
-  const { trigger, isMutating } = useUpdateOrganization(organizationId);
+  const { trigger, isMutating, error, reset } = useUpdateOrganization(organizationId, {
+    swr: {
+      onSuccess: () => Promise.all([mutate(getGetOrganizationKey(organizationId)), mutate(getListOrganizationsKey())]),
+    },
+  });
   const [open, setOpen] = useState(false);
 
   return (
-    <Dialog.Root open={open} onOpenChange={setOpen}>
+    <Dialog.Root
+      open={open}
+      onOpenChange={(op) => {
+        setOpen(op);
+        if (!op) {
+          reset();
+        }
+      }}
+    >
       <Dialog.Trigger>
         <Button>
           <GearIcon />
@@ -37,8 +50,6 @@ export function RenameOrganizationDialog({
               await trigger({
                 name,
               });
-              await mutate(getGetOrganizationKey(organizationId));
-              await mutate(getListOrganizationsKey());
               setOpen(false);
             }}
           >
@@ -46,6 +57,8 @@ export function RenameOrganizationDialog({
             <Dialog.Description size="2" mb="4">
               Change the organization name.
             </Dialog.Description>
+
+            {error && <GenericErrorCallout title={'Failed to rename organization'} error={error} />}
 
             <Flex direction="column" gap="3">
               <label>

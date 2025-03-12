@@ -11,8 +11,8 @@ import {
 } from '@/api/admin';
 import { useEffect, useState } from 'react';
 import { mutate } from 'swr';
-import { isHttpOk } from '@/services/typehelper';
 import { DsnDriver, UpdateDatasourceRequest } from '@/api/methods.schemas';
+import { GenericErrorCallout } from '@/app/components/generic-error';
 
 export const EditDatasourceDialog = ({
   organizationId,
@@ -23,7 +23,20 @@ export const EditDatasourceDialog = ({
   datasourceId: string;
   variant?: 'icon' | 'button';
 }) => {
-  const { trigger: updateDatasource } = useUpdateDatasource(datasourceId);
+  const {
+    trigger: updateDatasource,
+    error,
+    reset,
+  } = useUpdateDatasource(datasourceId, {
+    swr: {
+      onSuccess: () =>
+        Promise.all([
+          mutate(getGetDatasourceKey(datasourceId)),
+          mutate(getInspectDatasourceKey(datasourceId, {})),
+          ...(organizationId ? [mutate(getGetOrganizationKey(organizationId))] : []),
+        ]),
+    },
+  });
   const { data, isLoading } = useGetDatasource(datasourceId);
   const [open, setOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -40,8 +53,8 @@ export const EditDatasourceDialog = ({
   const [credentialsJson, setCredentialsJson] = useState('');
 
   useEffect(() => {
-    if (open && data && isHttpOk(data)) {
-      const datasource = data.data;
+    if (open && data) {
+      const datasource = data;
       setName(datasource.name);
       if (datasource.config.type === 'remote') {
         const dwh = datasource.config.dwh;
@@ -67,12 +80,11 @@ export const EditDatasourceDialog = ({
     }
   }, [open, data]);
 
-  if (isLoading || !data || !isHttpOk(data)) {
+  if (isLoading || !data) {
     return null;
   }
 
-  const datasource = data.data;
-  const config = datasource.config;
+  const config = data.config;
 
   if (config.type !== 'remote') {
     return null;
@@ -81,7 +93,15 @@ export const EditDatasourceDialog = ({
   const isBigQuery = config.dwh.driver === 'bigquery';
 
   return (
-    <Dialog.Root open={open} onOpenChange={setOpen}>
+    <Dialog.Root
+      open={open}
+      onOpenChange={(op) => {
+        setOpen(op);
+        if (!op) {
+          reset();
+        }
+      }}
+    >
       <Dialog.Trigger>
         {variant === 'icon' ? (
           <IconButton color="gray" variant="soft">
@@ -127,11 +147,6 @@ export const EditDatasourceDialog = ({
             }
 
             await updateDatasource(updateData);
-            if (organizationId) {
-              await mutate(getGetOrganizationKey(organizationId));
-            }
-            await mutate(getGetDatasourceKey(datasourceId));
-            await mutate(getInspectDatasourceKey(datasourceId, {}));
             setOpen(false);
           }}
         >
@@ -139,6 +154,8 @@ export const EditDatasourceDialog = ({
           <Dialog.Description size="2" mb="4">
             Update the datasource settings.
           </Dialog.Description>
+
+          {error && <GenericErrorCallout title={'Failed to update datasource'} error={error} />}
 
           <Flex direction="column" gap="3">
             <label>

@@ -16,7 +16,6 @@ import { ExperimentFormData } from './page';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 import { useListParticipantTypes } from '@/api/admin';
-import { isHttpOk } from '@/services/typehelper';
 
 interface InitialFormProps {
   formData: ExperimentFormData;
@@ -57,8 +56,8 @@ export function InitialForm({ formData, onFormDataChange, onNext }: InitialFormP
 
   // Set dropdown initial value
   useEffect(() => {
-    if (isHttpOk(participantTypesData) && participantTypesData.data.items.length > 0 && !formData.participantType) {
-      onFormDataChange({ ...formData, participantType: participantTypesData.data.items[0].participant_type });
+    if (participantTypesData !== undefined && participantTypesData.items.length > 0 && !formData.participantType) {
+      onFormDataChange({ ...formData, participantType: participantTypesData.items[0].participant_type });
     }
   }, [formData, participantTypesData, onFormDataChange]);
 
@@ -91,7 +90,7 @@ export function InitialForm({ formData, onFormDataChange, onNext }: InitialFormP
                     <Spinner size="1" />
                     <Text size="2">Loading participant types...</Text>
                   </Flex>
-                ) : !participantTypesData || !isHttpOk(participantTypesData) ? (
+                ) : !participantTypesData ? (
                   <Text color="gray">No participant types available</Text>
                 ) : (
                   <Select.Root
@@ -105,7 +104,7 @@ export function InitialForm({ formData, onFormDataChange, onNext }: InitialFormP
                   >
                     <Select.Trigger placeholder="Select a participant type" />
                     <Select.Content>
-                      {participantTypesData.data.items.map((pt) => (
+                      {participantTypesData.items.map((pt) => (
                         <Select.Item key={pt.participant_type} value={pt.participant_type}>
                           {pt.participant_type}
                         </Select.Item>
