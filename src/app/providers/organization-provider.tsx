@@ -5,7 +5,11 @@ import { createContext, PropsWithChildren, useContext, useEffect } from 'react';
 import { useListOrganizations } from '@/api/admin';
 import { useAuth } from './auth-provider';
 import { useLocalStorage } from '@/app/providers/use-local-storage';
-import { Button, Flex, Text } from '@radix-ui/themes';
+import { Button, Callout, Flex, Text } from '@radix-ui/themes';
+import { InfoCircledIcon } from '@radix-ui/react-icons';
+import { XSpinner } from '@/app/components/x-spinner';
+import { GenericErrorCallout } from '@/app/components/generic-error';
+import { ApiError } from '@/services/orval-fetch';
 
 const CURRENT_ORG_ID_KEY = 'org_id' as const;
 
@@ -26,7 +30,11 @@ export function useCurrentOrganization() {
 
 export function OrganizationProvider({ children }: PropsWithChildren) {
   const auth = useAuth();
-  const { data: orgsList, error } = useListOrganizations({
+  const {
+    data: orgsList,
+    isLoading,
+    error,
+  } = useListOrganizations({
     swr: {
       enabled: auth.isAuthenticated,
     },
@@ -43,14 +51,26 @@ export function OrganizationProvider({ children }: PropsWithChildren) {
     setOrgId(orgsList.items[0].id);
   }, [orgsList, orgId, setOrgId]);
 
+  if (isLoading) {
+    return <XSpinner message="Loading organizations..." />;
+  }
+
   if (error) {
-    console.error('Error loading organizations', error);
-    return (
-      <Flex direction="column" gap="3" align="center">
-        <Text>Unable to load your organization information.</Text>
-        <Button onClick={() => window.location.reload()}>Retry</Button>
-      </Flex>
-    );
+    if (error instanceof ApiError && error.response.status == 403) {
+      return (
+        <Flex direction="column" gap="3" p="4" align="center">
+          <Callout.Root color={'red'}>
+            <Callout.Icon>
+              <InfoCircledIcon />
+            </Callout.Icon>
+            <Callout.Text>Please contact evidential-support@agency.fund for access.</Callout.Text>
+          </Callout.Root>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </Flex>
+      );
+    } else {
+      return <GenericErrorCallout title={'Failed to fetch organizations'} error={error} />;
+    }
   }
   if (!auth.isAuthenticated || orgsList === undefined) {
     return <CurrentOrganizationContext.Provider value={null}>{children}</CurrentOrganizationContext.Provider>;

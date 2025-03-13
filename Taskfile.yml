@@ -9,8 +9,14 @@ env:
   # is only being used in local dev. This silences some warnings.
   SENTRY_SUPPRESS_TURBOPACK_WARNING: "1"
 
-  # The OAuth Client Credentials Client ID for handling Google signins on this application.
-  NEXT_PUBLIC_XNGIN_GOOGLE_CLIENT_ID: 222213100775-qa1ajcrk48il70itcbdcvgr9ib5t08uf.apps.googleusercontent.com
+  # The OAuth Client Credentials Client ID for handling Google signins on this application (xngin-development-dc).
+  # Use this during most development scenarios.
+  NEXT_PUBLIC_XNGIN_GOOGLE_CLIENT_ID: "222213100775-qa1ajcrk48il70itcbdcvgr9ib5t08uf.apps.googleusercontent.com"
+
+  # The OAuth Client Credentials Client ID for handling Google signins on this application (evidential-live).
+  # Use this only when verifying production environments.
+  # NEXT_PUBLIC_XNGIN_GOOGLE_CLIENT_ID: "314428509782-j8fgiq5dvoic01432s2bcu3isinc9kam.apps.googleusercontent.com"
+
   # The base URL of the xngin API server. Code will append the paths to the API endpoints (e.g. v1/m/apikeys, filters).
   NEXT_PUBLIC_XNGIN_API_BASE_URL: http://localhost:8000
   # The base URL of the xngin OIDC API.

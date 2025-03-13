@@ -22,9 +22,9 @@ export class ApiValidationError extends Error {
  */
 export class ApiError extends Error {
   constructor(public readonly response: { status: number; data: unknown }) {
-    super(`API Error: ${response}`);
+    super(`API Error: ${JSON.stringify(response)}`);
     Object.setPrototypeOf(this, ApiError.prototype);
-    this.name = 'ApiUnsuccessfulError';
+    this.name = 'ApiError';
   }
 }
 
