@@ -951,6 +951,7 @@ export const MetricAnalysisMessageType = {
 	insufficient: "insufficient",
 	no_baseline: "no baseline",
 	no_available_n: "no available n",
+	zero_effect_size: "zero effect size",
 } as const;
 
 /**
