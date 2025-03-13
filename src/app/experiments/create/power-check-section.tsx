@@ -29,23 +29,27 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
 
   const isButtonDisabled = isMutating || formData.primaryMetric === undefined;
   return (
-    <Flex direction="column" gap="3">
-      <Flex direction={'row'} gap={'3'}>
-        <Button disabled={isButtonDisabled} onClick={handlePowerCheck}>
+    <Flex direction="column" gap="3" align="center">
+        <Button disabled={isButtonDisabled} onClick={handlePowerCheck} style={{ minWidth: '25%' }}>
           {isMutating && <Spinner size="1" />}
           {isMutating ? 'Checking...' : 'Run Power Check'}
         </Button>
         {data !== undefined && (
           <>
-            <Text>N: </Text>
-            <TextField.Root
-              type="number"
-              value={formData.chosenN ?? ''}
-              onChange={(e) => onFormDataChange({ ...formData, chosenN: Number(e.target.value) })}
-            />
+              <Text>Target sample size to distribute across all arms: </Text>
+              <TextField.Root
+                style={{
+                  minWidth: '50%',
+                  textAlign: 'center'
+                }}
+                size="3"
+                type="number"
+                value={formData.chosenN ?? ''}
+                onChange={(e) => onFormDataChange({ ...formData, chosenN: e.target.value === '' ? undefined : Number(e.target.value) })}
+                placeholder="Run the Power Check, or type your own desired #."
+              />
           </>
         )}
-      </Flex>
 
       {error && (
         <Flex align="center" gap="2">
