@@ -40,7 +40,7 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
             <Text>N: </Text>
             <TextField.Root
               type="number"
-              value={formData.chosenN}
+              value={formData.chosenN ?? ''}
               onChange={(e) => onFormDataChange({ ...formData, chosenN: Number(e.target.value) })}
             />
           </>
