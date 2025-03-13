@@ -93,10 +93,13 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
                       {metricAnalysis.metric_spec.available_n === null ? '?' : metricAnalysis.metric_spec.available_n}
                     </Table.Cell>
                   </Table.Row>
-                  <Table.Row>
-                    <Table.RowHeaderCell>Minimum Detectable Effect</Table.RowHeaderCell>
-                    <Table.Cell>{metricAnalysis.pct_change_possible || '?'}%</Table.Cell>
-                  </Table.Row>
+                  {metricAnalysis.pct_change_possible !== null &&
+                   metricAnalysis.pct_change_possible !== undefined && (
+                    <Table.Row>
+                      <Table.RowHeaderCell>Minimum Detectable Effect with all available</Table.RowHeaderCell>
+                      <Table.Cell>{(metricAnalysis.pct_change_possible * 100).toFixed(4)}%</Table.Cell>
+                    </Table.Row>
+                  )}
                 </Table.Body>
               </Table.Root>
             </Flex>
