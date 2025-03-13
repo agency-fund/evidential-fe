@@ -17,10 +17,12 @@ import { GenericErrorCallout } from '@/app/components/generic-error';
 export const EditDatasourceDialog = ({
   organizationId,
   datasourceId,
+  onOpenChange,
   variant = 'icon',
 }: {
   organizationId?: string;
   datasourceId: string;
+  onOpenChange?: (open: boolean) => void;
   variant?: 'icon' | 'button';
 }) => {
   const {
@@ -39,6 +41,15 @@ export const EditDatasourceDialog = ({
   });
   const { data, isLoading } = useGetDatasource(datasourceId);
   const [open, setOpen] = useState(false);
+
+  // Notify parent when open state changes
+  const handleOpenChange = (newOpen: boolean) => {
+    if (onOpenChange) {
+      onOpenChange(newOpen);
+    }
+    setOpen(newOpen);
+  };
+
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [host, setHost] = useState('');
@@ -96,7 +107,7 @@ export const EditDatasourceDialog = ({
     <Dialog.Root
       open={open}
       onOpenChange={(op) => {
-        setOpen(op);
+        handleOpenChange(op);
         if (!op) {
           reset();
         }
@@ -147,7 +158,7 @@ export const EditDatasourceDialog = ({
             }
 
             await updateDatasource(updateData);
-            setOpen(false);
+            handleOpenChange(false);
           }}
         >
           <Dialog.Title>Edit Datasource</Dialog.Title>
