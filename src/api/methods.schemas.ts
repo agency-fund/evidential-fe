@@ -394,7 +394,7 @@ export type DesignSpecMetricMetricType = MetricType | null;
 export type DesignSpecMetricMetricBaseline = number | null;
 
 /**
- * Standard deviation is set only for metric_type.NUMERIC metrics.
+ * Standard deviation is set only for metric_type.NUMERIC metrics. Must be set for numeric metrics when available_n > 0.
  */
 export type DesignSpecMetricMetricStddev = number | null;
 
@@ -422,7 +422,7 @@ export interface DesignSpecMetric {
 	metric_type?: DesignSpecMetricMetricType;
 	/** Mean of the tracked metric. */
 	metric_baseline?: DesignSpecMetricMetricBaseline;
-	/** Standard deviation is set only for metric_type.NUMERIC metrics. */
+	/** Standard deviation is set only for metric_type.NUMERIC metrics. Must be set for numeric metrics when available_n > 0. */
 	metric_stddev?: DesignSpecMetricMetricStddev;
 	/** The number of participants meeting the filtering criteria with a *non-null* value for this metric. */
 	available_nonnull_n?: DesignSpecMetricAvailableNonnullN;
@@ -950,6 +950,7 @@ export const MetricAnalysisMessageType = {
 	sufficient: "sufficient",
 	insufficient: "insufficient",
 	no_baseline: "no baseline",
+	no_available_n: "no available n",
 } as const;
 
 /**
