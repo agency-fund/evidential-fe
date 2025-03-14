@@ -9,11 +9,13 @@ import {
   Separator, 
   Table, 
   Text, 
-  TextArea 
+  TextArea,
+  Tabs
 } from '@radix-ui/themes';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeftIcon, DotsVerticalIcon } from '@radix-ui/react-icons';
+import { ArrowLeftIcon, DotsVerticalIcon, CodeIcon } from '@radix-ui/react-icons';
 import { useAnalyzeExperiment, useGetExperiment, useListDatasources } from '@/api/admin';
+import { ForestPlot } from '@/app/experiments/forest-plot';
 import { useEffect, useState } from 'react';
 import { XSpinner } from '@/app/components/x-spinner';
 import { GenericErrorCallout } from '@/app/components/generic-error';
@@ -176,22 +178,38 @@ export default function ExperimentViewPage() {
         )}
         
         {analysisData && (
-          <Flex direction="column" gap="3">
-            <Text weight="medium">Raw Analysis Data:</Text>
-            <TextArea 
-              readOnly 
-              value={JSON.stringify(analysisData, null, 2)}
-              style={{
-                fontFamily: 'monospace',
-                height: '200px',
-                width: '100%',
-              }}
-            />
-            {/* Placeholder for future chart implementation */}
-            <Text color="gray" align="center">
-              Visualization chart will be implemented in a future update
-            </Text>
-          </Flex>
+          <Tabs.Root defaultValue="visualization">
+            <Tabs.List>
+              <Tabs.Trigger value="visualization">Visualization</Tabs.Trigger>
+              <Tabs.Trigger value="raw"><CodeIcon /> Raw Data</Tabs.Trigger>
+            </Tabs.List>
+            
+            <Tabs.Content value="visualization">
+              <Flex direction="column" gap="3" py="3">
+                {analysisData.map((analysis, index) => (
+                  <ForestPlot 
+                    key={index} 
+                    analysis={analysis} 
+                    armNames={Object.fromEntries(arms.map(arm => [arm.arm_id, arm.arm_name]))}
+                  />
+                ))}
+              </Flex>
+            </Tabs.Content>
+            
+            <Tabs.Content value="raw">
+              <Flex direction="column" gap="3" py="3">
+                <TextArea 
+                  readOnly 
+                  value={JSON.stringify(analysisData, null, 2)}
+                  style={{
+                    fontFamily: 'monospace',
+                    height: '200px',
+                    width: '100%',
+                  }}
+                />
+              </Flex>
+            </Tabs.Content>
+          </Tabs.Root>
         )}
       </Card>
     </Flex>
