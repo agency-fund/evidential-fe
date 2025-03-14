@@ -169,8 +169,14 @@ export default function Page() {
                     <Table.Cell>{experiment.design_spec.description}</Table.Cell>
                     <Table.Cell>
                       <Flex direction={'row'} gap={'2'}>
-                        <Button variant="soft" size="1">
-                          View
+                        <Button 
+                          variant="soft" 
+                          size="1" 
+                          asChild
+                        >
+                          <Link href={`/experiments/view/${experiment.design_spec.experiment_id}`}>
+                            View
+                          </Link>
                         </Button>
                         <DownloadAssignmentsCsvButton
                           datasourceId={selectedDatasource}

@@ -1,3 +1,4 @@
+'use client';
 import { ParticipantsDef } from '@/api/methods.schemas';
 import { getGetParticipantTypesKey, getInspectParticipantTypesKey, useUpdateParticipantType } from '@/api/admin';
 import { useState } from 'react';

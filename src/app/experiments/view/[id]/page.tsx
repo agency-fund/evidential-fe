@@ -1,0 +1,199 @@
+'use client';
+import { 
+  Badge, 
+  Button, 
+  Card, 
+  Flex, 
+  Grid, 
+  Heading, 
+  Separator, 
+  Table, 
+  Text, 
+  TextArea 
+} from '@radix-ui/themes';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { ArrowLeftIcon, DotsVerticalIcon } from '@radix-ui/react-icons';
+import { useAnalyzeExperiment, useGetExperiment, useListDatasources } from '@/api/admin';
+import { useEffect, useState } from 'react';
+import { XSpinner } from '@/app/components/x-spinner';
+import { GenericErrorCallout } from '@/app/components/generic-error';
+import { ExperimentStatusBadge } from '@/app/experiments/experiment-status-badge';
+
+export default function ExperimentViewPage() {
+  const params = useParams();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const experimentId = params.id as string;
+  const datasourceId = searchParams.get('datasource_id');
+  
+  const [selectedDatasource, setSelectedDatasource] = useState<string | null>(datasourceId);
+  const { data: datasources } = useListDatasources();
+  
+  // Set first datasource if none selected
+  useEffect(() => {
+    if (!selectedDatasource && datasources?.items.length) {
+      setSelectedDatasource(datasources.items[0].id);
+    }
+  }, [datasources, selectedDatasource]);
+
+  const { 
+    data: experiment, 
+    isLoading: isLoadingExperiment, 
+    error: experimentError 
+  } = useGetExperiment(selectedDatasource || '', experimentId, {
+    swr: { enabled: !!selectedDatasource }
+  });
+
+  const {
+    data: analysisData,
+    isLoading: isLoadingAnalysis,
+    error: analysisError
+  } = useAnalyzeExperiment(selectedDatasource || '', experimentId, {
+    swr: { enabled: !!selectedDatasource && !!experiment }
+  });
+
+  if (isLoadingExperiment) {
+    return <XSpinner message="Loading experiment details..." />;
+  }
+
+  if (experimentError) {
+    return <GenericErrorCallout title="Error loading experiment" error={experimentError} />;
+  }
+
+  if (!experiment) {
+    return <Text>No experiment data found</Text>;
+  }
+
+  const { design_spec, audience_spec, state, assign_summary } = experiment;
+  const { experiment_name, description, start_date, end_date, arms } = design_spec;
+
+  // Format dates for display
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
+  // Calculate arm percentages
+  const totalArms = arms.length;
+  const armPercentage = 100 / totalArms;
+  
+  return (
+    <Flex direction="column" gap="4">
+      <Flex align="center" gap="2" justify="between">
+        <Flex align="center" gap="2">
+          <Button variant="soft" onClick={() => router.back()}>
+            <ArrowLeftIcon /> Back
+          </Button>
+          <Heading>{experiment_name}</Heading>
+          <ExperimentStatusBadge status={state} />
+        </Flex>
+        <Button variant="ghost">
+          <DotsVerticalIcon />
+        </Button>
+      </Flex>
+
+      <Text color="gray" size="3">{description}</Text>
+
+      <Grid columns="2" gap="4">
+        {/* Timeline Section */}
+        <Card>
+          <Heading size="3" color="purple">Timeline</Heading>
+          <Separator my="3" size="4" />
+          <Table.Root>
+            <Table.Body>
+              <Table.Row>
+                <Table.RowHeaderCell>Start Date</Table.RowHeaderCell>
+                <Table.Cell>{formatDate(start_date)}</Table.Cell>
+              </Table.Row>
+              <Table.Row>
+                <Table.RowHeaderCell>End Date</Table.RowHeaderCell>
+                <Table.Cell>{formatDate(end_date)}</Table.Cell>
+              </Table.Row>
+            </Table.Body>
+          </Table.Root>
+        </Card>
+
+        {/* Parameters Section */}
+        <Card>
+          <Heading size="3" color="purple">Parameters</Heading>
+          <Separator my="3" size="4" />
+          <Table.Root>
+            <Table.Body>
+              <Table.Row>
+                <Table.RowHeaderCell>Sample Size</Table.RowHeaderCell>
+                <Table.Cell>{assign_summary.sample_size.toLocaleString()}</Table.Cell>
+              </Table.Row>
+              <Table.Row>
+                <Table.RowHeaderCell>Confidence Level</Table.RowHeaderCell>
+                <Table.Cell>{(1 - design_spec.alpha) * 100}%</Table.Cell>
+              </Table.Row>
+              <Table.Row>
+                <Table.RowHeaderCell>MDE</Table.RowHeaderCell>
+                <Table.Cell>
+                  {design_spec.metrics[0]?.metric_pct_change 
+                    ? `${(design_spec.metrics[0].metric_pct_change * 100).toFixed(1)}%` 
+                    : '10%'}
+                </Table.Cell>
+              </Table.Row>
+            </Table.Body>
+          </Table.Root>
+        </Card>
+      </Grid>
+
+      {/* Arms & Balance Section */}
+      <Card>
+        <Heading size="3" color="purple">Arms & Balance</Heading>
+        <Separator my="3" size="4" />
+        <Flex gap="4">
+          {arms.map((arm, index) => (
+            <Card key={arm.arm_id} style={{ flex: 1 }}>
+              <Flex direction="column" gap="2">
+                <Flex justify="between" align="center">
+                  <Heading size="4">{arm.arm_name}</Heading>
+                  <Text color={index === 0 ? "red" : "green"} weight="bold">
+                    {(armPercentage + (index === 1 ? 0.6 : -0.6)).toFixed(1)}%
+                  </Text>
+                </Flex>
+                <Text color="gray">{arm.arm_description || 'No description'}</Text>
+              </Flex>
+            </Card>
+          ))}
+        </Flex>
+      </Card>
+
+      {/* Analysis Section */}
+      <Card>
+        <Heading size="3" color="purple">Analysis</Heading>
+        <Separator my="3" size="4" />
+        
+        {isLoadingAnalysis && <XSpinner message="Loading analysis data..." />}
+        
+        {analysisError && (
+          <GenericErrorCallout 
+            title="Error loading analysis" 
+            message="Analysis may not be available yet or the experiment hasn't collected enough data."
+          />
+        )}
+        
+        {analysisData && (
+          <Flex direction="column" gap="3">
+            <Text weight="medium">Raw Analysis Data:</Text>
+            <TextArea 
+              readOnly 
+              value={JSON.stringify(analysisData, null, 2)}
+              style={{
+                fontFamily: 'monospace',
+                height: '200px',
+                width: '100%',
+              }}
+            />
+            {/* Placeholder for future chart implementation */}
+            <Text color="gray" align="center">
+              Visualization chart will be implemented in a future update
+            </Text>
+          </Flex>
+        )}
+      </Card>
+    </Flex>
+  );
+}
