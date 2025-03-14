@@ -191,6 +191,7 @@ export default function ExperimentViewPage() {
                     key={index} 
                     analysis={analysis} 
                     armNames={Object.fromEntries(arms.map(arm => [arm.arm_id, arm.arm_name]))}
+                    controlArmIndex={0} // Assuming first arm is control, make this configurable if needed
                   />
                 ))}
               </Flex>

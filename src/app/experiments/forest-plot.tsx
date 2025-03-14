@@ -3,12 +3,39 @@ import { ExperimentAnalysis } from '@/api/methods.schemas';
 import { Box, Card, Flex, Text } from '@radix-ui/themes';
 import { useEffect, useRef, useState } from 'react';
 
+/**
+ * Represents the calculated effect size data for a treatment arm
+ */
+interface EffectSizeData {
+  /** Unique identifier for the arm */
+  armId: string;
+  /** Display name for the arm */
+  armName: string;
+  /** Effect size as a percentage (coefficient * 100) */
+  effect: number;
+  /** Lower bound of 95% confidence interval as a percentage */
+  ci95Lower: number;
+  /** Upper bound of 95% confidence interval as a percentage */
+  ci95Upper: number;
+  /** P-value for statistical significance */
+  pValue: number;
+  /** Probability that the treatment is better than control (as a percentage) */
+  winProbability: number;
+  /** Whether the effect is statistically significant (p < 0.05) */
+  significant: boolean;
+}
+
 interface ForestPlotProps {
   analysis: ExperimentAnalysis;
   armNames: Record<string, string>;
+  /**
+   * Index of the control arm in the analysis.arm_ids array.
+   * Defaults to 0 (first arm) if not specified.
+   */
+  controlArmIndex?: number;
 }
 
-export function ForestPlot({ analysis, armNames }: ForestPlotProps) {
+export function ForestPlot({ analysis, armNames, controlArmIndex = 0 }: ForestPlotProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(600);
   
@@ -26,13 +53,13 @@ export function ForestPlot({ analysis, armNames }: ForestPlotProps) {
     }
   }, []);
 
-  // Skip the first arm (control) and calculate effect sizes for treatment arms
-  const treatmentArms = analysis.arm_ids.slice(1);
-  const controlIndex = 0;
-  
+  // Get all arm indices except the control arm
+  const treatmentArmIndices = analysis.arm_ids
+    .map((_, idx) => idx)
+    .filter(idx => idx !== controlArmIndex);
+
   // Extract data for visualization
-  const effectSizes = treatmentArms.map((_, idx) => {
-    const treatmentIdx = idx + 1; // +1 because we skip the control
+  const effectSizes: EffectSizeData[] = treatmentArmIndices.map(treatmentIdx => {
     const coefficient = analysis.coefficients[treatmentIdx];
     const stdError = analysis.std_errors[treatmentIdx];
     const pValue = analysis.pvalues[treatmentIdx];
@@ -106,7 +133,7 @@ export function ForestPlot({ analysis, armNames }: ForestPlotProps) {
           </div>
           
           {/* Effect size and confidence interval */}
-          {effectSizes.map((effect, i) => (
+          {effectSizes.map((effect) => (
             <div key={effect.armId} style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)' }}>
               {/* Confidence interval line */}
               <div 
@@ -140,7 +167,7 @@ export function ForestPlot({ analysis, armNames }: ForestPlotProps) {
           <Flex direction="column" gap="1">
             <Text size="1" weight="bold">Control</Text>
             <Text size="1">
-              {(analysis.coefficients[0] * 100).toFixed(2)}%
+              {(analysis.coefficients[controlArmIndex] * 100).toFixed(2)}%
             </Text>
           </Flex>
           
