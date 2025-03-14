@@ -98,7 +98,7 @@ export default function ExperimentViewPage() {
     return <Text>No experiment data found</Text>;
   }
 
-  const { design_spec, audience_spec, state, assign_summary } = experiment;
+  const { design_spec, state, assign_summary } = experiment;
   const { experiment_name, description, start_date, end_date, arms } = design_spec;
 
   // Format dates for display
@@ -165,7 +165,7 @@ export default function ExperimentViewPage() {
               </Table.Row>
               <Table.Row>
                 <Table.RowHeaderCell>Confidence Level</Table.RowHeaderCell>
-                <Table.Cell>{(1 - design_spec.alpha) * 100}%</Table.Cell>
+                <Table.Cell>{(1 - (design_spec.alpha || 0.05)) * 100}%</Table.Cell>
               </Table.Row>
               <Table.Row>
                 <Table.RowHeaderCell>MDE</Table.RowHeaderCell>

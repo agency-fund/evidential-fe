@@ -29,6 +29,12 @@ interface EffectSizeData {
   sampleSize?: number;
   /** Total sample size for this arm (if available) */
   totalSampleSize?: number;
+  /** Conversion rate for the control arm (if available) */
+  controlConversionRate?: number;
+  /** Sample size for the control arm (if available) */
+  controlSampleSize?: number;
+  /** Total sample size for the control arm (if available) */
+  controlTotalSampleSize?: number;
 }
 
 interface ForestPlotProps {
