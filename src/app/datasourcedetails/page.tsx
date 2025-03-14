@@ -30,7 +30,6 @@ export default function Page() {
     swr: {
       enabled: datasourceId !== null,
       isPaused: () => isDialogOpen,
-      revalidateOnFocus: false,
     },
   });
 
@@ -47,7 +46,6 @@ export default function Page() {
         enabled: datasourceId !== null,
         // Don't trigger the inspection if we're possibly editing the datasource.
         isPaused: () => isDialogOpen,
-        revalidateOnFocus: false,
       },
     },
   );
@@ -72,7 +70,7 @@ export default function Page() {
 
   const isLoading = inspectDatasourceLoading || datasourceDetailsLoading;
 
-  const editDatsourceDialogComponent = (
+  const editDatasourceDialogComponent = (
     <EditDatasourceDialog
       datasourceId={datasourceId!}
       variant="button"
@@ -92,7 +90,7 @@ export default function Page() {
     return (
       <>
         <GenericErrorCallout title={'Failed to fetch datasource metadata'} error={datasourceError} />
-        {editDatsourceDialogComponent}
+        {editDatasourceDialogComponent}
       </>
     );
   }
@@ -101,7 +99,7 @@ export default function Page() {
     return (
       <>
         <GenericErrorCallout title={'Failed to inspect datasource'} error={inspectError} />
-        {editDatsourceDialogComponent}
+        {editDatasourceDialogComponent}
       </>
     );
   }
@@ -121,7 +119,7 @@ export default function Page() {
         Back to: <Link href={`/organizationdetails?id=${organizationId}`}>{organizationName}</Link>
       </Text>
       <Flex gap="3">
-        {editDatsourceDialogComponent}
+        {editDatasourceDialogComponent}
       </Flex>
       {
         <>
