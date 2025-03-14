@@ -24,13 +24,13 @@ function calculateSampleSizes(experiment: ExperimentConfig, analysis: Experiment
 
   // Get the baseline coefficient (intercept) from the first coefficient
   const baselineCoefficient = analysis.coefficients[0];
-  
+
   analysis.arm_ids.forEach((armId, index) => {
     // Use the actual coefficients from the analysis to calculate conversion rates
     // For the control arm (usually index 0), use the baseline coefficient
     // For treatment arms, add the treatment effect to the baseline
     let effectiveRate;
-    
+
     if (index === 0) {
       // Control arm - use baseline coefficient directly
       effectiveRate = baselineCoefficient;
@@ -39,10 +39,10 @@ function calculateSampleSizes(experiment: ExperimentConfig, analysis: Experiment
       // The coefficients array contains [baseline, treatment1_effect, treatment2_effect, ...]
       effectiveRate = baselineCoefficient + analysis.coefficients[index];
     }
-    
+
     // Ensure the rate is positive (coefficients might be negative)
     effectiveRate = Math.max(0.001, effectiveRate);
-    
+
     sampleSizes[armId] = {
       // For conversions, use the coefficient as a rate
       conversions: Math.round(sampleSizePerArm * effectiveRate),
