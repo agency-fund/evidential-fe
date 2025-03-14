@@ -1,25 +1,57 @@
 'use client';
-import { 
-  Badge, 
-  Button, 
-  Card, 
-  Flex, 
-  Grid, 
-  Heading, 
-  Separator, 
-  Table, 
-  Text, 
-  TextArea,
-  Tabs
-} from '@radix-ui/themes';
+import { Button, Card, Flex, Grid, Heading, Separator, Table, Tabs, Text, TextArea } from '@radix-ui/themes';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeftIcon, DotsVerticalIcon, CodeIcon } from '@radix-ui/react-icons';
+import { ArrowLeftIcon, CodeIcon, DotsVerticalIcon } from '@radix-ui/react-icons';
 import { useAnalyzeExperiment, useGetExperiment, useListDatasources } from '@/api/admin';
 import { ForestPlot } from '@/app/experiments/forest-plot';
 import { useEffect, useState } from 'react';
 import { XSpinner } from '@/app/components/x-spinner';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 import { ExperimentStatusBadge } from '@/app/experiments/experiment-status-badge';
+import { ExperimentAnalysis, ExperimentConfig } from '@/api/methods.schemas';
+
+// Helper function to create sample sizes from experiment and analysis data
+function calculateSampleSizes(experiment: ExperimentConfig, analysis: ExperimentAnalysis) {
+  const { assign_summary, design_spec } = experiment;
+  const totalSampleSize = assign_summary.sample_size;
+
+  // Calculate approximate sample size per arm
+  const armCount = design_spec.arms.length;
+  const sampleSizePerArm = Math.floor(totalSampleSize / armCount);
+
+  // Format as expected by ForestPlot
+  const sampleSizes: Record<string, { conversions: number; total: number }> = {};
+
+  // Get the baseline coefficient (intercept) from the first coefficient
+  const baselineCoefficient = analysis.coefficients[0];
+  
+  analysis.arm_ids.forEach((armId, index) => {
+    // Use the actual coefficients from the analysis to calculate conversion rates
+    // For the control arm (usually index 0), use the baseline coefficient
+    // For treatment arms, add the treatment effect to the baseline
+    let effectiveRate;
+    
+    if (index === 0) {
+      // Control arm - use baseline coefficient directly
+      effectiveRate = baselineCoefficient;
+    } else {
+      // Treatment arm - add the treatment effect to the baseline
+      // The coefficients array contains [baseline, treatment1_effect, treatment2_effect, ...]
+      effectiveRate = baselineCoefficient + analysis.coefficients[index];
+    }
+    
+    // Ensure the rate is positive (coefficients might be negative)
+    effectiveRate = Math.max(0.001, effectiveRate);
+    
+    sampleSizes[armId] = {
+      // For conversions, use the coefficient as a rate
+      conversions: Math.round(sampleSizePerArm * effectiveRate),
+      total: sampleSizePerArm,
+    };
+  });
+
+  return sampleSizes;
+}
 
 export default function ExperimentViewPage() {
   const params = useParams();
@@ -27,10 +59,10 @@ export default function ExperimentViewPage() {
   const searchParams = useSearchParams();
   const experimentId = params.id as string;
   const datasourceId = searchParams.get('datasource_id');
-  
+
   const [selectedDatasource, setSelectedDatasource] = useState<string | null>(datasourceId);
   const { data: datasources } = useListDatasources();
-  
+
   // Set first datasource if none selected
   useEffect(() => {
     if (!selectedDatasource && datasources?.items.length) {
@@ -38,20 +70,20 @@ export default function ExperimentViewPage() {
     }
   }, [datasources, selectedDatasource]);
 
-  const { 
-    data: experiment, 
-    isLoading: isLoadingExperiment, 
-    error: experimentError 
+  const {
+    data: experiment,
+    isLoading: isLoadingExperiment,
+    error: experimentError,
   } = useGetExperiment(selectedDatasource || '', experimentId, {
-    swr: { enabled: !!selectedDatasource }
+    swr: { enabled: !!selectedDatasource },
   });
 
   const {
     data: analysisData,
     isLoading: isLoadingAnalysis,
-    error: analysisError
+    error: analysisError,
   } = useAnalyzeExperiment(selectedDatasource || '', experimentId, {
-    swr: { enabled: !!selectedDatasource && !!experiment }
+    swr: { enabled: !!selectedDatasource && !!experiment },
   });
 
   if (isLoadingExperiment) {
@@ -78,7 +110,7 @@ export default function ExperimentViewPage() {
   // Calculate arm percentages
   const totalArms = arms.length;
   const armPercentage = 100 / totalArms;
-  
+
   return (
     <Flex direction="column" gap="4">
       <Flex align="center" gap="2" justify="between">
@@ -94,12 +126,16 @@ export default function ExperimentViewPage() {
         </Button>
       </Flex>
 
-      <Text color="gray" size="3">{description}</Text>
+      <Text color="gray" size="3">
+        {description}
+      </Text>
 
       <Grid columns="2" gap="4">
         {/* Timeline Section */}
         <Card>
-          <Heading size="3" color="purple">Timeline</Heading>
+          <Heading size="3" color="purple">
+            Timeline
+          </Heading>
           <Separator my="3" size="4" />
           <Table.Root>
             <Table.Body>
@@ -117,7 +153,9 @@ export default function ExperimentViewPage() {
 
         {/* Parameters Section */}
         <Card>
-          <Heading size="3" color="purple">Parameters</Heading>
+          <Heading size="3" color="purple">
+            Parameters
+          </Heading>
           <Separator my="3" size="4" />
           <Table.Root>
             <Table.Body>
@@ -132,8 +170,8 @@ export default function ExperimentViewPage() {
               <Table.Row>
                 <Table.RowHeaderCell>MDE</Table.RowHeaderCell>
                 <Table.Cell>
-                  {design_spec.metrics[0]?.metric_pct_change 
-                    ? `${(design_spec.metrics[0].metric_pct_change * 100).toFixed(1)}%` 
+                  {design_spec.metrics[0]?.metric_pct_change
+                    ? `${(design_spec.metrics[0].metric_pct_change * 100).toFixed(1)}%`
                     : '10%'}
                 </Table.Cell>
               </Table.Row>
@@ -144,7 +182,9 @@ export default function ExperimentViewPage() {
 
       {/* Arms & Balance Section */}
       <Card>
-        <Heading size="3" color="purple">Arms & Balance</Heading>
+        <Heading size="3" color="purple">
+          Arms & Balance
+        </Heading>
         <Separator my="3" size="4" />
         <Flex gap="4">
           {arms.map((arm, index) => (
@@ -152,7 +192,7 @@ export default function ExperimentViewPage() {
               <Flex direction="column" gap="2">
                 <Flex justify="between" align="center">
                   <Heading size="4">{arm.arm_name}</Heading>
-                  <Text color={index === 0 ? "red" : "green"} weight="bold">
+                  <Text color={index === 0 ? 'red' : 'green'} weight="bold">
                     {(armPercentage + (index === 1 ? 0.6 : -0.6)).toFixed(1)}%
                   </Text>
                 </Flex>
@@ -165,42 +205,52 @@ export default function ExperimentViewPage() {
 
       {/* Analysis Section */}
       <Card>
-        <Heading size="3" color="purple">Analysis</Heading>
+        <Heading size="3" color="purple">
+          Analysis
+        </Heading>
         <Separator my="3" size="4" />
-        
+
         {isLoadingAnalysis && <XSpinner message="Loading analysis data..." />}
-        
+
         {analysisError && (
-          <GenericErrorCallout 
-            title="Error loading analysis" 
+          <GenericErrorCallout
+            title="Error loading analysis"
             message="Analysis may not be available yet or the experiment hasn't collected enough data."
           />
         )}
-        
+
         {analysisData && (
           <Tabs.Root defaultValue="visualization">
             <Tabs.List>
               <Tabs.Trigger value="visualization">Visualization</Tabs.Trigger>
-              <Tabs.Trigger value="raw"><CodeIcon /> Raw Data</Tabs.Trigger>
+              <Tabs.Trigger value="raw">
+                <CodeIcon /> Raw Data
+              </Tabs.Trigger>
             </Tabs.List>
-            
+
             <Tabs.Content value="visualization">
               <Flex direction="column" gap="3" py="3">
-                {analysisData.map((analysis, index) => (
-                  <ForestPlot 
-                    key={index} 
-                    analysis={analysis} 
-                    armNames={Object.fromEntries(arms.map(arm => [arm.arm_id, arm.arm_name]))}
-                    controlArmIndex={0} // Assuming first arm is control, make this configurable if needed
-                  />
-                ))}
+                {analysisData.map((analysis, index) => {
+                  // Calculate sample sizes from experiment data
+                  const sampleSizes = experiment ? calculateSampleSizes(experiment, analysis) : undefined;
+
+                  return (
+                    <ForestPlot
+                      key={index}
+                      analysis={analysis}
+                      armNames={Object.fromEntries(arms.map((arm) => [arm.arm_id!, arm.arm_name]))}
+                      controlArmIndex={0} // Assuming first arm is control, make this configurable if needed
+                      sampleSizes={sampleSizes}
+                    />
+                  );
+                })}
               </Flex>
             </Tabs.Content>
-            
+
             <Tabs.Content value="raw">
               <Flex direction="column" gap="3" py="3">
-                <TextArea 
-                  readOnly 
+                <TextArea
+                  readOnly
                   value={JSON.stringify(analysisData, null, 2)}
                   style={{
                     fontFamily: 'monospace',
