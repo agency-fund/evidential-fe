@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 /**
  * Represents the calculated effect size data for a treatment arm
  */
+// TODO(roboton): These are all suspicious.
 interface EffectSizeData {
   /** Unique identifier for the arm */
   armId: string;

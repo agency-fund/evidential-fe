@@ -11,6 +11,7 @@ import { ExperimentStatusBadge } from '@/app/experiments/experiment-status-badge
 import { ExperimentAnalysis, ExperimentConfig } from '@/api/methods.schemas';
 
 // Helper function to create sample sizes from experiment and analysis data
+// TODO(roboton): I think these should come from the API responses?
 function calculateSampleSizes(experiment: ExperimentConfig, analysis: ExperimentAnalysis) {
   const { assign_summary, design_spec } = experiment;
   const totalSampleSize = assign_summary.sample_size;
@@ -98,7 +99,7 @@ export default function ExperimentViewPage() {
     return <Text>No experiment data found</Text>;
   }
 
-  const { design_spec, state, assign_summary } = experiment;
+  const { design_spec, state, assign_summary, power_analyses, audience_spec } = experiment;
   const { experiment_name, description, start_date, end_date, arms } = design_spec;
 
   // Format dates for display
@@ -170,9 +171,10 @@ export default function ExperimentViewPage() {
               <Table.Row>
                 <Table.RowHeaderCell>MDE</Table.RowHeaderCell>
                 <Table.Cell>
+                  {/* TODO(roboton): verify */}
                   {design_spec.metrics[0]?.metric_pct_change
                     ? `${(design_spec.metrics[0].metric_pct_change * 100).toFixed(1)}%`
-                    : '10%'}
+                    : '(unknown)'}
                 </Table.Cell>
               </Table.Row>
             </Table.Body>
