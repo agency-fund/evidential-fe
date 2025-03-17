@@ -1,5 +1,5 @@
 'use client';
-import { ExperimentAnalysis } from '@/api/methods.schemas';
+import { ExperimentAnalysis, ExperimentConfig } from '@/api/methods.schemas';
 import { Box, Card, Flex, Text } from '@radix-ui/themes';
 import { useEffect, useRef, useState } from 'react';
 
@@ -51,9 +51,13 @@ interface ForestPlotProps {
    * If provided, will display conversion rates
    */
   sampleSizes?: Record<string, { conversions: number; total: number }>;
+  /**
+   * The experiment configuration containing design parameters
+   */
+  experiment: ExperimentConfig;
 }
 
-export function ForestPlot({ analysis, armNames, controlArmIndex = 0, sampleSizes }: ForestPlotProps) {
+export function ForestPlot({ analysis, armNames, controlArmIndex = 0, sampleSizes, experiment }: ForestPlotProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(600);
 
@@ -100,7 +104,7 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, sampleSize
       ci95Upper: ci95Upper * 100,
       pValue,
       winProbability: winProbability * 100,
-      significant: pValue < 0.05,
+      significant: pValue < (experiment.design_spec.alpha || 0.05),
       conversionRate: sampleData ? (sampleData.conversions / sampleData.total) * 100 : undefined,
       sampleSize: sampleData?.conversions,
       totalSampleSize: sampleData?.total,
@@ -168,13 +172,13 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, sampleSize
             )}
           </Flex>
 
-          {/* Right side - Win probability */}
+          {/* Right side - P-value */}
           <Flex direction="column" gap="1" style={{ width: '25%', textAlign: 'right' }}>
             <Text size="2" weight="bold">
-              {effectSizes[0].winProbability.toFixed(1)}% chance to
+              p = {effectSizes[0].pValue.toFixed(3)}
             </Text>
             <Text size="2" weight="bold">
-              win
+              {effectSizes[0].significant ? 'Significant' : 'Not Significant'}
             </Text>
           </Flex>
         </Flex>
