@@ -1111,7 +1111,13 @@ export const createExperimentWithAssignmentBody = zod.object({
 					pct_change_possible: zod.number().or(zod.null()).optional(),
 					msg: zod
 						.object({
-							type: zod.enum(["sufficient", "insufficient", "no baseline"]),
+							type: zod.enum([
+								"sufficient",
+								"insufficient",
+								"no baseline",
+								"no available n",
+								"zero effect size",
+							]),
 							msg: zod.string(),
 							source_msg: zod.string(),
 							values: zod
@@ -1257,7 +1263,13 @@ export const createExperimentWithAssignmentResponse = zod.object({
 					pct_change_possible: zod.number().or(zod.null()).optional(),
 					msg: zod
 						.object({
-							type: zod.enum(["sufficient", "insufficient", "no baseline"]),
+							type: zod.enum([
+								"sufficient",
+								"insufficient",
+								"no baseline",
+								"no available n",
+								"zero effect size",
+							]),
 							msg: zod.string(),
 							source_msg: zod.string(),
 							values: zod
@@ -1458,7 +1470,13 @@ export const listExperimentsResponse = zod.object({
 							pct_change_possible: zod.number().or(zod.null()).optional(),
 							msg: zod
 								.object({
-									type: zod.enum(["sufficient", "insufficient", "no baseline"]),
+									type: zod.enum([
+										"sufficient",
+										"insufficient",
+										"no baseline",
+										"no available n",
+										"zero effect size",
+									]),
 									msg: zod.string(),
 									source_msg: zod.string(),
 									values: zod
@@ -1616,7 +1634,13 @@ export const getExperimentResponse = zod.object({
 					pct_change_possible: zod.number().or(zod.null()).optional(),
 					msg: zod
 						.object({
-							type: zod.enum(["sufficient", "insufficient", "no baseline"]),
+							type: zod.enum([
+								"sufficient",
+								"insufficient",
+								"no baseline",
+								"no available n",
+								"zero effect size",
+							]),
 							msg: zod.string(),
 							source_msg: zod.string(),
 							values: zod
@@ -1819,7 +1843,13 @@ export const powerCheckResponse = zod.object({
 			pct_change_possible: zod.number().or(zod.null()).optional(),
 			msg: zod
 				.object({
-					type: zod.enum(["sufficient", "insufficient", "no baseline"]),
+					type: zod.enum([
+						"sufficient",
+						"insufficient",
+						"no baseline",
+						"no available n",
+						"zero effect size",
+					]),
 					msg: zod.string(),
 					source_msg: zod.string(),
 					values: zod

@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { EditDatasourceDialog } from '@/app/organizationdetails/edit-datasource-dialog';
 import { ParticipantTypesSection } from '@/app/datasourcedetails/participant-types-section';
 import { useCurrentOrganization } from '@/app/providers/organization-provider';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 
 export default function Page() {
@@ -18,6 +18,9 @@ export default function Page() {
   const orgContext = useCurrentOrganization();
   const currentOrgId = orgContext?.current?.id;
   const router = useRouter();
+  // State to pause some SWR requests when the dialog is open, which would otherwise inadvertently close the dialog.
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [wasDialogOpen, setWasDialogOpen] = useState(false);
 
   const {
     data: datasourceMetadata,
@@ -26,6 +29,7 @@ export default function Page() {
   } = useGetDatasource(datasourceId!, {
     swr: {
       enabled: datasourceId !== null,
+      isPaused: () => isDialogOpen,
     },
   });
 
@@ -33,15 +37,28 @@ export default function Page() {
     data: inspectDatasourceData,
     isLoading: inspectDatasourceLoading,
     error: inspectError,
+    mutate: mutateInspect,
   } = useInspectDatasource(
     datasourceId!,
     {},
     {
       swr: {
         enabled: datasourceId !== null,
+        // Don't trigger the inspection if we're possibly editing the datasource.
+        isPaused: () => isDialogOpen,
       },
     },
   );
+
+  // Only trigger revalidation when dialog transitions from open to closed,
+  // while avoiding the initial load triggering a revalidation.
+  useEffect(() => {
+    if (datasourceId && wasDialogOpen && !isDialogOpen) {
+      mutateInspect();
+    }
+    // Update previous state for next render
+    setWasDialogOpen(isDialogOpen);
+  }, [datasourceId, isDialogOpen, wasDialogOpen, mutateInspect]);
 
   // Redirect if datasource doesn't belong to current organization
   useEffect(() => {
@@ -52,32 +69,43 @@ export default function Page() {
   }, [currentOrgId, datasourceMetadata, router]);
 
   const isLoading = inspectDatasourceLoading || datasourceDetailsLoading;
+
+  const editDatasourceDialogComponent = (
+    <EditDatasourceDialog
+      datasourceId={datasourceId!}
+      variant="button"
+      onOpenChange={setIsDialogOpen}
+    />
+  );
+
   if (isLoading) {
     return <XSpinner message="Loading datasource details..." />;
   }
+
   if (!datasourceId) {
     return <Text>missing parameter</Text>;
-  }
-  if (inspectError) {
-    return (
-      <>
-        <GenericErrorCallout title={'Failed to fetch datasource metadata'} error={inspectError} />
-        <EditDatasourceDialog datasourceId={datasourceId} variant="button" />
-      </>
-    );
   }
 
   if (datasourceError) {
     return (
       <>
         <GenericErrorCallout title={'Failed to fetch datasource metadata'} error={datasourceError} />
-        <EditDatasourceDialog datasourceId={datasourceId} variant="button" />
+        {editDatasourceDialogComponent}
+      </>
+    );
+  }
+
+  if (inspectError) {
+    return (
+      <>
+        <GenericErrorCallout title={'Failed to inspect datasource'} error={inspectError} />
+        {editDatasourceDialogComponent}
       </>
     );
   }
 
   if (!datasourceMetadata || !inspectDatasourceData) {
-    return <Text>Error: Missing datasource metadata</Text>;
+    return <Text>Error: Missing datasource or table metadata</Text>;
   }
 
   // We can safely use data properties now that we've handled all error cases
@@ -91,7 +119,7 @@ export default function Page() {
         Back to: <Link href={`/organizationdetails?id=${organizationId}`}>{organizationName}</Link>
       </Text>
       <Flex gap="3">
-        <EditDatasourceDialog datasourceId={datasourceId} variant="button" />
+        {editDatasourceDialogComponent}
       </Flex>
       {
         <>
