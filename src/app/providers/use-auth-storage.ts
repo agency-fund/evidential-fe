@@ -17,11 +17,23 @@ const getSnapshot = () => localStorage.getItem(ID_TOKEN_KEY);
 // Exposes the current authentication token to code outside of the React context.
 export const currentIdToken = () => {
   const item = getSnapshot();
-  return typeof item === 'string' ? (JSON.parse(item) as IdTokenStored).idToken : null;
+  if (typeof item === 'string') {
+    // Ignore invalid values that may have been set by previous implementations.
+    if (item === 'null' || !item.startsWith('{')) {
+      return null;
+    }
+    return (JSON.parse(item) as IdTokenStored).idToken;
+  } else {
+    return null;
+  }
 };
 
 const setIdToken = (newValue: IdTokenStored | null) => {
-  localStorage.setItem(ID_TOKEN_KEY, JSON.stringify(newValue));
+  if (newValue === null) {
+    localStorage.removeItem(ID_TOKEN_KEY);
+  } else {
+    localStorage.setItem(ID_TOKEN_KEY, JSON.stringify(newValue));
+  }
   window.dispatchEvent(new StorageEvent(ID_TOKEN_EVENT));
 };
 
