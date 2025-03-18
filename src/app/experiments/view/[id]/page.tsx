@@ -10,49 +10,6 @@ import { GenericErrorCallout } from '@/app/components/generic-error';
 import { ExperimentStatusBadge } from '@/app/experiments/experiment-status-badge';
 import { ExperimentAnalysis, ExperimentConfig } from '@/api/methods.schemas';
 
-// Helper function to create sample sizes from experiment and analysis data
-// TODO(roboton): I think these should come from the API responses?
-function calculateSampleSizes(experiment: ExperimentConfig, analysis: ExperimentAnalysis) {
-  const { assign_summary, design_spec } = experiment;
-  const totalSampleSize = assign_summary.sample_size;
-
-  // Calculate approximate sample size per arm
-  const armCount = design_spec.arms.length;
-  const sampleSizePerArm = Math.floor(totalSampleSize / armCount);
-
-  // Format as expected by ForestPlot
-  const sampleSizes: Record<string, { conversions: number; total: number }> = {};
-
-  // Get the baseline coefficient (intercept) from the first coefficient
-  const baselineCoefficient = analysis.coefficients[0];
-
-  analysis.arm_ids.forEach((armId, index) => {
-    // Use the actual coefficients from the analysis to calculate conversion rates
-    // For the control arm (usually index 0), use the baseline coefficient
-    // For treatment arms, add the treatment effect to the baseline
-    let effectiveRate;
-
-    if (index === 0) {
-      // Control arm - use baseline coefficient directly
-      effectiveRate = baselineCoefficient;
-    } else {
-      // Treatment arm - add the treatment effect to the baseline
-      // The coefficients array contains [baseline, treatment1_effect, treatment2_effect, ...]
-      effectiveRate = baselineCoefficient + analysis.coefficients[index];
-    }
-
-    // Ensure the rate is positive (coefficients might be negative)
-    effectiveRate = Math.max(0.001, effectiveRate);
-
-    sampleSizes[armId] = {
-      // For conversions, use the coefficient as a rate
-      conversions: Math.round(sampleSizePerArm * effectiveRate),
-      total: sampleSizePerArm,
-    };
-  });
-
-  return sampleSizes;
-}
 
 export default function ExperimentViewPage() {
   const params = useParams();
@@ -193,7 +150,19 @@ export default function ExperimentViewPage() {
             <Card key={arm.arm_id} style={{ flex: 1 }}>
               <Flex direction="column" gap="2">
                 <Flex justify="between" align="center">
-                  <Heading size="4">{arm.arm_name}</Heading>
+                  <Flex gap="2" align="center">
+                    <Heading size="4">{arm.arm_name}</Heading>
+                    <Button
+                      variant="ghost"
+                      size="1"
+                      onClick={() => {
+                        navigator.clipboard.writeText(arm.arm_id || '');
+                        // Could add a toast notification here if you have one
+                      }}
+                    >
+                      <CodeIcon />
+                    </Button>
+                  </Flex>
                   <Text color={index === 0 ? 'red' : 'green'} weight="bold">
                     {(armPercentage + (index === 1 ? 0.6 : -0.6)).toFixed(1)}%
                   </Text>
@@ -232,21 +201,15 @@ export default function ExperimentViewPage() {
 
             <Tabs.Content value="visualization">
               <Flex direction="column" gap="3" py="3">
-                {analysisData.map((analysis, index) => {
-                  // Calculate sample sizes from experiment data
-                  const sampleSizes = experiment ? calculateSampleSizes(experiment, analysis) : undefined;
-
-                  return (
-                    <ForestPlot
-                      key={index}
-                      analysis={analysis}
-                      armNames={Object.fromEntries(arms.map((arm) => [arm.arm_id!, arm.arm_name]))}
-                      controlArmIndex={0} // Assuming first arm is control, make this configurable if needed
-                      sampleSizes={sampleSizes}
-                      experiment={experiment}
-                    />
-                  );
-                })}
+                {analysisData.map((analysis, index) => (
+                  <ForestPlot
+                    key={index}
+                    analysis={analysis}
+                    armNames={Object.fromEntries(arms.map((arm) => [arm.arm_id!, arm.arm_name]))}
+                    controlArmIndex={0} // Assuming first arm is control, make this configurable if needed
+                    experiment={experiment}
+                  />
+                ))}
               </Flex>
             </Tabs.Content>
 
