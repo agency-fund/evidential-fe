@@ -11,7 +11,7 @@ import { XSpinner } from '@/app/components/x-spinner';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 import { ApiError } from '@/services/orval-fetch';
 
-const CURRENT_ORG_ID_KEY = 'org_id' as const;
+export const CURRENT_ORG_ID_KEY = 'org_id' as const;
 
 type OrganizationContext = {
   current: OrganizationSummary;
