@@ -66,10 +66,6 @@ export default function ExperimentViewPage() {
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
-  // Calculate arm percentages
-  const totalArms = arms.length;
-  const armPercentage = 100 / totalArms;
-
   return (
     <Flex direction="column" gap="4">
       <Flex align="center" gap="2" justify="between">
@@ -150,22 +146,31 @@ export default function ExperimentViewPage() {
         </Heading>
         <Separator my="3" size="4" />
         <Flex gap="4">
-          {arms.map((arm, index) => (
-            <Card key={arm.arm_id} style={{ flex: 1 }}>
-              <Flex direction="column" gap="2">
-                <Flex justify="between" align="center">
-                  <Flex gap="2" align="center">
-                    <Heading size="4">{arm.arm_name}</Heading>
-                    <CopyButton value={arm.arm_id || ''} label="arm ID" />
+          {arms.map((arm, index) => {
+            const armSize = assign_summary.arm_sizes.find(a => a.arm.arm_id === arm.arm_id)?.size || 0;
+            const percentage = (armSize / assign_summary.sample_size) * 100;
+            return (
+              <Card key={arm.arm_id} style={{ flex: 1 }}>
+                <Flex direction="column" gap="2">
+                  <Flex justify="between" align="center">
+                    <Flex gap="2" align="center">
+                      <Heading size="4">{arm.arm_name}</Heading>
+                      <CopyButton value={arm.arm_id || ''} label="arm ID" />
+                    </Flex>
+                    <Text color="gray" weight="bold">
+                      {percentage.toFixed(1)}%
+                    </Text>
                   </Flex>
-                  <Text color={index === 0 ? 'red' : 'green'} weight="bold">
-                    {(armPercentage + (index === 1 ? 0.6 : -0.6)).toFixed(1)}%
-                  </Text>
+                  <Flex justify="between" align="center">
+                    <Text color="gray">{arm.arm_description || 'No description'}</Text>
+                    <Text size="2" color="gray">
+                      {armSize.toLocaleString()} participants
+                    </Text>
+                  </Flex>
                 </Flex>
-                <Text color="gray">{arm.arm_description || 'No description'}</Text>
-              </Flex>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </Flex>
       </Card>
 
