@@ -37,6 +37,14 @@ export interface Arm {
 	arm_description?: ArmArmDescription;
 }
 
+/**
+ * Describes the number of participants assigned to each arm.
+ */
+export interface ArmSizes {
+	arm: Arm;
+	size: number;
+}
+
 export interface ArmUpdate {
 	/**
 	 * New experiment arm name to be updated.
@@ -64,10 +72,12 @@ export interface AssignResponseInput {
 	/** Result of checking that the arms are balanced. May not be present if we are not able to stratify on any design metrics or other fields specified for stratification. (Fields used must be supported data types whose values are NOT all unique or all the same). */
 	balance_check?: AssignResponseInputBalanceCheck;
 	experiment_id: string;
+	/** The number of participants across all arms in total. */
 	sample_size: number;
 	/** Name of the datasource field used as the unique identifier for the participant_id value stored in each Assignment, as configured in the datasource settings. Included for frontend convenience. */
 	unique_id_field: string;
 	assignments: Assignment[];
+	arm_sizes: ArmSizes[];
 }
 
 /**
@@ -82,10 +92,12 @@ export interface AssignResponseOutput {
 	/** Result of checking that the arms are balanced. May not be present if we are not able to stratify on any design metrics or other fields specified for stratification. (Fields used must be supported data types whose values are NOT all unique or all the same). */
 	balance_check?: AssignResponseOutputBalanceCheck;
 	experiment_id: string;
+	/** The number of participants across all arms in total. */
 	sample_size: number;
 	/** Name of the datasource field used as the unique identifier for the participant_id value stored in each Assignment, as configured in the datasource settings. Included for frontend convenience. */
 	unique_id_field: string;
 	assignments: Assignment[];
+	arm_sizes: ArmSizes[];
 }
 
 /**
@@ -94,6 +106,7 @@ export interface AssignResponseOutput {
 export interface AssignSummary {
 	balance_check: BalanceCheck;
 	sample_size: number;
+	arm_sizes: ArmSizes[];
 }
 
 /**

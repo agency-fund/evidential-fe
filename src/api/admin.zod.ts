@@ -1282,6 +1282,16 @@ export const createExperimentWithAssignmentResponse = zod.object({
 			balance_ok: zod.boolean(),
 		}),
 		sample_size: zod.number(),
+		arm_sizes: zod.array(
+			zod.object({
+				arm: zod.object({
+					arm_id: zod.string().uuid().or(zod.null()).optional(),
+					arm_name: zod.string(),
+					arm_description: zod.string().or(zod.null()).optional(),
+				}),
+				size: zod.number(),
+			}),
+		),
 	}),
 });
 
@@ -1489,6 +1499,16 @@ export const listExperimentsResponse = zod.object({
 					balance_ok: zod.boolean(),
 				}),
 				sample_size: zod.number(),
+				arm_sizes: zod.array(
+					zod.object({
+						arm: zod.object({
+							arm_id: zod.string().uuid().or(zod.null()).optional(),
+							arm_name: zod.string(),
+							arm_description: zod.string().or(zod.null()).optional(),
+						}),
+						size: zod.number(),
+					}),
+				),
 			}),
 		}),
 	),
@@ -1653,6 +1673,16 @@ export const getExperimentResponse = zod.object({
 			balance_ok: zod.boolean(),
 		}),
 		sample_size: zod.number(),
+		arm_sizes: zod.array(
+			zod.object({
+				arm: zod.object({
+					arm_id: zod.string().uuid().or(zod.null()).optional(),
+					arm_name: zod.string(),
+					arm_description: zod.string().or(zod.null()).optional(),
+				}),
+				size: zod.number(),
+			}),
+		),
 	}),
 });
 
