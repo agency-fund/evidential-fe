@@ -1,69 +1,37 @@
 'use client';
 import { ExperimentAnalysis, ExperimentConfig } from '@/api/methods.schemas';
 import { Box, Card, Flex, Text } from '@radix-ui/themes';
-import { useEffect, useRef, useState } from 'react';
+import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ScatterProps } from 'recharts';
 
-/**
- * Represents the calculated effect size data for a treatment arm
- */
-// TODO(roboton): These are all suspicious.
 interface EffectSizeData {
-  /** Unique identifier for the arm */
   armId: string;
-  /** Display name for the arm */
   armName: string;
-  /** Effect size as a percentage (coefficient * 100) */
   effect: number;
-  /** Lower bound of 95% confidence interval as a percentage */
   ci95Lower: number;
-  /** Upper bound of 95% confidence interval as a percentage */
   ci95Upper: number;
-  /** P-value for statistical significance */
   pValue: number;
-  /** Whether the effect is statistically significant (p < 0.05) */
   significant: boolean;
-  /** Sample size for this arm */
   sampleSize: number;
-  /** Total sample size for this arm */
   totalSampleSize: number;
-  /** Sample size for the control arm */
   controlSampleSize: number;
-  /** Total sample size for the control arm */
   controlTotalSampleSize: number;
 }
 
 interface ForestPlotProps {
   analysis: ExperimentAnalysis;
   armNames: Record<string, string>;
-  /**
-   * Index of the control arm in the analysis.arm_ids array.
-   * Defaults to 0 (first arm) if not specified.
-   */
   controlArmIndex?: number;
-  /**
-   * The experiment configuration containing design parameters and results
-   */
   experiment: ExperimentConfig;
 }
 
+interface CustomShapeProps {
+  cx?: number;
+  cy?: number;
+  payload?: EffectSizeData;
+  width?: number;
+}
+
 export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment }: ForestPlotProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState(600);
-
-  // Responsive width adjustment
-  useEffect(() => {
-    if (containerRef.current) {
-      const resizeObserver = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          setWidth(entry.contentRect.width);
-        }
-      });
-
-      resizeObserver.observe(containerRef.current);
-      return () => resizeObserver.disconnect();
-    }
-  }, []);
-
   // Get all arm indices except the control arm
   const treatmentArmIndices = analysis.arm_ids.map((_, idx) => idx).filter((idx) => idx !== controlArmIndex);
 
@@ -88,9 +56,9 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
     return {
       armId,
       armName: armNames[armId] || `Arm ${treatmentIdx}`,
-      effect: coefficient * 100, // Convert to percentage
-      ci95Lower: ci95Lower * 100,
-      ci95Upper: ci95Upper * 100,
+      effect: coefficient, // Use actual coefficient value
+      ci95Lower,
+      ci95Upper,
       pValue,
       significant: pValue < (experiment.design_spec.alpha || 0.05),
       sampleSize: armSize,
@@ -100,21 +68,23 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
     };
   });
 
-  // Visualization parameters
-  const padding = { top: 20, right: 20, bottom: 20, left: 60 };
-  const plotWidth = width - padding.left - padding.right;
-  const plotHeight = 80;
+  // Create data for Recharts
+  const chartData = effectSizes.map((effect, index) => ({
+    ...effect,
+    y: effectSizes.length - index, // Position each treatment on its own line
+  }));
 
-  // Calculate scale for x-axis
-  const allValues = effectSizes.flatMap((d) => [d.effect, d.ci95Lower, d.ci95Upper]);
-  const minValue = Math.min(...allValues, -30);
-  const maxValue = Math.max(...allValues, 30);
-  const range = Math.max(Math.abs(minValue), Math.abs(maxValue));
-
-  // Scale function to convert data value to pixel position
-  const scaleX = (value: number) => {
-    return padding.left + ((value + range) / (range * 2)) * plotWidth;
-  };
+  // Add control arm data
+  const controlData = [{
+    armId: analysis.arm_ids[controlArmIndex],
+    armName: armNames[analysis.arm_ids[controlArmIndex]] || 'Control',
+    effect: 0,
+    ci95Lower: 0,
+    ci95Upper: 0,
+    pValue: 1,
+    significant: false,
+    y: effectSizes.length + 1, // Position control at the top
+  }];
 
   // Only render if we have data
   if (effectSizes.length === 0) {
@@ -122,7 +92,7 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
   }
 
   return (
-    <Card ref={containerRef}>
+    <Card>
       <Flex direction="column" gap="3">
         <Text weight="bold">Effect of {analysis.metric_name}</Text>
 
@@ -152,56 +122,99 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
           </Flex>
         </Flex>
 
-        <Box style={{ position: 'relative', height: plotHeight, backgroundColor: '#f9f9f9', borderRadius: '4px' }}>
-          {/* Zero line */}
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              left: scaleX(0),
-              width: '1px',
-              backgroundColor: '#ccc',
-            }}
-          />
-
-          {/* X-axis labels */}
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, textAlign: 'center' }}>
-            <Flex justify="between" px="4">
-              <Text size="1">{-range.toFixed(0)}%</Text>
-              <Text size="1">0%</Text>
-              <Text size="1">{range.toFixed(0)}%</Text>
-            </Flex>
-          </div>
-
-          {/* Effect size and confidence interval */}
-          {effectSizes.map((effect) => (
-            <div key={effect.armId} style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)' }}>
-              {/* Confidence interval line */}
-              <div
-                style={{
-                  position: 'absolute',
-                  height: '2px',
-                  backgroundColor: '#e0e0e0',
-                  left: scaleX(effect.ci95Lower),
-                  width: scaleX(effect.ci95Upper) - scaleX(effect.ci95Lower),
+        <Box style={{ height: 200 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <ScatterChart
+              margin={{ top: 20, right: 20, bottom: 20, left: 60 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                type="number"
+                dataKey="effect"
+                domain={[-30, 30]}
+                tickFormatter={(value) => value.toFixed(2)}
+              />
+              <YAxis
+                type="number"
+                dataKey="y"
+                domain={[0, effectSizes.length + 2]}
+                hide
+              />
+              <Tooltip
+                formatter={(value: number, name: string) => {
+                  if (name === 'effect') return value.toFixed(2);
+                  return value;
                 }}
               />
 
-              {/* Effect size point */}
-              <div
-                style={{
-                  position: 'absolute',
-                  height: '16px',
-                  width: '8px',
-                  backgroundColor: effect.significant ? '#00c853' : '#757575',
-                  left: scaleX(effect.effect) - 4,
-                  top: '-8px',
-                  borderRadius: '2px',
+              {/* Control arm baseline */}
+              <Scatter
+                data={controlData}
+                fill="#757575"
+                shape={(props: CustomShapeProps) => (
+                  <circle
+                    cx={props.cx}
+                    cy={props.cy}
+                    r={6}
+                    fill="#757575"
+                    stroke="none"
+                  />
+                )}
+              />
+
+              {/* Treatment arms */}
+              <Scatter
+                data={chartData}
+                fill="#8884d8"
+                shape={(props: CustomShapeProps) => (
+                  <circle
+                    cx={props.cx}
+                    cy={props.cy}
+                    r={4}
+                    fill={props.payload.significant ? '#00c853' : '#757575'}
+                    stroke="none"
+                  />
+                )}
+              />
+
+              {/* Confidence intervals */}
+              <Scatter
+                data={chartData}
+                fill="none"
+                shape={(props: CustomShapeProps) => {
+                  if (!props.payload || !props.width) return null;
+                  const { ci95Lower, ci95Upper } = props.payload;
+                  const scale = (x: number) => {
+                    const min = -30;
+                    const max = 30;
+                    return ((x - min) / (max - min)) * props.width;
+                  };
+
+                  return (
+                    <line
+                      x1={scale(ci95Lower)}
+                      y1={props.cy}
+                      x2={scale(ci95Upper)}
+                      y2={props.cy}
+                      stroke="#e0e0e0"
+                      strokeWidth={2}
+                    />
+                  );
                 }}
               />
-            </div>
-          ))}
+
+              {/* Vertical line through control point */}
+              <line
+                x1={0}
+                y1={0}
+                x2={0}
+                y2={effectSizes.length + 2}
+                stroke="#757575"
+                strokeDasharray="5 5"
+                strokeWidth={1}
+              />
+            </ScatterChart>
+          </ResponsiveContainer>
         </Box>
       </Flex>
     </Card>
