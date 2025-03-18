@@ -1,5 +1,5 @@
 'use client';
-import { getGetOrganizationKey, getListDatasourcesKey, useCreateDatasource } from '@/api/admin';
+import { getGetOrganizationKey, getListOrganizationDatasourcesKey, useCreateDatasource } from '@/api/admin';
 import { useState } from 'react';
 import { Button, Dialog, Flex, RadioGroup, Text, TextField } from '@radix-ui/themes';
 import { ServiceAccountJsonField } from '@/app/components/service-account-json-field';
@@ -11,7 +11,11 @@ import { mutate } from 'swr';
 export function AddDatasourceDialog({ organizationId }: { organizationId: string }) {
   const { trigger, isMutating } = useCreateDatasource({
     swr: {
-      onSuccess: () => Promise.all([mutate(getListDatasourcesKey()), mutate(getGetOrganizationKey(organizationId))]),
+      onSuccess: () =>
+        Promise.all([
+          mutate(getListOrganizationDatasourcesKey(organizationId)),
+          mutate(getGetOrganizationKey(organizationId)),
+        ]),
     },
   });
   const [open, setOpen] = useState(false);

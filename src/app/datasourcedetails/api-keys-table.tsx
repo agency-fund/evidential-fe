@@ -6,10 +6,10 @@ import { AlertDialog, Button, Flex, IconButton, Table, Text, Tooltip } from '@ra
 import { mutate } from 'swr';
 import { InfoCircledIcon, TrashIcon } from '@radix-ui/react-icons';
 
-export function ApiKeysTable({ apiKeys }: { apiKeys: ApiKeySummary[] }) {
+export function ApiKeysTable({ apiKeys, datasourceId }: { apiKeys: ApiKeySummary[]; datasourceId: string }) {
   const [confirmingDeleteForKeyId, setConfirmingDeleteForKeyId] = useState<string | null>(null);
-  const { trigger } = useDeleteApiKey(confirmingDeleteForKeyId ?? '', {
-    swr: { onSuccess: () => mutate(getListApiKeysKey()) },
+  const { trigger } = useDeleteApiKey(datasourceId, confirmingDeleteForKeyId ?? '', {
+    swr: { onSuccess: () => mutate(getListApiKeysKey(datasourceId)) },
   });
 
   return (

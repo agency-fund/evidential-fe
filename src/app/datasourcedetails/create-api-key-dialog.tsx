@@ -10,7 +10,7 @@ export const CreateApiKeyDialog = ({ datasourceId }: { datasourceId: string }) =
   const [state, setState] = useState<'presenting-form' | 'presenting-results' | 'presenting-button'>(
     'presenting-button',
   );
-  const { data: createdKey, trigger: triggerCreateApiKey, isMutating, error, reset } = useCreateApiKey();
+  const { data: createdKey, trigger: triggerCreateApiKey, isMutating, error, reset } = useCreateApiKey(datasourceId);
 
   const exampleCurlSnippet =
     createdKey !== undefined
@@ -81,9 +81,7 @@ export const CreateApiKeyDialog = ({ datasourceId }: { datasourceId: string }) =
                   <form
                     onSubmit={async (event) => {
                       event.preventDefault();
-                      await triggerCreateApiKey({
-                        datasource_id: datasourceId,
-                      });
+                      await triggerCreateApiKey();
                       setState('presenting-results');
                     }}
                   >
