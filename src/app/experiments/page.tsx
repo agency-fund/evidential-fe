@@ -174,7 +174,7 @@ export default function Page() {
                           size="1"
                           asChild
                         >
-                          <Link href={`/experiments/view/${experiment.design_spec.experiment_id}`}>
+                          <Link href={`/experiments/view/${experiment.design_spec.experiment_id}?datasource_id=${selectedDatasource}`}>
                             View
                           </Link>
                         </Button>
