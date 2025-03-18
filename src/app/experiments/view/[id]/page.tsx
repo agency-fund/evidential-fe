@@ -9,6 +9,7 @@ import { XSpinner } from '@/app/components/x-spinner';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 import { ExperimentStatusBadge } from '@/app/experiments/experiment-status-badge';
 import { ExperimentAnalysis, ExperimentConfig } from '@/api/methods.schemas';
+import { CopyButton } from '@/app/components/copy-button';
 
 
 export default function ExperimentViewPage() {
@@ -76,7 +77,10 @@ export default function ExperimentViewPage() {
           <Button variant="soft" onClick={() => router.back()}>
             <ArrowLeftIcon /> Back
           </Button>
-          <Heading>{experiment_name}</Heading>
+          <Flex gap="2" align="center">
+            <Heading>{experiment_name}</Heading>
+            <CopyButton value={experimentId} label="experiment ID" />
+          </Flex>
           <ExperimentStatusBadge status={state} />
         </Flex>
         <Button variant="ghost">
@@ -152,16 +156,7 @@ export default function ExperimentViewPage() {
                 <Flex justify="between" align="center">
                   <Flex gap="2" align="center">
                     <Heading size="4">{arm.arm_name}</Heading>
-                    <Button
-                      variant="ghost"
-                      size="1"
-                      onClick={() => {
-                        navigator.clipboard.writeText(arm.arm_id || '');
-                        // Could add a toast notification here if you have one
-                      }}
-                    >
-                      <CodeIcon />
-                    </Button>
+                    <CopyButton value={arm.arm_id || ''} label="arm ID" />
                   </Flex>
                   <Text color={index === 0 ? 'red' : 'green'} weight="bold">
                     {(armPercentage + (index === 1 ? 0.6 : -0.6)).toFixed(1)}%
