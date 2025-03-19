@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button, Dialog, Flex, RadioGroup, Text, TextField } from '@radix-ui/themes';
 import { ServiceAccountJsonField } from '@/app/components/service-account-json-field';
 import { XSpinner } from '../components/x-spinner';
-import { EyeClosedIcon, EyeOpenIcon, PlusIcon } from '@radix-ui/react-icons';
+import { EyeClosedIcon, EyeOpenIcon, InfoCircledIcon, PlusIcon } from '@radix-ui/react-icons';
 import { BqDsnInput, Dsn } from '@/api/methods.schemas';
 import { mutate } from 'swr';
 
@@ -15,7 +15,7 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
     },
   });
   const [open, setOpen] = useState(false);
-  const [dwhType, setDwhType] = useState<'postgres' | 'bigquery'>('postgres');
+  const [dwhType, setDwhType] = useState<'postgres' | 'redshift' | 'bigquery'>('postgres');
   const [projectId, setProjectId] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [credentialsJson, setCredentialsJson] = useState('');
@@ -47,6 +47,17 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
               if (dwhType === 'postgres') {
                 dwh = {
                   driver: 'postgresql+psycopg',
+                  host: fd.get('host') as string,
+                  port: parseInt(fd.get('port') as string),
+                  dbname: fd.get('database') as string,
+                  user: fd.get('user') as string,
+                  password: fd.get('password') as string,
+                  sslmode: fd.get('sslmode') as 'disable' | 'allow' | 'prefer' | 'require',
+                  search_path: (fd.get('search_path') as string) || null,
+                };
+              } else if (dwhType === 'redshift') {
+                dwh = {
+                  driver: 'postgresql+psycopg2',
                   host: fd.get('host') as string,
                   port: parseInt(fd.get('port') as string),
                   dbname: fd.get('database') as string,
@@ -108,6 +119,11 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                     </Text>
                     <Text as="label" size="2">
                       <Flex gap="2">
+                        <RadioGroup.Item value="redshift" /> Redshift
+                      </Flex>
+                    </Text>
+                    <Text as="label" size="2">
+                      <Flex gap="2">
                         <RadioGroup.Item value="bigquery" /> Google BigQuery
                       </Flex>
                     </Text>
@@ -115,7 +131,7 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                 </RadioGroup.Root>
               </label>
 
-              {dwhType === 'postgres' ? (
+              {dwhType === 'postgres' || dwhType === 'redshift' ? (
                 <>
                   <label>
                     <Text as="div" size="2" mb="1" weight="bold">
@@ -167,7 +183,15 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                   </label>
                   <label>
                     <Text as="div" size="2" mb="1" weight="bold">
-                      Search Path
+                      Search Path{' '}
+                      <a
+                        href="https://www.postgresql.org/docs/current/ddl-schemas.html#DDL-SCHEMAS-PATH"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Learn more about the schema search path"
+                      >
+                        <InfoCircledIcon style={{ verticalAlign: 'middle' }} />
+                      </a>
                     </Text>
                     <TextField.Root name="search_path" />
                   </label>

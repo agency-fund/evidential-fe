@@ -1,7 +1,7 @@
 'use client';
 import { Button, Dialog, Flex, IconButton, Text, TextField } from '@radix-ui/themes';
 import { ServiceAccountJsonField } from '@/app/components/service-account-json-field';
-import { EyeClosedIcon, EyeOpenIcon, GearIcon, Pencil2Icon } from '@radix-ui/react-icons';
+import { EyeClosedIcon, EyeOpenIcon, GearIcon, InfoCircledIcon, Pencil2Icon } from '@radix-ui/react-icons';
 import {
   getGetDatasourceKey,
   getGetOrganizationKey,
@@ -102,6 +102,7 @@ export const EditDatasourceDialog = ({
   }
 
   const isBigQuery = config.dwh.driver === 'bigquery';
+  const isRedshift = config.dwh.driver === 'postgresql+psycopg2';
 
   return (
     <Dialog.Root
@@ -136,7 +137,7 @@ export const EditDatasourceDialog = ({
 
             if (!isBigQuery) {
               updateData.dwh = {
-                driver: DsnDriver['postgresql+psycopg'],
+                driver: config.dwh.driver as DsnDriver, // Don't change the driver type!
                 host,
                 port: parseInt(port),
                 dbname,
@@ -242,7 +243,15 @@ export const EditDatasourceDialog = ({
                 </label>
                 <label>
                   <Text as="div" size="2" mb="1" weight="bold">
-                    Search Path
+                    Search Path{' '}
+                      <a
+                        href="https://www.postgresql.org/docs/current/ddl-schemas.html#DDL-SCHEMAS-PATH"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Learn more about the schema search path"
+                      >
+                        <InfoCircledIcon style={{ verticalAlign: 'middle' }} />
+                      </a>
                   </Text>
                   <TextField.Root
                     name="search_path"
