@@ -32,7 +32,7 @@ export type ArmArmDescription = string | null;
  */
 export interface Arm {
 	/** UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
-	arm_id: ArmArmId;
+	arm_id?: ArmArmId;
 	arm_name: string;
 	arm_description?: ArmArmDescription;
 }
@@ -53,10 +53,16 @@ export interface AssignRequest {
 }
 
 /**
+ * Result of checking that the arms are balanced. May not be present if we are not able to stratify on any design metrics or other fields specified for stratification. (Fields used must be supported data types whose values are NOT all unique or all the same).
+ */
+export type AssignResponseInputBalanceCheck = BalanceCheck | null;
+
+/**
  * Describes assignments for all participants and balance test results.
  */
 export interface AssignResponseInput {
-	balance_check: BalanceCheck;
+	/** Result of checking that the arms are balanced. May not be present if we are not able to stratify on any design metrics or other fields specified for stratification. (Fields used must be supported data types whose values are NOT all unique or all the same). */
+	balance_check?: AssignResponseInputBalanceCheck;
 	experiment_id: string;
 	sample_size: number;
 	/** Name of the datasource field used as the unique identifier for the participant_id value stored in each Assignment, as configured in the datasource settings. Included for frontend convenience. */
@@ -65,10 +71,16 @@ export interface AssignResponseInput {
 }
 
 /**
+ * Result of checking that the arms are balanced. May not be present if we are not able to stratify on any design metrics or other fields specified for stratification. (Fields used must be supported data types whose values are NOT all unique or all the same).
+ */
+export type AssignResponseOutputBalanceCheck = BalanceCheck | null;
+
+/**
  * Describes assignments for all participants and balance test results.
  */
 export interface AssignResponseOutput {
-	balance_check: BalanceCheck;
+	/** Result of checking that the arms are balanced. May not be present if we are not able to stratify on any design metrics or other fields specified for stratification. (Fields used must be supported data types whose values are NOT all unique or all the same). */
+	balance_check?: AssignResponseOutputBalanceCheck;
 	experiment_id: string;
 	sample_size: number;
 	/** Name of the datasource field used as the unique identifier for the participant_id value stored in each Assignment, as configured in the datasource settings. Included for frontend convenience. */
@@ -85,6 +97,11 @@ export interface AssignSummary {
 }
 
 /**
+ * List of properties and their values for this participant used for stratification or tracking metrics. If stratification is not used, this will be None.
+ */
+export type AssignmentStrata = Strata[] | null;
+
+/**
  * Describes treatment assignment for an experiment participant.
  */
 export interface Assignment {
@@ -93,8 +110,8 @@ export interface Assignment {
 	arm_id: string;
 	/** The arm this participant was assigned to. Same as Arm.arm_name. */
 	arm_name: string;
-	/** List of properties and their values for this participant used for stratification or tracking metrics. */
-	strata: Strata[];
+	/** List of properties and their values for this participant used for stratification or tracking metrics. If stratification is not used, this will be None. */
+	strata?: AssignmentStrata;
 }
 
 /**
@@ -238,10 +255,6 @@ export interface CommitRequest {
 	experiment_assignment: AssignResponseInput;
 }
 
-export interface CreateApiKeyRequest {
-	datasource_id: string;
-}
-
 export interface CreateApiKeyResponse {
 	id: string;
 	datasource_id: string;
@@ -340,13 +353,14 @@ export type DesignSpecExperimentId = string | null;
  */
 export interface DesignSpec {
 	/** UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
-	experiment_id: DesignSpecExperimentId;
+	experiment_id?: DesignSpecExperimentId;
 	experiment_name: string;
 	description: string;
 	start_date: string;
 	end_date: string;
 	/** @minItems 2 */
 	arms: Arm[];
+	/** List of participant_type variables to use for stratification. */
 	strata_field_names: string[];
 	/**
 	 * Primary and optional secondary metrics to target.
@@ -775,6 +789,10 @@ export interface GetStrataResponseElement {
 	field_name: string;
 	description: string;
 	extra?: GetStrataResponseElementExtra;
+}
+
+export interface HTTPExceptionError {
+	detail: string;
 }
 
 export interface HTTPValidationError {
@@ -1285,4 +1303,8 @@ export type CreateExperimentWithAssignmentParams = {
 	 * Number of participants to assign.
 	 */
 	chosen_n: number;
+	/**
+	 * Whether to also stratify on metrics during assignment.
+	 */
+	stratify_on_metrics?: boolean;
 };

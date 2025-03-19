@@ -3,11 +3,12 @@ import { useListOrganizations } from '@/api/admin';
 import { useLocalStorage } from '@/app/providers/use-local-storage';
 import { Flex, Select, Text } from '@radix-ui/themes';
 import { useRouter } from 'next/navigation';
+import { CURRENT_ORG_ID_KEY } from '@/app/providers/organization-provider';
 
 export function OrganizationSelector() {
   const router = useRouter();
   const { data: orgsResponse, isLoading } = useListOrganizations();
-  const [orgId, setOrgId] = useLocalStorage<string>('org_id');
+  const [orgId, setOrgId] = useLocalStorage<string>(CURRENT_ORG_ID_KEY);
 
   const updateOrgId = (orgId: string) => {
     setOrgId(orgId);

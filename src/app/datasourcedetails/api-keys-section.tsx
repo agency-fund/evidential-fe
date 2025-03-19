@@ -5,7 +5,7 @@ import { CreateApiKeyDialog } from '@/app/datasourcedetails/create-api-key-dialo
 import { ApiKeysTable } from '@/app/datasourcedetails/api-keys-table';
 
 export function ApiKeysSection({ datasourceId }: { datasourceId: string }) {
-  const { data, isLoading, error } = useListApiKeys();
+  const { data, isLoading, error } = useListApiKeys(datasourceId);
 
   if (isLoading) {
     return <Spinner />;
@@ -23,7 +23,7 @@ export function ApiKeysSection({ datasourceId }: { datasourceId: string }) {
         <Heading size="4">API Keys</Heading>
         <CreateApiKeyDialog datasourceId={datasourceId} />
       </Flex>
-      <ApiKeysTable apiKeys={filteredApiKeys} />
+      <ApiKeysTable apiKeys={filteredApiKeys} datasourceId={datasourceId} />
     </Flex>
   );
 }

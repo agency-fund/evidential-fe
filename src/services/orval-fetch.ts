@@ -42,6 +42,8 @@ const getBody = (c: Response) => {
   throw Error('Backend returned unsupported content-type.');
 };
 
+// Returns headers to send with API requests. If we currently have an idToken in localStorage, we also send that. Note
+// that this means we may generate requests that do not contain the idToken.
 const getHeaders = (options: RequestInit) => {
   const idToken = currentIdToken();
   return {

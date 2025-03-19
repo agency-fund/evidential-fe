@@ -139,23 +139,6 @@ export const listOrganizationDatasourcesResponse = zod.object({
 });
 
 /**
- * Returns a list of datasources accessible to the authenticated user.
- * @summary List Datasources
- */
-export const listDatasourcesResponse = zod.object({
-	items: zod.array(
-		zod.object({
-			id: zod.string(),
-			name: zod.string(),
-			driver: zod.string(),
-			type: zod.string(),
-			organization_id: zod.string(),
-			organization_name: zod.string(),
-		}),
-	),
-});
-
-/**
  * Creates a new datasource for the specified organization.
  * @summary Create Datasource
  */
@@ -940,12 +923,13 @@ export const deleteParticipantParams = zod.object({
 });
 
 /**
- * Returns API keys that the caller has access to via their organization memberships.
-
-An API key is visible if the user belongs to the organization that owns any of the
-datasources that the API key can access.
+ * Returns API keys that have access to the datasource.
  * @summary List Api Keys
  */
+export const listApiKeysParams = zod.object({
+	datasource_id: zod.string(),
+});
+
 export const listApiKeysResponse = zod.object({
 	items: zod.array(
 		zod.object({
@@ -963,7 +947,7 @@ export const listApiKeysResponse = zod.object({
 The user must belong to the organization that owns the requested datasource.
  * @summary Create Api Key
  */
-export const createApiKeyBody = zod.object({
+export const createApiKeyParams = zod.object({
 	datasource_id: zod.string(),
 });
 
@@ -978,6 +962,7 @@ export const createApiKeyResponse = zod.object({
  * @summary Delete Api Key
  */
 export const deleteApiKeyParams = zod.object({
+	datasource_id: zod.string(),
 	api_key_id: zod.string(),
 });
 
@@ -988,8 +973,13 @@ export const createExperimentWithAssignmentParams = zod.object({
 	datasource_id: zod.string(),
 });
 
+export const createExperimentWithAssignmentQueryStratifyOnMetricsDefault = true;
+
 export const createExperimentWithAssignmentQueryParams = zod.object({
 	chosen_n: zod.number(),
+	stratify_on_metrics: zod
+		.boolean()
+		.default(createExperimentWithAssignmentQueryStratifyOnMetricsDefault),
 });
 
 export const createExperimentWithAssignmentBodyDesignSpecArmsMin = 2;
@@ -1016,7 +1006,7 @@ export const createExperimentWithAssignmentBodyPowerAnalysesAnalysesItemMetricSp
 
 export const createExperimentWithAssignmentBody = zod.object({
 	design_spec: zod.object({
-		experiment_id: zod.string().uuid().or(zod.null()),
+		experiment_id: zod.string().uuid().or(zod.null()).optional(),
 		experiment_name: zod.string(),
 		description: zod.string(),
 		start_date: zod.string().datetime(),
@@ -1024,7 +1014,7 @@ export const createExperimentWithAssignmentBody = zod.object({
 		arms: zod
 			.array(
 				zod.object({
-					arm_id: zod.string().uuid().or(zod.null()),
+					arm_id: zod.string().uuid().or(zod.null()).optional(),
 					arm_name: zod.string(),
 					arm_description: zod.string().or(zod.null()).optional(),
 				}),
@@ -1166,7 +1156,7 @@ export const createExperimentWithAssignmentResponse = zod.object({
 		"aborted",
 	]),
 	design_spec: zod.object({
-		experiment_id: zod.string().uuid().or(zod.null()),
+		experiment_id: zod.string().uuid().or(zod.null()).optional(),
 		experiment_name: zod.string(),
 		description: zod.string(),
 		start_date: zod.string().datetime(),
@@ -1174,7 +1164,7 @@ export const createExperimentWithAssignmentResponse = zod.object({
 		arms: zod
 			.array(
 				zod.object({
-					arm_id: zod.string().uuid().or(zod.null()),
+					arm_id: zod.string().uuid().or(zod.null()).optional(),
 					arm_name: zod.string(),
 					arm_description: zod.string().or(zod.null()).optional(),
 				}),
@@ -1373,7 +1363,7 @@ export const listExperimentsResponse = zod.object({
 				"aborted",
 			]),
 			design_spec: zod.object({
-				experiment_id: zod.string().uuid().or(zod.null()),
+				experiment_id: zod.string().uuid().or(zod.null()).optional(),
 				experiment_name: zod.string(),
 				description: zod.string(),
 				start_date: zod.string().datetime(),
@@ -1381,7 +1371,7 @@ export const listExperimentsResponse = zod.object({
 				arms: zod
 					.array(
 						zod.object({
-							arm_id: zod.string().uuid().or(zod.null()),
+							arm_id: zod.string().uuid().or(zod.null()).optional(),
 							arm_name: zod.string(),
 							arm_description: zod.string().or(zod.null()).optional(),
 						}),
@@ -1545,7 +1535,7 @@ export const getExperimentResponse = zod.object({
 		"aborted",
 	]),
 	design_spec: zod.object({
-		experiment_id: zod.string().uuid().or(zod.null()),
+		experiment_id: zod.string().uuid().or(zod.null()).optional(),
 		experiment_name: zod.string(),
 		description: zod.string(),
 		start_date: zod.string().datetime(),
@@ -1553,7 +1543,7 @@ export const getExperimentResponse = zod.object({
 		arms: zod
 			.array(
 				zod.object({
-					arm_id: zod.string().uuid().or(zod.null()),
+					arm_id: zod.string().uuid().or(zod.null()).optional(),
 					arm_name: zod.string(),
 					arm_description: zod.string().or(zod.null()).optional(),
 				}),
@@ -1701,16 +1691,19 @@ export const getExperimentAssignmentsResponse = zod.object({
 			participant_id: zod.string(),
 			arm_id: zod.string().uuid(),
 			arm_name: zod.string(),
-			strata: zod.array(
-				zod.object({
-					field_name: zod
-						.string()
-						.regex(
-							getExperimentAssignmentsResponseAssignmentsItemStrataItemFieldNameRegExp,
-						),
-					strata_value: zod.string().or(zod.null()).optional(),
-				}),
-			),
+			strata: zod
+				.array(
+					zod.object({
+						field_name: zod
+							.string()
+							.regex(
+								getExperimentAssignmentsResponseAssignmentsItemStrataItemFieldNameRegExp,
+							),
+						strata_value: zod.string().or(zod.null()).optional(),
+					}),
+				)
+				.or(zod.null())
+				.optional(),
 		}),
 	),
 });
@@ -1757,7 +1750,7 @@ export const powerCheckBodyAudienceSpecFiltersItemFieldNameRegExp = new RegExp(
 
 export const powerCheckBody = zod.object({
 	design_spec: zod.object({
-		experiment_id: zod.string().uuid().or(zod.null()),
+		experiment_id: zod.string().uuid().or(zod.null()).optional(),
 		experiment_name: zod.string(),
 		description: zod.string(),
 		start_date: zod.string().datetime(),
@@ -1765,7 +1758,7 @@ export const powerCheckBody = zod.object({
 		arms: zod
 			.array(
 				zod.object({
-					arm_id: zod.string().uuid().or(zod.null()),
+					arm_id: zod.string().uuid().or(zod.null()).optional(),
 					arm_name: zod.string(),
 					arm_description: zod.string().or(zod.null()).optional(),
 				}),

@@ -12,7 +12,6 @@ import type { SWRMutationConfiguration } from "swr/mutation";
 
 import type {
 	AddMemberToOrganizationRequest,
-	CreateApiKeyRequest,
 	CreateApiKeyResponse,
 	CreateDatasourceRequest,
 	CreateDatasourceResponse,
@@ -28,6 +27,7 @@ import type {
 	GetDatasourceResponse,
 	GetExperimentAssigmentsResponse,
 	GetOrganizationResponse,
+	HTTPExceptionError,
 	HTTPValidationError,
 	InspectDatasourceParams,
 	InspectDatasourceResponse,
@@ -77,12 +77,14 @@ export const getCallerIdentityKey = () => [`/v1/m/caller-identity`] as const;
 export type CallerIdentityQueryResult = NonNullable<
 	Awaited<ReturnType<typeof callerIdentity>>
 >;
-export type CallerIdentityQueryError = ErrorType<unknown>;
+export type CallerIdentityQueryError = ErrorType<HTTPExceptionError>;
 
 /**
  * @summary Caller Identity
  */
-export const useCallerIdentity = <TError = ErrorType<unknown>>(options?: {
+export const useCallerIdentity = <
+	TError = ErrorType<HTTPExceptionError>,
+>(options?: {
 	swr?: SWRConfiguration<Awaited<ReturnType<typeof callerIdentity>>, TError> & {
 		swrKey?: Key;
 		enabled?: boolean;
@@ -129,12 +131,14 @@ export const getListOrganizationsKey = () => [`/v1/m/organizations`] as const;
 export type ListOrganizationsQueryResult = NonNullable<
 	Awaited<ReturnType<typeof listOrganizations>>
 >;
-export type ListOrganizationsQueryError = ErrorType<unknown>;
+export type ListOrganizationsQueryError = ErrorType<HTTPExceptionError>;
 
 /**
  * @summary List Organizations
  */
-export const useListOrganizations = <TError = ErrorType<unknown>>(options?: {
+export const useListOrganizations = <
+	TError = ErrorType<HTTPExceptionError>,
+>(options?: {
 	swr?: SWRConfiguration<
 		Awaited<ReturnType<typeof listOrganizations>>,
 		TError
@@ -198,13 +202,15 @@ export const getCreateOrganizationsMutationKey = () =>
 export type CreateOrganizationsMutationResult = NonNullable<
 	Awaited<ReturnType<typeof createOrganizations>>
 >;
-export type CreateOrganizationsMutationError = ErrorType<HTTPValidationError>;
+export type CreateOrganizationsMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Create Organizations
  */
 export const useCreateOrganizations = <
-	TError = ErrorType<HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(options?: {
 	swr?: SWRMutationConfiguration<
 		Awaited<ReturnType<typeof createOrganizations>>,
@@ -267,14 +273,15 @@ export const getAddMemberToOrganizationMutationKey = (organizationId: string) =>
 export type AddMemberToOrganizationMutationResult = NonNullable<
 	Awaited<ReturnType<typeof addMemberToOrganization>>
 >;
-export type AddMemberToOrganizationMutationError =
-	ErrorType<HTTPValidationError>;
+export type AddMemberToOrganizationMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Add Member To Organization
  */
 export const useAddMemberToOrganization = <
-	TError = ErrorType<HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
 	organizationId: string,
 	options?: {
@@ -348,14 +355,15 @@ export const getRemoveMemberFromOrganizationMutationKey = (
 export type RemoveMemberFromOrganizationMutationResult = NonNullable<
 	Awaited<ReturnType<typeof removeMemberFromOrganization>>
 >;
-export type RemoveMemberFromOrganizationMutationError =
-	ErrorType<HTTPValidationError>;
+export type RemoveMemberFromOrganizationMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Remove Member From Organization
  */
 export const useRemoveMemberFromOrganization = <
-	TError = ErrorType<HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
 	organizationId: string,
 	userId: string,
@@ -429,12 +437,16 @@ export const getUpdateOrganizationMutationKey = (organizationId: string) =>
 export type UpdateOrganizationMutationResult = NonNullable<
 	Awaited<ReturnType<typeof updateOrganization>>
 >;
-export type UpdateOrganizationMutationError = ErrorType<HTTPValidationError>;
+export type UpdateOrganizationMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Update Organization
  */
-export const useUpdateOrganization = <TError = ErrorType<HTTPValidationError>>(
+export const useUpdateOrganization = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
 	organizationId: string,
 	options?: {
 		swr?: SWRMutationConfiguration<
@@ -492,12 +504,16 @@ export const getGetOrganizationKey = (organizationId: string) =>
 export type GetOrganizationQueryResult = NonNullable<
 	Awaited<ReturnType<typeof getOrganization>>
 >;
-export type GetOrganizationQueryError = ErrorType<HTTPValidationError>;
+export type GetOrganizationQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Get Organization
  */
-export const useGetOrganization = <TError = ErrorType<HTTPValidationError>>(
+export const useGetOrganization = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
 	organizationId: string,
 	options?: {
 		swr?: SWRConfiguration<
@@ -553,14 +569,15 @@ export const getListOrganizationDatasourcesKey = (organizationId: string) =>
 export type ListOrganizationDatasourcesQueryResult = NonNullable<
 	Awaited<ReturnType<typeof listOrganizationDatasources>>
 >;
-export type ListOrganizationDatasourcesQueryError =
-	ErrorType<HTTPValidationError>;
+export type ListOrganizationDatasourcesQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary List Organization Datasources
  */
 export const useListOrganizationDatasources = <
-	TError = ErrorType<HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
 	organizationId: string,
 	options?: {
@@ -580,58 +597,6 @@ export const useListOrganizationDatasources = <
 			isEnabled ? getListOrganizationDatasourcesKey(organizationId) : null);
 	const swrFn = () =>
 		listOrganizationDatasources(organizationId, requestOptions);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-/**
- * Returns a list of datasources accessible to the authenticated user.
- * @summary List Datasources
- */
-export const getListDatasourcesUrl = () => {
-	return `/v1/m/datasources`;
-};
-
-export const listDatasources = async (
-	options?: RequestInit,
-): Promise<ListDatasourcesResponse> => {
-	return orvalFetch<ListDatasourcesResponse>(getListDatasourcesUrl(), {
-		...options,
-		method: "GET",
-	});
-};
-
-export const getListDatasourcesKey = () => [`/v1/m/datasources`] as const;
-
-export type ListDatasourcesQueryResult = NonNullable<
-	Awaited<ReturnType<typeof listDatasources>>
->;
-export type ListDatasourcesQueryError = ErrorType<unknown>;
-
-/**
- * @summary List Datasources
- */
-export const useListDatasources = <TError = ErrorType<unknown>>(options?: {
-	swr?: SWRConfiguration<
-		Awaited<ReturnType<typeof listDatasources>>,
-		TError
-	> & { swrKey?: Key; enabled?: boolean };
-	request?: SecondParameter<typeof orvalFetch>;
-}) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled = swrOptions?.enabled !== false;
-	const swrKey =
-		swrOptions?.swrKey ?? (() => (isEnabled ? getListDatasourcesKey() : null));
-	const swrFn = () => listDatasources(requestOptions);
 
 	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
 		swrKey,
@@ -680,13 +645,15 @@ export const getCreateDatasourceMutationKey = () =>
 export type CreateDatasourceMutationResult = NonNullable<
 	Awaited<ReturnType<typeof createDatasource>>
 >;
-export type CreateDatasourceMutationError = ErrorType<HTTPValidationError>;
+export type CreateDatasourceMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Create Datasource
  */
 export const useCreateDatasource = <
-	TError = ErrorType<HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(options?: {
 	swr?: SWRMutationConfiguration<
 		Awaited<ReturnType<typeof createDatasource>>,
@@ -746,12 +713,16 @@ export const getUpdateDatasourceMutationKey = (datasourceId: string) =>
 export type UpdateDatasourceMutationResult = NonNullable<
 	Awaited<ReturnType<typeof updateDatasource>>
 >;
-export type UpdateDatasourceMutationError = ErrorType<HTTPValidationError>;
+export type UpdateDatasourceMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Update Datasource
  */
-export const useUpdateDatasource = <TError = ErrorType<HTTPValidationError>>(
+export const useUpdateDatasource = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
 	datasourceId: string,
 	options?: {
 		swr?: SWRMutationConfiguration<
@@ -804,12 +775,16 @@ export const getGetDatasourceKey = (datasourceId: string) =>
 export type GetDatasourceQueryResult = NonNullable<
 	Awaited<ReturnType<typeof getDatasource>>
 >;
-export type GetDatasourceQueryError = ErrorType<HTTPValidationError>;
+export type GetDatasourceQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Get Datasource
  */
-export const useGetDatasource = <TError = ErrorType<HTTPValidationError>>(
+export const useGetDatasource = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
 	datasourceId: string,
 	options?: {
 		swr?: SWRConfiguration<
@@ -872,12 +847,16 @@ export const getDeleteDatasourceMutationKey = (datasourceId: string) =>
 export type DeleteDatasourceMutationResult = NonNullable<
 	Awaited<ReturnType<typeof deleteDatasource>>
 >;
-export type DeleteDatasourceMutationError = ErrorType<HTTPValidationError>;
+export type DeleteDatasourceMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Delete Datasource
  */
-export const useDeleteDatasource = <TError = ErrorType<HTTPValidationError>>(
+export const useDeleteDatasource = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
 	datasourceId: string,
 	options?: {
 		swr?: SWRMutationConfiguration<
@@ -955,12 +934,16 @@ export const getInspectDatasourceKey = (
 export type InspectDatasourceQueryResult = NonNullable<
 	Awaited<ReturnType<typeof inspectDatasource>>
 >;
-export type InspectDatasourceQueryError = ErrorType<HTTPValidationError>;
+export type InspectDatasourceQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Inspect Datasource
  */
-export const useInspectDatasource = <TError = ErrorType<HTTPValidationError>>(
+export const useInspectDatasource = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
 	datasourceId: string,
 	params?: InspectDatasourceParams,
 	options?: {
@@ -1042,13 +1025,15 @@ export const getInspectTableInDatasourceKey = (
 export type InspectTableInDatasourceQueryResult = NonNullable<
 	Awaited<ReturnType<typeof inspectTableInDatasource>>
 >;
-export type InspectTableInDatasourceQueryError = ErrorType<HTTPValidationError>;
+export type InspectTableInDatasourceQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Inspect Table In Datasource
  */
 export const useInspectTableInDatasource = <
-	TError = ErrorType<HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
 	datasourceId: string,
 	tableName: string,
@@ -1111,13 +1096,15 @@ export const getListParticipantTypesKey = (datasourceId: string) =>
 export type ListParticipantTypesQueryResult = NonNullable<
 	Awaited<ReturnType<typeof listParticipantTypes>>
 >;
-export type ListParticipantTypesQueryError = ErrorType<HTTPValidationError>;
+export type ListParticipantTypesQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary List Participant Types
  */
 export const useListParticipantTypes = <
-	TError = ErrorType<HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
 	datasourceId: string,
 	options?: {
@@ -1187,13 +1174,15 @@ export const getCreateParticipantTypeMutationKey = (datasourceId: string) =>
 export type CreateParticipantTypeMutationResult = NonNullable<
 	Awaited<ReturnType<typeof createParticipantType>>
 >;
-export type CreateParticipantTypeMutationError = ErrorType<HTTPValidationError>;
+export type CreateParticipantTypeMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Create Participant Type
  */
 export const useCreateParticipantType = <
-	TError = ErrorType<HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
 	datasourceId: string,
 	options?: {
@@ -1275,13 +1264,15 @@ export const getInspectParticipantTypesKey = (
 export type InspectParticipantTypesQueryResult = NonNullable<
 	Awaited<ReturnType<typeof inspectParticipantTypes>>
 >;
-export type InspectParticipantTypesQueryError = ErrorType<HTTPValidationError>;
+export type InspectParticipantTypesQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Inspect Participant Types
  */
 export const useInspectParticipantTypes = <
-	TError = ErrorType<HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
 	datasourceId: string,
 	participantId: string,
@@ -1356,12 +1347,16 @@ export const getGetParticipantTypesKey = (
 export type GetParticipantTypesQueryResult = NonNullable<
 	Awaited<ReturnType<typeof getParticipantTypes>>
 >;
-export type GetParticipantTypesQueryError = ErrorType<HTTPValidationError>;
+export type GetParticipantTypesQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Get Participant Types
  */
-export const useGetParticipantTypes = <TError = ErrorType<HTTPValidationError>>(
+export const useGetParticipantTypes = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
 	datasourceId: string,
 	participantId: string,
 	options?: {
@@ -1444,13 +1439,15 @@ export const getUpdateParticipantTypeMutationKey = (
 export type UpdateParticipantTypeMutationResult = NonNullable<
 	Awaited<ReturnType<typeof updateParticipantType>>
 >;
-export type UpdateParticipantTypeMutationError = ErrorType<HTTPValidationError>;
+export type UpdateParticipantTypeMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Update Participant Type
  */
 export const useUpdateParticipantType = <
-	TError = ErrorType<HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
 	datasourceId: string,
 	participantId: string,
@@ -1525,12 +1522,16 @@ export const getDeleteParticipantMutationKey = (
 export type DeleteParticipantMutationResult = NonNullable<
 	Awaited<ReturnType<typeof deleteParticipant>>
 >;
-export type DeleteParticipantMutationError = ErrorType<HTTPValidationError>;
+export type DeleteParticipantMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Delete Participant
  */
-export const useDeleteParticipant = <TError = ErrorType<HTTPValidationError>>(
+export const useDeleteParticipant = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
 	datasourceId: string,
 	participantId: string,
 	options?: {
@@ -1563,48 +1564,55 @@ export const useDeleteParticipant = <TError = ErrorType<HTTPValidationError>>(
 	};
 };
 /**
- * Returns API keys that the caller has access to via their organization memberships.
-
-An API key is visible if the user belongs to the organization that owns any of the
-datasources that the API key can access.
+ * Returns API keys that have access to the datasource.
  * @summary List Api Keys
  */
-export const getListApiKeysUrl = () => {
-	return `/v1/m/apikeys`;
+export const getListApiKeysUrl = (datasourceId: string) => {
+	return `/v1/m/datasources/${datasourceId}/apikeys`;
 };
 
 export const listApiKeys = async (
+	datasourceId: string,
 	options?: RequestInit,
 ): Promise<ListApiKeysResponse> => {
-	return orvalFetch<ListApiKeysResponse>(getListApiKeysUrl(), {
+	return orvalFetch<ListApiKeysResponse>(getListApiKeysUrl(datasourceId), {
 		...options,
 		method: "GET",
 	});
 };
 
-export const getListApiKeysKey = () => [`/v1/m/apikeys`] as const;
+export const getListApiKeysKey = (datasourceId: string) =>
+	[`/v1/m/datasources/${datasourceId}/apikeys`] as const;
 
 export type ListApiKeysQueryResult = NonNullable<
 	Awaited<ReturnType<typeof listApiKeys>>
 >;
-export type ListApiKeysQueryError = ErrorType<unknown>;
+export type ListApiKeysQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary List Api Keys
  */
-export const useListApiKeys = <TError = ErrorType<unknown>>(options?: {
-	swr?: SWRConfiguration<Awaited<ReturnType<typeof listApiKeys>>, TError> & {
-		swrKey?: Key;
-		enabled?: boolean;
-	};
-	request?: SecondParameter<typeof orvalFetch>;
-}) => {
+export const useListApiKeys = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	datasourceId: string,
+	options?: {
+		swr?: SWRConfiguration<Awaited<ReturnType<typeof listApiKeys>>, TError> & {
+			swrKey?: Key;
+			enabled?: boolean;
+		};
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
 	const { swr: swrOptions, request: requestOptions } = options ?? {};
 
-	const isEnabled = swrOptions?.enabled !== false;
+	const isEnabled = swrOptions?.enabled !== false && !!datasourceId;
 	const swrKey =
-		swrOptions?.swrKey ?? (() => (isEnabled ? getListApiKeysKey() : null));
-	const swrFn = () => listApiKeys(requestOptions);
+		swrOptions?.swrKey ??
+		(() => (isEnabled ? getListApiKeysKey(datasourceId) : null));
+	const swrFn = () => listApiKeys(datasourceId, requestOptions);
 
 	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
 		swrKey,
@@ -1623,58 +1631,60 @@ export const useListApiKeys = <TError = ErrorType<unknown>>(options?: {
 The user must belong to the organization that owns the requested datasource.
  * @summary Create Api Key
  */
-export const getCreateApiKeyUrl = () => {
-	return `/v1/m/apikeys`;
+export const getCreateApiKeyUrl = (datasourceId: string) => {
+	return `/v1/m/datasources/${datasourceId}/apikeys`;
 };
 
 export const createApiKey = async (
-	createApiKeyRequest: CreateApiKeyRequest,
+	datasourceId: string,
 	options?: RequestInit,
 ): Promise<CreateApiKeyResponse> => {
-	return orvalFetch<CreateApiKeyResponse>(getCreateApiKeyUrl(), {
+	return orvalFetch<CreateApiKeyResponse>(getCreateApiKeyUrl(datasourceId), {
 		...options,
 		method: "POST",
-		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(createApiKeyRequest),
 	});
 };
 
 export const getCreateApiKeyMutationFetcher = (
+	datasourceId: string,
 	options?: SecondParameter<typeof orvalFetch>,
 ) => {
-	return (
-		_: Key,
-		{ arg }: { arg: CreateApiKeyRequest },
-	): Promise<CreateApiKeyResponse> => {
-		return createApiKey(arg, options);
+	return (_: Key, __: { arg: Arguments }): Promise<CreateApiKeyResponse> => {
+		return createApiKey(datasourceId, options);
 	};
 };
-export const getCreateApiKeyMutationKey = () => [`/v1/m/apikeys`] as const;
+export const getCreateApiKeyMutationKey = (datasourceId: string) =>
+	[`/v1/m/datasources/${datasourceId}/apikeys`] as const;
 
 export type CreateApiKeyMutationResult = NonNullable<
 	Awaited<ReturnType<typeof createApiKey>>
 >;
-export type CreateApiKeyMutationError = ErrorType<HTTPValidationError>;
+export type CreateApiKeyMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Create Api Key
  */
 export const useCreateApiKey = <
-	TError = ErrorType<HTTPValidationError>,
->(options?: {
-	swr?: SWRMutationConfiguration<
-		Awaited<ReturnType<typeof createApiKey>>,
-		TError,
-		Key,
-		CreateApiKeyRequest,
-		Awaited<ReturnType<typeof createApiKey>>
-	> & { swrKey?: string };
-	request?: SecondParameter<typeof orvalFetch>;
-}) => {
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	datasourceId: string,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof createApiKey>>,
+			TError,
+			Key,
+			Arguments,
+			Awaited<ReturnType<typeof createApiKey>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
 	const { swr: swrOptions, request: requestOptions } = options ?? {};
 
-	const swrKey = swrOptions?.swrKey ?? getCreateApiKeyMutationKey();
-	const swrFn = getCreateApiKeyMutationFetcher(requestOptions);
+	const swrKey = swrOptions?.swrKey ?? getCreateApiKeyMutationKey(datasourceId);
+	const swrFn = getCreateApiKeyMutationFetcher(datasourceId, requestOptions);
 
 	const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
@@ -1687,40 +1697,49 @@ export const useCreateApiKey = <
  * Deletes the specified API key.
  * @summary Delete Api Key
  */
-export const getDeleteApiKeyUrl = (apiKeyId: string) => {
-	return `/v1/m/apikeys/${apiKeyId}`;
+export const getDeleteApiKeyUrl = (datasourceId: string, apiKeyId: string) => {
+	return `/v1/m/datasources/${datasourceId}/apikeys/${apiKeyId}`;
 };
 
 export const deleteApiKey = async (
+	datasourceId: string,
 	apiKeyId: string,
 	options?: RequestInit,
 ): Promise<void> => {
-	return orvalFetch<void>(getDeleteApiKeyUrl(apiKeyId), {
+	return orvalFetch<void>(getDeleteApiKeyUrl(datasourceId, apiKeyId), {
 		...options,
 		method: "DELETE",
 	});
 };
 
 export const getDeleteApiKeyMutationFetcher = (
+	datasourceId: string,
 	apiKeyId: string,
 	options?: SecondParameter<typeof orvalFetch>,
 ) => {
 	return (_: Key, __: { arg: Arguments }): Promise<void> => {
-		return deleteApiKey(apiKeyId, options);
+		return deleteApiKey(datasourceId, apiKeyId, options);
 	};
 };
-export const getDeleteApiKeyMutationKey = (apiKeyId: string) =>
-	[`/v1/m/apikeys/${apiKeyId}`] as const;
+export const getDeleteApiKeyMutationKey = (
+	datasourceId: string,
+	apiKeyId: string,
+) => [`/v1/m/datasources/${datasourceId}/apikeys/${apiKeyId}`] as const;
 
 export type DeleteApiKeyMutationResult = NonNullable<
 	Awaited<ReturnType<typeof deleteApiKey>>
 >;
-export type DeleteApiKeyMutationError = ErrorType<HTTPValidationError>;
+export type DeleteApiKeyMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Delete Api Key
  */
-export const useDeleteApiKey = <TError = ErrorType<HTTPValidationError>>(
+export const useDeleteApiKey = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	datasourceId: string,
 	apiKeyId: string,
 	options?: {
 		swr?: SWRMutationConfiguration<
@@ -1735,8 +1754,13 @@ export const useDeleteApiKey = <TError = ErrorType<HTTPValidationError>>(
 ) => {
 	const { swr: swrOptions, request: requestOptions } = options ?? {};
 
-	const swrKey = swrOptions?.swrKey ?? getDeleteApiKeyMutationKey(apiKeyId);
-	const swrFn = getDeleteApiKeyMutationFetcher(apiKeyId, requestOptions);
+	const swrKey =
+		swrOptions?.swrKey ?? getDeleteApiKeyMutationKey(datasourceId, apiKeyId);
+	const swrFn = getDeleteApiKeyMutationFetcher(
+		datasourceId,
+		apiKeyId,
+		requestOptions,
+	);
 
 	const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
@@ -1808,14 +1832,15 @@ export const getCreateExperimentWithAssignmentMutationKey = (
 export type CreateExperimentWithAssignmentMutationResult = NonNullable<
 	Awaited<ReturnType<typeof createExperimentWithAssignment>>
 >;
-export type CreateExperimentWithAssignmentMutationError =
-	ErrorType<HTTPValidationError>;
+export type CreateExperimentWithAssignmentMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Create Experiment With Assignment
  */
 export const useCreateExperimentWithAssignment = <
-	TError = ErrorType<HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
 	datasourceId: string,
 	params: CreateExperimentWithAssignmentParams,
@@ -1883,12 +1908,16 @@ export const getAnalyzeExperimentKey = (
 export type AnalyzeExperimentQueryResult = NonNullable<
 	Awaited<ReturnType<typeof analyzeExperiment>>
 >;
-export type AnalyzeExperimentQueryError = ErrorType<HTTPValidationError>;
+export type AnalyzeExperimentQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Analyze Experiment
  */
-export const useAnalyzeExperiment = <TError = ErrorType<HTTPValidationError>>(
+export const useAnalyzeExperiment = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
 	datasourceId: string,
 	experimentId: string,
 	options?: {
@@ -1962,12 +1991,16 @@ export const getCommitExperimentMutationKey = (
 export type CommitExperimentMutationResult = NonNullable<
 	Awaited<ReturnType<typeof commitExperiment>>
 >;
-export type CommitExperimentMutationError = ErrorType<HTTPValidationError>;
+export type CommitExperimentMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Commit Experiment
  */
-export const useCommitExperiment = <TError = ErrorType<HTTPValidationError>>(
+export const useCommitExperiment = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
 	datasourceId: string,
 	experimentId: string,
 	options?: {
@@ -2040,12 +2073,16 @@ export const getAbandonExperimentMutationKey = (
 export type AbandonExperimentMutationResult = NonNullable<
 	Awaited<ReturnType<typeof abandonExperiment>>
 >;
-export type AbandonExperimentMutationError = ErrorType<HTTPValidationError>;
+export type AbandonExperimentMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Abandon Experiment
  */
-export const useAbandonExperiment = <TError = ErrorType<HTTPValidationError>>(
+export const useAbandonExperiment = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
 	datasourceId: string,
 	experimentId: string,
 	options?: {
@@ -2104,12 +2141,16 @@ export const getListExperimentsKey = (datasourceId: string) =>
 export type ListExperimentsQueryResult = NonNullable<
 	Awaited<ReturnType<typeof listExperiments>>
 >;
-export type ListExperimentsQueryError = ErrorType<HTTPValidationError>;
+export type ListExperimentsQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary List Experiments
  */
-export const useListExperiments = <TError = ErrorType<HTTPValidationError>>(
+export const useListExperiments = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
 	datasourceId: string,
 	options?: {
 		swr?: SWRConfiguration<
@@ -2171,12 +2212,16 @@ export const getGetExperimentKey = (
 export type GetExperimentQueryResult = NonNullable<
 	Awaited<ReturnType<typeof getExperiment>>
 >;
-export type GetExperimentQueryError = ErrorType<HTTPValidationError>;
+export type GetExperimentQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Get Experiment
  */
-export const useGetExperiment = <TError = ErrorType<HTTPValidationError>>(
+export const useGetExperiment = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
 	datasourceId: string,
 	experimentId: string,
 	options?: {
@@ -2247,12 +2292,16 @@ export const getDeleteExperimentMutationKey = (
 export type DeleteExperimentMutationResult = NonNullable<
 	Awaited<ReturnType<typeof deleteExperiment>>
 >;
-export type DeleteExperimentMutationError = ErrorType<HTTPValidationError>;
+export type DeleteExperimentMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Delete Experiment
  */
-export const useDeleteExperiment = <TError = ErrorType<HTTPValidationError>>(
+export const useDeleteExperiment = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
 	datasourceId: string,
 	experimentId: string,
 	options?: {
@@ -2319,13 +2368,15 @@ export const getGetExperimentAssignmentsKey = (
 export type GetExperimentAssignmentsQueryResult = NonNullable<
 	Awaited<ReturnType<typeof getExperimentAssignments>>
 >;
-export type GetExperimentAssignmentsQueryError = ErrorType<HTTPValidationError>;
+export type GetExperimentAssignmentsQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Get Experiment Assignments
  */
 export const useGetExperimentAssignments = <
-	TError = ErrorType<HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
 	datasourceId: string,
 	experimentId: string,
@@ -2396,14 +2447,15 @@ export const getGetExperimentAssignmentsAsCsvKey = (
 export type GetExperimentAssignmentsAsCsvQueryResult = NonNullable<
 	Awaited<ReturnType<typeof getExperimentAssignmentsAsCsv>>
 >;
-export type GetExperimentAssignmentsAsCsvQueryError =
-	ErrorType<HTTPValidationError>;
+export type GetExperimentAssignmentsAsCsvQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Export experiment assignments as CSV file; BalanceCheck not included. csv header form: participant_id,arm_id,arm_name,strata_name1,strata_name2,...
  */
 export const useGetExperimentAssignmentsAsCsv = <
-	TError = ErrorType<HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
 	datasourceId: string,
 	experimentId: string,
@@ -2476,12 +2528,16 @@ export const getPowerCheckMutationKey = (datasourceId: string) =>
 export type PowerCheckMutationResult = NonNullable<
 	Awaited<ReturnType<typeof powerCheck>>
 >;
-export type PowerCheckMutationError = ErrorType<HTTPValidationError>;
+export type PowerCheckMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary Power Check
  */
-export const usePowerCheck = <TError = ErrorType<HTTPValidationError>>(
+export const usePowerCheck = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
 	datasourceId: string,
 	options?: {
 		swr?: SWRMutationConfiguration<
