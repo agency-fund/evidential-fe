@@ -5,6 +5,9 @@ import { XSpinner } from '../components/x-spinner';
 import Link from 'next/link';
 import { DeleteParticipantTypeDialog } from '@/app/datasourcedetails/delete-participant-type-dialog';
 import { GenericErrorCallout } from '@/app/components/generic-error';
+import { EditParticipantTypeDialog } from '@/app/participanttypedetails/edit-participant-type-dialog';
+import { Flex } from '@radix-ui/themes';
+import { ParticipantsDef } from '@/api/methods.schemas';
 
 export function ParticipantTypesTable({ datasourceId }: { datasourceId: string }) {
   const { data, isLoading, error } = useListParticipantTypes(datasourceId);
@@ -33,7 +36,17 @@ export function ParticipantTypesTable({ datasourceId }: { datasourceId: string }
             </Table.Cell>
             <Table.Cell>{item.table_name}</Table.Cell>
             <Table.Cell>
-              <DeleteParticipantTypeDialog datasourceId={datasourceId} participantType={item.participant_type} />
+              <Flex gap="2">
+                {item.type === 'schema' && (
+                  <EditParticipantTypeDialog
+                    datasourceId={datasourceId}
+                    participantType={item.participant_type}
+                    participantConfig={item as ParticipantsDef}
+                    variant="icon"
+                  />
+                )}
+                <DeleteParticipantTypeDialog datasourceId={datasourceId} participantType={item.participant_type} />
+              </Flex>
             </Table.Cell>
           </Table.Row>
         ))}

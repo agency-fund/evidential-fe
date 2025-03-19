@@ -2,7 +2,7 @@ import { ParticipantsDef } from '@/api/methods.schemas';
 import { getGetParticipantTypesKey, getInspectParticipantTypesKey, useUpdateParticipantType } from '@/api/admin';
 import { useState } from 'react';
 import { mutate } from 'swr';
-import { Button, Dialog, Flex } from '@radix-ui/themes';
+import { Button, Dialog, Flex, IconButton } from '@radix-ui/themes';
 import { Pencil2Icon } from '@radix-ui/react-icons';
 import { XSpinner } from '@/app/components/x-spinner';
 import { ParticipantDefEditor } from '@/app/participanttypedetails/edit-participant-def';
@@ -12,10 +12,12 @@ export function EditParticipantTypeDialog({
   datasourceId,
   participantType,
   participantConfig,
+  variant = 'default',
 }: {
   datasourceId: string;
   participantType: string;
   participantConfig: ParticipantsDef;
+  variant?: 'default' | 'icon';
 }) {
   const {
     trigger: updateParticipantType,
@@ -59,9 +61,15 @@ export function EditParticipantTypeDialog({
       }}
     >
       <Dialog.Trigger>
-        <Button>
-          <Pencil2Icon /> Edit Participant Type
-        </Button>
+        {variant === 'icon' ? (
+          <IconButton variant="soft">
+            <Pencil2Icon />
+          </IconButton>
+        ) : (
+          <Button>
+            <Pencil2Icon /> Edit Participant Type
+          </Button>
+        )}
       </Dialog.Trigger>
       <Dialog.Content minWidth={'800px'} maxWidth={'90vw'} maxHeight={'90vh'}>
         <Dialog.Title>Edit Participant Type</Dialog.Title>
