@@ -22,6 +22,9 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
     {
       swr: {
         enabled: tableIsSelected,
+        revalidateIfStale: false,
+        revalidateOnFocus: false,
+        revalidateOnReconnect: false
       },
     },
   );
@@ -100,7 +103,7 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
                 },
               });
               setOpen(false);
-              setFields([]);
+              updateSelectedTable('');
             }}
           >
             <Dialog.Title>Add Participant Type</Dialog.Title>
