@@ -102,7 +102,6 @@ export const EditDatasourceDialog = ({
   }
 
   const isBigQuery = config.dwh.driver === 'bigquery';
-  const isRedshift = config.dwh.driver === 'postgresql+psycopg2';
 
   return (
     <Dialog.Root
@@ -244,14 +243,14 @@ export const EditDatasourceDialog = ({
                 <label>
                   <Text as="div" size="2" mb="1" weight="bold">
                     Search Path{' '}
-                      <a
-                        href="https://www.postgresql.org/docs/current/ddl-schemas.html#DDL-SCHEMAS-PATH"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title="Learn more about the schema search path"
-                      >
-                        <InfoCircledIcon style={{ verticalAlign: 'middle' }} />
-                      </a>
+                    <a
+                      href="https://www.postgresql.org/docs/current/ddl-schemas.html#DDL-SCHEMAS-PATH"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Learn more about the schema search path"
+                    >
+                      <InfoCircledIcon style={{ verticalAlign: 'middle' }} />
+                    </a>
                   </Text>
                   <TextField.Root
                     name="search_path"
