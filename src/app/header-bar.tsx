@@ -35,11 +35,15 @@ export function HeaderBar() {
             API Documentation
           </DropdownMenu.Item>
           <DropdownMenu.Separator />
-          <DropdownMenu.Item onClick={() => eval('undefinedFunction()')}>
-            <ExclamationTriangleIcon />
-            Trigger error
-          </DropdownMenu.Item>
-          <DropdownMenu.Separator />
+          {auth.userEmail.endsWith('@agency.fund') && (
+            <>
+              <DropdownMenu.Item onClick={() => eval('undefinedFunction()')}>
+                <ExclamationTriangleIcon />
+                Trigger error
+              </DropdownMenu.Item>
+              <DropdownMenu.Separator />
+            </>
+          )}
           <DropdownMenu.Item color="red" onClick={auth.logout}>
             <ExitIcon />
             Logout
