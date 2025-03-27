@@ -34,7 +34,7 @@ export const EditDatasourceDialog = ({
       onSuccess: () =>
         Promise.all([
           mutate(getGetDatasourceKey(datasourceId)),
-          mutate(getInspectDatasourceKey(datasourceId, {})),
+          mutate(getInspectDatasourceKey(datasourceId)),
           ...(organizationId ? [mutate(getGetOrganizationKey(organizationId))] : []),
         ]),
     },
