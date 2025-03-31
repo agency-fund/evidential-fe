@@ -2,7 +2,7 @@
 import { Button, Card, Flex, Grid, Heading, Separator, Table, Tabs, Text, TextArea } from '@radix-ui/themes';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeftIcon, CodeIcon, DotsVerticalIcon } from '@radix-ui/react-icons';
-import { useAnalyzeExperiment, useGetExperiment, useListDatasources } from '@/api/admin';
+import { useAnalyzeExperiment, useGetExperiment } from '@/api/admin';
 import { ForestPlot } from '@/app/experiments/forest-plot';
 import { useEffect, useState } from 'react';
 import { XSpinner } from '@/app/components/x-spinner';
@@ -19,30 +19,20 @@ export default function ExperimentViewPage() {
   const experimentId = params.id as string;
   const datasourceId = searchParams.get('datasource_id');
 
-  const [selectedDatasource, setSelectedDatasource] = useState<string | null>(datasourceId);
-  const { data: datasources } = useListDatasources();
-
-  // Set first datasource if none selected
-  useEffect(() => {
-    if (!selectedDatasource && datasources?.items.length) {
-      setSelectedDatasource(datasources.items[0].id);
-    }
-  }, [datasources, selectedDatasource]);
-
   const {
     data: experiment,
     isLoading: isLoadingExperiment,
     error: experimentError,
-  } = useGetExperiment(selectedDatasource || '', experimentId, {
-    swr: { enabled: !!selectedDatasource },
+  } = useGetExperiment(datasourceId || '', experimentId, {
+    swr: { enabled: !!datasourceId },
   });
 
   const {
     data: analysisData,
     isLoading: isLoadingAnalysis,
     error: analysisError,
-  } = useAnalyzeExperiment(selectedDatasource || '', experimentId, {
-    swr: { enabled: !!selectedDatasource && !!experiment },
+  } = useAnalyzeExperiment(datasourceId || '', experimentId, {
+    swr: { enabled: !!datasourceId && !!experiment },
   });
 
   if (isLoadingExperiment) {

@@ -40,9 +40,9 @@ export interface Arm {
 /**
  * Describes the number of participants assigned to each arm.
  */
-export interface ArmSizes {
+export interface ArmSize {
 	arm: Arm;
-	size: number;
+	size?: number;
 }
 
 export interface ArmUpdate {
@@ -77,7 +77,7 @@ export interface AssignResponseInput {
 	/** Name of the datasource field used as the unique identifier for the participant_id value stored in each Assignment, as configured in the datasource settings. Included for frontend convenience. */
 	unique_id_field: string;
 	assignments: Assignment[];
-	arm_sizes: ArmSizes[];
+	arm_sizes: ArmSize[];
 }
 
 /**
@@ -97,16 +97,23 @@ export interface AssignResponseOutput {
 	/** Name of the datasource field used as the unique identifier for the participant_id value stored in each Assignment, as configured in the datasource settings. Included for frontend convenience. */
 	unique_id_field: string;
 	assignments: Assignment[];
-	arm_sizes: ArmSizes[];
+	arm_sizes: ArmSize[];
 }
+
+/**
+ * For each arm, the number of participants assigned. TODO: make required once development has stabilized. May be None if unknown due to persisting prior versions of an AssignSummary.
+ */
+export type AssignSummaryArmSizes = ArmSize[] | null;
 
 /**
  * Key pieces of an AssignResponse without the assignments.
  */
 export interface AssignSummary {
 	balance_check: BalanceCheck;
+	/** The number of participants across all arms in total. */
 	sample_size: number;
-	arm_sizes: ArmSizes[];
+	/** For each arm, the number of participants assigned. TODO: make required once development has stabilized. May be None if unknown due to persisting prior versions of an AssignSummary. */
+	arm_sizes?: AssignSummaryArmSizes;
 }
 
 /**
@@ -197,10 +204,15 @@ export interface AudienceSpecFilter {
  * Describes balance test results for treatment assignment.
  */
 export interface BalanceCheck {
+	/** F-statistic testing the overall significance of the model predicting treatment assignment. */
 	f_statistic: number;
+	/** The numerator degrees of freedom for the f-statistic related to number of dependent variables. */
 	numerator_df: number;
+	/** Denominator degrees of freedom related to the number of observations. */
 	denominator_df: number;
+	/** Probablity of observing these data if strata do not predict treatment assignment, i.e. our randomization is balanced. */
 	p_value: number;
+	/** Whether the p-value for our observed f_statistic is greater than the f-stat threshold specified in our design specification. (See DesignSpec.fstat_thresh) */
 	balance_ok: boolean;
 }
 
@@ -342,6 +354,8 @@ export const DataType = {
 	numeric: "numeric",
 	timestamp_without_time_zone: "timestamp without time zone",
 	bigint: "bigint",
+	"jsonb_(unsupported)": "jsonb (unsupported)",
+	"json_(unsupported)": "json (unsupported)",
 	unsupported: "unsupported",
 } as const;
 
