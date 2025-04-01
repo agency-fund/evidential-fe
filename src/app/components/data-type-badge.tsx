@@ -5,17 +5,18 @@ import {
   CalendarIcon,
   CheckCircledIcon,
   ClockIcon,
+  ExclamationTriangleIcon,
   IdCardIcon,
   LapTimerIcon,
-  TextIcon,
   QuestionMarkCircledIcon,
+  TextIcon,
 } from '@radix-ui/react-icons';
 import { Badge, Flex } from '@radix-ui/themes';
 import { DataType } from '@/api/methods.schemas';
 
 const dataTypeConfig: Record<
   DataType,
-  { color: 'orange' | 'blue' | 'green' | 'purple' | 'crimson'; icon: React.ReactNode }
+  { color: 'orange' | 'blue' | 'green' | 'purple' | 'crimson' | 'red'; icon: React.ReactNode }
 > = {
   boolean: { color: 'orange', icon: <CheckCircledIcon /> },
   'character varying': { color: 'blue', icon: <TextIcon /> },
@@ -26,6 +27,8 @@ const dataTypeConfig: Record<
   'timestamp without time zone': { color: 'crimson', icon: <ClockIcon /> },
   bigint: { color: 'purple', icon: <LapTimerIcon /> },
   uuid: { color: 'purple', icon: <IdCardIcon /> },
+  'json (unsupported)': { color: 'red', icon: <ExclamationTriangleIcon /> },
+  'jsonb (unsupported)': { color: 'red', icon: <ExclamationTriangleIcon /> },
   unsupported: { color: 'orange', icon: <QuestionMarkCircledIcon /> },
 };
 

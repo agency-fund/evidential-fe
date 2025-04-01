@@ -303,8 +303,8 @@ export const getDatasourceResponse = zod.object({
 									"numeric",
 									"timestamp without time zone",
 									"bigint",
-									"unsupported",
-									"unsupported",
+									"jsonb (unsupported)",
+									"json (unsupported)",
 									"unsupported",
 								]),
 								description: zod.string(),
@@ -431,8 +431,8 @@ export const getDatasourceResponse = zod.object({
 									"numeric",
 									"timestamp without time zone",
 									"bigint",
-									"unsupported",
-									"unsupported",
+									"jsonb (unsupported)",
+									"json (unsupported)",
 									"unsupported",
 								]),
 								description: zod.string(),
@@ -517,8 +517,8 @@ export const inspectTableInDatasourceResponse = zod.object({
 				"numeric",
 				"timestamp without time zone",
 				"bigint",
-				"unsupported",
-				"unsupported",
+				"jsonb (unsupported)",
+				"json (unsupported)",
 				"unsupported",
 			]),
 			description: zod.string(),
@@ -560,8 +560,8 @@ export const listParticipantTypesResponse = zod.object({
 							"numeric",
 							"timestamp without time zone",
 							"bigint",
-							"unsupported",
-							"unsupported",
+							"jsonb (unsupported)",
+							"json (unsupported)",
 							"unsupported",
 						]),
 						description: zod.string(),
@@ -606,8 +606,8 @@ export const createParticipantTypeBody = zod.object({
 					"numeric",
 					"timestamp without time zone",
 					"bigint",
-					"unsupported",
-					"unsupported",
+					"jsonb (unsupported)",
+					"json (unsupported)",
 					"unsupported",
 				]),
 				description: zod.string(),
@@ -638,8 +638,8 @@ export const createParticipantTypeResponse = zod.object({
 					"numeric",
 					"timestamp without time zone",
 					"bigint",
-					"unsupported",
-					"unsupported",
+					"jsonb (unsupported)",
+					"json (unsupported)",
 					"unsupported",
 				]),
 				description: zod.string(),
@@ -694,8 +694,8 @@ export const inspectParticipantTypesResponse = zod.object({
 					"numeric",
 					"timestamp without time zone",
 					"bigint",
-					"unsupported",
-					"unsupported",
+					"jsonb (unsupported)",
+					"json (unsupported)",
 					"unsupported",
 				]),
 				relations: zod
@@ -734,8 +734,8 @@ export const inspectParticipantTypesResponse = zod.object({
 						"numeric",
 						"timestamp without time zone",
 						"bigint",
-						"unsupported",
-						"unsupported",
+						"jsonb (unsupported)",
+						"json (unsupported)",
 						"unsupported",
 					]),
 					relations: zod
@@ -761,8 +761,8 @@ export const inspectParticipantTypesResponse = zod.object({
 				"numeric",
 				"timestamp without time zone",
 				"bigint",
-				"unsupported",
-				"unsupported",
+				"jsonb (unsupported)",
+				"json (unsupported)",
 				"unsupported",
 			]),
 			description: zod.string(),
@@ -780,8 +780,8 @@ export const inspectParticipantTypesResponse = zod.object({
 				"numeric",
 				"timestamp without time zone",
 				"bigint",
-				"unsupported",
-				"unsupported",
+				"jsonb (unsupported)",
+				"json (unsupported)",
 				"unsupported",
 			]),
 			field_name: zod
@@ -826,8 +826,8 @@ export const getParticipantTypesResponse = zod.discriminatedUnion("type", [
 					"numeric",
 					"timestamp without time zone",
 					"bigint",
-					"unsupported",
-					"unsupported",
+					"jsonb (unsupported)",
+					"json (unsupported)",
 					"unsupported",
 				]),
 				description: zod.string(),
@@ -868,8 +868,8 @@ export const updateParticipantTypeBody = zod.object({
 					"numeric",
 					"timestamp without time zone",
 					"bigint",
-					"unsupported",
-					"unsupported",
+					"jsonb (unsupported)",
+					"json (unsupported)",
 					"unsupported",
 				]),
 				description: zod.string(),
@@ -900,8 +900,8 @@ export const updateParticipantTypeResponse = zod.object({
 				"numeric",
 				"timestamp without time zone",
 				"bigint",
-				"unsupported",
-				"unsupported",
+				"jsonb (unsupported)",
+				"json (unsupported)",
 				"unsupported",
 			]),
 			description: zod.string(),
@@ -1145,6 +1145,7 @@ export const createExperimentWithAssignmentResponseAudienceSpecFiltersItemFieldN
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentWithAssignmentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentWithAssignmentResponseAssignSummaryArmSizesItemSizeDefault = 0;
 
 export const createExperimentWithAssignmentResponse = zod.object({
 	datasource_id: zod.string(),
@@ -1282,6 +1283,19 @@ export const createExperimentWithAssignmentResponse = zod.object({
 			balance_ok: zod.boolean(),
 		}),
 		sample_size: zod.number(),
+		arm_sizes: zod
+			.array(
+				zod.object({
+					arm: zod.object({
+						arm_id: zod.string().uuid().or(zod.null()).optional(),
+						arm_name: zod.string(),
+						arm_description: zod.string().or(zod.null()).optional(),
+					}),
+					size: zod.number().optional(),
+				}),
+			)
+			.or(zod.null())
+			.optional(),
 	}),
 });
 
@@ -1350,6 +1364,7 @@ export const listExperimentsResponseItemsItemAudienceSpecFiltersItemFieldNameReg
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const listExperimentsResponseItemsItemPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const listExperimentsResponseItemsItemAssignSummaryArmSizesItemSizeDefault = 0;
 
 export const listExperimentsResponse = zod.object({
 	items: zod.array(
@@ -1489,6 +1504,19 @@ export const listExperimentsResponse = zod.object({
 					balance_ok: zod.boolean(),
 				}),
 				sample_size: zod.number(),
+				arm_sizes: zod
+					.array(
+						zod.object({
+							arm: zod.object({
+								arm_id: zod.string().uuid().or(zod.null()).optional(),
+								arm_name: zod.string(),
+								arm_description: zod.string().or(zod.null()).optional(),
+							}),
+							size: zod.number().optional(),
+						}),
+					)
+					.or(zod.null())
+					.optional(),
 			}),
 		}),
 	),
@@ -1524,6 +1552,7 @@ export const getExperimentResponseAudienceSpecFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const getExperimentResponseAssignSummaryArmSizesItemSizeDefault = 0;
 
 export const getExperimentResponse = zod.object({
 	datasource_id: zod.string(),
@@ -1653,6 +1682,19 @@ export const getExperimentResponse = zod.object({
 			balance_ok: zod.boolean(),
 		}),
 		sample_size: zod.number(),
+		arm_sizes: zod
+			.array(
+				zod.object({
+					arm: zod.object({
+						arm_id: zod.string().uuid().or(zod.null()).optional(),
+						arm_name: zod.string(),
+						arm_description: zod.string().or(zod.null()).optional(),
+					}),
+					size: zod.number().optional(),
+				}),
+			)
+			.or(zod.null())
+			.optional(),
 	}),
 });
 
