@@ -31,6 +31,11 @@ interface CustomShapeProps {
   width?: number;
 }
 
+// Function to create a diamond shape
+const createDiamondShape = (cx: number = 0, cy: number = 0, size: number = 6) => {
+  return `${cx},${cy - size} ${cx + size},${cy} ${cx},${cy + size} ${cx - size},${cy}`;
+};
+
 export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment }: ForestPlotProps) {
   // Get all arm indices except the control arm
   const treatmentArmIndices = analysis.arm_ids.map((_, idx) => idx).filter((idx) => idx !== controlArmIndex);
@@ -152,10 +157,8 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
                 data={controlData}
                 fill="#757575"
                 shape={(props: CustomShapeProps) => (
-                  <circle
-                    cx={props.cx}
-                    cy={props.cy}
-                    r={6}
+                  <polygon
+                    points={createDiamondShape(props.cx, props.cy, 8)}
                     fill="#757575"
                     stroke="none"
                   />
@@ -171,7 +174,7 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
                     cx={props.cx}
                     cy={props.cy}
                     r={4}
-                    fill={props.payload.significant ? '#00c853' : '#757575'}
+                    fill={props.payload?.significant ? '#00c853' : '#757575'}
                     stroke="none"
                   />
                 )}
@@ -183,12 +186,18 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
                 fill="none"
                 shape={(props: CustomShapeProps) => {
                   if (!props.payload || !props.width) return null;
-                  const { ci95Lower, ci95Upper } = props.payload;
+                  const { ci95Lower, ci95Upper, significant, effect } = props.payload;
                   const scale = (x: number) => {
                     const min = -30;
                     const max = 30;
                     return ((x - min) / (max - min)) * props.width;
                   };
+
+                  // Determine stroke color based on significance and direction
+                  let strokeColor = "#000000"; // Default black
+                  if (significant) {
+                    strokeColor = effect > 0 ? "#00c853" : "#ff5252"; // Green if positive, red if negative
+                  }
 
                   return (
                     <line
@@ -196,7 +205,7 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
                       y1={props.cy}
                       x2={scale(ci95Upper)}
                       y2={props.cy}
-                      stroke="#e0e0e0"
+                      stroke={strokeColor}
                       strokeWidth={2}
                     />
                   );
