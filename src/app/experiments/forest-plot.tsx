@@ -104,18 +104,6 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
     y: 1 + index, // Position each treatment on its own line
   }));
 
-  // Add control arm data
-  // const controlData = [{
-  //   armId: analysis.arm_ids[controlArmIndex],
-  //   armName: armNames[analysis.arm_ids[controlArmIndex]] || 'Control',
-  //   effect: analysis.coefficients[controlArmIndex],
-  //   ci95Lower: 0,
-  //   ci95Upper: 0,
-  //   pValue: 1,
-  //   significant: false,
-  //   y: effectSizes.length + 1, // Position control at the top
-  // }];
-
   // Only render if we have data
   if (effectSizes.length === 0) {
     return <Text>No treatment arms to display</Text>;
@@ -185,7 +173,6 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
                 domain={effectSizes.map((e,i) => i)}
                 // hide={true} - use ticks for arm names
                 tickFormatter={(index) => {
-                  console.log('axis1', index, effectSizes.length);
                   return index >= 0 && index < effectSizes.length ? effectSizes[index].armName : '';
                 }}
                 allowDataOverflow={true}  // bit of a hack since the ErrorBar is internally messing with the y-axis domain
@@ -196,12 +183,17 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
                 orientation="right"
                 // work with an index into our different effect sizes
                 domain={effectSizes.map((e, i) => i)}
-                interval={0}
-                width={100}
-                // hide={true} - use ticks for arm names
-                tickFormatter={(index) => {
-                  console.log('axis2', index, effectSizes.length);
-                    return `p = ${effectSizes[index].pValue.toFixed(3)}`;
+                width={80}
+                tick={(e) => {
+                  const { payload: { value } } = e;
+                  // console.table(e);
+                  e["alignment-baseline"] = "middle";
+                  if (effectSizes[value].significant) {
+                    e["fontWeight"] = "bold";
+                    e["fill"] = "black";
+                  }
+                  const tickLabel = `p = ${effectSizes[value].pValue.toFixed(3)}`;
+                  return <text {...e}>{tickLabel}</text>;
                 }}
                 allowDataOverflow={true}
               />
