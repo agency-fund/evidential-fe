@@ -1,7 +1,7 @@
 'use client';
 import { ExperimentAnalysis, ExperimentConfig } from '@/api/methods.schemas';
 import { Box, Card, Flex, Text } from '@radix-ui/themes';
-import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ScatterProps, ErrorBar } from 'recharts';
+import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ErrorBar } from 'recharts';
 
 interface EffectSizeData {
   isControl: boolean;
@@ -182,14 +182,28 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
               />
               <YAxis
                 type="category"
-                dataKey="y"
-                domain={[0, chartData.length + 1]}
-                // hide={true}
-                tickFormatter={(value) => {
-                  const index = parseInt(value) - 1;
+                domain={effectSizes.map((e,i) => i)}
+                // hide={true} - use ticks for arm names
+                tickFormatter={(index) => {
+                  console.log('axis1', index, effectSizes.length);
                   return index >= 0 && index < effectSizes.length ? effectSizes[index].armName : '';
                 }}
                 allowDataOverflow={true}  // bit of a hack since the ErrorBar is internally messing with the y-axis domain
+              />
+              <YAxis
+                yAxisId="stats"
+                type="category"
+                orientation="right"
+                // work with an index into our different effect sizes
+                domain={effectSizes.map((e, i) => i)}
+                interval={0}
+                width={100}
+                // hide={true} - use ticks for arm names
+                tickFormatter={(index) => {
+                  console.log('axis2', index, effectSizes.length);
+                    return `p = ${effectSizes[index].pValue.toFixed(3)}`;
+                }}
+                allowDataOverflow={true}
               />
 
               <Tooltip
@@ -199,44 +213,7 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
                 }}
               />
 
-              {/* Control arm baseline */}
-              {/* <Scatter
-                data={controlData}
-                fill="#757575"
-                shape={(props: CustomShapeProps) => (
-                  <polygon
-                    points={createDiamondShape(props.cx, props.cy, 8)}
-                    fill="#757575"
-                    stroke="none"
-                  />
-                )}
-              /> */}
-
-              {/* Treatment arms */}
-              <Scatter
-                data={chartData}
-                fill="#8884d8"
-                shape={(props: CustomShapeProps) => {
-                  if (props.payload?.isControl) {
-                    // Mark the control arm with a larger diamond shape
-                    return <polygon
-                      points={createDiamondShape(props.cx, props.cy, 8)}
-                      fill="#757575"
-                      stroke="none"
-                    />
-                  } else {
-                    return <circle
-                      cx={props.cx}
-                      cy={props.cy}
-                      r={4}
-                      fill={props.payload?.significant ? '#00c853' : '#757575'}
-                      stroke="none"
-                    />
-                  }
-                }}
-              />
-
-              {/* Confidence intervals */}
+              {/* Confidence intervals - place under points */}
               <Scatter
                 data={chartData}
                 fill="none"
@@ -265,22 +242,35 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
                 {/* <ErrorBar dataKey="ci95" width={0} strokeWidth={10} stroke={"red"} opacity={0.2} direction="x"/> */}
               </Scatter>
 
-
-              {/* Vertical line through control point
-                  TODO(linus): This is broken.*/}
-              <line
-                x1={`${((0 - minX) / (maxX - minX)) * 100}%`}
-                y1={0}
-                x2={`${((0 - minX) / (maxX - minX)) * 100}%`}
-                y2={effectSizes.length + 2}
-                stroke="#757575"
-                strokeDasharray="5 5"
-                strokeWidth={1}
+              {/* All arms */}
+              <Scatter
+                data={chartData}
+                fill="#8884d8"
+                shape={(props: CustomShapeProps) => {
+                  if (props.payload?.isControl) {
+                    // Mark the control arm with a larger diamond shape
+                    return <polygon
+                      points={createDiamondShape(props.cx, props.cy, 8)}
+                      fill="#757575"
+                      stroke="none"
+                    />
+                  } else {
+                    return <circle
+                      cx={props.cx}
+                      cy={props.cy}
+                      r={4}
+                      fill={props.payload?.significant ? '#00c853' : '#757575'}
+                      stroke="none"
+                    />
+                  }
+                }}
               />
+
+              {/* Control arm mean - vertical marker */}
               <Scatter
                 data={chartData}
                 fill="none"
-                // Draw a custom line for CIs since ErrorBars don't give us enough control
+                // Draw a custom SVG line for CIs since ErrorBars don't give us enough control
                 shape={(props: CustomShapeProps) => {
                   if (!props.payload) return null;
                   const { isControl } = props.payload;
@@ -290,7 +280,7 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
                       x1={props.cx}
                       y1={0}
                       x2={props.cx}
-                      y2={props.yAxis?.height + 20}
+                      y2={props.yAxis?.height + 20}  // where's the extra 20 from?
                       stroke="red"
                       strokeWidth={5}
                       strokeDasharray="1 1"
