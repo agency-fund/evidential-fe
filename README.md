@@ -1,7 +1,7 @@
 [![lint](https://github.com/agency-fund/xngin-dash/actions/workflows/lint.yaml/badge.svg?branch=main)](https://github.com/agency-fund/xngin-dash/actions/workflows/lint.yaml)
 [![precommit](https://github.com/agency-fund/xngin-dash/actions/workflows/precommit.yaml/badge.svg?branch=main)](https://github.com/agency-fund/xngin-dash/actions/workflows/precommit.yaml)
 
-# xngin dash
+# Evidential Dashboard
 
 ## Getting Started
 
