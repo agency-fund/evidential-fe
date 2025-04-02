@@ -185,7 +185,7 @@ export default function ExperimentViewPage() {
             <Tabs.List>
               <Tabs.Trigger value="visualization">Visualization</Tabs.Trigger>
               <Tabs.Trigger value="raw">
-                <CodeIcon /> Raw Data
+                Raw Data <CodeIcon />
               </Tabs.Trigger>
             </Tabs.List>
 

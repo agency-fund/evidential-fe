@@ -60,7 +60,8 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
   const controlArmId = analysis.arm_ids[controlArmIndex];
   const controlArmSize = experiment.assign_summary.arm_sizes?.find(a => a.arm.arm_id === controlArmId)?.size || 0;
 
-  const effectSizes: EffectSizeData[] = treatmentArmIndices.map((treatmentIdx) => {
+  // Our data structure for Recharts
+  const effectSizes: EffectSizeData[] = treatmentArmIndices.map((treatmentIdx, index) => {
     const controlCoefficient = analysis.coefficients[controlArmIndex];
     const coefficient = analysis.coefficients[treatmentIdx];
     const stdError = analysis.std_errors[treatmentIdx];
@@ -98,29 +99,27 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
     };
   });
 
-  // Create data for Recharts
-  const chartData = effectSizes.map((effect, index) => ({
-    ...effect,
-    y: 1 + index, // Position each treatment on its own line
-  }));
-
   // Only render if we have data
   if (effectSizes.length === 0) {
     return <Text>No treatment arms to display</Text>;
   }
 
-  // Define scale function for positioning elements
-  let minX = Math.min(...chartData.map(d => d.absCI95Lower));
-  let maxX = Math.max(...chartData.map(d => d.absCI95Upper));
-  const viewportWidth = maxX - minX;
-  minX = minX - viewportWidth*.05;
-  maxX = maxX + viewportWidth*.05;
-  if (Math.abs(minX) > 1 && Math.abs(maxX) > 1) {
-    minX = Math.floor(minX);
-    maxX = Math.ceil(maxX);
+  // Get the min and max x-axis values to use in our charts.
+  function getMinMaxX(effectSizes: EffectSizeData[]) {
+    let minX = Math.min(...effectSizes.map(d => d.absCI95Lower));
+    let maxX = Math.max(...effectSizes.map(d => d.absCI95Upper));
+    const viewportWidth = maxX - minX;
+    minX = minX - viewportWidth*.05;
+    maxX = maxX + viewportWidth*.05;
+    if (Math.abs(minX) > 1 && Math.abs(maxX) > 1) {
+      minX = Math.floor(minX);
+      maxX = Math.ceil(maxX);
+    }
+    return [minX, maxX];
   }
+  const [minX, maxX] = getMinMaxX(effectSizes);
   // Scale a half-confidence interval to a width in viewport units to be used for drawing the error bars
-  const scale = (x: number, width: number|undefined) => {
+  const scaleHalfIntervalToViewport = (x: number, width: number|undefined) => {
     if (!width) return 0;
     return (x / (maxX - minX)) * width;
   };
@@ -129,32 +128,6 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
     <Card>
       <Flex direction="column" gap="3">
         <Text weight="bold">Effect of {analysis.metric_name}</Text>
-
-        <Flex justify="between" align="center">
-          {/* Left side - Control metrics */}
-          <Flex direction="column" gap="1" style={{ width: '25%' }}>
-            <Text size="2" color="gray">
-              {effectSizes[0].controlSampleSize?.toLocaleString()} / {effectSizes[0].controlTotalSampleSize?.toLocaleString()}
-            </Text>
-          </Flex>
-
-          {/* Middle - Treatment metrics */}
-          <Flex direction="column" gap="1" style={{ width: '25%' }}>
-            <Text size="2" color="gray">
-              {effectSizes[0].sampleSize?.toLocaleString()} / {effectSizes[0].totalSampleSize?.toLocaleString()}
-            </Text>
-          </Flex>
-
-          {/* Right side - P-value */}
-          <Flex direction="column" gap="1" style={{ width: '25%', textAlign: 'right' }}>
-            <Text size="2" weight="bold">
-              p = {effectSizes[0].pValue.toFixed(3)}
-            </Text>
-            <Text size="2" weight="bold">
-              {effectSizes[0].significant ? 'Significant' : 'Not Significant'}
-            </Text>
-          </Flex>
-        </Flex>
 
         <Box style={{ height: 200 }}>
           <ResponsiveContainer width="100%" height="100%">
@@ -186,14 +159,16 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
                 width={80}
                 tick={(e) => {
                   const { payload: { value } } = e;
-                  // console.table(e);
-                  e["alignment-baseline"] = "middle";
-                  if (effectSizes[value].significant) {
-                    e["fontWeight"] = "bold";
-                    e["fill"] = "black";
-                  }
+                  const textProps = {
+                    x: e.x,
+                    y: e.y,
+                    textAnchor: e.textAnchor,
+                    fill: effectSizes[value].significant ? "black" : undefined,
+                    fontWeight: effectSizes[value].significant ? "bold" : undefined,
+                    dominantBaseline: "middle" as const
+                  };
                   const tickLabel = `p = ${effectSizes[value].pValue.toFixed(3)}`;
-                  return <text {...e}>{tickLabel}</text>;
+                  return <text {...textProps}>{tickLabel}</text>;
                 }}
                 allowDataOverflow={true}
               />
@@ -207,7 +182,7 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
 
               {/* Confidence intervals - place under points */}
               <Scatter
-                data={chartData}
+                data={effectSizes}
                 fill="none"
                 // Draw a custom line for CIs since ErrorBars don't give us enough control
                 shape={(props: CustomShapeProps) => {
@@ -221,9 +196,9 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
                   }
                   return (
                     <line
-                      x1={props.cx - scale(ci95, props.xAxis?.width)}
+                      x1={props.cx - scaleHalfIntervalToViewport(ci95, props.xAxis?.width)}
                       y1={props.cy}
-                      x2={props.cx + scale(ci95, props.xAxis?.width)}
+                      x2={props.cx + scaleHalfIntervalToViewport(ci95, props.xAxis?.width)}
                       y2={props.cy}
                       stroke={strokeColor}
                       strokeWidth={2}
@@ -236,7 +211,7 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
 
               {/* All arms */}
               <Scatter
-                data={chartData}
+                data={effectSizes}
                 fill="#8884d8"
                 shape={(props: CustomShapeProps) => {
                   if (props.payload?.isControl) {
@@ -260,7 +235,7 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
 
               {/* Control arm mean - vertical marker */}
               <Scatter
-                data={chartData}
+                data={effectSizes}
                 fill="none"
                 // Draw a custom SVG line for CIs since ErrorBars don't give us enough control
                 shape={(props: CustomShapeProps) => {
