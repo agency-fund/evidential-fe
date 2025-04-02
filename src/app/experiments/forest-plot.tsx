@@ -3,6 +3,14 @@ import { ExperimentAnalysis, ExperimentConfig } from '@/api/methods.schemas';
 import { Box, Card, Flex, Text } from '@radix-ui/themes';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ErrorBar } from 'recharts';
 
+// Color constants
+const COLORS = {
+  DEFAULT: '#757575', // Gray for default/control
+  BLACK: '#000000',   // Black for default stroke
+  POSITIVE: '#00c853', // Green for positive effects
+  NEGATIVE: '#ff5252', // Red for negative effects
+} as const;
+
 interface EffectSizeData {
   isControl: boolean;
   armId: string;
@@ -51,12 +59,12 @@ function CustomTooltip({ active, payload }: { active: boolean, payload: [{ paylo
   if (!active || !payload || !payload.length) return null;
   const data = payload[0].payload;
   const percentChange = ((data.absEffect - data.baselineEffect) / data.baselineEffect * 100).toFixed(1);
-  const percentChangeLabel = data.isControl ? '' : `(${percentChange}% from control)`;
   return (
     <Card style={{ padding: '8px' }}>
       <Flex direction="column" gap="2">
         <Text weight="bold">{data.armName}</Text>
-        <Text>Effect: {data.absEffect.toFixed(2)} {percentChangeLabel}</Text>
+        <Text>Effect: {data.absEffect.toFixed(2)}</Text>
+        {data.isControl ? null : <Text>vs baseline: {percentChange}%</Text>}
         <Text>95% CI: [{data.absCI95Lower.toFixed(2)}, {data.absCI95Upper.toFixed(2)}]</Text>
       </Flex>
     </Card>
@@ -204,9 +212,9 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
                   const { ci95, significant, effect, isControl } = props.payload;
 
                   // Determine stroke color based on significance and direction
-                  let strokeColor = "#000000"; // Default black
+                  let strokeColor = COLORS.BLACK; // Default
                   if (significant && !isControl) {
-                    strokeColor = effect > 0 ? "#00c853" : "#ff5252"; // Green if positive, red if negative
+                    strokeColor = effect > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
                   }
                   return (
                     <line
@@ -226,13 +234,18 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
               {/* All arms */}
               <Scatter
                 data={effectSizes}
-                fill="#8884d8"
                 shape={(props: CustomShapeProps) => {
+                  if (!props.payload) return null;
+                  const { significant, isControl, effect } = props.payload;
+                  let fillColor: string = COLORS.DEFAULT; // Default gray
+                  if (significant && !isControl) {
+                    fillColor = effect > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
+                  }
                   if (props.payload?.isControl) {
                     // Mark the control arm with a larger diamond shape
                     return <polygon
                       points={createDiamondShape(props.cx, props.cy, 8)}
-                      fill="#757575"
+                      fill={COLORS.DEFAULT}
                       stroke="none"
                     />
                   } else {
@@ -240,7 +253,7 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
                       cx={props.cx}
                       cy={props.cy}
                       r={4}
-                      fill={props.payload?.significant ? '#00c853' : '#757575'}
+                      fill={fillColor}
                       stroke="none"
                     />
                   }
