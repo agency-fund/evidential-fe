@@ -10,6 +10,7 @@ import OurSwrConfig from '@/app/providers/our-swr-config';
 import { Suspense } from 'react';
 import { NavigationBar } from '@/app/navigation-bar';
 import { HeaderBar } from '@/app/header-bar';
+import * as Toast from '@radix-ui/react-toast';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -30,25 +31,38 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`} style={{ margin: 0, padding: 0 }}>
         <Theme>
-          <Suspense>
-            <GoogleAuthProvider>
-              <OurSwrConfig>
-                <OrganizationProvider>
-                  <Flex direction="column" height={'100vh'}>
-                    <HeaderBar />
-                    <Flex flexGrow={'1'} overflow={'hidden'} pb={'4'}>
-                      <NavigationBar />
-                      <Flex flexGrow={'1'} overflow={'auto'}>
-                        <Container p={'4'}>
-                          <Suspense>{children}</Suspense>
-                        </Container>
+          <Toast.Provider swipeDirection="right">
+            <Suspense>
+              <GoogleAuthProvider>
+                <OurSwrConfig>
+                  <OrganizationProvider>
+                    <Flex direction="column" height={'100vh'}>
+                      <HeaderBar />
+                      <Flex flexGrow={'1'} overflow={'hidden'} pb={'4'}>
+                        <NavigationBar />
+                        <Flex flexGrow={'1'} overflow={'auto'}>
+                          <Container p={'4'}>
+                            <Suspense>{children}</Suspense>
+                          </Container>
+                        </Flex>
                       </Flex>
                     </Flex>
-                  </Flex>
-                </OrganizationProvider>
-              </OurSwrConfig>
-            </GoogleAuthProvider>
-          </Suspense>
+                    <Toast.Viewport
+                      style={{
+                        position: 'fixed',
+                        bottom: '20px',
+                        right: '20px',
+                        zIndex: 1000,
+                        listStyle: 'none',
+                        padding: 0,
+                        margin: 0,
+                      }}
+                    />
+                  </OrganizationProvider>
+                </OurSwrConfig>
+              </GoogleAuthProvider>
+            </Suspense>
+          </Toast.Provider>
         </Theme>
       </body>
     </html>
