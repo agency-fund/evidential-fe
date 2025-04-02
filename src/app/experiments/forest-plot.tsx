@@ -7,6 +7,7 @@ interface EffectSizeData {
   isControl: boolean;
   armId: string;
   armName: string;
+  baselineEffect: number;
   effect: number;
   absEffect: number;
   ci95Lower: number;
@@ -46,6 +47,22 @@ const createDiamondShape = (cx: number = 0, cy: number = 0, size: number = 6) =>
   return `${cx},${cy - size} ${cx + size},${cy} ${cx},${cy + size} ${cx - size},${cy}`;
 };
 
+function CustomTooltip({ active, payload }: { active: boolean, payload: [{ payload: EffectSizeData }] }) {
+  if (!active || !payload || !payload.length) return null;
+  const data = payload[0].payload;
+  const percentChange = ((data.absEffect - data.baselineEffect) / data.baselineEffect * 100).toFixed(1);
+  const percentChangeLabel = data.isControl ? '' : `(${percentChange}% from control)`;
+  return (
+    <Card style={{ padding: '8px' }}>
+      <Flex direction="column" gap="2">
+        <Text weight="bold">{data.armName}</Text>
+        <Text>Effect: {data.absEffect.toFixed(2)} {percentChangeLabel}</Text>
+        <Text>95% CI: [{data.absCI95Lower.toFixed(2)}, {data.absCI95Upper.toFixed(2)}]</Text>
+      </Flex>
+    </Card>
+  );
+}
+
 // TODO(linus): currently the controlArmIndex is hardcoded to 0; payload also seems to have the wrong mapping of arm_ids to coefficients.
 export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment }: ForestPlotProps) {
   // Get all arm indices except the control arm
@@ -56,7 +73,6 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
   const availableN = experiment.assign_summary.sample_size;
 
   // Extract data for visualization
-  const controlCoefficient = analysis.coefficients[controlArmIndex];
   const controlArmId = analysis.arm_ids[controlArmIndex];
   const controlArmSize = experiment.assign_summary.arm_sizes?.find(a => a.arm.arm_id === controlArmId)?.size || 0;
 
@@ -83,6 +99,7 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
       isControl,
       armId,
       armName: armNames[armId] || `Arm ${treatmentIdx}`,
+      baselineEffect: controlCoefficient,
       effect: coefficient, // relative to baseline effect
       absEffect: absEffect,
       ci95Lower,
@@ -174,10 +191,7 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
               />
 
               <Tooltip
-                formatter={(value: number, name: string) => {
-                  if (name === 'absEffect') return value.toFixed(2);
-                  return effectSizes[value-1]?.armName;
-                }}
+                content={<CustomTooltip />}
               />
 
               {/* Confidence intervals - place under points */}
