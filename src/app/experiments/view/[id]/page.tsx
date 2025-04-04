@@ -4,13 +4,10 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeftIcon, CodeIcon, DotsVerticalIcon } from '@radix-ui/react-icons';
 import { useAnalyzeExperiment, useGetExperiment } from '@/api/admin';
 import { ForestPlot } from '@/app/experiments/forest-plot';
-import { useEffect, useState } from 'react';
 import { XSpinner } from '@/app/components/x-spinner';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 import { ExperimentStatusBadge } from '@/app/experiments/experiment-status-badge';
-import { ExperimentAnalysis, ExperimentConfig } from '@/api/methods.schemas';
 import { CopyButton } from '@/app/components/copy-button';
-
 
 export default function ExperimentViewPage() {
   const params = useParams();
@@ -47,7 +44,7 @@ export default function ExperimentViewPage() {
     return <Text>No experiment data found</Text>;
   }
 
-  const { design_spec, state, assign_summary, power_analyses, audience_spec } = experiment;
+  const { design_spec, state, assign_summary } = experiment;
   const { experiment_name, description, start_date, end_date, arms } = design_spec;
 
   // Format dates for display
@@ -136,8 +133,8 @@ export default function ExperimentViewPage() {
         </Heading>
         <Separator my="3" size="4" />
         <Flex gap="4">
-          {arms.map((arm, index) => {
-            const armSize = assign_summary.arm_sizes.find(a => a.arm.arm_id === arm.arm_id)?.size || 0;
+          {arms.map((arm) => {
+            const armSize = assign_summary.arm_sizes!.find((a) => a.arm.arm_id === arm.arm_id)?.size || 0;
             const percentage = (armSize / assign_summary.sample_size) * 100;
             return (
               <Card key={arm.arm_id} style={{ flex: 1 }}>
