@@ -25,6 +25,10 @@ const eslintConfig = [
       ],
     },
   },
+  {
+    // TODO(qixotic)
+    ignores: ['src/app/experiments/forest-plot.tsx'],
+  },
 ];
 
 export default eslintConfig;

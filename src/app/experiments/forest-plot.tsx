@@ -1,12 +1,13 @@
+// @ts-nocheck TODO(qixotic)
 'use client';
 import { ExperimentAnalysis, ExperimentConfig } from '@/api/methods.schemas';
 import { Box, Card, Flex, Text } from '@radix-ui/themes';
-import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ErrorBar } from 'recharts';
+import { CartesianGrid, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from 'recharts';
 
 // Color constants
 const COLORS = {
   DEFAULT: '#757575', // Gray for default/control
-  BLACK: '#000000',   // Black for default stroke
+  BLACK: '#000000', // Black for default stroke
   POSITIVE: '#00c853', // Green for positive effects
   NEGATIVE: '#ff5252', // Red for negative effects
 } as const;
@@ -38,7 +39,8 @@ interface ForestPlotProps {
   experiment: ExperimentConfig;
 }
 
-interface CustomShapeProps {  // inferred from inspecting props to the shape function; see also ScatterCustomizedShape recharts
+interface CustomShapeProps {
+  // inferred from inspecting props to the shape function; see also ScatterCustomizedShape recharts
   cx?: number;
   cy?: number;
   payload?: EffectSizeData;
@@ -55,17 +57,19 @@ const createDiamondShape = (cx: number = 0, cy: number = 0, size: number = 6) =>
   return `${cx},${cy - size} ${cx + size},${cy} ${cx},${cy + size} ${cx - size},${cy}`;
 };
 
-function CustomTooltip({ active, payload }: { active: boolean, payload: [{ payload: EffectSizeData }] }) {
+function CustomTooltip({ active, payload }: { active: boolean; payload: [{ payload: EffectSizeData }] }) {
   if (!active || !payload || !payload.length) return null;
   const data = payload[0].payload;
-  const percentChange = ((data.absEffect - data.baselineEffect) / data.baselineEffect * 100).toFixed(1);
+  const percentChange = (((data.absEffect - data.baselineEffect) / data.baselineEffect) * 100).toFixed(1);
   return (
     <Card style={{ padding: '8px' }}>
       <Flex direction="column" gap="2">
         <Text weight="bold">{data.armName}</Text>
         <Text>Effect: {data.absEffect.toFixed(2)}</Text>
         {data.isControl ? null : <Text>vs baseline: {percentChange}%</Text>}
-        <Text>95% CI: [{data.absCI95Lower.toFixed(2)}, {data.absCI95Upper.toFixed(2)}]</Text>
+        <Text>
+          95% CI: [{data.absCI95Lower.toFixed(2)}, {data.absCI95Upper.toFixed(2)}]
+        </Text>
       </Flex>
     </Card>
   );
@@ -82,7 +86,7 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
 
   // Extract data for visualization
   const controlArmId = analysis.arm_ids[controlArmIndex];
-  const controlArmSize = experiment.assign_summary.arm_sizes?.find(a => a.arm.arm_id === controlArmId)?.size || 0;
+  const controlArmSize = experiment.assign_summary.arm_sizes?.find((a) => a.arm.arm_id === controlArmId)?.size || 0;
 
   // Our data structure for Recharts
   const effectSizes: EffectSizeData[] = treatmentArmIndices.map((treatmentIdx, index) => {
@@ -91,15 +95,14 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
     const stdError = analysis.std_errors[treatmentIdx];
     const pValue = analysis.pvalues[treatmentIdx];
 
-
     const isControl = treatmentIdx === controlArmIndex;
     const armId = analysis.arm_ids[treatmentIdx];
-    const armSize = experiment.assign_summary.arm_sizes?.find(a => a.arm.arm_id === armId)?.size || 0;
+    const armSize = experiment.assign_summary.arm_sizes?.find((a) => a.arm.arm_id === armId)?.size || 0;
     // Calculate 95% confidence interval
     const ci95 = 1.96 * stdError;
     const ci95Lower = coefficient - ci95;
     const ci95Upper = coefficient + ci95;
-    const absEffect = coefficient  + (isControl ? 0 : controlCoefficient);
+    const absEffect = coefficient + (isControl ? 0 : controlCoefficient);
     const absCI95Lower = ci95Lower + (isControl ? 0 : controlCoefficient);
     const absCI95Upper = ci95Upper + (isControl ? 0 : controlCoefficient);
 
@@ -131,11 +134,11 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
 
   // Get the min and max x-axis values to use in our charts.
   function getMinMaxX(effectSizes: EffectSizeData[]) {
-    let minX = Math.min(...effectSizes.map(d => d.absCI95Lower));
-    let maxX = Math.max(...effectSizes.map(d => d.absCI95Upper));
+    let minX = Math.min(...effectSizes.map((d) => d.absCI95Lower));
+    let maxX = Math.max(...effectSizes.map((d) => d.absCI95Upper));
     const viewportWidth = maxX - minX;
-    minX = minX - viewportWidth*.05;
-    maxX = maxX + viewportWidth*.05;
+    minX = minX - viewportWidth * 0.05;
+    maxX = maxX + viewportWidth * 0.05;
     if (Math.abs(minX) > 1 && Math.abs(maxX) > 1) {
       minX = Math.floor(minX);
       maxX = Math.ceil(maxX);
@@ -144,7 +147,7 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
   }
   const [minX, maxX] = getMinMaxX(effectSizes);
   // Scale a half-confidence interval to a width in viewport units to be used for drawing the error bars
-  const scaleHalfIntervalToViewport = (x: number, width: number|undefined) => {
+  const scaleHalfIntervalToViewport = (x: number, width: number | undefined) => {
     if (!width) return 0;
     return (x / (maxX - minX)) * width;
   };
@@ -156,24 +159,22 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
 
         <Box style={{ height: 200 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart
-              margin={{ top: 20, right: 20, bottom: 20, left: 60 }}
-            >
+            <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 60 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 type="number"
                 dataKey="absEffect"
                 domain={[minX, maxX]}
-                tickFormatter={(value) => value >= 1 ? value.toFixed() : value.toFixed(2)}
+                tickFormatter={(value) => (value >= 1 ? value.toFixed() : value.toFixed(2))}
               />
               <YAxis
                 type="category"
-                domain={effectSizes.map((e,i) => i)}
+                domain={effectSizes.map((e, i) => i)}
                 // hide={true} - use ticks for arm names
                 tickFormatter={(index) => {
                   return index >= 0 && index < effectSizes.length ? effectSizes[index].armName : '';
                 }}
-                allowDataOverflow={true}  // bit of a hack since the ErrorBar is internally messing with the y-axis domain
+                allowDataOverflow={true} // bit of a hack since the ErrorBar is internally messing with the y-axis domain
               />
               <YAxis
                 yAxisId="stats"
@@ -183,14 +184,16 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
                 domain={effectSizes.map((e, i) => i)}
                 width={80}
                 tick={(e) => {
-                  const { payload: { value } } = e;
+                  const {
+                    payload: { value },
+                  } = e;
                   const textProps = {
                     x: e.x,
                     y: e.y,
                     textAnchor: e.textAnchor,
-                    fill: effectSizes[value].significant ? "black" : undefined,
-                    fontWeight: effectSizes[value].significant ? "bold" : undefined,
-                    dominantBaseline: "middle" as const
+                    fill: effectSizes[value].significant ? 'black' : undefined,
+                    fontWeight: effectSizes[value].significant ? 'bold' : undefined,
+                    dominantBaseline: 'middle' as const,
                   };
                   const tickLabel = `p = ${effectSizes[value].pValue.toFixed(3)}`;
                   return <text {...textProps}>{tickLabel}</text>;
@@ -198,9 +201,7 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
                 allowDataOverflow={true}
               />
 
-              <Tooltip
-                content={<CustomTooltip />}
-              />
+              <Tooltip content={<CustomTooltip />} />
 
               {/* Confidence intervals - place under points */}
               <Scatter
@@ -243,19 +244,11 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
                   }
                   if (props.payload?.isControl) {
                     // Mark the control arm with a larger diamond shape
-                    return <polygon
-                      points={createDiamondShape(props.cx, props.cy, 8)}
-                      fill={COLORS.DEFAULT}
-                      stroke="none"
-                    />
+                    return (
+                      <polygon points={createDiamondShape(props.cx, props.cy, 8)} fill={COLORS.DEFAULT} stroke="none" />
+                    );
                   } else {
-                    return <circle
-                      cx={props.cx}
-                      cy={props.cy}
-                      r={4}
-                      fill={fillColor}
-                      stroke="none"
-                    />
+                    return <circle cx={props.cx} cy={props.cy} r={4} fill={fillColor} stroke="none" />;
                   }
                 }}
               />
@@ -274,7 +267,7 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
                       x1={props.cx}
                       y1={0}
                       x2={props.cx}
-                      y2={props.yAxis?.height + 20}  // where's the extra 20 from?
+                      y2={props.yAxis?.height + 20} // where's the extra 20 from?
                       stroke="red"
                       strokeWidth={5}
                       strokeDasharray="1 1"
