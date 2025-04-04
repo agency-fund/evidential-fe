@@ -14,9 +14,13 @@ export interface AnalysisRequest {
 }
 
 export interface ApiKeySummary {
+	/** @maxLength 64 */
 	id: string;
+	/** @maxLength 64 */
 	datasource_id: string;
+	/** @maxLength 64 */
 	organization_id: string;
+	/** @maxLength 100 */
 	organization_name: string;
 }
 
@@ -33,6 +37,7 @@ export type ArmArmDescription = string | null;
 export interface Arm {
 	/** UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
 	arm_id?: ArmArmId;
+	/** @maxLength 100 */
 	arm_name: string;
 	arm_description?: ArmArmDescription;
 }
@@ -77,6 +82,7 @@ export interface AssignResponseInput {
 	/** Name of the datasource field used as the unique identifier for the participant_id value stored in each Assignment, as configured in the datasource settings. Included for frontend convenience. */
 	unique_id_field: string;
 	assignments: Assignment[];
+	/** @maxItems 10 */
 	arm_sizes: ArmSize[];
 }
 
@@ -97,6 +103,7 @@ export interface AssignResponseOutput {
 	/** Name of the datasource field used as the unique identifier for the participant_id value stored in each Assignment, as configured in the datasource settings. Included for frontend convenience. */
 	unique_id_field: string;
 	assignments: Assignment[];
+	/** @maxItems 10 */
 	arm_sizes: ArmSize[];
 }
 
@@ -125,10 +132,14 @@ export type AssignmentStrata = Strata[] | null;
  * Describes treatment assignment for an experiment participant.
  */
 export interface Assignment {
+	/** @maxLength 64 */
 	participant_id: string;
 	/** UUID of the arm this participant was assigned to. Same as Arm.arm_id. */
 	arm_id: string;
-	/** The arm this participant was assigned to. Same as Arm.arm_name. */
+	/**
+	 * The arm this participant was assigned to. Same as Arm.arm_name.
+	 * @maxLength 100
+	 */
 	arm_name: string;
 	/** List of properties and their values for this participant used for stratification or tracking metrics. If stratification is not used, this will be None. */
 	strata?: AssignmentStrata;
@@ -138,7 +149,9 @@ export interface Assignment {
  * Defines target participants for an experiment using filters.
  */
 export interface AudienceSpecInput {
+	/** @maxLength 100 */
 	participant_type: string;
+	/** @maxItems 20 */
 	filters: AudienceSpecFilter[];
 }
 
@@ -146,7 +159,9 @@ export interface AudienceSpecInput {
  * Defines target participants for an experiment using filters.
  */
 export interface AudienceSpecOutput {
+	/** @maxLength 100 */
 	participant_type: string;
+	/** @maxItems 20 */
 	filters: AudienceSpecFilter[];
 }
 
@@ -210,7 +225,7 @@ export interface BalanceCheck {
 	numerator_df: number;
 	/** Denominator degrees of freedom related to the number of observations. */
 	denominator_df: number;
-	/** Probablity of observing these data if strata do not predict treatment assignment, i.e. our randomization is balanced. */
+	/** Probability of observing these data if strata do not predict treatment assignment, i.e. our randomization is balanced. */
 	p_value: number;
 	/** Whether the p-value for our observed f_statistic is greater than the f-stat threshold specified in our design specification. (See DesignSpec.fstat_thresh) */
 	balance_ok: boolean;
@@ -229,9 +244,19 @@ export const BqDsnInputDriver = {
  */
 export interface BqDsnInput {
 	driver: BqDsnInputDriver;
-	/** The Google Cloud Project ID containing the dataset. */
+	/**
+	 * The Google Cloud Project ID containing the dataset.
+	 * @minLength 6
+	 * @maxLength 30
+	 * @pattern ^[a-z0-9-]+$
+	 */
 	project_id: string;
-	/** The dataset name. */
+	/**
+	 * The dataset name.
+	 * @minLength 1
+	 * @maxLength 1024
+	 * @pattern ^[a-zA-Z0-9_]+$
+	 */
 	dataset_id: string;
 	credentials: GcpCredentials;
 }
@@ -249,9 +274,19 @@ export const BqDsnOutputDriver = {
  */
 export interface BqDsnOutput {
 	driver: BqDsnOutputDriver;
-	/** The Google Cloud Project ID containing the dataset. */
+	/**
+	 * The Google Cloud Project ID containing the dataset.
+	 * @minLength 6
+	 * @maxLength 30
+	 * @pattern ^[a-z0-9-]+$
+	 */
 	project_id: string;
-	/** The dataset name. */
+	/**
+	 * The dataset name.
+	 * @minLength 1
+	 * @maxLength 1024
+	 * @pattern ^[a-zA-Z0-9_]+$
+	 */
 	dataset_id: string;
 	credentials: GcpCredentials;
 }
@@ -281,18 +316,21 @@ export interface CommitRequest {
 }
 
 export interface CreateApiKeyResponse {
+	/** @maxLength 64 */
 	id: string;
 	datasource_id: string;
 	key: string;
 }
 
 export interface CreateDatasourceRequest {
+	/** @maxLength 64 */
 	organization_id: string;
 	name: string;
 	dwh: DwhInput;
 }
 
 export interface CreateDatasourceResponse {
+	/** @maxLength 64 */
 	id: string;
 }
 
@@ -321,19 +359,23 @@ export interface CreateExperimentWithAssignmentResponse {
 }
 
 export interface CreateOrganizationRequest {
+	/** @maxLength 100 */
 	name: string;
 }
 
 export interface CreateOrganizationResponse {
+	/** @maxLength 64 */
 	id: string;
 }
 
 export interface CreateParticipantsTypeRequest {
+	/** @maxLength 100 */
 	participant_type: string;
 	schema_def: ParticipantsSchemaInput;
 }
 
 export interface CreateParticipantsTypeResponse {
+	/** @maxLength 100 */
 	participant_type: string;
 	schema_def: ParticipantsSchemaOutput;
 }
@@ -362,11 +404,15 @@ export const DataType = {
 export type DatasourceConfig = RemoteDatabaseConfig | SqliteLocalConfig;
 
 export interface DatasourceSummary {
+	/** @maxLength 64 */
 	id: string;
+	/** @maxLength 100 */
 	name: string;
 	driver: string;
 	type: string;
+	/** @maxLength 64 */
 	organization_id: string;
+	/** @maxLength 100 */
 	organization_name: string;
 }
 
@@ -381,17 +427,26 @@ export type DesignSpecExperimentId = string | null;
 export interface DesignSpec {
 	/** UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
 	experiment_id?: DesignSpecExperimentId;
+	/** @maxLength 100 */
 	experiment_name: string;
+	/** @maxLength 2000 */
 	description: string;
 	start_date: string;
 	end_date: string;
-	/** @minItems 2 */
+	/**
+	 * @minItems 2
+	 * @maxItems 10
+	 */
 	arms: Arm[];
-	/** List of participant_type variables to use for stratification. */
+	/**
+	 * List of participant_type variables to use for stratification.
+	 * @maxItems 100
+	 */
 	strata_field_names: string[];
 	/**
 	 * Primary and optional secondary metrics to target.
 	 * @minItems 1
+	 * @maxItems 100
 	 */
 	metrics: DesignSpecMetricRequest[];
 	/**
@@ -535,16 +590,32 @@ export type DwhInput = Dsn | BqDsnInput;
 export type DwhOutput = Dsn | BqDsnOutput;
 
 export interface ExperimentAnalysis {
-	/** The field_name from the datasource which this analysis models as the dependent variable (y). */
+	/**
+	 * The field_name from the datasource which this analysis models as the dependent variable (y).
+	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
+	 */
 	metric_name: string;
+	/** @maxItems 10 */
 	arm_ids: string[];
-	/** Estimates for each arm in the model, the first element is the baseline estimate (intercept) of the first arm_id, the latter two are coefficients estimated against that baseline. */
+	/**
+	 * Estimates for each arm in the model, the first element is the baseline estimate (intercept) of the first arm_id, the latter two are coefficients estimated against that baseline.
+	 * @maxItems 10
+	 */
 	coefficients: number[];
-	/** P-values corresponding to each coefficient estimate for arm_ids, starting with the intercept (arm_ids[0]). */
+	/**
+	 * P-values corresponding to each coefficient estimate for arm_ids, starting with the intercept (arm_ids[0]).
+	 * @maxItems 10
+	 */
 	pvalues: number[];
-	/** Corresponding t-stats for the pvalues and coefficients for each arm_id. */
+	/**
+	 * Corresponding t-stats for the pvalues and coefficients for each arm_id.
+	 * @maxItems 10
+	 */
 	tstats: number[];
-	/** Corresponding standard errors for the pvalues and coefficients for each arm_id. */
+	/**
+	 * Corresponding standard errors for the pvalues and coefficients for each arm_id.
+	 * @maxItems 10
+	 */
 	std_errors: number[];
 }
 
@@ -611,8 +682,10 @@ export interface FieldDescriptor {
  * Concise summary of fields in the table.
  */
 export interface FieldMetadata {
+	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
 	data_type: DataType;
+	/** @maxLength 2000 */
 	description: string;
 }
 
@@ -662,22 +735,30 @@ export const GcpServiceAccountInfoType = {
  */
 export interface GcpServiceAccountInfo {
 	type: GcpServiceAccountInfoType;
-	/** The base64-encoded service account info in the canonical JSON form. */
+	/**
+	 * The base64-encoded service account info in the canonical JSON form.
+	 * @minLength 4
+	 * @maxLength 8000
+	 */
 	content_base64: string;
 }
 
 export interface GetDatasourceResponse {
+	/** @maxLength 64 */
 	id: string;
+	/** @maxLength 100 */
 	name: string;
 	config: DatasourceConfig;
+	/** @maxLength 64 */
 	organization_id: string;
+	/** @maxLength 100 */
 	organization_name: string;
 }
 
 /**
  * Describes assignments for all participants and balance test results.
  */
-export interface GetExperimentAssigmentsResponse {
+export interface GetExperimentAssignmentsResponse {
 	balance_check: BalanceCheck;
 	experiment_id: string;
 	sample_size: number;
@@ -721,8 +802,12 @@ export interface GetFiltersResponseDiscrete {
 	 */
 	field_name: string;
 	data_type: DataType;
-	/** @minItems 1 */
+	/**
+	 * @minItems 1
+	 * @maxItems 20
+	 */
 	relations: Relation[];
+	/** @maxLength 2000 */
 	description: string;
 	/** Sorted list of unique values. */
 	distinct_values: GetFiltersResponseDiscreteDistinctValues;
@@ -762,8 +847,12 @@ export interface GetFiltersResponseNumericOrDate {
 	 */
 	field_name: string;
 	data_type: DataType;
-	/** @minItems 1 */
+	/**
+	 * @minItems 1
+	 * @maxItems 20
+	 */
 	relations: Relation[];
+	/** @maxLength 2000 */
 	description: string;
 	/** The minimum observed value. */
 	min: GetFiltersResponseNumericOrDateMin;
@@ -785,11 +874,14 @@ export interface GetMetricsResponseElement {
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
 	data_type: DataType;
+	/** @maxLength 2000 */
 	description: string;
 }
 
 export interface GetOrganizationResponse {
+	/** @maxLength 64 */
 	id: string;
+	/** @maxLength 100 */
 	name: string;
 	users: UserSummary[];
 	datasources: DatasourceSummary[];
@@ -814,6 +906,7 @@ export interface GetStrataResponseElement {
 	data_type: DataType;
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
+	/** @maxLength 2000 */
 	description: string;
 	extra?: GetStrataResponseElementExtra;
 }
@@ -1011,7 +1104,9 @@ export const MetricType = {
 } as const;
 
 export interface OrganizationSummary {
+	/** @maxLength 64 */
 	id: string;
+	/** @maxLength 100 */
 	name: string;
 }
 
@@ -1060,10 +1155,12 @@ export interface PowerRequest {
 }
 
 export interface PowerResponseInput {
+	/** @maxItems 100 */
 	analyses: MetricAnalysisInput[];
 }
 
 export interface PowerResponseOutput {
+	/** @maxItems 100 */
 	analyses: MetricAnalysisOutput[];
 }
 
@@ -1189,14 +1286,21 @@ export interface UpdateParticipantsTypeRequest {
 	fields?: UpdateParticipantsTypeRequestFields;
 }
 
+export type UpdateParticipantsTypeResponseTableName = string | null;
+
+export type UpdateParticipantsTypeResponseFields = FieldDescriptor[] | null;
+
 export interface UpdateParticipantsTypeResponse {
+	/** @maxLength 100 */
 	participant_type: string;
-	table_name: string;
-	fields: FieldDescriptor[];
+	table_name?: UpdateParticipantsTypeResponseTableName;
+	fields?: UpdateParticipantsTypeResponseFields;
 }
 
 export interface UserSummary {
+	/** @maxLength 64 */
 	id: string;
+	/** @maxLength 64 */
 	email: string;
 }
 
