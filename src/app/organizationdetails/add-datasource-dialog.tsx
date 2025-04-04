@@ -173,17 +173,19 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                       </Button>
                     </Flex>
                   </label>
-                  <label>
-                    <Text as="div" size="2" mb="1" weight="bold">
-                      SSL Mode
-                    </Text>
-                    <select name="sslmode" defaultValue="verify-ca">
-                      <option value="disable">disable</option>
-                      <option value="require">require</option>
-                      <option value="verify-ca">verify-ca</option>
-                      <option value="verify-full">verify-full</option>
-                    </select>
-                  </label>
+                  {dwhType === 'postgres' && (
+                    <label>
+                      <Text as="div" size="2" mb="1" weight="bold">
+                        SSL Mode
+                      </Text>
+                      <select name="sslmode" defaultValue="verify-ca">
+                        <option value="disable">disable</option>
+                        <option value="require">require</option>
+                        <option value="verify-ca">verify-ca</option>
+                        <option value="verify-full">verify-full</option>
+                      </select>
+                    </label>
+                  )}
                   <label>
                     <Text as="div" size="2" mb="1" weight="bold">
                       Search Path{' '}
