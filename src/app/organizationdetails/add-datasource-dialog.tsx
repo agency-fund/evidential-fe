@@ -7,6 +7,7 @@ import { XSpinner } from '../components/x-spinner';
 import { EyeClosedIcon, EyeOpenIcon, InfoCircledIcon, PlusIcon } from '@radix-ui/react-icons';
 import { BqDsnInput, Dsn } from '@/api/methods.schemas';
 import { mutate } from 'swr';
+import { PostgresSslModes } from '@/services/typehelper';
 
 export function AddDatasourceDialog({ organizationId }: { organizationId: string }) {
   const { trigger, isMutating } = useCreateDatasource({
@@ -56,7 +57,7 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                   dbname: fd.get('database') as string,
                   user: fd.get('user') as string,
                   password: fd.get('password') as string,
-                  sslmode: fd.get('sslmode') as 'disable' | 'allow' | 'prefer' | 'require',
+                  sslmode: fd.get('sslmode') as PostgresSslModes,
                   search_path: (fd.get('search_path') as string) || null,
                 };
               } else if (dwhType === 'redshift') {
@@ -67,7 +68,7 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                   dbname: fd.get('database') as string,
                   user: fd.get('user') as string,
                   password: fd.get('password') as string,
-                  sslmode: fd.get('sslmode') as 'disable' | 'allow' | 'prefer' | 'require',
+                  sslmode: 'verify-full',
                   search_path: (fd.get('search_path') as string) || null,
                 };
               } else {
@@ -176,10 +177,8 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                     <Text as="div" size="2" mb="1" weight="bold">
                       SSL Mode
                     </Text>
-                    <select name="sslmode" defaultValue="prefer">
+                    <select name="sslmode" defaultValue="verify-ca">
                       <option value="disable">disable</option>
-                      <option value="allow">allow</option>
-                      <option value="prefer">prefer</option>
                       <option value="require">require</option>
                       <option value="verify-ca">verify-ca</option>
                       <option value="verify-full">verify-full</option>

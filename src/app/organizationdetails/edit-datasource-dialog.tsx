@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react';
 import { mutate } from 'swr';
 import { DsnDriver, UpdateDatasourceRequest } from '@/api/methods.schemas';
 import { GenericErrorCallout } from '@/app/components/generic-error';
+import { PostgresSslModes } from '@/services/typehelper';
 
 export const EditDatasourceDialog = ({
   organizationId,
@@ -58,7 +59,7 @@ export const EditDatasourceDialog = ({
   const [user, setUser] = useState('');
   const [password, setPassword] = useState('');
   const [searchPath, setSearchPath] = useState('');
-  const [sslmode, setSslmode] = useState<'disable' | 'allow' | 'prefer' | 'require'>('prefer');
+  const [sslmode, setSslmode] = useState<PostgresSslModes>('require');
   const [projectId, setProjectId] = useState('');
   const [dataset, setDataset] = useState('');
   const [credentialsJson, setCredentialsJson] = useState('');
@@ -83,8 +84,15 @@ export const EditDatasourceDialog = ({
           setDbname(dwh.dbname);
           setUser(dwh.user);
           setPassword(dwh.password);
-          // TODO: support the extra modes
-          setSslmode((dwh.sslmode || 'prefer') as 'disable' | 'allow' | 'prefer' | 'require');
+          // Only use a subset of the possible configuration options.
+          const fallbackType = 'require';
+          const obsolete_modes = ['prefer', 'allow'];
+          const sslmode = dwh.sslmode
+            ? obsolete_modes.includes(dwh.sslmode)
+              ? fallbackType
+              : (dwh.sslmode as PostgresSslModes)
+            : fallbackType;
+          setSslmode(sslmode);
           setSearchPath(dwh.search_path || '');
         }
       }
@@ -232,12 +240,12 @@ export const EditDatasourceDialog = ({
                   <select
                     name="sslmode"
                     value={sslmode}
-                    onChange={(e) => setSslmode(e.target.value as 'disable' | 'allow' | 'prefer' | 'require')}
+                    onChange={(e) => setSslmode(e.target.value as PostgresSslModes)}
                   >
                     <option value="disable">disable</option>
-                    <option value="allow">allow</option>
-                    <option value="prefer">prefer</option>
                     <option value="require">require</option>
+                    <option value="verify-ca">verify-ca</option>
+                    <option value="verify-full">verify-full</option>
                   </select>
                 </label>
                 <label>
