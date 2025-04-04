@@ -21,11 +21,14 @@ export const callerIdentityResponse = zod.object({
  * Returns a list of organizations that the authenticated user is a member of.
  * @summary List Organizations
  */
+export const listOrganizationsResponseItemsItemIdMax = 64;
+export const listOrganizationsResponseItemsItemNameMax = 100;
+
 export const listOrganizationsResponse = zod.object({
 	items: zod.array(
 		zod.object({
-			id: zod.string(),
-			name: zod.string(),
+			id: zod.string().max(listOrganizationsResponseItemsItemIdMax),
+			name: zod.string().max(listOrganizationsResponseItemsItemNameMax),
 		}),
 	),
 });
@@ -36,12 +39,16 @@ export const listOrganizationsResponse = zod.object({
 Only users with an @agency.fund email address can create organizations.
  * @summary Create Organizations
  */
+export const createOrganizationsBodyNameMax = 100;
+
 export const createOrganizationsBody = zod.object({
-	name: zod.string(),
+	name: zod.string().max(createOrganizationsBodyNameMax),
 });
 
+export const createOrganizationsResponseIdMax = 64;
+
 export const createOrganizationsResponse = zod.object({
-	id: zod.string(),
+	id: zod.string().max(createOrganizationsResponseIdMax),
 });
 
 /**
@@ -80,8 +87,14 @@ export const updateOrganizationParams = zod.object({
 	organization_id: zod.string(),
 });
 
+export const updateOrganizationBodyNameMaxOne = 100;
+
 export const updateOrganizationBody = zod.object({
-	name: zod.string().or(zod.null()).optional(),
+	name: zod
+		.string()
+		.max(updateOrganizationBodyNameMaxOne)
+		.or(zod.null())
+		.optional(),
 });
 
 export const updateOrganizationResponse = zod.any();
@@ -96,23 +109,36 @@ export const getOrganizationParams = zod.object({
 	organization_id: zod.string(),
 });
 
+export const getOrganizationResponseIdMax = 64;
+export const getOrganizationResponseNameMax = 100;
+export const getOrganizationResponseUsersItemIdMax = 64;
+export const getOrganizationResponseUsersItemEmailMax = 64;
+export const getOrganizationResponseDatasourcesItemIdMax = 64;
+export const getOrganizationResponseDatasourcesItemNameMax = 100;
+export const getOrganizationResponseDatasourcesItemOrganizationIdMax = 64;
+export const getOrganizationResponseDatasourcesItemOrganizationNameMax = 100;
+
 export const getOrganizationResponse = zod.object({
-	id: zod.string(),
-	name: zod.string(),
+	id: zod.string().max(getOrganizationResponseIdMax),
+	name: zod.string().max(getOrganizationResponseNameMax),
 	users: zod.array(
 		zod.object({
-			id: zod.string(),
-			email: zod.string(),
+			id: zod.string().max(getOrganizationResponseUsersItemIdMax),
+			email: zod.string().max(getOrganizationResponseUsersItemEmailMax),
 		}),
 	),
 	datasources: zod.array(
 		zod.object({
-			id: zod.string(),
-			name: zod.string(),
+			id: zod.string().max(getOrganizationResponseDatasourcesItemIdMax),
+			name: zod.string().max(getOrganizationResponseDatasourcesItemNameMax),
 			driver: zod.string(),
 			type: zod.string(),
-			organization_id: zod.string(),
-			organization_name: zod.string(),
+			organization_id: zod
+				.string()
+				.max(getOrganizationResponseDatasourcesItemOrganizationIdMax),
+			organization_name: zod
+				.string()
+				.max(getOrganizationResponseDatasourcesItemOrganizationNameMax),
 		}),
 	),
 });
@@ -125,15 +151,26 @@ export const listOrganizationDatasourcesParams = zod.object({
 	organization_id: zod.string(),
 });
 
+export const listOrganizationDatasourcesResponseItemsItemIdMax = 64;
+export const listOrganizationDatasourcesResponseItemsItemNameMax = 100;
+export const listOrganizationDatasourcesResponseItemsItemOrganizationIdMax = 64;
+export const listOrganizationDatasourcesResponseItemsItemOrganizationNameMax = 100;
+
 export const listOrganizationDatasourcesResponse = zod.object({
 	items: zod.array(
 		zod.object({
-			id: zod.string(),
-			name: zod.string(),
+			id: zod.string().max(listOrganizationDatasourcesResponseItemsItemIdMax),
+			name: zod
+				.string()
+				.max(listOrganizationDatasourcesResponseItemsItemNameMax),
 			driver: zod.string(),
 			type: zod.string(),
-			organization_id: zod.string(),
-			organization_name: zod.string(),
+			organization_id: zod
+				.string()
+				.max(listOrganizationDatasourcesResponseItemsItemOrganizationIdMax),
+			organization_name: zod
+				.string()
+				.max(listOrganizationDatasourcesResponseItemsItemOrganizationNameMax),
 		}),
 	),
 });
@@ -142,13 +179,29 @@ export const listOrganizationDatasourcesResponse = zod.object({
  * Creates a new datasource for the specified organization.
  * @summary Create Datasource
  */
+export const createDatasourceBodyOrganizationIdMax = 64;
 export const createDatasourceBodyDwhPortDefault = 5432;
 export const createDatasourceBodyDwhPortMin = 1024;
 
 export const createDatasourceBodyDwhPortMax = 65535;
+export const createDatasourceBodyDwhProjectIdMin = 6;
+
+export const createDatasourceBodyDwhProjectIdMax = 30;
+
+export const createDatasourceBodyDwhProjectIdRegExp = new RegExp(
+	"^[a-z0-9-]+$",
+);
+export const createDatasourceBodyDwhDatasetIdMax = 1024;
+
+export const createDatasourceBodyDwhDatasetIdRegExp = new RegExp(
+	"^[a-zA-Z0-9_]+$",
+);
+export const createDatasourceBodyDwhCredentialsContentBase64Min = 4;
+
+export const createDatasourceBodyDwhCredentialsContentBase64Max = 8000;
 
 export const createDatasourceBody = zod.object({
-	organization_id: zod.string(),
+	organization_id: zod.string().max(createDatasourceBodyOrganizationIdMax),
 	name: zod.string(),
 	dwh: zod.discriminatedUnion("driver", [
 		zod.object({
@@ -177,12 +230,23 @@ export const createDatasourceBody = zod.object({
 		}),
 		zod.object({
 			driver: zod.enum(["bigquery"]),
-			project_id: zod.string(),
-			dataset_id: zod.string(),
+			project_id: zod
+				.string()
+				.min(createDatasourceBodyDwhProjectIdMin)
+				.max(createDatasourceBodyDwhProjectIdMax)
+				.regex(createDatasourceBodyDwhProjectIdRegExp),
+			dataset_id: zod
+				.string()
+				.min(1)
+				.max(createDatasourceBodyDwhDatasetIdMax)
+				.regex(createDatasourceBodyDwhDatasetIdRegExp),
 			credentials: zod.discriminatedUnion("type", [
 				zod.object({
 					type: zod.enum(["serviceaccountinfo"]),
-					content_base64: zod.string(),
+					content_base64: zod
+						.string()
+						.min(createDatasourceBodyDwhCredentialsContentBase64Min)
+						.max(createDatasourceBodyDwhCredentialsContentBase64Max),
 				}),
 				zod.object({
 					type: zod.enum(["serviceaccountfile"]),
@@ -193,8 +257,10 @@ export const createDatasourceBody = zod.object({
 	]),
 });
 
+export const createDatasourceResponseIdMax = 64;
+
 export const createDatasourceResponse = zod.object({
-	id: zod.string(),
+	id: zod.string().max(createDatasourceResponseIdMax),
 });
 
 /**
@@ -204,13 +270,33 @@ export const updateDatasourceParams = zod.object({
 	datasource_id: zod.string(),
 });
 
+export const updateDatasourceBodyNameMaxOne = 100;
 export const updateDatasourceBodyDwhPortDefault = 5432;
 export const updateDatasourceBodyDwhPortMin = 1024;
 
 export const updateDatasourceBodyDwhPortMax = 65535;
+export const updateDatasourceBodyDwhProjectIdMin = 6;
+
+export const updateDatasourceBodyDwhProjectIdMax = 30;
+
+export const updateDatasourceBodyDwhProjectIdRegExp = new RegExp(
+	"^[a-z0-9-]+$",
+);
+export const updateDatasourceBodyDwhDatasetIdMax = 1024;
+
+export const updateDatasourceBodyDwhDatasetIdRegExp = new RegExp(
+	"^[a-zA-Z0-9_]+$",
+);
+export const updateDatasourceBodyDwhCredentialsContentBase64Min = 4;
+
+export const updateDatasourceBodyDwhCredentialsContentBase64Max = 8000;
 
 export const updateDatasourceBody = zod.object({
-	name: zod.string().or(zod.null()).optional(),
+	name: zod
+		.string()
+		.max(updateDatasourceBodyNameMaxOne)
+		.or(zod.null())
+		.optional(),
 	dwh: zod
 		.discriminatedUnion("driver", [
 			zod.object({
@@ -239,12 +325,23 @@ export const updateDatasourceBody = zod.object({
 			}),
 			zod.object({
 				driver: zod.enum(["bigquery"]),
-				project_id: zod.string(),
-				dataset_id: zod.string(),
+				project_id: zod
+					.string()
+					.min(updateDatasourceBodyDwhProjectIdMin)
+					.max(updateDatasourceBodyDwhProjectIdMax)
+					.regex(updateDatasourceBodyDwhProjectIdRegExp),
+				dataset_id: zod
+					.string()
+					.min(1)
+					.max(updateDatasourceBodyDwhDatasetIdMax)
+					.regex(updateDatasourceBodyDwhDatasetIdRegExp),
 				credentials: zod.discriminatedUnion("type", [
 					zod.object({
 						type: zod.enum(["serviceaccountinfo"]),
-						content_base64: zod.string(),
+						content_base64: zod
+							.string()
+							.min(updateDatasourceBodyDwhCredentialsContentBase64Min)
+							.max(updateDatasourceBodyDwhCredentialsContentBase64Max),
 					}),
 					zod.object({
 						type: zod.enum(["serviceaccountfile"]),
@@ -267,14 +364,33 @@ export const getDatasourceParams = zod.object({
 	datasource_id: zod.string(),
 });
 
+export const getDatasourceResponseIdMax = 64;
+export const getDatasourceResponseNameMax = 100;
 export const getDatasourceResponseConfigDwhPortDefault = 5432;
 export const getDatasourceResponseConfigDwhPortMin = 1024;
 
 export const getDatasourceResponseConfigDwhPortMax = 65535;
+export const getDatasourceResponseConfigDwhProjectIdMin = 6;
+
+export const getDatasourceResponseConfigDwhProjectIdMax = 30;
+
+export const getDatasourceResponseConfigDwhProjectIdRegExp = new RegExp(
+	"^[a-z0-9-]+$",
+);
+export const getDatasourceResponseConfigDwhDatasetIdMax = 1024;
+
+export const getDatasourceResponseConfigDwhDatasetIdRegExp = new RegExp(
+	"^[a-zA-Z0-9_]+$",
+);
+export const getDatasourceResponseConfigDwhCredentialsContentBase64Min = 4;
+
+export const getDatasourceResponseConfigDwhCredentialsContentBase64Max = 8000;
+export const getDatasourceResponseOrganizationIdMax = 64;
+export const getDatasourceResponseOrganizationNameMax = 100;
 
 export const getDatasourceResponse = zod.object({
-	id: zod.string(),
-	name: zod.string(),
+	id: zod.string().max(getDatasourceResponseIdMax),
+	name: zod.string().max(getDatasourceResponseNameMax),
 	config: zod.discriminatedUnion("type", [
 		zod.object({
 			participants: zod.array(
@@ -389,12 +505,23 @@ export const getDatasourceResponse = zod.object({
 				}),
 				zod.object({
 					driver: zod.enum(["bigquery"]),
-					project_id: zod.string(),
-					dataset_id: zod.string(),
+					project_id: zod
+						.string()
+						.min(getDatasourceResponseConfigDwhProjectIdMin)
+						.max(getDatasourceResponseConfigDwhProjectIdMax)
+						.regex(getDatasourceResponseConfigDwhProjectIdRegExp),
+					dataset_id: zod
+						.string()
+						.min(1)
+						.max(getDatasourceResponseConfigDwhDatasetIdMax)
+						.regex(getDatasourceResponseConfigDwhDatasetIdRegExp),
 					credentials: zod.discriminatedUnion("type", [
 						zod.object({
 							type: zod.enum(["serviceaccountinfo"]),
-							content_base64: zod.string(),
+							content_base64: zod
+								.string()
+								.min(getDatasourceResponseConfigDwhCredentialsContentBase64Min)
+								.max(getDatasourceResponseConfigDwhCredentialsContentBase64Max),
 						}),
 						zod.object({
 							type: zod.enum(["serviceaccountfile"]),
@@ -455,8 +582,8 @@ export const getDatasourceResponse = zod.object({
 			sqlite_filename: zod.string(),
 		}),
 	]),
-	organization_id: zod.string(),
-	organization_name: zod.string(),
+	organization_id: zod.string().max(getDatasourceResponseOrganizationIdMax),
+	organization_name: zod.string().max(getDatasourceResponseOrganizationNameMax),
 });
 
 /**
@@ -502,11 +629,17 @@ export const inspectTableInDatasourceQueryParams = zod.object({
 	refresh: zod.boolean().optional(),
 });
 
+export const inspectTableInDatasourceResponseFieldsItemFieldNameRegExp =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const inspectTableInDatasourceResponseFieldsItemDescriptionMax = 2000;
+
 export const inspectTableInDatasourceResponse = zod.object({
 	detected_unique_id_fields: zod.array(zod.string()),
 	fields: zod.array(
 		zod.object({
-			field_name: zod.string(),
+			field_name: zod
+				.string()
+				.regex(inspectTableInDatasourceResponseFieldsItemFieldNameRegExp),
 			data_type: zod.enum([
 				"boolean",
 				"character varying",
@@ -521,7 +654,9 @@ export const inspectTableInDatasourceResponse = zod.object({
 				"json (unsupported)",
 				"unsupported",
 			]),
-			description: zod.string(),
+			description: zod
+				.string()
+				.max(inspectTableInDatasourceResponseFieldsItemDescriptionMax),
 		}),
 	),
 });
@@ -589,8 +724,12 @@ export const createParticipantTypeParams = zod.object({
 	datasource_id: zod.string(),
 });
 
+export const createParticipantTypeBodyParticipantTypeMax = 100;
+
 export const createParticipantTypeBody = zod.object({
-	participant_type: zod.string(),
+	participant_type: zod
+		.string()
+		.max(createParticipantTypeBodyParticipantTypeMax),
 	schema_def: zod.object({
 		table_name: zod.string(),
 		fields: zod.array(
@@ -621,8 +760,12 @@ export const createParticipantTypeBody = zod.object({
 	}),
 });
 
+export const createParticipantTypeResponseParticipantTypeMax = 100;
+
 export const createParticipantTypeResponse = zod.object({
-	participant_type: zod.string(),
+	participant_type: zod
+		.string()
+		.max(createParticipantTypeResponseParticipantTypeMax),
 	schema_def: zod.object({
 		table_name: zod.string(),
 		fields: zod.array(
@@ -670,12 +813,18 @@ export const inspectParticipantTypesQueryParams = zod.object({
 
 export const inspectParticipantTypesResponseFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const inspectParticipantTypesResponseFiltersItemRelationsMax = 20;
+export const inspectParticipantTypesResponseFiltersItemDescriptionMax = 2000;
 export const inspectParticipantTypesResponseFiltersItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const inspectParticipantTypesResponseFiltersItemRelationsMaxOne = 20;
+export const inspectParticipantTypesResponseFiltersItemDescriptionMaxOne = 2000;
 export const inspectParticipantTypesResponseMetricsItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const inspectParticipantTypesResponseMetricsItemDescriptionMax = 2000;
 export const inspectParticipantTypesResponseStrataItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const inspectParticipantTypesResponseStrataItemDescriptionMax = 2000;
 
 export const inspectParticipantTypesResponse = zod.object({
 	filters: zod.array(
@@ -700,8 +849,11 @@ export const inspectParticipantTypesResponse = zod.object({
 				]),
 				relations: zod
 					.array(zod.enum(["includes", "excludes", "between"]))
-					.min(1),
-				description: zod.string(),
+					.min(1)
+					.max(inspectParticipantTypesResponseFiltersItemRelationsMax),
+				description: zod
+					.string()
+					.max(inspectParticipantTypesResponseFiltersItemDescriptionMax),
 				min: zod
 					.string()
 					.datetime()
@@ -740,8 +892,11 @@ export const inspectParticipantTypesResponse = zod.object({
 					]),
 					relations: zod
 						.array(zod.enum(["includes", "excludes", "between"]))
-						.min(1),
-					description: zod.string(),
+						.min(1)
+						.max(inspectParticipantTypesResponseFiltersItemRelationsMaxOne),
+					description: zod
+						.string()
+						.max(inspectParticipantTypesResponseFiltersItemDescriptionMaxOne),
 					distinct_values: zod.array(zod.string()).or(zod.null()),
 				}),
 			),
@@ -765,7 +920,9 @@ export const inspectParticipantTypesResponse = zod.object({
 				"json (unsupported)",
 				"unsupported",
 			]),
-			description: zod.string(),
+			description: zod
+				.string()
+				.max(inspectParticipantTypesResponseMetricsItemDescriptionMax),
 		}),
 	),
 	strata: zod.array(
@@ -787,7 +944,9 @@ export const inspectParticipantTypesResponse = zod.object({
 			field_name: zod
 				.string()
 				.regex(inspectParticipantTypesResponseStrataItemFieldNameRegExp),
-			description: zod.string(),
+			description: zod
+				.string()
+				.max(inspectParticipantTypesResponseStrataItemDescriptionMax),
 			extra: zod.record(zod.string(), zod.string()).or(zod.null()).optional(),
 		}),
 	),
@@ -851,9 +1010,23 @@ export const updateParticipantTypeParams = zod.object({
 	participant_id: zod.string(),
 });
 
+export const updateParticipantTypeBodyParticipantTypeMaxOne = 100;
+export const updateParticipantTypeBodyTableNameRegExpOne = new RegExp(
+	"^[a-zA-Z_][a-zA-Z0-9_]*$",
+);
+export const updateParticipantTypeBodyFieldsMaxOne = 100;
+
 export const updateParticipantTypeBody = zod.object({
-	participant_type: zod.string().or(zod.null()).optional(),
-	table_name: zod.string().or(zod.null()).optional(),
+	participant_type: zod
+		.string()
+		.max(updateParticipantTypeBodyParticipantTypeMaxOne)
+		.or(zod.null())
+		.optional(),
+	table_name: zod
+		.string()
+		.regex(updateParticipantTypeBodyTableNameRegExpOne)
+		.or(zod.null())
+		.optional(),
 	fields: zod
 		.array(
 			zod.object({
@@ -880,38 +1053,55 @@ export const updateParticipantTypeBody = zod.object({
 				extra: zod.record(zod.string(), zod.string()).or(zod.null()).optional(),
 			}),
 		)
+		.max(updateParticipantTypeBodyFieldsMaxOne)
 		.or(zod.null())
 		.optional(),
 });
 
+export const updateParticipantTypeResponseParticipantTypeMax = 100;
+export const updateParticipantTypeResponseTableNameRegExpOne = new RegExp(
+	"^[a-zA-Z_][a-zA-Z0-9_]*$",
+);
+export const updateParticipantTypeResponseFieldsMaxOne = 100;
+
 export const updateParticipantTypeResponse = zod.object({
-	participant_type: zod.string(),
-	table_name: zod.string(),
-	fields: zod.array(
-		zod.object({
-			field_name: zod.string(),
-			data_type: zod.enum([
-				"boolean",
-				"character varying",
-				"uuid",
-				"date",
-				"integer",
-				"double precision",
-				"numeric",
-				"timestamp without time zone",
-				"bigint",
-				"jsonb (unsupported)",
-				"json (unsupported)",
-				"unsupported",
-			]),
-			description: zod.string(),
-			is_unique_id: zod.boolean(),
-			is_strata: zod.boolean(),
-			is_filter: zod.boolean(),
-			is_metric: zod.boolean(),
-			extra: zod.record(zod.string(), zod.string()).or(zod.null()).optional(),
-		}),
-	),
+	participant_type: zod
+		.string()
+		.max(updateParticipantTypeResponseParticipantTypeMax),
+	table_name: zod
+		.string()
+		.regex(updateParticipantTypeResponseTableNameRegExpOne)
+		.or(zod.null())
+		.optional(),
+	fields: zod
+		.array(
+			zod.object({
+				field_name: zod.string(),
+				data_type: zod.enum([
+					"boolean",
+					"character varying",
+					"uuid",
+					"date",
+					"integer",
+					"double precision",
+					"numeric",
+					"timestamp without time zone",
+					"bigint",
+					"jsonb (unsupported)",
+					"json (unsupported)",
+					"unsupported",
+				]),
+				description: zod.string(),
+				is_unique_id: zod.boolean(),
+				is_strata: zod.boolean(),
+				is_filter: zod.boolean(),
+				is_metric: zod.boolean(),
+				extra: zod.record(zod.string(), zod.string()).or(zod.null()).optional(),
+			}),
+		)
+		.max(updateParticipantTypeResponseFieldsMaxOne)
+		.or(zod.null())
+		.optional(),
 });
 
 /**
@@ -930,13 +1120,24 @@ export const listApiKeysParams = zod.object({
 	datasource_id: zod.string(),
 });
 
+export const listApiKeysResponseItemsItemIdMax = 64;
+export const listApiKeysResponseItemsItemDatasourceIdMax = 64;
+export const listApiKeysResponseItemsItemOrganizationIdMax = 64;
+export const listApiKeysResponseItemsItemOrganizationNameMax = 100;
+
 export const listApiKeysResponse = zod.object({
 	items: zod.array(
 		zod.object({
-			id: zod.string(),
-			datasource_id: zod.string(),
-			organization_id: zod.string(),
-			organization_name: zod.string(),
+			id: zod.string().max(listApiKeysResponseItemsItemIdMax),
+			datasource_id: zod
+				.string()
+				.max(listApiKeysResponseItemsItemDatasourceIdMax),
+			organization_id: zod
+				.string()
+				.max(listApiKeysResponseItemsItemOrganizationIdMax),
+			organization_name: zod
+				.string()
+				.max(listApiKeysResponseItemsItemOrganizationNameMax),
 		}),
 	),
 });
@@ -951,8 +1152,10 @@ export const createApiKeyParams = zod.object({
 	datasource_id: zod.string(),
 });
 
+export const createApiKeyResponseIdMax = 64;
+
 export const createApiKeyResponse = zod.object({
-	id: zod.string(),
+	id: zod.string().max(createApiKeyResponseIdMax),
 	datasource_id: zod.string(),
 	key: zod.string(),
 });
@@ -982,11 +1185,19 @@ export const createExperimentWithAssignmentQueryParams = zod.object({
 		.default(createExperimentWithAssignmentQueryStratifyOnMetricsDefault),
 });
 
+export const createExperimentWithAssignmentBodyDesignSpecExperimentNameMax = 100;
+export const createExperimentWithAssignmentBodyDesignSpecDescriptionMax = 2000;
+export const createExperimentWithAssignmentBodyDesignSpecArmsItemArmNameMax = 100;
+export const createExperimentWithAssignmentBodyDesignSpecArmsItemArmDescriptionMaxOne = 2000;
 export const createExperimentWithAssignmentBodyDesignSpecArmsMin = 2;
+
+export const createExperimentWithAssignmentBodyDesignSpecArmsMax = 10;
 export const createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesItemRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesMax = 100;
 export const createExperimentWithAssignmentBodyDesignSpecMetricsItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentWithAssignmentBodyDesignSpecMetricsMax = 100;
 export const createExperimentWithAssignmentBodyDesignSpecPowerDefault = 0.8;
 export const createExperimentWithAssignmentBodyDesignSpecPowerMin = 0;
 
@@ -999,34 +1210,54 @@ export const createExperimentWithAssignmentBodyDesignSpecFstatThreshDefault = 0.
 export const createExperimentWithAssignmentBodyDesignSpecFstatThreshMin = 0;
 
 export const createExperimentWithAssignmentBodyDesignSpecFstatThreshMax = 1;
+export const createExperimentWithAssignmentBodyAudienceSpecParticipantTypeMax = 100;
 export const createExperimentWithAssignmentBodyAudienceSpecFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentWithAssignmentBodyAudienceSpecFiltersMax = 20;
 export const createExperimentWithAssignmentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentWithAssignmentBodyPowerAnalysesAnalysesMax = 100;
 
 export const createExperimentWithAssignmentBody = zod.object({
 	design_spec: zod.object({
 		experiment_id: zod.string().uuid().or(zod.null()).optional(),
-		experiment_name: zod.string(),
-		description: zod.string(),
+		experiment_name: zod
+			.string()
+			.max(createExperimentWithAssignmentBodyDesignSpecExperimentNameMax),
+		description: zod
+			.string()
+			.max(createExperimentWithAssignmentBodyDesignSpecDescriptionMax),
 		start_date: zod.string().datetime(),
 		end_date: zod.string().datetime(),
 		arms: zod
 			.array(
 				zod.object({
 					arm_id: zod.string().uuid().or(zod.null()).optional(),
-					arm_name: zod.string(),
-					arm_description: zod.string().or(zod.null()).optional(),
+					arm_name: zod
+						.string()
+						.max(
+							createExperimentWithAssignmentBodyDesignSpecArmsItemArmNameMax,
+						),
+					arm_description: zod
+						.string()
+						.max(
+							createExperimentWithAssignmentBodyDesignSpecArmsItemArmDescriptionMaxOne,
+						)
+						.or(zod.null())
+						.optional(),
 				}),
 			)
-			.min(createExperimentWithAssignmentBodyDesignSpecArmsMin),
-		strata_field_names: zod.array(
-			zod
-				.string()
-				.regex(
-					createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesItemRegExp,
-				),
-		),
+			.min(createExperimentWithAssignmentBodyDesignSpecArmsMin)
+			.max(createExperimentWithAssignmentBodyDesignSpecArmsMax),
+		strata_field_names: zod
+			.array(
+				zod
+					.string()
+					.regex(
+						createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesItemRegExp,
+					),
+			)
+			.max(createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesMax),
 		metrics: zod
 			.array(
 				zod.object({
@@ -1039,7 +1270,8 @@ export const createExperimentWithAssignmentBody = zod.object({
 					metric_target: zod.number().or(zod.null()).optional(),
 				}),
 			)
-			.min(1),
+			.min(1)
+			.max(createExperimentWithAssignmentBodyDesignSpecMetricsMax),
 		power: zod
 			.number()
 			.min(createExperimentWithAssignmentBodyDesignSpecPowerMin)
@@ -1057,78 +1289,92 @@ export const createExperimentWithAssignmentBody = zod.object({
 			.default(createExperimentWithAssignmentBodyDesignSpecFstatThreshDefault),
 	}),
 	audience_spec: zod.object({
-		participant_type: zod.string(),
-		filters: zod.array(
-			zod.object({
-				field_name: zod
-					.string()
-					.regex(
-						createExperimentWithAssignmentBodyAudienceSpecFiltersItemFieldNameRegExp,
-					),
-				relation: zod.enum(["includes", "excludes", "between"]),
-				value: zod
-					.array(zod.number().or(zod.null()))
-					.or(zod.array(zod.number().or(zod.null())))
-					.or(zod.array(zod.string().or(zod.null())))
-					.or(zod.array(zod.boolean().or(zod.null()))),
-			}),
-		),
+		participant_type: zod
+			.string()
+			.max(createExperimentWithAssignmentBodyAudienceSpecParticipantTypeMax),
+		filters: zod
+			.array(
+				zod.object({
+					field_name: zod
+						.string()
+						.regex(
+							createExperimentWithAssignmentBodyAudienceSpecFiltersItemFieldNameRegExp,
+						),
+					relation: zod.enum(["includes", "excludes", "between"]),
+					value: zod
+						.array(zod.number().or(zod.null()))
+						.or(zod.array(zod.number().or(zod.null())))
+						.or(zod.array(zod.string().or(zod.null())))
+						.or(zod.array(zod.boolean().or(zod.null()))),
+				}),
+			)
+			.max(createExperimentWithAssignmentBodyAudienceSpecFiltersMax),
 	}),
 	power_analyses: zod
 		.object({
-			analyses: zod.array(
-				zod.object({
-					metric_spec: zod.object({
-						field_name: zod
-							.string()
-							.regex(
-								createExperimentWithAssignmentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp,
-							),
-						metric_pct_change: zod.number().or(zod.null()).optional(),
-						metric_target: zod.number().or(zod.null()).optional(),
-						metric_type: zod
-							.enum(["binary", "numeric"])
-							.or(zod.null())
-							.optional(),
-						metric_baseline: zod.number().or(zod.null()).optional(),
-						metric_stddev: zod.number().or(zod.null()).optional(),
-						available_nonnull_n: zod.number().or(zod.null()).optional(),
-						available_n: zod.number().or(zod.null()).optional(),
-					}),
-					target_n: zod.number().or(zod.null()).optional(),
-					sufficient_n: zod.boolean().or(zod.null()).optional(),
-					target_possible: zod.number().or(zod.null()).optional(),
-					pct_change_possible: zod.number().or(zod.null()).optional(),
-					msg: zod
-						.object({
-							type: zod.enum([
-								"sufficient",
-								"insufficient",
-								"no baseline",
-								"no available n",
-								"zero effect size",
-							]),
-							msg: zod.string(),
-							source_msg: zod.string(),
-							values: zod
-								.record(zod.string(), zod.number().or(zod.number()))
+			analyses: zod
+				.array(
+					zod.object({
+						metric_spec: zod.object({
+							field_name: zod
+								.string()
+								.regex(
+									createExperimentWithAssignmentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp,
+								),
+							metric_pct_change: zod.number().or(zod.null()).optional(),
+							metric_target: zod.number().or(zod.null()).optional(),
+							metric_type: zod
+								.enum(["binary", "numeric"])
 								.or(zod.null())
 								.optional(),
-						})
-						.or(zod.null())
-						.optional(),
-				}),
-			),
+							metric_baseline: zod.number().or(zod.null()).optional(),
+							metric_stddev: zod.number().or(zod.null()).optional(),
+							available_nonnull_n: zod.number().or(zod.null()).optional(),
+							available_n: zod.number().or(zod.null()).optional(),
+						}),
+						target_n: zod.number().or(zod.null()).optional(),
+						sufficient_n: zod.boolean().or(zod.null()).optional(),
+						target_possible: zod.number().or(zod.null()).optional(),
+						pct_change_possible: zod.number().or(zod.null()).optional(),
+						msg: zod
+							.object({
+								type: zod.enum([
+									"sufficient",
+									"insufficient",
+									"no baseline",
+									"no available n",
+									"zero effect size",
+								]),
+								msg: zod.string(),
+								source_msg: zod.string(),
+								values: zod
+									.record(zod.string(), zod.number().or(zod.number()))
+									.or(zod.null())
+									.optional(),
+							})
+							.or(zod.null())
+							.optional(),
+					}),
+				)
+				.max(createExperimentWithAssignmentBodyPowerAnalysesAnalysesMax),
 		})
 		.or(zod.null())
 		.optional(),
 });
 
+export const createExperimentWithAssignmentResponseDesignSpecExperimentNameMax = 100;
+export const createExperimentWithAssignmentResponseDesignSpecDescriptionMax = 2000;
+export const createExperimentWithAssignmentResponseDesignSpecArmsItemArmNameMax = 100;
+export const createExperimentWithAssignmentResponseDesignSpecArmsItemArmDescriptionMaxOne = 2000;
 export const createExperimentWithAssignmentResponseDesignSpecArmsMin = 2;
+
+export const createExperimentWithAssignmentResponseDesignSpecArmsMax = 10;
 export const createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesItemRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesMax = 100;
 export const createExperimentWithAssignmentResponseDesignSpecMetricsItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentWithAssignmentResponseDesignSpecMetricsMax = 100;
 export const createExperimentWithAssignmentResponseDesignSpecPowerDefault = 0.8;
 export const createExperimentWithAssignmentResponseDesignSpecPowerMin = 0;
 
@@ -1141,11 +1387,17 @@ export const createExperimentWithAssignmentResponseDesignSpecFstatThreshDefault 
 export const createExperimentWithAssignmentResponseDesignSpecFstatThreshMin = 0;
 
 export const createExperimentWithAssignmentResponseDesignSpecFstatThreshMax = 1;
+export const createExperimentWithAssignmentResponseAudienceSpecParticipantTypeMax = 100;
 export const createExperimentWithAssignmentResponseAudienceSpecFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentWithAssignmentResponseAudienceSpecFiltersMax = 20;
 export const createExperimentWithAssignmentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentWithAssignmentResponsePowerAnalysesAnalysesMax = 100;
+export const createExperimentWithAssignmentResponseAssignSummaryArmSizesItemArmArmNameMax = 100;
+export const createExperimentWithAssignmentResponseAssignSummaryArmSizesItemArmArmDescriptionMaxOne = 2000;
 export const createExperimentWithAssignmentResponseAssignSummaryArmSizesItemSizeDefault = 0;
+export const createExperimentWithAssignmentResponseAssignSummaryArmSizesMaxOne = 10;
 
 export const createExperimentWithAssignmentResponse = zod.object({
 	datasource_id: zod.string(),
@@ -1158,26 +1410,43 @@ export const createExperimentWithAssignmentResponse = zod.object({
 	]),
 	design_spec: zod.object({
 		experiment_id: zod.string().uuid().or(zod.null()).optional(),
-		experiment_name: zod.string(),
-		description: zod.string(),
+		experiment_name: zod
+			.string()
+			.max(createExperimentWithAssignmentResponseDesignSpecExperimentNameMax),
+		description: zod
+			.string()
+			.max(createExperimentWithAssignmentResponseDesignSpecDescriptionMax),
 		start_date: zod.string().datetime(),
 		end_date: zod.string().datetime(),
 		arms: zod
 			.array(
 				zod.object({
 					arm_id: zod.string().uuid().or(zod.null()).optional(),
-					arm_name: zod.string(),
-					arm_description: zod.string().or(zod.null()).optional(),
+					arm_name: zod
+						.string()
+						.max(
+							createExperimentWithAssignmentResponseDesignSpecArmsItemArmNameMax,
+						),
+					arm_description: zod
+						.string()
+						.max(
+							createExperimentWithAssignmentResponseDesignSpecArmsItemArmDescriptionMaxOne,
+						)
+						.or(zod.null())
+						.optional(),
 				}),
 			)
-			.min(createExperimentWithAssignmentResponseDesignSpecArmsMin),
-		strata_field_names: zod.array(
-			zod
-				.string()
-				.regex(
-					createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesItemRegExp,
-				),
-		),
+			.min(createExperimentWithAssignmentResponseDesignSpecArmsMin)
+			.max(createExperimentWithAssignmentResponseDesignSpecArmsMax),
+		strata_field_names: zod
+			.array(
+				zod
+					.string()
+					.regex(
+						createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesItemRegExp,
+					),
+			)
+			.max(createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesMax),
 		metrics: zod
 			.array(
 				zod.object({
@@ -1190,7 +1459,8 @@ export const createExperimentWithAssignmentResponse = zod.object({
 					metric_target: zod.number().or(zod.null()).optional(),
 				}),
 			)
-			.min(1),
+			.min(1)
+			.max(createExperimentWithAssignmentResponseDesignSpecMetricsMax),
 		power: zod
 			.number()
 			.min(createExperimentWithAssignmentResponseDesignSpecPowerMin)
@@ -1210,68 +1480,76 @@ export const createExperimentWithAssignmentResponse = zod.object({
 			),
 	}),
 	audience_spec: zod.object({
-		participant_type: zod.string(),
-		filters: zod.array(
-			zod.object({
-				field_name: zod
-					.string()
-					.regex(
-						createExperimentWithAssignmentResponseAudienceSpecFiltersItemFieldNameRegExp,
-					),
-				relation: zod.enum(["includes", "excludes", "between"]),
-				value: zod
-					.array(zod.number().or(zod.null()))
-					.or(zod.array(zod.number().or(zod.null())))
-					.or(zod.array(zod.string().or(zod.null())))
-					.or(zod.array(zod.boolean().or(zod.null()))),
-			}),
-		),
+		participant_type: zod
+			.string()
+			.max(
+				createExperimentWithAssignmentResponseAudienceSpecParticipantTypeMax,
+			),
+		filters: zod
+			.array(
+				zod.object({
+					field_name: zod
+						.string()
+						.regex(
+							createExperimentWithAssignmentResponseAudienceSpecFiltersItemFieldNameRegExp,
+						),
+					relation: zod.enum(["includes", "excludes", "between"]),
+					value: zod
+						.array(zod.number().or(zod.null()))
+						.or(zod.array(zod.number().or(zod.null())))
+						.or(zod.array(zod.string().or(zod.null())))
+						.or(zod.array(zod.boolean().or(zod.null()))),
+				}),
+			)
+			.max(createExperimentWithAssignmentResponseAudienceSpecFiltersMax),
 	}),
 	power_analyses: zod
 		.object({
-			analyses: zod.array(
-				zod.object({
-					metric_spec: zod.object({
-						field_name: zod
-							.string()
-							.regex(
-								createExperimentWithAssignmentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp,
-							),
-						metric_pct_change: zod.number().or(zod.null()).optional(),
-						metric_target: zod.number().or(zod.null()).optional(),
-						metric_type: zod
-							.enum(["binary", "numeric"])
-							.or(zod.null())
-							.optional(),
-						metric_baseline: zod.number().or(zod.null()).optional(),
-						metric_stddev: zod.number().or(zod.null()).optional(),
-						available_nonnull_n: zod.number().or(zod.null()).optional(),
-						available_n: zod.number().or(zod.null()).optional(),
-					}),
-					target_n: zod.number().or(zod.null()).optional(),
-					sufficient_n: zod.boolean().or(zod.null()).optional(),
-					target_possible: zod.number().or(zod.null()).optional(),
-					pct_change_possible: zod.number().or(zod.null()).optional(),
-					msg: zod
-						.object({
-							type: zod.enum([
-								"sufficient",
-								"insufficient",
-								"no baseline",
-								"no available n",
-								"zero effect size",
-							]),
-							msg: zod.string(),
-							source_msg: zod.string(),
-							values: zod
-								.record(zod.string(), zod.number().or(zod.number()))
+			analyses: zod
+				.array(
+					zod.object({
+						metric_spec: zod.object({
+							field_name: zod
+								.string()
+								.regex(
+									createExperimentWithAssignmentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp,
+								),
+							metric_pct_change: zod.number().or(zod.null()).optional(),
+							metric_target: zod.number().or(zod.null()).optional(),
+							metric_type: zod
+								.enum(["binary", "numeric"])
 								.or(zod.null())
 								.optional(),
-						})
-						.or(zod.null())
-						.optional(),
-				}),
-			),
+							metric_baseline: zod.number().or(zod.null()).optional(),
+							metric_stddev: zod.number().or(zod.null()).optional(),
+							available_nonnull_n: zod.number().or(zod.null()).optional(),
+							available_n: zod.number().or(zod.null()).optional(),
+						}),
+						target_n: zod.number().or(zod.null()).optional(),
+						sufficient_n: zod.boolean().or(zod.null()).optional(),
+						target_possible: zod.number().or(zod.null()).optional(),
+						pct_change_possible: zod.number().or(zod.null()).optional(),
+						msg: zod
+							.object({
+								type: zod.enum([
+									"sufficient",
+									"insufficient",
+									"no baseline",
+									"no available n",
+									"zero effect size",
+								]),
+								msg: zod.string(),
+								source_msg: zod.string(),
+								values: zod
+									.record(zod.string(), zod.number().or(zod.number()))
+									.or(zod.null())
+									.optional(),
+							})
+							.or(zod.null())
+							.optional(),
+					}),
+				)
+				.max(createExperimentWithAssignmentResponsePowerAnalysesAnalysesMax),
 		})
 		.or(zod.null()),
 	assign_summary: zod.object({
@@ -1288,12 +1566,23 @@ export const createExperimentWithAssignmentResponse = zod.object({
 				zod.object({
 					arm: zod.object({
 						arm_id: zod.string().uuid().or(zod.null()).optional(),
-						arm_name: zod.string(),
-						arm_description: zod.string().or(zod.null()).optional(),
+						arm_name: zod
+							.string()
+							.max(
+								createExperimentWithAssignmentResponseAssignSummaryArmSizesItemArmArmNameMax,
+							),
+						arm_description: zod
+							.string()
+							.max(
+								createExperimentWithAssignmentResponseAssignSummaryArmSizesItemArmArmDescriptionMaxOne,
+							)
+							.or(zod.null())
+							.optional(),
 					}),
 					size: zod.number().optional(),
 				}),
 			)
+			.max(createExperimentWithAssignmentResponseAssignSummaryArmSizesMaxOne)
 			.or(zod.null())
 			.optional(),
 	}),
@@ -1307,13 +1596,28 @@ export const analyzeExperimentParams = zod.object({
 	experiment_id: zod.string(),
 });
 
+export const analyzeExperimentResponseMetricNameRegExp = new RegExp(
+	"^[a-zA-Z_][a-zA-Z0-9_]*$",
+);
+export const analyzeExperimentResponseArmIdsMax = 10;
+export const analyzeExperimentResponseCoefficientsMax = 10;
+export const analyzeExperimentResponsePvaluesMax = 10;
+export const analyzeExperimentResponseTstatsMax = 10;
+export const analyzeExperimentResponseStdErrorsMax = 10;
+
 export const analyzeExperimentResponseItem = zod.object({
-	metric_name: zod.string(),
-	arm_ids: zod.array(zod.string().uuid()),
-	coefficients: zod.array(zod.number()),
-	pvalues: zod.array(zod.number()),
-	tstats: zod.array(zod.number()),
-	std_errors: zod.array(zod.number()),
+	metric_name: zod.string().regex(analyzeExperimentResponseMetricNameRegExp),
+	arm_ids: zod
+		.array(zod.string().uuid())
+		.max(analyzeExperimentResponseArmIdsMax),
+	coefficients: zod
+		.array(zod.number())
+		.max(analyzeExperimentResponseCoefficientsMax),
+	pvalues: zod.array(zod.number()).max(analyzeExperimentResponsePvaluesMax),
+	tstats: zod.array(zod.number()).max(analyzeExperimentResponseTstatsMax),
+	std_errors: zod
+		.array(zod.number())
+		.max(analyzeExperimentResponseStdErrorsMax),
 });
 export const analyzeExperimentResponse = zod.array(
 	analyzeExperimentResponseItem,
@@ -1343,11 +1647,19 @@ export const listExperimentsParams = zod.object({
 	datasource_id: zod.string(),
 });
 
+export const listExperimentsResponseItemsItemDesignSpecExperimentNameMax = 100;
+export const listExperimentsResponseItemsItemDesignSpecDescriptionMax = 2000;
+export const listExperimentsResponseItemsItemDesignSpecArmsItemArmNameMax = 100;
+export const listExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOne = 2000;
 export const listExperimentsResponseItemsItemDesignSpecArmsMin = 2;
+
+export const listExperimentsResponseItemsItemDesignSpecArmsMax = 10;
 export const listExperimentsResponseItemsItemDesignSpecStrataFieldNamesItemRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const listExperimentsResponseItemsItemDesignSpecStrataFieldNamesMax = 100;
 export const listExperimentsResponseItemsItemDesignSpecMetricsItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const listExperimentsResponseItemsItemDesignSpecMetricsMax = 100;
 export const listExperimentsResponseItemsItemDesignSpecPowerDefault = 0.8;
 export const listExperimentsResponseItemsItemDesignSpecPowerMin = 0;
 
@@ -1360,11 +1672,17 @@ export const listExperimentsResponseItemsItemDesignSpecFstatThreshDefault = 0.6;
 export const listExperimentsResponseItemsItemDesignSpecFstatThreshMin = 0;
 
 export const listExperimentsResponseItemsItemDesignSpecFstatThreshMax = 1;
+export const listExperimentsResponseItemsItemAudienceSpecParticipantTypeMax = 100;
 export const listExperimentsResponseItemsItemAudienceSpecFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const listExperimentsResponseItemsItemAudienceSpecFiltersMax = 20;
 export const listExperimentsResponseItemsItemPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const listExperimentsResponseItemsItemPowerAnalysesAnalysesMax = 100;
+export const listExperimentsResponseItemsItemAssignSummaryArmSizesItemArmArmNameMax = 100;
+export const listExperimentsResponseItemsItemAssignSummaryArmSizesItemArmArmDescriptionMaxOne = 2000;
 export const listExperimentsResponseItemsItemAssignSummaryArmSizesItemSizeDefault = 0;
+export const listExperimentsResponseItemsItemAssignSummaryArmSizesMaxOne = 10;
 
 export const listExperimentsResponse = zod.object({
 	items: zod.array(
@@ -1379,26 +1697,43 @@ export const listExperimentsResponse = zod.object({
 			]),
 			design_spec: zod.object({
 				experiment_id: zod.string().uuid().or(zod.null()).optional(),
-				experiment_name: zod.string(),
-				description: zod.string(),
+				experiment_name: zod
+					.string()
+					.max(listExperimentsResponseItemsItemDesignSpecExperimentNameMax),
+				description: zod
+					.string()
+					.max(listExperimentsResponseItemsItemDesignSpecDescriptionMax),
 				start_date: zod.string().datetime(),
 				end_date: zod.string().datetime(),
 				arms: zod
 					.array(
 						zod.object({
 							arm_id: zod.string().uuid().or(zod.null()).optional(),
-							arm_name: zod.string(),
-							arm_description: zod.string().or(zod.null()).optional(),
+							arm_name: zod
+								.string()
+								.max(
+									listExperimentsResponseItemsItemDesignSpecArmsItemArmNameMax,
+								),
+							arm_description: zod
+								.string()
+								.max(
+									listExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOne,
+								)
+								.or(zod.null())
+								.optional(),
 						}),
 					)
-					.min(listExperimentsResponseItemsItemDesignSpecArmsMin),
-				strata_field_names: zod.array(
-					zod
-						.string()
-						.regex(
-							listExperimentsResponseItemsItemDesignSpecStrataFieldNamesItemRegExp,
-						),
-				),
+					.min(listExperimentsResponseItemsItemDesignSpecArmsMin)
+					.max(listExperimentsResponseItemsItemDesignSpecArmsMax),
+				strata_field_names: zod
+					.array(
+						zod
+							.string()
+							.regex(
+								listExperimentsResponseItemsItemDesignSpecStrataFieldNamesItemRegExp,
+							),
+					)
+					.max(listExperimentsResponseItemsItemDesignSpecStrataFieldNamesMax),
 				metrics: zod
 					.array(
 						zod.object({
@@ -1411,7 +1746,8 @@ export const listExperimentsResponse = zod.object({
 							metric_target: zod.number().or(zod.null()).optional(),
 						}),
 					)
-					.min(1),
+					.min(1)
+					.max(listExperimentsResponseItemsItemDesignSpecMetricsMax),
 				power: zod
 					.number()
 					.min(listExperimentsResponseItemsItemDesignSpecPowerMin)
@@ -1431,68 +1767,74 @@ export const listExperimentsResponse = zod.object({
 					),
 			}),
 			audience_spec: zod.object({
-				participant_type: zod.string(),
-				filters: zod.array(
-					zod.object({
-						field_name: zod
-							.string()
-							.regex(
-								listExperimentsResponseItemsItemAudienceSpecFiltersItemFieldNameRegExp,
-							),
-						relation: zod.enum(["includes", "excludes", "between"]),
-						value: zod
-							.array(zod.number().or(zod.null()))
-							.or(zod.array(zod.number().or(zod.null())))
-							.or(zod.array(zod.string().or(zod.null())))
-							.or(zod.array(zod.boolean().or(zod.null()))),
-					}),
-				),
+				participant_type: zod
+					.string()
+					.max(listExperimentsResponseItemsItemAudienceSpecParticipantTypeMax),
+				filters: zod
+					.array(
+						zod.object({
+							field_name: zod
+								.string()
+								.regex(
+									listExperimentsResponseItemsItemAudienceSpecFiltersItemFieldNameRegExp,
+								),
+							relation: zod.enum(["includes", "excludes", "between"]),
+							value: zod
+								.array(zod.number().or(zod.null()))
+								.or(zod.array(zod.number().or(zod.null())))
+								.or(zod.array(zod.string().or(zod.null())))
+								.or(zod.array(zod.boolean().or(zod.null()))),
+						}),
+					)
+					.max(listExperimentsResponseItemsItemAudienceSpecFiltersMax),
 			}),
 			power_analyses: zod
 				.object({
-					analyses: zod.array(
-						zod.object({
-							metric_spec: zod.object({
-								field_name: zod
-									.string()
-									.regex(
-										listExperimentsResponseItemsItemPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp,
-									),
-								metric_pct_change: zod.number().or(zod.null()).optional(),
-								metric_target: zod.number().or(zod.null()).optional(),
-								metric_type: zod
-									.enum(["binary", "numeric"])
-									.or(zod.null())
-									.optional(),
-								metric_baseline: zod.number().or(zod.null()).optional(),
-								metric_stddev: zod.number().or(zod.null()).optional(),
-								available_nonnull_n: zod.number().or(zod.null()).optional(),
-								available_n: zod.number().or(zod.null()).optional(),
-							}),
-							target_n: zod.number().or(zod.null()).optional(),
-							sufficient_n: zod.boolean().or(zod.null()).optional(),
-							target_possible: zod.number().or(zod.null()).optional(),
-							pct_change_possible: zod.number().or(zod.null()).optional(),
-							msg: zod
-								.object({
-									type: zod.enum([
-										"sufficient",
-										"insufficient",
-										"no baseline",
-										"no available n",
-										"zero effect size",
-									]),
-									msg: zod.string(),
-									source_msg: zod.string(),
-									values: zod
-										.record(zod.string(), zod.number().or(zod.number()))
+					analyses: zod
+						.array(
+							zod.object({
+								metric_spec: zod.object({
+									field_name: zod
+										.string()
+										.regex(
+											listExperimentsResponseItemsItemPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp,
+										),
+									metric_pct_change: zod.number().or(zod.null()).optional(),
+									metric_target: zod.number().or(zod.null()).optional(),
+									metric_type: zod
+										.enum(["binary", "numeric"])
 										.or(zod.null())
 										.optional(),
-								})
-								.or(zod.null())
-								.optional(),
-						}),
-					),
+									metric_baseline: zod.number().or(zod.null()).optional(),
+									metric_stddev: zod.number().or(zod.null()).optional(),
+									available_nonnull_n: zod.number().or(zod.null()).optional(),
+									available_n: zod.number().or(zod.null()).optional(),
+								}),
+								target_n: zod.number().or(zod.null()).optional(),
+								sufficient_n: zod.boolean().or(zod.null()).optional(),
+								target_possible: zod.number().or(zod.null()).optional(),
+								pct_change_possible: zod.number().or(zod.null()).optional(),
+								msg: zod
+									.object({
+										type: zod.enum([
+											"sufficient",
+											"insufficient",
+											"no baseline",
+											"no available n",
+											"zero effect size",
+										]),
+										msg: zod.string(),
+										source_msg: zod.string(),
+										values: zod
+											.record(zod.string(), zod.number().or(zod.number()))
+											.or(zod.null())
+											.optional(),
+									})
+									.or(zod.null())
+									.optional(),
+							}),
+						)
+						.max(listExperimentsResponseItemsItemPowerAnalysesAnalysesMax),
 				})
 				.or(zod.null()),
 			assign_summary: zod.object({
@@ -1509,12 +1851,23 @@ export const listExperimentsResponse = zod.object({
 						zod.object({
 							arm: zod.object({
 								arm_id: zod.string().uuid().or(zod.null()).optional(),
-								arm_name: zod.string(),
-								arm_description: zod.string().or(zod.null()).optional(),
+								arm_name: zod
+									.string()
+									.max(
+										listExperimentsResponseItemsItemAssignSummaryArmSizesItemArmArmNameMax,
+									),
+								arm_description: zod
+									.string()
+									.max(
+										listExperimentsResponseItemsItemAssignSummaryArmSizesItemArmArmDescriptionMaxOne,
+									)
+									.or(zod.null())
+									.optional(),
 							}),
 							size: zod.number().optional(),
 						}),
 					)
+					.max(listExperimentsResponseItemsItemAssignSummaryArmSizesMaxOne)
 					.or(zod.null())
 					.optional(),
 			}),
@@ -1531,11 +1884,19 @@ export const getExperimentParams = zod.object({
 	experiment_id: zod.string(),
 });
 
+export const getExperimentResponseDesignSpecExperimentNameMax = 100;
+export const getExperimentResponseDesignSpecDescriptionMax = 2000;
+export const getExperimentResponseDesignSpecArmsItemArmNameMax = 100;
+export const getExperimentResponseDesignSpecArmsItemArmDescriptionMaxOne = 2000;
 export const getExperimentResponseDesignSpecArmsMin = 2;
+
+export const getExperimentResponseDesignSpecArmsMax = 10;
 export const getExperimentResponseDesignSpecStrataFieldNamesItemRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const getExperimentResponseDesignSpecStrataFieldNamesMax = 100;
 export const getExperimentResponseDesignSpecMetricsItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const getExperimentResponseDesignSpecMetricsMax = 100;
 export const getExperimentResponseDesignSpecPowerDefault = 0.8;
 export const getExperimentResponseDesignSpecPowerMin = 0;
 
@@ -1548,11 +1909,17 @@ export const getExperimentResponseDesignSpecFstatThreshDefault = 0.6;
 export const getExperimentResponseDesignSpecFstatThreshMin = 0;
 
 export const getExperimentResponseDesignSpecFstatThreshMax = 1;
+export const getExperimentResponseAudienceSpecParticipantTypeMax = 100;
 export const getExperimentResponseAudienceSpecFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const getExperimentResponseAudienceSpecFiltersMax = 20;
 export const getExperimentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const getExperimentResponsePowerAnalysesAnalysesMax = 100;
+export const getExperimentResponseAssignSummaryArmSizesItemArmArmNameMax = 100;
+export const getExperimentResponseAssignSummaryArmSizesItemArmArmDescriptionMaxOne = 2000;
 export const getExperimentResponseAssignSummaryArmSizesItemSizeDefault = 0;
+export const getExperimentResponseAssignSummaryArmSizesMaxOne = 10;
 
 export const getExperimentResponse = zod.object({
 	datasource_id: zod.string(),
@@ -1565,24 +1932,37 @@ export const getExperimentResponse = zod.object({
 	]),
 	design_spec: zod.object({
 		experiment_id: zod.string().uuid().or(zod.null()).optional(),
-		experiment_name: zod.string(),
-		description: zod.string(),
+		experiment_name: zod
+			.string()
+			.max(getExperimentResponseDesignSpecExperimentNameMax),
+		description: zod
+			.string()
+			.max(getExperimentResponseDesignSpecDescriptionMax),
 		start_date: zod.string().datetime(),
 		end_date: zod.string().datetime(),
 		arms: zod
 			.array(
 				zod.object({
 					arm_id: zod.string().uuid().or(zod.null()).optional(),
-					arm_name: zod.string(),
-					arm_description: zod.string().or(zod.null()).optional(),
+					arm_name: zod
+						.string()
+						.max(getExperimentResponseDesignSpecArmsItemArmNameMax),
+					arm_description: zod
+						.string()
+						.max(getExperimentResponseDesignSpecArmsItemArmDescriptionMaxOne)
+						.or(zod.null())
+						.optional(),
 				}),
 			)
-			.min(getExperimentResponseDesignSpecArmsMin),
-		strata_field_names: zod.array(
-			zod
-				.string()
-				.regex(getExperimentResponseDesignSpecStrataFieldNamesItemRegExp),
-		),
+			.min(getExperimentResponseDesignSpecArmsMin)
+			.max(getExperimentResponseDesignSpecArmsMax),
+		strata_field_names: zod
+			.array(
+				zod
+					.string()
+					.regex(getExperimentResponseDesignSpecStrataFieldNamesItemRegExp),
+			)
+			.max(getExperimentResponseDesignSpecStrataFieldNamesMax),
 		metrics: zod
 			.array(
 				zod.object({
@@ -1593,7 +1973,8 @@ export const getExperimentResponse = zod.object({
 					metric_target: zod.number().or(zod.null()).optional(),
 				}),
 			)
-			.min(1),
+			.min(1)
+			.max(getExperimentResponseDesignSpecMetricsMax),
 		power: zod
 			.number()
 			.min(getExperimentResponseDesignSpecPowerMin)
@@ -1611,66 +1992,72 @@ export const getExperimentResponse = zod.object({
 			.default(getExperimentResponseDesignSpecFstatThreshDefault),
 	}),
 	audience_spec: zod.object({
-		participant_type: zod.string(),
-		filters: zod.array(
-			zod.object({
-				field_name: zod
-					.string()
-					.regex(getExperimentResponseAudienceSpecFiltersItemFieldNameRegExp),
-				relation: zod.enum(["includes", "excludes", "between"]),
-				value: zod
-					.array(zod.number().or(zod.null()))
-					.or(zod.array(zod.number().or(zod.null())))
-					.or(zod.array(zod.string().or(zod.null())))
-					.or(zod.array(zod.boolean().or(zod.null()))),
-			}),
-		),
+		participant_type: zod
+			.string()
+			.max(getExperimentResponseAudienceSpecParticipantTypeMax),
+		filters: zod
+			.array(
+				zod.object({
+					field_name: zod
+						.string()
+						.regex(getExperimentResponseAudienceSpecFiltersItemFieldNameRegExp),
+					relation: zod.enum(["includes", "excludes", "between"]),
+					value: zod
+						.array(zod.number().or(zod.null()))
+						.or(zod.array(zod.number().or(zod.null())))
+						.or(zod.array(zod.string().or(zod.null())))
+						.or(zod.array(zod.boolean().or(zod.null()))),
+				}),
+			)
+			.max(getExperimentResponseAudienceSpecFiltersMax),
 	}),
 	power_analyses: zod
 		.object({
-			analyses: zod.array(
-				zod.object({
-					metric_spec: zod.object({
-						field_name: zod
-							.string()
-							.regex(
-								getExperimentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp,
-							),
-						metric_pct_change: zod.number().or(zod.null()).optional(),
-						metric_target: zod.number().or(zod.null()).optional(),
-						metric_type: zod
-							.enum(["binary", "numeric"])
-							.or(zod.null())
-							.optional(),
-						metric_baseline: zod.number().or(zod.null()).optional(),
-						metric_stddev: zod.number().or(zod.null()).optional(),
-						available_nonnull_n: zod.number().or(zod.null()).optional(),
-						available_n: zod.number().or(zod.null()).optional(),
-					}),
-					target_n: zod.number().or(zod.null()).optional(),
-					sufficient_n: zod.boolean().or(zod.null()).optional(),
-					target_possible: zod.number().or(zod.null()).optional(),
-					pct_change_possible: zod.number().or(zod.null()).optional(),
-					msg: zod
-						.object({
-							type: zod.enum([
-								"sufficient",
-								"insufficient",
-								"no baseline",
-								"no available n",
-								"zero effect size",
-							]),
-							msg: zod.string(),
-							source_msg: zod.string(),
-							values: zod
-								.record(zod.string(), zod.number().or(zod.number()))
+			analyses: zod
+				.array(
+					zod.object({
+						metric_spec: zod.object({
+							field_name: zod
+								.string()
+								.regex(
+									getExperimentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp,
+								),
+							metric_pct_change: zod.number().or(zod.null()).optional(),
+							metric_target: zod.number().or(zod.null()).optional(),
+							metric_type: zod
+								.enum(["binary", "numeric"])
 								.or(zod.null())
 								.optional(),
-						})
-						.or(zod.null())
-						.optional(),
-				}),
-			),
+							metric_baseline: zod.number().or(zod.null()).optional(),
+							metric_stddev: zod.number().or(zod.null()).optional(),
+							available_nonnull_n: zod.number().or(zod.null()).optional(),
+							available_n: zod.number().or(zod.null()).optional(),
+						}),
+						target_n: zod.number().or(zod.null()).optional(),
+						sufficient_n: zod.boolean().or(zod.null()).optional(),
+						target_possible: zod.number().or(zod.null()).optional(),
+						pct_change_possible: zod.number().or(zod.null()).optional(),
+						msg: zod
+							.object({
+								type: zod.enum([
+									"sufficient",
+									"insufficient",
+									"no baseline",
+									"no available n",
+									"zero effect size",
+								]),
+								msg: zod.string(),
+								source_msg: zod.string(),
+								values: zod
+									.record(zod.string(), zod.number().or(zod.number()))
+									.or(zod.null())
+									.optional(),
+							})
+							.or(zod.null())
+							.optional(),
+					}),
+				)
+				.max(getExperimentResponsePowerAnalysesAnalysesMax),
 		})
 		.or(zod.null()),
 	assign_summary: zod.object({
@@ -1687,12 +2074,21 @@ export const getExperimentResponse = zod.object({
 				zod.object({
 					arm: zod.object({
 						arm_id: zod.string().uuid().or(zod.null()).optional(),
-						arm_name: zod.string(),
-						arm_description: zod.string().or(zod.null()).optional(),
+						arm_name: zod
+							.string()
+							.max(getExperimentResponseAssignSummaryArmSizesItemArmArmNameMax),
+						arm_description: zod
+							.string()
+							.max(
+								getExperimentResponseAssignSummaryArmSizesItemArmArmDescriptionMaxOne,
+							)
+							.or(zod.null())
+							.optional(),
 					}),
 					size: zod.number().optional(),
 				}),
 			)
+			.max(getExperimentResponseAssignSummaryArmSizesMaxOne)
 			.or(zod.null())
 			.optional(),
 	}),
@@ -1715,8 +2111,11 @@ export const getExperimentAssignmentsParams = zod.object({
 	experiment_id: zod.string(),
 });
 
+export const getExperimentAssignmentsResponseAssignmentsItemParticipantIdMax = 64;
+export const getExperimentAssignmentsResponseAssignmentsItemArmNameMax = 100;
 export const getExperimentAssignmentsResponseAssignmentsItemStrataItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const getExperimentAssignmentsResponseAssignmentsItemStrataMaxOne = 100;
 
 export const getExperimentAssignmentsResponse = zod.object({
 	balance_check: zod.object({
@@ -1730,9 +2129,13 @@ export const getExperimentAssignmentsResponse = zod.object({
 	sample_size: zod.number(),
 	assignments: zod.array(
 		zod.object({
-			participant_id: zod.string(),
+			participant_id: zod
+				.string()
+				.max(getExperimentAssignmentsResponseAssignmentsItemParticipantIdMax),
 			arm_id: zod.string().uuid(),
-			arm_name: zod.string(),
+			arm_name: zod
+				.string()
+				.max(getExperimentAssignmentsResponseAssignmentsItemArmNameMax),
 			strata: zod
 				.array(
 					zod.object({
@@ -1744,6 +2147,7 @@ export const getExperimentAssignmentsResponse = zod.object({
 						strata_value: zod.string().or(zod.null()).optional(),
 					}),
 				)
+				.max(getExperimentAssignmentsResponseAssignmentsItemStrataMaxOne)
 				.or(zod.null())
 				.optional(),
 		}),
@@ -1767,13 +2171,21 @@ export const powerCheckParams = zod.object({
 	datasource_id: zod.string(),
 });
 
+export const powerCheckBodyDesignSpecExperimentNameMax = 100;
+export const powerCheckBodyDesignSpecDescriptionMax = 2000;
+export const powerCheckBodyDesignSpecArmsItemArmNameMax = 100;
+export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOne = 2000;
 export const powerCheckBodyDesignSpecArmsMin = 2;
+
+export const powerCheckBodyDesignSpecArmsMax = 10;
 export const powerCheckBodyDesignSpecStrataFieldNamesItemRegExp = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
+export const powerCheckBodyDesignSpecStrataFieldNamesMax = 100;
 export const powerCheckBodyDesignSpecMetricsItemFieldNameRegExp = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
+export const powerCheckBodyDesignSpecMetricsMax = 100;
 export const powerCheckBodyDesignSpecPowerDefault = 0.8;
 export const powerCheckBodyDesignSpecPowerMin = 0;
 
@@ -1786,29 +2198,42 @@ export const powerCheckBodyDesignSpecFstatThreshDefault = 0.6;
 export const powerCheckBodyDesignSpecFstatThreshMin = 0;
 
 export const powerCheckBodyDesignSpecFstatThreshMax = 1;
+export const powerCheckBodyAudienceSpecParticipantTypeMax = 100;
 export const powerCheckBodyAudienceSpecFiltersItemFieldNameRegExp = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
+export const powerCheckBodyAudienceSpecFiltersMax = 20;
 
 export const powerCheckBody = zod.object({
 	design_spec: zod.object({
 		experiment_id: zod.string().uuid().or(zod.null()).optional(),
-		experiment_name: zod.string(),
-		description: zod.string(),
+		experiment_name: zod
+			.string()
+			.max(powerCheckBodyDesignSpecExperimentNameMax),
+		description: zod.string().max(powerCheckBodyDesignSpecDescriptionMax),
 		start_date: zod.string().datetime(),
 		end_date: zod.string().datetime(),
 		arms: zod
 			.array(
 				zod.object({
 					arm_id: zod.string().uuid().or(zod.null()).optional(),
-					arm_name: zod.string(),
-					arm_description: zod.string().or(zod.null()).optional(),
+					arm_name: zod
+						.string()
+						.max(powerCheckBodyDesignSpecArmsItemArmNameMax),
+					arm_description: zod
+						.string()
+						.max(powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOne)
+						.or(zod.null())
+						.optional(),
 				}),
 			)
-			.min(powerCheckBodyDesignSpecArmsMin),
-		strata_field_names: zod.array(
-			zod.string().regex(powerCheckBodyDesignSpecStrataFieldNamesItemRegExp),
-		),
+			.min(powerCheckBodyDesignSpecArmsMin)
+			.max(powerCheckBodyDesignSpecArmsMax),
+		strata_field_names: zod
+			.array(
+				zod.string().regex(powerCheckBodyDesignSpecStrataFieldNamesItemRegExp),
+			)
+			.max(powerCheckBodyDesignSpecStrataFieldNamesMax),
 		metrics: zod
 			.array(
 				zod.object({
@@ -1819,7 +2244,8 @@ export const powerCheckBody = zod.object({
 					metric_target: zod.number().or(zod.null()).optional(),
 				}),
 			)
-			.min(1),
+			.min(1)
+			.max(powerCheckBodyDesignSpecMetricsMax),
 		power: zod
 			.number()
 			.min(powerCheckBodyDesignSpecPowerMin)
@@ -1837,63 +2263,73 @@ export const powerCheckBody = zod.object({
 			.default(powerCheckBodyDesignSpecFstatThreshDefault),
 	}),
 	audience_spec: zod.object({
-		participant_type: zod.string(),
-		filters: zod.array(
-			zod.object({
-				field_name: zod
-					.string()
-					.regex(powerCheckBodyAudienceSpecFiltersItemFieldNameRegExp),
-				relation: zod.enum(["includes", "excludes", "between"]),
-				value: zod
-					.array(zod.number().or(zod.null()))
-					.or(zod.array(zod.number().or(zod.null())))
-					.or(zod.array(zod.string().or(zod.null())))
-					.or(zod.array(zod.boolean().or(zod.null()))),
-			}),
-		),
+		participant_type: zod
+			.string()
+			.max(powerCheckBodyAudienceSpecParticipantTypeMax),
+		filters: zod
+			.array(
+				zod.object({
+					field_name: zod
+						.string()
+						.regex(powerCheckBodyAudienceSpecFiltersItemFieldNameRegExp),
+					relation: zod.enum(["includes", "excludes", "between"]),
+					value: zod
+						.array(zod.number().or(zod.null()))
+						.or(zod.array(zod.number().or(zod.null())))
+						.or(zod.array(zod.string().or(zod.null())))
+						.or(zod.array(zod.boolean().or(zod.null()))),
+				}),
+			)
+			.max(powerCheckBodyAudienceSpecFiltersMax),
 	}),
 });
 
 export const powerCheckResponseAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const powerCheckResponseAnalysesMax = 100;
 
 export const powerCheckResponse = zod.object({
-	analyses: zod.array(
-		zod.object({
-			metric_spec: zod.object({
-				field_name: zod
-					.string()
-					.regex(powerCheckResponseAnalysesItemMetricSpecFieldNameRegExp),
-				metric_pct_change: zod.number().or(zod.null()).optional(),
-				metric_target: zod.number().or(zod.null()).optional(),
-				metric_type: zod.enum(["binary", "numeric"]).or(zod.null()).optional(),
-				metric_baseline: zod.number().or(zod.null()).optional(),
-				metric_stddev: zod.number().or(zod.null()).optional(),
-				available_nonnull_n: zod.number().or(zod.null()).optional(),
-				available_n: zod.number().or(zod.null()).optional(),
-			}),
-			target_n: zod.number().or(zod.null()).optional(),
-			sufficient_n: zod.boolean().or(zod.null()).optional(),
-			target_possible: zod.number().or(zod.null()).optional(),
-			pct_change_possible: zod.number().or(zod.null()).optional(),
-			msg: zod
-				.object({
-					type: zod.enum([
-						"sufficient",
-						"insufficient",
-						"no baseline",
-						"no available n",
-						"zero effect size",
-					]),
-					msg: zod.string(),
-					source_msg: zod.string(),
-					values: zod
-						.record(zod.string(), zod.number().or(zod.number()))
+	analyses: zod
+		.array(
+			zod.object({
+				metric_spec: zod.object({
+					field_name: zod
+						.string()
+						.regex(powerCheckResponseAnalysesItemMetricSpecFieldNameRegExp),
+					metric_pct_change: zod.number().or(zod.null()).optional(),
+					metric_target: zod.number().or(zod.null()).optional(),
+					metric_type: zod
+						.enum(["binary", "numeric"])
 						.or(zod.null())
 						.optional(),
-				})
-				.or(zod.null())
-				.optional(),
-		}),
-	),
+					metric_baseline: zod.number().or(zod.null()).optional(),
+					metric_stddev: zod.number().or(zod.null()).optional(),
+					available_nonnull_n: zod.number().or(zod.null()).optional(),
+					available_n: zod.number().or(zod.null()).optional(),
+				}),
+				target_n: zod.number().or(zod.null()).optional(),
+				sufficient_n: zod.boolean().or(zod.null()).optional(),
+				target_possible: zod.number().or(zod.null()).optional(),
+				pct_change_possible: zod.number().or(zod.null()).optional(),
+				msg: zod
+					.object({
+						type: zod.enum([
+							"sufficient",
+							"insufficient",
+							"no baseline",
+							"no available n",
+							"zero effect size",
+						]),
+						msg: zod.string(),
+						source_msg: zod.string(),
+						values: zod
+							.record(zod.string(), zod.number().or(zod.number()))
+							.or(zod.null())
+							.optional(),
+					})
+					.or(zod.null())
+					.optional(),
+			}),
+		)
+		.max(powerCheckResponseAnalysesMax),
 });
