@@ -94,7 +94,8 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
           >
             <Dialog.Title>Add Datasource</Dialog.Title>
             <Dialog.Description size="2" mb="4">
-              Add a datasource to this organization.
+              <p>Add a datasource to this organization.</p>
+              {dwhType === 'redshift' && <p>Tip: Redshift default port is 5439.</p>}
             </Dialog.Description>
 
             <Flex direction="column" gap="3">
