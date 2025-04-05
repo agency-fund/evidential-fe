@@ -110,6 +110,7 @@ export const EditDatasourceDialog = ({
   }
 
   const isBigQuery = config.dwh.driver === 'bigquery';
+  const isRedshift = config.dwh.driver === 'postgresql+psycopg2' && config.dwh.host.endsWith('redshift.amazonaws.com');
 
   return (
     <Dialog.Root
@@ -233,21 +234,23 @@ export const EditDatasourceDialog = ({
                     </Button>
                   </Flex>
                 </label>
-                <label>
-                  <Text as="div" size="2" mb="1" weight="bold">
-                    SSL Mode
-                  </Text>
-                  <select
-                    name="sslmode"
-                    value={sslmode}
-                    onChange={(e) => setSslmode(e.target.value as PostgresSslModes)}
-                  >
-                    <option value="disable">disable</option>
-                    <option value="require">require</option>
-                    <option value="verify-ca">verify-ca</option>
-                    <option value="verify-full">verify-full</option>
-                  </select>
-                </label>
+                {!isRedshift && (
+                  <label>
+                    <Text as="div" size="2" mb="1" weight="bold">
+                      SSL Mode
+                    </Text>
+                    <select
+                      name="sslmode"
+                      value={sslmode}
+                      onChange={(e) => setSslmode(e.target.value as PostgresSslModes)}
+                    >
+                      <option value="disable">disable</option>
+                      <option value="require">require</option>
+                      <option value="verify-ca">verify-ca</option>
+                      <option value="verify-full">verify-full</option>
+                    </select>
+                  </label>
+                )}
                 <label>
                   <Text as="div" size="2" mb="1" weight="bold">
                     Search Path{' '}
