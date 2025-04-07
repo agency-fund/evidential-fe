@@ -24,7 +24,7 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
         enabled: tableIsSelected,
         revalidateIfStale: false,
         revalidateOnFocus: false,
-        revalidateOnReconnect: false
+        revalidateOnReconnect: false,
       },
     },
   );
@@ -116,19 +116,10 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
             <Flex direction="column" gap="3">
               <label>
                 <Text as="div" size="2" mb="1" weight="bold">
-                  Participant Type Name
-                </Text>
-                <TextField.Root
-                  name="participant_type"
-                  placeholder="e.g., students, faculty, organizers"
-                  required
-                  maxLength={40}
-                />
-              </label>
-
-              <label>
-                <Text as="div" size="2" mb="1" weight="bold">
                   Table Name
+                </Text>
+                <Text as="div" size={'1'} mb={'1'}>
+                  Please select the name of the data warehouse table.
                 </Text>
                 {!tables ? (
                   <XSpinner message="Loading table data..." />
@@ -149,10 +140,22 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
                 )}
               </label>
 
+              <label>
+                <Text as="div" size="2" mb="1" weight="bold">
+                  Participant Type Name
+                </Text>
+                <TextField.Root
+                  name="participant_type"
+                  placeholder="e.g., students, faculty, organizers"
+                  required
+                  maxLength={40}
+                />
+              </label>
+
               {loadingTableData ? (
                 <XSpinner message="Loading table data..." />
               ) : selectedTable === '' ? (
-                <Text>Please select a table.</Text>
+                <></>
               ) : (
                 <>
                   <Text as="div" size="2" mb="1" weight="bold">
