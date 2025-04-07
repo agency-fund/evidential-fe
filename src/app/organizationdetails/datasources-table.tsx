@@ -41,11 +41,9 @@ export function DatasourcesTable({
               </Flex>
             </Table.Cell>
             <Table.Cell>
-              {datasource.driver === 'bigquery'
-                ? 'Google BigQuery'
-                : datasource.driver === 'postgresql+psycopg'
-                  ? 'PostgreSQL'
-                  : datasource.driver}
+              {datasource.driver === 'bigquery' && 'Google BigQuery'}
+              {datasource.driver === 'postgresql+psycopg' && 'PostgreSQL'}
+              {datasource.driver === 'postgresql+psycopg2' && 'Redshift'}
             </Table.Cell>
             <Table.Cell>
               <Flex gap="2">

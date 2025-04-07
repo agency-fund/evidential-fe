@@ -1,5 +1,5 @@
 'use client';
-import { Box, Flex, Heading, Separator, Text } from '@radix-ui/themes';
+import { Box, Flex, Separator, Text } from '@radix-ui/themes';
 import Link from 'next/link';
 import { useAuth } from '@/app/providers/auth-provider';
 import { usePathname } from 'next/navigation';
@@ -26,7 +26,6 @@ export const NavigationBar = () => {
     >
       <OrganizationSelector />
       <Separator size="4" />
-      <Heading size="4">Experiments</Heading>
       <Flex direction="column" gap="2">
         <Link href="/">
           <Box
