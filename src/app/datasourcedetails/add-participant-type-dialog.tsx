@@ -39,11 +39,12 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
     if (tableData === undefined) {
       return;
     }
-    const probable_unique_id_field = tableData.detected_unique_id_fields?.pop();
+    const candidate_id_fields = tableData.detected_unique_id_fields ?? [];
+    const recommended_id = candidate_id_fields.length > 0 ? candidate_id_fields[0] : null;
     const sortedFields = tableData.fields
       .map(
         (field: FieldMetadata): FieldDescriptor => ({
-          is_unique_id: field.field_name == probable_unique_id_field,
+          is_unique_id: field.field_name == recommended_id,
           is_strata: false,
           is_filter: false,
           is_metric: false,
@@ -51,10 +52,20 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
         }),
       )
       .sort((a, b) => {
-        if (a.is_unique_id === b.is_unique_id) {
-          return a.field_name.localeCompare(b.field_name);
+        // Recommended unique ID field is always first.
+        if (a.is_unique_id !== b.is_unique_id) {
+          return a.is_unique_id ? -1 : 1;
         }
-        return a.is_unique_id ? -1 : 1;
+
+        // Other candidate ID fields order immediately after the recommended unique ID field.
+        const aIsCandidate = candidate_id_fields.includes(a.field_name);
+        const bIsCandidate = candidate_id_fields.includes(b.field_name);
+        if (aIsCandidate !== bIsCandidate) {
+          return aIsCandidate ? -1 : 1;
+        }
+
+        // If both are in candidate_id_fields or both are not, sort by field name
+        return a.field_name.localeCompare(b.field_name);
       });
     setFields(sortedFields);
   }, [tableData]);
@@ -68,6 +79,8 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
   const removeField = (index: number) => {
     setFields(fields.filter((_, i) => i !== index));
   };
+
+  console.log(tableData?.detected_unique_id_fields);
 
   return (
     <Dialog.Root
@@ -181,7 +194,13 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
                     <Table.Body>
                       {fields.map((field, index) => (
                         <Table.Row key={index}>
-                          <Table.Cell>{field.field_name}</Table.Cell>
+                          <Table.Cell>
+                            {tableData && tableData.detected_unique_id_fields.includes(field.field_name) ? (
+                              <Text weight={'bold'}>{field.field_name}</Text>
+                            ) : (
+                              <Text>{field.field_name}</Text>
+                            )}
+                          </Table.Cell>
                           <Table.Cell>{field.data_type}</Table.Cell>
                           <Table.Cell>
                             <TextField.Root
