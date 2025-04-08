@@ -218,9 +218,9 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
                   }
                   return (
                     <line
-                      x1={centerX || 0 - scaleHalfIntervalToViewport(ci95, xAxisWidth)}
+                      x1={(centerX || 0) - scaleHalfIntervalToViewport(ci95, xAxisWidth)}
                       y1={centerY}
-                      x2={centerX || 0 + scaleHalfIntervalToViewport(ci95, xAxisWidth)}
+                      x2={(centerX || 0) + scaleHalfIntervalToViewport(ci95, xAxisWidth)}
                       y2={centerY}
                       stroke={strokeColor}
                       strokeWidth={2}
@@ -272,7 +272,7 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
                       x1={centerX}
                       y1={0}
                       x2={centerX}
-                      y2={yAxis?.height || 0 + 20} // where's the extra 20 from? Margins?
+                      y2={(yAxis?.height || 0) + 20} // where's the extra 20 from? Margins?
                       stroke={COLORS.BASELINE}
                       strokeWidth={5}
                       strokeDasharray="1 1"
