@@ -36,8 +36,12 @@ interface ForestPlotProps {
   experiment: ExperimentConfig;
 }
 
-interface CustomShapeProps {
-  // inferred from inspecting props to the shape function; see also ScatterCustomizedShape recharts
+// Define a type for the shape props that matches what we need; leverages the fact that
+// type ScatterCustomizedShape accepts an ActiveShape, which allows for the signature:
+// ((props: unknown) => React.JSX.Element)
+// type TestProps = ActiveShape<ScatterPointItem, SVGPathElement & InnerSymbolsProp>;
+// We just list out what we need, inferred from inspecting props to this shape function.
+type CustomShapeProps = {
   cx?: number;
   cy?: number;
   payload?: EffectSizeData;
@@ -201,8 +205,11 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
                 fill="none"
                 // Draw a custom line for CIs since ErrorBars don't give us enough control
                 shape={(props: CustomShapeProps) => {
-                  if (!props.payload || !props.xAxis?.width) return null;
+                  // Always return an element even if empty.
+                  if (!props.payload || !props.xAxis?.width) return <g />;
+
                   const { ci95, significant, effect, isBaseline } = props.payload;
+                  const { cx: centerX, cy: centerY, xAxis: { width: xAxisWidth } } = props;
 
                   // Determine stroke color based on significance and direction
                   let strokeColor: string = COLORS.DEFAULT_CI;
@@ -211,10 +218,10 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
                   }
                   return (
                     <line
-                      x1={props.cx || 0 - scaleHalfIntervalToViewport(ci95, props.xAxis?.width)}
-                      y1={props.cy}
-                      x2={props.cx || 0 + scaleHalfIntervalToViewport(ci95, props.xAxis?.width)}
-                      y2={props.cy}
+                      x1={centerX || 0 - scaleHalfIntervalToViewport(ci95, xAxisWidth)}
+                      y1={centerY}
+                      x2={centerX || 0 + scaleHalfIntervalToViewport(ci95, xAxisWidth)}
+                      y2={centerY}
                       stroke={strokeColor}
                       strokeWidth={2}
                     />
@@ -228,19 +235,23 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
               <Scatter
                 data={effectSizes}
                 shape={(props: CustomShapeProps) => {
-                  if (!props.payload) return null;
+                  // Always return an element even if empty.
+                  if (!props.payload) return <g />;
+
                   const { significant, isBaseline, effect } = props.payload;
-                  let fillColor: string = COLORS.DEFAULT; // Default gray
+                  const { cx: centerX, cy: centerY } = props;
+
+                  let fillColor: string = COLORS.DEFAULT;
                   if (significant && !isBaseline) {
                     fillColor = effect > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
                   }
-                  if (props.payload?.isBaseline) {
+                  if (isBaseline) {
                     // Mark the control arm with a larger diamond shape
                     return (
-                      <polygon points={createDiamondShape(props.cx, props.cy, 8)} fill={COLORS.DEFAULT} stroke="none" />
+                      <polygon points={createDiamondShape(centerX, centerY, 8)} fill={COLORS.DEFAULT} stroke="none" />
                     );
                   } else {
-                    return <circle cx={props.cx} cy={props.cy} r={4} fill={fillColor} stroke="none" />;
+                    return <circle cx={centerX} cy={centerY} r={4} fill={fillColor} stroke="none" />;
                   }
                 }}
               />
@@ -251,15 +262,17 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
                 fill="none"
                 // Draw a custom SVG line for CIs since ErrorBars don't give us enough control
                 shape={(props: CustomShapeProps) => {
-                  if (!props.payload) return null;
-                  const { isBaseline } = props.payload;
-                  if (!isBaseline) return null;
+                  // Always return an element even if empty.
+                  if (!props.payload?.isBaseline) return <g />;
+
+                  const { cx: centerX, yAxis } = props;
+
                   return (
                     <line
-                      x1={props.cx}
+                      x1={centerX}
                       y1={0}
-                      x2={props.cx}
-                      y2={props.yAxis?.height || 0 + 20} // where's the extra 20 from? Margins?
+                      x2={centerX}
+                      y2={yAxis?.height || 0 + 20} // where's the extra 20 from? Margins?
                       stroke={COLORS.BASELINE}
                       strokeWidth={5}
                       strokeDasharray="1 1"
