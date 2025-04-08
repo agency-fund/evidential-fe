@@ -3,6 +3,7 @@ import { MetricAnalysis, ExperimentConfig } from '@/api/methods.schemas';
 import { Box, Card, Flex, Text } from '@radix-ui/themes';
 import { CartesianGrid, ResponsiveContainer, Scatter, ScatterChart, Tooltip, TooltipProps, XAxis, YAxis } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
+import { ChartOffset } from 'recharts/types/util/types';
 
 // Color constants
 const COLORS = {
@@ -127,7 +128,7 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
     return <Text>No treatment arms to display</Text>;
   }
 
-  // Get the min and max x-axis values to use in our charts.
+  // Get the min and max x-axis values in metric units to use in our charts.
   function getMinMaxX(effectSizes: EffectSizeData[]) {
     let minX = Math.min(...effectSizes.map((d) => d.absCI95Lower));
     let maxX = Math.max(...effectSizes.map((d) => d.absCI95Upper));
@@ -141,6 +142,14 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
     return [minX, maxX];
   }
   const [minX, maxX] = getMinMaxX(effectSizes);
+  const xGridPoints = [1, 2, 3].map(i => minX + i * (maxX - minX) / 4);
+
+  // Scale xGridPoints to viewport units
+  const scaleXGridPoints = (props: { xAxis: unknown, width: number, height: number, offset: ChartOffset }) => {
+    const { width, offset } = props;
+    return xGridPoints.map(x => Math.round((offset.left || 0) + ((x - minX) / (maxX - minX)) * (offset.width || width)));
+  };
+
   // Scale a half-confidence interval to a width in viewport units to be used for drawing the error bars
   const scaleHalfIntervalToViewport = (x: number, width: number | undefined) => {
     if (!width) return 0;
@@ -155,11 +164,15 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
         <Box style={{ height: 200 }}>
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 60 }}>
-              <CartesianGrid strokeDasharray="3 3" />
+              {/* Supply our own coordinates generator since default rendering is off for ratio metrics */}
+              <CartesianGrid strokeDasharray="3 3" verticalCoordinatesGenerator={scaleXGridPoints} />
               <XAxis
                 type="number"
                 dataKey="absEffect"
+                interval={0} // show all ticks
+                scale="linear"
                 domain={[minX, maxX]}
+                ticks={xGridPoints} // use our own ticks due to auto rendering issues
                 tickFormatter={(value) => (value >= 1 ? value.toFixed() : value.toFixed(2))}
               />
               <YAxis
