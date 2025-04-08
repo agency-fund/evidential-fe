@@ -27,6 +27,7 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@eslint/eslintrc": "^3",
+    "@types/next": "^8.0.7",
     "@types/node": "^22.13.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
