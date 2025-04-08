@@ -188,12 +188,11 @@ export default function ExperimentViewPage() {
 
             <Tabs.Content value="visualization">
               <Flex direction="column" gap="3" py="3">
-                {analysisData.map((analysis, index) => (
+                {analysisData.metric_analyses.map((metric_analysis, index) => (
                   <ForestPlot
                     key={index}
-                    analysis={analysis}
-                    armNames={Object.fromEntries(arms.map((arm) => [arm.arm_id!, arm.arm_name]))}
-                    controlArmIndex={0} // Assuming first arm is control, make this configurable if needed
+                    analysis={metric_analysis}
+                    // armIdToNames={Object.fromEntries(arms.map((arm) => [arm.arm_id!, arm.arm_name]))}
                     experiment={experiment}
                   />
                 ))}
