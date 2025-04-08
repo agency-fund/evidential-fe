@@ -142,7 +142,7 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
   }
   const [minX, maxX] = getMinMaxX(effectSizes);
   // Space 3 ticks evenly across the domain.
-  const xGridPoints = [1, 2, 3].map(i => minX + i * (maxX - minX) / 4);
+  const xGridPoints = [0, 1, 2, 3, 4].map(i => minX + i * (maxX - minX) / 4);
 
   // Scale xGridPoints to viewport units for use in drawing grid lines
   const scaleXGridPoints = (props: { xAxis: unknown, width: number, height: number, offset: ChartOffset }) => {
