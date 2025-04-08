@@ -1,13 +1,13 @@
-// @ts-nocheck TODO(qixotic)
 'use client';
 import { MetricAnalysis, ExperimentConfig } from '@/api/methods.schemas';
 import { Box, Card, Flex, Text } from '@radix-ui/themes';
-import { CartesianGrid, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from 'recharts';
+import { CartesianGrid, ResponsiveContainer, Scatter, ScatterChart, Tooltip, TooltipProps, XAxis, YAxis } from 'recharts';
+import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 
 // Color constants
 const COLORS = {
   DEFAULT: '#757575', // Gray for default/control
-  BLACK: '#000000', // Black for default stroke
+  DEFAULT_CI: '#000000', // Black for default stroke
   BASELINE: '#7575ff', // baseline vertical indicator
   POSITIVE: '#00c853', // Green for positive effects
   NEGATIVE: '#ff5252', // Red for negative effects
@@ -54,7 +54,7 @@ const createDiamondShape = (cx: number = 0, cy: number = 0, size: number = 6) =>
   return `${cx},${cy - size} ${cx + size},${cy} ${cx},${cy + size} ${cx - size},${cy}`;
 };
 
-function CustomTooltip({ active, payload }: { active: boolean; payload: [{ payload: EffectSizeData }] }) {
+function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   if (!active || !payload || !payload.length) return null;
   const data = payload[0].payload;
   const percentChange = (((data.absEffect - data.baselineEffect) / data.baselineEffect) * 100).toFixed(1);
@@ -80,13 +80,11 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
   const controlArmIndex = analysis.arm_analyses.findIndex(a => a.is_baseline);
   const controlArmAnalysis = analysis.arm_analyses[controlArmIndex];
   const controlEstimate = controlArmAnalysis.estimate; // regression intercept
-  const controlArmId = controlArmAnalysis.arm_id;
-  const controlArmSize = experiment.assign_summary.arm_sizes?.find((a) => a.arm.arm_id === controlArmId)?.size || 0;
 
   // Our data structure for Recharts
   const effectSizes: EffectSizeData[] = analysis.arm_analyses.map((armAnalysis, index) => {
     const isBaseline = armAnalysis.is_baseline;
-    const armId = armAnalysis.arm_id;
+    const armId = armAnalysis.arm_id || 'MISSING_ARM_ID'; // should be impossible
     const armSize = experiment.assign_summary.arm_sizes?.find((a) => a.arm.arm_id === armId)?.size || 0;
 
     const estimate = armAnalysis.estimate; // regression coefficient
@@ -194,7 +192,8 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
                 allowDataOverflow={true}
               />
 
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip content={<CustomTooltip />}
+              />
 
               {/* Confidence intervals - place under points */}
               <Scatter
@@ -206,15 +205,15 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
                   const { ci95, significant, effect, isBaseline } = props.payload;
 
                   // Determine stroke color based on significance and direction
-                  let strokeColor = COLORS.BLACK; // Default
+                  let strokeColor: string = COLORS.DEFAULT_CI;
                   if (significant && !isBaseline) {
                     strokeColor = effect > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
                   }
                   return (
                     <line
-                      x1={props.cx - scaleHalfIntervalToViewport(ci95, props.xAxis?.width)}
+                      x1={props.cx || 0 - scaleHalfIntervalToViewport(ci95, props.xAxis?.width)}
                       y1={props.cy}
-                      x2={props.cx + scaleHalfIntervalToViewport(ci95, props.xAxis?.width)}
+                      x2={props.cx || 0 + scaleHalfIntervalToViewport(ci95, props.xAxis?.width)}
                       y2={props.cy}
                       stroke={strokeColor}
                       strokeWidth={2}
@@ -260,7 +259,7 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
                       x1={props.cx}
                       y1={0}
                       x2={props.cx}
-                      y2={props.yAxis?.height + 20} // where's the extra 20 from?
+                      y2={props.yAxis?.height || 0 + 20} // where's the extra 20 from? Margins?
                       stroke={COLORS.BASELINE}
                       strokeWidth={5}
                       strokeDasharray="1 1"
