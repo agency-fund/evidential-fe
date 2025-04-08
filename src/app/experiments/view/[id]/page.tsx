@@ -134,7 +134,7 @@ export default function ExperimentViewPage() {
         <Separator my="3" size="4" />
         <Flex gap="4">
           {arms.map((arm) => {
-            const armSize = assign_summary.arm_sizes!.find((a) => a.arm.arm_id === arm.arm_id)?.size || 0;
+            const armSize = assign_summary.arm_sizes?.find((a) => a.arm.arm_id === arm.arm_id)?.size || 0;
             const percentage = (armSize / assign_summary.sample_size) * 100;
             return (
               <Card key={arm.arm_id} style={{ flex: 1 }}>
