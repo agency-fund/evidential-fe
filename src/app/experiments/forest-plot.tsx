@@ -39,9 +39,8 @@ interface ForestPlotProps {
 
 // Define a type for the shape props that matches what we need; leverages the fact that
 // type ScatterCustomizedShape accepts an ActiveShape, which allows for the signature:
-// ((props: unknown) => React.JSX.Element)
-// type TestProps = ActiveShape<ScatterPointItem, SVGPathElement & InnerSymbolsProp>;
-// We just list out what we need, inferred from inspecting props to this shape function.
+//     ((props: unknown) => React.JSX.Element)
+// Just list out what we need, inferred from inspecting props to this shape function.
 type CustomShapeProps = {
   cx?: number;
   cy?: number;
@@ -142,9 +141,10 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
     return [minX, maxX];
   }
   const [minX, maxX] = getMinMaxX(effectSizes);
+  // Space 3 ticks evenly across the domain.
   const xGridPoints = [1, 2, 3].map(i => minX + i * (maxX - minX) / 4);
 
-  // Scale xGridPoints to viewport units
+  // Scale xGridPoints to viewport units for use in drawing grid lines
   const scaleXGridPoints = (props: { xAxis: unknown, width: number, height: number, offset: ChartOffset }) => {
     const { width, offset } = props;
     return xGridPoints.map(x => Math.round((offset.left || 0) + ((x - minX) / (maxX - minX)) * (offset.width || width)));

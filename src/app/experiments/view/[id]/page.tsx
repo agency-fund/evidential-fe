@@ -192,7 +192,6 @@ export default function ExperimentViewPage() {
                   <ForestPlot
                     key={index}
                     analysis={metric_analysis}
-                    // armIdToNames={Object.fromEntries(arms.map((arm) => [arm.arm_id!, arm.arm_name]))}
                     experiment={experiment}
                   />
                 ))}
