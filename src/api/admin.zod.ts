@@ -1596,32 +1596,53 @@ export const analyzeExperimentParams = zod.object({
 	experiment_id: zod.string(),
 });
 
-export const analyzeExperimentResponseMetricNameRegExp = new RegExp(
-	"^[a-zA-Z_][a-zA-Z0-9_]*$",
-);
-export const analyzeExperimentResponseArmIdsMax = 10;
-export const analyzeExperimentResponseCoefficientsMax = 10;
-export const analyzeExperimentResponsePvaluesMax = 10;
-export const analyzeExperimentResponseTstatsMax = 10;
-export const analyzeExperimentResponseStdErrorsMax = 10;
+export const analyzeExperimentResponseMetricAnalysesItemMetricFieldNameRegExp =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const analyzeExperimentResponseMetricAnalysesItemArmAnalysesItemArmNameMax = 100;
+export const analyzeExperimentResponseMetricAnalysesItemArmAnalysesItemArmDescriptionMaxOne = 2000;
 
-export const analyzeExperimentResponseItem = zod.object({
-	metric_name: zod.string().regex(analyzeExperimentResponseMetricNameRegExp),
-	arm_ids: zod
-		.array(zod.string().uuid())
-		.max(analyzeExperimentResponseArmIdsMax),
-	coefficients: zod
-		.array(zod.number())
-		.max(analyzeExperimentResponseCoefficientsMax),
-	pvalues: zod.array(zod.number()).max(analyzeExperimentResponsePvaluesMax),
-	tstats: zod.array(zod.number()).max(analyzeExperimentResponseTstatsMax),
-	std_errors: zod
-		.array(zod.number())
-		.max(analyzeExperimentResponseStdErrorsMax),
+export const analyzeExperimentResponse = zod.object({
+	experiment_id: zod.string().uuid(),
+	metric_analyses: zod.array(
+		zod.object({
+			metric_name: zod.string().or(zod.null()).optional(),
+			metric: zod
+				.object({
+					field_name: zod
+						.string()
+						.regex(
+							analyzeExperimentResponseMetricAnalysesItemMetricFieldNameRegExp,
+						),
+					metric_pct_change: zod.number().or(zod.null()).optional(),
+					metric_target: zod.number().or(zod.null()).optional(),
+				})
+				.or(zod.null())
+				.optional(),
+			arm_analyses: zod.array(
+				zod.object({
+					arm_id: zod.string().uuid().or(zod.null()).optional(),
+					arm_name: zod
+						.string()
+						.max(
+							analyzeExperimentResponseMetricAnalysesItemArmAnalysesItemArmNameMax,
+						),
+					arm_description: zod
+						.string()
+						.max(
+							analyzeExperimentResponseMetricAnalysesItemArmAnalysesItemArmDescriptionMaxOne,
+						)
+						.or(zod.null())
+						.optional(),
+					is_baseline: zod.boolean(),
+					estimate: zod.number(),
+					p_value: zod.number(),
+					t_stat: zod.number(),
+					std_error: zod.number(),
+				}),
+			),
+		}),
+	),
 });
-export const analyzeExperimentResponse = zod.array(
-	analyzeExperimentResponseItem,
-);
 
 /**
  * @summary Commit Experiment

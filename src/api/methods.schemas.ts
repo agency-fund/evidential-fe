@@ -8,11 +8,6 @@ export interface AddMemberToOrganizationRequest {
 	email: string;
 }
 
-export interface AnalysisRequest {
-	design: DesignSpec;
-	assignment: AssignResponseInput;
-}
-
 export interface ApiKeySummary {
 	/** @maxLength 64 */
 	id: string;
@@ -40,6 +35,31 @@ export interface Arm {
 	/** @maxLength 100 */
 	arm_name: string;
 	arm_description?: ArmArmDescription;
+}
+
+/**
+ * UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
+ */
+export type ArmAnalysisArmId = string | null;
+
+export type ArmAnalysisArmDescription = string | null;
+
+export interface ArmAnalysis {
+	/** UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
+	arm_id?: ArmAnalysisArmId;
+	/** @maxLength 100 */
+	arm_name: string;
+	arm_description?: ArmAnalysisArmDescription;
+	/** Whether this arm is the baseline/control arm for comparison. */
+	is_baseline: boolean;
+	/** The estimated treatment effect relative to the baseline arm. */
+	estimate: number;
+	/** The p-value indicating statistical significance of the treatment effect. */
+	p_value: number;
+	/** The t-statistic from the statistical test. */
+	t_stat: number;
+	/** The standard error of the treatment effect estimate. */
+	std_error: number;
 }
 
 /**
@@ -589,34 +609,14 @@ export type DwhInput = Dsn | BqDsnInput;
 
 export type DwhOutput = Dsn | BqDsnOutput;
 
+/**
+ * Describes the change if any in metrics targeted by an experiment.
+ */
 export interface ExperimentAnalysis {
-	/**
-	 * The field_name from the datasource which this analysis models as the dependent variable (y).
-	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
-	 */
-	metric_name: string;
-	/** @maxItems 10 */
-	arm_ids: string[];
-	/**
-	 * Estimates for each arm in the model, the first element is the baseline estimate (intercept) of the first arm_id, the latter two are coefficients estimated against that baseline.
-	 * @maxItems 10
-	 */
-	coefficients: number[];
-	/**
-	 * P-values corresponding to each coefficient estimate for arm_ids, starting with the intercept (arm_ids[0]).
-	 * @maxItems 10
-	 */
-	pvalues: number[];
-	/**
-	 * Corresponding t-stats for the pvalues and coefficients for each arm_id.
-	 * @maxItems 10
-	 */
-	tstats: number[];
-	/**
-	 * Corresponding standard errors for the pvalues and coefficients for each arm_id.
-	 * @maxItems 10
-	 */
-	std_errors: number[];
+	/** UUID of the experiment. */
+	experiment_id: string;
+	/** Contains one analysis per metric targeted by the experiment. */
+	metric_analyses: MetricAnalysis[];
 }
 
 export type ExperimentConfigPowerAnalyses = PowerResponseOutput | null;
@@ -974,117 +974,131 @@ export interface ListParticipantsTypeResponse {
 	items: ParticipantsConfig[];
 }
 
-/**
- * Minimum sample size needed to meet the design specs.
- */
-export type MetricAnalysisInputTargetN = number | null;
+export type MetricAnalysisMetricName = string | null;
+
+export type MetricAnalysisMetric = DesignSpecMetricRequest | null;
 
 /**
- * Whether or not there are enough available units to sample from to meet target_n.
+ * Describes the change in a single metric for each arm of an experiment.
  */
-export type MetricAnalysisInputSufficientN = boolean | null;
-
-/**
- * If there is an insufficient sample size to meet the desired metric_target, we report what is possible given the available_n. This value is equivalent to the relative pct_change_possible. This is None when there is a sufficient sample size to detect the desired change.
- */
-export type MetricAnalysisInputTargetPossible = number | null;
-
-/**
- * If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.
- */
-export type MetricAnalysisInputPctChangePossible = number | null;
-
-/**
- * Human friendly message about the above results.
- */
-export type MetricAnalysisInputMsg = MetricAnalysisMessage | null;
-
-/**
- * Describes analysis results of a single metric.
- */
-export interface MetricAnalysisInput {
-	metric_spec: DesignSpecMetric;
-	/** Minimum sample size needed to meet the design specs. */
-	target_n?: MetricAnalysisInputTargetN;
-	/** Whether or not there are enough available units to sample from to meet target_n. */
-	sufficient_n?: MetricAnalysisInputSufficientN;
-	/** If there is an insufficient sample size to meet the desired metric_target, we report what is possible given the available_n. This value is equivalent to the relative pct_change_possible. This is None when there is a sufficient sample size to detect the desired change. */
-	target_possible?: MetricAnalysisInputTargetPossible;
-	/** If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change. */
-	pct_change_possible?: MetricAnalysisInputPctChangePossible;
-	/** Human friendly message about the above results. */
-	msg?: MetricAnalysisInputMsg;
+export interface MetricAnalysis {
+	metric_name?: MetricAnalysisMetricName;
+	metric?: MetricAnalysisMetric;
+	/** The results of the analysis for each arm (coefficient) for this specific metric. */
+	arm_analyses: ArmAnalysis[];
 }
 
 /**
  * Minimum sample size needed to meet the design specs.
  */
-export type MetricAnalysisOutputTargetN = number | null;
+export type MetricPowerAnalysisInputTargetN = number | null;
 
 /**
  * Whether or not there are enough available units to sample from to meet target_n.
  */
-export type MetricAnalysisOutputSufficientN = boolean | null;
+export type MetricPowerAnalysisInputSufficientN = boolean | null;
 
 /**
  * If there is an insufficient sample size to meet the desired metric_target, we report what is possible given the available_n. This value is equivalent to the relative pct_change_possible. This is None when there is a sufficient sample size to detect the desired change.
  */
-export type MetricAnalysisOutputTargetPossible = number | null;
+export type MetricPowerAnalysisInputTargetPossible = number | null;
 
 /**
  * If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.
  */
-export type MetricAnalysisOutputPctChangePossible = number | null;
+export type MetricPowerAnalysisInputPctChangePossible = number | null;
 
 /**
  * Human friendly message about the above results.
  */
-export type MetricAnalysisOutputMsg = MetricAnalysisMessage | null;
+export type MetricPowerAnalysisInputMsg = MetricPowerAnalysisMessage | null;
 
 /**
  * Describes analysis results of a single metric.
  */
-export interface MetricAnalysisOutput {
+export interface MetricPowerAnalysisInput {
 	metric_spec: DesignSpecMetric;
 	/** Minimum sample size needed to meet the design specs. */
-	target_n?: MetricAnalysisOutputTargetN;
+	target_n?: MetricPowerAnalysisInputTargetN;
 	/** Whether or not there are enough available units to sample from to meet target_n. */
-	sufficient_n?: MetricAnalysisOutputSufficientN;
+	sufficient_n?: MetricPowerAnalysisInputSufficientN;
 	/** If there is an insufficient sample size to meet the desired metric_target, we report what is possible given the available_n. This value is equivalent to the relative pct_change_possible. This is None when there is a sufficient sample size to detect the desired change. */
-	target_possible?: MetricAnalysisOutputTargetPossible;
+	target_possible?: MetricPowerAnalysisInputTargetPossible;
 	/** If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change. */
-	pct_change_possible?: MetricAnalysisOutputPctChangePossible;
+	pct_change_possible?: MetricPowerAnalysisInputPctChangePossible;
 	/** Human friendly message about the above results. */
-	msg?: MetricAnalysisOutputMsg;
+	msg?: MetricPowerAnalysisInputMsg;
 }
 
-export type MetricAnalysisMessageValuesAnyOf = {
+/**
+ * Minimum sample size needed to meet the design specs.
+ */
+export type MetricPowerAnalysisOutputTargetN = number | null;
+
+/**
+ * Whether or not there are enough available units to sample from to meet target_n.
+ */
+export type MetricPowerAnalysisOutputSufficientN = boolean | null;
+
+/**
+ * If there is an insufficient sample size to meet the desired metric_target, we report what is possible given the available_n. This value is equivalent to the relative pct_change_possible. This is None when there is a sufficient sample size to detect the desired change.
+ */
+export type MetricPowerAnalysisOutputTargetPossible = number | null;
+
+/**
+ * If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.
+ */
+export type MetricPowerAnalysisOutputPctChangePossible = number | null;
+
+/**
+ * Human friendly message about the above results.
+ */
+export type MetricPowerAnalysisOutputMsg = MetricPowerAnalysisMessage | null;
+
+/**
+ * Describes analysis results of a single metric.
+ */
+export interface MetricPowerAnalysisOutput {
+	metric_spec: DesignSpecMetric;
+	/** Minimum sample size needed to meet the design specs. */
+	target_n?: MetricPowerAnalysisOutputTargetN;
+	/** Whether or not there are enough available units to sample from to meet target_n. */
+	sufficient_n?: MetricPowerAnalysisOutputSufficientN;
+	/** If there is an insufficient sample size to meet the desired metric_target, we report what is possible given the available_n. This value is equivalent to the relative pct_change_possible. This is None when there is a sufficient sample size to detect the desired change. */
+	target_possible?: MetricPowerAnalysisOutputTargetPossible;
+	/** If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change. */
+	pct_change_possible?: MetricPowerAnalysisOutputPctChangePossible;
+	/** Human friendly message about the above results. */
+	msg?: MetricPowerAnalysisOutputMsg;
+}
+
+export type MetricPowerAnalysisMessageValuesAnyOf = {
 	[key: string]: number | number;
 };
 
-export type MetricAnalysisMessageValues =
-	MetricAnalysisMessageValuesAnyOf | null;
+export type MetricPowerAnalysisMessageValues =
+	MetricPowerAnalysisMessageValuesAnyOf | null;
 
 /**
- * Describes interpretation of analysis results.
+ * Describes interpretation of power analysis results.
  */
-export interface MetricAnalysisMessage {
-	type: MetricAnalysisMessageType;
-	/** Main analysis result stated in human-friendly English. */
+export interface MetricPowerAnalysisMessage {
+	type: MetricPowerAnalysisMessageType;
+	/** Main power analysis result stated in human-friendly English. */
 	msg: string;
-	/** Analysis result formatted as a template string with curly-braced {} named placeholders. Use with the dictionary of values to support localization of messages. */
+	/** Power analysis result formatted as a template string with curly-braced {} named placeholders. Use with the dictionary of values to support localization of messages. */
 	source_msg: string;
-	values?: MetricAnalysisMessageValues;
+	values?: MetricPowerAnalysisMessageValues;
 }
 
 /**
- * Classifies metric analysis results.
+ * Classifies metric power analysis results.
  */
-export type MetricAnalysisMessageType =
-	(typeof MetricAnalysisMessageType)[keyof typeof MetricAnalysisMessageType];
+export type MetricPowerAnalysisMessageType =
+	(typeof MetricPowerAnalysisMessageType)[keyof typeof MetricPowerAnalysisMessageType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const MetricAnalysisMessageType = {
+export const MetricPowerAnalysisMessageType = {
 	sufficient: "sufficient",
 	insufficient: "insufficient",
 	no_baseline: "no baseline",
@@ -1125,6 +1139,7 @@ export interface ParticipantsDef {
 	table_name: string;
 	/** List of fields available in this table */
 	fields: FieldDescriptor[];
+	/** The name of the set of participants defined by the filters. This name must be unique within a datasource. */
 	participant_type: string;
 	type: ParticipantsDefType;
 }
@@ -1156,12 +1171,12 @@ export interface PowerRequest {
 
 export interface PowerResponseInput {
 	/** @maxItems 100 */
-	analyses: MetricAnalysisInput[];
+	analyses: MetricPowerAnalysisInput[];
 }
 
 export interface PowerResponseOutput {
 	/** @maxItems 100 */
-	analyses: MetricAnalysisOutput[];
+	analyses: MetricPowerAnalysisOutput[];
 }
 
 /**
@@ -1216,6 +1231,7 @@ export const SheetParticipantsRefType = {
 } as const;
 
 export interface SheetParticipantsRef {
+	/** The name of the set of participants defined by the filters. This name must be unique within a datasource. */
 	participant_type: string;
 	type: SheetParticipantsRefType;
 	table_name: string;

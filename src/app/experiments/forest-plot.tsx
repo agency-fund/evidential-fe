@@ -1,19 +1,21 @@
-// @ts-nocheck TODO(qixotic)
 'use client';
-import { ExperimentAnalysis, ExperimentConfig } from '@/api/methods.schemas';
+import { MetricAnalysis, ExperimentConfig } from '@/api/methods.schemas';
 import { Box, Card, Flex, Text } from '@radix-ui/themes';
-import { CartesianGrid, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from 'recharts';
+import { CartesianGrid, ResponsiveContainer, Scatter, ScatterChart, Tooltip, TooltipProps, XAxis, YAxis } from 'recharts';
+import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
+import { ChartOffset } from 'recharts/types/util/types';
 
 // Color constants
 const COLORS = {
   DEFAULT: '#757575', // Gray for default/control
-  BLACK: '#000000', // Black for default stroke
+  DEFAULT_CI: '#000000', // Black for default stroke
+  BASELINE: '#7575ff', // baseline vertical indicator
   POSITIVE: '#00c853', // Green for positive effects
   NEGATIVE: '#ff5252', // Red for negative effects
 } as const;
 
 interface EffectSizeData {
-  isControl: boolean;
+  isBaseline: boolean;
   armId: string;
   armName: string;
   baselineEffect: number;
@@ -28,19 +30,18 @@ interface EffectSizeData {
   significant: boolean;
   sampleSize: number;
   totalSampleSize: number;
-  controlSampleSize: number;
-  controlTotalSampleSize: number;
 }
 
 interface ForestPlotProps {
-  analysis: ExperimentAnalysis;
-  armNames: Record<string, string>;
-  controlArmIndex?: number;
+  analysis: MetricAnalysis;
   experiment: ExperimentConfig;
 }
 
-interface CustomShapeProps {
-  // inferred from inspecting props to the shape function; see also ScatterCustomizedShape recharts
+// Define a type for the shape props that matches what we need; leverages the fact that
+// type ScatterCustomizedShape accepts an ActiveShape, which allows for the signature:
+//     ((props: unknown) => React.JSX.Element)
+// Just list out what we need, inferred from inspecting props to this shape function.
+type CustomShapeProps = {
   cx?: number;
   cy?: number;
   payload?: EffectSizeData;
@@ -57,7 +58,7 @@ const createDiamondShape = (cx: number = 0, cy: number = 0, size: number = 6) =>
   return `${cx},${cy - size} ${cx + size},${cy} ${cx},${cy + size} ${cx - size},${cy}`;
 };
 
-function CustomTooltip({ active, payload }: { active: boolean; payload: [{ payload: EffectSizeData }] }) {
+function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   if (!active || !payload || !payload.length) return null;
   const data = payload[0].payload;
   const percentChange = (((data.absEffect - data.baselineEffect) / data.baselineEffect) * 100).toFixed(1);
@@ -66,7 +67,7 @@ function CustomTooltip({ active, payload }: { active: boolean; payload: [{ paylo
       <Flex direction="column" gap="2">
         <Text weight="bold">{data.armName}</Text>
         <Text>Effect: {data.absEffect.toFixed(2)}</Text>
-        {data.isControl ? null : <Text>vs baseline: {percentChange}%</Text>}
+        {data.isBaseline ? null : <Text>vs baseline: {percentChange}%</Text>}
         <Text>
           95% CI: [{data.absCI95Lower.toFixed(2)}, {data.absCI95Upper.toFixed(2)}]
         </Text>
@@ -75,43 +76,39 @@ function CustomTooltip({ active, payload }: { active: boolean; payload: [{ paylo
   );
 }
 
-// TODO(linus): currently the controlArmIndex is hardcoded to 0; payload also seems to have the wrong mapping of arm_ids to coefficients.
-export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment }: ForestPlotProps) {
-  // Get all arm indices except the control arm
-  // const treatmentArmIndices = analysis.arm_ids.map((_, idx) => idx).filter((idx) => idx !== controlArmIndex);
-  const treatmentArmIndices = analysis.arm_ids.map((_, idx) => idx);
-
+export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
   // Get total sample size from assign summary
   const availableN = experiment.assign_summary.sample_size;
 
   // Extract data for visualization
-  const controlArmId = analysis.arm_ids[controlArmIndex];
-  const controlArmSize = experiment.assign_summary.arm_sizes?.find((a) => a.arm.arm_id === controlArmId)?.size || 0;
+  const controlArmIndex = analysis.arm_analyses.findIndex(a => a.is_baseline);
+  const controlArmAnalysis = analysis.arm_analyses[controlArmIndex];
+  const controlEstimate = controlArmAnalysis.estimate; // regression intercept
 
   // Our data structure for Recharts
-  const effectSizes: EffectSizeData[] = treatmentArmIndices.map((treatmentIdx, index) => {
-    const controlCoefficient = analysis.coefficients[controlArmIndex];
-    const coefficient = analysis.coefficients[treatmentIdx];
-    const stdError = analysis.std_errors[treatmentIdx];
-    const pValue = analysis.pvalues[treatmentIdx];
-
-    const isControl = treatmentIdx === controlArmIndex;
-    const armId = analysis.arm_ids[treatmentIdx];
+  const effectSizes: EffectSizeData[] = analysis.arm_analyses.map((armAnalysis, index) => {
+    const isBaseline = armAnalysis.is_baseline;
+    const armId = armAnalysis.arm_id || 'MISSING_ARM_ID'; // should be impossible
     const armSize = experiment.assign_summary.arm_sizes?.find((a) => a.arm.arm_id === armId)?.size || 0;
+
+    const estimate = armAnalysis.estimate; // regression coefficient
+    const stdError = armAnalysis.std_error;
+    const pValue = armAnalysis.p_value;
+
     // Calculate 95% confidence interval
     const ci95 = 1.96 * stdError;
-    const ci95Lower = coefficient - ci95;
-    const ci95Upper = coefficient + ci95;
-    const absEffect = coefficient + (isControl ? 0 : controlCoefficient);
-    const absCI95Lower = ci95Lower + (isControl ? 0 : controlCoefficient);
-    const absCI95Upper = ci95Upper + (isControl ? 0 : controlCoefficient);
+    const ci95Lower = estimate - ci95;
+    const ci95Upper = estimate + ci95;
+    const absEffect = estimate + (isBaseline ? 0 : controlEstimate);
+    const absCI95Lower = ci95Lower + (isBaseline ? 0 : controlEstimate);
+    const absCI95Upper = ci95Upper + (isBaseline ? 0 : controlEstimate);
 
     return {
-      isControl,
+      isBaseline,
       armId,
-      armName: armNames[armId] || `Arm ${treatmentIdx}`,
-      baselineEffect: controlCoefficient,
-      effect: coefficient, // relative to baseline effect
+      armName: armAnalysis.arm_name || `Arm ${index}`,
+      baselineEffect: controlEstimate,
+      effect: estimate, // relative to baseline effect
       absEffect: absEffect,
       ci95Lower,
       ci95Upper,
@@ -122,8 +119,6 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
       significant: pValue < (experiment.design_spec.alpha || 0.05),
       sampleSize: armSize,
       totalSampleSize: availableN,
-      controlSampleSize: controlArmSize,
-      controlTotalSampleSize: availableN,
     };
   });
 
@@ -132,7 +127,7 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
     return <Text>No treatment arms to display</Text>;
   }
 
-  // Get the min and max x-axis values to use in our charts.
+  // Get the min and max x-axis values in metric units to use in our charts.
   function getMinMaxX(effectSizes: EffectSizeData[]) {
     let minX = Math.min(...effectSizes.map((d) => d.absCI95Lower));
     let maxX = Math.max(...effectSizes.map((d) => d.absCI95Upper));
@@ -146,6 +141,15 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
     return [minX, maxX];
   }
   const [minX, maxX] = getMinMaxX(effectSizes);
+  // Space 3 ticks evenly across the domain.
+  const xGridPoints = [1, 2, 3].map(i => minX + i * (maxX - minX) / 4);
+
+  // Scale xGridPoints to viewport units for use in drawing grid lines
+  const scaleXGridPoints = (props: { xAxis: unknown, width: number, height: number, offset: ChartOffset }) => {
+    const { width, offset } = props;
+    return xGridPoints.map(x => Math.round((offset.left || 0) + ((x - minX) / (maxX - minX)) * (offset.width || width)));
+  };
+
   // Scale a half-confidence interval to a width in viewport units to be used for drawing the error bars
   const scaleHalfIntervalToViewport = (x: number, width: number | undefined) => {
     if (!width) return 0;
@@ -160,11 +164,15 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
         <Box style={{ height: 200 }}>
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 60 }}>
-              <CartesianGrid strokeDasharray="3 3" />
+              {/* Supply our own coordinates generator since default rendering is off for ratio metrics */}
+              <CartesianGrid strokeDasharray="3 3" verticalCoordinatesGenerator={scaleXGridPoints} />
               <XAxis
                 type="number"
                 dataKey="absEffect"
+                interval={0} // show all ticks
+                scale="linear"
                 domain={[minX, maxX]}
+                ticks={xGridPoints} // use our own ticks due to auto rendering issues
                 tickFormatter={(value) => (value >= 1 ? value.toFixed() : value.toFixed(2))}
               />
               <YAxis
@@ -201,7 +209,8 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
                 allowDataOverflow={true}
               />
 
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip content={<CustomTooltip />}
+              />
 
               {/* Confidence intervals - place under points */}
               <Scatter
@@ -209,20 +218,23 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
                 fill="none"
                 // Draw a custom line for CIs since ErrorBars don't give us enough control
                 shape={(props: CustomShapeProps) => {
-                  if (!props.payload || !props.xAxis?.width) return null;
-                  const { ci95, significant, effect, isControl } = props.payload;
+                  // Always return an element even if empty.
+                  if (!props.payload || !props.xAxis?.width) return <g />;
+
+                  const { ci95, significant, effect, isBaseline } = props.payload;
+                  const { cx: centerX, cy: centerY, xAxis: { width: xAxisWidth } } = props;
 
                   // Determine stroke color based on significance and direction
-                  let strokeColor = COLORS.BLACK; // Default
-                  if (significant && !isControl) {
+                  let strokeColor: string = COLORS.DEFAULT_CI;
+                  if (significant && !isBaseline) {
                     strokeColor = effect > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
                   }
                   return (
                     <line
-                      x1={props.cx - scaleHalfIntervalToViewport(ci95, props.xAxis?.width)}
-                      y1={props.cy}
-                      x2={props.cx + scaleHalfIntervalToViewport(ci95, props.xAxis?.width)}
-                      y2={props.cy}
+                      x1={(centerX || 0) - scaleHalfIntervalToViewport(ci95, xAxisWidth)}
+                      y1={centerY}
+                      x2={(centerX || 0) + scaleHalfIntervalToViewport(ci95, xAxisWidth)}
+                      y2={centerY}
                       stroke={strokeColor}
                       strokeWidth={2}
                     />
@@ -236,19 +248,23 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
               <Scatter
                 data={effectSizes}
                 shape={(props: CustomShapeProps) => {
-                  if (!props.payload) return null;
-                  const { significant, isControl, effect } = props.payload;
-                  let fillColor: string = COLORS.DEFAULT; // Default gray
-                  if (significant && !isControl) {
+                  // Always return an element even if empty.
+                  if (!props.payload) return <g />;
+
+                  const { significant, isBaseline, effect } = props.payload;
+                  const { cx: centerX, cy: centerY } = props;
+
+                  let fillColor: string = COLORS.DEFAULT;
+                  if (significant && !isBaseline) {
                     fillColor = effect > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
                   }
-                  if (props.payload?.isControl) {
+                  if (isBaseline) {
                     // Mark the control arm with a larger diamond shape
                     return (
-                      <polygon points={createDiamondShape(props.cx, props.cy, 8)} fill={COLORS.DEFAULT} stroke="none" />
+                      <polygon points={createDiamondShape(centerX, centerY, 8)} fill={COLORS.DEFAULT} stroke="none" />
                     );
                   } else {
-                    return <circle cx={props.cx} cy={props.cy} r={4} fill={fillColor} stroke="none" />;
+                    return <circle cx={centerX} cy={centerY} r={4} fill={fillColor} stroke="none" />;
                   }
                 }}
               />
@@ -259,16 +275,18 @@ export function ForestPlot({ analysis, armNames, controlArmIndex = 0, experiment
                 fill="none"
                 // Draw a custom SVG line for CIs since ErrorBars don't give us enough control
                 shape={(props: CustomShapeProps) => {
-                  if (!props.payload) return null;
-                  const { isControl } = props.payload;
-                  if (!isControl) return null;
+                  // Always return an element even if empty.
+                  if (!props.payload?.isBaseline) return <g />;
+
+                  const { cx: centerX, yAxis } = props;
+
                   return (
                     <line
-                      x1={props.cx}
+                      x1={centerX}
                       y1={0}
-                      x2={props.cx}
-                      y2={props.yAxis?.height + 20} // where's the extra 20 from?
-                      stroke="red"
+                      x2={centerX}
+                      y2={(yAxis?.height || 0) + 20} // where's the extra 20 from? Margins?
+                      stroke={COLORS.BASELINE}
                       strokeWidth={5}
                       strokeDasharray="1 1"
                       opacity={0.2}

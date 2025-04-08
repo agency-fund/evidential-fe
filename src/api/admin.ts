@@ -1887,8 +1887,8 @@ export const analyzeExperiment = async (
 	datasourceId: string,
 	experimentId: string,
 	options?: RequestInit,
-): Promise<ExperimentAnalysis[]> => {
-	return orvalFetch<ExperimentAnalysis[]>(
+): Promise<ExperimentAnalysis> => {
+	return orvalFetch<ExperimentAnalysis>(
 		getAnalyzeExperimentUrl(datasourceId, experimentId),
 		{
 			...options,
