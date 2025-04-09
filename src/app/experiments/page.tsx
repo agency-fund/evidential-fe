@@ -149,6 +149,7 @@ export default function Page() {
               <Table.Header>
                 <Table.Row>
                   <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Participants</Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>Start Date</Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>End Date</Table.ColumnHeaderCell>
@@ -161,6 +162,7 @@ export default function Page() {
                 {experimentsData.items.map((experiment) => (
                   <Table.Row key={experiment.design_spec.experiment_id}>
                     <Table.Cell>{experiment.design_spec.experiment_name}</Table.Cell>
+                    <Table.Cell>{experiment.audience_spec.participant_type}</Table.Cell>
                     <Table.Cell>
                       <ExperimentStatusBadge status={experiment.state} />
                     </Table.Cell>

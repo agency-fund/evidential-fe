@@ -8,8 +8,11 @@ import { XSpinner } from '@/app/components/x-spinner';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 import { ExperimentStatusBadge } from '@/app/experiments/experiment-status-badge';
 import { CopyButton } from '@/app/components/copy-button';
+import { useState } from 'react';
+import * as Toast from '@radix-ui/react-toast';
 
 export default function ExperimentViewPage() {
+  const [openToast, setOpenToast] = useState(false);
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -64,16 +67,24 @@ export default function ExperimentViewPage() {
             <Heading>{experiment_name}</Heading>
             <CopyButton value={experimentId} label="experiment ID" />
           </Flex>
+          <Text color="gray" size="3">
+            on <strong>{experiment.audience_spec.participant_type}</strong>
+          </Text>
           <ExperimentStatusBadge status={state} />
         </Flex>
-        <Button variant="ghost">
+        <Button variant="ghost" onClick={() => setOpenToast(true)}>
           <DotsVerticalIcon />
         </Button>
       </Flex>
 
-      <Text color="gray" size="3">
-        {description}
-      </Text>
+      <Flex direction="row" gap="1" align="baseline">
+        <Heading size="3" color="purple">
+          Hypothesis:
+        </Heading>
+        <Text color="gray" size="3">
+          {description}
+        </Text>
+      </Flex>
 
       <Grid columns="2" gap="4">
         {/* Timeline Section */}
@@ -214,6 +225,20 @@ export default function ExperimentViewPage() {
           </Tabs.Root>
         )}
       </Card>
+
+      <Toast.Root
+        open={openToast}
+        onOpenChange={setOpenToast}
+        duration={2000}
+        style={{
+          background: 'white',
+          padding: '12px 16px',
+          borderRadius: '4px',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+        }}
+      >
+        <Toast.Title style={{ margin: 0 }}>🚧 Nothing to do here yet... 🚧</Toast.Title>
+      </Toast.Root>
     </Flex>
   );
 }
