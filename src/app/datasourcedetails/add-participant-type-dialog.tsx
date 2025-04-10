@@ -7,6 +7,35 @@ import { useEffect, useState } from 'react';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 import { isEligibleForUseAsMetric } from '@/services/genapi-helpers';
 
+/** Creates a comparator function for ordering FieldDescriptors.
+ *
+ * TODO: When add-participant-type and edit-participant-type are consolidated, use the same ordering on both.
+ */
+const makeFieldDescriptorComparator = (candidatesForUniqueIdField: string[]) => {
+  const candidates = new Set(candidatesForUniqueIdField);
+  return (left: FieldDescriptor, right: FieldDescriptor) => {
+    if (left.is_unique_id && right.is_unique_id) {
+      return left.field_name.localeCompare(right.field_name);
+    } else if (left.is_unique_id) {
+      return -1;
+    } else if (right.is_unique_id) {
+      return 1;
+    }
+
+    const leftIsCandidate = candidates.has(left.field_name);
+    const rightIsCandidate = candidates.has(right.field_name);
+    if (leftIsCandidate && rightIsCandidate) {
+      return left.field_name.localeCompare(right.field_name);
+    } else if (leftIsCandidate) {
+      return -1;
+    } else if (rightIsCandidate) {
+      return 1;
+    }
+
+    return left.field_name.localeCompare(right.field_name);
+  };
+};
+
 const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId: string; tables: string[] }) => {
   const { trigger, isMutating, error, reset } = useCreateParticipantType(datasourceId);
   const [open, setOpen] = useState(false);
@@ -39,24 +68,21 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
     if (tableData === undefined) {
       return;
     }
-    const probable_unique_id_field = tableData.detected_unique_id_fields?.pop();
-    const sortedFields = tableData.fields
-      .map(
-        (field: FieldMetadata): FieldDescriptor => ({
-          is_unique_id: field.field_name == probable_unique_id_field,
-          is_strata: false,
-          is_filter: false,
-          is_metric: false,
-          ...field,
-        }),
-      )
-      .sort((a, b) => {
-        if (a.is_unique_id === b.is_unique_id) {
-          return a.field_name.localeCompare(b.field_name);
-        }
-        return a.is_unique_id ? -1 : 1;
-      });
-    setFields(sortedFields);
+    const recommended_id =
+      tableData.detected_unique_id_fields.length > 0 ? tableData.detected_unique_id_fields[0] : null;
+    setFields(
+      tableData.fields
+        .map(
+          (field: FieldMetadata): FieldDescriptor => ({
+            is_unique_id: field.field_name === recommended_id,
+            is_strata: false,
+            is_filter: false,
+            is_metric: false,
+            ...field,
+          }),
+        )
+        .sort(makeFieldDescriptorComparator(tableData.detected_unique_id_fields)),
+    );
   }, [tableData]);
 
   const updateField = (index: number, field: FieldDescriptor) => {
@@ -181,7 +207,13 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
                     <Table.Body>
                       {fields.map((field, index) => (
                         <Table.Row key={index}>
-                          <Table.Cell>{field.field_name}</Table.Cell>
+                          <Table.Cell>
+                            {tableData && tableData.detected_unique_id_fields.includes(field.field_name) ? (
+                              <Text weight={'bold'}>{field.field_name}</Text>
+                            ) : (
+                              <Text>{field.field_name}</Text>
+                            )}
+                          </Table.Cell>
                           <Table.Cell>{field.data_type}</Table.Cell>
                           <Table.Cell>
                             <TextField.Root
