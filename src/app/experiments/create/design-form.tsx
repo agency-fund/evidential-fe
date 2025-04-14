@@ -83,7 +83,12 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
                 <Flex>
                   <Select.Root
                     value={formData.primaryMetric}
-                    onValueChange={(value) => onFormDataChange({ ...formData, primaryMetric: value })}
+                    onValueChange={(value) => {
+                      // Remove the from the secondary metrics if it was added initially, else the
+                      // metric would show up in the power check 2x with an error.
+                      const secondaryMetrics = formData.secondaryMetrics.filter((m) => m !== value);
+                      onFormDataChange({ ...formData, primaryMetric: value, secondaryMetrics });
+                    }}
                   >
                     <Select.Trigger placeholder="Select a metric" />
                     <Select.Content>

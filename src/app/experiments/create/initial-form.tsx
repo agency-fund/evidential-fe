@@ -33,10 +33,13 @@ export function InitialForm({ formData, onFormDataChange, onNext }: InitialFormP
     },
   );
   const addArm = () => {
-    onFormDataChange({
-      ...formData,
-      arms: [...formData.arms, { arm_name: '', arm_description: '' }],
-    });
+    const new_arm = (formData.arms.length == 0) ?
+        {
+          arm_name: 'Control',
+          arm_description: 'Arm 1 will be used as baseline for comparison in analysis.'
+        } :
+        { arm_name: '', arm_description: '' };
+    onFormDataChange({...formData, arms: [...formData.arms, new_arm]});
   };
 
   const removeArm = (index: number) => {
