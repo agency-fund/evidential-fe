@@ -1,14 +1,21 @@
 'use client';
 import { getListOrganizationWebhooksKey, useAddWebhookToOrganization } from '@/api/admin';
 import { useState } from 'react';
-import { Box, Button, Card, Code, Dialog, Flex, Text, TextField } from '@radix-ui/themes';
+import { Button, Dialog, Flex, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
-import { CopyIcon, PlusIcon } from '@radix-ui/react-icons';
+import { PlusIcon } from '@radix-ui/react-icons';
 import { mutate } from 'swr';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 import { AddWebhookToOrganizationResponse } from '@/api/methods.schemas';
+import { WebhookInfoContent } from './webhook-info-content';
 
-export function AddWebhookDialog({ organizationId }: { organizationId: string }) {
+export function AddWebhookDialog({ 
+  organizationId, 
+  disabled = false 
+}: { 
+  organizationId: string;
+  disabled?: boolean;
+}) {
   const { trigger, isMutating, error, reset } = useAddWebhookToOrganization(organizationId, {
     swr: { onSuccess: () => mutate(getListOrganizationWebhooksKey(organizationId)) },
   });
@@ -35,7 +42,7 @@ export function AddWebhookDialog({ organizationId }: { organizationId: string })
       }}
     >
       <Dialog.Trigger>
-        <Button>
+        <Button disabled={disabled}>
           <PlusIcon />
           Add Webhook
         </Button>
@@ -51,72 +58,14 @@ export function AddWebhookDialog({ organizationId }: { organizationId: string })
               Your webhook has been created. Please save the following information.
             </Dialog.Description>
 
-            <Flex direction="column" gap="3">
-              <Card>
-                <Flex direction="column" gap="2">
-                  <Text as="div" size="2" weight="bold">
-                    Webhook URL
-                  </Text>
-                  <Flex align="center" gap="2">
-                    <Code>{webhookResponse.url}</Code>
-                    <Button variant="ghost" size="1" onClick={() => navigator.clipboard.writeText(webhookResponse.url)}>
-                      <CopyIcon />
-                    </Button>
-                  </Flex>
-                </Flex>
-              </Card>
-
-              <Card>
-                <Flex direction="column" gap="2">
-                  <Text as="div" size="2" weight="bold">
-                    Authentication Token
-                  </Text>
-                  <Flex align="center" gap="2">
-                    <Code>{webhookResponse.auth_token}</Code>
-                    <Button
-                      variant="ghost"
-                      size="1"
-                      onClick={() => navigator.clipboard.writeText(webhookResponse.auth_token)}
-                    >
-                      <CopyIcon />
-                    </Button>
-                  </Flex>
-                </Flex>
-              </Card>
-
-              <Box mt="2">
-                <Text as="div" size="2" weight="bold">
-                  How to Use This Webhook
-                </Text>
-                <Text as="div" size="2" mt="1">
-                  When an experiment is created, we will send a POST request to your URL with:
-                </Text>
-                <Box my="2">
-                  <Text as="div" size="2" weight="bold">
-                    Headers:
-                  </Text>
-                  <Code>
-                    Content-Type: application/json
-                    <br />
-                    Authorization: ${webhookResponse.auth_token}
-                  </Code>
-                </Box>
-                <Box my="2">
-                  <Text as="div" size="2" weight="bold">
-                    Body:
-                  </Text>
-                  <Code>
-                    {`{
-  "experiment_id": "some-experiment-id"
-}`}
-                  </Code>
-                </Box>
-                <Text as="div" size="2" color="orange" mt="2">
-                  Important: Your endpoint should validate the Authorization header to ensure requests are legitimate.
-                  Reject any requests that don't include the exact token shown above.
-                </Text>
-              </Box>
-            </Flex>
+            <WebhookInfoContent 
+              webhook={{
+                id: webhookResponse.id,
+                type: webhookResponse.type,
+                url: webhookResponse.url,
+                auth_token: webhookResponse.auth_token
+              }} 
+            />
 
             <Flex gap="3" mt="4" justify="end">
               <Button onClick={handleClose}>Close</Button>
