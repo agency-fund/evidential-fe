@@ -2,12 +2,13 @@
 import { Flex, Heading, Text } from '@radix-ui/themes';
 import { RenameOrganizationDialog } from './rename-organization-dialog';
 import { XSpinner } from '../components/x-spinner';
-import { useGetOrganization } from '@/api/admin';
+import { useGetOrganization, useListOrganizationEvents } from '@/api/admin';
 import { useSearchParams } from 'next/navigation';
 import { AddUserDialog } from '@/app/organizationdetails/add-user-dialog';
 import { AddDatasourceDialog } from '@/app/organizationdetails/add-datasource-dialog';
 import { DatasourcesTable } from '@/app/organizationdetails/datasources-table';
 import { UsersTable } from '@/app/organizationdetails/users-table';
+import { EventsTable } from '@/app/organizationdetails/events-table';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 
 export default function Page() {
@@ -19,6 +20,16 @@ export default function Page() {
     isLoading,
     error,
   } = useGetOrganization(organizationId!, {
+    swr: {
+      enabled: organizationId !== null,
+    },
+  });
+
+  const {
+    data: eventsData,
+    isLoading: isLoadingEvents,
+    error: eventsError,
+  } = useListOrganizationEvents(organizationId!, {
     swr: {
       enabled: organizationId !== null,
     },
@@ -56,6 +67,19 @@ export default function Page() {
           <AddDatasourceDialog organizationId={organizationId} />
         </Flex>
         <DatasourcesTable datasources={organization.datasources} organizationId={organizationId} />
+      </Flex>
+
+      <Flex direction="column" gap="3">
+        <Flex justify="between" align="center">
+          <Heading size="4">Recent Events</Heading>
+        </Flex>
+        {isLoadingEvents ? (
+          <XSpinner message="Loading events..." />
+        ) : eventsError ? (
+          <GenericErrorCallout title={'Failed to fetch events'} error={eventsError} />
+        ) : (
+          <EventsTable events={eventsData?.items || []} />
+        )}
       </Flex>
     </Flex>
   );
