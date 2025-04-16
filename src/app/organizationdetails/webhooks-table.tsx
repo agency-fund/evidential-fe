@@ -1,25 +1,19 @@
 'use client';
-import { Table, Text, Flex, IconButton, Code } from '@radix-ui/themes';
+import { Code, Flex, IconButton, Table, Text } from '@radix-ui/themes';
 import { WebhookSummary } from '@/api/methods.schemas';
-import { TrashIcon, CopyIcon, EyeOpenIcon, EyeClosedIcon } from '@radix-ui/react-icons';
+import { CopyIcon, EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons';
 import { DeleteWebhookDialog } from './delete-webhook-dialog';
 import { WebhookInfoDialog } from './webhook-info-dialog';
 import { useState } from 'react';
 
-export function WebhooksTable({ 
-  webhooks, 
-  organizationId 
-}: { 
-  webhooks: WebhookSummary[]; 
-  organizationId: string;
-}) {
+export function WebhooksTable({ webhooks, organizationId }: { webhooks: WebhookSummary[]; organizationId: string }) {
   // Track which webhook auth tokens are visible
   const [visibleTokens, setVisibleTokens] = useState<Record<string, boolean>>({});
 
   const toggleTokenVisibility = (webhookId: string) => {
-    setVisibleTokens(prev => ({
+    setVisibleTokens((prev) => ({
       ...prev,
-      [webhookId]: !prev[webhookId]
+      [webhookId]: !prev[webhookId],
     }));
   };
 
@@ -52,19 +46,19 @@ export function WebhooksTable({
                       <Code variant={'ghost'}>
                         {visibleTokens[webhook.id] ? webhook.auth_token : '••••••••••••••••'}
                       </Code>
-                      <IconButton 
-                        size="1" 
-                        aria-label={visibleTokens[webhook.id] ? "Hide auth token" : "Show auth token"} 
-                        color="gray" 
+                      <IconButton
+                        size="1"
+                        aria-label={visibleTokens[webhook.id] ? 'Hide auth token' : 'Show auth token'}
+                        color="gray"
                         variant="ghost"
                         onClick={() => toggleTokenVisibility(webhook.id)}
                       >
                         {visibleTokens[webhook.id] ? <EyeOpenIcon /> : <EyeClosedIcon />}
                       </IconButton>
-                      <IconButton 
-                        size="1" 
-                        aria-label="Copy auth token" 
-                        color="gray" 
+                      <IconButton
+                        size="1"
+                        aria-label="Copy auth token"
+                        color="gray"
                         variant="ghost"
                         onClick={() => navigator.clipboard.writeText(webhook.auth_token || '')}
                       >

@@ -64,7 +64,7 @@ Authorization: ${webhook.auth_token || '[auth token]'}`}
         </Box>
         <Text as="div" size="2" color="orange" mt="2">
           Important: Your endpoint should validate the Authorization header to ensure requests are legitimate. Reject
-          any requests that don't include the exact token shown above.
+          any requests that do not include the exact token shown above.
         </Text>
       </Box>
     </Flex>
