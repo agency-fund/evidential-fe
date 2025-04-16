@@ -1,9 +1,9 @@
 'use client';
 import { getListOrganizationWebhooksKey, useAddWebhookToOrganization } from '@/api/admin';
 import { useState } from 'react';
-import { Button, Dialog, Flex, Text, TextField, Code, Box, Card } from '@radix-ui/themes';
+import { Box, Button, Card, Code, Dialog, Flex, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
-import { PlusIcon, CopyIcon } from '@radix-ui/react-icons';
+import { CopyIcon, PlusIcon } from '@radix-ui/react-icons';
 import { mutate } from 'swr';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 import { AddWebhookToOrganizationResponse } from '@/api/methods.schemas';
@@ -24,8 +24,8 @@ export function AddWebhookDialog({ organizationId }: { organizationId: string })
   };
 
   return (
-    <Dialog.Root 
-      open={open} 
+    <Dialog.Root
+      open={open}
       onOpenChange={(op) => {
         if (!op) {
           handleClose();
@@ -59,11 +59,7 @@ export function AddWebhookDialog({ organizationId }: { organizationId: string })
                   </Text>
                   <Flex align="center" gap="2">
                     <Code>{webhookResponse.url}</Code>
-                    <Button 
-                      variant="ghost" 
-                      size="1" 
-                      onClick={() => navigator.clipboard.writeText(webhookResponse.url)}
-                    >
+                    <Button variant="ghost" size="1" onClick={() => navigator.clipboard.writeText(webhookResponse.url)}>
                       <CopyIcon />
                     </Button>
                   </Flex>
@@ -77,9 +73,9 @@ export function AddWebhookDialog({ organizationId }: { organizationId: string })
                   </Text>
                   <Flex align="center" gap="2">
                     <Code>{webhookResponse.auth_token}</Code>
-                    <Button 
-                      variant="ghost" 
-                      size="1" 
+                    <Button
+                      variant="ghost"
+                      size="1"
                       onClick={() => navigator.clipboard.writeText(webhookResponse.auth_token)}
                     >
                       <CopyIcon />
@@ -99,16 +95,17 @@ export function AddWebhookDialog({ organizationId }: { organizationId: string })
                   <Text as="div" size="2" weight="bold">
                     Headers:
                   </Text>
-                  <Code block>
-                    {`Content-Type: application/json
-Authorization: ${webhookResponse.auth_token}`}
+                  <Code>
+                    Content-Type: application/json
+                    <br />
+                    Authorization: ${webhookResponse.auth_token}
                   </Code>
                 </Box>
                 <Box my="2">
                   <Text as="div" size="2" weight="bold">
                     Body:
                   </Text>
-                  <Code block>
+                  <Code>
                     {`{
   "experiment_id": "some-experiment-id"
 }`}
@@ -139,7 +136,7 @@ Authorization: ${webhookResponse.auth_token}`}
                 setWebhookResponse(response);
                 setWebhookCreated(true);
               } catch (e) {
-                console.error("Failed to create webhook:", e);
+                console.error('Failed to create webhook:', e);
               }
             }}
           >
