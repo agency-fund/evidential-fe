@@ -52,6 +52,57 @@ export const createOrganizationsResponse = zod.object({
 });
 
 /**
+ * Adds a Webhook to an organization.
+ * @summary Add Webhook To Organization
+ */
+export const addWebhookToOrganizationParams = zod.object({
+	organization_id: zod.string(),
+});
+
+export const addWebhookToOrganizationBodyUrlMax = 500;
+
+export const addWebhookToOrganizationBody = zod.object({
+	type: zod.string(),
+	url: zod.string().max(addWebhookToOrganizationBodyUrlMax),
+});
+
+export const addWebhookToOrganizationResponse = zod.object({
+	id: zod.string(),
+	type: zod.string(),
+	url: zod.string(),
+	auth_token: zod.string(),
+});
+
+/**
+ * Removes a Webhook from an organization.
+ * @summary Delete Webhook From Organization
+ */
+export const deleteWebhookFromOrganizationParams = zod.object({
+	organization_id: zod.string(),
+	webhook_id: zod.string(),
+});
+
+/**
+ * Returns the most recent 200 events in an organization.
+ * @summary List Organization Events
+ */
+export const listOrganizationEventsParams = zod.object({
+	organization_id: zod.string(),
+});
+
+export const listOrganizationEventsResponse = zod.object({
+	items: zod.array(
+		zod.object({
+			id: zod.string(),
+			created_at: zod.string().datetime(),
+			type: zod.string(),
+			summary: zod.string(),
+			link: zod.string().or(zod.null()),
+		}),
+	),
+});
+
+/**
  * Adds a new member to an organization.
 
 The authenticated user must be part of the organization to add members.
@@ -1594,6 +1645,10 @@ export const createExperimentWithAssignmentResponse = zod.object({
 export const analyzeExperimentParams = zod.object({
 	datasource_id: zod.string(),
 	experiment_id: zod.string(),
+});
+
+export const analyzeExperimentQueryParams = zod.object({
+	baseline_arm_id: zod.string().or(zod.null()).optional(),
 });
 
 export const analyzeExperimentResponseMetricAnalysesItemMetricFieldNameRegExp =

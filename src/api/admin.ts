@@ -12,6 +12,9 @@ import type { SWRMutationConfiguration } from "swr/mutation";
 
 import type {
 	AddMemberToOrganizationRequest,
+	AddWebhookToOrganizationRequest,
+	AddWebhookToOrganizationResponse,
+	AnalyzeExperimentParams,
 	CreateApiKeyResponse,
 	CreateDatasourceRequest,
 	CreateDatasourceResponse,
@@ -38,6 +41,7 @@ import type {
 	ListApiKeysResponse,
 	ListDatasourcesResponse,
 	ListExperimentsResponse,
+	ListOrganizationEventsResponse,
 	ListOrganizationsResponse,
 	ListParticipantsTypeResponse,
 	ParticipantsConfig,
@@ -227,6 +231,235 @@ export const useCreateOrganizations = <
 	const swrFn = getCreateOrganizationsMutationFetcher(requestOptions);
 
 	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * Adds a Webhook to an organization.
+ * @summary Add Webhook To Organization
+ */
+export const getAddWebhookToOrganizationUrl = (organizationId: string) => {
+	return `/v1/m/organizations/${organizationId}/webhooks`;
+};
+
+export const addWebhookToOrganization = async (
+	organizationId: string,
+	addWebhookToOrganizationRequest: AddWebhookToOrganizationRequest,
+	options?: RequestInit,
+): Promise<AddWebhookToOrganizationResponse> => {
+	return orvalFetch<AddWebhookToOrganizationResponse>(
+		getAddWebhookToOrganizationUrl(organizationId),
+		{
+			...options,
+			method: "POST",
+			headers: { "Content-Type": "application/json", ...options?.headers },
+			body: JSON.stringify(addWebhookToOrganizationRequest),
+		},
+	);
+};
+
+export const getAddWebhookToOrganizationMutationFetcher = (
+	organizationId: string,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (
+		_: Key,
+		{ arg }: { arg: AddWebhookToOrganizationRequest },
+	): Promise<AddWebhookToOrganizationResponse> => {
+		return addWebhookToOrganization(organizationId, arg, options);
+	};
+};
+export const getAddWebhookToOrganizationMutationKey = (
+	organizationId: string,
+) => [`/v1/m/organizations/${organizationId}/webhooks`] as const;
+
+export type AddWebhookToOrganizationMutationResult = NonNullable<
+	Awaited<ReturnType<typeof addWebhookToOrganization>>
+>;
+export type AddWebhookToOrganizationMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+/**
+ * @summary Add Webhook To Organization
+ */
+export const useAddWebhookToOrganization = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	organizationId: string,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof addWebhookToOrganization>>,
+			TError,
+			Key,
+			AddWebhookToOrganizationRequest,
+			Awaited<ReturnType<typeof addWebhookToOrganization>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey =
+		swrOptions?.swrKey ??
+		getAddWebhookToOrganizationMutationKey(organizationId);
+	const swrFn = getAddWebhookToOrganizationMutationFetcher(
+		organizationId,
+		requestOptions,
+	);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * Removes a Webhook from an organization.
+ * @summary Delete Webhook From Organization
+ */
+export const getDeleteWebhookFromOrganizationUrl = (
+	organizationId: string,
+	webhookId: string,
+) => {
+	return `/v1/m/organizations/${organizationId}/webhooks/${webhookId}`;
+};
+
+export const deleteWebhookFromOrganization = async (
+	organizationId: string,
+	webhookId: string,
+	options?: RequestInit,
+): Promise<void> => {
+	return orvalFetch<void>(
+		getDeleteWebhookFromOrganizationUrl(organizationId, webhookId),
+		{
+			...options,
+			method: "DELETE",
+		},
+	);
+};
+
+export const getDeleteWebhookFromOrganizationMutationFetcher = (
+	organizationId: string,
+	webhookId: string,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, __: { arg: Arguments }): Promise<void> => {
+		return deleteWebhookFromOrganization(organizationId, webhookId, options);
+	};
+};
+export const getDeleteWebhookFromOrganizationMutationKey = (
+	organizationId: string,
+	webhookId: string,
+) => [`/v1/m/organizations/${organizationId}/webhooks/${webhookId}`] as const;
+
+export type DeleteWebhookFromOrganizationMutationResult = NonNullable<
+	Awaited<ReturnType<typeof deleteWebhookFromOrganization>>
+>;
+export type DeleteWebhookFromOrganizationMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+/**
+ * @summary Delete Webhook From Organization
+ */
+export const useDeleteWebhookFromOrganization = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	organizationId: string,
+	webhookId: string,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof deleteWebhookFromOrganization>>,
+			TError,
+			Key,
+			Arguments,
+			Awaited<ReturnType<typeof deleteWebhookFromOrganization>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey =
+		swrOptions?.swrKey ??
+		getDeleteWebhookFromOrganizationMutationKey(organizationId, webhookId);
+	const swrFn = getDeleteWebhookFromOrganizationMutationFetcher(
+		organizationId,
+		webhookId,
+		requestOptions,
+	);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * Returns the most recent 200 events in an organization.
+ * @summary List Organization Events
+ */
+export const getListOrganizationEventsUrl = (organizationId: string) => {
+	return `/v1/m/organizations/${organizationId}/events`;
+};
+
+export const listOrganizationEvents = async (
+	organizationId: string,
+	options?: RequestInit,
+): Promise<ListOrganizationEventsResponse> => {
+	return orvalFetch<ListOrganizationEventsResponse>(
+		getListOrganizationEventsUrl(organizationId),
+		{
+			...options,
+			method: "GET",
+		},
+	);
+};
+
+export const getListOrganizationEventsKey = (organizationId: string) =>
+	[`/v1/m/organizations/${organizationId}/events`] as const;
+
+export type ListOrganizationEventsQueryResult = NonNullable<
+	Awaited<ReturnType<typeof listOrganizationEvents>>
+>;
+export type ListOrganizationEventsQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+/**
+ * @summary List Organization Events
+ */
+export const useListOrganizationEvents = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	organizationId: string,
+	options?: {
+		swr?: SWRConfiguration<
+			Awaited<ReturnType<typeof listOrganizationEvents>>,
+			TError
+		> & { swrKey?: Key; enabled?: boolean };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const isEnabled = swrOptions?.enabled !== false && !!organizationId;
+	const swrKey =
+		swrOptions?.swrKey ??
+		(() => (isEnabled ? getListOrganizationEventsKey(organizationId) : null));
+	const swrFn = () => listOrganizationEvents(organizationId, requestOptions);
+
+	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
+		swrKey,
+		swrFn,
+		swrOptions,
+	);
 
 	return {
 		swrKey,
@@ -1879,17 +2112,31 @@ export const useCreateExperimentWithAssignment = <
 export const getAnalyzeExperimentUrl = (
 	datasourceId: string,
 	experimentId: string,
+	params?: AnalyzeExperimentParams,
 ) => {
-	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/analyze`;
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/analyze?${stringifiedParams}`
+		: `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/analyze`;
 };
 
 export const analyzeExperiment = async (
 	datasourceId: string,
 	experimentId: string,
+	params?: AnalyzeExperimentParams,
 	options?: RequestInit,
 ): Promise<ExperimentAnalysis> => {
 	return orvalFetch<ExperimentAnalysis>(
-		getAnalyzeExperimentUrl(datasourceId, experimentId),
+		getAnalyzeExperimentUrl(datasourceId, experimentId, params),
 		{
 			...options,
 			method: "GET",
@@ -1900,9 +2147,11 @@ export const analyzeExperiment = async (
 export const getAnalyzeExperimentKey = (
 	datasourceId: string,
 	experimentId: string,
+	params?: AnalyzeExperimentParams,
 ) =>
 	[
 		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/analyze`,
+		...(params ? [params] : []),
 	] as const;
 
 export type AnalyzeExperimentQueryResult = NonNullable<
@@ -1920,6 +2169,7 @@ export const useAnalyzeExperiment = <
 >(
 	datasourceId: string,
 	experimentId: string,
+	params?: AnalyzeExperimentParams,
 	options?: {
 		swr?: SWRConfiguration<
 			Awaited<ReturnType<typeof analyzeExperiment>>,
@@ -1935,9 +2185,11 @@ export const useAnalyzeExperiment = <
 	const swrKey =
 		swrOptions?.swrKey ??
 		(() =>
-			isEnabled ? getAnalyzeExperimentKey(datasourceId, experimentId) : null);
+			isEnabled
+				? getAnalyzeExperimentKey(datasourceId, experimentId, params)
+				: null);
 	const swrFn = () =>
-		analyzeExperiment(datasourceId, experimentId, requestOptions);
+		analyzeExperiment(datasourceId, experimentId, params, requestOptions);
 
 	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
 		swrKey,

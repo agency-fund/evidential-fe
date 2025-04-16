@@ -8,6 +8,19 @@ export interface AddMemberToOrganizationRequest {
 	email: string;
 }
 
+export interface AddWebhookToOrganizationRequest {
+	type: "event.created";
+	/** @maxLength 500 */
+	url: string;
+}
+
+export interface AddWebhookToOrganizationResponse {
+	id: string;
+	type: string;
+	url: string;
+	auth_token: string;
+}
+
 export interface ApiKeySummary {
 	/** @maxLength 64 */
 	id: string;
@@ -609,6 +622,16 @@ export type DwhInput = Dsn | BqDsnInput;
 
 export type DwhOutput = Dsn | BqDsnOutput;
 
+export type EventSummaryLink = string | null;
+
+export interface EventSummary {
+	id: string;
+	created_at: string;
+	type: string;
+	summary: string;
+	link: EventSummaryLink;
+}
+
 /**
  * Describes the change if any in metrics targeted by an experiment.
  */
@@ -964,6 +987,10 @@ export interface ListDatasourcesResponse {
 
 export interface ListExperimentsResponse {
 	items: ExperimentConfig[];
+}
+
+export interface ListOrganizationEventsResponse {
+	items: EventSummary[];
 }
 
 export interface ListOrganizationsResponse {
@@ -1454,4 +1481,11 @@ export type CreateExperimentWithAssignmentParams = {
 	 * Whether to also stratify on metrics during assignment.
 	 */
 	stratify_on_metrics?: boolean;
+};
+
+export type AnalyzeExperimentParams = {
+	/**
+	 * UUID of the baseline arm. If None, the first design spec arm is used.
+	 */
+	baseline_arm_id?: string | null;
 };
