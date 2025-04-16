@@ -2,13 +2,15 @@
 import { Flex, Heading, Text } from '@radix-ui/themes';
 import { RenameOrganizationDialog } from './rename-organization-dialog';
 import { XSpinner } from '../components/x-spinner';
-import { useGetOrganization, useListOrganizationEvents } from '@/api/admin';
+import { useGetOrganization, useListOrganizationEvents, useListOrganizationWebhooks } from '@/api/admin';
 import { useSearchParams } from 'next/navigation';
 import { AddUserDialog } from '@/app/organizationdetails/add-user-dialog';
 import { AddDatasourceDialog } from '@/app/organizationdetails/add-datasource-dialog';
+import { AddWebhookDialog } from '@/app/organizationdetails/add-webhook-dialog';
 import { DatasourcesTable } from '@/app/organizationdetails/datasources-table';
 import { UsersTable } from '@/app/organizationdetails/users-table';
 import { EventsTable } from '@/app/organizationdetails/events-table';
+import { WebhooksTable } from '@/app/organizationdetails/webhooks-table';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 
 export default function Page() {
@@ -30,6 +32,16 @@ export default function Page() {
     isLoading: isLoadingEvents,
     error: eventsError,
   } = useListOrganizationEvents(organizationId!, {
+    swr: {
+      enabled: organizationId !== null,
+    },
+  });
+
+  const {
+    data: webhooksData,
+    isLoading: isLoadingWebhooks,
+    error: webhooksError,
+  } = useListOrganizationWebhooks(organizationId!, {
     swr: {
       enabled: organizationId !== null,
     },
@@ -67,6 +79,20 @@ export default function Page() {
           <AddDatasourceDialog organizationId={organizationId} />
         </Flex>
         <DatasourcesTable datasources={organization.datasources} organizationId={organizationId} />
+      </Flex>
+
+      <Flex direction="column" gap="3">
+        <Flex justify="between" align="center">
+          <Heading size="4">Webhooks</Heading>
+          <AddWebhookDialog organizationId={organizationId} />
+        </Flex>
+        {isLoadingWebhooks ? (
+          <XSpinner message="Loading webhooks..." />
+        ) : webhooksError ? (
+          <GenericErrorCallout title={'Failed to fetch webhooks'} error={webhooksError} />
+        ) : (
+          <WebhooksTable webhooks={webhooksData?.items || []} organizationId={organizationId} />
+        )}
       </Flex>
 
       <Flex direction="column" gap="3">

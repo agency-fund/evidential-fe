@@ -44,6 +44,7 @@ import type {
 	ListOrganizationEventsResponse,
 	ListOrganizationsResponse,
 	ListParticipantsTypeResponse,
+	ListWebhooksResponse,
 	ParticipantsConfig,
 	PowerRequest,
 	PowerResponseOutput,
@@ -312,6 +313,71 @@ export const useAddWebhookToOrganization = <
 	);
 
 	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * Lists all the webhooks for an organization.
+ * @summary List Organization Webhooks
+ */
+export const getListOrganizationWebhooksUrl = (organizationId: string) => {
+	return `/v1/m/organizations/${organizationId}/webhooks`;
+};
+
+export const listOrganizationWebhooks = async (
+	organizationId: string,
+	options?: RequestInit,
+): Promise<ListWebhooksResponse> => {
+	return orvalFetch<ListWebhooksResponse>(
+		getListOrganizationWebhooksUrl(organizationId),
+		{
+			...options,
+			method: "GET",
+		},
+	);
+};
+
+export const getListOrganizationWebhooksKey = (organizationId: string) =>
+	[`/v1/m/organizations/${organizationId}/webhooks`] as const;
+
+export type ListOrganizationWebhooksQueryResult = NonNullable<
+	Awaited<ReturnType<typeof listOrganizationWebhooks>>
+>;
+export type ListOrganizationWebhooksQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+/**
+ * @summary List Organization Webhooks
+ */
+export const useListOrganizationWebhooks = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	organizationId: string,
+	options?: {
+		swr?: SWRConfiguration<
+			Awaited<ReturnType<typeof listOrganizationWebhooks>>,
+			TError
+		> & { swrKey?: Key; enabled?: boolean };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const isEnabled = swrOptions?.enabled !== false && !!organizationId;
+	const swrKey =
+		swrOptions?.swrKey ??
+		(() => (isEnabled ? getListOrganizationWebhooksKey(organizationId) : null));
+	const swrFn = () => listOrganizationWebhooks(organizationId, requestOptions);
+
+	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
+		swrKey,
+		swrFn,
+		swrOptions,
+	);
 
 	return {
 		swrKey,

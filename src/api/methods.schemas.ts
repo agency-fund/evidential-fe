@@ -1001,6 +1001,10 @@ export interface ListParticipantsTypeResponse {
 	items: ParticipantsConfig[];
 }
 
+export interface ListWebhooksResponse {
+	items: WebhookSummary[];
+}
+
 export type MetricAnalysisMetricName = string | null;
 
 export type MetricAnalysisMetric = DesignSpecMetricRequest | null;
@@ -1398,6 +1402,15 @@ export interface WebhookResponse {
 	status_code: number;
 	/** HTTP body (if any) we received from the webhook's server. May be empty. */
 	body: string;
+}
+
+export type WebhookSummaryAuthToken = string | null;
+
+export interface WebhookSummary {
+	id: string;
+	type: string;
+	url: string;
+	auth_token: WebhookSummaryAuthToken;
 }
 
 export type WebhookUpdateCommitRequestUpdateJson =

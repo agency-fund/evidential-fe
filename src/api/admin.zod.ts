@@ -74,6 +74,25 @@ export const addWebhookToOrganizationResponse = zod.object({
 });
 
 /**
+ * Lists all the webhooks for an organization.
+ * @summary List Organization Webhooks
+ */
+export const listOrganizationWebhooksParams = zod.object({
+	organization_id: zod.string(),
+});
+
+export const listOrganizationWebhooksResponse = zod.object({
+	items: zod.array(
+		zod.object({
+			id: zod.string(),
+			type: zod.string(),
+			url: zod.string(),
+			auth_token: zod.string().or(zod.null()),
+		}),
+	),
+});
+
+/**
  * Removes a Webhook from an organization.
  * @summary Delete Webhook From Organization
  */
