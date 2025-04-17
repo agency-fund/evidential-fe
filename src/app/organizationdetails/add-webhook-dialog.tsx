@@ -9,13 +9,7 @@ import { GenericErrorCallout } from '@/app/components/generic-error';
 import { AddWebhookToOrganizationResponse } from '@/api/methods.schemas';
 import { WebhookInfoContent } from './webhook-info-content';
 
-export function AddWebhookDialog({ 
-  organizationId, 
-  disabled = false 
-}: { 
-  organizationId: string;
-  disabled?: boolean;
-}) {
+export function AddWebhookDialog({ organizationId, disabled = false }: { organizationId: string; disabled?: boolean }) {
   const { trigger, isMutating, error, reset } = useAddWebhookToOrganization(organizationId, {
     swr: { onSuccess: () => mutate(getListOrganizationWebhooksKey(organizationId)) },
   });
@@ -58,13 +52,13 @@ export function AddWebhookDialog({
               Your webhook has been created. Please save the following information.
             </Dialog.Description>
 
-            <WebhookInfoContent 
+            <WebhookInfoContent
               webhook={{
                 id: webhookResponse.id,
                 type: webhookResponse.type,
                 url: webhookResponse.url,
-                auth_token: webhookResponse.auth_token
-              }} 
+                auth_token: webhookResponse.auth_token,
+              }}
             />
 
             <Flex gap="3" mt="4" justify="end">
@@ -79,7 +73,7 @@ export function AddWebhookDialog({
               const url = fd.get('url') as string;
               try {
                 const response = await trigger({
-                  type: 'event.created',
+                  type: 'experiment.created',
                   url,
                 });
                 setWebhookResponse(response);

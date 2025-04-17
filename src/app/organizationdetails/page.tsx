@@ -84,8 +84,8 @@ export default function Page() {
       <Flex direction="column" gap="3">
         <Flex justify="between" align="center">
           <Heading size="4">Webhooks</Heading>
-          <AddWebhookDialog 
-            organizationId={organizationId} 
+          <AddWebhookDialog
+            organizationId={organizationId}
             disabled={webhooksData?.items && webhooksData.items.length > 0}
           />
         </Flex>

@@ -9,16 +9,28 @@ export interface AddMemberToOrganizationRequest {
 }
 
 export interface AddWebhookToOrganizationRequest {
-	type: "event.created";
+	type: "experiment.created";
 	/** @maxLength 500 */
 	url: string;
 }
 
+/**
+ * The value of the Authorization: header that will be sent with the request to the configured URL.
+ */
+export type AddWebhookToOrganizationResponseAuthToken = string | null;
+
+/**
+ * Information on the successfully created webhook.
+ */
 export interface AddWebhookToOrganizationResponse {
+	/** The ID of the newly created webhook. */
 	id: string;
+	/** The type of webhook; e.g. experiment.created */
 	type: string;
+	/** The URL to notify. */
 	url: string;
-	auth_token: string;
+	/** The value of the Authorization: header that will be sent with the request to the configured URL. */
+	auth_token: AddWebhookToOrganizationResponseAuthToken;
 }
 
 export interface ApiKeySummary {
@@ -589,14 +601,15 @@ export const DsnDriver = {
 	"postgresql+psycopg2": "postgresql+psycopg2",
 } as const;
 
-export type DsnSslmode =
-	| "disable"
-	| "allow"
-	| "prefer"
-	| "require"
-	| "verify-ca"
-	| "verify-full"
-	| null;
+export type DsnSslmode = (typeof DsnSslmode)[keyof typeof DsnSslmode];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const DsnSslmode = {
+	disable: "disable",
+	require: "require",
+	"verify-ca": "verify-ca",
+	"verify-full": "verify-full",
+} as const;
 
 export type DsnSearchPath = string | null;
 
@@ -614,7 +627,7 @@ export interface Dsn {
 	user: string;
 	password: string;
 	dbname: string;
-	sslmode?: DsnSslmode;
+	sslmode: DsnSslmode;
 	search_path?: DsnSearchPath;
 }
 
@@ -622,14 +635,25 @@ export type DwhInput = Dsn | BqDsnInput;
 
 export type DwhOutput = Dsn | BqDsnOutput;
 
+/**
+ * A navigable link to related information.
+ */
 export type EventSummaryLink = string | null;
 
+/**
+ * Describes an event.
+ */
 export interface EventSummary {
+	/** The ID of the event. */
 	id: string;
+	/** The time the event was created. */
 	created_at: string;
+	/** The type of event. */
 	type: string;
+	/** Human-readable summary of the event. */
 	summary: string;
-	link: EventSummaryLink;
+	/** A navigable link to related information. */
+	link?: EventSummaryLink;
 }
 
 /**
@@ -1404,12 +1428,22 @@ export interface WebhookResponse {
 	body: string;
 }
 
+/**
+ * The value of the Authorization: header that will be sent with the request to the configured URL.
+ */
 export type WebhookSummaryAuthToken = string | null;
 
+/**
+ * Summarizes a Webhook configuration for an organization.
+ */
 export interface WebhookSummary {
+	/** The ID of the webhook. */
 	id: string;
+	/** The type of webhook; e.g. experiment.created */
 	type: string;
+	/** The URL to notify. */
 	url: string;
+	/** The value of the Authorization: header that will be sent with the request to the configured URL. */
 	auth_token: WebhookSummaryAuthToken;
 }
 

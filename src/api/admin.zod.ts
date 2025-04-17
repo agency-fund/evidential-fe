@@ -70,7 +70,7 @@ export const addWebhookToOrganizationResponse = zod.object({
 	id: zod.string(),
 	type: zod.string(),
 	url: zod.string(),
-	auth_token: zod.string(),
+	auth_token: zod.string().or(zod.null()),
 });
 
 /**
@@ -116,7 +116,7 @@ export const listOrganizationEventsResponse = zod.object({
 			created_at: zod.string().datetime(),
 			type: zod.string(),
 			summary: zod.string(),
-			link: zod.string().or(zod.null()),
+			link: zod.string().or(zod.null()).optional(),
 		}),
 	),
 });
@@ -285,17 +285,7 @@ export const createDatasourceBody = zod.object({
 			user: zod.string(),
 			password: zod.string(),
 			dbname: zod.string(),
-			sslmode: zod
-				.enum([
-					"disable",
-					"allow",
-					"prefer",
-					"require",
-					"verify-ca",
-					"verify-full",
-				])
-				.or(zod.null())
-				.optional(),
+			sslmode: zod.enum(["disable", "require", "verify-ca", "verify-full"]),
 			search_path: zod.string().or(zod.null()).optional(),
 		}),
 		zod.object({
@@ -380,17 +370,7 @@ export const updateDatasourceBody = zod.object({
 				user: zod.string(),
 				password: zod.string(),
 				dbname: zod.string(),
-				sslmode: zod
-					.enum([
-						"disable",
-						"allow",
-						"prefer",
-						"require",
-						"verify-ca",
-						"verify-full",
-					])
-					.or(zod.null())
-					.optional(),
+				sslmode: zod.enum(["disable", "require", "verify-ca", "verify-full"]),
 				search_path: zod.string().or(zod.null()).optional(),
 			}),
 			zod.object({
@@ -560,17 +540,7 @@ export const getDatasourceResponse = zod.object({
 					user: zod.string(),
 					password: zod.string(),
 					dbname: zod.string(),
-					sslmode: zod
-						.enum([
-							"disable",
-							"allow",
-							"prefer",
-							"require",
-							"verify-ca",
-							"verify-full",
-						])
-						.or(zod.null())
-						.optional(),
+					sslmode: zod.enum(["disable", "require", "verify-ca", "verify-full"]),
 					search_path: zod.string().or(zod.null()).optional(),
 				}),
 				zod.object({
