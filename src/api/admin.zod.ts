@@ -117,6 +117,7 @@ export const listOrganizationEventsResponse = zod.object({
 			type: zod.string(),
 			summary: zod.string(),
 			link: zod.string().or(zod.null()).optional(),
+			details: zod.object({}).or(zod.null()),
 		}),
 	),
 });

@@ -640,6 +640,13 @@ export type DwhOutput = Dsn | BqDsnOutput;
  */
 export type EventSummaryLink = string | null;
 
+export type EventSummaryDetailsAnyOf = { [key: string]: unknown };
+
+/**
+ * Details
+ */
+export type EventSummaryDetails = EventSummaryDetailsAnyOf | null;
+
 /**
  * Describes an event.
  */
@@ -654,6 +661,8 @@ export interface EventSummary {
 	summary: string;
 	/** A navigable link to related information. */
 	link?: EventSummaryLink;
+	/** Details */
+	details: EventSummaryDetails;
 }
 
 /**

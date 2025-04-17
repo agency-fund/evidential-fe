@@ -58,7 +58,10 @@ Authorization: ${webhook.auth_token || '[auth token]'}`}
           </Text>
           <Code>
             {`{
-  "experiment_id": "some-experiment-id"
+            "datasource_id": "datasource-id",
+            "organization_id": "organization-id",
+            "experiment_id": "some-experiment-id",
+            "experiment_url": "https://..."
 }`}
           </Code>
         </Box>
