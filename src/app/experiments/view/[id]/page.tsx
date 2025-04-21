@@ -31,9 +31,14 @@ export default function ExperimentViewPage() {
     data: analysisData,
     isLoading: isLoadingAnalysis,
     error: analysisError,
-  } = useAnalyzeExperiment(datasourceId || '', experimentId, {
-    swr: { enabled: !!datasourceId && !!experiment },
-  });
+  } = useAnalyzeExperiment(
+    datasourceId || '',
+    experimentId,
+    {},
+    {
+      swr: { enabled: !!datasourceId && !!experiment },
+    },
+  );
 
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
@@ -200,11 +205,7 @@ export default function ExperimentViewPage() {
             <Tabs.Content value="visualization">
               <Flex direction="column" gap="3" py="3">
                 {analysisData.metric_analyses.map((metric_analysis, index) => (
-                  <ForestPlot
-                    key={index}
-                    analysis={metric_analysis}
-                    experiment={experiment}
-                  />
+                  <ForestPlot key={index} analysis={metric_analysis} experiment={experiment} />
                 ))}
               </Flex>
             </Tabs.Content>

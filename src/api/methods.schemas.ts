@@ -8,6 +8,31 @@ export interface AddMemberToOrganizationRequest {
 	email: string;
 }
 
+export interface AddWebhookToOrganizationRequest {
+	type: "experiment.created";
+	/** @maxLength 500 */
+	url: string;
+}
+
+/**
+ * The value of the Authorization: header that will be sent with the request to the configured URL.
+ */
+export type AddWebhookToOrganizationResponseAuthToken = string | null;
+
+/**
+ * Information on the successfully created webhook.
+ */
+export interface AddWebhookToOrganizationResponse {
+	/** The ID of the newly created webhook. */
+	id: string;
+	/** The type of webhook; e.g. experiment.created */
+	type: string;
+	/** The URL to notify. */
+	url: string;
+	/** The value of the Authorization: header that will be sent with the request to the configured URL. */
+	auth_token: AddWebhookToOrganizationResponseAuthToken;
+}
+
 export interface ApiKeySummary {
 	/** @maxLength 64 */
 	id: string;
@@ -576,14 +601,15 @@ export const DsnDriver = {
 	"postgresql+psycopg2": "postgresql+psycopg2",
 } as const;
 
-export type DsnSslmode =
-	| "disable"
-	| "allow"
-	| "prefer"
-	| "require"
-	| "verify-ca"
-	| "verify-full"
-	| null;
+export type DsnSslmode = (typeof DsnSslmode)[keyof typeof DsnSslmode];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const DsnSslmode = {
+	disable: "disable",
+	require: "require",
+	"verify-ca": "verify-ca",
+	"verify-full": "verify-full",
+} as const;
 
 export type DsnSearchPath = string | null;
 
@@ -601,13 +627,43 @@ export interface Dsn {
 	user: string;
 	password: string;
 	dbname: string;
-	sslmode?: DsnSslmode;
+	sslmode: DsnSslmode;
 	search_path?: DsnSearchPath;
 }
 
 export type DwhInput = Dsn | BqDsnInput;
 
 export type DwhOutput = Dsn | BqDsnOutput;
+
+/**
+ * A navigable link to related information.
+ */
+export type EventSummaryLink = string | null;
+
+export type EventSummaryDetailsAnyOf = { [key: string]: unknown };
+
+/**
+ * Details
+ */
+export type EventSummaryDetails = EventSummaryDetailsAnyOf | null;
+
+/**
+ * Describes an event.
+ */
+export interface EventSummary {
+	/** The ID of the event. */
+	id: string;
+	/** The time the event was created. */
+	created_at: string;
+	/** The type of event. */
+	type: string;
+	/** Human-readable summary of the event. */
+	summary: string;
+	/** A navigable link to related information. */
+	link?: EventSummaryLink;
+	/** Details */
+	details: EventSummaryDetails;
+}
 
 /**
  * Describes the change if any in metrics targeted by an experiment.
@@ -966,12 +1022,20 @@ export interface ListExperimentsResponse {
 	items: ExperimentConfig[];
 }
 
+export interface ListOrganizationEventsResponse {
+	items: EventSummary[];
+}
+
 export interface ListOrganizationsResponse {
 	items: OrganizationSummary[];
 }
 
 export interface ListParticipantsTypeResponse {
 	items: ParticipantsConfig[];
+}
+
+export interface ListWebhooksResponse {
+	items: WebhookSummary[];
 }
 
 export type MetricAnalysisMetricName = string | null;
@@ -1373,6 +1437,25 @@ export interface WebhookResponse {
 	body: string;
 }
 
+/**
+ * The value of the Authorization: header that will be sent with the request to the configured URL.
+ */
+export type WebhookSummaryAuthToken = string | null;
+
+/**
+ * Summarizes a Webhook configuration for an organization.
+ */
+export interface WebhookSummary {
+	/** The ID of the webhook. */
+	id: string;
+	/** The type of webhook; e.g. experiment.created */
+	type: string;
+	/** The URL to notify. */
+	url: string;
+	/** The value of the Authorization: header that will be sent with the request to the configured URL. */
+	auth_token: WebhookSummaryAuthToken;
+}
+
 export type WebhookUpdateCommitRequestUpdateJson =
 	| WebhookUpdateTimestampsRequest
 	| WebhookUpdateDescriptionRequest;
@@ -1454,4 +1537,11 @@ export type CreateExperimentWithAssignmentParams = {
 	 * Whether to also stratify on metrics during assignment.
 	 */
 	stratify_on_metrics?: boolean;
+};
+
+export type AnalyzeExperimentParams = {
+	/**
+	 * UUID of the baseline arm. If None, the first design spec arm is used.
+	 */
+	baseline_arm_id?: string | null;
 };
