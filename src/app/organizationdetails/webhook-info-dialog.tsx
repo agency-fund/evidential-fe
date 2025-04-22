@@ -18,7 +18,7 @@ export function WebhookInfoDialog({ webhook }: { webhook: WebhookSummary }) {
 
       <Dialog.Content>
         <Dialog.Title>Webhook Information</Dialog.Title>
-        <Dialog.Description size="2" mb="4">
+        <Dialog.Description size="2" mb="2">
           Details about your webhook and how to use it.
         </Dialog.Description>
 

@@ -30,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`} style={{ margin: 0, padding: 0 }}>
-        <Theme>
+        <Theme appearance="light" accentColor="indigo" grayColor="slate" radius="large">
           <Toast.Provider swipeDirection="right">
             <Suspense>
               <GoogleAuthProvider>

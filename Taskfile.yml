@@ -16,7 +16,7 @@ env:
 
   # The OAuth Client Credentials Client ID for handling Google signins on this application (evidential-live).
   # Use this only when verifying production environments.
-  # NEXT_PUBLIC_XNGIN_GOOGLE_CLIENT_ID: "314428509782-j8fgiq5dvoic01432s2bcu3isinc9kam.apps.googleusercontent.com"
+  NEXT_PUBLIC_XNGIN_GOOGLE_CLIENT_ID: "314428509782-j8fgiq5dvoic01432s2bcu3isinc9kam.apps.googleusercontent.com"
 
   # The base URL of the xngin API server. Code will append the paths to the API endpoints (e.g. v1/m/apikeys, filters).
   NEXT_PUBLIC_XNGIN_API_BASE_URL: http://localhost:8000

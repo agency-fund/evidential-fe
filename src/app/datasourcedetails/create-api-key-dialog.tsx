@@ -5,6 +5,7 @@ import { XSpinner } from '../components/x-spinner';
 import { CopyIcon, PlusIcon } from '@radix-ui/react-icons';
 import { API_BASE_URL } from '@/services/constants';
 import { GenericErrorCallout } from '@/app/components/generic-error';
+import { CodeSnippetCard } from '@/app/components/cards/code-snipper-card';
 
 export const CreateApiKeyDialog = ({ datasourceId }: { datasourceId: string }) => {
   const [state, setState] = useState<'presenting-form' | 'presenting-results' | 'presenting-button'>(
@@ -28,31 +29,10 @@ export const CreateApiKeyDialog = ({ datasourceId }: { datasourceId: string }) =
             <Dialog.Description size="2" mb="4">
               The API key has been created. It will only be shown once. You can use it to make API calls.
             </Dialog.Description>
-            <DataList.Root>
-              <DataList.Item>
-                <DataList.Label minWidth="88px">Key</DataList.Label>
-                <DataList.Value>
-                  <Flex align="center" gap="2">
-                    <Code variant="ghost">{createdKey.key}</Code>
-                    <IconButton size="1" aria-label="Copy value" color="gray" variant="ghost">
-                      <CopyIcon onClick={() => navigator.clipboard.writeText(createdKey.key)} />
-                    </IconButton>
-                  </Flex>
-                </DataList.Value>
-              </DataList.Item>
-              <DataList.Item>
-                <DataList.Label>Example</DataList.Label>
-                <DataList.Value>
-                  {/* TODO: replace with a more useful API call */}
-                  <Flex align={'center'} gap={'2'}>
-                    <Code variant="ghost">{exampleCurlSnippet}</Code>
-                    <IconButton size="1" aria-label="Copy value" color="gray" variant="ghost">
-                      <CopyIcon onClick={() => navigator.clipboard.writeText(exampleCurlSnippet)} />
-                    </IconButton>
-                  </Flex>
-                </DataList.Value>
-              </DataList.Item>
-            </DataList.Root>
+
+            <CodeSnippetCard title="API key" content={createdKey.key} />
+
+            <CodeSnippetCard title="Example" content={exampleCurlSnippet} />
             <Flex gap="3" mt="4" justify="end">
               <Dialog.Close>
                 <Button variant="soft" color="gray">
