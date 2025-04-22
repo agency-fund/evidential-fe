@@ -1,0 +1,1 @@
+export { CopyToClipBoard } from './CopyToClipBoard';

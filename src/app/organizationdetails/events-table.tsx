@@ -1,9 +1,29 @@
 'use client';
-import { Code, DataList, HoverCard, Table, Text } from '@radix-ui/themes';
+import { Code, DataList, Flex, HoverCard, Table, Text } from '@radix-ui/themes';
 import { EventSummary } from '@/api/methods.schemas';
 import Link from 'next/link';
+import { CodeSnippetCard } from '@/app/components/cards/code-snipper-card';
+import { CopyToClipBoard } from '@/app/components/buttons';
 
 export function EventsTable({ events }: { events: EventSummary[] }) {
+  const eventDetails = [
+    {
+      label: 'Event ID',
+      value: (event: EventSummary) => event.id,
+      copy: true,
+    },
+    {
+      label: 'Timestamp',
+      value: (event: EventSummary) => event.created_at,
+      copy: false,
+    },
+    {
+      label: 'Summary',
+      value: (event: EventSummary) => event.summary,
+      copy: false,
+    },
+  ];
+
   return (
     <Table.Root variant="surface">
       <Table.Header>
@@ -40,27 +60,22 @@ export function EventsTable({ events }: { events: EventSummary[] }) {
               </HoverCard.Trigger>
               <HoverCard.Content>
                 <DataList.Root>
-                  <DataList.Item>
-                    <DataList.Label>Event ID</DataList.Label>
-                    <DataList.Value>{event.id}</DataList.Value>
-                  </DataList.Item>
-                  <DataList.Item>
-                    <DataList.Label>Timestamp</DataList.Label>
-                    <DataList.Value>{new Date(event.created_at).toISOString()}</DataList.Value>
-                  </DataList.Item>
-                  <DataList.Item>
-                    <DataList.Label>Summary</DataList.Label>
-                    <DataList.Value>{event.summary}</DataList.Value>
-                  </DataList.Item>
-                  {event.details && (
-                    <DataList.Item>
-                      <DataList.Label>Details</DataList.Label>
+                  {eventDetails.map((detail) => (
+                    <DataList.Item key={detail.label}>
+                      <DataList.Label>{detail.label}</DataList.Label>
                       <DataList.Value>
-                        <Code>{JSON.stringify(event.details, undefined, 2)}</Code>
+                        <Flex align="center" gap="2" justify="between" width="100%">
+                          {detail.value(event)}
+                          {detail.copy && <CopyToClipBoard content={detail.value(event)} />}
+                        </Flex>
                       </DataList.Value>
                     </DataList.Item>
-                  )}
+                  ))}
                 </DataList.Root>
+
+                {event.details && (
+                  <CodeSnippetCard title="Details" content={JSON.stringify(event.details, undefined, 2)} />
+                )}
               </HoverCard.Content>
             </HoverCard.Root>
           ))
