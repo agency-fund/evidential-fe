@@ -5,7 +5,7 @@ import { XSpinner } from '../components/x-spinner';
 import { CopyIcon, PlusIcon } from '@radix-ui/react-icons';
 import { API_BASE_URL } from '@/services/constants';
 import { GenericErrorCallout } from '@/app/components/generic-error';
-import { CodeSnippetCard } from '@/app/components/cards/code-snipper-card';
+import { CodeSnippetCard } from '@/app/components/cards/code-snippet-card';
 
 export const CreateApiKeyDialog = ({ datasourceId }: { datasourceId: string }) => {
   const [state, setState] = useState<'presenting-form' | 'presenting-results' | 'presenting-button'>(

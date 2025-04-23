@@ -1,6 +1,6 @@
 'use client';
 import { Code, Flex, IconButton, Table } from '@radix-ui/themes';
-import { CopyIcon } from '@radix-ui/react-icons';
+import { CopyToClipBoard } from '@/app/components/buttons';
 import Link from 'next/link';
 import { DeleteDatasourceDialog } from '@/app/organizationdetails/delete-datasource-dialog';
 import { EditDatasourceDialog } from '@/app/organizationdetails/edit-datasource-dialog';
@@ -35,9 +35,7 @@ export function DatasourcesTable({
             <Table.Cell>
               <Flex align="center" gap="2">
                 <Code variant={'ghost'}>{datasource.id}</Code>
-                <IconButton size="1" aria-label="Copy value" color="gray" variant="ghost">
-                  <CopyIcon onClick={() => navigator.clipboard.writeText(datasource.id)} />
-                </IconButton>
+                <CopyToClipBoard content={datasource.id} />
               </Flex>
             </Table.Cell>
             <Table.Cell>

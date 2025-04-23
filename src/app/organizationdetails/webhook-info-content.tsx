@@ -1,7 +1,7 @@
 'use client';
 import { Box, Flex, Text } from '@radix-ui/themes';
 import { WebhookSummary } from '@/api/methods.schemas';
-import { CodeSnippetCard } from '@/app/components/cards/code-snipper-card';
+import { CodeSnippetCard } from '@/app/components/cards/code-snippet-card';
 
 export function WebhookInfoContent({ webhook }: { webhook: WebhookSummary }) {
   const webHookBody = JSON.stringify(
