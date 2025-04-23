@@ -446,8 +446,6 @@ export const DataType = {
 	unsupported: "unsupported",
 } as const;
 
-export type DatasourceConfig = RemoteDatabaseConfig | SqliteLocalConfig;
-
 export interface DatasourceSummary {
 	/** @maxLength 64 */
 	id: string;
@@ -485,13 +483,13 @@ export interface DesignSpec {
 	arms: Arm[];
 	/**
 	 * List of participant_type variables to use for stratification.
-	 * @maxItems 100
+	 * @maxItems 150
 	 */
 	strata_field_names: string[];
 	/**
 	 * Primary and optional secondary metrics to target.
 	 * @minItems 1
-	 * @maxItems 100
+	 * @maxItems 150
 	 */
 	metrics: DesignSpecMetricRequest[];
 	/**
@@ -804,7 +802,7 @@ export interface GetDatasourceResponse {
 	id: string;
 	/** @maxLength 100 */
 	name: string;
-	config: DatasourceConfig;
+	config: RemoteDatabaseConfig;
 	/** @maxLength 64 */
 	organization_id: string;
 	/** @maxLength 100 */
@@ -1234,12 +1232,12 @@ export interface PowerRequest {
 }
 
 export interface PowerResponseInput {
-	/** @maxItems 100 */
+	/** @maxItems 150 */
 	analyses: MetricPowerAnalysisInput[];
 }
 
 export interface PowerResponseOutput {
-	/** @maxItems 100 */
+	/** @maxItems 150 */
 	analyses: MetricPowerAnalysisOutput[];
 }
 
@@ -1268,21 +1266,13 @@ export const Relation = {
 
 export type RemoteDatabaseConfigWebhookConfig = WebhookConfig | null;
 
-export type RemoteDatabaseConfigType =
-	(typeof RemoteDatabaseConfigType)[keyof typeof RemoteDatabaseConfigType];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const RemoteDatabaseConfigType = {
-	remote: "remote",
-} as const;
-
 /**
  * RemoteDatabaseConfig defines a configuration for a remote data warehouse.
  */
 export interface RemoteDatabaseConfig {
 	participants: ParticipantsConfig[];
 	webhook_config?: RemoteDatabaseConfigWebhookConfig;
-	type: RemoteDatabaseConfigType;
+	type: "remote";
 	dwh: DwhOutput;
 }
 
@@ -1305,20 +1295,6 @@ export interface SheetParticipantsRef {
 export interface SheetRef {
 	url: string;
 	worksheet: string;
-}
-
-export type SqliteLocalConfigType =
-	(typeof SqliteLocalConfigType)[keyof typeof SqliteLocalConfigType];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const SqliteLocalConfigType = {
-	sqlite_local: "sqlite_local",
-} as const;
-
-export interface SqliteLocalConfig {
-	participants: ParticipantsConfig[];
-	type: SqliteLocalConfigType;
-	sqlite_filename: string;
 }
 
 export type StrataStrataValue = string | null;

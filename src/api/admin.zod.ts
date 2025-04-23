@@ -528,7 +528,7 @@ export const getDatasourceResponse = zod.object({
 				})
 				.or(zod.null())
 				.optional(),
-			type: zod.enum(["remote"]),
+			type: zod.string(),
 			dwh: zod.discriminatedUnion("driver", [
 				zod.object({
 					driver: zod.enum(["postgresql+psycopg", "postgresql+psycopg2"]),
@@ -571,56 +571,6 @@ export const getDatasourceResponse = zod.object({
 					]),
 				}),
 			]),
-		}),
-		zod.object({
-			participants: zod.array(
-				zod.discriminatedUnion("type", [
-					zod.object({
-						participant_type: zod.string(),
-						type: zod.enum(["sheet"]),
-						table_name: zod.string(),
-						sheet: zod.object({
-							url: zod.string(),
-							worksheet: zod.string(),
-						}),
-					}),
-					zod.object({
-						table_name: zod.string(),
-						fields: zod.array(
-							zod.object({
-								field_name: zod.string(),
-								data_type: zod.enum([
-									"boolean",
-									"character varying",
-									"uuid",
-									"date",
-									"integer",
-									"double precision",
-									"numeric",
-									"timestamp without time zone",
-									"bigint",
-									"jsonb (unsupported)",
-									"json (unsupported)",
-									"unsupported",
-								]),
-								description: zod.string(),
-								is_unique_id: zod.boolean(),
-								is_strata: zod.boolean(),
-								is_filter: zod.boolean(),
-								is_metric: zod.boolean(),
-								extra: zod
-									.record(zod.string(), zod.string())
-									.or(zod.null())
-									.optional(),
-							}),
-						),
-						participant_type: zod.string(),
-						type: zod.enum(["schema"]),
-					}),
-				]),
-			),
-			type: zod.enum(["sqlite_local"]),
-			sqlite_filename: zod.string(),
 		}),
 	]),
 	organization_id: zod.string().max(getDatasourceResponseOrganizationIdMax),
@@ -1055,7 +1005,7 @@ export const updateParticipantTypeBodyParticipantTypeMaxOne = 100;
 export const updateParticipantTypeBodyTableNameRegExpOne = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
-export const updateParticipantTypeBodyFieldsMaxOne = 100;
+export const updateParticipantTypeBodyFieldsMaxOne = 150;
 
 export const updateParticipantTypeBody = zod.object({
 	participant_type: zod
@@ -1103,7 +1053,7 @@ export const updateParticipantTypeResponseParticipantTypeMax = 100;
 export const updateParticipantTypeResponseTableNameRegExpOne = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
-export const updateParticipantTypeResponseFieldsMaxOne = 100;
+export const updateParticipantTypeResponseFieldsMaxOne = 150;
 
 export const updateParticipantTypeResponse = zod.object({
 	participant_type: zod
@@ -1235,10 +1185,10 @@ export const createExperimentWithAssignmentBodyDesignSpecArmsMin = 2;
 export const createExperimentWithAssignmentBodyDesignSpecArmsMax = 10;
 export const createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesItemRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesMax = 100;
+export const createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesMax = 150;
 export const createExperimentWithAssignmentBodyDesignSpecMetricsItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentWithAssignmentBodyDesignSpecMetricsMax = 100;
+export const createExperimentWithAssignmentBodyDesignSpecMetricsMax = 150;
 export const createExperimentWithAssignmentBodyDesignSpecPowerDefault = 0.8;
 export const createExperimentWithAssignmentBodyDesignSpecPowerMin = 0;
 
@@ -1257,7 +1207,7 @@ export const createExperimentWithAssignmentBodyAudienceSpecFiltersItemFieldNameR
 export const createExperimentWithAssignmentBodyAudienceSpecFiltersMax = 20;
 export const createExperimentWithAssignmentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentWithAssignmentBodyPowerAnalysesAnalysesMax = 100;
+export const createExperimentWithAssignmentBodyPowerAnalysesAnalysesMax = 150;
 
 export const createExperimentWithAssignmentBody = zod.object({
 	design_spec: zod.object({
@@ -1412,10 +1362,10 @@ export const createExperimentWithAssignmentResponseDesignSpecArmsMin = 2;
 export const createExperimentWithAssignmentResponseDesignSpecArmsMax = 10;
 export const createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesItemRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesMax = 100;
+export const createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesMax = 150;
 export const createExperimentWithAssignmentResponseDesignSpecMetricsItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentWithAssignmentResponseDesignSpecMetricsMax = 100;
+export const createExperimentWithAssignmentResponseDesignSpecMetricsMax = 150;
 export const createExperimentWithAssignmentResponseDesignSpecPowerDefault = 0.8;
 export const createExperimentWithAssignmentResponseDesignSpecPowerMin = 0;
 
@@ -1434,7 +1384,7 @@ export const createExperimentWithAssignmentResponseAudienceSpecFiltersItemFieldN
 export const createExperimentWithAssignmentResponseAudienceSpecFiltersMax = 20;
 export const createExperimentWithAssignmentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentWithAssignmentResponsePowerAnalysesAnalysesMax = 100;
+export const createExperimentWithAssignmentResponsePowerAnalysesAnalysesMax = 150;
 export const createExperimentWithAssignmentResponseAssignSummaryArmSizesItemArmArmNameMax = 100;
 export const createExperimentWithAssignmentResponseAssignSummaryArmSizesItemArmArmDescriptionMaxOne = 2000;
 export const createExperimentWithAssignmentResponseAssignSummaryArmSizesItemSizeDefault = 0;
@@ -1722,10 +1672,10 @@ export const listExperimentsResponseItemsItemDesignSpecArmsMin = 2;
 export const listExperimentsResponseItemsItemDesignSpecArmsMax = 10;
 export const listExperimentsResponseItemsItemDesignSpecStrataFieldNamesItemRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const listExperimentsResponseItemsItemDesignSpecStrataFieldNamesMax = 100;
+export const listExperimentsResponseItemsItemDesignSpecStrataFieldNamesMax = 150;
 export const listExperimentsResponseItemsItemDesignSpecMetricsItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const listExperimentsResponseItemsItemDesignSpecMetricsMax = 100;
+export const listExperimentsResponseItemsItemDesignSpecMetricsMax = 150;
 export const listExperimentsResponseItemsItemDesignSpecPowerDefault = 0.8;
 export const listExperimentsResponseItemsItemDesignSpecPowerMin = 0;
 
@@ -1744,7 +1694,7 @@ export const listExperimentsResponseItemsItemAudienceSpecFiltersItemFieldNameReg
 export const listExperimentsResponseItemsItemAudienceSpecFiltersMax = 20;
 export const listExperimentsResponseItemsItemPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const listExperimentsResponseItemsItemPowerAnalysesAnalysesMax = 100;
+export const listExperimentsResponseItemsItemPowerAnalysesAnalysesMax = 150;
 export const listExperimentsResponseItemsItemAssignSummaryArmSizesItemArmArmNameMax = 100;
 export const listExperimentsResponseItemsItemAssignSummaryArmSizesItemArmArmDescriptionMaxOne = 2000;
 export const listExperimentsResponseItemsItemAssignSummaryArmSizesItemSizeDefault = 0;
@@ -1959,10 +1909,10 @@ export const getExperimentResponseDesignSpecArmsMin = 2;
 export const getExperimentResponseDesignSpecArmsMax = 10;
 export const getExperimentResponseDesignSpecStrataFieldNamesItemRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const getExperimentResponseDesignSpecStrataFieldNamesMax = 100;
+export const getExperimentResponseDesignSpecStrataFieldNamesMax = 150;
 export const getExperimentResponseDesignSpecMetricsItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const getExperimentResponseDesignSpecMetricsMax = 100;
+export const getExperimentResponseDesignSpecMetricsMax = 150;
 export const getExperimentResponseDesignSpecPowerDefault = 0.8;
 export const getExperimentResponseDesignSpecPowerMin = 0;
 
@@ -1981,7 +1931,7 @@ export const getExperimentResponseAudienceSpecFiltersItemFieldNameRegExp =
 export const getExperimentResponseAudienceSpecFiltersMax = 20;
 export const getExperimentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const getExperimentResponsePowerAnalysesAnalysesMax = 100;
+export const getExperimentResponsePowerAnalysesAnalysesMax = 150;
 export const getExperimentResponseAssignSummaryArmSizesItemArmArmNameMax = 100;
 export const getExperimentResponseAssignSummaryArmSizesItemArmArmDescriptionMaxOne = 2000;
 export const getExperimentResponseAssignSummaryArmSizesItemSizeDefault = 0;
@@ -2181,7 +2131,7 @@ export const getExperimentAssignmentsResponseAssignmentsItemParticipantIdMax = 6
 export const getExperimentAssignmentsResponseAssignmentsItemArmNameMax = 100;
 export const getExperimentAssignmentsResponseAssignmentsItemStrataItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const getExperimentAssignmentsResponseAssignmentsItemStrataMaxOne = 100;
+export const getExperimentAssignmentsResponseAssignmentsItemStrataMaxOne = 150;
 
 export const getExperimentAssignmentsResponse = zod.object({
 	balance_check: zod.object({
@@ -2247,11 +2197,11 @@ export const powerCheckBodyDesignSpecArmsMax = 10;
 export const powerCheckBodyDesignSpecStrataFieldNamesItemRegExp = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
-export const powerCheckBodyDesignSpecStrataFieldNamesMax = 100;
+export const powerCheckBodyDesignSpecStrataFieldNamesMax = 150;
 export const powerCheckBodyDesignSpecMetricsItemFieldNameRegExp = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
-export const powerCheckBodyDesignSpecMetricsMax = 100;
+export const powerCheckBodyDesignSpecMetricsMax = 150;
 export const powerCheckBodyDesignSpecPowerDefault = 0.8;
 export const powerCheckBodyDesignSpecPowerMin = 0;
 
@@ -2352,7 +2302,7 @@ export const powerCheckBody = zod.object({
 
 export const powerCheckResponseAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const powerCheckResponseAnalysesMax = 100;
+export const powerCheckResponseAnalysesMax = 150;
 
 export const powerCheckResponse = zod.object({
 	analyses: zod
