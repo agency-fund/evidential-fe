@@ -1,16 +1,16 @@
 'use client';
-import { Button, Card, Flex, Grid, Heading, Separator, Table, Tabs, Text, TextArea } from '@radix-ui/themes';
+import { Button, Card, Flex, Grid, Heading, Separator, Table, Tabs, Text } from '@radix-ui/themes';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeftIcon, CodeIcon, DotsVerticalIcon } from '@radix-ui/react-icons';
+import { ArrowLeftIcon, CodeIcon } from '@radix-ui/react-icons';
 import { useAnalyzeExperiment, useGetExperiment } from '@/api/admin';
 import { ForestPlot } from '@/app/experiments/forest-plot';
 import { XSpinner } from '@/app/components/x-spinner';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 import { ExperimentStatusBadge } from '@/app/experiments/experiment-status-badge';
-import { CopyButton } from '@/app/components/copy-button';
+import { CopyToClipBoard } from '@/app/components/buttons/copy-to-clipboard';
 import { useState } from 'react';
 import * as Toast from '@radix-ui/react-toast';
-
+import { CodeSnippetCard } from '@/app/components/cards/code-snippet-card';
 export default function ExperimentViewPage() {
   const [openToast, setOpenToast] = useState(false);
   const params = useParams();
@@ -70,16 +70,13 @@ export default function ExperimentViewPage() {
           </Button>
           <Flex gap="2" align="center">
             <Heading>{experiment_name}</Heading>
-            <CopyButton value={experimentId} label="experiment ID" />
+            <CopyToClipBoard content={experimentId} tooltipContent="Copy experiment ID" />
           </Flex>
           <Text color="gray" size="3">
             on <strong>{experiment.audience_spec.participant_type}</strong>
           </Text>
           <ExperimentStatusBadge status={state} />
         </Flex>
-        <Button variant="ghost" onClick={() => setOpenToast(true)}>
-          <DotsVerticalIcon />
-        </Button>
       </Flex>
 
       <Flex direction="row" gap="1" align="baseline">
@@ -158,7 +155,7 @@ export default function ExperimentViewPage() {
                   <Flex justify="between" align="center">
                     <Flex gap="2" align="center">
                       <Heading size="4">{arm.arm_name}</Heading>
-                      <CopyButton value={arm.arm_id || ''} label="arm ID" />
+                      <CopyToClipBoard content={arm.arm_id || ''} tooltipContent="Copy arm ID" />
                     </Flex>
                     <Text color="gray" weight="bold">
                       {percentage.toFixed(1)}%
@@ -212,14 +209,11 @@ export default function ExperimentViewPage() {
 
             <Tabs.Content value="raw">
               <Flex direction="column" gap="3" py="3">
-                <TextArea
-                  readOnly
-                  value={JSON.stringify(analysisData, null, 2)}
-                  style={{
-                    fontFamily: 'monospace',
-                    height: '200px',
-                    width: '100%',
-                  }}
+                <CodeSnippetCard
+                  title="Raw Data"
+                  content={JSON.stringify(analysisData, null, 2)}
+                  height="200px"
+                  tooltipContent="Copy raw data"
                 />
               </Flex>
             </Tabs.Content>

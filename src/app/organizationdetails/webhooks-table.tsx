@@ -1,10 +1,11 @@
 'use client';
-import { Code, Flex, IconButton, Table, Text } from '@radix-ui/themes';
+import { Code, Flex, IconButton, Table, Text, Tooltip } from '@radix-ui/themes';
 import { WebhookSummary } from '@/api/methods.schemas';
 import { CopyIcon, EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons';
 import { DeleteWebhookDialog } from './delete-webhook-dialog';
 import { WebhookInfoDialog } from './webhook-info-dialog';
 import { useState } from 'react';
+import { CopyToClipBoard } from '@/app/components/buttons/copy-to-clipboard';
 
 export function WebhooksTable({ webhooks, organizationId }: { webhooks: WebhookSummary[]; organizationId: string }) {
   // Track which webhook auth tokens are visible
@@ -53,17 +54,11 @@ export function WebhooksTable({ webhooks, organizationId }: { webhooks: WebhookS
                         variant="ghost"
                         onClick={() => toggleTokenVisibility(webhook.id)}
                       >
-                        {visibleTokens[webhook.id] ? <EyeOpenIcon /> : <EyeClosedIcon />}
+                        <Tooltip content={visibleTokens[webhook.id] ? 'Hide auth token' : 'Show auth token'}>
+                          {visibleTokens[webhook.id] ? <EyeOpenIcon /> : <EyeClosedIcon />}
+                        </Tooltip>
                       </IconButton>
-                      <IconButton
-                        size="1"
-                        aria-label="Copy auth token"
-                        color="gray"
-                        variant="ghost"
-                        onClick={() => navigator.clipboard.writeText(webhook.auth_token || '')}
-                      >
-                        <CopyIcon />
-                      </IconButton>
+                      <CopyToClipBoard tooltipContent="Copy auth key" content={webhook.auth_token || ''} />
                     </>
                   )}
                 </Flex>
