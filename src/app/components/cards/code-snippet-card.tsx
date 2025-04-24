@@ -4,7 +4,7 @@ import { CopyToClipBoard } from '@/app/components/buttons/copy-to-clipboard';
 
 interface CodeSnippetCardProps {
   title?: string;
-  content: string;
+  content: string | object;
   height?: string;
   tooltipContent?: string;
 }
@@ -15,6 +15,12 @@ export function CodeSnippetCard({
   height = 'auto',
   tooltipContent = 'Copy to clipboard',
 }: CodeSnippetCardProps) {
+  // Format the content as a JSON string if it's an object.
+  const formattedContent = typeof content === 'object' ? JSON.stringify(content, null, 2) : content;
+
+  // Auto-detect if we should fill width based on newlines.
+  const shouldFill = formattedContent.includes('\n');
+
   return (
     <Box my="2">
       <Card>
@@ -26,11 +32,19 @@ export function CodeSnippetCard({
               </Text>
             )}
 
-            <CopyToClipBoard content={content} tooltipContent={tooltipContent} />
+            <CopyToClipBoard content={formattedContent} tooltipContent={tooltipContent} />
           </Flex>
 
-          <Flex align="start" gap="2" overflowY="auto" height={height}>
-            <Code style={{ whiteSpace: 'pre-wrap', padding: '10px' }}>{content}</Code>
+          <Flex align="start" gap="2" overflowY="auto" height={height} width={shouldFill ? '100%' : 'auto'}>
+            <Code
+              style={{
+                whiteSpace: 'pre-wrap',
+                padding: '10px',
+                width: shouldFill ? '100%' : 'auto',
+              }}
+            >
+              {formattedContent}
+            </Code>
           </Flex>
         </Flex>
       </Card>
