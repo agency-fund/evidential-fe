@@ -106,7 +106,7 @@ export interface ArmUpdate {
 }
 
 export interface AssignRequest {
-	design_spec: DesignSpec;
+	design_spec: DesignSpecInput;
 	audience_spec: AudienceSpecInput;
 }
 
@@ -153,6 +153,11 @@ export interface AssignResponseOutput {
 }
 
 /**
+ * Balance test results if available. 'online' experiments do not have balance checks.
+ */
+export type AssignSummaryBalanceCheck = BalanceCheck | null;
+
+/**
  * For each arm, the number of participants assigned. TODO: make required once development has stabilized. May be None if unknown due to persisting prior versions of an AssignSummary.
  */
 export type AssignSummaryArmSizes = ArmSize[] | null;
@@ -161,7 +166,8 @@ export type AssignSummaryArmSizes = ArmSize[] | null;
  * Key pieces of an AssignResponse without the assignments.
  */
 export interface AssignSummary {
-	balance_check: BalanceCheck;
+	/** Balance test results if available. 'online' experiments do not have balance checks. */
+	balance_check?: AssignSummaryBalanceCheck;
 	/** The number of participants across all arms in total. */
 	sample_size: number;
 	/** For each arm, the number of participants assigned. TODO: make required once development has stabilized. May be None if unknown due to persisting prior versions of an AssignSummary. */
@@ -353,7 +359,7 @@ export type CommitRequestPowerAnalyses = PowerResponseInput | null;
  * The complete experiment configuration to persist in an experiment registry.
  */
 export interface CommitRequest {
-	design_spec: DesignSpec;
+	design_spec: DesignSpecInput;
 	audience_spec: AudienceSpecInput;
 	/** Optionally include the power analyses of your tracking metrics if performed. */
 	power_analyses?: CommitRequestPowerAnalyses;
@@ -382,24 +388,23 @@ export interface CreateDatasourceResponse {
 export type CreateExperimentRequestPowerAnalyses = PowerResponseInput | null;
 
 export interface CreateExperimentRequest {
-	design_spec: DesignSpec;
+	design_spec: DesignSpecInput;
 	audience_spec: AudienceSpecInput;
 	power_analyses?: CreateExperimentRequestPowerAnalyses;
 }
 
-export type CreateExperimentWithAssignmentResponsePowerAnalyses =
-	PowerResponseOutput | null;
+export type CreateExperimentResponsePowerAnalyses = PowerResponseOutput | null;
 
 /**
  * Same as the request but with uuids filled for the experiment and arms, and summary info on the assignment.
  */
-export interface CreateExperimentWithAssignmentResponse {
+export interface CreateExperimentResponse {
 	datasource_id: string;
 	/** Current state of this experiment. */
 	state: ExperimentState;
-	design_spec: DesignSpec;
+	design_spec: DesignSpecOutput;
 	audience_spec: AudienceSpecOutput;
-	power_analyses: CreateExperimentWithAssignmentResponsePowerAnalyses;
+	power_analyses: CreateExperimentResponsePowerAnalyses;
 	assign_summary: AssignSummary;
 }
 
@@ -459,58 +464,9 @@ export interface DatasourceSummary {
 	organization_name: string;
 }
 
-/**
- * UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
- */
-export type DesignSpecExperimentId = string | null;
+export type DesignSpecInput = PreassignedExperimentSpec | OnlineExperimentSpec;
 
-/**
- * Experiment design parameters for power calculations and treatment assignment.
- */
-export interface DesignSpec {
-	/** UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
-	experiment_id?: DesignSpecExperimentId;
-	/** @maxLength 100 */
-	experiment_name: string;
-	/** @maxLength 2000 */
-	description: string;
-	start_date: string;
-	end_date: string;
-	/**
-	 * @minItems 2
-	 * @maxItems 10
-	 */
-	arms: Arm[];
-	/**
-	 * List of participant_type variables to use for stratification.
-	 * @maxItems 150
-	 */
-	strata_field_names: string[];
-	/**
-	 * Primary and optional secondary metrics to target.
-	 * @minItems 1
-	 * @maxItems 150
-	 */
-	metrics: DesignSpecMetricRequest[];
-	/**
-	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
-	 * @minimum 0
-	 * @maximum 1
-	 */
-	power?: number;
-	/**
-	 * The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.
-	 * @minimum 0
-	 * @maximum 1
-	 */
-	alpha?: number;
-	/**
-	 * Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".
-	 * @minimum 0
-	 * @maximum 1
-	 */
-	fstat_thresh?: number;
-}
+export type DesignSpecOutput = PreassignedExperimentSpec | OnlineExperimentSpec;
 
 /**
  * Percent change target relative to the metric_baseline.
@@ -682,7 +638,7 @@ export interface ExperimentConfig {
 	datasource_id: string;
 	/** Current state of this experiment. */
 	state: ExperimentState;
-	design_spec: DesignSpec;
+	design_spec: DesignSpecOutput;
 	audience_spec: AudienceSpecOutput;
 	power_analyses: ExperimentConfigPowerAnalyses;
 	assign_summary: AssignSummary;
@@ -810,10 +766,16 @@ export interface GetDatasourceResponse {
 }
 
 /**
- * Describes assignments for all participants and balance test results.
+ * Balance test results if available. 'online' experiments do not have balance checks.
+ */
+export type GetExperimentAssignmentsResponseBalanceCheck = BalanceCheck | null;
+
+/**
+ * Describes assignments for all participants and balance test results if available.
  */
 export interface GetExperimentAssignmentsResponse {
-	balance_check: BalanceCheck;
+	/** Balance test results if available. 'online' experiments do not have balance checks. */
+	balance_check?: GetExperimentAssignmentsResponseBalanceCheck;
 	experiment_id: string;
 	sample_size: number;
 	assignments: Assignment[];
@@ -828,7 +790,7 @@ export interface GetExperimentResponse {
 	datasource_id: string;
 	/** Current state of this experiment. */
 	state: ExperimentState;
-	design_spec: DesignSpec;
+	design_spec: DesignSpecOutput;
 	audience_spec: AudienceSpecOutput;
 	power_analyses: GetExperimentResponsePowerAnalyses;
 	assign_summary: AssignSummary;
@@ -939,6 +901,21 @@ export interface GetOrganizationResponse {
 	name: string;
 	users: UserSummary[];
 	datasources: DatasourceSummary[];
+}
+
+/**
+ * Null if no assignment. assignment.strata are not included.
+ */
+export type GetParticipantAssignmentResponseAssignment = Assignment | null;
+
+/**
+ * Describes assignment for a single <experiment, participant> pair.
+ */
+export interface GetParticipantAssignmentResponse {
+	experiment_id: string;
+	participant_id: string;
+	/** Null if no assignment. assignment.strata are not included. */
+	assignment: GetParticipantAssignmentResponseAssignment;
 }
 
 /**
@@ -1179,6 +1156,70 @@ export const MetricType = {
 	numeric: "numeric",
 } as const;
 
+/**
+ * UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
+ */
+export type OnlineExperimentSpecExperimentId = string | null;
+
+export type OnlineExperimentSpecExperimentType =
+	(typeof OnlineExperimentSpecExperimentType)[keyof typeof OnlineExperimentSpecExperimentType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const OnlineExperimentSpecExperimentType = {
+	online: "online",
+} as const;
+
+/**
+ * Use this type to randomly assign participants into arms during live experiment execution.
+
+For example, you may wish to experiment on new users. Assignments are issued via API request.
+ */
+export interface OnlineExperimentSpec {
+	/** UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
+	experiment_id?: OnlineExperimentSpecExperimentId;
+	experiment_type: OnlineExperimentSpecExperimentType;
+	/** @maxLength 100 */
+	experiment_name: string;
+	/** @maxLength 2000 */
+	description: string;
+	start_date: string;
+	end_date: string;
+	/**
+	 * @minItems 2
+	 * @maxItems 10
+	 */
+	arms: Arm[];
+	/**
+	 * List of participant_type variables to use for stratification.
+	 * @maxItems 150
+	 */
+	strata_field_names: string[];
+	/**
+	 * Primary and optional secondary metrics to target.
+	 * @minItems 1
+	 * @maxItems 150
+	 */
+	metrics: DesignSpecMetricRequest[];
+	/**
+	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
+	 * @minimum 0
+	 * @maximum 1
+	 */
+	power?: number;
+	/**
+	 * The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.
+	 * @minimum 0
+	 * @maximum 1
+	 */
+	alpha?: number;
+	/**
+	 * Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".
+	 * @minimum 0
+	 * @maximum 1
+	 */
+	fstat_thresh?: number;
+}
+
 export interface OrganizationSummary {
 	/** @maxLength 64 */
 	id: string;
@@ -1227,7 +1268,7 @@ export interface ParticipantsSchemaOutput {
 }
 
 export interface PowerRequest {
-	design_spec: DesignSpec;
+	design_spec: DesignSpecInput;
 	audience_spec: AudienceSpecInput;
 }
 
@@ -1239,6 +1280,68 @@ export interface PowerResponseInput {
 export interface PowerResponseOutput {
 	/** @maxItems 150 */
 	analyses: MetricPowerAnalysisOutput[];
+}
+
+/**
+ * UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
+ */
+export type PreassignedExperimentSpecExperimentId = string | null;
+
+export type PreassignedExperimentSpecExperimentType =
+	(typeof PreassignedExperimentSpecExperimentType)[keyof typeof PreassignedExperimentSpecExperimentType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const PreassignedExperimentSpecExperimentType = {
+	preassigned: "preassigned",
+} as const;
+
+/**
+ * Use this type to randomly select and assign from existing participants at design time.
+ */
+export interface PreassignedExperimentSpec {
+	/** UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
+	experiment_id?: PreassignedExperimentSpecExperimentId;
+	experiment_type: PreassignedExperimentSpecExperimentType;
+	/** @maxLength 100 */
+	experiment_name: string;
+	/** @maxLength 2000 */
+	description: string;
+	start_date: string;
+	end_date: string;
+	/**
+	 * @minItems 2
+	 * @maxItems 10
+	 */
+	arms: Arm[];
+	/**
+	 * List of participant_type variables to use for stratification.
+	 * @maxItems 150
+	 */
+	strata_field_names: string[];
+	/**
+	 * Primary and optional secondary metrics to target.
+	 * @minItems 1
+	 * @maxItems 150
+	 */
+	metrics: DesignSpecMetricRequest[];
+	/**
+	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
+	 * @minimum 0
+	 * @maximum 1
+	 */
+	power?: number;
+	/**
+	 * The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.
+	 * @minimum 0
+	 * @maximum 1
+	 */
+	alpha?: number;
+	/**
+	 * Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".
+	 * @minimum 0
+	 * @maximum 1
+	 */
+	fstat_thresh?: number;
 }
 
 /**

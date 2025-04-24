@@ -7,7 +7,7 @@ import { Box, Container, Flex, Heading } from '@radix-ui/themes';
 import {
   Arm,
   AudienceSpecFilter,
-  CreateExperimentWithAssignmentResponse,
+  CreateExperimentResponse,
   PowerResponseOutput,
 } from '@/api/methods.schemas';
 import { useSearchParams } from 'next/navigation';
@@ -31,7 +31,7 @@ export type ExperimentFormData = {
   powerCheckResponse?: PowerResponseOutput;
   // Populated when assignments are created by pressing "Next" on DesignForm
   experimentId?: string;
-  createExperimentResponse?: CreateExperimentWithAssignmentResponse;
+  createExperimentResponse?: CreateExperimentResponse;
 };
 
 const reasonableStartDate = () => {
