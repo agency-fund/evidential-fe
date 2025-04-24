@@ -16,6 +16,7 @@ import { ExperimentFormData } from './page';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 import { useListParticipantTypes } from '@/api/admin';
+import Link from 'next/link';
 
 interface InitialFormProps {
   formData: ExperimentFormData;
@@ -93,8 +94,15 @@ export function InitialForm({ formData, onFormDataChange, onNext }: InitialFormP
                     <Spinner size="1" />
                     <Text size="2">Loading participant types...</Text>
                   </Flex>
-                ) : !participantTypesData ? (
-                  <Text color="gray">No participant types available</Text>
+                ) : !participantTypesData || participantTypesData.items.length === 0 ? (
+                  <Flex direction="column" gap="2">
+                    <Text color="gray">No participant types available</Text>
+                    <Link href={`/datasourcedetails?id=${formData.datasourceId}`} passHref>
+                      <Button size="2" variant="soft">
+                        Add a Participant Type
+                      </Button>
+                    </Link>
+                  </Flex>
                 ) : (
                   <Select.Root
                     value={formData.participantType || ''}
