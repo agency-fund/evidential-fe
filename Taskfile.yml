@@ -50,7 +50,7 @@ tasks:
       jq . /tmp/apispec.json > openapi.json
       npx orval --config orval.config.ts
       if [ $? -eq 0 ]; then
-        echo '👉 Run `task lint` to catch any typechecking errors the API changes may have introduced.'
+        task lint
       fi
   lint-next: npx next lint
   lint-tsc: npx tsc --noemit
