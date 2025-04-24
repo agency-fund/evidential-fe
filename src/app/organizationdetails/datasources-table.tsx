@@ -1,6 +1,6 @@
 'use client';
 import { Code, Flex, IconButton, Table } from '@radix-ui/themes';
-import { CopyToClipBoard } from '@/app/components/buttons';
+import { CopyToClipBoard } from '@/app/components/buttons/copy-to-clipboard';
 import Link from 'next/link';
 import { DeleteDatasourceDialog } from '@/app/organizationdetails/delete-datasource-dialog';
 import { EditDatasourceDialog } from '@/app/organizationdetails/edit-datasource-dialog';

@@ -1,6 +1,6 @@
 'use client';
 import { Box, Card, Code, Flex, Text } from '@radix-ui/themes';
-import { CopyToClipBoard } from '@/app/components/buttons';
+import { CopyToClipBoard } from '@/app/components/buttons/copy-to-clipboard';
 
 interface CodeSnippetCardProps {
   title?: string;

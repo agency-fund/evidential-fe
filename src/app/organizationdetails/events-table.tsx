@@ -3,7 +3,7 @@ import { Code, DataList, Flex, HoverCard, Table, Text } from '@radix-ui/themes';
 import { EventSummary } from '@/api/methods.schemas';
 import Link from 'next/link';
 import { CodeSnippetCard } from '@/app/components/cards/code-snippet-card';
-import { CopyToClipBoard } from '@/app/components/buttons';
+import { CopyToClipBoard } from '@/app/components/buttons/copy-to-clipboard';
 
 export function EventsTable({ events }: { events: EventSummary[] }) {
   const eventDetails = [

@@ -5,7 +5,7 @@ import { CopyIcon, EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons';
 import { DeleteWebhookDialog } from './delete-webhook-dialog';
 import { WebhookInfoDialog } from './webhook-info-dialog';
 import { useState } from 'react';
-import { CopyToClipBoard } from '@/app/components/buttons';
+import { CopyToClipBoard } from '@/app/components/buttons/copy-to-clipboard';
 
 export function WebhooksTable({ webhooks, organizationId }: { webhooks: WebhookSummary[]; organizationId: string }) {
   // Track which webhook auth tokens are visible
