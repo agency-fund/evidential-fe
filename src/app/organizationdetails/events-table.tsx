@@ -66,7 +66,9 @@ export function EventsTable({ events }: { events: EventSummary[] }) {
                       <DataList.Value>
                         <Flex align="center" gap="2" justify="between" width="100%">
                           {detail.value(event)}
-                          {detail.copy && <CopyToClipBoard content={detail.value(event)} />}
+                          {detail.copy && (
+                            <CopyToClipBoard content={detail.value(event)} tooltipContent={`Copy ${detail.label}`} />
+                          )}
                         </Flex>
                       </DataList.Value>
                     </DataList.Item>
@@ -74,7 +76,11 @@ export function EventsTable({ events }: { events: EventSummary[] }) {
                 </DataList.Root>
 
                 {event.details && (
-                  <CodeSnippetCard title="Details" content={JSON.stringify(event.details, undefined, 2)} />
+                  <CodeSnippetCard
+                    title="Details"
+                    content={JSON.stringify(event.details, undefined, 2)}
+                    tooltipContent="Copy details"
+                  />
                 )}
               </HoverCard.Content>
             </HoverCard.Root>

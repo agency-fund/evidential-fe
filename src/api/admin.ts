@@ -19,8 +19,8 @@ import type {
 	CreateDatasourceRequest,
 	CreateDatasourceResponse,
 	CreateExperimentRequest,
-	CreateExperimentResponse,
 	CreateExperimentWithAssignmentParams,
+	CreateExperimentWithAssignmentResponse,
 	CreateOrganizationRequest,
 	CreateOrganizationResponse,
 	CreateParticipantsTypeRequest,
@@ -30,7 +30,6 @@ import type {
 	GetDatasourceResponse,
 	GetExperimentAssignmentsResponse,
 	GetOrganizationResponse,
-	GetParticipantAssignmentResponse,
 	HTTPExceptionError,
 	HTTPValidationError,
 	InspectDatasourceParams,
@@ -2087,8 +2086,8 @@ export const getCreateExperimentWithAssignmentUrl = (
 	const stringifiedParams = normalizedParams.toString();
 
 	return stringifiedParams.length > 0
-		? `/v1/m/datasources/${datasourceId}/experiments?${stringifiedParams}`
-		: `/v1/m/datasources/${datasourceId}/experiments`;
+		? `/v1/m/experiments/${datasourceId}/with-assignment?${stringifiedParams}`
+		: `/v1/m/experiments/${datasourceId}/with-assignment`;
 };
 
 export const createExperimentWithAssignment = async (
@@ -2096,8 +2095,8 @@ export const createExperimentWithAssignment = async (
 	createExperimentRequest: CreateExperimentRequest,
 	params: CreateExperimentWithAssignmentParams,
 	options?: RequestInit,
-): Promise<CreateExperimentResponse> => {
-	return orvalFetch<CreateExperimentResponse>(
+): Promise<CreateExperimentWithAssignmentResponse> => {
+	return orvalFetch<CreateExperimentWithAssignmentResponse>(
 		getCreateExperimentWithAssignmentUrl(datasourceId, params),
 		{
 			...options,
@@ -2116,7 +2115,7 @@ export const getCreateExperimentWithAssignmentMutationFetcher = (
 	return (
 		_: Key,
 		{ arg }: { arg: CreateExperimentRequest },
-	): Promise<CreateExperimentResponse> => {
+	): Promise<CreateExperimentWithAssignmentResponse> => {
 		return createExperimentWithAssignment(datasourceId, arg, params, options);
 	};
 };
@@ -2125,7 +2124,7 @@ export const getCreateExperimentWithAssignmentMutationKey = (
 	params: CreateExperimentWithAssignmentParams,
 ) =>
 	[
-		`/v1/m/datasources/${datasourceId}/experiments`,
+		`/v1/m/experiments/${datasourceId}/with-assignment`,
 		...(params ? [params] : []),
 	] as const;
 
@@ -2167,71 +2166,6 @@ export const useCreateExperimentWithAssignment = <
 	);
 
 	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-/**
- * Returns the list of experiments in the datasource.
- * @summary List Experiments
- */
-export const getListExperimentsUrl = (datasourceId: string) => {
-	return `/v1/m/datasources/${datasourceId}/experiments`;
-};
-
-export const listExperiments = async (
-	datasourceId: string,
-	options?: RequestInit,
-): Promise<ListExperimentsResponse> => {
-	return orvalFetch<ListExperimentsResponse>(
-		getListExperimentsUrl(datasourceId),
-		{
-			...options,
-			method: "GET",
-		},
-	);
-};
-
-export const getListExperimentsKey = (datasourceId: string) =>
-	[`/v1/m/datasources/${datasourceId}/experiments`] as const;
-
-export type ListExperimentsQueryResult = NonNullable<
-	Awaited<ReturnType<typeof listExperiments>>
->;
-export type ListExperimentsQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-/**
- * @summary List Experiments
- */
-export const useListExperiments = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	options?: {
-		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof listExperiments>>,
-			TError
-		> & { swrKey?: Key; enabled?: boolean };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled = swrOptions?.enabled !== false && !!datasourceId;
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() => (isEnabled ? getListExperimentsKey(datasourceId) : null));
-	const swrFn = () => listExperiments(datasourceId, requestOptions);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
 
 	return {
 		swrKey,
@@ -2492,6 +2426,71 @@ export const useAbandonExperiment = <
 	);
 
 	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * Returns the list of experiments in the datasource.
+ * @summary List Experiments
+ */
+export const getListExperimentsUrl = (datasourceId: string) => {
+	return `/v1/m/datasources/${datasourceId}/experiments`;
+};
+
+export const listExperiments = async (
+	datasourceId: string,
+	options?: RequestInit,
+): Promise<ListExperimentsResponse> => {
+	return orvalFetch<ListExperimentsResponse>(
+		getListExperimentsUrl(datasourceId),
+		{
+			...options,
+			method: "GET",
+		},
+	);
+};
+
+export const getListExperimentsKey = (datasourceId: string) =>
+	[`/v1/m/datasources/${datasourceId}/experiments`] as const;
+
+export type ListExperimentsQueryResult = NonNullable<
+	Awaited<ReturnType<typeof listExperiments>>
+>;
+export type ListExperimentsQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+/**
+ * @summary List Experiments
+ */
+export const useListExperiments = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	datasourceId: string,
+	options?: {
+		swr?: SWRConfiguration<
+			Awaited<ReturnType<typeof listExperiments>>,
+			TError
+		> & { swrKey?: Key; enabled?: boolean };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const isEnabled = swrOptions?.enabled !== false && !!datasourceId;
+	const swrKey =
+		swrOptions?.swrKey ??
+		(() => (isEnabled ? getListExperimentsKey(datasourceId) : null));
+	const swrFn = () => listExperiments(datasourceId, requestOptions);
+
+	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
+		swrKey,
+		swrFn,
+		swrOptions,
+	);
 
 	return {
 		swrKey,
@@ -2798,106 +2797,6 @@ export const useGetExperimentAssignmentsAsCsv = <
 				: null);
 	const swrFn = () =>
 		getExperimentAssignmentsAsCsv(datasourceId, experimentId, requestOptions);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-/**
- * Get the assignment for a specific participant, excluding strata if any.
-    For 'preassigned' experiments, the participant's Assignment is returned if it exists.
-    For 'online', returns the assignment if it exists, else generates an assignment.
- * @summary Get Experiment Assignment For Participant
- */
-export const getGetExperimentAssignmentForParticipantUrl = (
-	datasourceId: string,
-	experimentId: string,
-	participantId: string,
-) => {
-	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments/${participantId}`;
-};
-
-export const getExperimentAssignmentForParticipant = async (
-	datasourceId: string,
-	experimentId: string,
-	participantId: string,
-	options?: RequestInit,
-): Promise<GetParticipantAssignmentResponse> => {
-	return orvalFetch<GetParticipantAssignmentResponse>(
-		getGetExperimentAssignmentForParticipantUrl(
-			datasourceId,
-			experimentId,
-			participantId,
-		),
-		{
-			...options,
-			method: "GET",
-		},
-	);
-};
-
-export const getGetExperimentAssignmentForParticipantKey = (
-	datasourceId: string,
-	experimentId: string,
-	participantId: string,
-) =>
-	[
-		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments/${participantId}`,
-	] as const;
-
-export type GetExperimentAssignmentForParticipantQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getExperimentAssignmentForParticipant>>
->;
-export type GetExperimentAssignmentForParticipantQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-/**
- * @summary Get Experiment Assignment For Participant
- */
-export const useGetExperimentAssignmentForParticipant = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	experimentId: string,
-	participantId: string,
-	options?: {
-		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof getExperimentAssignmentForParticipant>>,
-			TError
-		> & { swrKey?: Key; enabled?: boolean };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled =
-		swrOptions?.enabled !== false &&
-		!!(datasourceId && experimentId && participantId);
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() =>
-			isEnabled
-				? getGetExperimentAssignmentForParticipantKey(
-						datasourceId,
-						experimentId,
-						participantId,
-					)
-				: null);
-	const swrFn = () =>
-		getExperimentAssignmentForParticipant(
-			datasourceId,
-			experimentId,
-			participantId,
-			requestOptions,
-		);
 
 	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
 		swrKey,

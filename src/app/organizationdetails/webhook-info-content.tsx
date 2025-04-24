@@ -28,9 +28,9 @@ export function WebhookInfoContent({ webhook }: { webhook: WebhookSummary }) {
           When an experiment is created, we will send a POST request to your URL with:
         </Text>
 
-        <CodeSnippetCard title="Headers" content={webHookHeaders} />
+        <CodeSnippetCard title="Headers" content={webHookHeaders} tooltipContent="Copy headers" />
 
-        <CodeSnippetCard title="Body" content={webHookBody} />
+        <CodeSnippetCard title="Body" content={webHookBody} tooltipContent="Copy body" />
 
         <Text as="div" size="2" color="orange" mt="2">
           Important: Your endpoint should validate the Authorization header to ensure requests are legitimate. Reject

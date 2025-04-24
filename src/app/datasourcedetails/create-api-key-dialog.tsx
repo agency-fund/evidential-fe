@@ -30,9 +30,9 @@ export const CreateApiKeyDialog = ({ datasourceId }: { datasourceId: string }) =
               The API key has been created. It will only be shown once. You can use it to make API calls.
             </Dialog.Description>
 
-            <CodeSnippetCard title="API key" content={createdKey.key} />
+            <CodeSnippetCard title="API key" content={createdKey.key} tooltipContent="Copy API key" />
 
-            <CodeSnippetCard title="Example" content={exampleCurlSnippet} />
+            <CodeSnippetCard title="Example" content={exampleCurlSnippet} tooltipContent="Copy example" />
             <Flex gap="3" mt="4" justify="end">
               <Dialog.Close>
                 <Button variant="soft" color="gray">
