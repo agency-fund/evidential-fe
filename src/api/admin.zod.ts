@@ -509,221 +509,8 @@ export const getDatasourceResponseOrganizationNameMax = 100;
 export const getDatasourceResponse = zod.object({
 	id: zod.string().max(getDatasourceResponseIdMax),
 	name: zod.string().max(getDatasourceResponseNameMax),
-	config: zod.discriminatedUnion("type", [
-		zod
-			.object({
-				participants: zod.array(
-					zod.discriminatedUnion("type", [
-						zod.object({
-							participant_type: zod
-								.string()
-								.describe(
-									"The name of the set of participants defined by the filters. This name must be unique within a datasource.",
-								),
-							type: zod.enum(["sheet"]),
-							table_name: zod.string(),
-							sheet: zod.object({
-								url: zod.string(),
-								worksheet: zod.string(),
-							}),
-						}),
-						zod.object({
-							table_name: zod
-								.string()
-								.describe("Name of the table in the data warehouse"),
-							fields: zod
-								.array(
-									zod.object({
-										field_name: zod
-											.string()
-											.describe("Name of the field in the data source"),
-										data_type: zod
-											.enum([
-												"boolean",
-												"character varying",
-												"uuid",
-												"date",
-												"integer",
-												"double precision",
-												"numeric",
-												"timestamp without time zone",
-												"bigint",
-												"jsonb (unsupported)",
-												"json (unsupported)",
-												"unsupported",
-											])
-											.describe(
-												"Defines the supported data types for fields in the data source.",
-											),
-										description: zod
-											.string()
-											.describe("Human-readable description of the field"),
-										is_unique_id: zod
-											.boolean()
-											.describe(
-												"Whether this field uniquely identifies records",
-											),
-										is_strata: zod
-											.boolean()
-											.describe(
-												"Whether this field should be used for stratification",
-											),
-										is_filter: zod
-											.boolean()
-											.describe("Whether this field can be used as a filter"),
-										is_metric: zod
-											.boolean()
-											.describe("Whether this field can be used as a metric"),
-										extra: zod
-											.record(zod.string(), zod.string())
-											.or(zod.null())
-											.optional()
-											.describe("Additional field metadata"),
-									}),
-								)
-								.describe("List of fields available in this table"),
-							participant_type: zod
-								.string()
-								.describe(
-									"The name of the set of participants defined by the filters. This name must be unique within a datasource.",
-								),
-							type: zod.enum(["schema"]),
-						}),
-					]),
-				),
-				webhook_config: zod
-					.object({
-						actions: zod
-							.object({
-								commit: zod
-									.object({
-										method: zod.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
-										url: zod.string(),
-									})
-									.describe("Represents a url and HTTP method to use with it.")
-									.or(zod.null())
-									.optional(),
-								assignment_file: zod
-									.object({
-										method: zod.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
-										url: zod.string(),
-									})
-									.describe("Represents a url and HTTP method to use with it.")
-									.or(zod.null())
-									.optional(),
-								update_timestamps: zod
-									.object({
-										method: zod.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
-										url: zod.string(),
-									})
-									.describe("Represents a url and HTTP method to use with it.")
-									.or(zod.null())
-									.optional(),
-								update_description: zod
-									.object({
-										method: zod.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
-										url: zod.string(),
-									})
-									.describe("Represents a url and HTTP method to use with it.")
-									.or(zod.null())
-									.optional(),
-							})
-							.describe(
-								"The set of supported actions that trigger a user callback.",
-							),
-						common_headers: zod
-							.object({
-								authorization: zod.string().or(zod.null()),
-							})
-							.describe(
-								"Enumerates supported headers to attach to all webhook requests.",
-							),
-					})
-					.describe("Top-level configuration object for user-defined webhooks.")
-					.or(zod.null())
-					.optional(),
-				type: zod.enum(["remote"]),
-				dwh: zod.discriminatedUnion("driver", [
-					zod
-						.object({
-							driver: zod.enum(["postgresql+psycopg", "postgresql+psycopg2"]),
-							host: zod.string(),
-							port: zod
-								.number()
-								.min(getDatasourceResponseConfigDwhPortMin)
-								.max(getDatasourceResponseConfigDwhPortMax)
-								.default(getDatasourceResponseConfigDwhPortDefault),
-							user: zod.string(),
-							password: zod.string(),
-							dbname: zod.string(),
-							sslmode: zod.enum([
-								"disable",
-								"require",
-								"verify-ca",
-								"verify-full",
-							]),
-							search_path: zod.string().or(zod.null()).optional(),
-						})
-						.describe(
-							"Describes a set of parameters suitable for connecting to most types of remote databases.",
-						),
-					zod
-						.object({
-							driver: zod.enum(["bigquery"]),
-							project_id: zod
-								.string()
-								.min(getDatasourceResponseConfigDwhProjectIdMin)
-								.max(getDatasourceResponseConfigDwhProjectIdMax)
-								.regex(getDatasourceResponseConfigDwhProjectIdRegExp)
-								.describe(
-									"The Google Cloud Project ID containing the dataset.",
-								),
-							dataset_id: zod
-								.string()
-								.min(1)
-								.max(getDatasourceResponseConfigDwhDatasetIdMax)
-								.regex(getDatasourceResponseConfigDwhDatasetIdRegExp)
-								.describe("The dataset name."),
-							credentials: zod.discriminatedUnion("type", [
-								zod
-									.object({
-										type: zod.enum(["serviceaccountinfo"]),
-										content_base64: zod
-											.string()
-											.min(
-												getDatasourceResponseConfigDwhCredentialsContentBase64Min,
-											)
-											.max(
-												getDatasourceResponseConfigDwhCredentialsContentBase64Max,
-											)
-											.describe(
-												"The base64-encoded service account info in the canonical JSON form.",
-											),
-									})
-									.describe(
-										"Describes a Google Cloud Service Account credential.",
-									),
-								zod
-									.object({
-										type: zod.enum(["serviceaccountfile"]),
-										path: zod
-											.string()
-											.describe(
-												"The path to the service account credentials file containing the credentials in canonical JSON form.",
-											),
-									})
-									.describe(
-										"Describes a file path to a Google Cloud Service Account credential file.",
-									),
-							]),
-						})
-						.describe("Describes a BigQuery connection."),
-				]),
-			})
-			.describe(
-				"RemoteDatabaseConfig defines a configuration for a remote data warehouse.",
-			),
-		zod.object({
+	config: zod
+		.object({
 			participants: zod.array(
 				zod.discriminatedUnion("type", [
 					zod.object({
@@ -801,10 +588,136 @@ export const getDatasourceResponse = zod.object({
 					}),
 				]),
 			),
-			type: zod.enum(["sqlite_local"]),
-			sqlite_filename: zod.string(),
-		}),
-	]),
+			webhook_config: zod
+				.object({
+					actions: zod
+						.object({
+							commit: zod
+								.object({
+									method: zod.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
+									url: zod.string(),
+								})
+								.describe("Represents a url and HTTP method to use with it.")
+								.or(zod.null())
+								.optional(),
+							assignment_file: zod
+								.object({
+									method: zod.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
+									url: zod.string(),
+								})
+								.describe("Represents a url and HTTP method to use with it.")
+								.or(zod.null())
+								.optional(),
+							update_timestamps: zod
+								.object({
+									method: zod.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
+									url: zod.string(),
+								})
+								.describe("Represents a url and HTTP method to use with it.")
+								.or(zod.null())
+								.optional(),
+							update_description: zod
+								.object({
+									method: zod.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
+									url: zod.string(),
+								})
+								.describe("Represents a url and HTTP method to use with it.")
+								.or(zod.null())
+								.optional(),
+						})
+						.describe(
+							"The set of supported actions that trigger a user callback.",
+						),
+					common_headers: zod
+						.object({
+							authorization: zod.string().or(zod.null()),
+						})
+						.describe(
+							"Enumerates supported headers to attach to all webhook requests.",
+						),
+				})
+				.describe("Top-level configuration object for user-defined webhooks.")
+				.or(zod.null())
+				.optional(),
+			type: zod.string(),
+			dwh: zod.discriminatedUnion("driver", [
+				zod
+					.object({
+						driver: zod.enum(["postgresql+psycopg", "postgresql+psycopg2"]),
+						host: zod.string(),
+						port: zod
+							.number()
+							.min(getDatasourceResponseConfigDwhPortMin)
+							.max(getDatasourceResponseConfigDwhPortMax)
+							.default(getDatasourceResponseConfigDwhPortDefault),
+						user: zod.string(),
+						password: zod.string(),
+						dbname: zod.string(),
+						sslmode: zod.enum([
+							"disable",
+							"require",
+							"verify-ca",
+							"verify-full",
+						]),
+						search_path: zod.string().or(zod.null()).optional(),
+					})
+					.describe(
+						"Describes a set of parameters suitable for connecting to most types of remote databases.",
+					),
+				zod
+					.object({
+						driver: zod.enum(["bigquery"]),
+						project_id: zod
+							.string()
+							.min(getDatasourceResponseConfigDwhProjectIdMin)
+							.max(getDatasourceResponseConfigDwhProjectIdMax)
+							.regex(getDatasourceResponseConfigDwhProjectIdRegExp)
+							.describe("The Google Cloud Project ID containing the dataset."),
+						dataset_id: zod
+							.string()
+							.min(1)
+							.max(getDatasourceResponseConfigDwhDatasetIdMax)
+							.regex(getDatasourceResponseConfigDwhDatasetIdRegExp)
+							.describe("The dataset name."),
+						credentials: zod.discriminatedUnion("type", [
+							zod
+								.object({
+									type: zod.enum(["serviceaccountinfo"]),
+									content_base64: zod
+										.string()
+										.min(
+											getDatasourceResponseConfigDwhCredentialsContentBase64Min,
+										)
+										.max(
+											getDatasourceResponseConfigDwhCredentialsContentBase64Max,
+										)
+										.describe(
+											"The base64-encoded service account info in the canonical JSON form.",
+										),
+								})
+								.describe(
+									"Describes a Google Cloud Service Account credential.",
+								),
+							zod
+								.object({
+									type: zod.enum(["serviceaccountfile"]),
+									path: zod
+										.string()
+										.describe(
+											"The path to the service account credentials file containing the credentials in canonical JSON form.",
+										),
+								})
+								.describe(
+									"Describes a file path to a Google Cloud Service Account credential file.",
+								),
+						]),
+					})
+					.describe("Describes a BigQuery connection."),
+			]),
+		})
+		.describe(
+			"RemoteDatabaseConfig defines a configuration for a remote data warehouse.",
+		),
 	organization_id: zod.string().max(getDatasourceResponseOrganizationIdMax),
 	organization_name: zod.string().max(getDatasourceResponseOrganizationNameMax),
 });
@@ -1656,6 +1569,31 @@ export const createExperimentWithAssignmentBodyDesignSpecFstatThreshDefault = 0.
 export const createExperimentWithAssignmentBodyDesignSpecFstatThreshMin = 0;
 
 export const createExperimentWithAssignmentBodyDesignSpecFstatThreshMax = 1;
+export const createExperimentWithAssignmentBodyDesignSpecExperimentNameMaxOne = 100;
+export const createExperimentWithAssignmentBodyDesignSpecDescriptionMaxOne = 2000;
+export const createExperimentWithAssignmentBodyDesignSpecArmsItemArmNameMaxOne = 100;
+export const createExperimentWithAssignmentBodyDesignSpecArmsItemArmDescriptionMaxFour = 2000;
+export const createExperimentWithAssignmentBodyDesignSpecArmsMinOne = 2;
+
+export const createExperimentWithAssignmentBodyDesignSpecArmsMaxOne = 10;
+export const createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesItemRegExpOne =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesMaxOne = 150;
+export const createExperimentWithAssignmentBodyDesignSpecMetricsItemFieldNameRegExpOne =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentWithAssignmentBodyDesignSpecMetricsMaxOne = 150;
+export const createExperimentWithAssignmentBodyDesignSpecPowerDefaultOne = 0.8;
+export const createExperimentWithAssignmentBodyDesignSpecPowerMinOne = 0;
+
+export const createExperimentWithAssignmentBodyDesignSpecPowerMaxOne = 1;
+export const createExperimentWithAssignmentBodyDesignSpecAlphaDefaultOne = 0.05;
+export const createExperimentWithAssignmentBodyDesignSpecAlphaMinOne = 0;
+
+export const createExperimentWithAssignmentBodyDesignSpecAlphaMaxOne = 1;
+export const createExperimentWithAssignmentBodyDesignSpecFstatThreshDefaultOne = 0.6;
+export const createExperimentWithAssignmentBodyDesignSpecFstatThreshMinOne = 0;
+
+export const createExperimentWithAssignmentBodyDesignSpecFstatThreshMaxOne = 1;
 export const createExperimentWithAssignmentBodyAudienceSpecParticipantTypeMax = 100;
 export const createExperimentWithAssignmentBodyAudienceSpecFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
@@ -1665,124 +1603,254 @@ export const createExperimentWithAssignmentBodyPowerAnalysesAnalysesItemMetricSp
 export const createExperimentWithAssignmentBodyPowerAnalysesAnalysesMax = 150;
 
 export const createExperimentWithAssignmentBody = zod.object({
-	design_spec: zod
-		.object({
-			experiment_id: zod
-				.string()
-				.uuid()
-				.or(zod.null())
-				.optional()
-				.describe(
-					"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-				),
-			experiment_name: zod
-				.string()
-				.max(createExperimentWithAssignmentBodyDesignSpecExperimentNameMax),
-			description: zod
-				.string()
-				.max(createExperimentWithAssignmentBodyDesignSpecDescriptionMax),
-			start_date: zod.string().datetime({}),
-			end_date: zod.string().datetime({}),
-			arms: zod
-				.array(
-					zod
-						.object({
-							arm_id: zod
-								.string()
-								.uuid()
-								.or(zod.null())
-								.optional()
-								.describe(
-									"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-								),
-							arm_name: zod
-								.string()
-								.max(
-									createExperimentWithAssignmentBodyDesignSpecArmsItemArmNameMax,
-								),
-							arm_description: zod
-								.string()
-								.max(
-									createExperimentWithAssignmentBodyDesignSpecArmsItemArmDescriptionMaxOne,
-								)
-								.or(zod.null())
-								.optional(),
-						})
-						.describe("Describes an experiment treatment arm."),
-				)
-				.min(createExperimentWithAssignmentBodyDesignSpecArmsMin)
-				.max(createExperimentWithAssignmentBodyDesignSpecArmsMax),
-			strata_field_names: zod
-				.array(
-					zod
-						.string()
-						.regex(
-							createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesItemRegExp,
-						),
-				)
-				.max(createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesMax)
-				.describe(
-					"List of participant_type variables to use for stratification.",
-				),
-			metrics: zod
-				.array(
-					zod
-						.object({
-							field_name: zod
-								.string()
-								.regex(
-									createExperimentWithAssignmentBodyDesignSpecMetricsItemFieldNameRegExp,
-								),
-							metric_pct_change: zod
-								.number()
-								.or(zod.null())
-								.optional()
-								.describe(
-									"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
-								),
-							metric_target: zod
-								.number()
-								.or(zod.null())
-								.optional()
-								.describe(
-									"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
-								),
-						})
-						.describe(
-							"Defines a request to look up baseline stats for a metric to measure in an experiment.",
-						),
-				)
-				.min(1)
-				.max(createExperimentWithAssignmentBodyDesignSpecMetricsMax)
-				.describe("Primary and optional secondary metrics to target."),
-			power: zod
-				.number()
-				.min(createExperimentWithAssignmentBodyDesignSpecPowerMin)
-				.max(createExperimentWithAssignmentBodyDesignSpecPowerMax)
-				.default(createExperimentWithAssignmentBodyDesignSpecPowerDefault)
-				.describe(
-					"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
-				),
-			alpha: zod
-				.number()
-				.min(createExperimentWithAssignmentBodyDesignSpecAlphaMin)
-				.max(createExperimentWithAssignmentBodyDesignSpecAlphaMax)
-				.default(createExperimentWithAssignmentBodyDesignSpecAlphaDefault)
-				.describe(
-					"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
-				),
-			fstat_thresh: zod
-				.number()
-				.min(createExperimentWithAssignmentBodyDesignSpecFstatThreshMin)
-				.max(createExperimentWithAssignmentBodyDesignSpecFstatThreshMax)
-				.default(createExperimentWithAssignmentBodyDesignSpecFstatThreshDefault)
-				.describe(
-					'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
-				),
-		})
-		.describe(
-			"Experiment design parameters for power calculations and treatment assignment.",
-		),
+	design_spec: zod.discriminatedUnion("experiment_type", [
+		zod
+			.object({
+				experiment_id: zod
+					.string()
+					.uuid()
+					.or(zod.null())
+					.optional()
+					.describe(
+						"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+					),
+				experiment_type: zod.enum(["preassigned"]),
+				experiment_name: zod
+					.string()
+					.max(createExperimentWithAssignmentBodyDesignSpecExperimentNameMax),
+				description: zod
+					.string()
+					.max(createExperimentWithAssignmentBodyDesignSpecDescriptionMax),
+				start_date: zod.string().datetime({}),
+				end_date: zod.string().datetime({}),
+				arms: zod
+					.array(
+						zod
+							.object({
+								arm_id: zod
+									.string()
+									.uuid()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+									),
+								arm_name: zod
+									.string()
+									.max(
+										createExperimentWithAssignmentBodyDesignSpecArmsItemArmNameMax,
+									),
+								arm_description: zod
+									.string()
+									.max(
+										createExperimentWithAssignmentBodyDesignSpecArmsItemArmDescriptionMaxOne,
+									)
+									.or(zod.null())
+									.optional(),
+							})
+							.describe("Describes an experiment treatment arm."),
+					)
+					.min(createExperimentWithAssignmentBodyDesignSpecArmsMin)
+					.max(createExperimentWithAssignmentBodyDesignSpecArmsMax),
+				strata_field_names: zod
+					.array(
+						zod
+							.string()
+							.regex(
+								createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesItemRegExp,
+							),
+					)
+					.max(createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesMax)
+					.describe(
+						"List of participant_type variables to use for stratification.",
+					),
+				metrics: zod
+					.array(
+						zod
+							.object({
+								field_name: zod
+									.string()
+									.regex(
+										createExperimentWithAssignmentBodyDesignSpecMetricsItemFieldNameRegExp,
+									),
+								metric_pct_change: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+									),
+								metric_target: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+									),
+							})
+							.describe(
+								"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+							),
+					)
+					.min(1)
+					.max(createExperimentWithAssignmentBodyDesignSpecMetricsMax)
+					.describe("Primary and optional secondary metrics to target."),
+				power: zod
+					.number()
+					.min(createExperimentWithAssignmentBodyDesignSpecPowerMin)
+					.max(createExperimentWithAssignmentBodyDesignSpecPowerMax)
+					.default(createExperimentWithAssignmentBodyDesignSpecPowerDefault)
+					.describe(
+						"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
+					),
+				alpha: zod
+					.number()
+					.min(createExperimentWithAssignmentBodyDesignSpecAlphaMin)
+					.max(createExperimentWithAssignmentBodyDesignSpecAlphaMax)
+					.default(createExperimentWithAssignmentBodyDesignSpecAlphaDefault)
+					.describe(
+						"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
+					),
+				fstat_thresh: zod
+					.number()
+					.min(createExperimentWithAssignmentBodyDesignSpecFstatThreshMin)
+					.max(createExperimentWithAssignmentBodyDesignSpecFstatThreshMax)
+					.default(
+						createExperimentWithAssignmentBodyDesignSpecFstatThreshDefault,
+					)
+					.describe(
+						'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
+					),
+			})
+			.describe(
+				"Use this type to randomly select and assign from existing participants at design time.",
+			),
+		zod
+			.object({
+				experiment_id: zod
+					.string()
+					.uuid()
+					.or(zod.null())
+					.optional()
+					.describe(
+						"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+					),
+				experiment_type: zod.enum(["online"]),
+				experiment_name: zod
+					.string()
+					.max(
+						createExperimentWithAssignmentBodyDesignSpecExperimentNameMaxOne,
+					),
+				description: zod
+					.string()
+					.max(createExperimentWithAssignmentBodyDesignSpecDescriptionMaxOne),
+				start_date: zod.string().datetime({}),
+				end_date: zod.string().datetime({}),
+				arms: zod
+					.array(
+						zod
+							.object({
+								arm_id: zod
+									.string()
+									.uuid()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+									),
+								arm_name: zod
+									.string()
+									.max(
+										createExperimentWithAssignmentBodyDesignSpecArmsItemArmNameMaxOne,
+									),
+								arm_description: zod
+									.string()
+									.max(
+										createExperimentWithAssignmentBodyDesignSpecArmsItemArmDescriptionMaxFour,
+									)
+									.or(zod.null())
+									.optional(),
+							})
+							.describe("Describes an experiment treatment arm."),
+					)
+					.min(createExperimentWithAssignmentBodyDesignSpecArmsMinOne)
+					.max(createExperimentWithAssignmentBodyDesignSpecArmsMaxOne),
+				strata_field_names: zod
+					.array(
+						zod
+							.string()
+							.regex(
+								createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesItemRegExpOne,
+							),
+					)
+					.max(
+						createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesMaxOne,
+					)
+					.describe(
+						"List of participant_type variables to use for stratification.",
+					),
+				metrics: zod
+					.array(
+						zod
+							.object({
+								field_name: zod
+									.string()
+									.regex(
+										createExperimentWithAssignmentBodyDesignSpecMetricsItemFieldNameRegExpOne,
+									),
+								metric_pct_change: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+									),
+								metric_target: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+									),
+							})
+							.describe(
+								"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+							),
+					)
+					.min(1)
+					.max(createExperimentWithAssignmentBodyDesignSpecMetricsMaxOne)
+					.describe("Primary and optional secondary metrics to target."),
+				power: zod
+					.number()
+					.min(createExperimentWithAssignmentBodyDesignSpecPowerMinOne)
+					.max(createExperimentWithAssignmentBodyDesignSpecPowerMaxOne)
+					.default(createExperimentWithAssignmentBodyDesignSpecPowerDefaultOne)
+					.describe(
+						"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
+					),
+				alpha: zod
+					.number()
+					.min(createExperimentWithAssignmentBodyDesignSpecAlphaMinOne)
+					.max(createExperimentWithAssignmentBodyDesignSpecAlphaMaxOne)
+					.default(createExperimentWithAssignmentBodyDesignSpecAlphaDefaultOne)
+					.describe(
+						"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
+					),
+				fstat_thresh: zod
+					.number()
+					.min(createExperimentWithAssignmentBodyDesignSpecFstatThreshMinOne)
+					.max(createExperimentWithAssignmentBodyDesignSpecFstatThreshMaxOne)
+					.default(
+						createExperimentWithAssignmentBodyDesignSpecFstatThreshDefaultOne,
+					)
+					.describe(
+						'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
+					),
+			})
+			.describe(
+				"Use this type to randomly assign participants into arms during live experiment execution.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+			),
+	]),
 	audience_spec: zod
 		.object({
 			participant_type: zod
@@ -1970,6 +2038,31 @@ export const createExperimentWithAssignmentResponseDesignSpecFstatThreshDefault 
 export const createExperimentWithAssignmentResponseDesignSpecFstatThreshMin = 0;
 
 export const createExperimentWithAssignmentResponseDesignSpecFstatThreshMax = 1;
+export const createExperimentWithAssignmentResponseDesignSpecExperimentNameMaxOne = 100;
+export const createExperimentWithAssignmentResponseDesignSpecDescriptionMaxOne = 2000;
+export const createExperimentWithAssignmentResponseDesignSpecArmsItemArmNameMaxOne = 100;
+export const createExperimentWithAssignmentResponseDesignSpecArmsItemArmDescriptionMaxFour = 2000;
+export const createExperimentWithAssignmentResponseDesignSpecArmsMinOne = 2;
+
+export const createExperimentWithAssignmentResponseDesignSpecArmsMaxOne = 10;
+export const createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesItemRegExpOne =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesMaxOne = 150;
+export const createExperimentWithAssignmentResponseDesignSpecMetricsItemFieldNameRegExpOne =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentWithAssignmentResponseDesignSpecMetricsMaxOne = 150;
+export const createExperimentWithAssignmentResponseDesignSpecPowerDefaultOne = 0.8;
+export const createExperimentWithAssignmentResponseDesignSpecPowerMinOne = 0;
+
+export const createExperimentWithAssignmentResponseDesignSpecPowerMaxOne = 1;
+export const createExperimentWithAssignmentResponseDesignSpecAlphaDefaultOne = 0.05;
+export const createExperimentWithAssignmentResponseDesignSpecAlphaMinOne = 0;
+
+export const createExperimentWithAssignmentResponseDesignSpecAlphaMaxOne = 1;
+export const createExperimentWithAssignmentResponseDesignSpecFstatThreshDefaultOne = 0.6;
+export const createExperimentWithAssignmentResponseDesignSpecFstatThreshMinOne = 0;
+
+export const createExperimentWithAssignmentResponseDesignSpecFstatThreshMaxOne = 1;
 export const createExperimentWithAssignmentResponseAudienceSpecParticipantTypeMax = 100;
 export const createExperimentWithAssignmentResponseAudienceSpecFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
@@ -1990,130 +2083,274 @@ export const createExperimentWithAssignmentResponse = zod
 			.describe(
 				"Experiment lifecycle states.\n\nnote: [starting state], [[terminal state]]\n[DESIGNING]->[ASSIGNED]->{[[ABANDONED]], COMMITTED}->[[ABORTED]]",
 			),
-		design_spec: zod
-			.object({
-				experiment_id: zod
-					.string()
-					.uuid()
-					.or(zod.null())
-					.optional()
-					.describe(
-						"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-					),
-				experiment_name: zod
-					.string()
-					.max(
-						createExperimentWithAssignmentResponseDesignSpecExperimentNameMax,
-					),
-				description: zod
-					.string()
-					.max(createExperimentWithAssignmentResponseDesignSpecDescriptionMax),
-				start_date: zod.string().datetime({}),
-				end_date: zod.string().datetime({}),
-				arms: zod
-					.array(
-						zod
-							.object({
-								arm_id: zod
-									.string()
-									.uuid()
-									.or(zod.null())
-									.optional()
-									.describe(
-										"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-									),
-								arm_name: zod
-									.string()
-									.max(
-										createExperimentWithAssignmentResponseDesignSpecArmsItemArmNameMax,
-									),
-								arm_description: zod
-									.string()
-									.max(
-										createExperimentWithAssignmentResponseDesignSpecArmsItemArmDescriptionMaxOne,
-									)
-									.or(zod.null())
-									.optional(),
-							})
-							.describe("Describes an experiment treatment arm."),
-					)
-					.min(createExperimentWithAssignmentResponseDesignSpecArmsMin)
-					.max(createExperimentWithAssignmentResponseDesignSpecArmsMax),
-				strata_field_names: zod
-					.array(
-						zod
-							.string()
-							.regex(
-								createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesItemRegExp,
-							),
-					)
-					.max(
-						createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesMax,
-					)
-					.describe(
-						"List of participant_type variables to use for stratification.",
-					),
-				metrics: zod
-					.array(
-						zod
-							.object({
-								field_name: zod
-									.string()
-									.regex(
-										createExperimentWithAssignmentResponseDesignSpecMetricsItemFieldNameRegExp,
-									),
-								metric_pct_change: zod
-									.number()
-									.or(zod.null())
-									.optional()
-									.describe(
-										"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
-									),
-								metric_target: zod
-									.number()
-									.or(zod.null())
-									.optional()
-									.describe(
-										"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
-									),
-							})
-							.describe(
-								"Defines a request to look up baseline stats for a metric to measure in an experiment.",
-							),
-					)
-					.min(1)
-					.max(createExperimentWithAssignmentResponseDesignSpecMetricsMax)
-					.describe("Primary and optional secondary metrics to target."),
-				power: zod
-					.number()
-					.min(createExperimentWithAssignmentResponseDesignSpecPowerMin)
-					.max(createExperimentWithAssignmentResponseDesignSpecPowerMax)
-					.default(createExperimentWithAssignmentResponseDesignSpecPowerDefault)
-					.describe(
-						"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
-					),
-				alpha: zod
-					.number()
-					.min(createExperimentWithAssignmentResponseDesignSpecAlphaMin)
-					.max(createExperimentWithAssignmentResponseDesignSpecAlphaMax)
-					.default(createExperimentWithAssignmentResponseDesignSpecAlphaDefault)
-					.describe(
-						"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
-					),
-				fstat_thresh: zod
-					.number()
-					.min(createExperimentWithAssignmentResponseDesignSpecFstatThreshMin)
-					.max(createExperimentWithAssignmentResponseDesignSpecFstatThreshMax)
-					.default(
-						createExperimentWithAssignmentResponseDesignSpecFstatThreshDefault,
-					)
-					.describe(
-						'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
-					),
-			})
-			.describe(
-				"Experiment design parameters for power calculations and treatment assignment.",
-			),
+		design_spec: zod.discriminatedUnion("experiment_type", [
+			zod
+				.object({
+					experiment_id: zod
+						.string()
+						.uuid()
+						.or(zod.null())
+						.optional()
+						.describe(
+							"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+						),
+					experiment_type: zod.enum(["preassigned"]),
+					experiment_name: zod
+						.string()
+						.max(
+							createExperimentWithAssignmentResponseDesignSpecExperimentNameMax,
+						),
+					description: zod
+						.string()
+						.max(
+							createExperimentWithAssignmentResponseDesignSpecDescriptionMax,
+						),
+					start_date: zod.string().datetime({}),
+					end_date: zod.string().datetime({}),
+					arms: zod
+						.array(
+							zod
+								.object({
+									arm_id: zod
+										.string()
+										.uuid()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										),
+									arm_name: zod
+										.string()
+										.max(
+											createExperimentWithAssignmentResponseDesignSpecArmsItemArmNameMax,
+										),
+									arm_description: zod
+										.string()
+										.max(
+											createExperimentWithAssignmentResponseDesignSpecArmsItemArmDescriptionMaxOne,
+										)
+										.or(zod.null())
+										.optional(),
+								})
+								.describe("Describes an experiment treatment arm."),
+						)
+						.min(createExperimentWithAssignmentResponseDesignSpecArmsMin)
+						.max(createExperimentWithAssignmentResponseDesignSpecArmsMax),
+					strata_field_names: zod
+						.array(
+							zod
+								.string()
+								.regex(
+									createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesItemRegExp,
+								),
+						)
+						.max(
+							createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesMax,
+						)
+						.describe(
+							"List of participant_type variables to use for stratification.",
+						),
+					metrics: zod
+						.array(
+							zod
+								.object({
+									field_name: zod
+										.string()
+										.regex(
+											createExperimentWithAssignmentResponseDesignSpecMetricsItemFieldNameRegExp,
+										),
+									metric_pct_change: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+										),
+									metric_target: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+										),
+								})
+								.describe(
+									"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+								),
+						)
+						.min(1)
+						.max(createExperimentWithAssignmentResponseDesignSpecMetricsMax)
+						.describe("Primary and optional secondary metrics to target."),
+					power: zod
+						.number()
+						.min(createExperimentWithAssignmentResponseDesignSpecPowerMin)
+						.max(createExperimentWithAssignmentResponseDesignSpecPowerMax)
+						.default(
+							createExperimentWithAssignmentResponseDesignSpecPowerDefault,
+						)
+						.describe(
+							"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
+						),
+					alpha: zod
+						.number()
+						.min(createExperimentWithAssignmentResponseDesignSpecAlphaMin)
+						.max(createExperimentWithAssignmentResponseDesignSpecAlphaMax)
+						.default(
+							createExperimentWithAssignmentResponseDesignSpecAlphaDefault,
+						)
+						.describe(
+							"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
+						),
+					fstat_thresh: zod
+						.number()
+						.min(createExperimentWithAssignmentResponseDesignSpecFstatThreshMin)
+						.max(createExperimentWithAssignmentResponseDesignSpecFstatThreshMax)
+						.default(
+							createExperimentWithAssignmentResponseDesignSpecFstatThreshDefault,
+						)
+						.describe(
+							'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
+						),
+				})
+				.describe(
+					"Use this type to randomly select and assign from existing participants at design time.",
+				),
+			zod
+				.object({
+					experiment_id: zod
+						.string()
+						.uuid()
+						.or(zod.null())
+						.optional()
+						.describe(
+							"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+						),
+					experiment_type: zod.enum(["online"]),
+					experiment_name: zod
+						.string()
+						.max(
+							createExperimentWithAssignmentResponseDesignSpecExperimentNameMaxOne,
+						),
+					description: zod
+						.string()
+						.max(
+							createExperimentWithAssignmentResponseDesignSpecDescriptionMaxOne,
+						),
+					start_date: zod.string().datetime({}),
+					end_date: zod.string().datetime({}),
+					arms: zod
+						.array(
+							zod
+								.object({
+									arm_id: zod
+										.string()
+										.uuid()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										),
+									arm_name: zod
+										.string()
+										.max(
+											createExperimentWithAssignmentResponseDesignSpecArmsItemArmNameMaxOne,
+										),
+									arm_description: zod
+										.string()
+										.max(
+											createExperimentWithAssignmentResponseDesignSpecArmsItemArmDescriptionMaxFour,
+										)
+										.or(zod.null())
+										.optional(),
+								})
+								.describe("Describes an experiment treatment arm."),
+						)
+						.min(createExperimentWithAssignmentResponseDesignSpecArmsMinOne)
+						.max(createExperimentWithAssignmentResponseDesignSpecArmsMaxOne),
+					strata_field_names: zod
+						.array(
+							zod
+								.string()
+								.regex(
+									createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesItemRegExpOne,
+								),
+						)
+						.max(
+							createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesMaxOne,
+						)
+						.describe(
+							"List of participant_type variables to use for stratification.",
+						),
+					metrics: zod
+						.array(
+							zod
+								.object({
+									field_name: zod
+										.string()
+										.regex(
+											createExperimentWithAssignmentResponseDesignSpecMetricsItemFieldNameRegExpOne,
+										),
+									metric_pct_change: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+										),
+									metric_target: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+										),
+								})
+								.describe(
+									"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+								),
+						)
+						.min(1)
+						.max(createExperimentWithAssignmentResponseDesignSpecMetricsMaxOne)
+						.describe("Primary and optional secondary metrics to target."),
+					power: zod
+						.number()
+						.min(createExperimentWithAssignmentResponseDesignSpecPowerMinOne)
+						.max(createExperimentWithAssignmentResponseDesignSpecPowerMaxOne)
+						.default(
+							createExperimentWithAssignmentResponseDesignSpecPowerDefaultOne,
+						)
+						.describe(
+							"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
+						),
+					alpha: zod
+						.number()
+						.min(createExperimentWithAssignmentResponseDesignSpecAlphaMinOne)
+						.max(createExperimentWithAssignmentResponseDesignSpecAlphaMaxOne)
+						.default(
+							createExperimentWithAssignmentResponseDesignSpecAlphaDefaultOne,
+						)
+						.describe(
+							"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
+						),
+					fstat_thresh: zod
+						.number()
+						.min(
+							createExperimentWithAssignmentResponseDesignSpecFstatThreshMinOne,
+						)
+						.max(
+							createExperimentWithAssignmentResponseDesignSpecFstatThreshMaxOne,
+						)
+						.default(
+							createExperimentWithAssignmentResponseDesignSpecFstatThreshDefaultOne,
+						)
+						.describe(
+							'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
+						),
+				})
+				.describe(
+					"Use this type to randomly assign participants into arms during live experiment execution.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+				),
+		]),
 		audience_spec: zod
 			.object({
 				participant_type: zod
@@ -2307,7 +2544,12 @@ export const createExperimentWithAssignmentResponse = zod
 								"Whether the p-value for our observed f_statistic is greater than the f-stat threshold specified in our design specification. (See DesignSpec.fstat_thresh)",
 							),
 					})
-					.describe("Describes balance test results for treatment assignment."),
+					.describe("Describes balance test results for treatment assignment.")
+					.or(zod.null())
+					.optional()
+					.describe(
+						"Balance test results if available. 'online' experiments do not have balance checks.",
+					),
 				sample_size: zod
 					.number()
 					.describe("The number of participants across all arms in total."),
@@ -2361,142 +2603,6 @@ export const createExperimentWithAssignmentResponse = zod
 	);
 
 /**
- * @summary Analyze Experiment
- */
-export const analyzeExperimentParams = zod.object({
-	datasource_id: zod.string(),
-	experiment_id: zod.string(),
-});
-
-export const analyzeExperimentQueryParams = zod.object({
-	baseline_arm_id: zod
-		.string()
-		.or(zod.null())
-		.optional()
-		.describe(
-			"UUID of the baseline arm. If None, the first design spec arm is used.",
-		),
-});
-
-export const analyzeExperimentResponseMetricAnalysesItemMetricFieldNameRegExp =
-	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const analyzeExperimentResponseMetricAnalysesItemArmAnalysesItemArmNameMax = 100;
-export const analyzeExperimentResponseMetricAnalysesItemArmAnalysesItemArmDescriptionMaxOne = 2000;
-
-export const analyzeExperimentResponse = zod
-	.object({
-		experiment_id: zod.string().uuid().describe("UUID of the experiment."),
-		metric_analyses: zod
-			.array(
-				zod
-					.object({
-						metric_name: zod.string().or(zod.null()).optional(),
-						metric: zod
-							.object({
-								field_name: zod
-									.string()
-									.regex(
-										analyzeExperimentResponseMetricAnalysesItemMetricFieldNameRegExp,
-									),
-								metric_pct_change: zod
-									.number()
-									.or(zod.null())
-									.optional()
-									.describe(
-										"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
-									),
-								metric_target: zod
-									.number()
-									.or(zod.null())
-									.optional()
-									.describe(
-										"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
-									),
-							})
-							.describe(
-								"Defines a request to look up baseline stats for a metric to measure in an experiment.",
-							)
-							.or(zod.null())
-							.optional(),
-						arm_analyses: zod
-							.array(
-								zod.object({
-									arm_id: zod
-										.string()
-										.uuid()
-										.or(zod.null())
-										.optional()
-										.describe(
-											"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-										),
-									arm_name: zod
-										.string()
-										.max(
-											analyzeExperimentResponseMetricAnalysesItemArmAnalysesItemArmNameMax,
-										),
-									arm_description: zod
-										.string()
-										.max(
-											analyzeExperimentResponseMetricAnalysesItemArmAnalysesItemArmDescriptionMaxOne,
-										)
-										.or(zod.null())
-										.optional(),
-									is_baseline: zod
-										.boolean()
-										.describe(
-											"Whether this arm is the baseline/control arm for comparison.",
-										),
-									estimate: zod
-										.number()
-										.describe(
-											"The estimated treatment effect relative to the baseline arm.",
-										),
-									p_value: zod
-										.number()
-										.describe(
-											"The p-value indicating statistical significance of the treatment effect.",
-										),
-									t_stat: zod
-										.number()
-										.describe("The t-statistic from the statistical test."),
-									std_error: zod
-										.number()
-										.describe(
-											"The standard error of the treatment effect estimate.",
-										),
-								}),
-							)
-							.describe(
-								"The results of the analysis for each arm (coefficient) for this specific metric.",
-							),
-					})
-					.describe(
-						"Describes the change in a single metric for each arm of an experiment.",
-					),
-			)
-			.describe("Contains one analysis per metric targeted by the experiment."),
-	})
-	.describe(
-		"Describes the change if any in metrics targeted by an experiment.",
-	);
-
-/**
- * @summary Commit Experiment
- */
-export const commitExperimentParams = zod.object({
-	datasource_id: zod.string(),
-	experiment_id: zod.string(),
-});
-
-/**
- * @summary Abandon Experiment
- */
-export const abandonExperimentParams = zod.object({
-	datasource_id: zod.string(),
-	experiment_id: zod.string(),
-});
-
-/**
  * Returns the list of experiments in the datasource.
  * @summary List Experiments
  */
@@ -2529,6 +2635,31 @@ export const listExperimentsResponseItemsItemDesignSpecFstatThreshDefault = 0.6;
 export const listExperimentsResponseItemsItemDesignSpecFstatThreshMin = 0;
 
 export const listExperimentsResponseItemsItemDesignSpecFstatThreshMax = 1;
+export const listExperimentsResponseItemsItemDesignSpecExperimentNameMaxOne = 100;
+export const listExperimentsResponseItemsItemDesignSpecDescriptionMaxOne = 2000;
+export const listExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxOne = 100;
+export const listExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxFour = 2000;
+export const listExperimentsResponseItemsItemDesignSpecArmsMinOne = 2;
+
+export const listExperimentsResponseItemsItemDesignSpecArmsMaxOne = 10;
+export const listExperimentsResponseItemsItemDesignSpecStrataFieldNamesItemRegExpOne =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const listExperimentsResponseItemsItemDesignSpecStrataFieldNamesMaxOne = 150;
+export const listExperimentsResponseItemsItemDesignSpecMetricsItemFieldNameRegExpOne =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const listExperimentsResponseItemsItemDesignSpecMetricsMaxOne = 150;
+export const listExperimentsResponseItemsItemDesignSpecPowerDefaultOne = 0.8;
+export const listExperimentsResponseItemsItemDesignSpecPowerMinOne = 0;
+
+export const listExperimentsResponseItemsItemDesignSpecPowerMaxOne = 1;
+export const listExperimentsResponseItemsItemDesignSpecAlphaDefaultOne = 0.05;
+export const listExperimentsResponseItemsItemDesignSpecAlphaMinOne = 0;
+
+export const listExperimentsResponseItemsItemDesignSpecAlphaMaxOne = 1;
+export const listExperimentsResponseItemsItemDesignSpecFstatThreshDefaultOne = 0.6;
+export const listExperimentsResponseItemsItemDesignSpecFstatThreshMinOne = 0;
+
+export const listExperimentsResponseItemsItemDesignSpecFstatThreshMaxOne = 1;
 export const listExperimentsResponseItemsItemAudienceSpecParticipantTypeMax = 100;
 export const listExperimentsResponseItemsItemAudienceSpecFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
@@ -2551,128 +2682,268 @@ export const listExperimentsResponse = zod.object({
 					.describe(
 						"Experiment lifecycle states.\n\nnote: [starting state], [[terminal state]]\n[DESIGNING]->[ASSIGNED]->{[[ABANDONED]], COMMITTED}->[[ABORTED]]",
 					),
-				design_spec: zod
-					.object({
-						experiment_id: zod
-							.string()
-							.uuid()
-							.or(zod.null())
-							.optional()
-							.describe(
-								"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-							),
-						experiment_name: zod
-							.string()
-							.max(listExperimentsResponseItemsItemDesignSpecExperimentNameMax),
-						description: zod
-							.string()
-							.max(listExperimentsResponseItemsItemDesignSpecDescriptionMax),
-						start_date: zod.string().datetime({}),
-						end_date: zod.string().datetime({}),
-						arms: zod
-							.array(
-								zod
-									.object({
-										arm_id: zod
-											.string()
-											.uuid()
-											.or(zod.null())
-											.optional()
-											.describe(
-												"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-											),
-										arm_name: zod
-											.string()
-											.max(
-												listExperimentsResponseItemsItemDesignSpecArmsItemArmNameMax,
-											),
-										arm_description: zod
-											.string()
-											.max(
-												listExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOne,
-											)
-											.or(zod.null())
-											.optional(),
-									})
-									.describe("Describes an experiment treatment arm."),
-							)
-							.min(listExperimentsResponseItemsItemDesignSpecArmsMin)
-							.max(listExperimentsResponseItemsItemDesignSpecArmsMax),
-						strata_field_names: zod
-							.array(
-								zod
-									.string()
-									.regex(
-										listExperimentsResponseItemsItemDesignSpecStrataFieldNamesItemRegExp,
-									),
-							)
-							.max(
-								listExperimentsResponseItemsItemDesignSpecStrataFieldNamesMax,
-							)
-							.describe(
-								"List of participant_type variables to use for stratification.",
-							),
-						metrics: zod
-							.array(
-								zod
-									.object({
-										field_name: zod
-											.string()
-											.regex(
-												listExperimentsResponseItemsItemDesignSpecMetricsItemFieldNameRegExp,
-											),
-										metric_pct_change: zod
-											.number()
-											.or(zod.null())
-											.optional()
-											.describe(
-												"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
-											),
-										metric_target: zod
-											.number()
-											.or(zod.null())
-											.optional()
-											.describe(
-												"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
-											),
-									})
-									.describe(
-										"Defines a request to look up baseline stats for a metric to measure in an experiment.",
-									),
-							)
-							.min(1)
-							.max(listExperimentsResponseItemsItemDesignSpecMetricsMax)
-							.describe("Primary and optional secondary metrics to target."),
-						power: zod
-							.number()
-							.min(listExperimentsResponseItemsItemDesignSpecPowerMin)
-							.max(listExperimentsResponseItemsItemDesignSpecPowerMax)
-							.default(listExperimentsResponseItemsItemDesignSpecPowerDefault)
-							.describe(
-								"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
-							),
-						alpha: zod
-							.number()
-							.min(listExperimentsResponseItemsItemDesignSpecAlphaMin)
-							.max(listExperimentsResponseItemsItemDesignSpecAlphaMax)
-							.default(listExperimentsResponseItemsItemDesignSpecAlphaDefault)
-							.describe(
-								"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
-							),
-						fstat_thresh: zod
-							.number()
-							.min(listExperimentsResponseItemsItemDesignSpecFstatThreshMin)
-							.max(listExperimentsResponseItemsItemDesignSpecFstatThreshMax)
-							.default(
-								listExperimentsResponseItemsItemDesignSpecFstatThreshDefault,
-							)
-							.describe(
-								'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
-							),
-					})
-					.describe(
-						"Experiment design parameters for power calculations and treatment assignment.",
-					),
+				design_spec: zod.discriminatedUnion("experiment_type", [
+					zod
+						.object({
+							experiment_id: zod
+								.string()
+								.uuid()
+								.or(zod.null())
+								.optional()
+								.describe(
+									"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+								),
+							experiment_type: zod.enum(["preassigned"]),
+							experiment_name: zod
+								.string()
+								.max(
+									listExperimentsResponseItemsItemDesignSpecExperimentNameMax,
+								),
+							description: zod
+								.string()
+								.max(listExperimentsResponseItemsItemDesignSpecDescriptionMax),
+							start_date: zod.string().datetime({}),
+							end_date: zod.string().datetime({}),
+							arms: zod
+								.array(
+									zod
+										.object({
+											arm_id: zod
+												.string()
+												.uuid()
+												.or(zod.null())
+												.optional()
+												.describe(
+													"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+												),
+											arm_name: zod
+												.string()
+												.max(
+													listExperimentsResponseItemsItemDesignSpecArmsItemArmNameMax,
+												),
+											arm_description: zod
+												.string()
+												.max(
+													listExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOne,
+												)
+												.or(zod.null())
+												.optional(),
+										})
+										.describe("Describes an experiment treatment arm."),
+								)
+								.min(listExperimentsResponseItemsItemDesignSpecArmsMin)
+								.max(listExperimentsResponseItemsItemDesignSpecArmsMax),
+							strata_field_names: zod
+								.array(
+									zod
+										.string()
+										.regex(
+											listExperimentsResponseItemsItemDesignSpecStrataFieldNamesItemRegExp,
+										),
+								)
+								.max(
+									listExperimentsResponseItemsItemDesignSpecStrataFieldNamesMax,
+								)
+								.describe(
+									"List of participant_type variables to use for stratification.",
+								),
+							metrics: zod
+								.array(
+									zod
+										.object({
+											field_name: zod
+												.string()
+												.regex(
+													listExperimentsResponseItemsItemDesignSpecMetricsItemFieldNameRegExp,
+												),
+											metric_pct_change: zod
+												.number()
+												.or(zod.null())
+												.optional()
+												.describe(
+													"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+												),
+											metric_target: zod
+												.number()
+												.or(zod.null())
+												.optional()
+												.describe(
+													"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+												),
+										})
+										.describe(
+											"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+										),
+								)
+								.min(1)
+								.max(listExperimentsResponseItemsItemDesignSpecMetricsMax)
+								.describe("Primary and optional secondary metrics to target."),
+							power: zod
+								.number()
+								.min(listExperimentsResponseItemsItemDesignSpecPowerMin)
+								.max(listExperimentsResponseItemsItemDesignSpecPowerMax)
+								.default(listExperimentsResponseItemsItemDesignSpecPowerDefault)
+								.describe(
+									"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
+								),
+							alpha: zod
+								.number()
+								.min(listExperimentsResponseItemsItemDesignSpecAlphaMin)
+								.max(listExperimentsResponseItemsItemDesignSpecAlphaMax)
+								.default(listExperimentsResponseItemsItemDesignSpecAlphaDefault)
+								.describe(
+									"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
+								),
+							fstat_thresh: zod
+								.number()
+								.min(listExperimentsResponseItemsItemDesignSpecFstatThreshMin)
+								.max(listExperimentsResponseItemsItemDesignSpecFstatThreshMax)
+								.default(
+									listExperimentsResponseItemsItemDesignSpecFstatThreshDefault,
+								)
+								.describe(
+									'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
+								),
+						})
+						.describe(
+							"Use this type to randomly select and assign from existing participants at design time.",
+						),
+					zod
+						.object({
+							experiment_id: zod
+								.string()
+								.uuid()
+								.or(zod.null())
+								.optional()
+								.describe(
+									"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+								),
+							experiment_type: zod.enum(["online"]),
+							experiment_name: zod
+								.string()
+								.max(
+									listExperimentsResponseItemsItemDesignSpecExperimentNameMaxOne,
+								),
+							description: zod
+								.string()
+								.max(
+									listExperimentsResponseItemsItemDesignSpecDescriptionMaxOne,
+								),
+							start_date: zod.string().datetime({}),
+							end_date: zod.string().datetime({}),
+							arms: zod
+								.array(
+									zod
+										.object({
+											arm_id: zod
+												.string()
+												.uuid()
+												.or(zod.null())
+												.optional()
+												.describe(
+													"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+												),
+											arm_name: zod
+												.string()
+												.max(
+													listExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxOne,
+												),
+											arm_description: zod
+												.string()
+												.max(
+													listExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxFour,
+												)
+												.or(zod.null())
+												.optional(),
+										})
+										.describe("Describes an experiment treatment arm."),
+								)
+								.min(listExperimentsResponseItemsItemDesignSpecArmsMinOne)
+								.max(listExperimentsResponseItemsItemDesignSpecArmsMaxOne),
+							strata_field_names: zod
+								.array(
+									zod
+										.string()
+										.regex(
+											listExperimentsResponseItemsItemDesignSpecStrataFieldNamesItemRegExpOne,
+										),
+								)
+								.max(
+									listExperimentsResponseItemsItemDesignSpecStrataFieldNamesMaxOne,
+								)
+								.describe(
+									"List of participant_type variables to use for stratification.",
+								),
+							metrics: zod
+								.array(
+									zod
+										.object({
+											field_name: zod
+												.string()
+												.regex(
+													listExperimentsResponseItemsItemDesignSpecMetricsItemFieldNameRegExpOne,
+												),
+											metric_pct_change: zod
+												.number()
+												.or(zod.null())
+												.optional()
+												.describe(
+													"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+												),
+											metric_target: zod
+												.number()
+												.or(zod.null())
+												.optional()
+												.describe(
+													"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+												),
+										})
+										.describe(
+											"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+										),
+								)
+								.min(1)
+								.max(listExperimentsResponseItemsItemDesignSpecMetricsMaxOne)
+								.describe("Primary and optional secondary metrics to target."),
+							power: zod
+								.number()
+								.min(listExperimentsResponseItemsItemDesignSpecPowerMinOne)
+								.max(listExperimentsResponseItemsItemDesignSpecPowerMaxOne)
+								.default(
+									listExperimentsResponseItemsItemDesignSpecPowerDefaultOne,
+								)
+								.describe(
+									"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
+								),
+							alpha: zod
+								.number()
+								.min(listExperimentsResponseItemsItemDesignSpecAlphaMinOne)
+								.max(listExperimentsResponseItemsItemDesignSpecAlphaMaxOne)
+								.default(
+									listExperimentsResponseItemsItemDesignSpecAlphaDefaultOne,
+								)
+								.describe(
+									"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
+								),
+							fstat_thresh: zod
+								.number()
+								.min(
+									listExperimentsResponseItemsItemDesignSpecFstatThreshMinOne,
+								)
+								.max(
+									listExperimentsResponseItemsItemDesignSpecFstatThreshMaxOne,
+								)
+								.default(
+									listExperimentsResponseItemsItemDesignSpecFstatThreshDefaultOne,
+								)
+								.describe(
+									'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
+								),
+						})
+						.describe(
+							"Use this type to randomly assign participants into arms during live experiment execution.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+						),
+				]),
 				audience_spec: zod
 					.object({
 						participant_type: zod
@@ -2874,6 +3145,11 @@ export const listExperimentsResponse = zod.object({
 							})
 							.describe(
 								"Describes balance test results for treatment assignment.",
+							)
+							.or(zod.null())
+							.optional()
+							.describe(
+								"Balance test results if available. 'online' experiments do not have balance checks.",
 							),
 						sample_size: zod
 							.number()
@@ -2926,6 +3202,142 @@ export const listExperimentsResponse = zod.object({
 });
 
 /**
+ * @summary Analyze Experiment
+ */
+export const analyzeExperimentParams = zod.object({
+	datasource_id: zod.string(),
+	experiment_id: zod.string(),
+});
+
+export const analyzeExperimentQueryParams = zod.object({
+	baseline_arm_id: zod
+		.string()
+		.or(zod.null())
+		.optional()
+		.describe(
+			"UUID of the baseline arm. If None, the first design spec arm is used.",
+		),
+});
+
+export const analyzeExperimentResponseMetricAnalysesItemMetricFieldNameRegExp =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const analyzeExperimentResponseMetricAnalysesItemArmAnalysesItemArmNameMax = 100;
+export const analyzeExperimentResponseMetricAnalysesItemArmAnalysesItemArmDescriptionMaxOne = 2000;
+
+export const analyzeExperimentResponse = zod
+	.object({
+		experiment_id: zod.string().uuid().describe("UUID of the experiment."),
+		metric_analyses: zod
+			.array(
+				zod
+					.object({
+						metric_name: zod.string().or(zod.null()).optional(),
+						metric: zod
+							.object({
+								field_name: zod
+									.string()
+									.regex(
+										analyzeExperimentResponseMetricAnalysesItemMetricFieldNameRegExp,
+									),
+								metric_pct_change: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+									),
+								metric_target: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+									),
+							})
+							.describe(
+								"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+							)
+							.or(zod.null())
+							.optional(),
+						arm_analyses: zod
+							.array(
+								zod.object({
+									arm_id: zod
+										.string()
+										.uuid()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										),
+									arm_name: zod
+										.string()
+										.max(
+											analyzeExperimentResponseMetricAnalysesItemArmAnalysesItemArmNameMax,
+										),
+									arm_description: zod
+										.string()
+										.max(
+											analyzeExperimentResponseMetricAnalysesItemArmAnalysesItemArmDescriptionMaxOne,
+										)
+										.or(zod.null())
+										.optional(),
+									is_baseline: zod
+										.boolean()
+										.describe(
+											"Whether this arm is the baseline/control arm for comparison.",
+										),
+									estimate: zod
+										.number()
+										.describe(
+											"The estimated treatment effect relative to the baseline arm.",
+										),
+									p_value: zod
+										.number()
+										.describe(
+											"The p-value indicating statistical significance of the treatment effect.",
+										),
+									t_stat: zod
+										.number()
+										.describe("The t-statistic from the statistical test."),
+									std_error: zod
+										.number()
+										.describe(
+											"The standard error of the treatment effect estimate.",
+										),
+								}),
+							)
+							.describe(
+								"The results of the analysis for each arm (coefficient) for this specific metric.",
+							),
+					})
+					.describe(
+						"Describes the change in a single metric for each arm of an experiment.",
+					),
+			)
+			.describe("Contains one analysis per metric targeted by the experiment."),
+	})
+	.describe(
+		"Describes the change if any in metrics targeted by an experiment.",
+	);
+
+/**
+ * @summary Commit Experiment
+ */
+export const commitExperimentParams = zod.object({
+	datasource_id: zod.string(),
+	experiment_id: zod.string(),
+});
+
+/**
+ * @summary Abandon Experiment
+ */
+export const abandonExperimentParams = zod.object({
+	datasource_id: zod.string(),
+	experiment_id: zod.string(),
+});
+
+/**
  * Returns the experiment with the specified ID.
  * @summary Get Experiment
  */
@@ -2959,6 +3371,31 @@ export const getExperimentResponseDesignSpecFstatThreshDefault = 0.6;
 export const getExperimentResponseDesignSpecFstatThreshMin = 0;
 
 export const getExperimentResponseDesignSpecFstatThreshMax = 1;
+export const getExperimentResponseDesignSpecExperimentNameMaxOne = 100;
+export const getExperimentResponseDesignSpecDescriptionMaxOne = 2000;
+export const getExperimentResponseDesignSpecArmsItemArmNameMaxOne = 100;
+export const getExperimentResponseDesignSpecArmsItemArmDescriptionMaxFour = 2000;
+export const getExperimentResponseDesignSpecArmsMinOne = 2;
+
+export const getExperimentResponseDesignSpecArmsMaxOne = 10;
+export const getExperimentResponseDesignSpecStrataFieldNamesItemRegExpOne =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const getExperimentResponseDesignSpecStrataFieldNamesMaxOne = 150;
+export const getExperimentResponseDesignSpecMetricsItemFieldNameRegExpOne =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const getExperimentResponseDesignSpecMetricsMaxOne = 150;
+export const getExperimentResponseDesignSpecPowerDefaultOne = 0.8;
+export const getExperimentResponseDesignSpecPowerMinOne = 0;
+
+export const getExperimentResponseDesignSpecPowerMaxOne = 1;
+export const getExperimentResponseDesignSpecAlphaDefaultOne = 0.05;
+export const getExperimentResponseDesignSpecAlphaMinOne = 0;
+
+export const getExperimentResponseDesignSpecAlphaMaxOne = 1;
+export const getExperimentResponseDesignSpecFstatThreshDefaultOne = 0.6;
+export const getExperimentResponseDesignSpecFstatThreshMinOne = 0;
+
+export const getExperimentResponseDesignSpecFstatThreshMaxOne = 1;
 export const getExperimentResponseAudienceSpecParticipantTypeMax = 100;
 export const getExperimentResponseAudienceSpecFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
@@ -2979,120 +3416,242 @@ export const getExperimentResponse = zod
 			.describe(
 				"Experiment lifecycle states.\n\nnote: [starting state], [[terminal state]]\n[DESIGNING]->[ASSIGNED]->{[[ABANDONED]], COMMITTED}->[[ABORTED]]",
 			),
-		design_spec: zod
-			.object({
-				experiment_id: zod
-					.string()
-					.uuid()
-					.or(zod.null())
-					.optional()
-					.describe(
-						"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-					),
-				experiment_name: zod
-					.string()
-					.max(getExperimentResponseDesignSpecExperimentNameMax),
-				description: zod
-					.string()
-					.max(getExperimentResponseDesignSpecDescriptionMax),
-				start_date: zod.string().datetime({}),
-				end_date: zod.string().datetime({}),
-				arms: zod
-					.array(
-						zod
-							.object({
-								arm_id: zod
-									.string()
-									.uuid()
-									.or(zod.null())
-									.optional()
-									.describe(
-										"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-									),
-								arm_name: zod
-									.string()
-									.max(getExperimentResponseDesignSpecArmsItemArmNameMax),
-								arm_description: zod
-									.string()
-									.max(
-										getExperimentResponseDesignSpecArmsItemArmDescriptionMaxOne,
-									)
-									.or(zod.null())
-									.optional(),
-							})
-							.describe("Describes an experiment treatment arm."),
-					)
-					.min(getExperimentResponseDesignSpecArmsMin)
-					.max(getExperimentResponseDesignSpecArmsMax),
-				strata_field_names: zod
-					.array(
-						zod
-							.string()
-							.regex(getExperimentResponseDesignSpecStrataFieldNamesItemRegExp),
-					)
-					.max(getExperimentResponseDesignSpecStrataFieldNamesMax)
-					.describe(
-						"List of participant_type variables to use for stratification.",
-					),
-				metrics: zod
-					.array(
-						zod
-							.object({
-								field_name: zod
-									.string()
-									.regex(
-										getExperimentResponseDesignSpecMetricsItemFieldNameRegExp,
-									),
-								metric_pct_change: zod
-									.number()
-									.or(zod.null())
-									.optional()
-									.describe(
-										"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
-									),
-								metric_target: zod
-									.number()
-									.or(zod.null())
-									.optional()
-									.describe(
-										"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
-									),
-							})
-							.describe(
-								"Defines a request to look up baseline stats for a metric to measure in an experiment.",
-							),
-					)
-					.min(1)
-					.max(getExperimentResponseDesignSpecMetricsMax)
-					.describe("Primary and optional secondary metrics to target."),
-				power: zod
-					.number()
-					.min(getExperimentResponseDesignSpecPowerMin)
-					.max(getExperimentResponseDesignSpecPowerMax)
-					.default(getExperimentResponseDesignSpecPowerDefault)
-					.describe(
-						"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
-					),
-				alpha: zod
-					.number()
-					.min(getExperimentResponseDesignSpecAlphaMin)
-					.max(getExperimentResponseDesignSpecAlphaMax)
-					.default(getExperimentResponseDesignSpecAlphaDefault)
-					.describe(
-						"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
-					),
-				fstat_thresh: zod
-					.number()
-					.min(getExperimentResponseDesignSpecFstatThreshMin)
-					.max(getExperimentResponseDesignSpecFstatThreshMax)
-					.default(getExperimentResponseDesignSpecFstatThreshDefault)
-					.describe(
-						'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
-					),
-			})
-			.describe(
-				"Experiment design parameters for power calculations and treatment assignment.",
-			),
+		design_spec: zod.discriminatedUnion("experiment_type", [
+			zod
+				.object({
+					experiment_id: zod
+						.string()
+						.uuid()
+						.or(zod.null())
+						.optional()
+						.describe(
+							"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+						),
+					experiment_type: zod.enum(["preassigned"]),
+					experiment_name: zod
+						.string()
+						.max(getExperimentResponseDesignSpecExperimentNameMax),
+					description: zod
+						.string()
+						.max(getExperimentResponseDesignSpecDescriptionMax),
+					start_date: zod.string().datetime({}),
+					end_date: zod.string().datetime({}),
+					arms: zod
+						.array(
+							zod
+								.object({
+									arm_id: zod
+										.string()
+										.uuid()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										),
+									arm_name: zod
+										.string()
+										.max(getExperimentResponseDesignSpecArmsItemArmNameMax),
+									arm_description: zod
+										.string()
+										.max(
+											getExperimentResponseDesignSpecArmsItemArmDescriptionMaxOne,
+										)
+										.or(zod.null())
+										.optional(),
+								})
+								.describe("Describes an experiment treatment arm."),
+						)
+						.min(getExperimentResponseDesignSpecArmsMin)
+						.max(getExperimentResponseDesignSpecArmsMax),
+					strata_field_names: zod
+						.array(
+							zod
+								.string()
+								.regex(
+									getExperimentResponseDesignSpecStrataFieldNamesItemRegExp,
+								),
+						)
+						.max(getExperimentResponseDesignSpecStrataFieldNamesMax)
+						.describe(
+							"List of participant_type variables to use for stratification.",
+						),
+					metrics: zod
+						.array(
+							zod
+								.object({
+									field_name: zod
+										.string()
+										.regex(
+											getExperimentResponseDesignSpecMetricsItemFieldNameRegExp,
+										),
+									metric_pct_change: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+										),
+									metric_target: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+										),
+								})
+								.describe(
+									"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+								),
+						)
+						.min(1)
+						.max(getExperimentResponseDesignSpecMetricsMax)
+						.describe("Primary and optional secondary metrics to target."),
+					power: zod
+						.number()
+						.min(getExperimentResponseDesignSpecPowerMin)
+						.max(getExperimentResponseDesignSpecPowerMax)
+						.default(getExperimentResponseDesignSpecPowerDefault)
+						.describe(
+							"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
+						),
+					alpha: zod
+						.number()
+						.min(getExperimentResponseDesignSpecAlphaMin)
+						.max(getExperimentResponseDesignSpecAlphaMax)
+						.default(getExperimentResponseDesignSpecAlphaDefault)
+						.describe(
+							"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
+						),
+					fstat_thresh: zod
+						.number()
+						.min(getExperimentResponseDesignSpecFstatThreshMin)
+						.max(getExperimentResponseDesignSpecFstatThreshMax)
+						.default(getExperimentResponseDesignSpecFstatThreshDefault)
+						.describe(
+							'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
+						),
+				})
+				.describe(
+					"Use this type to randomly select and assign from existing participants at design time.",
+				),
+			zod
+				.object({
+					experiment_id: zod
+						.string()
+						.uuid()
+						.or(zod.null())
+						.optional()
+						.describe(
+							"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+						),
+					experiment_type: zod.enum(["online"]),
+					experiment_name: zod
+						.string()
+						.max(getExperimentResponseDesignSpecExperimentNameMaxOne),
+					description: zod
+						.string()
+						.max(getExperimentResponseDesignSpecDescriptionMaxOne),
+					start_date: zod.string().datetime({}),
+					end_date: zod.string().datetime({}),
+					arms: zod
+						.array(
+							zod
+								.object({
+									arm_id: zod
+										.string()
+										.uuid()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										),
+									arm_name: zod
+										.string()
+										.max(getExperimentResponseDesignSpecArmsItemArmNameMaxOne),
+									arm_description: zod
+										.string()
+										.max(
+											getExperimentResponseDesignSpecArmsItemArmDescriptionMaxFour,
+										)
+										.or(zod.null())
+										.optional(),
+								})
+								.describe("Describes an experiment treatment arm."),
+						)
+						.min(getExperimentResponseDesignSpecArmsMinOne)
+						.max(getExperimentResponseDesignSpecArmsMaxOne),
+					strata_field_names: zod
+						.array(
+							zod
+								.string()
+								.regex(
+									getExperimentResponseDesignSpecStrataFieldNamesItemRegExpOne,
+								),
+						)
+						.max(getExperimentResponseDesignSpecStrataFieldNamesMaxOne)
+						.describe(
+							"List of participant_type variables to use for stratification.",
+						),
+					metrics: zod
+						.array(
+							zod
+								.object({
+									field_name: zod
+										.string()
+										.regex(
+											getExperimentResponseDesignSpecMetricsItemFieldNameRegExpOne,
+										),
+									metric_pct_change: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+										),
+									metric_target: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+										),
+								})
+								.describe(
+									"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+								),
+						)
+						.min(1)
+						.max(getExperimentResponseDesignSpecMetricsMaxOne)
+						.describe("Primary and optional secondary metrics to target."),
+					power: zod
+						.number()
+						.min(getExperimentResponseDesignSpecPowerMinOne)
+						.max(getExperimentResponseDesignSpecPowerMaxOne)
+						.default(getExperimentResponseDesignSpecPowerDefaultOne)
+						.describe(
+							"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
+						),
+					alpha: zod
+						.number()
+						.min(getExperimentResponseDesignSpecAlphaMinOne)
+						.max(getExperimentResponseDesignSpecAlphaMaxOne)
+						.default(getExperimentResponseDesignSpecAlphaDefaultOne)
+						.describe(
+							"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
+						),
+					fstat_thresh: zod
+						.number()
+						.min(getExperimentResponseDesignSpecFstatThreshMinOne)
+						.max(getExperimentResponseDesignSpecFstatThreshMaxOne)
+						.default(getExperimentResponseDesignSpecFstatThreshDefaultOne)
+						.describe(
+							'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
+						),
+				})
+				.describe(
+					"Use this type to randomly assign participants into arms during live experiment execution.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+				),
+		]),
 		audience_spec: zod
 			.object({
 				participant_type: zod
@@ -3284,7 +3843,12 @@ export const getExperimentResponse = zod
 								"Whether the p-value for our observed f_statistic is greater than the f-stat threshold specified in our design specification. (See DesignSpec.fstat_thresh)",
 							),
 					})
-					.describe("Describes balance test results for treatment assignment."),
+					.describe("Describes balance test results for treatment assignment.")
+					.or(zod.null())
+					.optional()
+					.describe(
+						"Balance test results if available. 'online' experiments do not have balance checks.",
+					),
 				sample_size: zod
 					.number()
 					.describe("The number of participants across all arms in total."),
@@ -3386,7 +3950,12 @@ export const getExperimentAssignmentsResponse = zod
 						"Whether the p-value for our observed f_statistic is greater than the f-stat threshold specified in our design specification. (See DesignSpec.fstat_thresh)",
 					),
 			})
-			.describe("Describes balance test results for treatment assignment."),
+			.describe("Describes balance test results for treatment assignment.")
+			.or(zod.null())
+			.optional()
+			.describe(
+				"Balance test results if available. 'online' experiments do not have balance checks.",
+			),
 		experiment_id: zod.string().uuid(),
 		sample_size: zod.number(),
 		assignments: zod.array(
@@ -3437,7 +4006,7 @@ export const getExperimentAssignmentsResponse = zod
 		),
 	})
 	.describe(
-		"Describes assignments for all participants and balance test results.",
+		"Describes assignments for all participants and balance test results if available.",
 	);
 
 /**
@@ -3449,6 +4018,81 @@ export const getExperimentAssignmentsAsCsvParams = zod.object({
 });
 
 export const getExperimentAssignmentsAsCsvResponse = zod.any();
+
+/**
+ * Get the assignment for a specific participant, excluding strata if any.
+    For 'preassigned' experiments, the participant's Assignment is returned if it exists.
+    For 'online', returns the assignment if it exists, else generates an assignment.
+ * @summary Get Experiment Assignment For Participant
+ */
+export const getExperimentAssignmentForParticipantParams = zod.object({
+	datasource_id: zod.string(),
+	experiment_id: zod.string(),
+	participant_id: zod.string(),
+});
+
+export const getExperimentAssignmentForParticipantResponseAssignmentParticipantIdMax = 64;
+export const getExperimentAssignmentForParticipantResponseAssignmentArmNameMax = 100;
+export const getExperimentAssignmentForParticipantResponseAssignmentStrataItemFieldNameRegExp =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const getExperimentAssignmentForParticipantResponseAssignmentStrataMaxOne = 150;
+
+export const getExperimentAssignmentForParticipantResponse = zod
+	.object({
+		experiment_id: zod.string(),
+		participant_id: zod.string(),
+		assignment: zod
+			.object({
+				participant_id: zod
+					.string()
+					.max(
+						getExperimentAssignmentForParticipantResponseAssignmentParticipantIdMax,
+					),
+				arm_id: zod
+					.string()
+					.uuid()
+					.describe(
+						"UUID of the arm this participant was assigned to. Same as Arm.arm_id.",
+					),
+				arm_name: zod
+					.string()
+					.max(
+						getExperimentAssignmentForParticipantResponseAssignmentArmNameMax,
+					)
+					.describe(
+						"The arm this participant was assigned to. Same as Arm.arm_name.",
+					),
+				strata: zod
+					.array(
+						zod
+							.object({
+								field_name: zod
+									.string()
+									.regex(
+										getExperimentAssignmentForParticipantResponseAssignmentStrataItemFieldNameRegExp,
+									),
+								strata_value: zod.string().or(zod.null()).optional(),
+							})
+							.describe(
+								"Describes stratification for an experiment participant.",
+							),
+					)
+					.max(
+						getExperimentAssignmentForParticipantResponseAssignmentStrataMaxOne,
+					)
+					.or(zod.null())
+					.optional()
+					.describe(
+						"List of properties and their values for this participant used for stratification or tracking metrics. If stratification is not used, this will be None.",
+					),
+			})
+			.describe("Describes treatment assignment for an experiment participant.")
+			.or(zod.null())
+			.describe("Null if no assignment. assignment.strata are not included."),
+	})
+	.describe(
+		"Describes assignment for a single <experiment, participant> pair.",
+	);
 
 /**
  * @summary Power Check
@@ -3484,6 +4128,33 @@ export const powerCheckBodyDesignSpecFstatThreshDefault = 0.6;
 export const powerCheckBodyDesignSpecFstatThreshMin = 0;
 
 export const powerCheckBodyDesignSpecFstatThreshMax = 1;
+export const powerCheckBodyDesignSpecExperimentNameMaxOne = 100;
+export const powerCheckBodyDesignSpecDescriptionMaxOne = 2000;
+export const powerCheckBodyDesignSpecArmsItemArmNameMaxOne = 100;
+export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxFour = 2000;
+export const powerCheckBodyDesignSpecArmsMinOne = 2;
+
+export const powerCheckBodyDesignSpecArmsMaxOne = 10;
+export const powerCheckBodyDesignSpecStrataFieldNamesItemRegExpOne = new RegExp(
+	"^[a-zA-Z_][a-zA-Z0-9_]*$",
+);
+export const powerCheckBodyDesignSpecStrataFieldNamesMaxOne = 150;
+export const powerCheckBodyDesignSpecMetricsItemFieldNameRegExpOne = new RegExp(
+	"^[a-zA-Z_][a-zA-Z0-9_]*$",
+);
+export const powerCheckBodyDesignSpecMetricsMaxOne = 150;
+export const powerCheckBodyDesignSpecPowerDefaultOne = 0.8;
+export const powerCheckBodyDesignSpecPowerMinOne = 0;
+
+export const powerCheckBodyDesignSpecPowerMaxOne = 1;
+export const powerCheckBodyDesignSpecAlphaDefaultOne = 0.05;
+export const powerCheckBodyDesignSpecAlphaMinOne = 0;
+
+export const powerCheckBodyDesignSpecAlphaMaxOne = 1;
+export const powerCheckBodyDesignSpecFstatThreshDefaultOne = 0.6;
+export const powerCheckBodyDesignSpecFstatThreshMinOne = 0;
+
+export const powerCheckBodyDesignSpecFstatThreshMaxOne = 1;
 export const powerCheckBodyAudienceSpecParticipantTypeMax = 100;
 export const powerCheckBodyAudienceSpecFiltersItemFieldNameRegExp = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
@@ -3491,114 +4162,228 @@ export const powerCheckBodyAudienceSpecFiltersItemFieldNameRegExp = new RegExp(
 export const powerCheckBodyAudienceSpecFiltersMax = 20;
 
 export const powerCheckBody = zod.object({
-	design_spec: zod
-		.object({
-			experiment_id: zod
-				.string()
-				.uuid()
-				.or(zod.null())
-				.optional()
-				.describe(
-					"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-				),
-			experiment_name: zod
-				.string()
-				.max(powerCheckBodyDesignSpecExperimentNameMax),
-			description: zod.string().max(powerCheckBodyDesignSpecDescriptionMax),
-			start_date: zod.string().datetime({}),
-			end_date: zod.string().datetime({}),
-			arms: zod
-				.array(
-					zod
-						.object({
-							arm_id: zod
-								.string()
-								.uuid()
-								.or(zod.null())
-								.optional()
-								.describe(
-									"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-								),
-							arm_name: zod
-								.string()
-								.max(powerCheckBodyDesignSpecArmsItemArmNameMax),
-							arm_description: zod
-								.string()
-								.max(powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOne)
-								.or(zod.null())
-								.optional(),
-						})
-						.describe("Describes an experiment treatment arm."),
-				)
-				.min(powerCheckBodyDesignSpecArmsMin)
-				.max(powerCheckBodyDesignSpecArmsMax),
-			strata_field_names: zod
-				.array(
-					zod
-						.string()
-						.regex(powerCheckBodyDesignSpecStrataFieldNamesItemRegExp),
-				)
-				.max(powerCheckBodyDesignSpecStrataFieldNamesMax)
-				.describe(
-					"List of participant_type variables to use for stratification.",
-				),
-			metrics: zod
-				.array(
-					zod
-						.object({
-							field_name: zod
-								.string()
-								.regex(powerCheckBodyDesignSpecMetricsItemFieldNameRegExp),
-							metric_pct_change: zod
-								.number()
-								.or(zod.null())
-								.optional()
-								.describe(
-									"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
-								),
-							metric_target: zod
-								.number()
-								.or(zod.null())
-								.optional()
-								.describe(
-									"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
-								),
-						})
-						.describe(
-							"Defines a request to look up baseline stats for a metric to measure in an experiment.",
-						),
-				)
-				.min(1)
-				.max(powerCheckBodyDesignSpecMetricsMax)
-				.describe("Primary and optional secondary metrics to target."),
-			power: zod
-				.number()
-				.min(powerCheckBodyDesignSpecPowerMin)
-				.max(powerCheckBodyDesignSpecPowerMax)
-				.default(powerCheckBodyDesignSpecPowerDefault)
-				.describe(
-					"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
-				),
-			alpha: zod
-				.number()
-				.min(powerCheckBodyDesignSpecAlphaMin)
-				.max(powerCheckBodyDesignSpecAlphaMax)
-				.default(powerCheckBodyDesignSpecAlphaDefault)
-				.describe(
-					"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
-				),
-			fstat_thresh: zod
-				.number()
-				.min(powerCheckBodyDesignSpecFstatThreshMin)
-				.max(powerCheckBodyDesignSpecFstatThreshMax)
-				.default(powerCheckBodyDesignSpecFstatThreshDefault)
-				.describe(
-					'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
-				),
-		})
-		.describe(
-			"Experiment design parameters for power calculations and treatment assignment.",
-		),
+	design_spec: zod.discriminatedUnion("experiment_type", [
+		zod
+			.object({
+				experiment_id: zod
+					.string()
+					.uuid()
+					.or(zod.null())
+					.optional()
+					.describe(
+						"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+					),
+				experiment_type: zod.enum(["preassigned"]),
+				experiment_name: zod
+					.string()
+					.max(powerCheckBodyDesignSpecExperimentNameMax),
+				description: zod.string().max(powerCheckBodyDesignSpecDescriptionMax),
+				start_date: zod.string().datetime({}),
+				end_date: zod.string().datetime({}),
+				arms: zod
+					.array(
+						zod
+							.object({
+								arm_id: zod
+									.string()
+									.uuid()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+									),
+								arm_name: zod
+									.string()
+									.max(powerCheckBodyDesignSpecArmsItemArmNameMax),
+								arm_description: zod
+									.string()
+									.max(powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOne)
+									.or(zod.null())
+									.optional(),
+							})
+							.describe("Describes an experiment treatment arm."),
+					)
+					.min(powerCheckBodyDesignSpecArmsMin)
+					.max(powerCheckBodyDesignSpecArmsMax),
+				strata_field_names: zod
+					.array(
+						zod
+							.string()
+							.regex(powerCheckBodyDesignSpecStrataFieldNamesItemRegExp),
+					)
+					.max(powerCheckBodyDesignSpecStrataFieldNamesMax)
+					.describe(
+						"List of participant_type variables to use for stratification.",
+					),
+				metrics: zod
+					.array(
+						zod
+							.object({
+								field_name: zod
+									.string()
+									.regex(powerCheckBodyDesignSpecMetricsItemFieldNameRegExp),
+								metric_pct_change: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+									),
+								metric_target: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+									),
+							})
+							.describe(
+								"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+							),
+					)
+					.min(1)
+					.max(powerCheckBodyDesignSpecMetricsMax)
+					.describe("Primary and optional secondary metrics to target."),
+				power: zod
+					.number()
+					.min(powerCheckBodyDesignSpecPowerMin)
+					.max(powerCheckBodyDesignSpecPowerMax)
+					.default(powerCheckBodyDesignSpecPowerDefault)
+					.describe(
+						"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
+					),
+				alpha: zod
+					.number()
+					.min(powerCheckBodyDesignSpecAlphaMin)
+					.max(powerCheckBodyDesignSpecAlphaMax)
+					.default(powerCheckBodyDesignSpecAlphaDefault)
+					.describe(
+						"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
+					),
+				fstat_thresh: zod
+					.number()
+					.min(powerCheckBodyDesignSpecFstatThreshMin)
+					.max(powerCheckBodyDesignSpecFstatThreshMax)
+					.default(powerCheckBodyDesignSpecFstatThreshDefault)
+					.describe(
+						'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
+					),
+			})
+			.describe(
+				"Use this type to randomly select and assign from existing participants at design time.",
+			),
+		zod
+			.object({
+				experiment_id: zod
+					.string()
+					.uuid()
+					.or(zod.null())
+					.optional()
+					.describe(
+						"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+					),
+				experiment_type: zod.enum(["online"]),
+				experiment_name: zod
+					.string()
+					.max(powerCheckBodyDesignSpecExperimentNameMaxOne),
+				description: zod
+					.string()
+					.max(powerCheckBodyDesignSpecDescriptionMaxOne),
+				start_date: zod.string().datetime({}),
+				end_date: zod.string().datetime({}),
+				arms: zod
+					.array(
+						zod
+							.object({
+								arm_id: zod
+									.string()
+									.uuid()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+									),
+								arm_name: zod
+									.string()
+									.max(powerCheckBodyDesignSpecArmsItemArmNameMaxOne),
+								arm_description: zod
+									.string()
+									.max(powerCheckBodyDesignSpecArmsItemArmDescriptionMaxFour)
+									.or(zod.null())
+									.optional(),
+							})
+							.describe("Describes an experiment treatment arm."),
+					)
+					.min(powerCheckBodyDesignSpecArmsMinOne)
+					.max(powerCheckBodyDesignSpecArmsMaxOne),
+				strata_field_names: zod
+					.array(
+						zod
+							.string()
+							.regex(powerCheckBodyDesignSpecStrataFieldNamesItemRegExpOne),
+					)
+					.max(powerCheckBodyDesignSpecStrataFieldNamesMaxOne)
+					.describe(
+						"List of participant_type variables to use for stratification.",
+					),
+				metrics: zod
+					.array(
+						zod
+							.object({
+								field_name: zod
+									.string()
+									.regex(powerCheckBodyDesignSpecMetricsItemFieldNameRegExpOne),
+								metric_pct_change: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+									),
+								metric_target: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+									),
+							})
+							.describe(
+								"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+							),
+					)
+					.min(1)
+					.max(powerCheckBodyDesignSpecMetricsMaxOne)
+					.describe("Primary and optional secondary metrics to target."),
+				power: zod
+					.number()
+					.min(powerCheckBodyDesignSpecPowerMinOne)
+					.max(powerCheckBodyDesignSpecPowerMaxOne)
+					.default(powerCheckBodyDesignSpecPowerDefaultOne)
+					.describe(
+						"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
+					),
+				alpha: zod
+					.number()
+					.min(powerCheckBodyDesignSpecAlphaMinOne)
+					.max(powerCheckBodyDesignSpecAlphaMaxOne)
+					.default(powerCheckBodyDesignSpecAlphaDefaultOne)
+					.describe(
+						"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
+					),
+				fstat_thresh: zod
+					.number()
+					.min(powerCheckBodyDesignSpecFstatThreshMinOne)
+					.max(powerCheckBodyDesignSpecFstatThreshMaxOne)
+					.default(powerCheckBodyDesignSpecFstatThreshDefaultOne)
+					.describe(
+						'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
+					),
+			})
+			.describe(
+				"Use this type to randomly assign participants into arms during live experiment execution.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+			),
+	]),
 	audience_spec: zod
 		.object({
 			participant_type: zod
