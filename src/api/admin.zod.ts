@@ -442,137 +442,135 @@ export const getDatasourceResponseOrganizationNameMax = 100;
 export const getDatasourceResponse = zod.object({
 	id: zod.string().max(getDatasourceResponseIdMax),
 	name: zod.string().max(getDatasourceResponseNameMax),
-	config: zod.discriminatedUnion("type", [
-		zod.object({
-			participants: zod.array(
-				zod.discriminatedUnion("type", [
-					zod.object({
-						participant_type: zod.string(),
-						type: zod.enum(["sheet"]),
-						table_name: zod.string(),
-						sheet: zod.object({
-							url: zod.string(),
-							worksheet: zod.string(),
-						}),
-					}),
-					zod.object({
-						table_name: zod.string(),
-						fields: zod.array(
-							zod.object({
-								field_name: zod.string(),
-								data_type: zod.enum([
-									"boolean",
-									"character varying",
-									"uuid",
-									"date",
-									"integer",
-									"double precision",
-									"numeric",
-									"timestamp without time zone",
-									"bigint",
-									"jsonb (unsupported)",
-									"json (unsupported)",
-									"unsupported",
-								]),
-								description: zod.string(),
-								is_unique_id: zod.boolean(),
-								is_strata: zod.boolean(),
-								is_filter: zod.boolean(),
-								is_metric: zod.boolean(),
-								extra: zod
-									.record(zod.string(), zod.string())
-									.or(zod.null())
-									.optional(),
-							}),
-						),
-						participant_type: zod.string(),
-						type: zod.enum(["schema"]),
-					}),
-				]),
-			),
-			webhook_config: zod
-				.object({
-					actions: zod.object({
-						commit: zod
-							.object({
-								method: zod.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
-								url: zod.string(),
-							})
-							.or(zod.null())
-							.optional(),
-						assignment_file: zod
-							.object({
-								method: zod.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
-								url: zod.string(),
-							})
-							.or(zod.null())
-							.optional(),
-						update_timestamps: zod
-							.object({
-								method: zod.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
-								url: zod.string(),
-							})
-							.or(zod.null())
-							.optional(),
-						update_description: zod
-							.object({
-								method: zod.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
-								url: zod.string(),
-							})
-							.or(zod.null())
-							.optional(),
-					}),
-					common_headers: zod.object({
-						authorization: zod.string().or(zod.null()),
-					}),
-				})
-				.or(zod.null())
-				.optional(),
-			type: zod.string(),
-			dwh: zod.discriminatedUnion("driver", [
+	config: zod.object({
+		participants: zod.array(
+			zod.discriminatedUnion("type", [
 				zod.object({
-					driver: zod.enum(["postgresql+psycopg", "postgresql+psycopg2"]),
-					host: zod.string(),
-					port: zod
-						.number()
-						.min(getDatasourceResponseConfigDwhPortMin)
-						.max(getDatasourceResponseConfigDwhPortMax)
-						.default(getDatasourceResponseConfigDwhPortDefault),
-					user: zod.string(),
-					password: zod.string(),
-					dbname: zod.string(),
-					sslmode: zod.enum(["disable", "require", "verify-ca", "verify-full"]),
-					search_path: zod.string().or(zod.null()).optional(),
+					participant_type: zod.string(),
+					type: zod.enum(["sheet"]),
+					table_name: zod.string(),
+					sheet: zod.object({
+						url: zod.string(),
+						worksheet: zod.string(),
+					}),
 				}),
 				zod.object({
-					driver: zod.enum(["bigquery"]),
-					project_id: zod
-						.string()
-						.min(getDatasourceResponseConfigDwhProjectIdMin)
-						.max(getDatasourceResponseConfigDwhProjectIdMax)
-						.regex(getDatasourceResponseConfigDwhProjectIdRegExp),
-					dataset_id: zod
-						.string()
-						.min(1)
-						.max(getDatasourceResponseConfigDwhDatasetIdMax)
-						.regex(getDatasourceResponseConfigDwhDatasetIdRegExp),
-					credentials: zod.discriminatedUnion("type", [
+					table_name: zod.string(),
+					fields: zod.array(
 						zod.object({
-							type: zod.enum(["serviceaccountinfo"]),
-							content_base64: zod
-								.string()
-								.min(getDatasourceResponseConfigDwhCredentialsContentBase64Min)
-								.max(getDatasourceResponseConfigDwhCredentialsContentBase64Max),
+							field_name: zod.string(),
+							data_type: zod.enum([
+								"boolean",
+								"character varying",
+								"uuid",
+								"date",
+								"integer",
+								"double precision",
+								"numeric",
+								"timestamp without time zone",
+								"bigint",
+								"jsonb (unsupported)",
+								"json (unsupported)",
+								"unsupported",
+							]),
+							description: zod.string(),
+							is_unique_id: zod.boolean(),
+							is_strata: zod.boolean(),
+							is_filter: zod.boolean(),
+							is_metric: zod.boolean(),
+							extra: zod
+								.record(zod.string(), zod.string())
+								.or(zod.null())
+								.optional(),
 						}),
-						zod.object({
-							type: zod.enum(["serviceaccountfile"]),
-							path: zod.string(),
-						}),
-					]),
+					),
+					participant_type: zod.string(),
+					type: zod.enum(["schema"]),
 				}),
 			]),
-		}),
-	]),
+		),
+		webhook_config: zod
+			.object({
+				actions: zod.object({
+					commit: zod
+						.object({
+							method: zod.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
+							url: zod.string(),
+						})
+						.or(zod.null())
+						.optional(),
+					assignment_file: zod
+						.object({
+							method: zod.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
+							url: zod.string(),
+						})
+						.or(zod.null())
+						.optional(),
+					update_timestamps: zod
+						.object({
+							method: zod.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
+							url: zod.string(),
+						})
+						.or(zod.null())
+						.optional(),
+					update_description: zod
+						.object({
+							method: zod.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
+							url: zod.string(),
+						})
+						.or(zod.null())
+						.optional(),
+				}),
+				common_headers: zod.object({
+					authorization: zod.string().or(zod.null()),
+				}),
+			})
+			.or(zod.null())
+			.optional(),
+		type: zod.string(),
+		dwh: zod.discriminatedUnion("driver", [
+			zod.object({
+				driver: zod.enum(["postgresql+psycopg", "postgresql+psycopg2"]),
+				host: zod.string(),
+				port: zod
+					.number()
+					.min(getDatasourceResponseConfigDwhPortMin)
+					.max(getDatasourceResponseConfigDwhPortMax)
+					.default(getDatasourceResponseConfigDwhPortDefault),
+				user: zod.string(),
+				password: zod.string(),
+				dbname: zod.string(),
+				sslmode: zod.enum(["disable", "require", "verify-ca", "verify-full"]),
+				search_path: zod.string().or(zod.null()).optional(),
+			}),
+			zod.object({
+				driver: zod.enum(["bigquery"]),
+				project_id: zod
+					.string()
+					.min(getDatasourceResponseConfigDwhProjectIdMin)
+					.max(getDatasourceResponseConfigDwhProjectIdMax)
+					.regex(getDatasourceResponseConfigDwhProjectIdRegExp),
+				dataset_id: zod
+					.string()
+					.min(1)
+					.max(getDatasourceResponseConfigDwhDatasetIdMax)
+					.regex(getDatasourceResponseConfigDwhDatasetIdRegExp),
+				credentials: zod.discriminatedUnion("type", [
+					zod.object({
+						type: zod.enum(["serviceaccountinfo"]),
+						content_base64: zod
+							.string()
+							.min(getDatasourceResponseConfigDwhCredentialsContentBase64Min)
+							.max(getDatasourceResponseConfigDwhCredentialsContentBase64Max),
+					}),
+					zod.object({
+						type: zod.enum(["serviceaccountfile"]),
+						path: zod.string(),
+					}),
+				]),
+			}),
+		]),
+	}),
 	organization_id: zod.string().max(getDatasourceResponseOrganizationIdMax),
 	organization_name: zod.string().max(getDatasourceResponseOrganizationNameMax),
 });

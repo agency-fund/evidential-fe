@@ -451,6 +451,18 @@ export const DataType = {
 	unsupported: "unsupported",
 } as const;
 
+export type DatasourceConfigWebhookConfig = WebhookConfig | null;
+
+/**
+ * RemoteDatabaseConfig defines a configuration for a remote data warehouse.
+ */
+export interface DatasourceConfig {
+	participants: ParticipantsConfig[];
+	webhook_config?: DatasourceConfigWebhookConfig;
+	type: "remote";
+	dwh: DwhOutput;
+}
+
 export interface DatasourceSummary {
 	/** @maxLength 64 */
 	id: string;
@@ -758,7 +770,7 @@ export interface GetDatasourceResponse {
 	id: string;
 	/** @maxLength 100 */
 	name: string;
-	config: RemoteDatabaseConfig;
+	config: DatasourceConfig;
 	/** @maxLength 64 */
 	organization_id: string;
 	/** @maxLength 100 */
@@ -1366,18 +1378,6 @@ export const Relation = {
 	excludes: "excludes",
 	between: "between",
 } as const;
-
-export type RemoteDatabaseConfigWebhookConfig = WebhookConfig | null;
-
-/**
- * RemoteDatabaseConfig defines a configuration for a remote data warehouse.
- */
-export interface RemoteDatabaseConfig {
-	participants: ParticipantsConfig[];
-	webhook_config?: RemoteDatabaseConfigWebhookConfig;
-	type: "remote";
-	dwh: DwhOutput;
-}
 
 export type SheetParticipantsRefType =
 	(typeof SheetParticipantsRefType)[keyof typeof SheetParticipantsRefType];
