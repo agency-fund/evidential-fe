@@ -6,6 +6,7 @@ export const convertFormDataToCreateExperimentRequest = (formData: ExperimentFor
   return createExperimentWithAssignmentBody.parse({
     design_spec: {
       experiment_name: formData.name,
+      experiment_type: 'preassigned',
       arms: Array.from(formData.arms.map((arm) => ({ ...arm, arm_id: null }))),
       end_date: new Date(Date.parse(formData.endDate)).toISOString(),
       start_date: new Date(Date.parse(formData.startDate)).toISOString(),
