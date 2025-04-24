@@ -7,7 +7,7 @@ import { ForestPlot } from '@/app/experiments/forest-plot';
 import { XSpinner } from '@/app/components/x-spinner';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 import { ExperimentStatusBadge } from '@/app/experiments/experiment-status-badge';
-import { CopyToClipBoard } from '@/app/components/buttons';
+import { CopyToClipBoard } from '@/app/components/buttons/copy-to-clipboard';
 import { useState } from 'react';
 import * as Toast from '@radix-ui/react-toast';
 import { CodeSnippetCard } from '@/app/components/cards/code-snippet-card';
