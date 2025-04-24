@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Button, Tooltip, IconButton } from '@radix-ui/themes';
+import { Tooltip, IconButton } from '@radix-ui/themes';
 import { CopyIcon, CheckIcon } from '@radix-ui/react-icons';
 
 interface CopyToClipBoardProps {

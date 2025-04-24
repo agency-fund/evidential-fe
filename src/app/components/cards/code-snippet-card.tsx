@@ -5,9 +5,16 @@ import { CopyToClipBoard } from '@/app/components/buttons';
 interface CodeSnippetCardProps {
   title?: string;
   content: string;
+  height?: string;
+  tooltipContent?: string;
 }
 
-export function CodeSnippetCard({ title, content }: CodeSnippetCardProps) {
+export function CodeSnippetCard({
+  title,
+  content,
+  height = 'auto',
+  tooltipContent = 'Copy to clipboard',
+}: CodeSnippetCardProps) {
   return (
     <Box my="2">
       <Card>
@@ -19,10 +26,10 @@ export function CodeSnippetCard({ title, content }: CodeSnippetCardProps) {
               </Text>
             )}
 
-            <CopyToClipBoard content={content} />
+            <CopyToClipBoard content={content} tooltipContent={tooltipContent} />
           </Flex>
 
-          <Flex align="start" gap="2">
+          <Flex align="start" gap="2" overflowY="auto" height={height}>
             <Code style={{ whiteSpace: 'pre-wrap', padding: '10px' }}>{content}</Code>
           </Flex>
         </Flex>
