@@ -1,3 +1,4 @@
+// app/layout.tsx (or appropriate path)
 'use client';
 import '@radix-ui/themes/styles.css';
 
@@ -8,8 +9,10 @@ import { OrganizationProvider } from './providers/organization-provider';
 import GoogleAuthProvider from '@/app/providers/auth-provider';
 import OurSwrConfig from '@/app/providers/our-swr-config';
 import { Suspense } from 'react';
-import { NavigationBar } from '@/app/navigation-bar';
-import { HeaderBar } from '@/app/header-bar';
+// Assuming NavigationBar is now at '@/app/components/navigation/NavigationBar'
+import { NavigationBar } from '@/app/components/nav/navigation-curtain';
+// Assuming HeaderBar is now at '@/app/components/header/HeaderBar'
+import { HeaderBar } from '@/app/components/header/header-bar';
 import * as Toast from '@radix-ui/react-toast';
 
 const geistSans = Geist({
@@ -36,17 +39,37 @@ export default function RootLayout({
               <GoogleAuthProvider>
                 <OurSwrConfig>
                   <OrganizationProvider>
-                    <Flex direction="column" height={'100vh'}>
+                    {/* Overall Page Layout: Header fixed at top, content area below */}
+                    <Flex direction="column" style={{ height: '100vh' }}>
+                      {/* Header Bar remains at the top */}
                       <HeaderBar />
-                      <Flex flexGrow={'1'} overflow={'hidden'} pb={'4'}>
+
+                      {/* Main Content Area: Navigation and Children side-by-side */}
+                      {/* This Flex container holds the Nav and the main content */}
+                      <Flex flexGrow="1" style={{ overflow: 'hidden' }}>
+                        {/* NavigationBar is now a direct child here */}
+                        {/* It will naturally take space on the left */}
                         <NavigationBar />
-                        <Flex flexGrow={'1'} overflow={'auto'}>
-                          <Container p={'4'}>
+
+                        {/* Main Scrollable Content Area */}
+                        <Flex
+                          direction="column" // Stack content vertically if needed
+                          flexGrow="1"
+                          style={{
+                            overflowY: 'auto', // Allow only vertical scrolling for content
+                            position: 'relative', // Establish stacking context if needed for children
+                          }}
+                        >
+                          {/* Container for padding */}
+                          {/* Removed pb='4' from outer Flex, handled by Container or content */}
+                          <Container p="4" style={{ flexGrow: 1, width: '100%' }}>
                             <Suspense>{children}</Suspense>
                           </Container>
                         </Flex>
                       </Flex>
                     </Flex>
+
+                    {/* Toast Viewport remains fixed */}
                     <Toast.Viewport
                       style={{
                         position: 'fixed',

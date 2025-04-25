@@ -1,0 +1,61 @@
+/* Navigation Curtain Module - following Radix UI patterns */
+
+.NavigationMenuRoot {
+  display: flex;
+  height: 100%;
+  background-color: var(--gray-1);
+  border-right: 1px solid var(--gray-5);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.NavigationMenuList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.linkContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.utilityNav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.spacer {
+  flex-grow: 1;
+}
+
+/* NavLink Styles */
+.navLinkAnchor {
+  text-decoration: none;
+}
+
+.navLinkBox {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  border-radius: var(--radius-2);
+  padding: var(--space-2);
+  transition:
+    background-color 0.15s ease-in-out,
+    color 0.15s ease-in-out;
+  color: var(--gray-11);
+}
+
+.navLinkBox[data-active='true'] {
+  background-color: var(--accent-a3);
+  color: var(--accent-a11);
+}
+
+.navLinkBox[data-active='false'] {
+  background-color: transparent;
+}

@@ -4,7 +4,7 @@ import { useAuth } from '@/app/providers/auth-provider';
 import { AvatarIcon, ExclamationTriangleIcon, ExitIcon, GearIcon, RocketIcon } from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
 import { PRODUCT_NAME, XNGIN_API_DOCS_LINK } from '@/services/constants';
-
+import { OrganizationSelector } from '@/app/components/organization-selector';
 export function HeaderBar() {
   const auth = useAuth();
   const router = useRouter();
@@ -26,9 +26,14 @@ export function HeaderBar() {
           <AvatarIcon width="24" height="24" />
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DropdownMenu.Item onClick={() => router.push('/organizations')}>
-            <GearIcon /> Organizations
-          </DropdownMenu.Item>
+          <DropdownMenu.Sub>
+            <DropdownMenu.SubTrigger>
+              <GearIcon /> Organizations
+            </DropdownMenu.SubTrigger>
+            <DropdownMenu.SubContent>
+              <OrganizationSelector />
+            </DropdownMenu.SubContent>
+          </DropdownMenu.Sub>
           <DropdownMenu.Separator />
           <DropdownMenu.Item onClick={() => window.open(XNGIN_API_DOCS_LINK, '_blank', 'noopener')}>
             <RocketIcon />

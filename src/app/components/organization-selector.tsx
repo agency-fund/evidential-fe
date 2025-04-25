@@ -42,9 +42,6 @@ export function OrganizationSelector() {
   const selectedOrg = orgId ?? organizations[0].id;
   return (
     <Flex gap="2" direction={'column'}>
-      <Text size="2" weight="bold">
-        Organization:
-      </Text>
       <Select.Root value={selectedOrg} onValueChange={updateOrgId}>
         <Select.Trigger />
         <Select.Content>
