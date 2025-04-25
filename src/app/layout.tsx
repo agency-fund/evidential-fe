@@ -37,7 +37,7 @@ export default function RootLayout({
                   <OrganizationProvider>
                     <Flex direction="column" height="100vh">
                       <HeaderBar />
-                      <Flex flexGrow="1" overflow="hidden" pb="4">
+                      <Flex flexGrow="1" overflow="hidden">
                         <NavigationBar />
                         <Flex direction="column" flexGrow="1" overflowY="auto" position="relative">
                           <Container p="4" flexGrow="1" width="100%">
