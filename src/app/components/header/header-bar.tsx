@@ -1,7 +1,14 @@
 'use client';
-import { DropdownMenu, Flex, Heading } from '@radix-ui/themes';
+import { Button, DropdownMenu, Flex, Heading, Text } from '@radix-ui/themes';
 import { useAuth } from '@/app/providers/auth-provider';
-import { AvatarIcon, ExclamationTriangleIcon, ExitIcon, GearIcon, RocketIcon } from '@radix-ui/react-icons';
+import {
+  AvatarIcon,
+  ExclamationTriangleIcon,
+  ExitIcon,
+  GearIcon,
+  RocketIcon,
+  ArrowRightIcon,
+} from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
 import { PRODUCT_NAME, XNGIN_API_DOCS_LINK } from '@/services/constants';
 import { OrganizationSelector } from '@/app/components/organization-selector';
@@ -31,7 +38,15 @@ export function HeaderBar() {
               <GearIcon /> Organizations
             </DropdownMenu.SubTrigger>
             <DropdownMenu.SubContent>
-              <OrganizationSelector />
+              <Flex direction="column" gap="3">
+                <Flex direction="column" gap="1">
+                  <Text size="2">Choose Organization:</Text>
+                  <OrganizationSelector />
+                </Flex>
+                <Button onClick={() => router.push('/organizations')}>
+                  View all organizations <ArrowRightIcon />
+                </Button>
+              </Flex>
             </DropdownMenu.SubContent>
           </DropdownMenu.Sub>
           <DropdownMenu.Separator />
