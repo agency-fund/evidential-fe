@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { motion, MotionProps } from 'framer-motion';
+import { motion, MotionProps } from 'motion/react';
 import { Box, Flex, Grid, Container } from '@radix-ui/themes';
 
 /**

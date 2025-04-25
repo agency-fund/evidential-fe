@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Flex, Text, Tooltip } from '@radix-ui/themes';
 import * as NavigationMenu from '@radix-ui/react-navigation-menu';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'motion/react';
 import { AccessibleIcon } from '@radix-ui/react-accessible-icon';
 import { MotionBox } from '@/app/lib/utils/motion-utils';
 import { transitions } from '@/app/lib/utils/motion-tokens'; // 🧱 now pulling from tokens!
