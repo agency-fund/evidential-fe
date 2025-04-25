@@ -5,8 +5,8 @@ import { Flex, Text, Tooltip } from '@radix-ui/themes';
 import * as NavigationMenu from '@radix-ui/react-navigation-menu';
 import { AnimatePresence } from 'motion/react';
 import { AccessibleIcon } from '@radix-ui/react-accessible-icon';
-import { MotionBox } from '@/app/lib/utils/motion-utils';
-import { transitions } from '@/app/lib/utils/motion-tokens'; // 🧱 now pulling from tokens!
+import { MotionBox } from '@/app/lib/utils/motion/motion-utils';
+import { transitions } from '@/app/lib/utils/motion/motion-tokens'; // 🧱 now pulling from tokens!
 
 export interface NavLinkProps {
   href: string;
@@ -37,11 +37,11 @@ export const NavLink = ({ href, isActive, label, icon: Icon, isOpen }: NavLinkPr
           }}
         >
           <Flex align="center" gap="2">
-            <Tooltip content={label} side="right">
-              <AccessibleIcon label={label}>
+            <AccessibleIcon label={label}>
+              <Tooltip content={label} side="right" style={{ display: isOpen ? 'none' : 'block' }}>
                 <Icon width={24} height={24} style={{ marginLeft: '2px' }} />
-              </AccessibleIcon>
-            </Tooltip>
+              </Tooltip>
+            </AccessibleIcon>
 
             <AnimatePresence initial={false}>
               {isOpen && (

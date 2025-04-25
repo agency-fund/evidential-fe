@@ -6,7 +6,7 @@ import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useAbandonExperiment, useCommitExperiment } from '@/api/admin';
 import { ParametersSummaryTable } from '@/app/experiments/create/parameters-summary-table';
 import { StatisticsSummaryTable } from '@/app/experiments/create/statistics-summary-table';
-import { ClippableText } from '@/app/components/clippable-text';
+import { CopyToClipBoard } from '@/app/components/buttons/copy-to-clipboard';
 
 interface ConfirmationFormProps {
   formData: ExperimentFormData;
@@ -42,7 +42,10 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
             <Table.Row>
               <Table.RowHeaderCell>Experiment ID</Table.RowHeaderCell>
               <Table.Cell>
-                <ClippableText text={formData.experimentId!} />
+                <Flex gap="2" align="center">
+                  <Text>{formData.experimentId}</Text>
+                  <CopyToClipBoard content={formData.experimentId!} />
+                </Flex>
               </Table.Cell>
             </Table.Row>
             <Table.Row>
@@ -84,7 +87,10 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
             {formData.createExperimentResponse?.design_spec.arms.map((arm, index) => (
               <Table.Row key={index}>
                 <Table.Cell>
-                  <ClippableText text={arm.arm_id!} />
+                  <Flex gap="2" align="center">
+                    <Text>{arm.arm_id}</Text>
+                    <CopyToClipBoard content={arm.arm_id!} />
+                  </Flex>
                 </Table.Cell>
                 <Table.Cell>{arm.arm_name}</Table.Cell>
                 <Table.Cell>{arm.arm_description || '-'}</Table.Cell>

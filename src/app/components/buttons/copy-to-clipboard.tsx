@@ -3,8 +3,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Tooltip, IconButton } from '@radix-ui/themes';
 import { CopyIcon, CheckIcon } from '@radix-ui/react-icons';
-import { MotionBox } from '@/app/lib/utils/motion-utils';
-import { transitions } from '@/app/lib/utils/motion-tokens';
+import { MotionBox } from '@/app/lib/utils/motion/motion-utils';
+import { transitions } from '@/app/lib/utils/motion/motion-tokens';
 
 interface CopyToClipboardProps {
   content: string;
