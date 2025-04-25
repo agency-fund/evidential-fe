@@ -35,19 +35,12 @@ export default function RootLayout({
               <GoogleAuthProvider>
                 <OurSwrConfig>
                   <OrganizationProvider>
-                    <Flex direction="column" style={{ height: '100vh' }}>
+                    <Flex direction="column" height="100vh">
                       <HeaderBar />
-                      <Flex flexGrow="1" style={{ overflow: 'hidden' }}>
+                      <Flex flexGrow="1" overflow="hidden" pb="4">
                         <NavigationBar />
-                        <Flex
-                          direction="column"
-                          flexGrow="1"
-                          style={{
-                            overflowY: 'auto',
-                            position: 'relative',
-                          }}
-                        >
-                          <Container p="4" style={{ flexGrow: 1, width: '100%' }}>
+                        <Flex direction="column" flexGrow="1" overflowY="auto" position="relative">
+                          <Container p="4" flexGrow="1" width="100%">
                             <Suspense>{children}</Suspense>
                           </Container>
                         </Flex>
