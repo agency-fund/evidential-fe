@@ -600,30 +600,6 @@ export const getDatasourceResponse = zod.object({
 								.describe("Represents a url and HTTP method to use with it.")
 								.or(zod.null())
 								.optional(),
-							assignment_file: zod
-								.object({
-									method: zod.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
-									url: zod.string(),
-								})
-								.describe("Represents a url and HTTP method to use with it.")
-								.or(zod.null())
-								.optional(),
-							update_timestamps: zod
-								.object({
-									method: zod.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
-									url: zod.string(),
-								})
-								.describe("Represents a url and HTTP method to use with it.")
-								.or(zod.null())
-								.optional(),
-							update_description: zod
-								.object({
-									method: zod.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
-									url: zod.string(),
-								})
-								.describe("Represents a url and HTTP method to use with it.")
-								.or(zod.null())
-								.optional(),
 						})
 						.describe(
 							"The set of supported actions that trigger a user callback.",
