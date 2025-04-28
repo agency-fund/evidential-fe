@@ -6,7 +6,7 @@ import * as NavigationMenu from '@radix-ui/react-navigation-menu';
 import { AnimatePresence } from 'motion/react';
 import { AccessibleIcon } from '@radix-ui/react-accessible-icon';
 import { MotionBox } from '@/app/lib/utils/motion/motion-utils';
-import { transitions } from '@/app/lib/utils/motion/motion-tokens'; // 🧱 now pulling from tokens!
+import { transitions } from '@/app/lib/utils/motion/motion-tokens';
 
 export interface NavLinkProps {
   href: string;
@@ -26,7 +26,7 @@ export const NavLink = ({ href, isActive, label, icon: Icon, isOpen }: NavLinkPr
             backgroundColor: isActive ? 'var(--accent-a3)' : 'transparent',
             color: isActive ? 'var(--accent-a11)' : 'var(--gray-11)',
           }}
-          transition={transitions.fast} // 🔥 using token
+          transition={transitions.fast}
           layout
           style={{
             display: 'flex',
@@ -50,7 +50,7 @@ export const NavLink = ({ href, isActive, label, icon: Icon, isOpen }: NavLinkPr
                   initial={{ opacity: 0, maxWidth: 0 }}
                   animate={{ opacity: 1, maxWidth: 200 }}
                   exit={{ opacity: 0, maxWidth: 0 }}
-                  transition={transitions.normal} // 🔥 using token
+                  transition={transitions.normal}
                   style={{
                     overflow: 'hidden',
                     whiteSpace: 'nowrap',

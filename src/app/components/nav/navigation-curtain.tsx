@@ -1,10 +1,10 @@
 'use client';
 
-import { Box, Flex, IconButton, Tooltip } from '@radix-ui/themes';
+import { Box, Flex, IconButton, Tooltip, Separator } from '@radix-ui/themes';
 import { useAuth } from '@/app/providers/auth-provider';
 import { usePathname } from 'next/navigation';
 import { useCurrentOrganization } from '@/app/providers/organization-provider';
-import { HamburgerMenuIcon, HomeIcon, GearIcon, LightningBoltIcon, Cross2Icon } from '@radix-ui/react-icons';
+import { HamburgerMenuIcon, HomeIcon, GearIcon, LightningBoltIcon, ArrowLeftIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 import * as NavigationMenu from '@radix-ui/react-navigation-menu';
 import { NavLink } from '@/app/components/nav/nav-link';
@@ -49,7 +49,7 @@ export const NavigationBar = () => {
           flexShrink: 0,
         }}
       >
-        <Flex direction="column" width="100%" p="2" gap="6" height="100%" py="5">
+        <Flex direction="column" width="100%" p="2" gap="4" height="100%" py="5">
           {/* Toggle Button to open and close nav curtain */}
           <Flex justify={isOpen ? 'end' : 'center'} width="100%">
             <MotionBox initial={false} layout transition={transitions.normal}>
@@ -63,12 +63,12 @@ export const NavigationBar = () => {
                   variant="ghost"
                   color="gray"
                 >
-                  {isOpen ? <Cross2Icon width={20} height={20} /> : <HamburgerMenuIcon width={20} height={20} />}
+                  {isOpen ? <ArrowLeftIcon width={20} height={20} /> : <HamburgerMenuIcon width={20} height={20} />}
                 </IconButton>
               </Tooltip>
             </MotionBox>
           </Flex>
-
+          <Separator size="4" />
           {/* Top nav links defined in mainNavItems */}
           <NavigationMenu.List asChild id="nav-content">
             <Flex direction="column" gap="1" p="0" m="0" style={{ listStyle: 'none' }}>
