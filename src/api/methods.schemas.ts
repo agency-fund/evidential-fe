@@ -95,16 +95,6 @@ export interface ArmSize {
 	size?: number;
 }
 
-export interface ArmUpdate {
-	/**
-	 * New experiment arm name to be updated.
-	 * @minLength 1
-	 */
-	arm_name: string;
-	/** The id originally assigned to this arm by the user. */
-	arm_id: string;
-}
-
 export interface AssignRequest {
 	design_spec: DesignSpecInput;
 	audience_spec: AudienceSpecInput;
@@ -1473,20 +1463,11 @@ export interface ValidationError {
 
 export type WebhookActionsCommit = WebhookUrl | null;
 
-export type WebhookActionsAssignmentFile = WebhookUrl | null;
-
-export type WebhookActionsUpdateTimestamps = WebhookUrl | null;
-
-export type WebhookActionsUpdateDescription = WebhookUrl | null;
-
 /**
  * The set of supported actions that trigger a user callback.
  */
 export interface WebhookActions {
 	commit?: WebhookActionsCommit;
-	assignment_file?: WebhookActionsAssignmentFile;
-	update_timestamps?: WebhookActionsUpdateTimestamps;
-	update_description?: WebhookActionsUpdateDescription;
 }
 
 export type WebhookCommonHeadersAuthorization = string | null;
@@ -1533,49 +1514,6 @@ export interface WebhookSummary {
 	url: string;
 	/** The value of the Authorization: header that will be sent with the request to the configured URL. */
 	auth_token: WebhookSummaryAuthToken;
-}
-
-export type WebhookUpdateCommitRequestUpdateJson =
-	| WebhookUpdateTimestampsRequest
-	| WebhookUpdateDescriptionRequest;
-
-/**
- * Request structure for supported types of experiment updates.
- */
-export interface WebhookUpdateCommitRequest {
-	update_json: WebhookUpdateCommitRequestUpdateJson;
-}
-
-/**
- * Describes how to update an experiment description and/or the names of its arms.
- */
-export interface WebhookUpdateDescriptionRequest {
-	/** ID of the experiment to update. */
-	experiment_id: string;
-	/**
-	 * New experiment name.
-	 * @minLength 1
-	 */
-	experiment_name: string;
-	/**
-	 * New experiment description.
-	 * @minLength 1
-	 */
-	description: string;
-	/** All arms as saved in the original DesignSpec must be present here, even if you don't intend to change the arm_name */
-	arms: ArmUpdate[];
-}
-
-/**
- * Describes how to update an experiment's start and/or end dates.
- */
-export interface WebhookUpdateTimestampsRequest {
-	/** ID of the experiment to update. */
-	experiment_id: string;
-	/** New or the same start date to update with. */
-	start_date: string;
-	/** New or the same end date to update with. Must be later than start_date. */
-	end_date: string;
 }
 
 /**
