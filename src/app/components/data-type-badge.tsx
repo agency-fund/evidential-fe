@@ -16,24 +16,25 @@ import { DataType } from '@/api/methods.schemas';
 
 const dataTypeConfig: Record<
   DataType,
-  { color: 'orange' | 'blue' | 'green' | 'purple' | 'crimson' | 'red'; icon: React.ReactNode }
+  { color: 'orange' | 'gold' | 'cyan' | 'green' | 'lime' | 'iris' | 'purple' |'red'; icon: React.ReactNode }
 > = {
-  boolean: { color: 'orange', icon: <CheckCircledIcon /> },
-  'character varying': { color: 'blue', icon: <TextIcon /> },
-  date: { color: 'green', icon: <CalendarIcon /> },
+  boolean: { color: 'iris', icon: <CheckCircledIcon /> },
+  'character varying': { color: 'gold', icon: <TextIcon /> },
+  date: { color: 'cyan', icon: <CalendarIcon /> },
+  'timestamp without time zone': { color: 'green', icon: <ClockIcon /> },
+  'timestamp with time zone': { color: 'lime', icon: <ClockIcon /> },
   integer: { color: 'purple', icon: <BarChartIcon /> },
   'double precision': { color: 'purple', icon: <BarChartIcon /> },
   numeric: { color: 'purple', icon: <BarChartIcon /> },
-  'timestamp without time zone': { color: 'crimson', icon: <ClockIcon /> },
   bigint: { color: 'purple', icon: <LapTimerIcon /> },
-  uuid: { color: 'purple', icon: <IdCardIcon /> },
+  uuid: { color: 'orange', icon: <IdCardIcon /> },
   'json (unsupported)': { color: 'red', icon: <ExclamationTriangleIcon /> },
   'jsonb (unsupported)': { color: 'red', icon: <ExclamationTriangleIcon /> },
-  unsupported: { color: 'orange', icon: <QuestionMarkCircledIcon /> },
+  unsupported: { color: 'red', icon: <QuestionMarkCircledIcon /> },
 };
 
 export function DataTypeBadge({ type }: { type: DataType }) {
-  const config = dataTypeConfig[type];
+  const config = dataTypeConfig[type] || dataTypeConfig.unsupported;
   return (
     <Badge color={config.color}>
       <Flex gap="1" align="center">
