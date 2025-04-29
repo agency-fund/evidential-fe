@@ -97,7 +97,6 @@ export function HeaderBar() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="API Documentation (opens in a new tab)"
-                    style={{ textDecoration: 'none', color: 'inherit' }}
                   >
                     <RocketIcon /> API Documentation
                   </a>
