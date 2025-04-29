@@ -1584,11 +1584,10 @@ export const createExperimentWithAssignmentBody = zod.object({
 			.object({
 				experiment_id: zod
 					.string()
-					.uuid()
 					.or(zod.null())
 					.optional()
 					.describe(
-						"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+						"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 					),
 				experiment_type: zod.enum(["preassigned"]),
 				experiment_name: zod
@@ -1605,11 +1604,10 @@ export const createExperimentWithAssignmentBody = zod.object({
 							.object({
 								arm_id: zod
 									.string()
-									.uuid()
 									.or(zod.null())
 									.optional()
 									.describe(
-										"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 									),
 								arm_name: zod
 									.string()
@@ -1705,11 +1703,10 @@ export const createExperimentWithAssignmentBody = zod.object({
 			.object({
 				experiment_id: zod
 					.string()
-					.uuid()
 					.or(zod.null())
 					.optional()
 					.describe(
-						"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+						"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 					),
 				experiment_type: zod.enum(["online"]),
 				experiment_name: zod
@@ -1728,11 +1725,10 @@ export const createExperimentWithAssignmentBody = zod.object({
 							.object({
 								arm_id: zod
 									.string()
-									.uuid()
 									.or(zod.null())
 									.optional()
 									.describe(
-										"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 									),
 								arm_name: zod
 									.string()
@@ -2064,11 +2060,10 @@ export const createExperimentWithAssignmentResponse = zod
 				.object({
 					experiment_id: zod
 						.string()
-						.uuid()
 						.or(zod.null())
 						.optional()
 						.describe(
-							"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+							"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 						),
 					experiment_type: zod.enum(["preassigned"]),
 					experiment_name: zod
@@ -2089,11 +2084,10 @@ export const createExperimentWithAssignmentResponse = zod
 								.object({
 									arm_id: zod
 										.string()
-										.uuid()
 										.or(zod.null())
 										.optional()
 										.describe(
-											"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+											"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 										),
 									arm_name: zod
 										.string()
@@ -2195,11 +2189,10 @@ export const createExperimentWithAssignmentResponse = zod
 				.object({
 					experiment_id: zod
 						.string()
-						.uuid()
 						.or(zod.null())
 						.optional()
 						.describe(
-							"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+							"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 						),
 					experiment_type: zod.enum(["online"]),
 					experiment_name: zod
@@ -2220,11 +2213,10 @@ export const createExperimentWithAssignmentResponse = zod
 								.object({
 									arm_id: zod
 										.string()
-										.uuid()
 										.or(zod.null())
 										.optional()
 										.describe(
-											"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+											"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 										),
 									arm_name: zod
 										.string()
@@ -2537,11 +2529,10 @@ export const createExperimentWithAssignmentResponse = zod
 									.object({
 										arm_id: zod
 											.string()
-											.uuid()
 											.or(zod.null())
 											.optional()
 											.describe(
-												"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+												"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 											),
 										arm_name: zod
 											.string()
@@ -2575,7 +2566,7 @@ export const createExperimentWithAssignmentResponse = zod
 			.describe("Key pieces of an AssignResponse without the assignments."),
 	})
 	.describe(
-		"Same as the request but with uuids filled for the experiment and arms, and summary info on the assignment.",
+		"Same as the request but with ids filled for the experiment and arms, and summary info on the assignment.",
 	);
 
 /**
@@ -2663,11 +2654,10 @@ export const listExperimentsResponse = zod.object({
 						.object({
 							experiment_id: zod
 								.string()
-								.uuid()
 								.or(zod.null())
 								.optional()
 								.describe(
-									"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+									"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 								),
 							experiment_type: zod.enum(["preassigned"]),
 							experiment_name: zod
@@ -2686,11 +2676,10 @@ export const listExperimentsResponse = zod.object({
 										.object({
 											arm_id: zod
 												.string()
-												.uuid()
 												.or(zod.null())
 												.optional()
 												.describe(
-													"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+													"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 												),
 											arm_name: zod
 												.string()
@@ -2788,11 +2777,10 @@ export const listExperimentsResponse = zod.object({
 						.object({
 							experiment_id: zod
 								.string()
-								.uuid()
 								.or(zod.null())
 								.optional()
 								.describe(
-									"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+									"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 								),
 							experiment_type: zod.enum(["online"]),
 							experiment_name: zod
@@ -2813,11 +2801,10 @@ export const listExperimentsResponse = zod.object({
 										.object({
 											arm_id: zod
 												.string()
-												.uuid()
 												.or(zod.null())
 												.optional()
 												.describe(
-													"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+													"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 												),
 											arm_name: zod
 												.string()
@@ -3138,11 +3125,10 @@ export const listExperimentsResponse = zod.object({
 											.object({
 												arm_id: zod
 													.string()
-													.uuid()
 													.or(zod.null())
 													.optional()
 													.describe(
-														"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 													),
 												arm_name: zod
 													.string()
@@ -3202,7 +3188,7 @@ export const analyzeExperimentResponseMetricAnalysesItemArmAnalysesItemArmDescri
 
 export const analyzeExperimentResponse = zod
 	.object({
-		experiment_id: zod.string().uuid().describe("UUID of the experiment."),
+		experiment_id: zod.string().describe("ID of the experiment."),
 		metric_analyses: zod
 			.array(
 				zod
@@ -3240,11 +3226,10 @@ export const analyzeExperimentResponse = zod
 								zod.object({
 									arm_id: zod
 										.string()
-										.uuid()
 										.or(zod.null())
 										.optional()
 										.describe(
-											"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+											"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 										),
 									arm_name: zod
 										.string()
@@ -3397,11 +3382,10 @@ export const getExperimentResponse = zod
 				.object({
 					experiment_id: zod
 						.string()
-						.uuid()
 						.or(zod.null())
 						.optional()
 						.describe(
-							"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+							"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 						),
 					experiment_type: zod.enum(["preassigned"]),
 					experiment_name: zod
@@ -3418,11 +3402,10 @@ export const getExperimentResponse = zod
 								.object({
 									arm_id: zod
 										.string()
-										.uuid()
 										.or(zod.null())
 										.optional()
 										.describe(
-											"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+											"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 										),
 									arm_name: zod
 										.string()
@@ -3514,11 +3497,10 @@ export const getExperimentResponse = zod
 				.object({
 					experiment_id: zod
 						.string()
-						.uuid()
 						.or(zod.null())
 						.optional()
 						.describe(
-							"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+							"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 						),
 					experiment_type: zod.enum(["online"]),
 					experiment_name: zod
@@ -3535,11 +3517,10 @@ export const getExperimentResponse = zod
 								.object({
 									arm_id: zod
 										.string()
-										.uuid()
 										.or(zod.null())
 										.optional()
 										.describe(
-											"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+											"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 										),
 									arm_name: zod
 										.string()
@@ -3836,11 +3817,10 @@ export const getExperimentResponse = zod
 									.object({
 										arm_id: zod
 											.string()
-											.uuid()
 											.or(zod.null())
 											.optional()
 											.describe(
-												"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+												"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 											),
 										arm_name: zod
 											.string()
@@ -3932,7 +3912,7 @@ export const getExperimentAssignmentsResponse = zod
 			.describe(
 				"Balance test results if available. 'online' experiments do not have balance checks.",
 			),
-		experiment_id: zod.string().uuid(),
+		experiment_id: zod.string(),
 		sample_size: zod.number(),
 		assignments: zod.array(
 			zod
@@ -3944,9 +3924,8 @@ export const getExperimentAssignmentsResponse = zod
 						),
 					arm_id: zod
 						.string()
-						.uuid()
 						.describe(
-							"UUID of the arm this participant was assigned to. Same as Arm.arm_id.",
+							"ID of the arm this participant was assigned to. Same as Arm.arm_id.",
 						),
 					arm_name: zod
 						.string()
@@ -4026,9 +4005,8 @@ export const getExperimentAssignmentForParticipantResponse = zod
 					),
 				arm_id: zod
 					.string()
-					.uuid()
 					.describe(
-						"UUID of the arm this participant was assigned to. Same as Arm.arm_id.",
+						"ID of the arm this participant was assigned to. Same as Arm.arm_id.",
 					),
 				arm_name: zod
 					.string()
@@ -4143,11 +4121,10 @@ export const powerCheckBody = zod.object({
 			.object({
 				experiment_id: zod
 					.string()
-					.uuid()
 					.or(zod.null())
 					.optional()
 					.describe(
-						"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+						"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 					),
 				experiment_type: zod.enum(["preassigned"]),
 				experiment_name: zod
@@ -4162,11 +4139,10 @@ export const powerCheckBody = zod.object({
 							.object({
 								arm_id: zod
 									.string()
-									.uuid()
 									.or(zod.null())
 									.optional()
 									.describe(
-										"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 									),
 								arm_name: zod
 									.string()
@@ -4252,11 +4228,10 @@ export const powerCheckBody = zod.object({
 			.object({
 				experiment_id: zod
 					.string()
-					.uuid()
 					.or(zod.null())
 					.optional()
 					.describe(
-						"UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+						"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 					),
 				experiment_type: zod.enum(["online"]),
 				experiment_name: zod
@@ -4273,11 +4248,10 @@ export const powerCheckBody = zod.object({
 							.object({
 								arm_id: zod
 									.string()
-									.uuid()
 									.or(zod.null())
 									.optional()
 									.describe(
-										"UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 									),
 								arm_name: zod
 									.string()

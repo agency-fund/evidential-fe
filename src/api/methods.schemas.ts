@@ -45,7 +45,7 @@ export interface ApiKeySummary {
 }
 
 /**
- * UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
+ * ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
  */
 export type ArmArmId = string | null;
 
@@ -55,7 +55,7 @@ export type ArmArmDescription = string | null;
  * Describes an experiment treatment arm.
  */
 export interface Arm {
-	/** UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
+	/** ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
 	arm_id?: ArmArmId;
 	/** @maxLength 100 */
 	arm_name: string;
@@ -63,14 +63,14 @@ export interface Arm {
 }
 
 /**
- * UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
+ * ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
  */
 export type ArmAnalysisArmId = string | null;
 
 export type ArmAnalysisArmDescription = string | null;
 
 export interface ArmAnalysis {
-	/** UUID of the arm. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
+	/** ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
 	arm_id?: ArmAnalysisArmId;
 	/** @maxLength 100 */
 	arm_name: string;
@@ -117,8 +117,6 @@ export interface AssignResponseInput {
 	/** Name of the datasource field used as the unique identifier for the participant_id value stored in each Assignment, as configured in the datasource settings. Included for frontend convenience. */
 	unique_id_field: string;
 	assignments: Assignment[];
-	/** @maxItems 10 */
-	arm_sizes: ArmSize[];
 }
 
 /**
@@ -138,8 +136,6 @@ export interface AssignResponseOutput {
 	/** Name of the datasource field used as the unique identifier for the participant_id value stored in each Assignment, as configured in the datasource settings. Included for frontend convenience. */
 	unique_id_field: string;
 	assignments: Assignment[];
-	/** @maxItems 10 */
-	arm_sizes: ArmSize[];
 }
 
 /**
@@ -175,7 +171,7 @@ export type AssignmentStrata = Strata[] | null;
 export interface Assignment {
 	/** @maxLength 64 */
 	participant_id: string;
-	/** UUID of the arm this participant was assigned to. Same as Arm.arm_id. */
+	/** ID of the arm this participant was assigned to. Same as Arm.arm_id. */
 	arm_id: string;
 	/**
 	 * The arm this participant was assigned to. Same as Arm.arm_name.
@@ -386,7 +382,7 @@ export interface CreateExperimentRequest {
 export type CreateExperimentResponsePowerAnalyses = PowerResponseOutput | null;
 
 /**
- * Same as the request but with uuids filled for the experiment and arms, and summary info on the assignment.
+ * Same as the request but with ids filled for the experiment and arms, and summary info on the assignment.
  */
 export interface CreateExperimentResponse {
 	datasource_id: string;
@@ -625,7 +621,7 @@ export interface EventSummary {
  * Describes the change if any in metrics targeted by an experiment.
  */
 export interface ExperimentAnalysis {
-	/** UUID of the experiment. */
+	/** ID of the experiment. */
 	experiment_id: string;
 	/** Contains one analysis per metric targeted by the experiment. */
 	metric_analyses: MetricAnalysis[];
@@ -1159,7 +1155,7 @@ export const MetricType = {
 } as const;
 
 /**
- * UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
+ * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
  */
 export type OnlineExperimentSpecExperimentId = string | null;
 
@@ -1177,7 +1173,7 @@ export const OnlineExperimentSpecExperimentType = {
 For example, you may wish to experiment on new users. Assignments are issued via API request.
  */
 export interface OnlineExperimentSpec {
-	/** UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
+	/** ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
 	experiment_id?: OnlineExperimentSpecExperimentId;
 	experiment_type: OnlineExperimentSpecExperimentType;
 	/** @maxLength 100 */
@@ -1285,7 +1281,7 @@ export interface PowerResponseOutput {
 }
 
 /**
- * UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
+ * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
  */
 export type PreassignedExperimentSpecExperimentId = string | null;
 
@@ -1301,7 +1297,7 @@ export const PreassignedExperimentSpecExperimentType = {
  * Use this type to randomly select and assign from existing participants at design time.
  */
 export interface PreassignedExperimentSpec {
-	/** UUID of the experiment. If using the /experiments/with-assignment endpoint, this is generated for you and available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
+	/** ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
 	experiment_id?: PreassignedExperimentSpecExperimentId;
 	experiment_type: PreassignedExperimentSpecExperimentType;
 	/** @maxLength 100 */
