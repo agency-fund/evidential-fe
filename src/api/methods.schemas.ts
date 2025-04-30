@@ -431,6 +431,7 @@ export const DataType = {
 	double_precision: "double precision",
 	numeric: "numeric",
 	timestamp_without_time_zone: "timestamp without time zone",
+	timestamp_with_time_zone: "timestamp with time zone",
 	bigint: "bigint",
 	"jsonb_(unsupported)": "jsonb (unsupported)",
 	"json_(unsupported)": "json (unsupported)",
@@ -673,15 +674,15 @@ export interface FieldDescriptor {
 	/** The data type of this field */
 	data_type: DataType;
 	/** Human-readable description of the field */
-	description: string;
+	description?: string;
 	/** Whether this field uniquely identifies records */
-	is_unique_id: boolean;
+	is_unique_id?: boolean;
 	/** Whether this field should be used for stratification */
-	is_strata: boolean;
+	is_strata?: boolean;
 	/** Whether this field can be used as a filter */
-	is_filter: boolean;
+	is_filter?: boolean;
 	/** Whether this field can be used as a metric */
-	is_metric: boolean;
+	is_metric?: boolean;
 	/** Additional field metadata */
 	extra?: FieldDescriptorExtra;
 }

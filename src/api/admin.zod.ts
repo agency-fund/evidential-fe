@@ -484,6 +484,12 @@ export const getDatasourceParams = zod.object({
 
 export const getDatasourceResponseIdMax = 64;
 export const getDatasourceResponseNameMax = 100;
+export const getDatasourceResponseConfigParticipantsItemFieldsItemDescriptionDefault =
+	"";
+export const getDatasourceResponseConfigParticipantsItemFieldsItemIsUniqueIdDefault = false;
+export const getDatasourceResponseConfigParticipantsItemFieldsItemIsStrataDefault = false;
+export const getDatasourceResponseConfigParticipantsItemFieldsItemIsFilterDefault = false;
+export const getDatasourceResponseConfigParticipantsItemFieldsItemIsMetricDefault = false;
 export const getDatasourceResponseConfigDwhPortDefault = 5432;
 export const getDatasourceResponseConfigDwhPortMin = 1024;
 
@@ -546,6 +552,7 @@ export const getDatasourceResponse = zod.object({
 											"double precision",
 											"numeric",
 											"timestamp without time zone",
+											"timestamp with time zone",
 											"bigint",
 											"jsonb (unsupported)",
 											"json (unsupported)",
@@ -556,20 +563,25 @@ export const getDatasourceResponse = zod.object({
 										),
 									description: zod
 										.string()
+										.optional()
 										.describe("Human-readable description of the field"),
 									is_unique_id: zod
 										.boolean()
+										.optional()
 										.describe("Whether this field uniquely identifies records"),
 									is_strata: zod
 										.boolean()
+										.optional()
 										.describe(
 											"Whether this field should be used for stratification",
 										),
 									is_filter: zod
 										.boolean()
+										.optional()
 										.describe("Whether this field can be used as a filter"),
 									is_metric: zod
 										.boolean()
+										.optional()
 										.describe("Whether this field can be used as a metric"),
 									extra: zod
 										.record(zod.string(), zod.string())
@@ -767,6 +779,7 @@ export const inspectTableInDatasourceResponse = zod
 								"double precision",
 								"numeric",
 								"timestamp without time zone",
+								"timestamp with time zone",
 								"bigint",
 								"jsonb (unsupported)",
 								"json (unsupported)",
@@ -791,6 +804,13 @@ export const inspectTableInDatasourceResponse = zod
 export const listParticipantTypesParams = zod.object({
 	datasource_id: zod.string(),
 });
+
+export const listParticipantTypesResponseItemsItemFieldsItemDescriptionDefault =
+	"";
+export const listParticipantTypesResponseItemsItemFieldsItemIsUniqueIdDefault = false;
+export const listParticipantTypesResponseItemsItemFieldsItemIsStrataDefault = false;
+export const listParticipantTypesResponseItemsItemFieldsItemIsFilterDefault = false;
+export const listParticipantTypesResponseItemsItemFieldsItemIsMetricDefault = false;
 
 export const listParticipantTypesResponse = zod.object({
 	items: zod.array(
@@ -828,6 +848,7 @@ export const listParticipantTypesResponse = zod.object({
 									"double precision",
 									"numeric",
 									"timestamp without time zone",
+									"timestamp with time zone",
 									"bigint",
 									"jsonb (unsupported)",
 									"json (unsupported)",
@@ -838,20 +859,25 @@ export const listParticipantTypesResponse = zod.object({
 								),
 							description: zod
 								.string()
+								.optional()
 								.describe("Human-readable description of the field"),
 							is_unique_id: zod
 								.boolean()
+								.optional()
 								.describe("Whether this field uniquely identifies records"),
 							is_strata: zod
 								.boolean()
+								.optional()
 								.describe(
 									"Whether this field should be used for stratification",
 								),
 							is_filter: zod
 								.boolean()
+								.optional()
 								.describe("Whether this field can be used as a filter"),
 							is_metric: zod
 								.boolean()
+								.optional()
 								.describe("Whether this field can be used as a metric"),
 							extra: zod
 								.record(zod.string(), zod.string())
@@ -880,6 +906,12 @@ export const createParticipantTypeParams = zod.object({
 });
 
 export const createParticipantTypeBodyParticipantTypeMax = 100;
+export const createParticipantTypeBodySchemaDefFieldsItemDescriptionDefault =
+	"";
+export const createParticipantTypeBodySchemaDefFieldsItemIsUniqueIdDefault = false;
+export const createParticipantTypeBodySchemaDefFieldsItemIsStrataDefault = false;
+export const createParticipantTypeBodySchemaDefFieldsItemIsFilterDefault = false;
+export const createParticipantTypeBodySchemaDefFieldsItemIsMetricDefault = false;
 
 export const createParticipantTypeBody = zod.object({
 	participant_type: zod
@@ -906,6 +938,7 @@ export const createParticipantTypeBody = zod.object({
 								"double precision",
 								"numeric",
 								"timestamp without time zone",
+								"timestamp with time zone",
 								"bigint",
 								"jsonb (unsupported)",
 								"json (unsupported)",
@@ -916,18 +949,23 @@ export const createParticipantTypeBody = zod.object({
 							),
 						description: zod
 							.string()
+							.optional()
 							.describe("Human-readable description of the field"),
 						is_unique_id: zod
 							.boolean()
+							.optional()
 							.describe("Whether this field uniquely identifies records"),
 						is_strata: zod
 							.boolean()
+							.optional()
 							.describe("Whether this field should be used for stratification"),
 						is_filter: zod
 							.boolean()
+							.optional()
 							.describe("Whether this field can be used as a filter"),
 						is_metric: zod
 							.boolean()
+							.optional()
 							.describe("Whether this field can be used as a metric"),
 						extra: zod
 							.record(zod.string(), zod.string())
@@ -944,6 +982,12 @@ export const createParticipantTypeBody = zod.object({
 });
 
 export const createParticipantTypeResponseParticipantTypeMax = 100;
+export const createParticipantTypeResponseSchemaDefFieldsItemDescriptionDefault =
+	"";
+export const createParticipantTypeResponseSchemaDefFieldsItemIsUniqueIdDefault = false;
+export const createParticipantTypeResponseSchemaDefFieldsItemIsStrataDefault = false;
+export const createParticipantTypeResponseSchemaDefFieldsItemIsFilterDefault = false;
+export const createParticipantTypeResponseSchemaDefFieldsItemIsMetricDefault = false;
 
 export const createParticipantTypeResponse = zod.object({
 	participant_type: zod
@@ -970,6 +1014,7 @@ export const createParticipantTypeResponse = zod.object({
 								"double precision",
 								"numeric",
 								"timestamp without time zone",
+								"timestamp with time zone",
 								"bigint",
 								"jsonb (unsupported)",
 								"json (unsupported)",
@@ -980,18 +1025,23 @@ export const createParticipantTypeResponse = zod.object({
 							),
 						description: zod
 							.string()
+							.optional()
 							.describe("Human-readable description of the field"),
 						is_unique_id: zod
 							.boolean()
+							.optional()
 							.describe("Whether this field uniquely identifies records"),
 						is_strata: zod
 							.boolean()
+							.optional()
 							.describe("Whether this field should be used for stratification"),
 						is_filter: zod
 							.boolean()
+							.optional()
 							.describe("Whether this field can be used as a filter"),
 						is_metric: zod
 							.boolean()
+							.optional()
 							.describe("Whether this field can be used as a metric"),
 						extra: zod
 							.record(zod.string(), zod.string())
@@ -1056,6 +1106,7 @@ export const inspectParticipantTypesResponse = zod
 							"double precision",
 							"numeric",
 							"timestamp without time zone",
+							"timestamp with time zone",
 							"bigint",
 							"jsonb (unsupported)",
 							"json (unsupported)",
@@ -1114,6 +1165,7 @@ export const inspectParticipantTypesResponse = zod
 									"double precision",
 									"numeric",
 									"timestamp without time zone",
+									"timestamp with time zone",
 									"bigint",
 									"jsonb (unsupported)",
 									"json (unsupported)",
@@ -1161,6 +1213,7 @@ export const inspectParticipantTypesResponse = zod
 							"double precision",
 							"numeric",
 							"timestamp without time zone",
+							"timestamp with time zone",
 							"bigint",
 							"jsonb (unsupported)",
 							"json (unsupported)",
@@ -1188,6 +1241,7 @@ export const inspectParticipantTypesResponse = zod
 							"double precision",
 							"numeric",
 							"timestamp without time zone",
+							"timestamp with time zone",
 							"bigint",
 							"jsonb (unsupported)",
 							"json (unsupported)",
@@ -1221,6 +1275,12 @@ export const getParticipantTypesParams = zod.object({
 	datasource_id: zod.string(),
 	participant_id: zod.string(),
 });
+
+export const getParticipantTypesResponseFieldsItemDescriptionDefault = "";
+export const getParticipantTypesResponseFieldsItemIsUniqueIdDefault = false;
+export const getParticipantTypesResponseFieldsItemIsStrataDefault = false;
+export const getParticipantTypesResponseFieldsItemIsFilterDefault = false;
+export const getParticipantTypesResponseFieldsItemIsMetricDefault = false;
 
 export const getParticipantTypesResponse = zod.discriminatedUnion("type", [
 	zod.object({
@@ -1256,6 +1316,7 @@ export const getParticipantTypesResponse = zod.discriminatedUnion("type", [
 							"double precision",
 							"numeric",
 							"timestamp without time zone",
+							"timestamp with time zone",
 							"bigint",
 							"jsonb (unsupported)",
 							"json (unsupported)",
@@ -1266,18 +1327,23 @@ export const getParticipantTypesResponse = zod.discriminatedUnion("type", [
 						),
 					description: zod
 						.string()
+						.optional()
 						.describe("Human-readable description of the field"),
 					is_unique_id: zod
 						.boolean()
+						.optional()
 						.describe("Whether this field uniquely identifies records"),
 					is_strata: zod
 						.boolean()
+						.optional()
 						.describe("Whether this field should be used for stratification"),
 					is_filter: zod
 						.boolean()
+						.optional()
 						.describe("Whether this field can be used as a filter"),
 					is_metric: zod
 						.boolean()
+						.optional()
 						.describe("Whether this field can be used as a metric"),
 					extra: zod
 						.record(zod.string(), zod.string())
@@ -1308,6 +1374,11 @@ export const updateParticipantTypeBodyParticipantTypeMaxOne = 100;
 export const updateParticipantTypeBodyTableNameRegExpOne = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
+export const updateParticipantTypeBodyFieldsItemDescriptionDefault = "";
+export const updateParticipantTypeBodyFieldsItemIsUniqueIdDefault = false;
+export const updateParticipantTypeBodyFieldsItemIsStrataDefault = false;
+export const updateParticipantTypeBodyFieldsItemIsFilterDefault = false;
+export const updateParticipantTypeBodyFieldsItemIsMetricDefault = false;
 export const updateParticipantTypeBodyFieldsMaxOne = 150;
 
 export const updateParticipantTypeBody = zod.object({
@@ -1337,6 +1408,7 @@ export const updateParticipantTypeBody = zod.object({
 						"double precision",
 						"numeric",
 						"timestamp without time zone",
+						"timestamp with time zone",
 						"bigint",
 						"jsonb (unsupported)",
 						"json (unsupported)",
@@ -1347,18 +1419,23 @@ export const updateParticipantTypeBody = zod.object({
 					),
 				description: zod
 					.string()
+					.optional()
 					.describe("Human-readable description of the field"),
 				is_unique_id: zod
 					.boolean()
+					.optional()
 					.describe("Whether this field uniquely identifies records"),
 				is_strata: zod
 					.boolean()
+					.optional()
 					.describe("Whether this field should be used for stratification"),
 				is_filter: zod
 					.boolean()
+					.optional()
 					.describe("Whether this field can be used as a filter"),
 				is_metric: zod
 					.boolean()
+					.optional()
 					.describe("Whether this field can be used as a metric"),
 				extra: zod
 					.record(zod.string(), zod.string())
@@ -1376,6 +1453,11 @@ export const updateParticipantTypeResponseParticipantTypeMax = 100;
 export const updateParticipantTypeResponseTableNameRegExpOne = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
+export const updateParticipantTypeResponseFieldsItemDescriptionDefault = "";
+export const updateParticipantTypeResponseFieldsItemIsUniqueIdDefault = false;
+export const updateParticipantTypeResponseFieldsItemIsStrataDefault = false;
+export const updateParticipantTypeResponseFieldsItemIsFilterDefault = false;
+export const updateParticipantTypeResponseFieldsItemIsMetricDefault = false;
 export const updateParticipantTypeResponseFieldsMaxOne = 150;
 
 export const updateParticipantTypeResponse = zod.object({
@@ -1403,6 +1485,7 @@ export const updateParticipantTypeResponse = zod.object({
 						"double precision",
 						"numeric",
 						"timestamp without time zone",
+						"timestamp with time zone",
 						"bigint",
 						"jsonb (unsupported)",
 						"json (unsupported)",
@@ -1413,18 +1496,23 @@ export const updateParticipantTypeResponse = zod.object({
 					),
 				description: zod
 					.string()
+					.optional()
 					.describe("Human-readable description of the field"),
 				is_unique_id: zod
 					.boolean()
+					.optional()
 					.describe("Whether this field uniquely identifies records"),
 				is_strata: zod
 					.boolean()
+					.optional()
 					.describe("Whether this field should be used for stratification"),
 				is_filter: zod
 					.boolean()
+					.optional()
 					.describe("Whether this field can be used as a filter"),
 				is_metric: zod
 					.boolean()
+					.optional()
 					.describe("Whether this field can be used as a metric"),
 				extra: zod
 					.record(zod.string(), zod.string())
