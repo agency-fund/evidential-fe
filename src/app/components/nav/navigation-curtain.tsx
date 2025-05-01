@@ -4,7 +4,7 @@ import { Box, Flex, IconButton, Tooltip, Separator } from '@radix-ui/themes';
 import { useAuth } from '@/app/providers/auth-provider';
 import { usePathname } from 'next/navigation';
 import { useCurrentOrganization } from '@/app/providers/organization-provider';
-import { HamburgerMenuIcon, HomeIcon, GearIcon, LightningBoltIcon, ArrowLeftIcon } from '@radix-ui/react-icons';
+import { HamburgerMenuIcon, HomeIcon, GearIcon, LightningBoltIcon, ChevronLeftIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 import * as NavigationMenu from '@radix-ui/react-navigation-menu';
 import { NavLink } from '@/app/components/nav/nav-link';
@@ -63,7 +63,7 @@ export const NavigationBar = () => {
                   variant="ghost"
                   color="gray"
                 >
-                  {isOpen ? <ArrowLeftIcon width={20} height={20} /> : <HamburgerMenuIcon width={20} height={20} />}
+                  {isOpen ? <ChevronLeftIcon width={20} height={20} /> : <HamburgerMenuIcon width={20} height={20} />}
                 </IconButton>
               </Tooltip>
             </MotionBox>
