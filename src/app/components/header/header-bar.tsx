@@ -1,12 +1,21 @@
 'use client';
 import { DropdownMenu, Flex, Heading, IconButton, Box } from '@radix-ui/themes';
 import { useAuth } from '@/app/providers/auth-provider';
-import { AvatarIcon, ExitIcon, GearIcon, RocketIcon, ArrowLeftIcon, BackpackIcon } from '@radix-ui/react-icons';
+import {
+  AvatarIcon,
+  ExitIcon,
+  GearIcon,
+  RocketIcon,
+  ArrowLeftIcon,
+  BackpackIcon,
+  CheckIcon,
+} from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
 import { PRODUCT_NAME, XNGIN_API_DOCS_LINK } from '@/services/constants';
 import { useListOrganizations } from '@/api/admin';
 import { useState } from 'react';
-import { OrganizationSelector } from '@/app/components/organization-selector';
+import { useLocalStorage } from '@/app/providers/use-local-storage';
+import { CURRENT_ORG_ID_KEY } from '@/app/providers/organization-provider';
 import Link from 'next/link';
 export function HeaderBar() {
   const auth = useAuth();
@@ -14,12 +23,19 @@ export function HeaderBar() {
   const { data: orgsResponse } = useListOrganizations();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showOrgMenu, setShowOrgMenu] = useState(false);
+  const [orgId, setOrgId] = useLocalStorage<string>(CURRENT_ORG_ID_KEY);
 
   if (!auth.isAuthenticated) return null;
 
   const organizations = orgsResponse?.items || [];
   const hasMultipleOrgs = organizations.length > 1;
   const isPrivileged = auth.userEmail.endsWith('@agency.fund');
+
+  const updateOrgId = (orgId: string) => {
+    setOrgId(orgId);
+    setDropdownOpen(false);
+    router.push('/');
+  };
 
   return (
     <Flex
@@ -118,9 +134,22 @@ export function HeaderBar() {
                   <ArrowLeftIcon /> Back
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator />
-                <Box p="2">
-                  <OrganizationSelector />
-                </Box>
+                {organizations.map((org) => (
+                  <DropdownMenu.Item
+                    key={org.id}
+                    onSelect={() => updateOrgId(org.id)}
+                    style={
+                      org.id === orgId
+                        ? {
+                            backgroundColor: 'var(--accent-a3)',
+                            color: 'var(--accent-a11)',
+                          }
+                        : {}
+                    }
+                  >
+                    {org.name}
+                  </DropdownMenu.Item>
+                ))}
               </DropdownMenu.Content>
             )}
           </DropdownMenu.Root>
