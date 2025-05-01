@@ -43,6 +43,12 @@ tasks:
       - nodedeps
     cmd: |
       npm run dev
+  start-airplane:
+    desc: "Like start, but runs the frontend in airplane mode. The UI will identify you as testing@agency.fund automatically."
+    env:
+      NEXT_PUBLIC_AIRPLANE_MODE: "true"
+    interactive: true
+    cmd: task start
   genapiclient:
     desc: "Updates the generated API client from the apiserver running at http://localhost:8000"
     cmd: |

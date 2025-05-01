@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { exchangeCodeForTokens, generatePkceLoginInfo } from '@/services/pkce';
 import { XSpinner } from '../components/x-spinner';
 import { useAuthStorage } from '@/app/providers/use-auth-storage';
-import { API_BASE_URL } from '@/services/constants';
+import { AIRPLANE_MODE, API_BASE_URL } from '@/services/constants';
 import { useCustomEventListener } from '@/app/providers/use-custom-event-handler';
 
 export const API_401_EVENT = 'api_returned_401';
@@ -119,18 +119,29 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
     return () => clearInterval(interval);
   }, [user, logout]);
 
-  const contextValue: AuthContext = user
-    ? {
-        isAuthenticated: true,
-        idToken: user.idToken,
-        userEmail: user.email,
-        logout,
-      }
-    : {
-        isAuthenticated: false,
-        startLogin,
-        reset: logout,
-      };
+  let contextValue: AuthContext;
+
+  if (AIRPLANE_MODE) {
+    contextValue = {
+      isAuthenticated: true,
+      idToken: 'airplane-mode-token',
+      userEmail: 'testing@agency.fund',
+      logout: () => console.log('Login and logout functionality is not available when AIRPLANE_MODE is set.'),
+    };
+  } else if (user) {
+    contextValue = {
+      isAuthenticated: true,
+      idToken: user.idToken,
+      userEmail: user.email,
+      logout,
+    };
+  } else {
+    contextValue = {
+      isAuthenticated: false,
+      startLogin,
+      reset: logout,
+    };
+  }
 
   return fetching ? (
     <XSpinner message="Authenticating..." />
