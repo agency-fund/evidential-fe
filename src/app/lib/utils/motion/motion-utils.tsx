@@ -18,8 +18,8 @@ import { Box, Flex } from '@radix-ui/themes';
 /* ------------------------------------
  * Radix Layout Components (safe for motion(Component))
  * ------------------------------------ */
-export const MotionBox = motion(Box);
-export const MotionFlex = motion(Flex);
+export const MotionBox = motion.create(Box);
+export const MotionFlex = motion.create(Flex);
 
 /* ------------------------------------
  * Native Semantic HTML Wrappers

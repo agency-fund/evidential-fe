@@ -1,15 +1,7 @@
 'use client';
-import { DropdownMenu, Flex, Heading, IconButton, Box } from '@radix-ui/themes';
+import { DropdownMenu, Flex, Heading, IconButton } from '@radix-ui/themes';
 import { useAuth } from '@/app/providers/auth-provider';
-import {
-  AvatarIcon,
-  ExitIcon,
-  GearIcon,
-  RocketIcon,
-  ArrowLeftIcon,
-  BackpackIcon,
-  CheckIcon,
-} from '@radix-ui/react-icons';
+import { AvatarIcon, ExitIcon, GearIcon, RocketIcon, ArrowLeftIcon, BackpackIcon } from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
 import { PRODUCT_NAME, XNGIN_API_DOCS_LINK } from '@/services/constants';
 import { useListOrganizations } from '@/api/admin';
@@ -21,8 +13,7 @@ export function HeaderBar() {
   const auth = useAuth();
   const router = useRouter();
   const { data: orgsResponse } = useListOrganizations();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [showOrgMenu, setShowOrgMenu] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState<'closed' | 'main' | 'organizations'>('closed');
   const [orgId, setOrgId] = useLocalStorage<string>(CURRENT_ORG_ID_KEY);
 
   if (!auth.isAuthenticated) return null;
@@ -33,7 +24,7 @@ export function HeaderBar() {
 
   const updateOrgId = (orgId: string) => {
     setOrgId(orgId);
-    setDropdownOpen(false);
+    setDropdownOpen('closed');
     router.push('/');
   };
 
@@ -45,116 +36,109 @@ export function HeaderBar() {
       style={{
         borderBottom: '1px solid var(--gray-5)',
       }}
-      asChild
+      role="banner"
     >
-      <header>
-        {/* Using Link instead of router.push for accessibility */}
-        <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <Heading>{PRODUCT_NAME}</Heading>
-        </Link>
-        <nav>
-          <DropdownMenu.Root
-            open={dropdownOpen}
-            onOpenChange={(open) => {
-              setDropdownOpen(open);
-              if (!open) setShowOrgMenu(false);
-            }}
+      {/* Using Link instead of router.push for accessibility */}
+      <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+        <Heading>{PRODUCT_NAME}</Heading>
+      </Link>
+      <DropdownMenu.Root
+        open={dropdownOpen !== 'closed'}
+        onOpenChange={(open) => {
+          setDropdownOpen(open ? 'main' : 'closed');
+        }}
+      >
+        <DropdownMenu.Trigger>
+          <IconButton
+            variant="ghost"
+            color="gray"
+            size="2"
+            aria-label="User menu"
+            aria-controls="user-menu"
+            aria-expanded={dropdownOpen !== 'closed'}
+            aria-haspopup="true"
           >
-            <DropdownMenu.Trigger>
-              <IconButton
-                variant="ghost"
-                color="gray"
-                size="2"
-                aria-label="User menu"
-                aria-controls="user-menu"
-                aria-expanded={dropdownOpen}
-                aria-haspopup="true"
-              >
-                <AvatarIcon width="24" height="24" />
-              </IconButton>
-            </DropdownMenu.Trigger>
-            {!showOrgMenu ? (
-              <DropdownMenu.Content id="user-menu">
-                {/* Main menu */}
-                {hasMultipleOrgs && (
-                  <>
-                    <DropdownMenu.Item
-                      onSelect={(event) => {
-                        event.preventDefault();
-                        setShowOrgMenu(true);
-                      }}
-                      aria-haspopup="true"
-                      aria-expanded={showOrgMenu}
-                      aria-controls="organizations-menu"
-                    >
-                      <BackpackIcon /> Organizations
-                    </DropdownMenu.Item>
-                    <DropdownMenu.Separator />
-                  </>
-                )}
-                {isPrivileged && (
-                  <>
-                    <DropdownMenu.Item
-                      onClick={() => router.push('/organizations')}
-                      aria-haspopup="true"
-                      aria-expanded={showOrgMenu}
-                      aria-controls="organizations-menu"
-                    >
-                      <GearIcon /> Manage Organizations
-                    </DropdownMenu.Item>
-                    <DropdownMenu.Separator />
-                  </>
-                )}
+            <AvatarIcon width="24" height="24" />
+          </IconButton>
+        </DropdownMenu.Trigger>
 
-                <DropdownMenu.Item asChild>
-                  {/* Using a instead of router.push for accessibility */}
-                  <a
-                    href={XNGIN_API_DOCS_LINK}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="API Documentation (opens in a new tab)"
-                  >
-                    <RocketIcon /> API Documentation
-                  </a>
-                </DropdownMenu.Item>
-                <DropdownMenu.Separator />
-                <DropdownMenu.Item color="red" onClick={auth.logout}>
-                  <ExitIcon /> Logout
-                </DropdownMenu.Item>
-              </DropdownMenu.Content>
-            ) : (
-              <DropdownMenu.Content id="organizations-menu">
-                {/* Organizations list view */}
+        {dropdownOpen === 'main' ? (
+          <DropdownMenu.Content id="user-menu">
+            {/* Main menu */}
+            {hasMultipleOrgs && (
+              <>
                 <DropdownMenu.Item
                   onSelect={(event) => {
                     event.preventDefault();
-                    setShowOrgMenu(false);
+                    setDropdownOpen('organizations');
                   }}
+                  aria-haspopup="true"
+                  aria-controls="organizations-menu"
                 >
-                  <ArrowLeftIcon /> Back
+                  <BackpackIcon /> Organizations
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator />
-                {organizations.map((org) => (
-                  <DropdownMenu.Item
-                    key={org.id}
-                    onSelect={() => updateOrgId(org.id)}
-                    style={
-                      org.id === orgId
-                        ? {
-                            backgroundColor: 'var(--accent-a3)',
-                            color: 'var(--accent-a11)',
-                          }
-                        : {}
-                    }
-                  >
-                    {org.name}
-                  </DropdownMenu.Item>
-                ))}
-              </DropdownMenu.Content>
+              </>
             )}
-          </DropdownMenu.Root>
-        </nav>
-      </header>
+            {isPrivileged && (
+              <>
+                <DropdownMenu.Item
+                  onClick={() => router.push('/organizations')}
+                  aria-haspopup="true"
+                  aria-controls="organizations-menu"
+                >
+                  <GearIcon /> Manage Organizations
+                </DropdownMenu.Item>
+                <DropdownMenu.Separator />
+              </>
+            )}
+
+            <DropdownMenu.Item asChild>
+              <a
+                href={XNGIN_API_DOCS_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="API Documentation (opens in a new tab)"
+              >
+                <RocketIcon /> API Documentation
+              </a>
+            </DropdownMenu.Item>
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item color="red" onClick={auth.logout}>
+              <ExitIcon /> Logout
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
+        ) : dropdownOpen === 'organizations' ? (
+          <DropdownMenu.Content id="organizations-menu">
+            {/* Organizations list view */}
+            <DropdownMenu.Item
+              onSelect={(event) => {
+                event.preventDefault();
+                setDropdownOpen('main');
+              }}
+            >
+              <ArrowLeftIcon /> Back
+            </DropdownMenu.Item>
+            <DropdownMenu.Separator />
+            {organizations.map((org) => (
+              <DropdownMenu.Item
+                key={org.id}
+                onSelect={() => updateOrgId(org.id)}
+                style={
+                  org.id === orgId
+                    ? {
+                        backgroundColor: 'var(--accent-a3)',
+                        color: 'var(--accent-a11)',
+                      }
+                    : {}
+                }
+              >
+                {org.name}
+              </DropdownMenu.Item>
+            ))}
+          </DropdownMenu.Content>
+        ) : null}
+      </DropdownMenu.Root>
     </Flex>
   );
 }
