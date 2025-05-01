@@ -36,7 +36,6 @@ export function HeaderBar() {
       style={{
         borderBottom: '1px solid var(--gray-5)',
       }}
-      role="banner"
     >
       {/* Using Link instead of router.push for accessibility */}
       <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
