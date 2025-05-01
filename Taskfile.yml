@@ -1,18 +1,18 @@
 version: '3'
 output: prefixed
 env:
-  NEXT_TELEMETRY_DISABLED: "1"
-  NPM_CONFIG_AUDIT: "false"
-  NPM_CONFIG_FUND: "false"
-  NPM_CONFIG_UPDATE_NOTIFIER: "false"
+  NEXT_TELEMETRY_DISABLED: '1'
+  NPM_CONFIG_AUDIT: 'false'
+  NPM_CONFIG_FUND: 'false'
+  NPM_CONFIG_UPDATE_NOTIFIER: 'false'
 
   # Sentry doesn't work with Turbopack but we don't care because we don't use Sentry in local development and Turbopack
   # is only being used in local dev. This silences some warnings.
-  SENTRY_SUPPRESS_TURBOPACK_WARNING: "1"
+  SENTRY_SUPPRESS_TURBOPACK_WARNING: '1'
 
   # The OAuth Client Credentials Client ID for handling Google signins on this application (xngin-development-dc).
   # Use this during most development scenarios.
-  NEXT_PUBLIC_XNGIN_GOOGLE_CLIENT_ID: "222213100775-qa1ajcrk48il70itcbdcvgr9ib5t08uf.apps.googleusercontent.com"
+  NEXT_PUBLIC_XNGIN_GOOGLE_CLIENT_ID: '222213100775-qa1ajcrk48il70itcbdcvgr9ib5t08uf.apps.googleusercontent.com'
 
   # The OAuth Client Credentials Client ID for handling Google signins on this application (evidential-live).
   # Use this only when verifying production environments.
@@ -37,7 +37,7 @@ tasks:
       fi
       npm install
   start:
-    desc: "Starts the development server"
+    desc: 'Starts the development server'
     interactive: true
     deps:
       - nodedeps
@@ -50,7 +50,7 @@ tasks:
     interactive: true
     cmd: task start
   genapiclient:
-    desc: "Updates the generated API client from the apiserver running at http://localhost:8000"
+    desc: 'Updates the generated API client from the apiserver running at http://localhost:8000'
     cmd: |
       curl --max-time 3 -o /tmp/apispec.json http://localhost:8000/openapi.json
       jq . /tmp/apispec.json > openapi.json
@@ -64,14 +64,14 @@ tasks:
     deps:
       - lint-tsc
       - lint-next
-    desc: "Runs the NextJS-managed linter"
+    desc: 'Runs the NextJS-managed linter'
   build:
-    desc: "Production build of the NextJS application"
+    desc: 'Production build of the NextJS application'
     cmd: npm run build
   railway-build:
-    desc: "Builds the Docker image used by the Railway deployment."
+    desc: 'Builds the Docker image used by the Railway deployment.'
     cmd: docker build -t xngin-dash -f Dockerfile.railway .
   railway-run:
-    desc: "Runs the Docker image in a similar way to how Railway runs it."
+    desc: 'Runs the Docker image in a similar way to how Railway runs it.'
     interactive: true
     cmd: docker run --rm -it -p 3000:3000 xngin-dash

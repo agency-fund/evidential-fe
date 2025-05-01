@@ -4,12 +4,11 @@ import '@radix-ui/themes/styles.css';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { Container, Flex, Theme } from '@radix-ui/themes';
 import { OrganizationProvider } from './providers/organization-provider';
-
 import GoogleAuthProvider from '@/app/providers/auth-provider';
 import OurSwrConfig from '@/app/providers/our-swr-config';
 import { Suspense } from 'react';
-import { NavigationBar } from '@/app/navigation-bar';
-import { HeaderBar } from '@/app/header-bar';
+import { NavigationBar } from '@/app/components/nav/navigation-curtain';
+import { HeaderBar } from '@/app/components/header/header-bar';
 import * as Toast from '@radix-ui/react-toast';
 
 const geistSans = Geist({
@@ -36,12 +35,12 @@ export default function RootLayout({
               <GoogleAuthProvider>
                 <OurSwrConfig>
                   <OrganizationProvider>
-                    <Flex direction="column" height={'100vh'}>
+                    <Flex direction="column" height="100vh">
                       <HeaderBar />
-                      <Flex flexGrow={'1'} overflow={'hidden'} pb={'4'}>
+                      <Flex flexGrow="1" overflow="hidden">
                         <NavigationBar />
-                        <Flex flexGrow={'1'} overflow={'auto'}>
-                          <Container p={'4'}>
+                        <Flex direction="column" flexGrow="1" overflowY="auto" position="relative">
+                          <Container p="4" flexGrow="1" width="100%">
                             <Suspense>{children}</Suspense>
                           </Container>
                         </Flex>
