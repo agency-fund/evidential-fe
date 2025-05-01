@@ -48,15 +48,7 @@ export function HeaderBar() {
         }}
       >
         <DropdownMenu.Trigger>
-          <IconButton
-            variant="ghost"
-            color="gray"
-            size="2"
-            aria-label="User menu"
-            aria-controls="user-menu"
-            aria-expanded={dropdownOpen !== 'closed'}
-            aria-haspopup="true"
-          >
+          <IconButton variant="ghost" color="gray" size="2">
             <AvatarIcon width="24" height="24" />
           </IconButton>
         </DropdownMenu.Trigger>
@@ -71,8 +63,6 @@ export function HeaderBar() {
                     event.preventDefault();
                     setDropdownOpen('organizations');
                   }}
-                  aria-haspopup="true"
-                  aria-controls="organizations-menu"
                 >
                   <BackpackIcon /> Organizations
                 </DropdownMenu.Item>
@@ -81,11 +71,7 @@ export function HeaderBar() {
             )}
             {isPrivileged && (
               <>
-                <DropdownMenu.Item
-                  onClick={() => router.push('/organizations')}
-                  aria-haspopup="true"
-                  aria-controls="organizations-menu"
-                >
+                <DropdownMenu.Item onClick={() => router.push('/organizations')}>
                   <GearIcon /> Manage Organizations
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator />
@@ -93,12 +79,7 @@ export function HeaderBar() {
             )}
 
             <DropdownMenu.Item asChild>
-              <a
-                href={XNGIN_API_DOCS_LINK}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="API Documentation (opens in a new tab)"
-              >
+              <a href={XNGIN_API_DOCS_LINK} target="_blank" rel="noopener noreferrer">
                 <RocketIcon /> API Documentation
               </a>
             </DropdownMenu.Item>

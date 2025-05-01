@@ -54,15 +54,7 @@ export const NavigationBar = () => {
           <Flex justify={isOpen ? 'end' : 'center'} width="100%">
             <MotionBox initial={false} layout transition={transitions.normal}>
               <Tooltip content={isOpen ? 'Collapse navigation' : 'Expand navigation'}>
-                <IconButton
-                  aria-label={isOpen ? 'Collapse navigation' : 'Expand navigation'}
-                  aria-controls="nav-content"
-                  aria-expanded={isOpen}
-                  onClick={() => setIsOpen((o) => !o)}
-                  size="2"
-                  variant="ghost"
-                  color="gray"
-                >
+                <IconButton onClick={() => setIsOpen((o) => !o)} size="2" variant="ghost" color="gray">
                   {isOpen ? <ChevronLeftIcon width={20} height={20} /> : <HamburgerMenuIcon width={20} height={20} />}
                 </IconButton>
               </Tooltip>

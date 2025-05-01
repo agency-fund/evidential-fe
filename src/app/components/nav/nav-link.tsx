@@ -19,7 +19,7 @@ export interface NavLinkProps {
 export const NavLink = ({ href, isActive, label, icon: Icon, isOpen }: NavLinkProps) => {
   return (
     <NavigationMenu.Link active={isActive} asChild>
-      <Link href={href} passHref aria-label={label} style={{ textDecoration: 'none' }}>
+      <Link href={href} passHref style={{ textDecoration: 'none' }}>
         <MotionBox
           initial={false}
           animate={{
