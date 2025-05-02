@@ -1,6 +1,6 @@
 'use client';
 import { FieldDescriptor, ParticipantsDef } from '@/api/methods.schemas';
-import { Flex, Switch, Table, Text, TextField } from '@radix-ui/themes';
+import { Flex, Switch, Table, Text, TextField, Radio, Checkbox, Tooltip } from '@radix-ui/themes';
 import { useState } from 'react';
 import { isEligibleForUseAsMetric } from '@/services/genapi-helpers';
 
@@ -55,63 +55,66 @@ export function ParticipantDefEditor({
                 />
               </Table.Cell>
               <Table.Cell style={{ textAlign: 'center' }}>
-                <input
-                  type="radio"
-                  name="unique_id"
+                <Radio
+                  value={field.field_name}
                   checked={field.is_unique_id}
-                  onChange={(e) => {
-                    // Update all fields to set is_unique_id to false
+                  onValueChange={(checked) => {
                     const newFields = [...participantDef.fields].map((f) => ({
                       ...f,
                       is_unique_id: false,
                     }));
-                    // Then set the selected field to true
-                    newFields[index].is_unique_id = e.target.checked;
+                    newFields[index].is_unique_id = true;
                     onUpdate({
                       ...participantDef,
                       fields: newFields,
                     });
                   }}
+                  size="3"
                 />
               </Table.Cell>
               {showAdvanced && (
                 <Table.Cell style={{ textAlign: 'center' }}>
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={field.is_strata}
-                    onChange={(e) =>
+                    onCheckedChange={(checked) =>
                       updateField(index, {
                         ...field,
-                        is_strata: e.target.checked,
-                      })
+                        is_strata: checked,
+                      } as FieldDescriptor)
                     }
+                    size="3"
                   />
                 </Table.Cell>
               )}
               <Table.Cell style={{ textAlign: 'center' }}>
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={field.is_filter}
-                  onChange={(e) =>
+                  onCheckedChange={(checked) =>
                     updateField(index, {
                       ...field,
-                      is_filter: e.target.checked,
-                    })
+                      is_filter: checked,
+                    } as FieldDescriptor)
                   }
+                  size="3"
                 />
               </Table.Cell>
               <Table.Cell style={{ textAlign: 'center' }}>
-                <input
-                  type="checkbox"
-                  disabled={!isEligibleForUseAsMetric(field.data_type)}
-                  checked={field.is_metric}
-                  onChange={(e) =>
-                    updateField(index, {
-                      ...field,
-                      is_metric: e.target.checked,
-                    })
-                  }
-                />
+                {isEligibleForUseAsMetric(field.data_type) ? (
+                  <Checkbox
+                    checked={field.is_metric}
+                    onCheckedChange={(checked) =>
+                      updateField(index, {
+                        ...field,
+                        is_metric: checked,
+                      } as FieldDescriptor)
+                    }
+                    size="3"
+                  />
+                ) : (
+                  <Tooltip content="Not eligible for use as a metric">
+                    <Checkbox disabled={true} size="3" />
+                  </Tooltip>
+                )}
               </Table.Cell>
             </Table.Row>
           ))}
