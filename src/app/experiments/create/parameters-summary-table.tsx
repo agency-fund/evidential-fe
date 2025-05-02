@@ -22,8 +22,8 @@ export function ParametersSummaryTable({ formData }: { formData: ExperimentFormD
             <Table.Cell>{formData.effectPctChange}%</Table.Cell>
           </Table.Row>
           <Table.Row>
-            <Table.RowHeaderCell>Chosen N</Table.RowHeaderCell>
-            <Table.Cell>{formData.chosenN}</Table.Cell>
+            <Table.RowHeaderCell>Desired sample size</Table.RowHeaderCell>
+            <Table.Cell>{formData.chosenN || 'N/A'}</Table.Cell>
           </Table.Row>
         </Table.Body>
       </Table.Root>
