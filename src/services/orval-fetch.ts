@@ -39,6 +39,9 @@ const getBody = (c: Response) => {
   if (c.status === 204) {
     return null;
   }
+  if (c.status === 304) {  // not modified
+    return null;
+  }
   throw Error('Backend returned unsupported content-type.');
 };
 
