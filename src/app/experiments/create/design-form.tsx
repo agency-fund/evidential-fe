@@ -217,7 +217,13 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
           <Heading size="4" mb="4">
             <LightningBoltIcon /> Power Check
           </Heading>
-          <PowerCheckSection formData={formData} onFormDataChange={onFormDataChange} />
+          {formData.experimentType === 'online' ? (
+            <Text size="2" color="gray">
+              ⚠️ Power calculations are currently unsupported for online experiments.
+            </Text>
+          ) : (
+            <PowerCheckSection formData={formData} onFormDataChange={onFormDataChange} />
+          )}
         </Card>
 
         <Flex gap="3" justify="end">
