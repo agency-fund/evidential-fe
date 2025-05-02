@@ -1,9 +1,9 @@
 import { ExperimentFormData } from '@/app/experiments/create/page';
 import { CreateExperimentRequest, DesignSpecMetricRequest } from '@/api/methods.schemas';
-import { createExperimentWithAssignmentBody } from '@/api/admin.zod';
+import { createExperimentBody } from '@/api/admin.zod';
 
 export const convertFormDataToCreateExperimentRequest = (formData: ExperimentFormData): CreateExperimentRequest => {
-  return createExperimentWithAssignmentBody.parse({
+  return createExperimentBody.parse({
     design_spec: {
       experiment_name: formData.name,
       experiment_type: formData.experimentType,

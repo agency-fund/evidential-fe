@@ -1592,81 +1592,85 @@ export const deleteApiKeyParams = zod.object({
 });
 
 /**
- * @summary Create Experiment With Assignment
+ * @summary Create Experiment
  */
-export const createExperimentWithAssignmentParams = zod.object({
+export const createExperimentParams = zod.object({
 	datasource_id: zod.string(),
 });
 
-export const createExperimentWithAssignmentQueryStratifyOnMetricsDefault = true;
+export const createExperimentQueryStratifyOnMetricsDefault = true;
 
-export const createExperimentWithAssignmentQueryParams = zod.object({
-	chosen_n: zod.number().describe("Number of participants to assign."),
+export const createExperimentQueryParams = zod.object({
+	chosen_n: zod
+		.number()
+		.or(zod.null())
+		.optional()
+		.describe("Number of participants to assign."),
 	stratify_on_metrics: zod
 		.boolean()
-		.default(createExperimentWithAssignmentQueryStratifyOnMetricsDefault)
+		.default(createExperimentQueryStratifyOnMetricsDefault)
 		.describe("Whether to also stratify on metrics during assignment."),
 });
 
-export const createExperimentWithAssignmentBodyDesignSpecExperimentNameMax = 100;
-export const createExperimentWithAssignmentBodyDesignSpecDescriptionMax = 2000;
-export const createExperimentWithAssignmentBodyDesignSpecArmsItemArmNameMax = 100;
-export const createExperimentWithAssignmentBodyDesignSpecArmsItemArmDescriptionMaxOne = 2000;
-export const createExperimentWithAssignmentBodyDesignSpecArmsMin = 2;
+export const createExperimentBodyDesignSpecExperimentNameMax = 100;
+export const createExperimentBodyDesignSpecDescriptionMax = 2000;
+export const createExperimentBodyDesignSpecArmsItemArmNameMax = 100;
+export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOne = 2000;
+export const createExperimentBodyDesignSpecArmsMin = 2;
 
-export const createExperimentWithAssignmentBodyDesignSpecArmsMax = 10;
-export const createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesItemRegExp =
+export const createExperimentBodyDesignSpecArmsMax = 10;
+export const createExperimentBodyDesignSpecStrataFieldNamesItemRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesMax = 150;
-export const createExperimentWithAssignmentBodyDesignSpecMetricsItemFieldNameRegExp =
+export const createExperimentBodyDesignSpecStrataFieldNamesMax = 150;
+export const createExperimentBodyDesignSpecMetricsItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentWithAssignmentBodyDesignSpecMetricsMax = 150;
-export const createExperimentWithAssignmentBodyDesignSpecPowerDefault = 0.8;
-export const createExperimentWithAssignmentBodyDesignSpecPowerMin = 0;
+export const createExperimentBodyDesignSpecMetricsMax = 150;
+export const createExperimentBodyDesignSpecPowerDefault = 0.8;
+export const createExperimentBodyDesignSpecPowerMin = 0;
 
-export const createExperimentWithAssignmentBodyDesignSpecPowerMax = 1;
-export const createExperimentWithAssignmentBodyDesignSpecAlphaDefault = 0.05;
-export const createExperimentWithAssignmentBodyDesignSpecAlphaMin = 0;
+export const createExperimentBodyDesignSpecPowerMax = 1;
+export const createExperimentBodyDesignSpecAlphaDefault = 0.05;
+export const createExperimentBodyDesignSpecAlphaMin = 0;
 
-export const createExperimentWithAssignmentBodyDesignSpecAlphaMax = 1;
-export const createExperimentWithAssignmentBodyDesignSpecFstatThreshDefault = 0.6;
-export const createExperimentWithAssignmentBodyDesignSpecFstatThreshMin = 0;
+export const createExperimentBodyDesignSpecAlphaMax = 1;
+export const createExperimentBodyDesignSpecFstatThreshDefault = 0.6;
+export const createExperimentBodyDesignSpecFstatThreshMin = 0;
 
-export const createExperimentWithAssignmentBodyDesignSpecFstatThreshMax = 1;
-export const createExperimentWithAssignmentBodyDesignSpecExperimentNameMaxOne = 100;
-export const createExperimentWithAssignmentBodyDesignSpecDescriptionMaxOne = 2000;
-export const createExperimentWithAssignmentBodyDesignSpecArmsItemArmNameMaxOne = 100;
-export const createExperimentWithAssignmentBodyDesignSpecArmsItemArmDescriptionMaxFour = 2000;
-export const createExperimentWithAssignmentBodyDesignSpecArmsMinOne = 2;
+export const createExperimentBodyDesignSpecFstatThreshMax = 1;
+export const createExperimentBodyDesignSpecExperimentNameMaxOne = 100;
+export const createExperimentBodyDesignSpecDescriptionMaxOne = 2000;
+export const createExperimentBodyDesignSpecArmsItemArmNameMaxOne = 100;
+export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxFour = 2000;
+export const createExperimentBodyDesignSpecArmsMinOne = 2;
 
-export const createExperimentWithAssignmentBodyDesignSpecArmsMaxOne = 10;
-export const createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesItemRegExpOne =
+export const createExperimentBodyDesignSpecArmsMaxOne = 10;
+export const createExperimentBodyDesignSpecStrataFieldNamesItemRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesMaxOne = 150;
-export const createExperimentWithAssignmentBodyDesignSpecMetricsItemFieldNameRegExpOne =
+export const createExperimentBodyDesignSpecStrataFieldNamesMaxOne = 150;
+export const createExperimentBodyDesignSpecMetricsItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentWithAssignmentBodyDesignSpecMetricsMaxOne = 150;
-export const createExperimentWithAssignmentBodyDesignSpecPowerDefaultOne = 0.8;
-export const createExperimentWithAssignmentBodyDesignSpecPowerMinOne = 0;
+export const createExperimentBodyDesignSpecMetricsMaxOne = 150;
+export const createExperimentBodyDesignSpecPowerDefaultOne = 0.8;
+export const createExperimentBodyDesignSpecPowerMinOne = 0;
 
-export const createExperimentWithAssignmentBodyDesignSpecPowerMaxOne = 1;
-export const createExperimentWithAssignmentBodyDesignSpecAlphaDefaultOne = 0.05;
-export const createExperimentWithAssignmentBodyDesignSpecAlphaMinOne = 0;
+export const createExperimentBodyDesignSpecPowerMaxOne = 1;
+export const createExperimentBodyDesignSpecAlphaDefaultOne = 0.05;
+export const createExperimentBodyDesignSpecAlphaMinOne = 0;
 
-export const createExperimentWithAssignmentBodyDesignSpecAlphaMaxOne = 1;
-export const createExperimentWithAssignmentBodyDesignSpecFstatThreshDefaultOne = 0.6;
-export const createExperimentWithAssignmentBodyDesignSpecFstatThreshMinOne = 0;
+export const createExperimentBodyDesignSpecAlphaMaxOne = 1;
+export const createExperimentBodyDesignSpecFstatThreshDefaultOne = 0.6;
+export const createExperimentBodyDesignSpecFstatThreshMinOne = 0;
 
-export const createExperimentWithAssignmentBodyDesignSpecFstatThreshMaxOne = 1;
-export const createExperimentWithAssignmentBodyAudienceSpecParticipantTypeMax = 100;
-export const createExperimentWithAssignmentBodyAudienceSpecFiltersItemFieldNameRegExp =
+export const createExperimentBodyDesignSpecFstatThreshMaxOne = 1;
+export const createExperimentBodyAudienceSpecParticipantTypeMax = 100;
+export const createExperimentBodyAudienceSpecFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentWithAssignmentBodyAudienceSpecFiltersMax = 20;
-export const createExperimentWithAssignmentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
+export const createExperimentBodyAudienceSpecFiltersMax = 20;
+export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentWithAssignmentBodyPowerAnalysesAnalysesMax = 150;
+export const createExperimentBodyPowerAnalysesAnalysesMax = 150;
 
-export const createExperimentWithAssignmentBody = zod.object({
+export const createExperimentBody = zod.object({
 	design_spec: zod.discriminatedUnion("experiment_type", [
 		zod
 			.object({
@@ -1680,10 +1684,10 @@ export const createExperimentWithAssignmentBody = zod.object({
 				experiment_type: zod.enum(["preassigned"]),
 				experiment_name: zod
 					.string()
-					.max(createExperimentWithAssignmentBodyDesignSpecExperimentNameMax),
+					.max(createExperimentBodyDesignSpecExperimentNameMax),
 				description: zod
 					.string()
-					.max(createExperimentWithAssignmentBodyDesignSpecDescriptionMax),
+					.max(createExperimentBodyDesignSpecDescriptionMax),
 				start_date: zod.string().datetime({}),
 				end_date: zod.string().datetime({}),
 				arms: zod
@@ -1699,30 +1703,26 @@ export const createExperimentWithAssignmentBody = zod.object({
 									),
 								arm_name: zod
 									.string()
-									.max(
-										createExperimentWithAssignmentBodyDesignSpecArmsItemArmNameMax,
-									),
+									.max(createExperimentBodyDesignSpecArmsItemArmNameMax),
 								arm_description: zod
 									.string()
 									.max(
-										createExperimentWithAssignmentBodyDesignSpecArmsItemArmDescriptionMaxOne,
+										createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOne,
 									)
 									.or(zod.null())
 									.optional(),
 							})
 							.describe("Describes an experiment treatment arm."),
 					)
-					.min(createExperimentWithAssignmentBodyDesignSpecArmsMin)
-					.max(createExperimentWithAssignmentBodyDesignSpecArmsMax),
+					.min(createExperimentBodyDesignSpecArmsMin)
+					.max(createExperimentBodyDesignSpecArmsMax),
 				strata_field_names: zod
 					.array(
 						zod
 							.string()
-							.regex(
-								createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesItemRegExp,
-							),
+							.regex(createExperimentBodyDesignSpecStrataFieldNamesItemRegExp),
 					)
-					.max(createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesMax)
+					.max(createExperimentBodyDesignSpecStrataFieldNamesMax)
 					.describe(
 						"List of participant_type variables to use for stratification.",
 					),
@@ -1733,7 +1733,7 @@ export const createExperimentWithAssignmentBody = zod.object({
 								field_name: zod
 									.string()
 									.regex(
-										createExperimentWithAssignmentBodyDesignSpecMetricsItemFieldNameRegExp,
+										createExperimentBodyDesignSpecMetricsItemFieldNameRegExp,
 									),
 								metric_pct_change: zod
 									.number()
@@ -1755,31 +1755,29 @@ export const createExperimentWithAssignmentBody = zod.object({
 							),
 					)
 					.min(1)
-					.max(createExperimentWithAssignmentBodyDesignSpecMetricsMax)
+					.max(createExperimentBodyDesignSpecMetricsMax)
 					.describe("Primary and optional secondary metrics to target."),
 				power: zod
 					.number()
-					.min(createExperimentWithAssignmentBodyDesignSpecPowerMin)
-					.max(createExperimentWithAssignmentBodyDesignSpecPowerMax)
-					.default(createExperimentWithAssignmentBodyDesignSpecPowerDefault)
+					.min(createExperimentBodyDesignSpecPowerMin)
+					.max(createExperimentBodyDesignSpecPowerMax)
+					.default(createExperimentBodyDesignSpecPowerDefault)
 					.describe(
 						"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
 					),
 				alpha: zod
 					.number()
-					.min(createExperimentWithAssignmentBodyDesignSpecAlphaMin)
-					.max(createExperimentWithAssignmentBodyDesignSpecAlphaMax)
-					.default(createExperimentWithAssignmentBodyDesignSpecAlphaDefault)
+					.min(createExperimentBodyDesignSpecAlphaMin)
+					.max(createExperimentBodyDesignSpecAlphaMax)
+					.default(createExperimentBodyDesignSpecAlphaDefault)
 					.describe(
 						"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
 					),
 				fstat_thresh: zod
 					.number()
-					.min(createExperimentWithAssignmentBodyDesignSpecFstatThreshMin)
-					.max(createExperimentWithAssignmentBodyDesignSpecFstatThreshMax)
-					.default(
-						createExperimentWithAssignmentBodyDesignSpecFstatThreshDefault,
-					)
+					.min(createExperimentBodyDesignSpecFstatThreshMin)
+					.max(createExperimentBodyDesignSpecFstatThreshMax)
+					.default(createExperimentBodyDesignSpecFstatThreshDefault)
 					.describe(
 						'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
 					),
@@ -1799,12 +1797,10 @@ export const createExperimentWithAssignmentBody = zod.object({
 				experiment_type: zod.enum(["online"]),
 				experiment_name: zod
 					.string()
-					.max(
-						createExperimentWithAssignmentBodyDesignSpecExperimentNameMaxOne,
-					),
+					.max(createExperimentBodyDesignSpecExperimentNameMaxOne),
 				description: zod
 					.string()
-					.max(createExperimentWithAssignmentBodyDesignSpecDescriptionMaxOne),
+					.max(createExperimentBodyDesignSpecDescriptionMaxOne),
 				start_date: zod.string().datetime({}),
 				end_date: zod.string().datetime({}),
 				arms: zod
@@ -1820,32 +1816,28 @@ export const createExperimentWithAssignmentBody = zod.object({
 									),
 								arm_name: zod
 									.string()
-									.max(
-										createExperimentWithAssignmentBodyDesignSpecArmsItemArmNameMaxOne,
-									),
+									.max(createExperimentBodyDesignSpecArmsItemArmNameMaxOne),
 								arm_description: zod
 									.string()
 									.max(
-										createExperimentWithAssignmentBodyDesignSpecArmsItemArmDescriptionMaxFour,
+										createExperimentBodyDesignSpecArmsItemArmDescriptionMaxFour,
 									)
 									.or(zod.null())
 									.optional(),
 							})
 							.describe("Describes an experiment treatment arm."),
 					)
-					.min(createExperimentWithAssignmentBodyDesignSpecArmsMinOne)
-					.max(createExperimentWithAssignmentBodyDesignSpecArmsMaxOne),
+					.min(createExperimentBodyDesignSpecArmsMinOne)
+					.max(createExperimentBodyDesignSpecArmsMaxOne),
 				strata_field_names: zod
 					.array(
 						zod
 							.string()
 							.regex(
-								createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesItemRegExpOne,
+								createExperimentBodyDesignSpecStrataFieldNamesItemRegExpOne,
 							),
 					)
-					.max(
-						createExperimentWithAssignmentBodyDesignSpecStrataFieldNamesMaxOne,
-					)
+					.max(createExperimentBodyDesignSpecStrataFieldNamesMaxOne)
 					.describe(
 						"List of participant_type variables to use for stratification.",
 					),
@@ -1856,7 +1848,7 @@ export const createExperimentWithAssignmentBody = zod.object({
 								field_name: zod
 									.string()
 									.regex(
-										createExperimentWithAssignmentBodyDesignSpecMetricsItemFieldNameRegExpOne,
+										createExperimentBodyDesignSpecMetricsItemFieldNameRegExpOne,
 									),
 								metric_pct_change: zod
 									.number()
@@ -1878,31 +1870,29 @@ export const createExperimentWithAssignmentBody = zod.object({
 							),
 					)
 					.min(1)
-					.max(createExperimentWithAssignmentBodyDesignSpecMetricsMaxOne)
+					.max(createExperimentBodyDesignSpecMetricsMaxOne)
 					.describe("Primary and optional secondary metrics to target."),
 				power: zod
 					.number()
-					.min(createExperimentWithAssignmentBodyDesignSpecPowerMinOne)
-					.max(createExperimentWithAssignmentBodyDesignSpecPowerMaxOne)
-					.default(createExperimentWithAssignmentBodyDesignSpecPowerDefaultOne)
+					.min(createExperimentBodyDesignSpecPowerMinOne)
+					.max(createExperimentBodyDesignSpecPowerMaxOne)
+					.default(createExperimentBodyDesignSpecPowerDefaultOne)
 					.describe(
 						"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
 					),
 				alpha: zod
 					.number()
-					.min(createExperimentWithAssignmentBodyDesignSpecAlphaMinOne)
-					.max(createExperimentWithAssignmentBodyDesignSpecAlphaMaxOne)
-					.default(createExperimentWithAssignmentBodyDesignSpecAlphaDefaultOne)
+					.min(createExperimentBodyDesignSpecAlphaMinOne)
+					.max(createExperimentBodyDesignSpecAlphaMaxOne)
+					.default(createExperimentBodyDesignSpecAlphaDefaultOne)
 					.describe(
 						"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
 					),
 				fstat_thresh: zod
 					.number()
-					.min(createExperimentWithAssignmentBodyDesignSpecFstatThreshMinOne)
-					.max(createExperimentWithAssignmentBodyDesignSpecFstatThreshMaxOne)
-					.default(
-						createExperimentWithAssignmentBodyDesignSpecFstatThreshDefaultOne,
-					)
+					.min(createExperimentBodyDesignSpecFstatThreshMinOne)
+					.max(createExperimentBodyDesignSpecFstatThreshMaxOne)
+					.default(createExperimentBodyDesignSpecFstatThreshDefaultOne)
 					.describe(
 						'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
 					),
@@ -1915,7 +1905,7 @@ export const createExperimentWithAssignmentBody = zod.object({
 		.object({
 			participant_type: zod
 				.string()
-				.max(createExperimentWithAssignmentBodyAudienceSpecParticipantTypeMax),
+				.max(createExperimentBodyAudienceSpecParticipantTypeMax),
 			filters: zod
 				.array(
 					zod
@@ -1923,7 +1913,7 @@ export const createExperimentWithAssignmentBody = zod.object({
 							field_name: zod
 								.string()
 								.regex(
-									createExperimentWithAssignmentBodyAudienceSpecFiltersItemFieldNameRegExp,
+									createExperimentBodyAudienceSpecFiltersItemFieldNameRegExp,
 								),
 							relation: zod
 								.enum(["includes", "excludes", "between"])
@@ -1940,7 +1930,7 @@ export const createExperimentWithAssignmentBody = zod.object({
 							'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 						),
 				)
-				.max(createExperimentWithAssignmentBodyAudienceSpecFiltersMax),
+				.max(createExperimentBodyAudienceSpecFiltersMax),
 		})
 		.describe("Defines target participants for an experiment using filters."),
 	power_analyses: zod
@@ -1954,7 +1944,7 @@ export const createExperimentWithAssignmentBody = zod.object({
 									field_name: zod
 										.string()
 										.regex(
-											createExperimentWithAssignmentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp,
+											createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp,
 										),
 									metric_pct_change: zod
 										.number()
@@ -2067,75 +2057,75 @@ export const createExperimentWithAssignmentBody = zod.object({
 						})
 						.describe("Describes analysis results of a single metric."),
 				)
-				.max(createExperimentWithAssignmentBodyPowerAnalysesAnalysesMax),
+				.max(createExperimentBodyPowerAnalysesAnalysesMax),
 		})
 		.or(zod.null())
 		.optional(),
 });
 
-export const createExperimentWithAssignmentResponseDesignSpecExperimentNameMax = 100;
-export const createExperimentWithAssignmentResponseDesignSpecDescriptionMax = 2000;
-export const createExperimentWithAssignmentResponseDesignSpecArmsItemArmNameMax = 100;
-export const createExperimentWithAssignmentResponseDesignSpecArmsItemArmDescriptionMaxOne = 2000;
-export const createExperimentWithAssignmentResponseDesignSpecArmsMin = 2;
+export const createExperimentResponseDesignSpecExperimentNameMax = 100;
+export const createExperimentResponseDesignSpecDescriptionMax = 2000;
+export const createExperimentResponseDesignSpecArmsItemArmNameMax = 100;
+export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOne = 2000;
+export const createExperimentResponseDesignSpecArmsMin = 2;
 
-export const createExperimentWithAssignmentResponseDesignSpecArmsMax = 10;
-export const createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesItemRegExp =
+export const createExperimentResponseDesignSpecArmsMax = 10;
+export const createExperimentResponseDesignSpecStrataFieldNamesItemRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesMax = 150;
-export const createExperimentWithAssignmentResponseDesignSpecMetricsItemFieldNameRegExp =
+export const createExperimentResponseDesignSpecStrataFieldNamesMax = 150;
+export const createExperimentResponseDesignSpecMetricsItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentWithAssignmentResponseDesignSpecMetricsMax = 150;
-export const createExperimentWithAssignmentResponseDesignSpecPowerDefault = 0.8;
-export const createExperimentWithAssignmentResponseDesignSpecPowerMin = 0;
+export const createExperimentResponseDesignSpecMetricsMax = 150;
+export const createExperimentResponseDesignSpecPowerDefault = 0.8;
+export const createExperimentResponseDesignSpecPowerMin = 0;
 
-export const createExperimentWithAssignmentResponseDesignSpecPowerMax = 1;
-export const createExperimentWithAssignmentResponseDesignSpecAlphaDefault = 0.05;
-export const createExperimentWithAssignmentResponseDesignSpecAlphaMin = 0;
+export const createExperimentResponseDesignSpecPowerMax = 1;
+export const createExperimentResponseDesignSpecAlphaDefault = 0.05;
+export const createExperimentResponseDesignSpecAlphaMin = 0;
 
-export const createExperimentWithAssignmentResponseDesignSpecAlphaMax = 1;
-export const createExperimentWithAssignmentResponseDesignSpecFstatThreshDefault = 0.6;
-export const createExperimentWithAssignmentResponseDesignSpecFstatThreshMin = 0;
+export const createExperimentResponseDesignSpecAlphaMax = 1;
+export const createExperimentResponseDesignSpecFstatThreshDefault = 0.6;
+export const createExperimentResponseDesignSpecFstatThreshMin = 0;
 
-export const createExperimentWithAssignmentResponseDesignSpecFstatThreshMax = 1;
-export const createExperimentWithAssignmentResponseDesignSpecExperimentNameMaxOne = 100;
-export const createExperimentWithAssignmentResponseDesignSpecDescriptionMaxOne = 2000;
-export const createExperimentWithAssignmentResponseDesignSpecArmsItemArmNameMaxOne = 100;
-export const createExperimentWithAssignmentResponseDesignSpecArmsItemArmDescriptionMaxFour = 2000;
-export const createExperimentWithAssignmentResponseDesignSpecArmsMinOne = 2;
+export const createExperimentResponseDesignSpecFstatThreshMax = 1;
+export const createExperimentResponseDesignSpecExperimentNameMaxOne = 100;
+export const createExperimentResponseDesignSpecDescriptionMaxOne = 2000;
+export const createExperimentResponseDesignSpecArmsItemArmNameMaxOne = 100;
+export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxFour = 2000;
+export const createExperimentResponseDesignSpecArmsMinOne = 2;
 
-export const createExperimentWithAssignmentResponseDesignSpecArmsMaxOne = 10;
-export const createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesItemRegExpOne =
+export const createExperimentResponseDesignSpecArmsMaxOne = 10;
+export const createExperimentResponseDesignSpecStrataFieldNamesItemRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesMaxOne = 150;
-export const createExperimentWithAssignmentResponseDesignSpecMetricsItemFieldNameRegExpOne =
+export const createExperimentResponseDesignSpecStrataFieldNamesMaxOne = 150;
+export const createExperimentResponseDesignSpecMetricsItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentWithAssignmentResponseDesignSpecMetricsMaxOne = 150;
-export const createExperimentWithAssignmentResponseDesignSpecPowerDefaultOne = 0.8;
-export const createExperimentWithAssignmentResponseDesignSpecPowerMinOne = 0;
+export const createExperimentResponseDesignSpecMetricsMaxOne = 150;
+export const createExperimentResponseDesignSpecPowerDefaultOne = 0.8;
+export const createExperimentResponseDesignSpecPowerMinOne = 0;
 
-export const createExperimentWithAssignmentResponseDesignSpecPowerMaxOne = 1;
-export const createExperimentWithAssignmentResponseDesignSpecAlphaDefaultOne = 0.05;
-export const createExperimentWithAssignmentResponseDesignSpecAlphaMinOne = 0;
+export const createExperimentResponseDesignSpecPowerMaxOne = 1;
+export const createExperimentResponseDesignSpecAlphaDefaultOne = 0.05;
+export const createExperimentResponseDesignSpecAlphaMinOne = 0;
 
-export const createExperimentWithAssignmentResponseDesignSpecAlphaMaxOne = 1;
-export const createExperimentWithAssignmentResponseDesignSpecFstatThreshDefaultOne = 0.6;
-export const createExperimentWithAssignmentResponseDesignSpecFstatThreshMinOne = 0;
+export const createExperimentResponseDesignSpecAlphaMaxOne = 1;
+export const createExperimentResponseDesignSpecFstatThreshDefaultOne = 0.6;
+export const createExperimentResponseDesignSpecFstatThreshMinOne = 0;
 
-export const createExperimentWithAssignmentResponseDesignSpecFstatThreshMaxOne = 1;
-export const createExperimentWithAssignmentResponseAudienceSpecParticipantTypeMax = 100;
-export const createExperimentWithAssignmentResponseAudienceSpecFiltersItemFieldNameRegExp =
+export const createExperimentResponseDesignSpecFstatThreshMaxOne = 1;
+export const createExperimentResponseAudienceSpecParticipantTypeMax = 100;
+export const createExperimentResponseAudienceSpecFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentWithAssignmentResponseAudienceSpecFiltersMax = 20;
-export const createExperimentWithAssignmentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
+export const createExperimentResponseAudienceSpecFiltersMax = 20;
+export const createExperimentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentWithAssignmentResponsePowerAnalysesAnalysesMax = 150;
-export const createExperimentWithAssignmentResponseAssignSummaryArmSizesItemArmArmNameMax = 100;
-export const createExperimentWithAssignmentResponseAssignSummaryArmSizesItemArmArmDescriptionMaxOne = 2000;
-export const createExperimentWithAssignmentResponseAssignSummaryArmSizesItemSizeDefault = 0;
-export const createExperimentWithAssignmentResponseAssignSummaryArmSizesMaxOne = 10;
+export const createExperimentResponsePowerAnalysesAnalysesMax = 150;
+export const createExperimentResponseAssignSummaryArmSizesItemArmArmNameMax = 100;
+export const createExperimentResponseAssignSummaryArmSizesItemArmArmDescriptionMaxOne = 2000;
+export const createExperimentResponseAssignSummaryArmSizesItemSizeDefault = 0;
+export const createExperimentResponseAssignSummaryArmSizesMaxOne = 10;
 
-export const createExperimentWithAssignmentResponse = zod
+export const createExperimentResponse = zod
 	.object({
 		datasource_id: zod.string(),
 		state: zod
@@ -2156,14 +2146,10 @@ export const createExperimentWithAssignmentResponse = zod
 					experiment_type: zod.enum(["preassigned"]),
 					experiment_name: zod
 						.string()
-						.max(
-							createExperimentWithAssignmentResponseDesignSpecExperimentNameMax,
-						),
+						.max(createExperimentResponseDesignSpecExperimentNameMax),
 					description: zod
 						.string()
-						.max(
-							createExperimentWithAssignmentResponseDesignSpecDescriptionMax,
-						),
+						.max(createExperimentResponseDesignSpecDescriptionMax),
 					start_date: zod.string().datetime({}),
 					end_date: zod.string().datetime({}),
 					arms: zod
@@ -2179,32 +2165,28 @@ export const createExperimentWithAssignmentResponse = zod
 										),
 									arm_name: zod
 										.string()
-										.max(
-											createExperimentWithAssignmentResponseDesignSpecArmsItemArmNameMax,
-										),
+										.max(createExperimentResponseDesignSpecArmsItemArmNameMax),
 									arm_description: zod
 										.string()
 										.max(
-											createExperimentWithAssignmentResponseDesignSpecArmsItemArmDescriptionMaxOne,
+											createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOne,
 										)
 										.or(zod.null())
 										.optional(),
 								})
 								.describe("Describes an experiment treatment arm."),
 						)
-						.min(createExperimentWithAssignmentResponseDesignSpecArmsMin)
-						.max(createExperimentWithAssignmentResponseDesignSpecArmsMax),
+						.min(createExperimentResponseDesignSpecArmsMin)
+						.max(createExperimentResponseDesignSpecArmsMax),
 					strata_field_names: zod
 						.array(
 							zod
 								.string()
 								.regex(
-									createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesItemRegExp,
+									createExperimentResponseDesignSpecStrataFieldNamesItemRegExp,
 								),
 						)
-						.max(
-							createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesMax,
-						)
+						.max(createExperimentResponseDesignSpecStrataFieldNamesMax)
 						.describe(
 							"List of participant_type variables to use for stratification.",
 						),
@@ -2215,7 +2197,7 @@ export const createExperimentWithAssignmentResponse = zod
 									field_name: zod
 										.string()
 										.regex(
-											createExperimentWithAssignmentResponseDesignSpecMetricsItemFieldNameRegExp,
+											createExperimentResponseDesignSpecMetricsItemFieldNameRegExp,
 										),
 									metric_pct_change: zod
 										.number()
@@ -2237,35 +2219,29 @@ export const createExperimentWithAssignmentResponse = zod
 								),
 						)
 						.min(1)
-						.max(createExperimentWithAssignmentResponseDesignSpecMetricsMax)
+						.max(createExperimentResponseDesignSpecMetricsMax)
 						.describe("Primary and optional secondary metrics to target."),
 					power: zod
 						.number()
-						.min(createExperimentWithAssignmentResponseDesignSpecPowerMin)
-						.max(createExperimentWithAssignmentResponseDesignSpecPowerMax)
-						.default(
-							createExperimentWithAssignmentResponseDesignSpecPowerDefault,
-						)
+						.min(createExperimentResponseDesignSpecPowerMin)
+						.max(createExperimentResponseDesignSpecPowerMax)
+						.default(createExperimentResponseDesignSpecPowerDefault)
 						.describe(
 							"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
 						),
 					alpha: zod
 						.number()
-						.min(createExperimentWithAssignmentResponseDesignSpecAlphaMin)
-						.max(createExperimentWithAssignmentResponseDesignSpecAlphaMax)
-						.default(
-							createExperimentWithAssignmentResponseDesignSpecAlphaDefault,
-						)
+						.min(createExperimentResponseDesignSpecAlphaMin)
+						.max(createExperimentResponseDesignSpecAlphaMax)
+						.default(createExperimentResponseDesignSpecAlphaDefault)
 						.describe(
 							"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
 						),
 					fstat_thresh: zod
 						.number()
-						.min(createExperimentWithAssignmentResponseDesignSpecFstatThreshMin)
-						.max(createExperimentWithAssignmentResponseDesignSpecFstatThreshMax)
-						.default(
-							createExperimentWithAssignmentResponseDesignSpecFstatThreshDefault,
-						)
+						.min(createExperimentResponseDesignSpecFstatThreshMin)
+						.max(createExperimentResponseDesignSpecFstatThreshMax)
+						.default(createExperimentResponseDesignSpecFstatThreshDefault)
 						.describe(
 							'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
 						),
@@ -2285,14 +2261,10 @@ export const createExperimentWithAssignmentResponse = zod
 					experiment_type: zod.enum(["online"]),
 					experiment_name: zod
 						.string()
-						.max(
-							createExperimentWithAssignmentResponseDesignSpecExperimentNameMaxOne,
-						),
+						.max(createExperimentResponseDesignSpecExperimentNameMaxOne),
 					description: zod
 						.string()
-						.max(
-							createExperimentWithAssignmentResponseDesignSpecDescriptionMaxOne,
-						),
+						.max(createExperimentResponseDesignSpecDescriptionMaxOne),
 					start_date: zod.string().datetime({}),
 					end_date: zod.string().datetime({}),
 					arms: zod
@@ -2309,31 +2281,29 @@ export const createExperimentWithAssignmentResponse = zod
 									arm_name: zod
 										.string()
 										.max(
-											createExperimentWithAssignmentResponseDesignSpecArmsItemArmNameMaxOne,
+											createExperimentResponseDesignSpecArmsItemArmNameMaxOne,
 										),
 									arm_description: zod
 										.string()
 										.max(
-											createExperimentWithAssignmentResponseDesignSpecArmsItemArmDescriptionMaxFour,
+											createExperimentResponseDesignSpecArmsItemArmDescriptionMaxFour,
 										)
 										.or(zod.null())
 										.optional(),
 								})
 								.describe("Describes an experiment treatment arm."),
 						)
-						.min(createExperimentWithAssignmentResponseDesignSpecArmsMinOne)
-						.max(createExperimentWithAssignmentResponseDesignSpecArmsMaxOne),
+						.min(createExperimentResponseDesignSpecArmsMinOne)
+						.max(createExperimentResponseDesignSpecArmsMaxOne),
 					strata_field_names: zod
 						.array(
 							zod
 								.string()
 								.regex(
-									createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesItemRegExpOne,
+									createExperimentResponseDesignSpecStrataFieldNamesItemRegExpOne,
 								),
 						)
-						.max(
-							createExperimentWithAssignmentResponseDesignSpecStrataFieldNamesMaxOne,
-						)
+						.max(createExperimentResponseDesignSpecStrataFieldNamesMaxOne)
 						.describe(
 							"List of participant_type variables to use for stratification.",
 						),
@@ -2344,7 +2314,7 @@ export const createExperimentWithAssignmentResponse = zod
 									field_name: zod
 										.string()
 										.regex(
-											createExperimentWithAssignmentResponseDesignSpecMetricsItemFieldNameRegExpOne,
+											createExperimentResponseDesignSpecMetricsItemFieldNameRegExpOne,
 										),
 									metric_pct_change: zod
 										.number()
@@ -2366,39 +2336,29 @@ export const createExperimentWithAssignmentResponse = zod
 								),
 						)
 						.min(1)
-						.max(createExperimentWithAssignmentResponseDesignSpecMetricsMaxOne)
+						.max(createExperimentResponseDesignSpecMetricsMaxOne)
 						.describe("Primary and optional secondary metrics to target."),
 					power: zod
 						.number()
-						.min(createExperimentWithAssignmentResponseDesignSpecPowerMinOne)
-						.max(createExperimentWithAssignmentResponseDesignSpecPowerMaxOne)
-						.default(
-							createExperimentWithAssignmentResponseDesignSpecPowerDefaultOne,
-						)
+						.min(createExperimentResponseDesignSpecPowerMinOne)
+						.max(createExperimentResponseDesignSpecPowerMaxOne)
+						.default(createExperimentResponseDesignSpecPowerDefaultOne)
 						.describe(
 							"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
 						),
 					alpha: zod
 						.number()
-						.min(createExperimentWithAssignmentResponseDesignSpecAlphaMinOne)
-						.max(createExperimentWithAssignmentResponseDesignSpecAlphaMaxOne)
-						.default(
-							createExperimentWithAssignmentResponseDesignSpecAlphaDefaultOne,
-						)
+						.min(createExperimentResponseDesignSpecAlphaMinOne)
+						.max(createExperimentResponseDesignSpecAlphaMaxOne)
+						.default(createExperimentResponseDesignSpecAlphaDefaultOne)
 						.describe(
 							"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
 						),
 					fstat_thresh: zod
 						.number()
-						.min(
-							createExperimentWithAssignmentResponseDesignSpecFstatThreshMinOne,
-						)
-						.max(
-							createExperimentWithAssignmentResponseDesignSpecFstatThreshMaxOne,
-						)
-						.default(
-							createExperimentWithAssignmentResponseDesignSpecFstatThreshDefaultOne,
-						)
+						.min(createExperimentResponseDesignSpecFstatThreshMinOne)
+						.max(createExperimentResponseDesignSpecFstatThreshMaxOne)
+						.default(createExperimentResponseDesignSpecFstatThreshDefaultOne)
 						.describe(
 							'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
 						),
@@ -2411,9 +2371,7 @@ export const createExperimentWithAssignmentResponse = zod
 			.object({
 				participant_type: zod
 					.string()
-					.max(
-						createExperimentWithAssignmentResponseAudienceSpecParticipantTypeMax,
-					),
+					.max(createExperimentResponseAudienceSpecParticipantTypeMax),
 				filters: zod
 					.array(
 						zod
@@ -2421,7 +2379,7 @@ export const createExperimentWithAssignmentResponse = zod
 								field_name: zod
 									.string()
 									.regex(
-										createExperimentWithAssignmentResponseAudienceSpecFiltersItemFieldNameRegExp,
+										createExperimentResponseAudienceSpecFiltersItemFieldNameRegExp,
 									),
 								relation: zod
 									.enum(["includes", "excludes", "between"])
@@ -2438,7 +2396,7 @@ export const createExperimentWithAssignmentResponse = zod
 								'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 							),
 					)
-					.max(createExperimentWithAssignmentResponseAudienceSpecFiltersMax),
+					.max(createExperimentResponseAudienceSpecFiltersMax),
 			})
 			.describe("Defines target participants for an experiment using filters."),
 		power_analyses: zod
@@ -2452,7 +2410,7 @@ export const createExperimentWithAssignmentResponse = zod
 										field_name: zod
 											.string()
 											.regex(
-												createExperimentWithAssignmentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp,
+												createExperimentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp,
 											),
 										metric_pct_change: zod
 											.number()
@@ -2567,7 +2525,7 @@ export const createExperimentWithAssignmentResponse = zod
 							})
 							.describe("Describes analysis results of a single metric."),
 					)
-					.max(createExperimentWithAssignmentResponsePowerAnalysesAnalysesMax),
+					.max(createExperimentResponsePowerAnalysesAnalysesMax),
 			})
 			.or(zod.null()),
 		assign_summary: zod
@@ -2625,12 +2583,12 @@ export const createExperimentWithAssignmentResponse = zod
 										arm_name: zod
 											.string()
 											.max(
-												createExperimentWithAssignmentResponseAssignSummaryArmSizesItemArmArmNameMax,
+												createExperimentResponseAssignSummaryArmSizesItemArmArmNameMax,
 											),
 										arm_description: zod
 											.string()
 											.max(
-												createExperimentWithAssignmentResponseAssignSummaryArmSizesItemArmArmDescriptionMaxOne,
+												createExperimentResponseAssignSummaryArmSizesItemArmArmDescriptionMaxOne,
 											)
 											.or(zod.null())
 											.optional(),
@@ -2642,9 +2600,7 @@ export const createExperimentWithAssignmentResponse = zod
 								"Describes the number of participants assigned to each arm.",
 							),
 					)
-					.max(
-						createExperimentWithAssignmentResponseAssignSummaryArmSizesMaxOne,
-					)
+					.max(createExperimentResponseAssignSummaryArmSizesMaxOne)
 					.or(zod.null())
 					.optional()
 					.describe(
@@ -3378,6 +3334,8 @@ export const commitExperimentParams = zod.object({
 	experiment_id: zod.string(),
 });
 
+export const commitExperimentResponse = zod.any();
+
 /**
  * @summary Abandon Experiment
  */
@@ -3385,6 +3343,8 @@ export const abandonExperimentParams = zod.object({
 	datasource_id: zod.string(),
 	experiment_id: zod.string(),
 });
+
+export const abandonExperimentResponse = zod.any();
 
 /**
  * Returns the experiment with the specified ID.
