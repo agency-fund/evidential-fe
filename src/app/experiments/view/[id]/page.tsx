@@ -11,6 +11,7 @@ import { CopyToClipBoard } from '@/app/components/buttons/copy-to-clipboard';
 import { useState } from 'react';
 import * as Toast from '@radix-ui/react-toast';
 import { CodeSnippetCard } from '@/app/components/cards/code-snippet-card';
+import { ExperimentTypeBadge } from '../../experiment-type-badge';
 export default function ExperimentViewPage() {
   const [openToast, setOpenToast] = useState(false);
   const params = useParams();
@@ -75,6 +76,7 @@ export default function ExperimentViewPage() {
           <Text color="gray" size="3">
             on <strong>{experiment.audience_spec.participant_type}</strong>
           </Text>
+          <ExperimentTypeBadge type={design_spec.experiment_type} />
           <ExperimentStatusBadge status={state} />
         </Flex>
       </Flex>
@@ -163,7 +165,7 @@ export default function ExperimentViewPage() {
                   </Flex>
                   <Flex justify="between" align="center">
                     <Text color="gray">{arm.arm_description || 'No description'}</Text>
-                    <Text size="2" color="gray">
+                    <Text size="2" color="gray" align="right">
                       {armSize.toLocaleString()} participants
                     </Text>
                   </Flex>
