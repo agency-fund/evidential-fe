@@ -7,6 +7,8 @@ import { useAbandonExperiment, useCommitExperiment } from '@/api/admin';
 import { ParametersSummaryTable } from '@/app/experiments/create/parameters-summary-table';
 import { StatisticsSummaryTable } from '@/app/experiments/create/statistics-summary-table';
 import { CopyToClipBoard } from '@/app/components/buttons/copy-to-clipboard';
+import { GenericErrorCallout } from '@/app/components/generic-error';
+import { ApiError } from '@/services/orval-fetch';
 
 interface ConfirmationFormProps {
   formData: ExperimentFormData;
@@ -14,9 +16,27 @@ interface ConfirmationFormProps {
   onFormDataChange: (data: ExperimentFormData) => void;
 }
 
+function ExperimentErrorCallout({ error, type }: { error?: Error; type: string }) {
+  // Local component for error display. Should not normally show.
+  if (!error) return null;
+
+  const title = `Failed to ${type} experiment`;
+  // Specify a message if the error is a 304 since it has no content.
+  const message = type === 'commit' ? 'Experiment already committed.' : 'Experiment already abandoned.';
+  let is304 = false;
+  if (error instanceof ApiError && error.response) {
+    const response = error.response as { status: number };
+    is304 = response.status === 304;
+  }
+  return <GenericErrorCallout title={title} message={is304 ? message : undefined} error={is304 ? undefined : error} />;
+}
+
 export function ConfirmationForm({ formData, onBack, onFormDataChange }: ConfirmationFormProps) {
-  const { trigger: abandon } = useAbandonExperiment(formData.datasourceId!, formData.experimentId!);
-  const { trigger: commit } = useCommitExperiment(formData.datasourceId!, formData.experimentId!);
+  const { trigger: abandon, error: abandonError } = useAbandonExperiment(
+    formData.datasourceId!,
+    formData.experimentId!,
+  );
+  const { trigger: commit, error: commitError } = useCommitExperiment(formData.datasourceId!, formData.experimentId!);
 
   const handleSaveCommit = async () => {
     await commit();
@@ -149,7 +169,10 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
           <Text color="gray">No filters defined</Text>
         )}
       </Card>
-      <Flex direction={'row'} gap={'3'}></Flex>
+
+      <ExperimentErrorCallout error={commitError} type={'commit'} />
+      <ExperimentErrorCallout error={abandonError} type={'abandon'} />
+
       <Flex gap="3" justify="between" align="center">
         <Callout.Root variant={'soft'} size={'1'}>
           <Callout.Icon>
