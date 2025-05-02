@@ -112,7 +112,7 @@ export function ParticipantDefEditor({
                   />
                 ) : (
                   <Tooltip content="Not eligible for use as a metric">
-                    <Checkbox checked={field.is_metric} disabled={true} size="3" />
+                    <Checkbox disabled={true} size="3" />
                   </Tooltip>
                 )}
               </Table.Cell>
