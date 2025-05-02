@@ -1,7 +1,20 @@
 import { useCreateParticipantType, useInspectDatasource, useInspectTableInDatasource } from '@/api/admin';
 import { FieldDescriptor, FieldMetadata } from '@/api/methods.schemas';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
-import { Button, Dialog, Flex, IconButton, Spinner, Switch, Table, Text, TextField } from '@radix-ui/themes';
+import {
+  Button,
+  Dialog,
+  Flex,
+  IconButton,
+  Spinner,
+  Switch,
+  Table,
+  Text,
+  TextField,
+  Checkbox,
+  Radio,
+  Tooltip,
+} from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
 import { useEffect, useState } from 'react';
 import { GenericErrorCallout } from '@/app/components/generic-error';
@@ -227,60 +240,65 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
                             />
                           </Table.Cell>
                           <Table.Cell justify={'center'}>
-                            <input
-                              type="radio"
-                              name="unique_id"
+                            <Radio
+                              value={field.field_name}
                               checked={field.is_unique_id}
-                              onChange={(e) => {
+                              onValueChange={() => {
                                 // Update all fields to set is_unique_id to false
                                 const newFields = fields.map((f) => ({
                                   ...f,
                                   is_unique_id: false,
                                 }));
                                 // Then set the selected field to true
-                                newFields[index].is_unique_id = e.target.checked;
+                                newFields[index].is_unique_id = true;
                                 setFields(newFields);
                               }}
+                              size="3"
                             />
                           </Table.Cell>
                           {showAdvanced && (
                             <Table.Cell justify={'center'}>
-                              <input
-                                type="checkbox"
+                              <Checkbox
                                 checked={field.is_strata}
-                                onChange={(e) =>
+                                onCheckedChange={(checked) =>
                                   updateField(index, {
                                     ...field,
-                                    is_strata: e.target.checked,
+                                    is_strata: checked,
                                   } as FieldDescriptor)
                                 }
+                                size="3"
                               />
                             </Table.Cell>
                           )}
                           <Table.Cell justify={'center'}>
-                            <input
-                              type="checkbox"
+                            <Checkbox
                               checked={field.is_filter}
-                              onChange={(e) =>
+                              onCheckedChange={(checked) =>
                                 updateField(index, {
                                   ...field,
-                                  is_filter: e.target.checked,
+                                  is_filter: checked,
                                 } as FieldDescriptor)
                               }
+                              size="3"
                             />
                           </Table.Cell>
                           <Table.Cell justify={'center'}>
-                            <input
-                              type="checkbox"
-                              disabled={!isEligibleForUseAsMetric(field.data_type)}
-                              checked={field.is_metric}
-                              onChange={(e) =>
-                                updateField(index, {
-                                  ...field,
-                                  is_metric: e.target.checked,
-                                } as FieldDescriptor)
-                              }
-                            />
+                            {isEligibleForUseAsMetric(field.data_type) ? (
+                              <Checkbox
+                                checked={field.is_metric}
+                                onCheckedChange={(checked) =>
+                                  updateField(index, {
+                                    ...field,
+                                    is_metric: checked,
+                                  } as FieldDescriptor)
+                                }
+                                size="3"
+                              />
+                            ) : (
+                              <Tooltip content="Not eligible for use as a metric">
+                                <Checkbox checked={field.is_metric} disabled={true} size="3" />
+                              </Tooltip>
+                            )}
                           </Table.Cell>
                           {showAdvanced && (
                             <Table.Cell justify={'center'}>
