@@ -10,6 +10,7 @@ import { Suspense } from 'react';
 import { NavigationBar } from '@/app/components/nav/navigation-curtain';
 import { HeaderBar } from '@/app/components/header/header-bar';
 import * as Toast from '@radix-ui/react-toast';
+import RequireLogin from '@/app/components/require-login';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -34,30 +35,32 @@ export default function RootLayout({
             <Suspense>
               <GoogleAuthProvider>
                 <OurSwrConfig>
-                  <OrganizationProvider>
-                    <Flex direction="column" height="100vh">
-                      <HeaderBar />
-                      <Flex flexGrow="1" overflow="hidden">
-                        <NavigationBar />
-                        <Flex direction="column" flexGrow="1" overflowY="auto" position="relative">
-                          <Container p="4" flexGrow="1" width="100%">
-                            <Suspense>{children}</Suspense>
-                          </Container>
+                  <RequireLogin>
+                    <OrganizationProvider>
+                      <Flex direction="column" height="100vh">
+                        <HeaderBar />
+                        <Flex flexGrow="1" overflow="hidden">
+                          <NavigationBar />
+                          <Flex direction="column" flexGrow="1" overflowY="auto" position="relative">
+                            <Container p="4" flexGrow="1" width="100%">
+                              <Suspense>{children}</Suspense>
+                            </Container>
+                          </Flex>
                         </Flex>
                       </Flex>
-                    </Flex>
-                    <Toast.Viewport
-                      style={{
-                        position: 'fixed',
-                        bottom: '20px',
-                        right: '20px',
-                        zIndex: 1000,
-                        listStyle: 'none',
-                        padding: 0,
-                        margin: 0,
-                      }}
-                    />
-                  </OrganizationProvider>
+                      <Toast.Viewport
+                        style={{
+                          position: 'fixed',
+                          bottom: '20px',
+                          right: '20px',
+                          zIndex: 1000,
+                          listStyle: 'none',
+                          padding: 0,
+                          margin: 0,
+                        }}
+                      />
+                    </OrganizationProvider>
+                  </RequireLogin>
                 </OurSwrConfig>
               </GoogleAuthProvider>
             </Suspense>
