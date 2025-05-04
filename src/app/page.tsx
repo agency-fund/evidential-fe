@@ -1,5 +1,5 @@
 'use client';
-import { Box, Button, Card, Flex, Heading, Text } from '@radix-ui/themes';
+import { Box, Card, Flex, Heading, Text } from '@radix-ui/themes';
 import { useAuth } from '@/app/providers/auth-provider';
 import { useCurrentOrganization } from '@/app/providers/organization-provider';
 
@@ -8,17 +8,7 @@ export default function Home() {
   const org = useCurrentOrganization();
 
   if (!auth.isAuthenticated) {
-    return (
-      <Flex direction="column" justify="center" align="center" height={'100%'}>
-        <Card size="3">
-          <Flex direction="column" gap="3" align="center">
-            <Heading>Welcome to xngin</Heading>
-            <Text>Please log in to continue</Text>
-            <Button onClick={auth.startLogin}>Log in</Button>
-          </Flex>
-        </Card>
-      </Flex>
-    );
+    throw Error('This application must be wrapped in a RequireLogin.');
   }
 
   return (
