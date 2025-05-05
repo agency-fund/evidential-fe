@@ -4,7 +4,6 @@ import { Box, Button, Card, Flex, Heading, Text } from '@radix-ui/themes';
 interface EmptyStateCardProps {
   title: string;
   description: string;
-  button?: boolean;
   buttonText?: string;
   buttonIcon?: React.ReactNode;
   onClick?: () => void;
@@ -17,7 +16,6 @@ export const EmptyStateCard = ({
   buttonText,
   buttonIcon,
   onClick,
-  button = true,
   children,
 }: EmptyStateCardProps) => {
   return (
@@ -30,7 +28,7 @@ export const EmptyStateCard = ({
               {description}
             </Text>
           </Flex>
-          {button && (
+          {buttonText && onClick && (
             <Button onClick={onClick}>
               {buttonIcon}
               {buttonText}

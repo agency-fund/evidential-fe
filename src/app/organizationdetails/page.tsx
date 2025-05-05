@@ -82,7 +82,7 @@ export default function Page() {
         {organization.datasources.length > 0 ? (
           <DatasourcesTable datasources={organization.datasources} organizationId={organizationId} />
         ) : (
-          <EmptyStateCard title="No datasources found" description="Add a datasource to get started" button={false}>
+          <EmptyStateCard title="No datasources found" description="Add a datasource to get started">
             <AddDatasourceDialog organizationId={organizationId} />
           </EmptyStateCard>
         )}
@@ -103,7 +103,7 @@ export default function Page() {
         ) : webhooksData?.items && webhooksData.items.length > 0 ? (
           <WebhooksTable webhooks={webhooksData?.items || []} organizationId={organizationId} />
         ) : (
-          <EmptyStateCard title="No webhooks found" description="Add a webhook to get started" button={false}>
+          <EmptyStateCard title="No webhooks found" description="Add a webhook to get started">
             <AddWebhookDialog organizationId={organizationId} />
           </EmptyStateCard>
         )}
@@ -120,7 +120,9 @@ export default function Page() {
         ) : eventsData?.items && eventsData.items.length > 0 ? (
           <EventsTable events={eventsData?.items || []} />
         ) : (
-          <EmptyStateCard title="No events found" description="Events will appear here" button={false} />
+          <EmptyStateCard title="No events found" description="Events will appear here">
+            <AddWebhookDialog organizationId={organizationId} />
+          </EmptyStateCard>
         )}
       </Flex>
     </Flex>

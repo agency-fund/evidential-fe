@@ -16,12 +16,9 @@ export function ApiKeysTable({ apiKeys, datasourceId }: { apiKeys: ApiKeySummary
   });
 
   const [newlyCreatedKey, setNewlyCreatedKey] = useState<{ key: string } | undefined>(undefined);
-  const [showResultsDialog, setShowResultsDialog] = useState(false);
 
   const handleKeyCreated = (key: { key: string }) => {
     setNewlyCreatedKey(key);
-    setShowResultsDialog(true);
-    mutate(getListApiKeysKey(datasourceId));
   };
 
   return (
@@ -30,9 +27,8 @@ export function ApiKeysTable({ apiKeys, datasourceId }: { apiKeys: ApiKeySummary
         <ApiKeyResultsDialog
           createdKey={newlyCreatedKey}
           datasourceId={datasourceId}
-          isOpen={showResultsDialog}
+          isOpen={true}
           onOpenChange={(open) => {
-            setShowResultsDialog(open);
             if (!open) {
               setNewlyCreatedKey(undefined);
             }
@@ -113,7 +109,7 @@ export function ApiKeysTable({ apiKeys, datasourceId }: { apiKeys: ApiKeySummary
           </Table.Root>
         </Flex>
       ) : (
-        <EmptyStateCard title="No API keys found" description="Add an API key to get started" button={false}>
+        <EmptyStateCard title="No API keys found" description="Add an API key to get started">
           <CreateApiKeyDialog datasourceId={datasourceId} onKeyCreated={handleKeyCreated} />
         </EmptyStateCard>
       )}

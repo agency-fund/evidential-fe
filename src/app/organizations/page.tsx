@@ -24,11 +24,7 @@ export default function Page() {
       {data.items.length > 0 ? (
         <OrganizationsTable organizations={data.items} />
       ) : (
-        <EmptyStateCard
-          title="No organizations found"
-          description="Create an organization to get started"
-          button={false}
-        >
+        <EmptyStateCard title="No organizations found" description="Create an organization to get started">
           <CreateOrganizationDialog />
         </EmptyStateCard>
       )}

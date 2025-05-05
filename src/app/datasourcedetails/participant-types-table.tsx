@@ -7,7 +7,6 @@ import { DeleteParticipantTypeDialog } from '@/app/datasourcedetails/delete-part
 import { GenericErrorCallout } from '@/app/components/generic-error';
 import { EditParticipantTypeDialog } from '@/app/participanttypedetails/edit-participant-type-dialog';
 import { Flex } from '@radix-ui/themes';
-import { ParticipantsDef } from '@/api/methods.schemas';
 import { EmptyStateCard } from '@/app/components/cards/empty-state-card';
 import { AddParticipantTypeDialog } from './add-participant-type-dialog';
 
@@ -29,7 +28,7 @@ export function ParticipantTypesTable({ datasourceId }: { datasourceId: string }
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {data?.items?.map((item) => (
+            {data.items.map((item) => (
               <Table.Row key={item.participant_type}>
                 <Table.Cell>
                   <Link
@@ -45,7 +44,7 @@ export function ParticipantTypesTable({ datasourceId }: { datasourceId: string }
                       <EditParticipantTypeDialog
                         datasourceId={datasourceId}
                         participantType={item.participant_type}
-                        participantConfig={item as ParticipantsDef}
+                        participantConfig={item}
                         variant="icon"
                       />
                     )}
@@ -57,11 +56,7 @@ export function ParticipantTypesTable({ datasourceId }: { datasourceId: string }
           </Table.Body>
         </Table.Root>
       ) : (
-        <EmptyStateCard
-          title="No participant types found"
-          description="Add a participant type to get started"
-          button={false}
-        >
+        <EmptyStateCard title="No participant types found" description="Add a participant type to get started">
           <AddParticipantTypeDialog datasourceId={datasourceId} />
         </EmptyStateCard>
       )}

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useCreateApiKey } from '@/api/admin';
+import { getListApiKeysKey, useCreateApiKey } from '@/api/admin';
 import { Button, Dialog, Flex } from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
 import { PlusIcon } from '@radix-ui/react-icons';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 import { ApiKeyResultsDialog } from './api-key-results-dialog';
+import { mutate } from 'swr';
 
 export const CreateApiKeyDialog = ({
   datasourceId,
@@ -16,14 +17,17 @@ export const CreateApiKeyDialog = ({
   const [state, setState] = useState<'presenting-form' | 'presenting-results' | 'presenting-button'>(
     'presenting-button',
   );
-  const { data: createdKey, trigger: triggerCreateApiKey, isMutating, error, reset } = useCreateApiKey(datasourceId);
-
-  // Use effect to handle the callback when createdKey changes
-  useEffect(() => {
-    if (createdKey && onKeyCreated && state === 'presenting-results') {
-      onKeyCreated(createdKey);
-    }
-  }, [createdKey, onKeyCreated, state]);
+  const {
+    data: createdKey,
+    trigger: triggerCreateApiKey,
+    isMutating,
+    error,
+    reset,
+  } = useCreateApiKey(datasourceId, {
+    swr: {
+      onSuccess: () => mutate(getListApiKeysKey(datasourceId)),
+    },
+  });
 
   return (
     <>
@@ -53,7 +57,10 @@ export const CreateApiKeyDialog = ({
                   <form
                     onSubmit={async (event) => {
                       event.preventDefault();
-                      await triggerCreateApiKey();
+                      const response = await triggerCreateApiKey();
+                      if (onKeyCreated) {
+                        onKeyCreated({ key: response.key });
+                      }
                       setState('presenting-results');
                     }}
                   >

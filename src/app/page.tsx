@@ -153,7 +153,7 @@ export default function Page() {
           <Flex direction="column" gap="3">
             {experimentsData.items.length === 0 ? (
               <EmptyStateCard
-                title="No Experiments Yet"
+                title="Create your first experiment"
                 description="Get started by creating your first experiment."
                 buttonText="Create Experiment"
                 buttonIcon={<PlusIcon />}

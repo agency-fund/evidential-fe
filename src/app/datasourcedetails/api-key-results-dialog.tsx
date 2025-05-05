@@ -31,9 +31,7 @@ export const ApiKeyResultsDialog = ({
         <CodeSnippetCard title="Example" content={exampleCurlSnippet} tooltipContent="Copy example" />
         <Flex gap="3" mt="4" justify="end">
           <Dialog.Close>
-            <Button variant="soft" color="gray">
-              Close
-            </Button>
+            <Button>Close</Button>
           </Dialog.Close>
         </Flex>
       </Dialog.Content>
