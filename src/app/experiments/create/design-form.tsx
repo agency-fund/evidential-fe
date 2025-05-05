@@ -1,7 +1,7 @@
 'use client';
-import { Badge, Button, Card, Flex, Heading, HoverCard, Select, Spinner, Text, TextField } from '@radix-ui/themes';
+import { Badge, Button, Callout, Card, Flex, Heading, HoverCard, Select, Spinner, Text, TextField } from '@radix-ui/themes';
 import { ExperimentFormData } from './page';
-import { LightningBoltIcon } from '@radix-ui/react-icons';
+import { InfoCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import { useCreateExperiment, useInspectParticipantTypes } from '@/api/admin';
 import { AudienceSpecFilter, GetFiltersResponseElement, GetMetricsResponseElement } from '@/api/methods.schemas';
 import { PowerCheckSection } from '@/app/experiments/create/power-check-section';
@@ -58,8 +58,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
 
   const supportsPowerCheck = formData.experimentType === 'preassigned';
   const isNextButtonDisabled =
-    !formData.primaryMetric ||
-    supportsPowerCheck && (formData.powerCheckResponse === undefined || isMutating);
+    !formData.primaryMetric || (supportsPowerCheck && (formData.powerCheckResponse === undefined || isMutating));
 
   return (
     <form onSubmit={handleSubmit}>
@@ -217,15 +216,20 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
         </Card>
 
         <Card>
-          <Heading size="4" mb="4" color={supportsPowerCheck ? undefined : "gray"}>
+          <Heading size="4" mb="4" color={supportsPowerCheck ? undefined : 'gray'}>
             <LightningBoltIcon /> Power Check
           </Heading>
           {supportsPowerCheck ? (
             <PowerCheckSection formData={formData} onFormDataChange={onFormDataChange} />
           ) : (
-            <Text size="2" color="gray">
-              ⚠️ Power calculations for experiment size estimates are currently unsupported for online experiments.
-            </Text>
+            <Callout.Root>
+              <Callout.Icon>
+                <InfoCircledIcon />
+              </Callout.Icon>
+              <Callout.Text>
+                ️ Power calculations are not required to set up an online experiment, but if desired should be computed outside Evidential.
+              </Callout.Text>
+            </Callout.Root>
           )}
         </Card>
 

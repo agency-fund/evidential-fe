@@ -16,18 +16,14 @@ interface ConfirmationFormProps {
   onFormDataChange: (data: ExperimentFormData) => void;
 }
 
-function ExperimentErrorCallout({ error, type }: { error?: Error; type: string }) {
+function ExperimentErrorCallout({ error, type }: { error?: Error; type: 'commit' | 'abandon' }) {
   // Local component for error display. Should not normally show.
   if (!error) return null;
 
   const title = `Failed to ${type} experiment`;
   // Specify a message if the error is a 304 since it has no content.
   const message = type === 'commit' ? 'Experiment already committed.' : 'Experiment already abandoned.';
-  let is304 = false;
-  if (error instanceof ApiError && error.response) {
-    const response = error.response as { status: number };
-    is304 = response.status === 304;
-  }
+  const is304 = error instanceof ApiError && error.response.status === 304;
   return <GenericErrorCallout title={title} message={is304 ? message : undefined} error={is304 ? undefined : error} />;
 }
 

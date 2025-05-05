@@ -45,7 +45,7 @@ export function StatisticsSummaryTable({ formData }: { formData: ExperimentFormD
           ) : (
             <Table.Row>
               <Table.RowHeaderCell>Balance Check</Table.RowHeaderCell>
-              <Table.Cell>None</Table.Cell>
+              <Table.Cell>N/A</Table.Cell>
             </Table.Row>
           )}
         </Table.Body>
