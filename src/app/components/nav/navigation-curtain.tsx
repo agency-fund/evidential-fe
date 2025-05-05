@@ -4,7 +4,7 @@ import { Box, Flex, IconButton, Tooltip, Separator } from '@radix-ui/themes';
 import { useAuth } from '@/app/providers/auth-provider';
 import { usePathname } from 'next/navigation';
 import { useCurrentOrganization } from '@/app/providers/organization-provider';
-import { HamburgerMenuIcon, HomeIcon, GearIcon, ChevronLeftIcon } from '@radix-ui/react-icons';
+import { HamburgerMenuIcon, LightningBoltIcon, GearIcon, ChevronLeftIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 import * as NavigationMenu from '@radix-ui/react-navigation-menu';
 import { NavLink } from '@/app/components/nav/nav-link';
@@ -26,7 +26,7 @@ export const NavigationBar = () => {
 
   if (!isAuthenticated || org === null) return null;
 
-  const mainNavItems = [{ label: 'Dashboard', href: '/', icon: HomeIcon }];
+  const mainNavItems = [{ label: 'Experiments', href: '/', icon: LightningBoltIcon }];
 
   const utilityNavItems = [{ label: 'Settings', href: `/organizationdetails?id=${org.current.id}`, icon: GearIcon }];
 
