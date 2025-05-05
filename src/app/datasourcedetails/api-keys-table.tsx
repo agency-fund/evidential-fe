@@ -18,7 +18,6 @@ export function ApiKeysTable({ apiKeys, datasourceId }: { apiKeys: ApiKeySummary
   const [newlyCreatedKey, setNewlyCreatedKey] = useState<{ key: string } | undefined>(undefined);
   const [showResultsDialog, setShowResultsDialog] = useState(false);
 
-  // Handle key creation from empty state
   const handleKeyCreated = (key: { key: string }) => {
     setNewlyCreatedKey(key);
     setShowResultsDialog(true);
