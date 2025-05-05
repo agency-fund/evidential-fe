@@ -142,8 +142,8 @@ export default function Page() {
       )}
       {datasourcesData && datasourcesData.items.length === 0 ? (
         <EmptyStateCard
-          title="No Data Sources Available"
-          description="You need to add a data source before you can create experiments. You can create a data source in settings."
+          title="Welcome to Evidential"
+          description="To get started with experiments you'll need to first add a datasource in settings."
           buttonText="Go to Settings"
           buttonIcon={<GearIcon />}
           onClick={() => router.push(`/organizationdetails?id=${currentOrgId}`)}
