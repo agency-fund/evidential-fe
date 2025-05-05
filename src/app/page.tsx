@@ -1,7 +1,7 @@
 'use client';
-import { Button, Flex, Heading, Table, Text, TextArea } from '@radix-ui/themes';
+import { Button, Flex, Heading, Table, TextArea } from '@radix-ui/themes';
+import { PlusIcon, GearIcon } from '@radix-ui/react-icons';
 import Link from 'next/link';
-import { PlusIcon } from '@radix-ui/react-icons';
 import { DownloadAssignmentsCsvButton } from '@/app/experiments/download-assignments-csv-button';
 import { analyzeExperiment, useListExperiments, useListOrganizationDatasources } from '@/api/admin';
 import { DeleteExperimentButton } from '@/app/experiments/delete-experiment-button';
@@ -11,8 +11,11 @@ import { useEffect, useState } from 'react';
 import { DatasourceSelector } from '@/app/experiments/datasource-selector';
 import { ExperimentStatusBadge } from '@/app/experiments/experiment-status-badge';
 import { useCurrentOrganization } from '@/app/providers/organization-provider';
+import { EmptyStateCard } from '@/app/components/cards/empty-state-card';
+import { useRouter } from 'next/navigation';
 
 export default function Page() {
+  const router = useRouter();
   // Get the current organization from context
   const orgContext = useCurrentOrganization();
   const currentOrgId = orgContext?.current?.id;
@@ -117,7 +120,7 @@ export default function Page() {
   return (
     <Flex direction="column" gap="3">
       {datasourcesIsLoading && <XSpinner message={'Datasources list loading...'} />}
-      {datasourcesData && (
+      {datasourcesData && datasourcesData.items.length > 0 && (
         <DatasourceSelector
           selectedDatasource={selectedDatasource}
           setSelectedDatasource={setSelectedDatasource}
@@ -137,110 +140,123 @@ export default function Page() {
           <XSpinner message={'Loading experiments list...'} />
         </Flex>
       )}
-      {experimentsData !== undefined && (
-        <Flex direction="column" gap="3">
-          {experimentsData.items.length === 0 && (
-            <Flex>
-              <Text>There are no experiments. Create one!</Text>
-            </Flex>
-          )}
-          {experimentsData.items.length ? (
-            <Table.Root>
-              <Table.Header>
-                <Table.Row>
-                  <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Participants</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Start Date</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>End Date</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell width="30%">Hypothesis</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
-                </Table.Row>
-              </Table.Header>
-
-              <Table.Body>
-                {experimentsData.items.map((experiment) => (
-                  <Table.Row key={experiment.design_spec.experiment_id}>
-                    <Table.Cell>{experiment.design_spec.experiment_name}</Table.Cell>
-                    <Table.Cell>{experiment.audience_spec.participant_type}</Table.Cell>
-                    <Table.Cell>
-                      <ExperimentStatusBadge status={experiment.state} />
-                    </Table.Cell>
-                    <Table.Cell>{experiment.design_spec.start_date}</Table.Cell>
-                    <Table.Cell>{experiment.design_spec.end_date}</Table.Cell>
-                    <Table.Cell>{experiment.design_spec.description}</Table.Cell>
-                    <Table.Cell>
-                      <Flex direction={'row'} gap={'2'}>
-                        <Button variant="soft" size="1" asChild>
-                          <Link
-                            href={`/experiments/view/${experiment.design_spec.experiment_id}?datasource_id=${selectedDatasource}`}
-                          >
-                            View
-                          </Link>
-                        </Button>
-                        <DownloadAssignmentsCsvButton
-                          datasourceId={selectedDatasource}
-                          experimentId={experiment.design_spec.experiment_id!}
-                        />
-                        <DeleteExperimentButton
-                          datasourceId={selectedDatasource}
-                          experimentId={experiment.design_spec.experiment_id!}
-                        />
-                        <Button
-                          color="green"
-                          variant="soft"
-                          size="1"
-                          onClick={() => handlePeekClick(experiment.design_spec.experiment_id!)}
-                          disabled={isAnalyzing}
-                        >
-                          {isAnalyzing ? 'Analyzing...' : 'Peek'}
-                        </Button>
-                      </Flex>
-                    </Table.Cell>
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table.Root>
-          ) : null}
-
-          {/* Analysis Results Section */}
-          {isAnalyzing && <XSpinner message="Analyzing experiment..." />}
-          {analyzeError && <GenericErrorCallout title="Analysis Error" message={analyzeError} />}
-          {analysisResults && (
-            <Flex direction="column" gap="2">
-              <Flex justify="between" align="center">
-                <Heading size="3">Analysis Results</Heading>
-                <Button
-                  size="1"
-                  variant="soft"
-                  onClick={() => {
-                    navigator.clipboard.writeText(analysisResults);
-                    // Could add a toast notification here if you have a toast component
-                  }}
-                >
-                  Copy to Clipboard
-                </Button>
-              </Flex>
-              <TextArea
-                readOnly
-                value={analysisResults}
-                style={{
-                  fontFamily: 'monospace',
-                  height: '400px',
-                  width: '100%',
-                  whiteSpace: 'pre',
-                  overflowX: 'auto',
-                  padding: '12px',
-                  fontSize: '14px',
-                  lineHeight: '1.5',
-                  backgroundColor: '#f5f5f5',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '4px',
-                }}
+      {datasourcesData && datasourcesData.items.length === 0 ? (
+        <EmptyStateCard
+          title="No Data Sources Available"
+          description="You need to add a data source before you can create experiments. You can create a data source in settings."
+          buttonText="Go to Settings"
+          buttonIcon={<GearIcon />}
+          onClick={() => router.push(`/organizationdetails?id=${currentOrgId}`)}
+        />
+      ) : (
+        experimentsData !== undefined && (
+          <Flex direction="column" gap="3">
+            {experimentsData.items.length === 0 ? (
+              <EmptyStateCard
+                title="No Experiments Yet"
+                description="Get started by creating your first experiment."
+                buttonText="Create Experiment"
+                buttonIcon={<PlusIcon />}
+                onClick={() => router.push(`/experiments/create?datasource_id=${selectedDatasource}`)}
               />
-            </Flex>
-          )}
-        </Flex>
+            ) : (
+              <Table.Root>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Participants</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Start Date</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>End Date</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell width="30%">Hypothesis</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
+                  </Table.Row>
+                </Table.Header>
+
+                <Table.Body>
+                  {experimentsData.items.map((experiment) => (
+                    <Table.Row key={experiment.design_spec.experiment_id}>
+                      <Table.Cell>{experiment.design_spec.experiment_name}</Table.Cell>
+                      <Table.Cell>{experiment.audience_spec.participant_type}</Table.Cell>
+                      <Table.Cell>
+                        <ExperimentStatusBadge status={experiment.state} />
+                      </Table.Cell>
+                      <Table.Cell>{experiment.design_spec.start_date}</Table.Cell>
+                      <Table.Cell>{experiment.design_spec.end_date}</Table.Cell>
+                      <Table.Cell>{experiment.design_spec.description}</Table.Cell>
+                      <Table.Cell>
+                        <Flex direction={'row'} gap={'2'}>
+                          <Button variant="soft" size="1" asChild>
+                            <Link
+                              href={`/experiments/view/${experiment.design_spec.experiment_id}?datasource_id=${selectedDatasource}`}
+                            >
+                              View
+                            </Link>
+                          </Button>
+                          <DownloadAssignmentsCsvButton
+                            datasourceId={selectedDatasource}
+                            experimentId={experiment.design_spec.experiment_id!}
+                          />
+                          <DeleteExperimentButton
+                            datasourceId={selectedDatasource}
+                            experimentId={experiment.design_spec.experiment_id!}
+                          />
+                          <Button
+                            color="green"
+                            variant="soft"
+                            size="1"
+                            onClick={() => handlePeekClick(experiment.design_spec.experiment_id!)}
+                            disabled={isAnalyzing}
+                          >
+                            {isAnalyzing ? 'Analyzing...' : 'Peek'}
+                          </Button>
+                        </Flex>
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table.Root>
+            )}
+
+            {/* Analysis Results Section */}
+            {isAnalyzing && <XSpinner message="Analyzing experiment..." />}
+            {analyzeError && <GenericErrorCallout title="Analysis Error" message={analyzeError} />}
+            {analysisResults && (
+              <Flex direction="column" gap="2">
+                <Flex justify="between" align="center">
+                  <Heading size="3">Analysis Results</Heading>
+                  <Button
+                    size="1"
+                    variant="soft"
+                    onClick={() => {
+                      navigator.clipboard.writeText(analysisResults);
+                      // Could add a toast notification here if you have a toast component
+                    }}
+                  >
+                    Copy to Clipboard
+                  </Button>
+                </Flex>
+                <TextArea
+                  readOnly
+                  value={analysisResults}
+                  style={{
+                    fontFamily: 'monospace',
+                    height: '400px',
+                    width: '100%',
+                    whiteSpace: 'pre',
+                    overflowX: 'auto',
+                    padding: '12px',
+                    fontSize: '14px',
+                    lineHeight: '1.5',
+                    backgroundColor: '#f5f5f5',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: '4px',
+                  }}
+                />
+              </Flex>
+            )}
+          </Flex>
+        )
       )}
     </Flex>
   );

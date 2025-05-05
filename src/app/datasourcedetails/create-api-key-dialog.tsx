@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useCreateApiKey } from '@/api/admin';
-import { Button, Code, DataList, Dialog, Flex, IconButton } from '@radix-ui/themes';
+import { Button, Dialog, Flex } from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
-import { CopyIcon, PlusIcon } from '@radix-ui/react-icons';
+import { PlusIcon } from '@radix-ui/react-icons';
 import { API_BASE_URL } from '@/services/constants';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 import { CodeSnippetCard } from '@/app/components/cards/code-snippet-card';
