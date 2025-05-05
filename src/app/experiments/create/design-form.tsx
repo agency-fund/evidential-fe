@@ -170,7 +170,11 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
             <FilterBuilder
               availableFields={filterFields}
               filters={formData.filters}
-              onChange={(filters: AudienceSpecFilter[]) => onFormDataChange({ ...formData, filters })}
+              onChange={(filters: AudienceSpecFilter[]) => onFormDataChange({
+                ...formData,
+                filters,
+                powerCheckResponse: undefined,
+              })}
             />
           </Flex>
         </Card>
