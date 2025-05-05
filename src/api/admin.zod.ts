@@ -2033,6 +2033,7 @@ export const createExperimentBody = zod.object({
 											"no baseline",
 											"no available n",
 											"zero effect size",
+											"zero variation",
 										])
 										.describe("Classifies metric power analysis results."),
 									msg: zod
@@ -2499,6 +2500,7 @@ export const createExperimentResponse = zod
 												"no baseline",
 												"no available n",
 												"zero effect size",
+												"zero variation",
 											])
 											.describe("Classifies metric power analysis results."),
 										msg: zod
@@ -3087,6 +3089,7 @@ export const listExperimentsResponse = zod.object({
 														"no baseline",
 														"no available n",
 														"zero effect size",
+														"zero variation",
 													])
 													.describe(
 														"Classifies metric power analysis results.",
@@ -3789,6 +3792,7 @@ export const getExperimentResponse = zod
 												"no baseline",
 												"no available n",
 												"zero effect size",
+												"zero variation",
 											])
 											.describe("Classifies metric power analysis results."),
 										msg: zod
@@ -4513,6 +4517,7 @@ export const powerCheckResponse = zod.object({
 									"no baseline",
 									"no available n",
 									"zero effect size",
+									"zero variation",
 								])
 								.describe("Classifies metric power analysis results."),
 							msg: zod
