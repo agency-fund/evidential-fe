@@ -1,5 +1,5 @@
 'use client';
-import { Code, DataList, Flex, HoverCard, Table, Text } from '@radix-ui/themes';
+import { DataList, Flex, HoverCard, Table, Text } from '@radix-ui/themes';
 import { EventSummary } from '@/api/methods.schemas';
 import Link from 'next/link';
 import { CodeSnippetCard } from '@/app/components/cards/code-snippet-card';
