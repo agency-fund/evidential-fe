@@ -10,7 +10,7 @@ export function StatisticsSummaryTable({ formData }: { formData: ExperimentFormD
       <Table.Root>
         <Table.Body>
           <Table.Row>
-            <Table.RowHeaderCell>Sample Size</Table.RowHeaderCell>
+            <Table.RowHeaderCell>Actual Sample Size</Table.RowHeaderCell>
             <Table.Cell>{formData.createExperimentResponse?.assign_summary.sample_size}</Table.Cell>
           </Table.Row>
           {formData.createExperimentResponse?.assign_summary.balance_check ? (
@@ -45,7 +45,7 @@ export function StatisticsSummaryTable({ formData }: { formData: ExperimentFormD
           ) : (
             <Table.Row>
               <Table.RowHeaderCell>Balance Check</Table.RowHeaderCell>
-              <Table.Cell>No balance check</Table.Cell>
+              <Table.Cell>N/A</Table.Cell>
             </Table.Row>
           )}
         </Table.Body>

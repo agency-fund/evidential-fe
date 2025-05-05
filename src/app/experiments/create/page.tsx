@@ -13,13 +13,14 @@ import {
 import { useSearchParams } from 'next/navigation';
 
 export type ExperimentFormData = {
+  datasourceId?: string;
+  participantType?: string;
+  experimentType: string;
   name: string;
   hypothesis: string;
   startDate: string;
   endDate: string;
   arms: Omit<Arm, 'arm_id'>[];
-  datasourceId?: string;
-  participantType?: string;
   primaryMetric?: string;
   secondaryMetrics: string[];
   filters: AudienceSpecFilter[];
@@ -52,8 +53,9 @@ export default function CreateExperimentPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState<ExperimentFormData>({
-    name: 'My Experiment',
     datasourceId: searchParams.get('datasource_id') || '',
+    experimentType: 'preassigned',
+    name: 'My Experiment',
     hypothesis: 'To the moon!',
     startDate: reasonableStartDate(),
     endDate: reasonableEndDate(),

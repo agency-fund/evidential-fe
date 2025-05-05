@@ -9,7 +9,7 @@ const FormattedError = ({ error }: { error: Error }) => {
     return (
       <Flex direction="column" gap="2">
         <Text weight="bold">API Error: {response.status}</Text>
-        {response.data !== undefined && (
+        {response.data !== undefined && response.data !== null && (
           <Flex direction="column" gap="1">
             <Text size="2">Response data:</Text>
             <Code style={{ whiteSpace: 'pre-wrap' }}>

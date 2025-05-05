@@ -1542,11 +1542,11 @@ export type InspectParticipantTypesParams = {
 	refresh?: boolean;
 };
 
-export type CreateExperimentWithAssignmentParams = {
+export type CreateExperimentParams = {
 	/**
 	 * Number of participants to assign.
 	 */
-	chosen_n: number;
+	chosen_n?: number | null;
 	/**
 	 * Whether to also stratify on metrics during assignment.
 	 */

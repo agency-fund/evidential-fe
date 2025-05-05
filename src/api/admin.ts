@@ -18,9 +18,9 @@ import type {
 	CreateApiKeyResponse,
 	CreateDatasourceRequest,
 	CreateDatasourceResponse,
+	CreateExperimentParams,
 	CreateExperimentRequest,
 	CreateExperimentResponse,
-	CreateExperimentWithAssignmentParams,
 	CreateOrganizationRequest,
 	CreateOrganizationResponse,
 	CreateParticipantsTypeRequest,
@@ -2070,11 +2070,11 @@ export const useDeleteApiKey = <
 	};
 };
 /**
- * @summary Create Experiment With Assignment
+ * @summary Create Experiment
  */
-export const getCreateExperimentWithAssignmentUrl = (
+export const getCreateExperimentUrl = (
 	datasourceId: string,
-	params: CreateExperimentWithAssignmentParams,
+	params?: CreateExperimentParams,
 ) => {
 	const normalizedParams = new URLSearchParams();
 
@@ -2091,14 +2091,14 @@ export const getCreateExperimentWithAssignmentUrl = (
 		: `/v1/m/datasources/${datasourceId}/experiments`;
 };
 
-export const createExperimentWithAssignment = async (
+export const createExperiment = async (
 	datasourceId: string,
 	createExperimentRequest: CreateExperimentRequest,
-	params: CreateExperimentWithAssignmentParams,
+	params?: CreateExperimentParams,
 	options?: RequestInit,
 ): Promise<CreateExperimentResponse> => {
 	return orvalFetch<CreateExperimentResponse>(
-		getCreateExperimentWithAssignmentUrl(datasourceId, params),
+		getCreateExperimentUrl(datasourceId, params),
 		{
 			...options,
 			method: "POST",
@@ -2108,49 +2108,49 @@ export const createExperimentWithAssignment = async (
 	);
 };
 
-export const getCreateExperimentWithAssignmentMutationFetcher = (
+export const getCreateExperimentMutationFetcher = (
 	datasourceId: string,
-	params: CreateExperimentWithAssignmentParams,
+	params?: CreateExperimentParams,
 	options?: SecondParameter<typeof orvalFetch>,
 ) => {
 	return (
 		_: Key,
 		{ arg }: { arg: CreateExperimentRequest },
 	): Promise<CreateExperimentResponse> => {
-		return createExperimentWithAssignment(datasourceId, arg, params, options);
+		return createExperiment(datasourceId, arg, params, options);
 	};
 };
-export const getCreateExperimentWithAssignmentMutationKey = (
+export const getCreateExperimentMutationKey = (
 	datasourceId: string,
-	params: CreateExperimentWithAssignmentParams,
+	params?: CreateExperimentParams,
 ) =>
 	[
 		`/v1/m/datasources/${datasourceId}/experiments`,
 		...(params ? [params] : []),
 	] as const;
 
-export type CreateExperimentWithAssignmentMutationResult = NonNullable<
-	Awaited<ReturnType<typeof createExperimentWithAssignment>>
+export type CreateExperimentMutationResult = NonNullable<
+	Awaited<ReturnType<typeof createExperiment>>
 >;
-export type CreateExperimentWithAssignmentMutationError = ErrorType<
+export type CreateExperimentMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
 /**
- * @summary Create Experiment With Assignment
+ * @summary Create Experiment
  */
-export const useCreateExperimentWithAssignment = <
+export const useCreateExperiment = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
 	datasourceId: string,
-	params: CreateExperimentWithAssignmentParams,
+	params?: CreateExperimentParams,
 	options?: {
 		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof createExperimentWithAssignment>>,
+			Awaited<ReturnType<typeof createExperiment>>,
 			TError,
 			Key,
 			CreateExperimentRequest,
-			Awaited<ReturnType<typeof createExperimentWithAssignment>>
+			Awaited<ReturnType<typeof createExperiment>>
 		> & { swrKey?: string };
 		request?: SecondParameter<typeof orvalFetch>;
 	},
@@ -2158,9 +2158,8 @@ export const useCreateExperimentWithAssignment = <
 	const { swr: swrOptions, request: requestOptions } = options ?? {};
 
 	const swrKey =
-		swrOptions?.swrKey ??
-		getCreateExperimentWithAssignmentMutationKey(datasourceId, params);
-	const swrFn = getCreateExperimentWithAssignmentMutationFetcher(
+		swrOptions?.swrKey ?? getCreateExperimentMutationKey(datasourceId, params);
+	const swrFn = getCreateExperimentMutationFetcher(
 		datasourceId,
 		params,
 		requestOptions,
@@ -2348,11 +2347,14 @@ export const commitExperiment = async (
 	datasourceId: string,
 	experimentId: string,
 	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(getCommitExperimentUrl(datasourceId, experimentId), {
-		...options,
-		method: "POST",
-	});
+): Promise<unknown | void> => {
+	return orvalFetch<unknown | void>(
+		getCommitExperimentUrl(datasourceId, experimentId),
+		{
+			...options,
+			method: "POST",
+		},
+	);
 };
 
 export const getCommitExperimentMutationFetcher = (
@@ -2360,7 +2362,7 @@ export const getCommitExperimentMutationFetcher = (
 	experimentId: string,
 	options?: SecondParameter<typeof orvalFetch>,
 ) => {
-	return (_: Key, __: { arg: Arguments }): Promise<void> => {
+	return (_: Key, __: { arg: Arguments }): Promise<unknown | void> => {
 		return commitExperiment(datasourceId, experimentId, options);
 	};
 };
@@ -2376,14 +2378,14 @@ export type CommitExperimentMutationResult = NonNullable<
 	Awaited<ReturnType<typeof commitExperiment>>
 >;
 export type CommitExperimentMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
+	void | HTTPExceptionError | HTTPValidationError
 >;
 
 /**
  * @summary Commit Experiment
  */
 export const useCommitExperiment = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+	TError = ErrorType<void | HTTPExceptionError | HTTPValidationError>,
 >(
 	datasourceId: string,
 	experimentId: string,
@@ -2430,11 +2432,14 @@ export const abandonExperiment = async (
 	datasourceId: string,
 	experimentId: string,
 	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(getAbandonExperimentUrl(datasourceId, experimentId), {
-		...options,
-		method: "POST",
-	});
+): Promise<unknown | void> => {
+	return orvalFetch<unknown | void>(
+		getAbandonExperimentUrl(datasourceId, experimentId),
+		{
+			...options,
+			method: "POST",
+		},
+	);
 };
 
 export const getAbandonExperimentMutationFetcher = (
@@ -2442,7 +2447,7 @@ export const getAbandonExperimentMutationFetcher = (
 	experimentId: string,
 	options?: SecondParameter<typeof orvalFetch>,
 ) => {
-	return (_: Key, __: { arg: Arguments }): Promise<void> => {
+	return (_: Key, __: { arg: Arguments }): Promise<unknown | void> => {
 		return abandonExperiment(datasourceId, experimentId, options);
 	};
 };
@@ -2458,14 +2463,14 @@ export type AbandonExperimentMutationResult = NonNullable<
 	Awaited<ReturnType<typeof abandonExperiment>>
 >;
 export type AbandonExperimentMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
+	void | HTTPExceptionError | HTTPValidationError
 >;
 
 /**
  * @summary Abandon Experiment
  */
 export const useAbandonExperiment = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+	TError = ErrorType<void | HTTPExceptionError | HTTPValidationError>,
 >(
 	datasourceId: string,
 	experimentId: string,
