@@ -1,7 +1,7 @@
 'use client';
 import { Code, Flex, IconButton, Table, Text, Tooltip } from '@radix-ui/themes';
 import { WebhookSummary } from '@/api/methods.schemas';
-import { CopyIcon, EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons';
+import { EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons';
 import { DeleteWebhookDialog } from './delete-webhook-dialog';
 import { WebhookInfoDialog } from './webhook-info-dialog';
 import { useState } from 'react';

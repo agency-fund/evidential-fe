@@ -4,7 +4,7 @@ import { XSpinner } from '../components/x-spinner';
 import { useListOrganizations } from '@/api/admin';
 import { CreateOrganizationDialog } from '@/app/organizations/create-organization-dialog';
 import { OrganizationsTable } from '@/app/organizations/organizations-table';
-
+import { EmptyStateCard } from '../components/cards/empty-state-card';
 export default function Page() {
   const { data, isLoading, error } = useListOrganizations();
 
@@ -21,7 +21,13 @@ export default function Page() {
         <Heading size="4">Organizations</Heading>
         <CreateOrganizationDialog />
       </Flex>
-      <OrganizationsTable organizations={data.items} />
+      {data.items.length > 0 ? (
+        <OrganizationsTable organizations={data.items} />
+      ) : (
+        <EmptyStateCard title="No organizations found" description="Create an organization to get started">
+          <CreateOrganizationDialog />
+        </EmptyStateCard>
+      )}
     </Flex>
   );
 }

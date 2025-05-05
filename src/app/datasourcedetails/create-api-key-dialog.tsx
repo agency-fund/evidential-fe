@@ -1,47 +1,43 @@
-import { useState } from 'react';
-import { useCreateApiKey } from '@/api/admin';
-import { Button, Code, DataList, Dialog, Flex, IconButton } from '@radix-ui/themes';
+import { useState, useEffect } from 'react';
+import { getListApiKeysKey, useCreateApiKey } from '@/api/admin';
+import { Button, Dialog, Flex } from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
-import { CopyIcon, PlusIcon } from '@radix-ui/react-icons';
-import { API_BASE_URL } from '@/services/constants';
+import { PlusIcon } from '@radix-ui/react-icons';
 import { GenericErrorCallout } from '@/app/components/generic-error';
-import { CodeSnippetCard } from '@/app/components/cards/code-snippet-card';
+import { ApiKeyResultsDialog } from './api-key-results-dialog';
+import { mutate } from 'swr';
 
-export const CreateApiKeyDialog = ({ datasourceId }: { datasourceId: string }) => {
+export const CreateApiKeyDialog = ({
+  datasourceId,
+  onKeyCreated,
+}: {
+  datasourceId: string;
+  onKeyCreated?: (key: { key: string }) => void;
+}) => {
   const [state, setState] = useState<'presenting-form' | 'presenting-results' | 'presenting-button'>(
     'presenting-button',
   );
-  const { data: createdKey, trigger: triggerCreateApiKey, isMutating, error, reset } = useCreateApiKey(datasourceId);
+  const {
+    data: createdKey,
+    trigger: triggerCreateApiKey,
+    isMutating,
+    error,
+    reset,
+  } = useCreateApiKey(datasourceId, {
+    swr: {
+      onSuccess: () => mutate(getListApiKeysKey(datasourceId)),
+    },
+  });
 
-  const exampleCurlSnippet =
-    createdKey !== undefined
-      ? `curl -H "X-API-Key: ${createdKey.key}" -H "Datasource-ID: ${datasourceId}" ${API_BASE_URL}/v1/_authcheck`
-      : '';
   return (
     <>
-      {state === 'presenting-results' && createdKey !== undefined && (
-        <Dialog.Root
-          defaultOpen={true}
+      {state === 'presenting-results' && createdKey !== undefined && !onKeyCreated && (
+        <ApiKeyResultsDialog
+          createdKey={createdKey}
+          datasourceId={datasourceId}
+          isOpen={true}
           onOpenChange={(open) => setState(open ? 'presenting-results' : 'presenting-button')}
-        >
-          <Dialog.Content>
-            <Dialog.Title>Created API key</Dialog.Title>
-            <Dialog.Description size="2" mb="4">
-              The API key has been created. It will only be shown once. You can use it to make API calls.
-            </Dialog.Description>
-
-            <CodeSnippetCard title="API key" content={createdKey.key} tooltipContent="Copy API key" />
-
-            <CodeSnippetCard title="Example" content={exampleCurlSnippet} tooltipContent="Copy example" />
-            <Flex gap="3" mt="4" justify="end">
-              <Dialog.Close>
-                <Button variant="soft" color="gray">
-                  Close
-                </Button>
-              </Dialog.Close>
-            </Flex>
-          </Dialog.Content>
-        </Dialog.Root>
+        />
       )}
 
       {(state === 'presenting-form' || state == 'presenting-button') && (
@@ -61,7 +57,10 @@ export const CreateApiKeyDialog = ({ datasourceId }: { datasourceId: string }) =
                   <form
                     onSubmit={async (event) => {
                       event.preventDefault();
-                      await triggerCreateApiKey();
+                      const response = await triggerCreateApiKey();
+                      if (onKeyCreated) {
+                        onKeyCreated({ key: response.key });
+                      }
                       setState('presenting-results');
                     }}
                   >

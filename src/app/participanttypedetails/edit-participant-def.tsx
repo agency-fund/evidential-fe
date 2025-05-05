@@ -58,7 +58,7 @@ export function ParticipantDefEditor({
                 <Radio
                   value={field.field_name}
                   checked={field.is_unique_id}
-                  onValueChange={(checked) => {
+                  onValueChange={() => {
                     const newFields = [...participantDef.fields].map((f) => ({
                       ...f,
                       is_unique_id: false,
