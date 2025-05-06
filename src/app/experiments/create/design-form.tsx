@@ -187,7 +187,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
               <TextField.Root
                 type="number"
                 value={formData.confidence}
-                onChange={(e) => onFormDataChange({ ...formData, confidence: Number(e.target.value) })}
+                onChange={(e) => onFormDataChange({ ...formData, confidence: e.target.value })}
               />
             </Flex>
 
@@ -198,7 +198,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
               <TextField.Root
                 type="number"
                 value={formData.power}
-                onChange={(e) => onFormDataChange({ ...formData, power: Number(e.target.value) })}
+                onChange={(e) => onFormDataChange({ ...formData, power: e.target.value })}
               />
             </Flex>
 
@@ -209,7 +209,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
               <TextField.Root
                 type="number"
                 value={formData.effectPctChange}
-                onChange={(e) => onFormDataChange({ ...formData, effectPctChange: Number(e.target.value) })}
+                onChange={(e) => onFormDataChange({ ...formData, effectPctChange: e.target.value })}
               />
             </Flex>
           </Flex>
