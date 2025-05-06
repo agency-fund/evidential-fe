@@ -1,6 +1,6 @@
 'use client';
 import { Button, Flex, Heading, Table, TextArea } from '@radix-ui/themes';
-import { PlusIcon, GearIcon } from '@radix-ui/react-icons';
+import { GearIcon, PlusIcon } from '@radix-ui/react-icons';
 import Link from 'next/link';
 import { DownloadAssignmentsCsvButton } from '@/app/experiments/download-assignments-csv-button';
 import { analyzeExperiment, useListExperiments, useListOrganizationDatasources } from '@/api/admin';
@@ -13,6 +13,7 @@ import { ExperimentStatusBadge } from '@/app/experiments/experiment-status-badge
 import { useCurrentOrganization } from '@/app/providers/organization-provider';
 import { EmptyStateCard } from '@/app/components/cards/empty-state-card';
 import { useRouter } from 'next/navigation';
+import { PRODUCT_NAME } from '@/services/constants';
 
 export default function Page() {
   const router = useRouter();
@@ -142,7 +143,7 @@ export default function Page() {
       )}
       {datasourcesData && datasourcesData.items.length === 0 ? (
         <EmptyStateCard
-          title="Welcome to Evidential"
+          title={`Welcome to ${PRODUCT_NAME}`}
           description="To get started with experiments you'll need to first add a datasource in settings."
           buttonText="Go to Settings"
           buttonIcon={<GearIcon />}
