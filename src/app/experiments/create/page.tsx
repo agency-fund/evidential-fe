@@ -4,12 +4,7 @@ import { InitialForm } from './initial-form';
 import { DesignForm } from './design-form';
 import { ConfirmationForm } from './confirmation-form';
 import { Box, Container, Flex, Heading } from '@radix-ui/themes';
-import {
-  Arm,
-  AudienceSpecFilter,
-  CreateExperimentResponse,
-  PowerResponseOutput,
-} from '@/api/methods.schemas';
+import { Arm, AudienceSpecFilter, CreateExperimentResponse, PowerResponseOutput } from '@/api/methods.schemas';
 import { useSearchParams } from 'next/navigation';
 
 export type ExperimentFormData = {
@@ -60,7 +55,10 @@ export default function CreateExperimentPage() {
     startDate: reasonableStartDate(),
     endDate: reasonableEndDate(),
     arms: [
-      { arm_name: 'Control', arm_description: 'No change. (Your Arm 1 will be used as baseline for comparison in analysis.)' },
+      {
+        arm_name: 'Control',
+        arm_description: 'No change. (Your Arm 1 will be used as baseline for comparison in analysis.)',
+      },
       { arm_name: 'Treatment', arm_description: 'Change' },
     ],
     secondaryMetrics: [],
@@ -79,6 +77,34 @@ export default function CreateExperimentPage() {
     setCurrentStep(currentStep - 1);
   };
 
+  const handleFormDataChange = (data: ExperimentFormData) => {
+    // Determine if we need to invalidate the power check response
+    const filtersChanged =
+      formData.filters.length !== data.filters.length ||
+      formData.filters.some(
+        (filter, i) =>
+          data.filters[i]?.field_name !== filter.field_name ||
+          data.filters[i]?.relation !== filter.relation ||
+          JSON.stringify(filter.value) !== JSON.stringify(data.filters[i]?.value),
+      );
+
+    const shouldInvalidatePowerCheck =
+      formData.primaryMetric !== data.primaryMetric ||
+      formData.secondaryMetrics.join(',') !== data.secondaryMetrics.join(',') ||
+      formData.confidence !== data.confidence ||
+      formData.power !== data.power ||
+      formData.effectPctChange !== data.effectPctChange ||
+      filtersChanged;
+
+    // Only reset if we have a previous power check response and need to invalidate it
+    const newData =
+      shouldInvalidatePowerCheck && formData.powerCheckResponse
+        ? { ...data, powerCheckResponse: undefined }
+        : data;
+
+    setFormData(newData);
+  }
+
   return (
     <Container>
       <Flex direction="column" gap="4">
@@ -86,7 +112,12 @@ export default function CreateExperimentPage() {
         <Box>
           {currentStep === 1 && <InitialForm formData={formData} onFormDataChange={setFormData} onNext={handleNext} />}
           {currentStep === 2 && (
-            <DesignForm formData={formData} onFormDataChange={setFormData} onNext={handleNext} onBack={handleBack} />
+            <DesignForm
+              formData={formData}
+              onFormDataChange={handleFormDataChange}
+              onNext={handleNext}
+              onBack={handleBack}
+            />
           )}
           {currentStep === 3 && (
             <ConfirmationForm formData={formData} onFormDataChange={setFormData} onBack={handleBack} />

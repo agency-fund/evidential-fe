@@ -1,5 +1,17 @@
 'use client';
-import { Badge, Button, Callout, Card, Flex, Heading, HoverCard, Select, Spinner, Text, TextField } from '@radix-ui/themes';
+import {
+  Badge,
+  Button,
+  Callout,
+  Card,
+  Flex,
+  Heading,
+  HoverCard,
+  Select,
+  Spinner,
+  Text,
+  TextField,
+} from '@radix-ui/themes';
 import { ExperimentFormData } from './page';
 import { InfoCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import { useCreateExperiment, useInspectParticipantTypes } from '@/api/admin';
@@ -86,8 +98,8 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
                   <Select.Root
                     value={formData.primaryMetric}
                     onValueChange={(value) => {
-                      // Remove the from the secondary metrics if it was added initially, else the
-                      // metric would show up in the power check 2x with an error.
+                      // Remove primary from secondary metrics if it was added initially, else
+                      // the metric would show up in the power check 2x with an error.
                       const secondaryMetrics = formData.secondaryMetrics.filter((m) => m !== value);
                       onFormDataChange({ ...formData, primaryMetric: value, secondaryMetrics });
                     }}
@@ -170,11 +182,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
             <FilterBuilder
               availableFields={filterFields}
               filters={formData.filters}
-              onChange={(filters: AudienceSpecFilter[]) => onFormDataChange({
-                ...formData,
-                filters,
-                powerCheckResponse: undefined,
-              })}
+              onChange={(filters: AudienceSpecFilter[]) => onFormDataChange({ ...formData, filters })}
             />
           </Flex>
         </Card>
@@ -231,7 +239,8 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
                 <InfoCircledIcon />
               </Callout.Icon>
               <Callout.Text>
-                ️ Power calculations are not required to set up an online experiment, but if desired should be computed outside Evidential.
+                ️ Power calculations are not required to set up an online experiment, but if desired should be computed
+                outside Evidential.
               </Callout.Text>
             </Callout.Root>
           )}
