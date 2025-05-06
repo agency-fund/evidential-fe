@@ -128,6 +128,10 @@ export default function ExperimentViewPage() {
                 <Table.Cell>{(1 - (design_spec.alpha || 0.05)) * 100}%</Table.Cell>
               </Table.Row>
               <Table.Row>
+                <Table.RowHeaderCell>Power</Table.RowHeaderCell>
+                <Table.Cell>{design_spec.power ? `${design_spec.power * 100}%` : '?'}</Table.Cell>
+              </Table.Row>
+              <Table.Row>
                 <Table.RowHeaderCell>MDE</Table.RowHeaderCell>
                 <Table.Cell>
                   {/* TODO(roboton): verify */}
