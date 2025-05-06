@@ -19,9 +19,11 @@ export type ExperimentFormData = {
   primaryMetric?: string;
   secondaryMetrics: string[];
   filters: AudienceSpecFilter[];
-  confidence: number;
-  power: number;
-  effectPctChange: number;
+  // These next 3 Experiment Parameters are strings to allow for empty values,
+  // which should be converted to numbers when making power or experiment creation requests.
+  confidence: string;
+  power: string;
+  effectPctChange: string;
   // Populated when user clicks "Power Check" on DesignForm
   chosenN?: number;
   powerCheckResponse?: PowerResponseOutput;
@@ -63,9 +65,9 @@ export default function CreateExperimentPage() {
     ],
     secondaryMetrics: [],
     filters: [],
-    confidence: 95,
-    power: 80,
-    effectPctChange: 10,
+    confidence: '95',
+    power: '80',
+    effectPctChange: '10',
   });
   console.log('formData', formData);
 

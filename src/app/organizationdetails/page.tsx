@@ -12,6 +12,7 @@ import { UsersTable } from '@/app/organizationdetails/users-table';
 import { EventsTable } from '@/app/organizationdetails/events-table';
 import { WebhooksTable } from '@/app/organizationdetails/webhooks-table';
 import { GenericErrorCallout } from '@/app/components/generic-error';
+import { EmptyStateCard } from '../components/cards/empty-state-card';
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -78,7 +79,13 @@ export default function Page() {
           <Heading size="4">Datasources</Heading>
           <AddDatasourceDialog organizationId={organizationId} />
         </Flex>
-        <DatasourcesTable datasources={organization.datasources} organizationId={organizationId} />
+        {organization.datasources.length > 0 ? (
+          <DatasourcesTable datasources={organization.datasources} organizationId={organizationId} />
+        ) : (
+          <EmptyStateCard title="No datasources found" description="Add a datasource to get started">
+            <AddDatasourceDialog organizationId={organizationId} />
+          </EmptyStateCard>
+        )}
       </Flex>
 
       <Flex direction="column" gap="3">
@@ -93,8 +100,12 @@ export default function Page() {
           <XSpinner message="Loading webhooks..." />
         ) : webhooksError ? (
           <GenericErrorCallout title={'Failed to fetch webhooks'} error={webhooksError} />
-        ) : (
+        ) : webhooksData?.items && webhooksData.items.length > 0 ? (
           <WebhooksTable webhooks={webhooksData?.items || []} organizationId={organizationId} />
+        ) : (
+          <EmptyStateCard title="No webhooks found" description="Add a webhook to get started">
+            <AddWebhookDialog organizationId={organizationId} />
+          </EmptyStateCard>
         )}
       </Flex>
 
@@ -106,8 +117,12 @@ export default function Page() {
           <XSpinner message="Loading events..." />
         ) : eventsError ? (
           <GenericErrorCallout title={'Failed to fetch events'} error={eventsError} />
-        ) : (
+        ) : eventsData?.items && eventsData.items.length > 0 ? (
           <EventsTable events={eventsData?.items || []} />
+        ) : (
+          <EmptyStateCard title="No events found" description="Events will appear here">
+            <AddWebhookDialog organizationId={organizationId} />
+          </EmptyStateCard>
         )}
       </Flex>
     </Flex>

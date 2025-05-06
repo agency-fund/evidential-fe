@@ -4,6 +4,8 @@ import { ExperimentFormData } from '@/app/experiments/create/page';
 import { usePowerCheck } from '@/api/admin';
 import { convertFormDataToCreateExperimentRequest } from '@/app/experiments/create/helpers';
 import { GenericErrorCallout } from '@/app/components/generic-error';
+import { ZodError } from 'zod';
+import { useState } from 'react';
 
 interface PowerCheckSectionProps {
   formData: ExperimentFormData;
@@ -12,22 +14,34 @@ interface PowerCheckSectionProps {
 
 export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSectionProps) {
   const { trigger, data, isMutating, error } = usePowerCheck(formData.datasourceId!);
+  const [validationError, setValidationError] = useState<ZodError | null>(null);
 
   const handlePowerCheck = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    const { design_spec, audience_spec } = convertFormDataToCreateExperimentRequest(formData);
-    const response = await trigger({
-      design_spec,
-      audience_spec,
-    });
-    onFormDataChange({
-      ...formData,
-      powerCheckResponse: response,
-      chosenN: response.analyses[0].target_n!,
-    });
+
+    setValidationError(null);
+    try {
+      const { design_spec, audience_spec } = convertFormDataToCreateExperimentRequest(formData);
+      const response = await trigger({
+        design_spec,
+        audience_spec,
+      });
+      onFormDataChange({
+        ...formData,
+        powerCheckResponse: response,
+        chosenN: response.analyses[0].target_n!,
+      });
+    } catch (err) {
+      if (err instanceof ZodError) {
+        setValidationError(err);
+        return;
+      }
+      throw err;
+    }
   };
 
   const isButtonDisabled = isMutating || formData.primaryMetric === undefined;
+
   return (
     <Flex direction="column" gap="3" align="center">
         <Button disabled={isButtonDisabled} onClick={handlePowerCheck} style={{ minWidth: '25%' }}>
@@ -56,6 +70,15 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
           <GenericErrorCallout
             title={'Power check failed'}
             message={error ? JSON.stringify(error, null, 2) : 'unknown'}
+          />
+        </Flex>
+      )}
+
+      {validationError && (
+        <Flex align="center" gap="2">
+          <GenericErrorCallout
+            title={'Validation failed'}
+            message={validationError.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`).join('\n')}
           />
         </Flex>
       )}

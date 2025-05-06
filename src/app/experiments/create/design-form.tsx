@@ -19,6 +19,7 @@ import { AudienceSpecFilter, GetFiltersResponseElement, GetMetricsResponseElemen
 import { PowerCheckSection } from '@/app/experiments/create/power-check-section';
 import { convertFormDataToCreateExperimentRequest } from '@/app/experiments/create/helpers';
 import { FilterBuilder } from '@/app/components/querybuilder/filter-builder';
+import { GenericErrorCallout } from '@/app/components/generic-error';
 
 interface DesignFormProps {
   formData: ExperimentFormData;
@@ -38,7 +39,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
       },
     },
   );
-  const { trigger: triggerCreateAssignment, isMutating } = useCreateExperiment(formData.datasourceId!, {
+  const { trigger: triggerCreateExperiment, isMutating, error: createExperimentError } = useCreateExperiment(formData.datasourceId!, {
     chosen_n: formData.chosenN!,
   });
 
@@ -54,7 +55,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
 
     try {
       const request = convertFormDataToCreateExperimentRequest(formData);
-      const response = await triggerCreateAssignment(request);
+      const response = await triggerCreateExperiment(request);
       onFormDataChange({
         ...formData,
         experimentId: response.design_spec.experiment_id!,
@@ -199,7 +200,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
               <TextField.Root
                 type="number"
                 value={formData.confidence}
-                onChange={(e) => onFormDataChange({ ...formData, confidence: Number(e.target.value) })}
+                onChange={(e) => onFormDataChange({ ...formData, confidence: e.target.value })}
               />
             </Flex>
 
@@ -210,7 +211,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
               <TextField.Root
                 type="number"
                 value={formData.power}
-                onChange={(e) => onFormDataChange({ ...formData, power: Number(e.target.value) })}
+                onChange={(e) => onFormDataChange({ ...formData, power: e.target.value })}
               />
             </Flex>
 
@@ -221,7 +222,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
               <TextField.Root
                 type="number"
                 value={formData.effectPctChange}
-                onChange={(e) => onFormDataChange({ ...formData, effectPctChange: Number(e.target.value) })}
+                onChange={(e) => onFormDataChange({ ...formData, effectPctChange: e.target.value })}
               />
             </Flex>
           </Flex>
@@ -245,6 +246,10 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
             </Callout.Root>
           )}
         </Card>
+
+        {createExperimentError && (
+          <GenericErrorCallout title="Failed to create experiment" error={createExperimentError} />
+        )}
 
         <Flex gap="3" justify="end">
           <Button type="button" variant="soft" onClick={onBack}>

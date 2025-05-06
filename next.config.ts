@@ -3,6 +3,15 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  async redirects() {
+    return [
+      {
+        source: '/experiments',
+        destination: '/',
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default withSentryConfig(nextConfig, {
