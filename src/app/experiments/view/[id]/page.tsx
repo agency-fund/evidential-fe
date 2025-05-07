@@ -168,7 +168,9 @@ export default function ExperimentViewPage() {
                     </Text>
                   </Flex>
                   <Flex justify="between" align="center">
-                    <Text color="gray">{arm.arm_description || 'No description'}</Text>
+                    <Text color="gray" style={{ whiteSpace: 'pre-wrap' }}>
+                      {arm.arm_description || 'No description'}
+                    </Text>
                     <Text size="2" color="gray" align="right">
                       {armSize.toLocaleString()} participants
                     </Text>
