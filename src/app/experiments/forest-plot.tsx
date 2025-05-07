@@ -1,6 +1,7 @@
 'use client';
 import { MetricAnalysis, ExperimentConfig } from '@/api/methods.schemas';
-import { Box, Card, Flex, Text } from '@radix-ui/themes';
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
+import { Box, Callout, Card, Flex, Text } from '@radix-ui/themes';
 import { CartesianGrid, ResponsiveContainer, Scatter, ScatterChart, Tooltip, TooltipProps, XAxis, YAxis } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { ChartOffset } from 'recharts/types/util/types';
@@ -27,6 +28,7 @@ interface EffectSizeData {
   absCI95Lower: number;
   absCI95Upper: number;
   pValue: number | null;
+  invalidStatTest: boolean;
   significant: boolean;
   sampleSize: number;
   totalSampleSize: number;
@@ -94,6 +96,8 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
     const estimate = armAnalysis.estimate; // regression coefficient
     const stdError = armAnalysis.std_error;
     const pValue = armAnalysis.p_value;
+    const tStat = armAnalysis.t_stat;
+    const invalidStatTest = pValue === null || pValue === undefined || tStat === null || tStat === undefined;
 
     // Calculate 95% confidence interval
     const ci95 = 1.96 * stdError;
@@ -116,6 +120,7 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
       absCI95Lower,
       absCI95Upper,
       pValue,
+      invalidStatTest,
       significant: !!(pValue && pValue < (experiment.design_spec.alpha || 0.05)),
       sampleSize: armSize,
       totalSampleSize: availableN,
@@ -164,6 +169,18 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
     <Card>
       <Flex direction="column" gap="3">
         <Text weight="bold">Effect of {analysis.metric_name}</Text>
+
+        {effectSizes.some(e => e.invalidStatTest) && (
+          <Callout.Root color="orange" size="1">
+            <Callout.Icon>
+              <ExclamationTriangleIcon />
+            </Callout.Icon>
+            <Callout.Text>
+              Statistical test is invalid for one or more arms. The experiment might not have enough
+              data or no variation in the metric right now.
+            </Callout.Text>
+          </Callout.Root>
+        )}
 
         <Box style={{ height: 200 }}>
           <ResponsiveContainer width="100%" height="100%">
