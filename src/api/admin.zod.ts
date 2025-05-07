@@ -3302,11 +3302,13 @@ export const analyzeExperimentResponse = zod
 										),
 									p_value: zod
 										.number()
+										.or(zod.null())
 										.describe(
 											"The p-value indicating statistical significance of the treatment effect.",
 										),
 									t_stat: zod
 										.number()
+										.or(zod.null())
 										.describe("The t-statistic from the statistical test."),
 									std_error: zod
 										.number()

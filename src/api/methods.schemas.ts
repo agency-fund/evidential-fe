@@ -69,6 +69,16 @@ export type ArmAnalysisArmId = string | null;
 
 export type ArmAnalysisArmDescription = string | null;
 
+/**
+ * The p-value indicating statistical significance of the treatment effect.
+ */
+export type ArmAnalysisPValue = number | null;
+
+/**
+ * The t-statistic from the statistical test.
+ */
+export type ArmAnalysisTStat = number | null;
+
 export interface ArmAnalysis {
 	/** ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
 	arm_id?: ArmAnalysisArmId;
@@ -80,9 +90,9 @@ export interface ArmAnalysis {
 	/** The estimated treatment effect relative to the baseline arm. */
 	estimate: number;
 	/** The p-value indicating statistical significance of the treatment effect. */
-	p_value: number;
+	p_value: ArmAnalysisPValue;
 	/** The t-statistic from the statistical test. */
-	t_stat: number;
+	t_stat: ArmAnalysisTStat;
 	/** The standard error of the treatment effect estimate. */
 	std_error: number;
 }

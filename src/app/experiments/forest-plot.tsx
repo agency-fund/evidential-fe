@@ -26,7 +26,7 @@ interface EffectSizeData {
   ci95: number;
   absCI95Lower: number;
   absCI95Upper: number;
-  pValue: number;
+  pValue: number | null;
   significant: boolean;
   sampleSize: number;
   totalSampleSize: number;
@@ -116,7 +116,7 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
       absCI95Lower,
       absCI95Upper,
       pValue,
-      significant: pValue < (experiment.design_spec.alpha || 0.05),
+      significant: !!(pValue && pValue < (experiment.design_spec.alpha || 0.05)),
       sampleSize: armSize,
       totalSampleSize: availableN,
     };
@@ -141,18 +141,22 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
     return [minX, maxX];
   }
   const [minX, maxX] = getMinMaxX(effectSizes);
-  // Space 3 ticks evenly across the domain.
-  const xGridPoints = [0, 1, 2, 3, 4].map(i => minX + i * (maxX - minX) / 4);
+  // Space 3 ticks evenly across the domain, but filter out duplicates,
+  // which can occur when the effect is 0.
+  const xGridPoints = [0, 1, 2, 3, 4].map(i => minX + i * (maxX - minX) / 4)
+    .filter((value, index, self) => self.indexOf(value) === index);
 
   // Scale xGridPoints to viewport units for use in drawing grid lines
   const scaleXGridPoints = (props: { xAxis: unknown, width: number, height: number, offset: ChartOffset }) => {
     const { width, offset } = props;
+    if (maxX - minX === 0) return [];  // zero effect size so no grid lines
     return xGridPoints.map(x => Math.round((offset.left || 0) + ((x - minX) / (maxX - minX)) * (offset.width || width)));
   };
 
   // Scale a half-confidence interval to a width in viewport units to be used for drawing the error bars
   const scaleHalfIntervalToViewport = (x: number, width: number | undefined) => {
     if (!width) return 0;
+    if (maxX - minX === 0) return 0;
     return (x / (maxX - minX)) * width;
   };
 
@@ -203,7 +207,7 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
                     fontWeight: effectSizes[value].significant ? 'bold' : undefined,
                     dominantBaseline: 'middle' as const,
                   };
-                  const tickLabel = `p = ${effectSizes[value].pValue.toFixed(3)}`;
+                  const tickLabel = `p = ${effectSizes[value].pValue !== null ? effectSizes[value].pValue.toFixed(3) : 'N/A'}`;
                   return <text {...textProps}>{tickLabel}</text>;
                 }}
                 allowDataOverflow={true}
