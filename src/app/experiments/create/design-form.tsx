@@ -20,6 +20,7 @@ import { PowerCheckSection } from '@/app/experiments/create/power-check-section'
 import { convertFormDataToCreateExperimentRequest } from '@/app/experiments/create/helpers';
 import { FilterBuilder } from '@/app/components/querybuilder/filter-builder';
 import { GenericErrorCallout } from '@/app/components/generic-error';
+import { PRODUCT_NAME } from '@/services/constants';
 
 interface DesignFormProps {
   formData: ExperimentFormData;
@@ -39,7 +40,11 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
       },
     },
   );
-  const { trigger: triggerCreateExperiment, isMutating, error: createExperimentError } = useCreateExperiment(formData.datasourceId!, {
+  const {
+    trigger: triggerCreateExperiment,
+    isMutating,
+    error: createExperimentError,
+  } = useCreateExperiment(formData.datasourceId!, {
     chosen_n: formData.chosenN!,
   });
 
@@ -241,7 +246,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
               </Callout.Icon>
               <Callout.Text>
                 ️ Power calculations are not required to set up an online experiment, but if desired should be computed
-                outside Evidential.
+                outside {PRODUCT_NAME}.
               </Callout.Text>
             </Callout.Root>
           )}

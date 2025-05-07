@@ -10,6 +10,7 @@ import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { XSpinner } from '@/app/components/x-spinner';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 import { ApiError } from '@/services/orval-fetch';
+import { SUPPORT_EMAIL } from '@/services/constants';
 
 export const CURRENT_ORG_ID_KEY = 'org_id' as const;
 
@@ -63,7 +64,7 @@ export function OrganizationProvider({ children }: PropsWithChildren) {
             <Callout.Icon>
               <InfoCircledIcon />
             </Callout.Icon>
-            <Callout.Text>Please contact evidential-support@agency.fund for access.</Callout.Text>
+            <Callout.Text>Please contact {SUPPORT_EMAIL} for access.</Callout.Text>
           </Callout.Root>
           <Button onClick={() => window.location.reload()}>Retry</Button>
         </Flex>
