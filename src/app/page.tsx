@@ -10,6 +10,7 @@ import { GenericErrorCallout } from '@/app/components/generic-error';
 import { useEffect, useState } from 'react';
 import { DatasourceSelector } from '@/app/experiments/datasource-selector';
 import { ExperimentStatusBadge } from '@/app/experiments/experiment-status-badge';
+import { ExperimentTypeBadge } from '@/app/experiments/experiment-type-badge';
 import { useCurrentOrganization } from '@/app/providers/organization-provider';
 import { EmptyStateCard } from '@/app/components/cards/empty-state-card';
 import { useRouter } from 'next/navigation';
@@ -166,6 +167,7 @@ export default function Page() {
                   <Table.Row>
                     <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Participants</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Start Date</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>End Date</Table.ColumnHeaderCell>
@@ -179,6 +181,9 @@ export default function Page() {
                     <Table.Row key={experiment.design_spec.experiment_id}>
                       <Table.Cell>{experiment.design_spec.experiment_name}</Table.Cell>
                       <Table.Cell>{experiment.audience_spec.participant_type}</Table.Cell>
+                      <Table.Cell>
+                        <ExperimentTypeBadge type={experiment.design_spec.experiment_type} />
+                      </Table.Cell>
                       <Table.Cell>
                         <ExperimentStatusBadge status={experiment.state} />
                       </Table.Cell>
