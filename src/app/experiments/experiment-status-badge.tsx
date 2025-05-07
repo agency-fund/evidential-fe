@@ -3,17 +3,17 @@ import { Badge } from '@radix-ui/themes';
 export const ExperimentStatusBadge = ({ status }: { status: string }) => {
   const colorMap: Record<
     string,
-    { color: 'orange' | 'green' | 'gray' | 'blue' | 'red'; variant?: 'soft' | 'outline' }
+    { color: 'gray' | 'amber' | 'green' | 'lime' | 'blue' | 'red'; variant?: 'soft' | 'outline' }
   > = {
-    ongoing: { color: 'orange' },
-    completed: { color: 'green' },
-    pending: { color: 'gray', variant: 'outline' },
+    // TODO: use these colors if the current date is after the start/end dates and it was committed.
+    ongoing: { color: 'green' },
+    completed: { color: 'lime' },
     // ExperimentState types below
-    designing: { color: 'blue', variant: 'soft' },
-    assigned: { color: 'blue' },
-    abandoned: { color: 'red', variant: 'outline' },
+    designing: { color: 'blue', variant: 'outline' },
+    assigned: { color: 'blue', variant: 'outline' },
+    abandoned: { color: 'gray', variant: 'outline' },
     committed: { color: 'green', variant: 'outline' },
-    aborted: { color: 'red' },
+    aborted: { color: 'red', variant: 'outline' },
   };
 
   const { color, variant = 'soft' } = colorMap[status];
