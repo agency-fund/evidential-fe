@@ -14,6 +14,8 @@ import {
   Checkbox,
   Radio,
   Tooltip,
+  Select,
+  Box,
 } from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
 import { useEffect, useState } from 'react';
@@ -153,43 +155,44 @@ const AddParticipantTypeDialogInner = ({ datasourceId, tables }: { datasourceId:
             {error && <GenericErrorCallout title={'Failed to save participant type'} error={error} />}
 
             <Flex direction="column" gap="3">
-              <label>
-                <Text as="div" size="2" mb="1" weight="bold">
-                  Table Name
-                </Text>
-                <Text as="div" size={'1'} mb={'1'}>
-                  Please select the name of the data warehouse table.
-                </Text>
-                {!tables ? (
-                  <XSpinner message="Loading table data..." />
-                ) : (
-                  <select
+              <Text as="div" size="2" mb="1" weight="bold">
+                Table Name
+              </Text>
+              <Text as="div" size={'1'} mb={'1'}>
+                Please select the name of the data warehouse table.
+              </Text>
+              {!tables ? (
+                <XSpinner message="Loading table data..." />
+              ) : (
+                <Box>
+                  <Select.Root
                     name="table_name"
                     required
                     value={selectedTable}
-                    onChange={(e) => updateSelectedTable(e.target.value)}
+                    onValueChange={(value) => updateSelectedTable(value)}
                   >
-                    <option value="">Select a table</option>
-                    {tables.map((table: string) => (
-                      <option key={table} value={table}>
-                        {table}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </label>
+                    <Select.Trigger placeholder="Select a table" />
+                    <Select.Content>
+                      {tables.map((table: string) => (
+                        <Select.Item key={table} value={table}>
+                          {table}
+                        </Select.Item>
+                      ))}
+                    </Select.Content>
+                  </Select.Root>
+                </Box>
+              )}
 
-              <label>
-                <Text as="div" size="2" mb="1" weight="bold">
-                  Participant Type Name
-                </Text>
-                <TextField.Root
-                  name="participant_type"
-                  placeholder="e.g., students, faculty, organizers"
-                  required
-                  maxLength={40}
-                />
-              </label>
+              <Text as="div" size="2" mb="1" weight="bold">
+                Participant Type Name
+              </Text>
+              <TextField.Root
+                name="participant_type"
+                placeholder="e.g., students, faculty, organizers"
+                required
+                maxLength={40}
+                defaultValue={selectedTable}
+              />
 
               {loadingTableData ? (
                 <XSpinner message="Loading table data..." />

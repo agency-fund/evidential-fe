@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { getListApiKeysKey, useCreateApiKey } from '@/api/admin';
 import { Button, Dialog, Flex } from '@radix-ui/themes';
 import { XSpinner } from '../components/x-spinner';
