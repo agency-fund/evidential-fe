@@ -123,11 +123,25 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
           <Flex direction="column" gap="3">
             <Flex direction="column" gap="1">
               <Text weight="bold">Primary Metric</Text>
-              <Text>{formData.primaryMetric || '-'}</Text>
+              {formData.primaryMetric ? (
+                <Text>
+                  {formData.primaryMetric.metricName} (min effect: {formData.primaryMetric.mde}%)
+                </Text>
+              ) : (
+                <Text>-</Text>
+              )}
             </Flex>
             <Flex direction="column" gap="1">
               <Text weight="bold">Secondary Metrics</Text>
-              <Text>{formData.secondaryMetrics.length > 0 ? formData.secondaryMetrics.join(', ') : 'None'}</Text>
+              {formData.secondaryMetrics.length > 0 ? (
+                formData.secondaryMetrics.map((metric) => (
+                  <Text key={metric.metricName}>
+                    {metric.metricName} (min effect: {metric.mde}%)
+                  </Text>
+                ))
+              ) : (
+                <Text>None</Text>
+              )}
             </Flex>
           </Flex>
         </Card>

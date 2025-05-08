@@ -1,17 +1,5 @@
 'use client';
-import {
-  Badge,
-  Button,
-  Callout,
-  Card,
-  Flex,
-  Heading,
-  HoverCard,
-  Select,
-  Spinner,
-  Text,
-  TextField,
-} from '@radix-ui/themes';
+import { Button, Callout, Card, Flex, Heading, Spinner, Text, TextField } from '@radix-ui/themes';
 import { ExperimentFormData } from './page';
 import { InfoCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import { useCreateExperiment, useInspectParticipantTypes } from '@/api/admin';
@@ -21,6 +9,7 @@ import { convertFormDataToCreateExperimentRequest } from '@/app/experiments/crea
 import { FilterBuilder } from '@/app/components/querybuilder/filter-builder';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 import { PRODUCT_NAME } from '@/services/constants';
+import { MetricBuilder } from './metric-builder';
 
 interface DesignFormProps {
   formData: ExperimentFormData;
@@ -76,7 +65,9 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
 
   const supportsPowerCheck = formData.experimentType === 'preassigned';
   const isNextButtonDisabled =
-    !formData.primaryMetric || (supportsPowerCheck && (formData.powerCheckResponse === undefined || isMutating));
+    !formData.primaryMetric?.metricName ||
+    !formData.primaryMetric?.mde ||
+    (supportsPowerCheck && (formData.powerCheckResponse === undefined || isMutating));
 
   return (
     <form onSubmit={handleSubmit}>
@@ -85,99 +76,14 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
           <Heading size="4" mb="4">
             Metrics
           </Heading>
-          <Flex direction="column" gap="3">
-            <Flex direction="column" gap="2">
-              <Text as="label" size="2" weight="bold">
-                Primary Metric
-              </Text>
-              {loadingParticipantTypes ? (
-                <Flex align="center" gap="2">
-                  <Spinner size="1" />
-                  <Text size="2">Loading metrics...</Text>
-                </Flex>
-              ) : metricFields.length === 0 ? (
-                <Text color="gray" size="2">
-                  No metrics available for this participant type
-                </Text>
-              ) : (
-                <Flex>
-                  <Select.Root
-                    value={formData.primaryMetric}
-                    onValueChange={(value) => {
-                      // Remove primary from secondary metrics if it was added initially, else
-                      // the metric would show up in the power check 2x with an error.
-                      const secondaryMetrics = formData.secondaryMetrics.filter((m) => m !== value);
-                      onFormDataChange({ ...formData, primaryMetric: value, secondaryMetrics });
-                    }}
-                  >
-                    <Select.Trigger placeholder="Select a metric" />
-                    <Select.Content>
-                      {metricFields.map((metric) => (
-                        <Select.Item key={metric.field_name} value={metric.field_name}>
-                          {metric.field_name} ({metric.data_type})
-                        </Select.Item>
-                      ))}
-                    </Select.Content>
-                  </Select.Root>
-                </Flex>
-              )}
+          {loadingParticipantTypes ? (
+            <Flex align="center" gap="2">
+              <Spinner size="1" />
+              <Text size="2">Loading metrics...</Text>
             </Flex>
-
-            <Flex direction="column" gap="2">
-              <Text as="label" size="2" weight="bold">
-                Secondary Metrics
-              </Text>
-              {loadingParticipantTypes ? (
-                <Flex align="center" gap="2">
-                  <Spinner size="1" />
-                  <Text size="2">Loading metrics...</Text>
-                </Flex>
-              ) : metricFields.length === 0 ? (
-                <Text color="gray" size="2">
-                  No metrics available for this participant type
-                </Text>
-              ) : (
-                <Flex gap="2" wrap="wrap">
-                  {metricFields
-                    .filter((m) => m.field_name !== formData.primaryMetric)
-                    .map((metric) => {
-                      const isSelected = formData.secondaryMetrics.includes(metric.field_name);
-                      const badge = (
-                        <Badge
-                          size={'3'}
-                          variant={isSelected ? 'solid' : 'outline'}
-                          color={isSelected ? 'blue' : 'gray'}
-                          style={{ cursor: 'pointer' }}
-                          onClick={() => {
-                            const newSecondaryMetrics = isSelected
-                              ? formData.secondaryMetrics.filter((m) => m !== metric.field_name)
-                              : [...formData.secondaryMetrics, metric.field_name];
-                            onFormDataChange({
-                              ...formData,
-                              secondaryMetrics: newSecondaryMetrics,
-                            });
-                          }}
-                        >
-                          {metric.field_name}
-                        </Badge>
-                      );
-                      if (metric.description) {
-                        return (
-                          <HoverCard.Root key={metric.field_name}>
-                            <HoverCard.Trigger>{badge}</HoverCard.Trigger>
-                            <HoverCard.Content maxWidth="300px">
-                              <Flex gap="4">{metric.description}</Flex>
-                            </HoverCard.Content>
-                          </HoverCard.Root>
-                        );
-                      } else {
-                        return <Text key={metric.field_name}>{badge}</Text>;
-                      }
-                    })}
-                </Flex>
-              )}
-            </Flex>
-          </Flex>
+          ) : (
+            <MetricBuilder formData={formData} onFormDataChange={onFormDataChange} metricFields={metricFields} />
+          )}
         </Card>
 
         <Card>
@@ -217,17 +123,6 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
                 type="number"
                 value={formData.power}
                 onChange={(e) => onFormDataChange({ ...formData, power: e.target.value })}
-              />
-            </Flex>
-
-            <Flex direction="column" gap="2">
-              <Text as="label" size="2" weight="bold">
-                Effect % Change
-              </Text>
-              <TextField.Root
-                type="number"
-                value={formData.effectPctChange}
-                onChange={(e) => onFormDataChange({ ...formData, effectPctChange: e.target.value })}
               />
             </Flex>
           </Flex>
