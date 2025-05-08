@@ -1,21 +1,17 @@
-import { Badge, Button, Flex, HoverCard, Spinner, Table, Text, TextField } from '@radix-ui/themes';
+import { Badge, Button, Flex, HoverCard, Table, Text, TextField } from '@radix-ui/themes';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData } from '@/app/experiments/create/page';
 import { GetMetricsResponseElement } from '@/api/methods.schemas';
 
 const DEFAULT_MDE = '10';
 
-export function MetricBuilder({
-  formData,
-  onFormDataChange,
-  loadingParticipantTypes,
-  metricFields,
-}: {
+type MetricBuilderProps = {
   formData: ExperimentFormData;
   onFormDataChange: (data: ExperimentFormData) => void;
-  loadingParticipantTypes: boolean;
   metricFields: GetMetricsResponseElement[];
-}) {
+};
+
+export function MetricBuilder({ formData, onFormDataChange, metricFields }: MetricBuilderProps) {
   const handlePrimaryMetricSelect = (metricName: string) => {
     onFormDataChange({
       ...formData,
@@ -152,12 +148,7 @@ export function MetricBuilder({
 
       <Flex direction="column" gap="3" overflowX={'auto'}>
         <Flex direction="column" gap="2">
-          {loadingParticipantTypes ? (
-            <Flex align="center" gap="2">
-              <Spinner size="1" />
-              <Text size="2">Loading metrics...</Text>
-            </Flex>
-          ) : !formData.primaryMetric ? (
+          {!formData.primaryMetric ? (
             <Flex gap="2" wrap="wrap">
               <Text as={'label'} size={'2'} weight={'bold'}>
                 Select a primary metric:

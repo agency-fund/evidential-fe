@@ -77,12 +77,14 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
           <Heading size="4" mb="4">
             Metrics
           </Heading>
-          <MetricBuilder
-            formData={formData}
-            onFormDataChange={onFormDataChange}
-            loadingParticipantTypes={loadingParticipantTypes}
-            metricFields={metricFields}
-          />
+          {loadingParticipantTypes ? (
+            <Flex align="center" gap="2">
+              <Spinner size="1" />
+              <Text size="2">Loading metrics...</Text>
+            </Flex>
+          ) : (
+            <MetricBuilder formData={formData} onFormDataChange={onFormDataChange} metricFields={metricFields} />
+          )}
         </Card>
 
         <Card>
