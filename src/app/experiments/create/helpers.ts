@@ -3,6 +3,22 @@ import { CreateExperimentRequest, DesignSpecMetricRequest } from '@/api/methods.
 import { createExperimentBody } from '@/api/admin.zod';
 
 export const convertFormDataToCreateExperimentRequest = (formData: ExperimentFormData): CreateExperimentRequest => {
+  const metrics: DesignSpecMetricRequest[] = [];
+
+  if (formData.primaryMetric && formData.primaryMetric.metricName) {
+    metrics.push({
+      field_name: formData.primaryMetric.metricName,
+      metric_pct_change: Number(formData.primaryMetric.mde) / 100.0,
+    });
+  }
+
+  formData.secondaryMetrics.forEach(metric => {
+    metrics.push({
+      field_name: metric.metricName,
+      metric_pct_change: Number(metric.mde) / 100.0,
+    });
+  });
+
   return createExperimentBody.parse({
     design_spec: {
       experiment_name: formData.name,
@@ -11,12 +27,7 @@ export const convertFormDataToCreateExperimentRequest = (formData: ExperimentFor
       end_date: new Date(Date.parse(formData.endDate)).toISOString(),
       start_date: new Date(Date.parse(formData.startDate)).toISOString(),
       description: formData.hypothesis,
-      metrics: [formData.primaryMetric!, ...formData.secondaryMetrics].map(
-        (field_name): DesignSpecMetricRequest => ({
-          field_name: field_name,
-          metric_pct_change: Number(formData.effectPctChange) / 100.0,
-        }),
-      ),
+      metrics: metrics,
       strata_field_names: [],
       power: Number(formData.power) / 100.0,
       alpha: 1 - Number(formData.confidence) / 100.0,

@@ -7,6 +7,11 @@ import { Box, Container, Flex, Heading } from '@radix-ui/themes';
 import { Arm, AudienceSpecFilter, CreateExperimentResponse, PowerResponseOutput } from '@/api/methods.schemas';
 import { useSearchParams } from 'next/navigation';
 
+export type MetricWithMDE = {
+  metricName: string;
+  mde: string; // desired minimum detectable effect as a percentage of the metric's baseline value
+};
+
 export type ExperimentFormData = {
   datasourceId?: string;
   participantType?: string;
@@ -16,14 +21,13 @@ export type ExperimentFormData = {
   startDate: string;
   endDate: string;
   arms: Omit<Arm, 'arm_id'>[];
-  primaryMetric?: string;
-  secondaryMetrics: string[];
+  primaryMetric?: MetricWithMDE;
+  secondaryMetrics: MetricWithMDE[];
   filters: AudienceSpecFilter[];
-  // These next 3 Experiment Parameters are strings to allow for empty values,
+  // These next 2 Experiment Parameters are strings to allow for empty values,
   // which should be converted to numbers when making power or experiment creation requests.
   confidence: string;
   power: string;
-  effectPctChange: string;
   // Populated when user clicks "Power Check" on DesignForm
   chosenN?: number;
   powerCheckResponse?: PowerResponseOutput;
@@ -63,11 +67,11 @@ export default function CreateExperimentPage() {
       },
       { arm_name: 'Treatment', arm_description: 'Change' },
     ],
+    // primaryMetric will be undefined initially
     secondaryMetrics: [],
     filters: [],
     confidence: '95',
     power: '80',
-    effectPctChange: '10',
   });
   console.log('formData', formData);
 
@@ -90,13 +94,24 @@ export default function CreateExperimentPage() {
           JSON.stringify(filter.value) !== JSON.stringify(data.filters[i]?.value),
       );
 
+    const primaryMetricChanged =
+      formData.primaryMetric?.metricName !== data.primaryMetric?.metricName ||
+      formData.primaryMetric?.mde !== data.primaryMetric?.mde;
+
+    const secondaryMetricsChanged =
+      formData.secondaryMetrics.length !== data.secondaryMetrics.length ||
+      formData.secondaryMetrics.some(
+        (metric, i) =>
+          data.secondaryMetrics[i]?.metricName !== metric.metricName ||
+          data.secondaryMetrics[i]?.mde !== metric.mde,
+      );
+
     const shouldInvalidatePowerCheck =
-      formData.primaryMetric !== data.primaryMetric ||
-      formData.secondaryMetrics.join(',') !== data.secondaryMetrics.join(',') ||
+      filtersChanged ||
+      primaryMetricChanged ||
+      secondaryMetricsChanged ||
       formData.confidence !== data.confidence ||
-      formData.power !== data.power ||
-      formData.effectPctChange !== data.effectPctChange ||
-      filtersChanged;
+      formData.power !== data.power;
 
     // Only reset if we have a previous power check response and need to invalidate it
     const newData =

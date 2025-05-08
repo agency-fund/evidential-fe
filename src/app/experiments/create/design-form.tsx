@@ -7,13 +7,13 @@ import {
   Flex,
   Heading,
   HoverCard,
-  Select,
-  Spinner,
+   Spinner,
   Text,
   TextField,
+  Box,
 } from '@radix-ui/themes';
 import { ExperimentFormData } from './page';
-import { InfoCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
+import { InfoCircledIcon, LightningBoltIcon, TrashIcon } from '@radix-ui/react-icons';
 import { useCreateExperiment, useInspectParticipantTypes } from '@/api/admin';
 import { AudienceSpecFilter, GetFiltersResponseElement, GetMetricsResponseElement } from '@/api/methods.schemas';
 import { PowerCheckSection } from '@/app/experiments/create/power-check-section';
@@ -55,6 +55,67 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
   const filterFields: GetFiltersResponseElement[] =
     participantTypesData !== undefined ? participantTypesData.filters : [];
 
+  const handlePrimaryMetricSelect = (metricName: string) => {
+    onFormDataChange({
+      ...formData,
+      primaryMetric: { metricName, mde: '10' }, // Default MDE
+      // Secondary metrics remain as is, user can add/remove them after primary is set
+    });
+  };
+
+  const handlePrimaryMetricDeselect = () => {
+    onFormDataChange({
+      ...formData,
+      primaryMetric: undefined,
+      // secondaryMetrics: [], // DO NOT Clear secondary metrics
+    });
+  };
+
+  const handleSecondaryMetricAdd = (metricName: string) => {
+    const newSecondaryMetrics = [
+      ...formData.secondaryMetrics,
+      { metricName, mde: '10' }, // Default MDE
+    ];
+    onFormDataChange({ ...formData, secondaryMetrics: newSecondaryMetrics });
+  };
+
+  const handleSecondaryMetricRemove = (metricName: string) => {
+    const newSecondaryMetrics = formData.secondaryMetrics.filter(
+      (m) => m.metricName !== metricName,
+    );
+    onFormDataChange({ ...formData, secondaryMetrics: newSecondaryMetrics });
+  };
+
+  const handleMdeChange = (
+    type: 'primary' | 'secondary',
+    metricName: string,
+    mde: string,
+  ) => {
+    if (type === 'primary' && formData.primaryMetric) {
+      onFormDataChange({
+        ...formData,
+        primaryMetric: { ...formData.primaryMetric, mde },
+      });
+    } else if (type === 'secondary') {
+      const newSecondaryMetrics = formData.secondaryMetrics.map((m) =>
+        m.metricName === metricName ? { ...m, mde } : m,
+      );
+      onFormDataChange({ ...formData, secondaryMetrics: newSecondaryMetrics });
+    }
+  };
+
+  // Determine metrics available for primary selection (all metrics not in secondaryMetrics)
+  const availablePrimaryMetricBadges = metricFields.filter(
+    (m) => !formData.secondaryMetrics.some((sm) => sm.metricName === m.field_name),
+  );
+
+  // Determine metrics available for secondary selection
+  const availableSecondaryMetricBadges = metricFields.filter(
+    (m) =>
+      m.field_name !== formData.primaryMetric?.metricName &&
+      !formData.secondaryMetrics.some((sm) => sm.metricName === m.field_name),
+  );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -76,7 +137,9 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
 
   const supportsPowerCheck = formData.experimentType === 'preassigned';
   const isNextButtonDisabled =
-    !formData.primaryMetric || (supportsPowerCheck && (formData.powerCheckResponse === undefined || isMutating));
+    !formData.primaryMetric?.metricName ||
+    !formData.primaryMetric?.mde || // Ensure MDE is also set
+    (supportsPowerCheck && (formData.powerCheckResponse === undefined || isMutating));
 
   return (
     <form onSubmit={handleSubmit}>
@@ -85,7 +148,8 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
           <Heading size="4" mb="4">
             Metrics
           </Heading>
-          <Flex direction="column" gap="3">
+          <Flex direction="column" gap="3" style={{ overflowX: 'auto' }}>
+            {/* Primary Metric Section */}
             <Flex direction="column" gap="2">
               <Text as="label" size="2" weight="bold">
                 Primary Metric
@@ -95,88 +159,174 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
                   <Spinner size="1" />
                   <Text size="2">Loading metrics...</Text>
                 </Flex>
-              ) : metricFields.length === 0 ? (
-                <Text color="gray" size="2">
-                  No metrics available for this participant type
-                </Text>
+              ) : formData.primaryMetric?.metricName ? (
+                // Display selected primary metric with MDE input and trash icon
+                <>
+                  {/* Header for MDE */}
+                  <Flex align="center" mt="1" mb="1">
+                    <Box style={{ minWidth: '250px', flexShrink: 0, marginRight: 'var(--space-3)', paddingLeft: 'var(--space-1)' }}>
+                      <Text size="1" weight="bold">Metric Name</Text>
+                    </Box>
+                    <Box style={{ width: '150px', minWidth: '80px', flexShrink: 0, marginRight: 'var(--space-2)' }}>
+                      <Text size="1" weight="bold">min effect (% change)</Text>
+                    </Box>
+                    <Box style={{ width: 'var(--radix-size-7)' }} /> {/* Spacer for Trash Icon Column */}
+                  </Flex>
+                  <Flex align="center"> {/* Removed gap */}
+                    <Box style={{ minWidth: '250px', flexShrink: 0, marginRight: 'var(--space-3)', paddingLeft: 'var(--space-1)' }}>
+                      <Text size="3">
+                        {formData.primaryMetric.metricName}
+                      </Text>
+                    </Box>
+                    <Box style={{ width: '150px', minWidth: '80px', flexShrink: 0, marginRight: 'var(--space-2)' }}>
+                      <TextField.Root
+                        type="number"
+                        value={formData.primaryMetric.mde}
+                        onChange={(e) =>
+                          handleMdeChange('primary', formData.primaryMetric!.metricName, e.target.value)
+                        }
+                        placeholder="MDE %"
+                      />
+                    </Box>
+                    <Box>
+                      <Button variant="soft" color="red" onClick={handlePrimaryMetricDeselect}>
+                        <TrashIcon />
+                      </Button>
+                    </Box>
+                    <Box style={{ flexGrow: 1 }} /> {/* Spacer to push content left */}
+                  </Flex>
+                </>
               ) : (
-                <Flex>
-                  <Select.Root
-                    value={formData.primaryMetric}
-                    onValueChange={(value) => {
-                      // Remove primary from secondary metrics if it was added initially, else
-                      // the metric would show up in the power check 2x with an error.
-                      const secondaryMetrics = formData.secondaryMetrics.filter((m) => m !== value);
-                      onFormDataChange({ ...formData, primaryMetric: value, secondaryMetrics });
-                    }}
-                  >
-                    <Select.Trigger placeholder="Select a metric" />
-                    <Select.Content>
-                      {metricFields.map((metric) => (
-                        <Select.Item key={metric.field_name} value={metric.field_name}>
-                          {metric.field_name} ({metric.data_type})
-                        </Select.Item>
-                      ))}
-                    </Select.Content>
-                  </Select.Root>
+                // Display badges for primary metric selection
+                <Flex gap="2" wrap="wrap">
+                  {availablePrimaryMetricBadges.map((metric) => (
+                    <Badge
+                      key={metric.field_name}
+                      size={'3'}
+                      variant={'outline'}
+                      color={'gray'}
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => handlePrimaryMetricSelect(metric.field_name)}
+                    >
+                      {metric.field_name}
+                    </Badge>
+                  ))}
+                  {availablePrimaryMetricBadges.length === 0 && metricFields.length > 0 && (
+                    <Text color="gray" size="2">
+                      All available metrics are selected as secondary. Deselect one to make it primary.
+                    </Text>
+                  )}
+                  {metricFields.length === 0 && (
+                     <Text color="gray" size="2">
+                       No metrics available for this participant type.
+                     </Text>
+                  )}
                 </Flex>
               )}
             </Flex>
 
-            <Flex direction="column" gap="2">
-              <Text as="label" size="2" weight="bold">
-                Secondary Metrics
-              </Text>
-              {loadingParticipantTypes ? (
-                <Flex align="center" gap="2">
-                  <Spinner size="1" />
-                  <Text size="2">Loading metrics...</Text>
-                </Flex>
-              ) : metricFields.length === 0 ? (
-                <Text color="gray" size="2">
-                  No metrics available for this participant type
-                </Text>
-              ) : (
-                <Flex gap="2" wrap="wrap">
-                  {metricFields
-                    .filter((m) => m.field_name !== formData.primaryMetric)
-                    .map((metric) => {
-                      const isSelected = formData.secondaryMetrics.includes(metric.field_name);
-                      const badge = (
-                        <Badge
-                          size={'3'}
-                          variant={isSelected ? 'solid' : 'outline'}
-                          color={isSelected ? 'blue' : 'gray'}
-                          style={{ cursor: 'pointer' }}
-                          onClick={() => {
-                            const newSecondaryMetrics = isSelected
-                              ? formData.secondaryMetrics.filter((m) => m !== metric.field_name)
-                              : [...formData.secondaryMetrics, metric.field_name];
-                            onFormDataChange({
-                              ...formData,
-                              secondaryMetrics: newSecondaryMetrics,
-                            });
-                          }}
+            {/* Secondary Metrics Sections - Visible if primary is selected OR secondary metrics exist */}
+            {(formData.primaryMetric?.metricName || formData.secondaryMetrics.length > 0) && (
+              <>
+                {/* Selected Secondary Metrics Section */}
+                <Flex direction="column" gap="2" mt="3">
+                  <Text as="label" size="2" weight="bold">
+                    Selected Secondary Metrics
+                  </Text>
+                  {formData.secondaryMetrics.length === 0 && !loadingParticipantTypes && (
+                    <Text color="gray" size="2">
+                      No secondary metrics selected. Choose from available below if a primary metric is also selected.
+                    </Text>
+                  )}
+                  {/* Header for MDE in Secondary Metrics */}
+                  {formData.secondaryMetrics.length > 0 && (
+                    <Flex align="center" mt="1" mb="1">
+                      <Box style={{ minWidth: '250px', flexShrink: 0, marginRight: 'var(--space-3)', paddingLeft: 'var(--space-1)' }}>
+                        <Text size="1" weight="bold">Metric Name</Text>
+                      </Box>
+                      <Box style={{ width: '150px', minWidth: '80px', flexShrink: 0, marginRight: 'var(--space-2)' }}>
+                        <Text size="1" weight="bold">min effect (% change)</Text>
+                      </Box>
+                      <Box style={{ width: 'var(--radix-size-7)' }} /> {/* Spacer for Trash Icon Column */}
+                    </Flex>
+                  )}
+                  {formData.secondaryMetrics.map((selectedMetric) => (
+                    <Flex key={selectedMetric.metricName} align="center"> {/* Removed gap */}
+                      <Box style={{ minWidth: '250px', flexShrink: 0, marginRight: 'var(--space-3)', paddingLeft: 'var(--space-1)' }}>
+                        <Text size="3">
+                          {selectedMetric.metricName}
+                        </Text>
+                      </Box>
+                      <Box style={{ width: '150px', minWidth: '80px', flexShrink: 0, marginRight: 'var(--space-2)' }}>
+                        <TextField.Root
+                          type="number"
+                          value={selectedMetric.mde}
+                          onChange={(e) =>
+                            handleMdeChange('secondary', selectedMetric.metricName, e.target.value)
+                          }
+                          placeholder="MDE %"
+                        />
+                      </Box>
+                      <Box>
+                        <Button
+                          variant="soft"
+                          color="red"
+                          onClick={() => handleSecondaryMetricRemove(selectedMetric.metricName)}
                         >
-                          {metric.field_name}
-                        </Badge>
-                      );
-                      if (metric.description) {
-                        return (
-                          <HoverCard.Root key={metric.field_name}>
-                            <HoverCard.Trigger>{badge}</HoverCard.Trigger>
-                            <HoverCard.Content maxWidth="300px">
-                              <Flex gap="4">{metric.description}</Flex>
-                            </HoverCard.Content>
-                          </HoverCard.Root>
-                        );
-                      } else {
-                        return <Text key={metric.field_name}>{badge}</Text>;
-                      }
-                    })}
+                          <TrashIcon />
+                        </Button>
+                      </Box>
+                      <Box style={{ flexGrow: 1 }} /> {/* Spacer to push content left */}
+                    </Flex>
+                  ))}
                 </Flex>
-              )}
-            </Flex>
+
+                {/* Available Secondary Metrics Section - Conditionally render the entire section */}
+                {(loadingParticipantTypes || availableSecondaryMetricBadges.length > 0) && (
+                  <Flex direction="column" gap="2" mt="3">
+                    <Text as="label" size="2" weight="bold">
+                      Available Secondary Metrics
+                    </Text>
+                    {loadingParticipantTypes && (
+                      <Flex align="center" gap="2">
+                        <Spinner size="1" />
+                        <Text size="2">Loading metrics...</Text>
+                      </Flex>
+                    )}
+                    {!loadingParticipantTypes && availableSecondaryMetricBadges.length > 0 && (
+                      <Flex gap="2" wrap="wrap">
+                        {availableSecondaryMetricBadges.map((metric) => {
+                          const badge = (
+                            <Badge
+                              key={metric.field_name}
+                              size={'3'}
+                              variant={'outline'}
+                              color={'gray'}
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => handleSecondaryMetricAdd(metric.field_name)}
+                            >
+                              {metric.field_name}
+                            </Badge>
+                          );
+                          if (metric.description) {
+                            return (
+                              <HoverCard.Root key={metric.field_name}>
+                                <HoverCard.Trigger>{badge}</HoverCard.Trigger>
+                                <HoverCard.Content maxWidth="300px">
+                                  <Flex gap="4">{metric.description}</Flex>
+                                </HoverCard.Content>
+                              </HoverCard.Root>
+                            );
+                          } else {
+                            return <Text key={metric.field_name}>{badge}</Text>;
+                          }
+                        })}
+                      </Flex>
+                    )}
+                  </Flex>
+                )}
+              </>
+            )}
           </Flex>
         </Card>
 
@@ -226,8 +376,8 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
               </Text>
               <TextField.Root
                 type="number"
-                value={formData.effectPctChange}
-                onChange={(e) => onFormDataChange({ ...formData, effectPctChange: e.target.value })}
+                disabled
+                placeholder="Set per metric"
               />
             </Flex>
           </Flex>
