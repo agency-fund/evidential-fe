@@ -1,14 +1,15 @@
 'use client';
 import {
   Badge,
-  Box,
   Button,
   Callout,
   Card,
+  Container,
   Flex,
   Heading,
   HoverCard,
   Spinner,
+  Table,
   Text,
   TextField,
 } from '@radix-ui/themes';
@@ -150,10 +151,8 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
                   <Text size="2">Loading metrics...</Text>
                 </Flex>
               ) : formData.primaryMetric?.metricName ? (
-                // Display selected primary metric with MDE input and trash icon
                 <></>
               ) : (
-                // Display badges for primary metric selection
                 <Flex gap="2" wrap="wrap">
                   <Text as={'label'} size={'2'} weight={'bold'}>
                     Select a primary metric:
@@ -231,95 +230,74 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
               <>
                 <Flex direction="column" gap="2" mt="3">
                   {(formData.primaryMetric || formData.secondaryMetrics.length > 0) && (
-                    <>
-                      <Flex align="center" mt="1" mb="1">
-                        <Box
-                          style={{
-                            minWidth: '250px',
-                            flexShrink: 0,
-                            marginRight: 'var(--space-3)',
-                            paddingLeft: 'var(--space-1)',
-                          }}
-                        >
-                          <Text size="1" weight="bold">
-                            Metric Name
-                          </Text>
-                        </Box>
-                        <Box style={{ width: '150px', minWidth: '80px', flexShrink: 0, marginRight: 'var(--space-2)' }}>
-                          <Text size="1" weight="bold">
-                            min effect (% change)
-                          </Text>
-                        </Box>
-                        <Box style={{ width: 'var(--radix-size-7)' }} /> {/* Spacer for Trash Icon Column */}
-                      </Flex>
-                    </>
+                    <Container width={'60%'} align={'left'}>
+                      <Table.Root>
+                        <Table.Header>
+                          <Table.Row>
+                            <Table.ColumnHeaderCell>Metric</Table.ColumnHeaderCell>
+                            <Table.ColumnHeaderCell>
+                              Minimum Effect
+                              <br />
+                              (% change)
+                            </Table.ColumnHeaderCell>
+                            <Table.ColumnHeaderCell> </Table.ColumnHeaderCell>
+                          </Table.Row>
+                        </Table.Header>
+                        <Table.Body>
+                          {formData.primaryMetric && (
+                            <Table.Row>
+                              <Table.Cell>
+                                {formData.primaryMetric.metricName} <Badge>Primary</Badge>
+                              </Table.Cell>
+                              <Table.Cell>
+                                <TextField.Root
+                                  type="number"
+                                  value={formData.primaryMetric.mde}
+                                  onChange={(e) =>
+                                    handleMdeChange('primary', formData.primaryMetric!.metricName, e.target.value)
+                                  }
+                                  placeholder="MDE %"
+                                />
+                              </Table.Cell>
+                              <Table.Cell>
+                                <Button variant="soft" color="red" onClick={handlePrimaryMetricDeselect}>
+                                  <TrashIcon />
+                                </Button>
+                              </Table.Cell>
+                            </Table.Row>
+                          )}
+                          {formData.secondaryMetrics
+                            .toSorted((a, b) => a.metricName.localeCompare(b.metricName))
+                            .map((selectedMetric) => (
+                              <Table.Row>
+                                <Table.Cell>
+                                  <Text size="3">{selectedMetric.metricName}</Text>
+                                </Table.Cell>
+                                <Table.Cell>
+                                  <TextField.Root
+                                    type="number"
+                                    value={selectedMetric.mde}
+                                    onChange={(e) =>
+                                      handleMdeChange('secondary', selectedMetric.metricName, e.target.value)
+                                    }
+                                    placeholder="MDE %"
+                                  />
+                                </Table.Cell>
+                                <Table.Cell>
+                                  <Button
+                                    variant="soft"
+                                    color="red"
+                                    onClick={() => handleSecondaryMetricRemove(selectedMetric.metricName)}
+                                  >
+                                    <TrashIcon />
+                                  </Button>
+                                </Table.Cell>
+                              </Table.Row>
+                            ))}
+                        </Table.Body>
+                      </Table.Root>
+                    </Container>
                   )}
-                  {formData.primaryMetric && (
-                    <Flex align="center">
-                      <Box
-                        style={{
-                          minWidth: '250px',
-                          flexShrink: 0,
-                          marginRight: 'var(--space-3)',
-                          paddingLeft: 'var(--space-1)',
-                        }}
-                      >
-                        <Text size="3">
-                          {formData.primaryMetric.metricName} <Badge>Primary</Badge>
-                        </Text>
-                      </Box>
-                      <Box style={{ width: '150px', minWidth: '80px', flexShrink: 0, marginRight: 'var(--space-2)' }}>
-                        <TextField.Root
-                          type="number"
-                          value={formData.primaryMetric.mde}
-                          onChange={(e) =>
-                            handleMdeChange('primary', formData.primaryMetric!.metricName, e.target.value)
-                          }
-                          placeholder="MDE %"
-                        />
-                      </Box>
-                      <Box>
-                        <Button variant="soft" color="red" onClick={handlePrimaryMetricDeselect}>
-                          <TrashIcon />
-                        </Button>
-                      </Box>
-                      <Box style={{ flexGrow: 1 }} /> {/* Spacer to push content left */}
-                    </Flex>
-                  )}
-                  {formData.secondaryMetrics
-                    .toSorted((a, b) => a.metricName.localeCompare(b.metricName))
-                    .map((selectedMetric) => (
-                      <Flex key={selectedMetric.metricName} align="center">
-                        <Box
-                          style={{
-                            minWidth: '250px',
-                            flexShrink: 0,
-                            marginRight: 'var(--space-3)',
-                            paddingLeft: 'var(--space-1)',
-                          }}
-                        >
-                          <Text size="3">{selectedMetric.metricName}</Text>
-                        </Box>
-                        <Box style={{ width: '150px', minWidth: '80px', flexShrink: 0, marginRight: 'var(--space-2)' }}>
-                          <TextField.Root
-                            type="number"
-                            value={selectedMetric.mde}
-                            onChange={(e) => handleMdeChange('secondary', selectedMetric.metricName, e.target.value)}
-                            placeholder="MDE %"
-                          />
-                        </Box>
-                        <Box>
-                          <Button
-                            variant="soft"
-                            color="red"
-                            onClick={() => handleSecondaryMetricRemove(selectedMetric.metricName)}
-                          >
-                            <TrashIcon />
-                          </Button>
-                        </Box>
-                        <Box style={{ flexGrow: 1 }} /> {/* Spacer to push content left */}
-                      </Flex>
-                    ))}
                 </Flex>
               </>
             )}
