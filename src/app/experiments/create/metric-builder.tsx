@@ -1,4 +1,4 @@
-import { Badge, Button, Flex, HoverCard, Table, Text, TextField } from '@radix-ui/themes';
+import { Badge, Button, Flex, Grid, HoverCard, Table, Text, TextField } from '@radix-ui/themes';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData } from '@/app/experiments/create/page';
 import { GetMetricsResponseElement } from '@/api/methods.schemas';
@@ -51,20 +51,22 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
   };
 
   // Determine metrics available for primary selection (all metrics not in secondaryMetrics)
-  const availablePrimaryMetricBadges = metricFields.filter(
-    (m) => !formData.secondaryMetrics.some((sm) => sm.metricName === m.field_name),
-  );
+  const availablePrimaryMetricBadges = metricFields
+    .filter((m) => !formData.secondaryMetrics.some((sm) => sm.metricName === m.field_name))
+    .toSorted((a, b) => a.field_name.localeCompare(b.field_name));
 
   // Determine metrics available for secondary selection
-  const availableSecondaryMetricBadges = metricFields.filter(
-    (m) =>
-      m.field_name !== formData.primaryMetric?.metricName &&
-      !formData.secondaryMetrics.some((sm) => sm.metricName === m.field_name),
-  );
+  const availableSecondaryMetricBadges = metricFields
+    .filter(
+      (m) =>
+        m.field_name !== formData.primaryMetric?.metricName &&
+        !formData.secondaryMetrics.some((sm) => sm.metricName === m.field_name),
+    )
+    .toSorted((a, b) => a.field_name.localeCompare(b.field_name));
 
   return (
-    <Flex direction={'row'} justify={'start'} gap={'4'}>
-      <Table.Root>
+    <Grid columns={'2'} gap={'4'}>
+      <Table.Root layout={'fixed'}>
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeaderCell>Metric</Table.ColumnHeaderCell>
@@ -80,7 +82,9 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
           <>
             {!formData.primaryMetric && !formData.secondaryMetrics.length && (
               <Table.Row>
-                <Table.Cell>Please pick a primary metric.</Table.Cell>
+                <Table.Cell>(no metrics selected)</Table.Cell>
+                <Table.Cell></Table.Cell>
+                <Table.Cell></Table.Cell>
               </Table.Row>
             )}
             {formData.primaryMetric && (
@@ -142,42 +146,47 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
           </>
         </Table.Body>
       </Table.Root>
-
       <Flex direction="column" gap="3" overflowX={'auto'}>
         <Flex direction="column" gap="2">
           {!formData.primaryMetric ? (
-            <Flex gap="2" wrap="wrap">
-              <Text as={'label'} size={'2'} weight={'bold'}>
-                Select a primary metric:
-              </Text>
-              {availablePrimaryMetricBadges.map((metric) => (
-                <Badge
-                  key={metric.field_name}
-                  size={'3'}
-                  variant={'soft'}
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => handlePrimaryMetricSelect(metric.field_name)}
-                >
-                  <PlusIcon /> {metric.field_name}
-                </Badge>
-              ))}
-              {availablePrimaryMetricBadges.length === 0 && metricFields.length > 0 && (
-                <Text color="gray" size="2">
-                  All available metrics are selected as secondary. Deselect one to make it primary.
+            <>
+              <Flex gap="2">
+                <Text as={'label'} size={'2'} weight={'bold'}>
+                  Select a primary metric:
                 </Text>
-              )}
-              {metricFields.length === 0 && (
-                <Text color="gray" size="2">
-                  No metrics available for this participant type.
-                </Text>
-              )}
-            </Flex>
+              </Flex>
+              <Flex gap={'2'}>
+                {availablePrimaryMetricBadges.map((metric) => (
+                  <Badge
+                    key={metric.field_name}
+                    size={'3'}
+                    variant={'soft'}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => handlePrimaryMetricSelect(metric.field_name)}
+                  >
+                    <PlusIcon /> {metric.field_name}
+                  </Badge>
+                ))}
+                {availablePrimaryMetricBadges.length === 0 && metricFields.length > 0 && (
+                  <Text color="gray" size="2">
+                    All available metrics are selected as secondary. Deselect one to make it primary.
+                  </Text>
+                )}
+                {metricFields.length === 0 && (
+                  <Text color="gray" size="2">
+                    No metrics available for this participant type.
+                  </Text>
+                )}
+              </Flex>
+            </>
           ) : availableSecondaryMetricBadges.length > 0 && formData.primaryMetric ? (
-            <Flex direction="column" gap="2" mt="3">
-              <Text as="label" size="2" weight="bold">
-                Add optional secondary metrics:
-              </Text>
-              <Flex gap="2" wrap="wrap">
+            <>
+              <Flex gap={'2'}>
+                <Text as="label" size="2" weight="bold">
+                  Add optional secondary metrics:
+                </Text>
+              </Flex>
+              <Flex gap="2">
                 {availableSecondaryMetricBadges.map((metric) => {
                   const badge = (
                     <Badge
@@ -204,12 +213,12 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
                   }
                 })}
               </Flex>
-            </Flex>
+            </>
           ) : (
             <></>
           )}
         </Flex>
       </Flex>
-    </Flex>
+    </Grid>
   );
 }
