@@ -229,17 +229,41 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
                   const {
                     payload: { value },
                   } = e;
-                  const textProps = {
+                  const armData = effectSizes[value];
+
+                  let percentChangeText = '';
+                  if (!armData.isBaseline) {
+                    const rawPercentChange = ((armData.absEffect - armData.baselineEffect) / armData.baselineEffect) * 100;
+                    // Handle cases where baselineEffect is 0 or very small to avoid Infinity or NaN
+                    if (isFinite(rawPercentChange)) {
+                       percentChangeText = `Δ= ${rawPercentChange.toFixed(1)}%`;
+                    } else {
+                       percentChangeText = 'change: N/A';
+                    }
+                  }
+
+                  const pValueText = `p = ${armData.pValue !== null ? armData.pValue.toFixed(3) : 'N/A'}`;
+
+                  // Common text properties
+                  const commonTextProps = {
                     x: e.x,
-                    y: e.y,
                     textAnchor: e.textAnchor,
-                    fill: effectSizes[value].significant ? 'black' : undefined,
-                    fontWeight: effectSizes[value].significant ? 'bold' : undefined,
-                    dominantBaseline: 'middle' as const,
+                    fill: armData.significant && !armData.isBaseline ? 'black' : undefined, // Only bold/black if significant AND not baseline
+                    fontWeight: armData.significant && !armData.isBaseline ? 'bold' : undefined,
+                    // fontSize will be set individually
                   };
-                  const tickLabel = `p = ${effectSizes[value].pValue !== null ? effectSizes[value].pValue.toFixed(3) : 'N/A'}`;
-                  return <text {...textProps}>{tickLabel}</text>;
-                }}
+
+                  return (
+                    <g>
+                      <text {...commonTextProps} y={e.y} dy={!armData.isBaseline ? '-8px' : '0'} dominantBaseline="middle" fontSize="16px">
+                        {percentChangeText}
+                      </text>
+                      <text {...commonTextProps} y={e.y} dy={!armData.isBaseline ? '8px' : '0'} dominantBaseline="middle" fontSize="12px">
+                        {pValueText}
+                      </text>
+                    </g>
+                  );
+                }} // end tickFormatter, whew
                 allowDataOverflow={true}
               />
 
