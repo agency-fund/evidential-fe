@@ -12,6 +12,7 @@ import { useState } from 'react';
 import * as Toast from '@radix-ui/react-toast';
 import { CodeSnippetCard } from '@/app/components/cards/code-snippet-card';
 import { ExperimentTypeBadge } from '../../experiment-type-badge';
+
 export default function ExperimentViewPage() {
   const [openToast, setOpenToast] = useState(false);
   const params = useParams();
@@ -130,15 +131,6 @@ export default function ExperimentViewPage() {
               <Table.Row>
                 <Table.RowHeaderCell>Power</Table.RowHeaderCell>
                 <Table.Cell>{design_spec.power ? `${design_spec.power * 100}%` : '?'}</Table.Cell>
-              </Table.Row>
-              <Table.Row>
-                <Table.RowHeaderCell>MDE</Table.RowHeaderCell>
-                <Table.Cell>
-                  {/* TODO(roboton): verify */}
-                  {design_spec.metrics[0]?.metric_pct_change
-                    ? `${(design_spec.metrics[0].metric_pct_change * 100).toFixed(1)}%`
-                    : '(unknown)'}
-                </Table.Cell>
               </Table.Row>
             </Table.Body>
           </Table.Root>

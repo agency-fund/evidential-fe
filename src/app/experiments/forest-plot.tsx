@@ -168,7 +168,20 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
   return (
     <Card>
       <Flex direction="column" gap="3">
-        <Text weight="bold">Effect of {analysis.metric_name}</Text>
+        <Flex direction="row" align="baseline" wrap="wrap">
+          <Text weight="bold">
+            Effect of {analysis.metric_name || 'Unknown Metric'}&nbsp;
+          </Text>
+          <Text>
+            {(() => {
+              const mdePct = analysis.metric?.metric_pct_change;
+              if (typeof mdePct === 'number') {
+                return `(Target min effect: ${(mdePct * 100).toFixed(1)}%)`;
+              }
+              return '(Target min effect: unknown)';
+            })()}
+          </Text>
+        </Flex>
 
         {effectSizes.some(e => e.invalidStatTest) && (
           <Callout.Root color="orange" size="1">
