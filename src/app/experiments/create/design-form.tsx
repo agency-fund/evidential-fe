@@ -55,7 +55,6 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
         experimentId: response.design_spec.experiment_id!,
         createExperimentResponse: response,
       });
-      console.log('handleSubmit is calling onNext()');
       onNext();
     } catch (error) {
       // TODO
