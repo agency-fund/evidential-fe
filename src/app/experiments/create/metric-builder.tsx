@@ -1,7 +1,8 @@
-import { Badge, Button, Flex, Grid, HoverCard, Table, Text, TextField } from '@radix-ui/themes';
-import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
+import { Badge, Button, Flex, Grid, Table, Text, TextField } from '@radix-ui/themes';
+import { TrashIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData } from '@/app/experiments/create/page';
 import { GetMetricsResponseElement } from '@/api/methods.schemas';
+import { ClickableBadge } from '@/app/experiments/create/clickable-badge';
 
 const DEFAULT_MDE = '10';
 
@@ -90,7 +91,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
             {formData.primaryMetric && (
               <Table.Row>
                 <Table.Cell>
-                  {formData.primaryMetric.metricName} <Badge>Primary</Badge>
+                  {formData.primaryMetric.metricName} <Badge color={'green'}>Primary</Badge>
                 </Table.Cell>
                 <Table.Cell>
                   <TextField.Root
@@ -157,15 +158,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
               </Flex>
               <Flex gap={'2'}>
                 {availablePrimaryMetricBadges.map((metric) => (
-                  <Badge
-                    key={metric.field_name}
-                    size={'3'}
-                    variant={'soft'}
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => handlePrimaryMetricSelect(metric.field_name)}
-                  >
-                    <PlusIcon /> {metric.field_name}
-                  </Badge>
+                  <ClickableBadge metric={metric} onClick={handlePrimaryMetricSelect} />
                 ))}
                 {availablePrimaryMetricBadges.length === 0 && metricFields.length > 0 && (
                   <Text color="gray" size="2">
@@ -187,31 +180,9 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
                 </Text>
               </Flex>
               <Flex gap="2">
-                {availableSecondaryMetricBadges.map((metric) => {
-                  const badge = (
-                    <Badge
-                      key={metric.field_name}
-                      size={'3'}
-                      variant={'soft'}
-                      style={{ cursor: 'pointer' }}
-                      onClick={() => handleSecondaryMetricAdd(metric.field_name)}
-                    >
-                      <PlusIcon /> {metric.field_name}
-                    </Badge>
-                  );
-                  if (metric.description) {
-                    return (
-                      <HoverCard.Root key={metric.field_name}>
-                        <HoverCard.Trigger>{badge}</HoverCard.Trigger>
-                        <HoverCard.Content maxWidth="300px">
-                          <Flex gap="4">{metric.description}</Flex>
-                        </HoverCard.Content>
-                      </HoverCard.Root>
-                    );
-                  } else {
-                    return <Text key={metric.field_name}>{badge}</Text>;
-                  }
-                })}
+                {availableSecondaryMetricBadges.map((metric) => (
+                  <ClickableBadge metric={metric} onClick={handleSecondaryMetricAdd} />
+                ))}
               </Flex>
             </>
           ) : (
