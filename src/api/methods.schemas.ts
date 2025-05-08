@@ -70,12 +70,12 @@ export type ArmAnalysisArmId = string | null;
 export type ArmAnalysisArmDescription = string | null;
 
 /**
- * The p-value indicating statistical significance of the treatment effect.
+ * The p-value indicating statistical significance of the treatment effect. Value may be None if the t-stat is not available, e.g. due to inability to calculate the standard error.
  */
 export type ArmAnalysisPValue = number | null;
 
 /**
- * The t-statistic from the statistical test.
+ * The t-statistic from the statistical test. If the value is actually NaN, e.g. due to inability to calculate the standard error, we return None.
  */
 export type ArmAnalysisTStat = number | null;
 
@@ -89,9 +89,9 @@ export interface ArmAnalysis {
 	is_baseline: boolean;
 	/** The estimated treatment effect relative to the baseline arm. */
 	estimate: number;
-	/** The p-value indicating statistical significance of the treatment effect. */
+	/** The p-value indicating statistical significance of the treatment effect. Value may be None if the t-stat is not available, e.g. due to inability to calculate the standard error. */
 	p_value: ArmAnalysisPValue;
-	/** The t-statistic from the statistical test. */
+	/** The t-statistic from the statistical test. If the value is actually NaN, e.g. due to inability to calculate the standard error, we return None. */
 	t_stat: ArmAnalysisTStat;
 	/** The standard error of the treatment effect estimate. */
 	std_error: number;
