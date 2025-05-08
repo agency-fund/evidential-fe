@@ -1,16 +1,16 @@
 'use client';
 import {
   Badge,
+  Box,
   Button,
   Callout,
   Card,
   Flex,
   Heading,
   HoverCard,
-   Spinner,
+  Spinner,
   Text,
   TextField,
-  Box,
 } from '@radix-ui/themes';
 import { ExperimentFormData } from './page';
 import { InfoCircledIcon, LightningBoltIcon, TrashIcon } from '@radix-ui/react-icons';
@@ -80,17 +80,11 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
   };
 
   const handleSecondaryMetricRemove = (metricName: string) => {
-    const newSecondaryMetrics = formData.secondaryMetrics.filter(
-      (m) => m.metricName !== metricName,
-    );
+    const newSecondaryMetrics = formData.secondaryMetrics.filter((m) => m.metricName !== metricName);
     onFormDataChange({ ...formData, secondaryMetrics: newSecondaryMetrics });
   };
 
-  const handleMdeChange = (
-    type: 'primary' | 'secondary',
-    metricName: string,
-    mde: string,
-  ) => {
+  const handleMdeChange = (type: 'primary' | 'secondary', metricName: string, mde: string) => {
     if (type === 'primary' && formData.primaryMetric) {
       onFormDataChange({
         ...formData,
@@ -164,27 +158,41 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
                 <>
                   {/* Header for MDE */}
                   <Flex align="center" mt="1" mb="1">
-                    <Box style={{ minWidth: '250px', flexShrink: 0, marginRight: 'var(--space-3)', paddingLeft: 'var(--space-1)' }}>
-                      <Text size="1" weight="bold">Metric Name</Text>
+                    <Box
+                      style={{
+                        minWidth: '250px',
+                        flexShrink: 0,
+                        marginRight: 'var(--space-3)',
+                        paddingLeft: 'var(--space-1)',
+                      }}
+                    >
+                      <Text size="1" weight="bold">
+                        Metric Name
+                      </Text>
                     </Box>
                     <Box style={{ width: '150px', minWidth: '80px', flexShrink: 0, marginRight: 'var(--space-2)' }}>
-                      <Text size="1" weight="bold">min effect (% change)</Text>
+                      <Text size="1" weight="bold">
+                        min effect (% change)
+                      </Text>
                     </Box>
                     <Box style={{ width: 'var(--radix-size-7)' }} /> {/* Spacer for Trash Icon Column */}
                   </Flex>
-                  <Flex align="center"> {/* Removed gap */}
-                    <Box style={{ minWidth: '250px', flexShrink: 0, marginRight: 'var(--space-3)', paddingLeft: 'var(--space-1)' }}>
-                      <Text size="3">
-                        {formData.primaryMetric.metricName}
-                      </Text>
+                  <Flex align="center">
+                    <Box
+                      style={{
+                        minWidth: '250px',
+                        flexShrink: 0,
+                        marginRight: 'var(--space-3)',
+                        paddingLeft: 'var(--space-1)',
+                      }}
+                    >
+                      <Text size="3">{formData.primaryMetric.metricName}</Text>
                     </Box>
                     <Box style={{ width: '150px', minWidth: '80px', flexShrink: 0, marginRight: 'var(--space-2)' }}>
                       <TextField.Root
                         type="number"
                         value={formData.primaryMetric.mde}
-                        onChange={(e) =>
-                          handleMdeChange('primary', formData.primaryMetric!.metricName, e.target.value)
-                        }
+                        onChange={(e) => handleMdeChange('primary', formData.primaryMetric!.metricName, e.target.value)}
                         placeholder="MDE %"
                       />
                     </Box>
@@ -217,9 +225,9 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
                     </Text>
                   )}
                   {metricFields.length === 0 && (
-                     <Text color="gray" size="2">
-                       No metrics available for this participant type.
-                     </Text>
+                    <Text color="gray" size="2">
+                      No metrics available for this participant type.
+                    </Text>
                   )}
                 </Flex>
               )}
@@ -241,29 +249,43 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
                   {/* Header for MDE in Secondary Metrics */}
                   {formData.secondaryMetrics.length > 0 && (
                     <Flex align="center" mt="1" mb="1">
-                      <Box style={{ minWidth: '250px', flexShrink: 0, marginRight: 'var(--space-3)', paddingLeft: 'var(--space-1)' }}>
-                        <Text size="1" weight="bold">Metric Name</Text>
+                      <Box
+                        style={{
+                          minWidth: '250px',
+                          flexShrink: 0,
+                          marginRight: 'var(--space-3)',
+                          paddingLeft: 'var(--space-1)',
+                        }}
+                      >
+                        <Text size="1" weight="bold">
+                          Metric Name
+                        </Text>
                       </Box>
                       <Box style={{ width: '150px', minWidth: '80px', flexShrink: 0, marginRight: 'var(--space-2)' }}>
-                        <Text size="1" weight="bold">min effect (% change)</Text>
+                        <Text size="1" weight="bold">
+                          min effect (% change)
+                        </Text>
                       </Box>
                       <Box style={{ width: 'var(--radix-size-7)' }} /> {/* Spacer for Trash Icon Column */}
                     </Flex>
                   )}
                   {formData.secondaryMetrics.map((selectedMetric) => (
-                    <Flex key={selectedMetric.metricName} align="center"> {/* Removed gap */}
-                      <Box style={{ minWidth: '250px', flexShrink: 0, marginRight: 'var(--space-3)', paddingLeft: 'var(--space-1)' }}>
-                        <Text size="3">
-                          {selectedMetric.metricName}
-                        </Text>
+                    <Flex key={selectedMetric.metricName} align="center">
+                      <Box
+                        style={{
+                          minWidth: '250px',
+                          flexShrink: 0,
+                          marginRight: 'var(--space-3)',
+                          paddingLeft: 'var(--space-1)',
+                        }}
+                      >
+                        <Text size="3">{selectedMetric.metricName}</Text>
                       </Box>
                       <Box style={{ width: '150px', minWidth: '80px', flexShrink: 0, marginRight: 'var(--space-2)' }}>
                         <TextField.Root
                           type="number"
                           value={selectedMetric.mde}
-                          onChange={(e) =>
-                            handleMdeChange('secondary', selectedMetric.metricName, e.target.value)
-                          }
+                          onChange={(e) => handleMdeChange('secondary', selectedMetric.metricName, e.target.value)}
                           placeholder="MDE %"
                         />
                       </Box>
@@ -367,17 +389,6 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
                 type="number"
                 value={formData.power}
                 onChange={(e) => onFormDataChange({ ...formData, power: e.target.value })}
-              />
-            </Flex>
-
-            <Flex direction="column" gap="2">
-              <Text as="label" size="2" weight="bold">
-                Effect % Change
-              </Text>
-              <TextField.Root
-                type="number"
-                disabled
-                placeholder="Set per metric"
               />
             </Flex>
           </Flex>
