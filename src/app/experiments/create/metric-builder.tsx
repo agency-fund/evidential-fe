@@ -95,7 +95,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
                 </Table.Cell>
                 <Table.Cell>
                   <TextField.Root
-                    type="number"
+                    type={'number'}
                     value={formData.primaryMetric.mde}
                     onChange={(e) => handleMdeChange('primary', formData.primaryMetric!.metricName, e.target.value)}
                     placeholder="MDE %"
@@ -118,7 +118,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
             {formData.secondaryMetrics
               .toSorted((a, b) => a.metricName.localeCompare(b.metricName))
               .map((selectedMetric) => (
-                <Table.Row>
+                <Table.Row key={selectedMetric.metricName}>
                   <Table.Cell>
                     <Text size="3">{selectedMetric.metricName}</Text>
                   </Table.Cell>
@@ -158,7 +158,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
               </Flex>
               <Flex gap={'2'}>
                 {availablePrimaryMetricBadges.map((metric) => (
-                  <ClickableBadge metric={metric} onClick={handlePrimaryMetricSelect} />
+                  <ClickableBadge key={metric.field_name} metric={metric} onClick={handlePrimaryMetricSelect} />
                 ))}
                 {availablePrimaryMetricBadges.length === 0 && metricFields.length > 0 && (
                   <Text color="gray" size="2">
@@ -181,7 +181,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
               </Flex>
               <Flex gap="2">
                 {availableSecondaryMetricBadges.map((metric) => (
-                  <ClickableBadge metric={metric} onClick={handleSecondaryMetricAdd} />
+                  <ClickableBadge key={metric.field_name} metric={metric} onClick={handleSecondaryMetricAdd} />
                 ))}
               </Flex>
             </>
