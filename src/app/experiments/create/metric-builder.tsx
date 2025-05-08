@@ -156,7 +156,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
                   Select a primary metric:
                 </Text>
               </Flex>
-              <Flex gap={'2'}>
+              <Flex gap={'2'} wrap={'wrap'}>
                 {availablePrimaryMetricBadges.map((metric) => (
                   <ClickableBadge key={metric.field_name} metric={metric} onClick={handlePrimaryMetricSelect} />
                 ))}
@@ -179,7 +179,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
                   Add optional secondary metrics:
                 </Text>
               </Flex>
-              <Flex gap="2">
+              <Flex gap="2" wrap={'wrap'}>
                 {availableSecondaryMetricBadges.map((metric) => (
                   <ClickableBadge key={metric.field_name} metric={metric} onClick={handleSecondaryMetricAdd} />
                 ))}
