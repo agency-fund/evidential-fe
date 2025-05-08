@@ -44,26 +44,28 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
 
   return (
     <Flex direction="column" gap="3" align="center">
-        <Button disabled={isButtonDisabled} onClick={handlePowerCheck} style={{ minWidth: '25%' }}>
-          {isMutating && <Spinner size="1" />}
-          {isMutating ? 'Checking...' : 'Run Power Check'}
-        </Button>
-        {data !== undefined && (
-          <>
-              <Text>Target sample size to distribute across all arms: </Text>
-              <TextField.Root
-                style={{
-                  minWidth: '50%',
-                  textAlign: 'center'
-                }}
-                size="3"
-                type="number"
-                value={formData.chosenN ?? ''}
-                onChange={(e) => onFormDataChange({ ...formData, chosenN: e.target.value === '' ? undefined : Number(e.target.value) })}
-                placeholder="Run the Power Check, or type your own desired #."
-              />
-          </>
-        )}
+      <Button disabled={isButtonDisabled} onClick={handlePowerCheck} style={{ minWidth: '25%' }}>
+        {isMutating && <Spinner size="1" />}
+        {isMutating ? 'Checking...' : 'Run Power Check'}
+      </Button>
+      {data !== undefined && (
+        <>
+          <Text>Target sample size to distribute across all arms: </Text>
+          <TextField.Root
+            style={{
+              minWidth: '50%',
+              textAlign: 'center',
+            }}
+            size="3"
+            type="number"
+            value={formData.chosenN ?? ''}
+            onChange={(e) =>
+              onFormDataChange({ ...formData, chosenN: e.target.value === '' ? undefined : Number(e.target.value) })
+            }
+            placeholder="Run the Power Check, or type your own desired #."
+          />
+        </>
+      )}
 
       {error && (
         <Flex align="center" gap="2">
@@ -78,7 +80,7 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
         <Flex align="center" gap="2">
           <GenericErrorCallout
             title={'Validation failed'}
-            message={validationError.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`).join('\n')}
+            message={validationError.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('\n')}
           />
         </Flex>
       )}
@@ -91,6 +93,7 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
       )}
 
       {data !== undefined &&
+        !validationError &&
         data.analyses.map((metricAnalysis, i) => (
           <Card key={i}>
             <Flex direction="column" gap="3">
@@ -116,8 +119,7 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
                       {metricAnalysis.metric_spec.available_n === null ? '?' : metricAnalysis.metric_spec.available_n}
                     </Table.Cell>
                   </Table.Row>
-                  {metricAnalysis.pct_change_possible !== null &&
-                   metricAnalysis.pct_change_possible !== undefined && (
+                  {metricAnalysis.pct_change_possible !== null && metricAnalysis.pct_change_possible !== undefined && (
                     <Table.Row>
                       <Table.RowHeaderCell>Minimum Detectable Effect with all available samples</Table.RowHeaderCell>
                       <Table.Cell>{(metricAnalysis.pct_change_possible * 100).toFixed(4)}%</Table.Cell>
