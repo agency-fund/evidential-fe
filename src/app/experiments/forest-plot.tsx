@@ -2,7 +2,16 @@
 import { MetricAnalysis, ExperimentConfig } from '@/api/methods.schemas';
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 import { Box, Callout, Card, Flex, Text } from '@radix-ui/themes';
-import { CartesianGrid, ResponsiveContainer, Scatter, ScatterChart, Tooltip, TooltipProps, XAxis, YAxis } from 'recharts';
+import {
+  CartesianGrid,
+  ResponsiveContainer,
+  Scatter,
+  ScatterChart,
+  Tooltip,
+  TooltipProps,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { ChartOffset } from 'recharts/types/util/types';
 
@@ -53,7 +62,7 @@ type CustomShapeProps = {
   yAxis?: {
     height?: number;
   };
-}
+};
 
 // Function to create a diamond shape
 const createDiamondShape = (cx: number = 0, cy: number = 0, size: number = 6) => {
@@ -83,7 +92,7 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
   const availableN = experiment.assign_summary.sample_size;
 
   // Extract data for visualization
-  const controlArmIndex = analysis.arm_analyses.findIndex(a => a.is_baseline);
+  const controlArmIndex = analysis.arm_analyses.findIndex((a) => a.is_baseline);
   const controlArmAnalysis = analysis.arm_analyses[controlArmIndex];
   const controlEstimate = controlArmAnalysis.estimate; // regression intercept
 
@@ -148,14 +157,17 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
   const [minX, maxX] = getMinMaxX(effectSizes);
   // Space 3 ticks evenly across the domain, but filter out duplicates,
   // which can occur when the effect is 0.
-  const xGridPoints = [0, 1, 2, 3, 4].map(i => minX + i * (maxX - minX) / 4)
+  const xGridPoints = [0, 1, 2, 3, 4]
+    .map((i) => minX + (i * (maxX - minX)) / 4)
     .filter((value, index, self) => self.indexOf(value) === index);
 
   // Scale xGridPoints to viewport units for use in drawing grid lines
-  const scaleXGridPoints = (props: { xAxis: unknown, width: number, height: number, offset: ChartOffset }) => {
+  const scaleXGridPoints = (props: { xAxis: unknown; width: number; height: number; offset: ChartOffset }) => {
     const { width, offset } = props;
-    if (maxX - minX === 0) return [];  // zero effect size so no grid lines
-    return xGridPoints.map(x => Math.round((offset.left || 0) + ((x - minX) / (maxX - minX)) * (offset.width || width)));
+    if (maxX - minX === 0) return []; // zero effect size so no grid lines
+    return xGridPoints.map((x) =>
+      Math.round((offset.left || 0) + ((x - minX) / (maxX - minX)) * (offset.width || width)),
+    );
   };
 
   // Scale a half-confidence interval to a width in viewport units to be used for drawing the error bars
@@ -169,9 +181,7 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
     <Card>
       <Flex direction="column" gap="3">
         <Flex direction="row" align="baseline" wrap="wrap">
-          <Text weight="bold">
-            Effect of {analysis.metric_name || 'Unknown Metric'}&nbsp;
-          </Text>
+          <Text weight="bold">Effect of {analysis.metric_name || 'Unknown Metric'}&nbsp;</Text>
           <Text>
             {(() => {
               const mdePct = analysis.metric?.metric_pct_change;
@@ -183,14 +193,14 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
           </Text>
         </Flex>
 
-        {effectSizes.some(e => e.invalidStatTest) && (
+        {effectSizes.some((e) => e.invalidStatTest) && (
           <Callout.Root color="orange" size="1">
             <Callout.Icon>
               <ExclamationTriangleIcon />
             </Callout.Icon>
             <Callout.Text>
-              Statistical test is invalid for one or more arms. The experiment might not have enough
-              data or no variation in the metric right now.
+              Statistical test is invalid for one or more arms. The experiment might not have enough data or no
+              variation in the metric right now.
             </Callout.Text>
           </Callout.Root>
         )}
@@ -233,12 +243,13 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
 
                   let percentChangeText = '';
                   if (!armData.isBaseline) {
-                    const rawPercentChange = ((armData.absEffect - armData.baselineEffect) / armData.baselineEffect) * 100;
+                    const rawPercentChange =
+                      ((armData.absEffect - armData.baselineEffect) / armData.baselineEffect) * 100;
                     // Handle cases where baselineEffect is 0 or very small to avoid Infinity or NaN
                     if (isFinite(rawPercentChange)) {
-                       percentChangeText = `Δ= ${rawPercentChange.toFixed(1)}%`;
+                      percentChangeText = `Δ= ${rawPercentChange.toFixed(1)}%`;
                     } else {
-                       percentChangeText = 'change: N/A';
+                      percentChangeText = 'change: N/A';
                     }
                   }
 
@@ -248,17 +259,32 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
                   const commonTextProps = {
                     x: e.x,
                     textAnchor: e.textAnchor,
-                    fill: armData.significant && !armData.isBaseline ? 'black' : undefined, // Only bold/black if significant AND not baseline
+                    // Only bold/black if significant AND not baseline arm
+                    fill: armData.significant && !armData.isBaseline ? 'black' : undefined,
                     fontWeight: armData.significant && !armData.isBaseline ? 'bold' : undefined,
                     // fontSize will be set individually
                   };
 
                   return (
                     <g>
-                      <text {...commonTextProps} y={e.y} dy={!armData.isBaseline ? '-8px' : '0'} dominantBaseline="middle" fontSize="16px">
+                      <text
+                        {...commonTextProps}
+                        y={e.y}
+                        // dy shift here and below to align the two lines of text around the tick mark better
+                        dy={!armData.isBaseline ? '-8px' : '0'}
+                        dominantBaseline="middle"
+                        // Purposely larger font size for the percent change
+                        fontSize="16px"
+                      >
                         {percentChangeText}
                       </text>
-                      <text {...commonTextProps} y={e.y} dy={!armData.isBaseline ? '8px' : '0'} dominantBaseline="middle" fontSize="12px">
+                      <text
+                        {...commonTextProps}
+                        y={e.y}
+                        dy={!armData.isBaseline ? '8px' : '0'}
+                        dominantBaseline="middle"
+                        fontSize="12px"
+                      >
                         {pValueText}
                       </text>
                     </g>
@@ -267,8 +293,7 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
                 allowDataOverflow={true}
               />
 
-              <Tooltip content={<CustomTooltip />}
-              />
+              <Tooltip content={<CustomTooltip />} />
 
               {/* Confidence intervals - place under points */}
               <Scatter
@@ -280,7 +305,11 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
                   if (!props.payload || !props.xAxis?.width) return <g />;
 
                   const { ci95, significant, effect, isBaseline } = props.payload;
-                  const { cx: centerX, cy: centerY, xAxis: { width: xAxisWidth } } = props;
+                  const {
+                    cx: centerX,
+                    cy: centerY,
+                    xAxis: { width: xAxisWidth },
+                  } = props;
 
                   // Determine stroke color based on significance and direction
                   let strokeColor: string = COLORS.DEFAULT_CI;
