@@ -64,87 +64,84 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
 
   return (
     <Flex direction={'row'} justify={'start'} gap={'4'}>
-      <Flex direction="column" gap="2" mt="3">
-        <Table.Root>
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeaderCell>Metric</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>
-                Minimum Effect
-                <br />
-                (% change)
-              </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell> </Table.ColumnHeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            <>
-              {(formData.primaryMetric || formData.secondaryMetrics.length > 0) && (
-                <>
-                  {formData.primaryMetric && (
-                    <Table.Row>
-                      <Table.Cell>
-                        {formData.primaryMetric.metricName} <Badge>Primary</Badge>
-                      </Table.Cell>
-                      <Table.Cell>
-                        <TextField.Root
-                          type="number"
-                          value={formData.primaryMetric.mde}
-                          onChange={(e) =>
-                            handleMdeChange('primary', formData.primaryMetric!.metricName, e.target.value)
-                          }
-                          placeholder="MDE %"
-                        />
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Button
-                          variant="soft"
-                          color="red"
-                          onClick={(event) => {
-                            event.preventDefault();
-                            handlePrimaryMetricDeselect();
-                          }}
-                        >
-                          <TrashIcon />
-                        </Button>
-                      </Table.Cell>
-                    </Table.Row>
-                  )}
-                  {formData.secondaryMetrics
-                    .toSorted((a, b) => a.metricName.localeCompare(b.metricName))
-                    .map((selectedMetric) => (
-                      <Table.Row>
-                        <Table.Cell>
-                          <Text size="3">{selectedMetric.metricName}</Text>
-                        </Table.Cell>
-                        <Table.Cell>
-                          <TextField.Root
-                            type="number"
-                            value={selectedMetric.mde}
-                            onChange={(e) => handleMdeChange('secondary', selectedMetric.metricName, e.target.value)}
-                            placeholder="MDE %"
-                          />
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Button
-                            variant="soft"
-                            color="red"
-                            onClick={(event) => {
-                              event.preventDefault();
-                              handleSecondaryMetricRemove(selectedMetric.metricName);
-                            }}
-                          >
-                            <TrashIcon />
-                          </Button>
-                        </Table.Cell>
-                      </Table.Row>
-                    ))}
-                </>
-              )}
-            </>
-          </Table.Body>
-        </Table.Root>
-      </Flex>
+      <Table.Root>
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeaderCell>Metric</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>
+              Minimum Effect
+              <br />
+              (% change)
+            </Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell> </Table.ColumnHeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          <>
+            {!formData.primaryMetric && !formData.secondaryMetrics.length && (
+              <Table.Row>
+                <Table.Cell>Please pick a primary metric.</Table.Cell>
+              </Table.Row>
+            )}
+            {formData.primaryMetric && (
+              <Table.Row>
+                <Table.Cell>
+                  {formData.primaryMetric.metricName} <Badge>Primary</Badge>
+                </Table.Cell>
+                <Table.Cell>
+                  <TextField.Root
+                    type="number"
+                    value={formData.primaryMetric.mde}
+                    onChange={(e) => handleMdeChange('primary', formData.primaryMetric!.metricName, e.target.value)}
+                    placeholder="MDE %"
+                  />
+                </Table.Cell>
+                <Table.Cell>
+                  <Button
+                    variant="soft"
+                    color="red"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      handlePrimaryMetricDeselect();
+                    }}
+                  >
+                    <TrashIcon />
+                  </Button>
+                </Table.Cell>
+              </Table.Row>
+            )}
+            {formData.secondaryMetrics
+              .toSorted((a, b) => a.metricName.localeCompare(b.metricName))
+              .map((selectedMetric) => (
+                <Table.Row>
+                  <Table.Cell>
+                    <Text size="3">{selectedMetric.metricName}</Text>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <TextField.Root
+                      type="number"
+                      value={selectedMetric.mde}
+                      onChange={(e) => handleMdeChange('secondary', selectedMetric.metricName, e.target.value)}
+                      placeholder="MDE %"
+                    />
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Button
+                      variant="soft"
+                      color="red"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        handleSecondaryMetricRemove(selectedMetric.metricName);
+                      }}
+                    >
+                      <TrashIcon />
+                    </Button>
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+          </>
+        </Table.Body>
+      </Table.Root>
 
       <Flex direction="column" gap="3" overflowX={'auto'}>
         <Flex direction="column" gap="2">
