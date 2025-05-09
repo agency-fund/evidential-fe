@@ -90,12 +90,13 @@ export default function ExperimentViewPage() {
         </Flex>
       </Flex>
 
-      <Flex direction="row" gap="1" align="baseline">
-        <Heading size="3">Hypothesis:</Heading>
+      <Card>
+        <Heading size="3">Hypothesis</Heading>
+        <Separator my="3" size="4" />
         <Text color="gray" size="3" style={{ whiteSpace: 'pre-wrap' }}>
           {description}
         </Text>
-      </Flex>
+      </Card>
 
       <Grid columns="2" gap="4">
         {/* Timeline Section */}
