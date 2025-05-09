@@ -1,0 +1,7 @@
+{
+  "python": "async def get_participant_assignment(\n        api_key: str,\n        datasource_id: str,\n        experiment_id: str,\n        participant_id: str,\n        base_url: str = \"https://main.dev.agencyfund.org\"\n):\n    headers = {\n        \"X-API-Key\": api_key,\n        \"Datasource-ID\": datasource_id\n    }\n\n    url = f\"{base_url}/v1/experiments/{experiment_id}/assignments/{participant_id}\"\n\n    async with httpx.AsyncClient() as client:\n        response = await client.get(url, headers=headers)\n        response.raise_for_status()\n        data = response.json()",
+  "php": "TODO",
+  "ruby": "TODO",
+  "rust": "TODO",
+  "bash": "TODO"
+}

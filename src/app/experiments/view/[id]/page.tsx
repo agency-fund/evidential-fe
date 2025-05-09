@@ -1,5 +1,5 @@
 'use client';
-import { Button, Card, Flex, Grid, Heading, Separator, Table, Tabs, Text } from '@radix-ui/themes';
+import { Button, Card, Flex, Grid, Heading, Separator, Switch, Table, Tabs, Text } from '@radix-ui/themes';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeftIcon, CodeIcon } from '@radix-ui/react-icons';
 import { useAnalyzeExperiment, useGetExperiment } from '@/api/admin';
@@ -13,11 +13,14 @@ import * as Toast from '@radix-ui/react-toast';
 import { CodeSnippetCard } from '@/app/components/cards/code-snippet-card';
 import { ExperimentTypeBadge } from '../../experiment-type-badge';
 import Link from 'next/link';
+import { DownloadAssignmentsCsvButton } from '@/app/experiments/download-assignments-csv-button';
+import { ExperimentAssignmentCodeSnippet } from '@/app/experiments/view/[id]/experiment-assignment-code-snippet';
 
 export default function ExperimentViewPage() {
   const [openToast, setOpenToast] = useState(false);
   const params = useParams();
   const router = useRouter();
+  const [showExamples, setShowExamples] = useState<boolean>(false);
   const searchParams = useSearchParams();
   const experimentId = params.id as string;
   const datasourceId = searchParams.get('datasource_id');
@@ -138,6 +141,40 @@ export default function ExperimentViewPage() {
           </Table.Root>
         </Card>
       </Grid>
+
+      <Card>
+        <Heading size={'3'}>Assignments</Heading>
+        <Separator my={'3'} size={'4'} />
+        <Flex direction={'column'}>
+          <Flex>
+            <DownloadAssignmentsCsvButton
+              datasourceId={experiment.datasource_id}
+              experimentId={experiment.design_spec.experiment_id!}
+            />
+          </Flex>
+          {experiment.design_spec.experiment_type === 'online' && (
+            <>
+              <Text>This is an online experiment; assignments are generated on-demand.</Text>
+              <Text as="label" size="2">
+                <Flex gap="2">
+                  <Switch size="1" onCheckedChange={setShowExamples} /> Show API Usage Examples
+                </Flex>
+              </Text>
+              {showExamples && (
+                <>
+                  <ExperimentAssignmentCodeSnippet
+                    datasourceId={experiment.datasource_id}
+                    experimentId={experimentId}
+                  />
+                  <Text>
+                    Generate API keys in <Link href={`/datasourcedetails?id=${datasourceId}`}>Settings</Link>.
+                  </Text>
+                </>
+              )}
+            </>
+          )}
+        </Flex>
+      </Card>
 
       {/* Arms & Balance Section */}
       <Card>
