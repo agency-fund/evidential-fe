@@ -12,6 +12,7 @@ import { useState } from 'react';
 import * as Toast from '@radix-ui/react-toast';
 import { CodeSnippetCard } from '@/app/components/cards/code-snippet-card';
 import { ExperimentTypeBadge } from '../../experiment-type-badge';
+import Link from 'next/link';
 
 export default function ExperimentViewPage() {
   const [openToast, setOpenToast] = useState(false);
@@ -38,7 +39,7 @@ export default function ExperimentViewPage() {
     experimentId,
     {},
     {
-      swr: { enabled: !!datasourceId && !!experiment },
+      swr: { enabled: !!datasourceId && !!experiment, shouldRetryOnError: false },
     },
   );
 
@@ -73,19 +74,24 @@ export default function ExperimentViewPage() {
           <Flex gap="2" align="center">
             <Heading>{experiment_name}</Heading>
             <CopyToClipBoard content={experimentId} tooltipContent="Copy experiment ID" />
+            <ExperimentStatusBadge status={state} />
           </Flex>
-          <Text color="gray" size="3">
-            on <strong>{experiment.audience_spec.participant_type}</strong>
-          </Text>
-          <ExperimentTypeBadge type={design_spec.experiment_type} />
-          <ExperimentStatusBadge status={state} />
+          <Flex direction={'column'}>
+            <Text color={'gray'}>
+              This <ExperimentTypeBadge type={design_spec.experiment_type} /> experiment is on{' '}
+              <Link
+                href={`/participanttypedetails?datasource_id=${experiment.datasource_id}&participant_type=${experiment.audience_spec.participant_type}`}
+              >
+                {experiment.audience_spec.participant_type}
+              </Link>
+              .
+            </Text>
+          </Flex>
         </Flex>
       </Flex>
 
       <Flex direction="row" gap="1" align="baseline">
-        <Heading size="3" color="purple">
-          Hypothesis:
-        </Heading>
+        <Heading size="3">Hypothesis:</Heading>
         <Text color="gray" size="3">
           {description}
         </Text>
@@ -94,9 +100,7 @@ export default function ExperimentViewPage() {
       <Grid columns="2" gap="4">
         {/* Timeline Section */}
         <Card>
-          <Heading size="3" color="purple">
-            Timeline
-          </Heading>
+          <Heading size="3">Timeline</Heading>
           <Separator my="3" size="4" />
           <Table.Root>
             <Table.Body>
@@ -114,9 +118,7 @@ export default function ExperimentViewPage() {
 
         {/* Parameters Section */}
         <Card>
-          <Heading size="3" color="purple">
-            Parameters
-          </Heading>
+          <Heading size="3">Parameters</Heading>
           <Separator my="3" size="4" />
           <Table.Root>
             <Table.Body>
@@ -139,9 +141,7 @@ export default function ExperimentViewPage() {
 
       {/* Arms & Balance Section */}
       <Card>
-        <Heading size="3" color="purple">
-          Arms & Balance
-        </Heading>
+        <Heading size="3">Arms & Balance</Heading>
         <Separator my="3" size="4" />
         <Flex gap="4">
           {arms.map((arm) => {
@@ -174,9 +174,7 @@ export default function ExperimentViewPage() {
 
       {/* Analysis Section */}
       <Card>
-        <Heading size="3" color="purple">
-          Analysis
-        </Heading>
+        <Heading size="3">Analysis</Heading>
         <Separator my="3" size="4" />
 
         {isLoadingAnalysis && <XSpinner message="Loading analysis data..." />}
