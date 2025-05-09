@@ -1,7 +1,7 @@
 'use client';
-import { Button, Card, Flex, Grid, Heading, Separator, Table, Tabs, Text } from '@radix-ui/themes';
+import { Button, Card, Flex, Grid, Heading, Separator, Table, Tabs, Text, Badge } from '@radix-ui/themes';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeftIcon, CodeIcon } from '@radix-ui/react-icons';
+import { ArrowLeftIcon, CodeIcon, PersonIcon } from '@radix-ui/react-icons';
 import { useAnalyzeExperiment, useGetExperiment } from '@/api/admin';
 import { ForestPlot } from '@/app/experiments/forest-plot';
 import { XSpinner } from '@/app/components/x-spinner';
@@ -90,12 +90,13 @@ export default function ExperimentViewPage() {
         </Flex>
       </Flex>
 
-      <Flex direction="row" gap="1" align="baseline">
-        <Heading size="3">Hypothesis:</Heading>
-        <Text color="gray" size="3">
+      <Card>
+        <Heading size="3">Hypothesis</Heading>
+        <Separator my="3" size="4" />
+        <Text color="gray" size="3" style={{ whiteSpace: 'pre-wrap' }}>
           {description}
         </Text>
-      </Flex>
+      </Card>
 
       <Grid columns="2" gap="4">
         {/* Timeline Section */}
@@ -159,10 +160,15 @@ export default function ExperimentViewPage() {
                       {percentage.toFixed(1)}%
                     </Text>
                   </Flex>
+                  <Flex gap="2" align="center" justify="end">
+                    <Badge>
+                      <PersonIcon />
+                      <Text size="2">{armSize.toLocaleString()} participants</Text>
+                    </Badge>
+                  </Flex>
                   <Flex justify="between" align="center">
-                    <Text color="gray">{arm.arm_description || 'No description'}</Text>
-                    <Text size="2" color="gray" align="right">
-                      {armSize.toLocaleString()} participants
+                    <Text color="gray" style={{ whiteSpace: 'pre-wrap' }}>
+                      {arm.arm_description || 'No description'}
                     </Text>
                   </Flex>
                 </Flex>
