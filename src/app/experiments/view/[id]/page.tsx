@@ -1,7 +1,7 @@
 'use client';
-import { Button, Card, Flex, Grid, Heading, Separator, Table, Tabs, Text } from '@radix-ui/themes';
+import { Button, Card, Flex, Grid, Heading, Separator, Table, Tabs, Text, Badge } from '@radix-ui/themes';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeftIcon, CodeIcon } from '@radix-ui/react-icons';
+import { ArrowLeftIcon, CodeIcon, PersonIcon } from '@radix-ui/react-icons';
 import { useAnalyzeExperiment, useGetExperiment } from '@/api/admin';
 import { ForestPlot } from '@/app/experiments/forest-plot';
 import { XSpinner } from '@/app/components/x-spinner';
@@ -82,10 +82,8 @@ export default function ExperimentViewPage() {
       </Flex>
 
       <Flex direction="row" gap="1" align="baseline">
-        <Heading size="3" color="purple">
-          Hypothesis:
-        </Heading>
-        <Text color="gray" size="3">
+        <Heading size="3">Hypothesis:</Heading>
+        <Text color="gray" size="3" style={{ whiteSpace: 'pre-wrap' }}>
           {description}
         </Text>
       </Flex>
@@ -93,9 +91,7 @@ export default function ExperimentViewPage() {
       <Grid columns="2" gap="4">
         {/* Timeline Section */}
         <Card>
-          <Heading size="3" color="purple">
-            Timeline
-          </Heading>
+          <Heading size="3">Timeline</Heading>
           <Separator my="3" size="4" />
           <Table.Root>
             <Table.Body>
@@ -113,9 +109,7 @@ export default function ExperimentViewPage() {
 
         {/* Parameters Section */}
         <Card>
-          <Heading size="3" color="purple">
-            Parameters
-          </Heading>
+          <Heading size="3">Parameters</Heading>
           <Separator my="3" size="4" />
           <Table.Root>
             <Table.Body>
@@ -147,9 +141,7 @@ export default function ExperimentViewPage() {
 
       {/* Arms & Balance Section */}
       <Card>
-        <Heading size="3" color="purple">
-          Arms & Balance
-        </Heading>
+        <Heading size="3">Arms & Balance</Heading>
         <Separator my="3" size="4" />
         <Flex gap="4">
           {arms.map((arm) => {
@@ -167,12 +159,15 @@ export default function ExperimentViewPage() {
                       {percentage.toFixed(1)}%
                     </Text>
                   </Flex>
+                  <Flex gap="2" align="center" justify="end">
+                    <Badge>
+                      <PersonIcon />
+                      <Text size="2">{armSize.toLocaleString()} participants</Text>
+                    </Badge>
+                  </Flex>
                   <Flex justify="between" align="center">
                     <Text color="gray" style={{ whiteSpace: 'pre-wrap' }}>
                       {arm.arm_description || 'No description'}
-                    </Text>
-                    <Text size="2" color="gray" align="right">
-                      {armSize.toLocaleString()} participants
                     </Text>
                   </Flex>
                 </Flex>
@@ -184,9 +179,7 @@ export default function ExperimentViewPage() {
 
       {/* Analysis Section */}
       <Card>
-        <Heading size="3" color="purple">
-          Analysis
-        </Heading>
+        <Heading size="3">Analysis</Heading>
         <Separator my="3" size="4" />
 
         {isLoadingAnalysis && <XSpinner message="Loading analysis data..." />}

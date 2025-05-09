@@ -70,7 +70,9 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
             </Table.Row>
             <Table.Row>
               <Table.RowHeaderCell>Hypothesis</Table.RowHeaderCell>
-              <Table.Cell>{formData.hypothesis}</Table.Cell>
+              <Table.Cell>
+                <Text style={{ whiteSpace: 'pre-wrap' }}>{formData.hypothesis}</Text>
+              </Table.Cell>
             </Table.Row>
             <Table.Row>
               <Table.RowHeaderCell>Participant Type</Table.RowHeaderCell>
@@ -109,7 +111,9 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
                   </Flex>
                 </Table.Cell>
                 <Table.Cell>{arm.arm_name}</Table.Cell>
-                <Table.Cell>{arm.arm_description || '-'}</Table.Cell>
+                <Table.Cell>
+                  <Text style={{ whiteSpace: 'pre-wrap' }}>{arm.arm_description || '-'}</Text>
+                </Table.Cell>
               </Table.Row>
             ))}
           </Table.Body>
