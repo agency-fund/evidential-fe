@@ -3302,12 +3302,16 @@ export const analyzeExperimentResponse = zod
 										),
 									p_value: zod
 										.number()
+										.or(zod.null())
 										.describe(
-											"The p-value indicating statistical significance of the treatment effect.",
+											"The p-value indicating statistical significance of the treatment effect. Value may be None if the t-stat is not available, e.g. due to inability to calculate the standard error.",
 										),
 									t_stat: zod
 										.number()
-										.describe("The t-statistic from the statistical test."),
+										.or(zod.null())
+										.describe(
+											"The t-statistic from the statistical test. If the value is actually NaN, e.g. due to inability to calculate the standard error, we return None.",
+										),
 									std_error: zod
 										.number()
 										.describe(
