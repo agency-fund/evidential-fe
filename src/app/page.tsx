@@ -131,7 +131,7 @@ export default function Page() {
       )}
       <Flex justify="between" align="center">
         <Heading>Experiments</Heading>
-        <Link href={`/experiments/create?datasource_id=${selectedDatasource}`}>
+        <Link href={`/datasources/${selectedDatasource}/experiments/create`}>
           <Button disabled={selectedDatasource === ''}>
             <PlusIcon /> Create Experiment
           </Button>
@@ -159,7 +159,7 @@ export default function Page() {
                 description="Get started by creating your first experiment."
                 buttonText="Create Experiment"
                 buttonIcon={<PlusIcon />}
-                onClick={() => router.push(`/experiments/create?datasource_id=${selectedDatasource}`)}
+                onClick={() => router.push(`/datasources/${selectedDatasource}/experiments/create`)}
               />
             ) : (
               <Table.Root>
@@ -194,7 +194,7 @@ export default function Page() {
                         <Flex direction={'row'} gap={'2'}>
                           <Button variant="soft" size="1" asChild>
                             <Link
-                              href={`/experiments/view/${experiment.design_spec.experiment_id}?datasource_id=${selectedDatasource}`}
+                              href={`/datasources/${selectedDatasource}/experiments/${experiment.design_spec.experiment_id}`}
                             >
                               View
                             </Link>

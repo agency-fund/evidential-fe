@@ -1,17 +1,17 @@
 'use client';
 import { useGetParticipantTypes, useInspectParticipantTypes } from '@/api/admin';
 import { Flex, Heading, Text } from '@radix-ui/themes';
-import { XSpinner } from '../components/x-spinner';
-import { useSearchParams } from 'next/navigation';
+import { XSpinner } from '@/app/components/x-spinner';
+import { useParams } from 'next/navigation';
 import { InspectParticipantTypesSummary } from '@/app/participanttypedetails/inspect-participant-types-summary';
 import Link from 'next/link';
 import { EditParticipantTypeDialog } from '@/app/participanttypedetails/edit-participant-type-dialog';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 
 export default function Page() {
-  const searchParams = useSearchParams();
-  const datasourceId = searchParams.get('datasource_id');
-  const participantType = searchParams.get('participant_type');
+  const params = useParams();
+  const datasourceId = params.datasourceId as string;
+  const participantType = params.participantTypeId as string;
 
   const { data, isLoading, error } = useGetParticipantTypes(datasourceId!, participantType!, {
     swr: {

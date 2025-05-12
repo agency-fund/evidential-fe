@@ -1,7 +1,7 @@
 'use client';
 import { Flex, Heading } from '@radix-ui/themes';
-import { AddParticipantTypeDialog } from '@/app/datasourcedetails/add-participant-type-dialog';
-import { ParticipantTypesTable } from '@/app/datasourcedetails/participant-types-table';
+import { AddParticipantTypeDialog } from '@/app/datasources/[datasourceId]/participanttype/add-participant-type-dialog';
+import { ParticipantTypesTable } from '@/app/datasources/[datasourceId]/participanttype/participant-types-table';
 
 export function ParticipantTypesSection({ datasourceId }: { datasourceId: string }) {
   return (

@@ -17,7 +17,7 @@ import {
   Select,
   Box,
 } from '@radix-ui/themes';
-import { XSpinner } from '../components/x-spinner';
+import { XSpinner } from '../../../components/x-spinner';
 import { useEffect, useState } from 'react';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 import { isEligibleForUseAsMetric } from '@/services/genapi-helpers';

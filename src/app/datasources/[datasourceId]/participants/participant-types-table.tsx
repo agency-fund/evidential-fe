@@ -1,14 +1,14 @@
 'use client';
 import { useListParticipantTypes } from '@/api/admin';
 import { Table } from '@radix-ui/themes';
-import { XSpinner } from '../components/x-spinner';
+import { XSpinner } from '@/app/components/x-spinner';
 import Link from 'next/link';
-import { DeleteParticipantTypeDialog } from '@/app/datasourcedetails/delete-participant-type-dialog';
+import { DeleteParticipantTypeDialog } from '@/app/datasources/[datasourceId]/participanttype/delete-participant-type-dialog';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 import { EditParticipantTypeDialog } from '@/app/participanttypedetails/edit-participant-type-dialog';
 import { Flex } from '@radix-ui/themes';
 import { EmptyStateCard } from '@/app/components/cards/empty-state-card';
-import { AddParticipantTypeDialog } from './add-participant-type-dialog';
+import { AddParticipantTypeDialog } from '@/app/datasources/[datasourceId]/participanttype/add-participant-type-dialog';
 
 export function ParticipantTypesTable({ datasourceId }: { datasourceId: string }) {
   const { data, isLoading, error } = useListParticipantTypes(datasourceId);

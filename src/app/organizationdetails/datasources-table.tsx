@@ -30,7 +30,7 @@ export function DatasourcesTable({
         {datasources.map((datasource) => (
           <Table.Row key={datasource.id}>
             <Table.Cell>
-              <Link href={`/datasourcedetails?id=${datasource.id}`}>{datasource.name}</Link>
+              <Link href={`/datasources/${datasource.id}`}>{datasource.name}</Link>
             </Table.Cell>
             <Table.Cell>
               <Flex align="center" gap="2">

@@ -1,8 +1,8 @@
 'use client';
 import { Flex, Heading, Spinner, Text } from '@radix-ui/themes';
 import { useListApiKeys } from '@/api/admin';
-import { CreateApiKeyDialog } from '@/app/datasourcedetails/create-api-key-dialog';
-import { ApiKeysTable } from '@/app/datasourcedetails/api-keys-table';
+import { CreateApiKeyDialog } from '@/app/datasources/create-api-key-dialog';
+import { ApiKeysTable } from '@/app/datasources/api-keys-table';
 
 export function ApiKeysSection({ datasourceId }: { datasourceId: string }) {
   const { data, isLoading, error } = useListApiKeys(datasourceId);

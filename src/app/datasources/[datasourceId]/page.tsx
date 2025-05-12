@@ -1,20 +1,20 @@
 'use client';
 import { Callout, Flex, Heading, Text } from '@radix-ui/themes';
-import { XSpinner } from '../components/x-spinner';
+import { XSpinner } from '../../components/x-spinner';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
-import { ApiKeysSection } from './api-keys-section';
+import { ApiKeysSection } from '../api-keys-section';
 import { useGetDatasource, useInspectDatasource } from '@/api/admin';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { EditDatasourceDialog } from '@/app/organizationdetails/edit-datasource-dialog';
-import { ParticipantTypesSection } from '@/app/datasourcedetails/participant-types-section';
+import { ParticipantTypesSection } from '@/app/datasources/[datasourceId]/participants/participant-types-section';
 import { useCurrentOrganization } from '@/app/providers/organization-provider';
 import { useEffect, useState } from 'react';
 import { GenericErrorCallout } from '@/app/components/generic-error';
 
 export default function Page() {
-  const searchParams = useSearchParams();
-  const datasourceId = searchParams.get('id');
+  const params = useParams();
+  const datasourceId = params.datasourceId as string;
   const orgContext = useCurrentOrganization();
   const currentOrgId = orgContext?.current?.id;
   const router = useRouter();
@@ -71,11 +71,7 @@ export default function Page() {
   const isLoading = inspectDatasourceLoading || datasourceDetailsLoading;
 
   const editDatasourceDialogComponent = (
-    <EditDatasourceDialog
-      datasourceId={datasourceId!}
-      variant="button"
-      onOpenChange={setIsDialogOpen}
-    />
+    <EditDatasourceDialog datasourceId={datasourceId!} variant="button" onOpenChange={setIsDialogOpen} />
   );
 
   if (isLoading) {
@@ -118,9 +114,7 @@ export default function Page() {
       <Text>
         Back to: <Link href={`/organizationdetails?id=${organizationId}`}>{organizationName}</Link>
       </Text>
-      <Flex gap="3">
-        {editDatasourceDialogComponent}
-      </Flex>
+      <Flex gap="3">{editDatasourceDialogComponent}</Flex>
       {
         <>
           <Callout.Root color={'green'}>
