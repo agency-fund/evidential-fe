@@ -29,8 +29,6 @@ export default function ExperimentViewPage() {
     swr: { enabled: !!datasourceId },
   });
 
-  console.log(experiment);
-
   const {
     data: analysisData,
     isLoading: isLoadingAnalysis,
