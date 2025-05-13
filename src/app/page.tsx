@@ -168,7 +168,6 @@ export default function Page() {
                     <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Participants</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Start Date</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>End Date</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell width="30%">Hypothesis</Table.ColumnHeaderCell>
@@ -177,51 +176,50 @@ export default function Page() {
                 </Table.Header>
 
                 <Table.Body>
-                  {experimentsData.items.map((experiment) => (
-                    <Table.Row key={experiment.design_spec.experiment_id}>
-                      <Table.Cell>{experiment.design_spec.experiment_name}</Table.Cell>
-                      <Table.Cell>{experiment.design_spec.participant_type}</Table.Cell>
-                      <Table.Cell>
-                        <ExperimentTypeBadge type={experiment.design_spec.experiment_type} />
-                      </Table.Cell>
-                      <Table.Cell>
-                        <ExperimentStatusBadge status={experiment.state} />
-                      </Table.Cell>
-                      <Table.Cell>{new Date(experiment.design_spec.start_date).toLocaleDateString()}</Table.Cell>
-                      <Table.Cell>{new Date(experiment.design_spec.end_date).toLocaleDateString()}</Table.Cell>
-                      <Table.Cell>
-                        <ReadMoreText text={experiment.design_spec.description} />
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Flex direction={'row'} gap={'2'}>
-                          <Button variant="soft" size="1" asChild>
-                            <Link
-                              href={`/datasources/${selectedDatasource}/experiments/${experiment.design_spec.experiment_id}`}
+                  {experimentsData.items
+                    .filter((experiment) => experiment.state === 'committed')
+                    .map((experiment) => (
+                      <Table.Row key={experiment.design_spec.experiment_id}>
+                        <Table.Cell>{experiment.design_spec.experiment_name}</Table.Cell>
+                        <Table.Cell>{experiment.design_spec.participant_type}</Table.Cell>
+                        <Table.Cell>
+                          <ExperimentTypeBadge type={experiment.design_spec.experiment_type} />
+                        </Table.Cell>
+                        <Table.Cell>{new Date(experiment.design_spec.start_date).toLocaleDateString()}</Table.Cell>
+                        <Table.Cell>{new Date(experiment.design_spec.end_date).toLocaleDateString()}</Table.Cell>
+                        <Table.Cell>
+                          <ReadMoreText text={experiment.design_spec.description} />
+                        </Table.Cell>
+                        <Table.Cell>
+                          <Flex direction={'row'} gap={'2'}>
+                            <Button variant="soft" size="1" asChild>
+                              <Link
+                                href={`/datasources/${selectedDatasource}/experiments/${experiment.design_spec.experiment_id}`}
+                              >
+                                View
+                              </Link>
+                            </Button>
+                            <DownloadAssignmentsCsvButton
+                              datasourceId={selectedDatasource}
+                              experimentId={experiment.design_spec.experiment_id!}
+                            />
+                            <DeleteExperimentButton
+                              datasourceId={selectedDatasource}
+                              experimentId={experiment.design_spec.experiment_id!}
+                            />
+                            <Button
+                              color="green"
+                              variant="soft"
+                              size="1"
+                              onClick={() => handlePeekClick(experiment.design_spec.experiment_id!)}
+                              disabled={isAnalyzing}
                             >
-                              View
-                            </Link>
-                          </Button>
-                          <DownloadAssignmentsCsvButton
-                            datasourceId={selectedDatasource}
-                            experimentId={experiment.design_spec.experiment_id!}
-                          />
-                          <DeleteExperimentButton
-                            datasourceId={selectedDatasource}
-                            experimentId={experiment.design_spec.experiment_id!}
-                          />
-                          <Button
-                            color="green"
-                            variant="soft"
-                            size="1"
-                            onClick={() => handlePeekClick(experiment.design_spec.experiment_id!)}
-                            disabled={isAnalyzing}
-                          >
-                            {isAnalyzing ? 'Analyzing...' : 'Peek'}
-                          </Button>
-                        </Flex>
-                      </Table.Cell>
-                    </Table.Row>
-                  ))}
+                              {isAnalyzing ? 'Analyzing...' : 'Peek'}
+                            </Button>
+                          </Flex>
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
                 </Table.Body>
               </Table.Root>
             )}
