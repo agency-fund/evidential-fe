@@ -1,17 +1,17 @@
 'use client';
 
 import { Text } from '@radix-ui/themes';
-import { AudienceSpecFilter, DataType } from '@/api/methods.schemas';
-import { BooleanFilterInput } from '@/app/components/querybuilder/boolean-filter-input';
-import { StringFilterInput } from '@/app/components/querybuilder/string-filter-input';
-import { NumericFilterInput } from '@/app/components/querybuilder/numeric-filter-input';
-import { DateFilterInput } from '@/app/components/querybuilder/date-filter-input';
-import { TypedFilter } from '@/app/components/querybuilder/utils';
+import { DataType, Filter } from '@/api/methods.schemas';
+import { BooleanFilterInput } from '@/app/components/features/experiments/querybuilder/boolean-filter-input';
+import { StringFilterInput } from '@/app/components/features/experiments/querybuilder/string-filter-input';
+import { NumericFilterInput } from '@/app/components/features/experiments/querybuilder/numeric-filter-input';
+import { DateFilterInput } from '@/app/components/features/experiments/querybuilder/date-filter-input';
+import { TypedFilter } from '@/app/components/features/experiments/querybuilder/utils';
 
 export interface TypeSpecificFilterInputProps {
   dataType: DataType;
-  filter: AudienceSpecFilter;
-  onChange: (filter: AudienceSpecFilter) => void;
+  filter: Filter;
+  onChange: (filter: Filter) => void;
 }
 
 export function TypeSpecificFilterInput({ dataType, filter, onChange }: TypeSpecificFilterInputProps) {

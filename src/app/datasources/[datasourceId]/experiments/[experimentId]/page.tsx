@@ -29,6 +29,8 @@ export default function ExperimentViewPage() {
     swr: { enabled: !!datasourceId },
   });
 
+  console.log(experiment);
+
   const {
     data: analysisData,
     isLoading: isLoadingAnalysis,
@@ -79,9 +81,9 @@ export default function ExperimentViewPage() {
             <Text color={'gray'}>
               This <ExperimentTypeBadge type={design_spec.experiment_type} /> experiment is on{' '}
               <Link
-                href={`/datasources/${experiment.datasource_id}/participants/${experiment.audience_spec.participant_type}`}
+                href={`/datasources/${experiment.datasource_id}/participants/${experiment.design_spec.participant_type}`}
               >
-                {experiment.audience_spec.participant_type}
+                {experiment.design_spec.participant_type}
               </Link>
               .
             </Text>

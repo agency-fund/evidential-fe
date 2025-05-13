@@ -2,7 +2,7 @@
 import { OrganizationSummary } from '@/api/methods.schemas';
 import { Flex, Table } from '@radix-ui/themes';
 import Link from 'next/link';
-import { AddUserDialog } from '@/app/organizations/add-user-dialog';
+import { AddUserDialog } from '@/app/components/features/organizations/add-user-dialog';
 import { AddDatasourceDialog } from '@/app/components/features/datasources/add-datasource-dialog';
 
 export function OrganizationsTable({ organizations }: { organizations: OrganizationSummary[] }) {

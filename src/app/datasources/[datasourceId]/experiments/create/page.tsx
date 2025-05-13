@@ -4,7 +4,7 @@ import { InitialForm } from '@/app/components/features/experiments/initial-form'
 import { DesignForm } from '@/app/components/features/experiments/design-form';
 import { ConfirmationForm } from '@/app/components/features/experiments/confirmation-form';
 import { Box, Container, Flex, Heading } from '@radix-ui/themes';
-import { Arm, AudienceSpecFilter, CreateExperimentResponse, PowerResponseOutput } from '@/api/methods.schemas';
+import { Arm, CreateExperimentResponse, Filter, PowerResponseOutput } from '@/api/methods.schemas';
 import { useParams } from 'next/navigation';
 
 export type MetricWithMDE = {
@@ -23,7 +23,7 @@ export type ExperimentFormData = {
   arms: Omit<Arm, 'arm_id'>[];
   primaryMetric?: MetricWithMDE;
   secondaryMetrics: MetricWithMDE[];
-  filters: AudienceSpecFilter[];
+  filters: Filter[];
   // These next 2 Experiment Parameters are strings to allow for empty values,
   // which should be converted to numbers when making power or experiment creation requests.
   confidence: string;

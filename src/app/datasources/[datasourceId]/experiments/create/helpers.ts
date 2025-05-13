@@ -43,21 +43,19 @@ export const convertFormDataToCreateExperimentRequest = (formData: ExperimentFor
 
   return createExperimentBody.parse({
     design_spec: {
+      participant_type: formData.participantType!,
       experiment_name: formData.name,
       experiment_type: formData.experimentType,
       arms: Array.from(formData.arms.map((arm) => ({ ...arm, arm_id: null }))),
       end_date: new Date(Date.parse(formData.endDate)).toISOString(),
       start_date: new Date(Date.parse(formData.startDate)).toISOString(),
       description: formData.hypothesis,
+      filters: formData.filters,
       metrics: metrics,
       strata_field_names: [],
       power: Number(formData.power) / 100.0,
       alpha: 1 - Number(formData.confidence) / 100.0,
       experiment_id: null,
-    },
-    audience_spec: {
-      participant_type: formData.participantType!,
-      filters: formData.filters,
     },
     power_analyses: formData.powerCheckResponse,
   });

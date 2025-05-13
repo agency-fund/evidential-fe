@@ -2,7 +2,7 @@
 import { getGetOrganizationKey, getListOrganizationsKey, useUpdateOrganization } from '@/api/admin';
 import { useState } from 'react';
 import { Button, Dialog, Flex, Text, TextField } from '@radix-ui/themes';
-import { XSpinner } from '../components/ui/x-spinner';
+import { XSpinner } from '@/app/components/ui/x-spinner';
 import { GearIcon } from '@radix-ui/react-icons';
 import { mutate } from 'swr';
 import { GenericErrorCallout } from '@/app/components/ui/generic-error';

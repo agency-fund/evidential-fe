@@ -2,13 +2,17 @@
 
 import { Button, Checkbox, Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
-import { AudienceSpecFilter, DataType } from '@/api/methods.schemas';
-import { TypedFilter, createDefaultValueForOperator, operatorToRelation } from './utils';
+import { DataType, Filter } from '@/api/methods.schemas';
+import {
+  TypedFilter,
+  createDefaultValueForOperator,
+  operatorToRelation,
+} from '@/app/components/features/experiments/querybuilder/utils';
 import React, { useState } from 'react';
 
 export interface StringFilterInputProps {
-  filter: AudienceSpecFilter & TypedFilter<string>;
-  onChange: (filter: AudienceSpecFilter) => void;
+  filter: Filter & TypedFilter<string>;
+  onChange: (filter: Filter) => void;
   dataType: DataType;
 }
 
@@ -134,9 +138,7 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
 
       {renderValueInputs()}
 
-      {(operator === 'equals' ||
-        operator === 'in-list' ||
-        operator === 'not-in-list') && (
+      {(operator === 'equals' || operator === 'in-list' || operator === 'not-in-list') && (
         <Flex gap="1" align="center">
           <Checkbox checked={includesNull} onCheckedChange={(checked) => handleNullChange(!!checked)} />
           <Text size="2">Include NULL</Text>

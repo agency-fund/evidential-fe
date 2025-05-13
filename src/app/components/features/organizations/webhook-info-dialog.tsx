@@ -3,7 +3,7 @@ import { Button, Dialog, Flex, IconButton } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { WebhookSummary } from '@/api/methods.schemas';
 import { useState } from 'react';
-import { WebhookInfoContent } from './webhook-info-content';
+import { WebhookInfoContent } from '@/app/components/features/organizations/webhook-info-content';
 
 export function WebhookInfoDialog({ webhook }: { webhook: WebhookSummary }) {
   const [open, setOpen] = useState(false);

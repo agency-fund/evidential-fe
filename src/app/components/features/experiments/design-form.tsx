@@ -3,10 +3,10 @@ import { Button, Callout, Card, Flex, Heading, Spinner, Text, TextField } from '
 import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
 import { InfoCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import { useCreateExperiment, useInspectParticipantTypes } from '@/api/admin';
-import { AudienceSpecFilter, GetFiltersResponseElement, GetMetricsResponseElement } from '@/api/methods.schemas';
+import { Filter, GetFiltersResponseElement, GetMetricsResponseElement } from '@/api/methods.schemas';
 import { PowerCheckSection } from '@/app/components/features/experiments/power-check-section';
 import { convertFormDataToCreateExperimentRequest } from '@/app/datasources/[datasourceId]/experiments/create/helpers';
-import { FilterBuilder } from '@/app/components/querybuilder/filter-builder';
+import { FilterBuilder } from '@/app/components/features/experiments/querybuilder/filter-builder';
 import { GenericErrorCallout } from '@/app/components/ui/generic-error';
 import { PRODUCT_NAME } from '@/services/constants';
 import { MetricBuilder } from '@/app/components/features/experiments/metric-builder';
@@ -94,7 +94,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
             <FilterBuilder
               availableFields={filterFields}
               filters={formData.filters}
-              onChange={(filters: AudienceSpecFilter[]) => onFormDataChange({ ...formData, filters })}
+              onChange={(filters: Filter[]) => onFormDataChange({ ...formData, filters })}
             />
           </Flex>
         </Card>

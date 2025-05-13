@@ -1,16 +1,16 @@
 'use client';
 import { Flex, Heading, Text } from '@radix-ui/themes';
-import { RenameOrganizationDialog } from '@/app/organizations/rename-organization-dialog';
+import { RenameOrganizationDialog } from '@/app/components/features/organizations/rename-organization-dialog';
 import { XSpinner } from '@/app/components/ui/x-spinner';
 import { useGetOrganization, useListOrganizationEvents, useListOrganizationWebhooks } from '@/api/admin';
 import { useParams } from 'next/navigation';
-import { AddUserDialog } from '@/app/organizations/add-user-dialog';
+import { AddUserDialog } from '@/app/components/features/organizations/add-user-dialog';
 import { AddDatasourceDialog } from '@/app/components/features/datasources/add-datasource-dialog';
-import { AddWebhookDialog } from '@/app/organizations/add-webhook-dialog';
-import { DatasourcesTable } from '@/app/organizations/datasources-table';
-import { UsersTable } from '@/app/organizations/users-table';
-import { EventsTable } from '@/app/organizations/events-table';
-import { WebhooksTable } from '@/app/organizations/webhooks-table';
+import { AddWebhookDialog } from '@/app/components/features/organizations/add-webhook-dialog';
+import { DatasourcesTable } from '@/app/components/features/datasources/datasources-table';
+import { UsersTable } from '@/app/components/features/organizations/users-table';
+import { EventsTable } from '@/app/components/features/organizations/events-table';
+import { WebhooksTable } from '@/app/components/features/organizations/webhooks-table';
 import { GenericErrorCallout } from '@/app/components/ui/generic-error';
 import { EmptyStateCard } from '@/app/components/ui/cards/empty-state-card';
 

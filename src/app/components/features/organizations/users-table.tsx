@@ -1,6 +1,6 @@
 'use client';
 import { Flex, Table } from '@radix-ui/themes';
-import { DeleteUserDialog } from '@/app/organizations/delete-user-dialog';
+import { DeleteUserDialog } from '@/app/components/features/organizations/delete-user-dialog';
 import { useAuth } from '@/app/providers/auth-provider';
 
 export function UsersTable({

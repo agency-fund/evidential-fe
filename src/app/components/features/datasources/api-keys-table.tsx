@@ -6,8 +6,8 @@ import { AlertDialog, Button, Flex, IconButton, Table, Text, Tooltip } from '@ra
 import { mutate } from 'swr';
 import { InfoCircledIcon, TrashIcon } from '@radix-ui/react-icons';
 import { EmptyStateCard } from '@/app/components/ui/cards/empty-state-card';
-import { CreateApiKeyDialog } from './create-api-key-dialog';
-import { ApiKeyResultsDialog } from './api-key-results-dialog';
+import { CreateApiKeyDialog } from '@/app/components/features/datasources/create-api-key-dialog';
+import { ApiKeyResultsDialog } from '@/app/components/features/datasources/api-key-results-dialog';
 
 export function ApiKeysTable({ apiKeys, datasourceId }: { apiKeys: ApiKeySummary[]; datasourceId: string }) {
   const [confirmingDeleteForKeyId, setConfirmingDeleteForKeyId] = useState<string | null>(null);

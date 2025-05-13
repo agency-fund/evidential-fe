@@ -2,8 +2,8 @@
 import { Code, Flex, IconButton, Table, Text, Tooltip } from '@radix-ui/themes';
 import { WebhookSummary } from '@/api/methods.schemas';
 import { EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons';
-import { DeleteWebhookDialog } from './delete-webhook-dialog';
-import { WebhookInfoDialog } from './webhook-info-dialog';
+import { DeleteWebhookDialog } from '@/app/components/features/organizations/delete-webhook-dialog';
+import { WebhookInfoDialog } from '@/app/components/features/organizations/webhook-info-dialog';
 import { useState } from 'react';
 import { CopyToClipBoard } from '@/app/components/ui/buttons/copy-to-clipboard';
 
