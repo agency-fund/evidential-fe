@@ -80,9 +80,9 @@ export default function ExperimentViewPage() {
             <Text color={'gray'}>
               This <ExperimentTypeBadge type={design_spec.experiment_type} /> experiment is on{' '}
               <Link
-                href={`/participanttypedetails?datasource_id=${experiment.datasource_id}&participant_type=${experiment.audience_spec.participant_type}`}
+                href={`/participanttypedetails?datasource_id=${experiment.datasource_id}&participant_type=${experiment.design_spec.participant_type}`}
               >
-                {experiment.audience_spec.participant_type}
+                {experiment.design_spec.participant_type}
               </Link>
               .
             </Text>

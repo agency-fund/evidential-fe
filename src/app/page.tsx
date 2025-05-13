@@ -180,7 +180,7 @@ export default function Page() {
                   {experimentsData.items.map((experiment) => (
                     <Table.Row key={experiment.design_spec.experiment_id}>
                       <Table.Cell>{experiment.design_spec.experiment_name}</Table.Cell>
-                      <Table.Cell>{experiment.audience_spec.participant_type}</Table.Cell>
+                      <Table.Cell>{experiment.design_spec.participant_type}</Table.Cell>
                       <Table.Cell>
                         <ExperimentTypeBadge type={experiment.design_spec.experiment_type} />
                       </Table.Cell>

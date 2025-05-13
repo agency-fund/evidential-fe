@@ -1612,6 +1612,7 @@ export const createExperimentQueryParams = zod.object({
 		.describe("Whether to also stratify on metrics during assignment."),
 });
 
+export const createExperimentBodyDesignSpecParticipantTypeMax = 100;
 export const createExperimentBodyDesignSpecExperimentNameMax = 100;
 export const createExperimentBodyDesignSpecDescriptionMax = 2000;
 export const createExperimentBodyDesignSpecArmsItemArmNameMax = 100;
@@ -1625,6 +1626,9 @@ export const createExperimentBodyDesignSpecStrataFieldNamesMax = 150;
 export const createExperimentBodyDesignSpecMetricsItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyDesignSpecMetricsMax = 150;
+export const createExperimentBodyDesignSpecFiltersItemFieldNameRegExp =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentBodyDesignSpecFiltersMax = 20;
 export const createExperimentBodyDesignSpecPowerDefault = 0.8;
 export const createExperimentBodyDesignSpecPowerMin = 0;
 
@@ -1637,6 +1641,7 @@ export const createExperimentBodyDesignSpecFstatThreshDefault = 0.6;
 export const createExperimentBodyDesignSpecFstatThreshMin = 0;
 
 export const createExperimentBodyDesignSpecFstatThreshMax = 1;
+export const createExperimentBodyDesignSpecParticipantTypeMaxOne = 100;
 export const createExperimentBodyDesignSpecExperimentNameMaxOne = 100;
 export const createExperimentBodyDesignSpecDescriptionMaxOne = 2000;
 export const createExperimentBodyDesignSpecArmsItemArmNameMaxOne = 100;
@@ -1650,6 +1655,9 @@ export const createExperimentBodyDesignSpecStrataFieldNamesMaxOne = 150;
 export const createExperimentBodyDesignSpecMetricsItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyDesignSpecMetricsMaxOne = 150;
+export const createExperimentBodyDesignSpecFiltersItemFieldNameRegExpOne =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentBodyDesignSpecFiltersMaxOne = 20;
 export const createExperimentBodyDesignSpecPowerDefaultOne = 0.8;
 export const createExperimentBodyDesignSpecPowerMinOne = 0;
 
@@ -1662,10 +1670,6 @@ export const createExperimentBodyDesignSpecFstatThreshDefaultOne = 0.6;
 export const createExperimentBodyDesignSpecFstatThreshMinOne = 0;
 
 export const createExperimentBodyDesignSpecFstatThreshMaxOne = 1;
-export const createExperimentBodyAudienceSpecParticipantTypeMax = 100;
-export const createExperimentBodyAudienceSpecFiltersItemFieldNameRegExp =
-	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentBodyAudienceSpecFiltersMax = 20;
 export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyPowerAnalysesAnalysesMax = 150;
@@ -1674,6 +1678,9 @@ export const createExperimentBody = zod.object({
 	design_spec: zod.discriminatedUnion("experiment_type", [
 		zod
 			.object({
+				participant_type: zod
+					.string()
+					.max(createExperimentBodyDesignSpecParticipantTypeMax),
 				experiment_id: zod
 					.string()
 					.or(zod.null())
@@ -1757,6 +1764,31 @@ export const createExperimentBody = zod.object({
 					.min(1)
 					.max(createExperimentBodyDesignSpecMetricsMax)
 					.describe("Primary and optional secondary metrics to target."),
+				filters: zod
+					.array(
+						zod
+							.object({
+								field_name: zod
+									.string()
+									.regex(
+										createExperimentBodyDesignSpecFiltersItemFieldNameRegExp,
+									),
+								relation: zod
+									.enum(["includes", "excludes", "between"])
+									.describe(
+										"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+									),
+								value: zod
+									.array(zod.number().or(zod.null()))
+									.or(zod.array(zod.number().or(zod.null())))
+									.or(zod.array(zod.string().or(zod.null())))
+									.or(zod.array(zod.boolean().or(zod.null()))),
+							})
+							.describe(
+								'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+							),
+					)
+					.max(createExperimentBodyDesignSpecFiltersMax),
 				power: zod
 					.number()
 					.min(createExperimentBodyDesignSpecPowerMin)
@@ -1787,6 +1819,9 @@ export const createExperimentBody = zod.object({
 			),
 		zod
 			.object({
+				participant_type: zod
+					.string()
+					.max(createExperimentBodyDesignSpecParticipantTypeMaxOne),
 				experiment_id: zod
 					.string()
 					.or(zod.null())
@@ -1872,6 +1907,31 @@ export const createExperimentBody = zod.object({
 					.min(1)
 					.max(createExperimentBodyDesignSpecMetricsMaxOne)
 					.describe("Primary and optional secondary metrics to target."),
+				filters: zod
+					.array(
+						zod
+							.object({
+								field_name: zod
+									.string()
+									.regex(
+										createExperimentBodyDesignSpecFiltersItemFieldNameRegExpOne,
+									),
+								relation: zod
+									.enum(["includes", "excludes", "between"])
+									.describe(
+										"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+									),
+								value: zod
+									.array(zod.number().or(zod.null()))
+									.or(zod.array(zod.number().or(zod.null())))
+									.or(zod.array(zod.string().or(zod.null())))
+									.or(zod.array(zod.boolean().or(zod.null()))),
+							})
+							.describe(
+								'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+							),
+					)
+					.max(createExperimentBodyDesignSpecFiltersMaxOne),
 				power: zod
 					.number()
 					.min(createExperimentBodyDesignSpecPowerMinOne)
@@ -1901,38 +1961,6 @@ export const createExperimentBody = zod.object({
 				"Use this type to randomly assign participants into arms during live experiment execution.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
 			),
 	]),
-	audience_spec: zod
-		.object({
-			participant_type: zod
-				.string()
-				.max(createExperimentBodyAudienceSpecParticipantTypeMax),
-			filters: zod
-				.array(
-					zod
-						.object({
-							field_name: zod
-								.string()
-								.regex(
-									createExperimentBodyAudienceSpecFiltersItemFieldNameRegExp,
-								),
-							relation: zod
-								.enum(["includes", "excludes", "between"])
-								.describe(
-									"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
-								),
-							value: zod
-								.array(zod.number().or(zod.null()))
-								.or(zod.array(zod.number().or(zod.null())))
-								.or(zod.array(zod.string().or(zod.null())))
-								.or(zod.array(zod.boolean().or(zod.null()))),
-						})
-						.describe(
-							'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
-						),
-				)
-				.max(createExperimentBodyAudienceSpecFiltersMax),
-		})
-		.describe("Defines target participants for an experiment using filters."),
 	power_analyses: zod
 		.object({
 			analyses: zod
@@ -2064,6 +2092,7 @@ export const createExperimentBody = zod.object({
 		.optional(),
 });
 
+export const createExperimentResponseDesignSpecParticipantTypeMax = 100;
 export const createExperimentResponseDesignSpecExperimentNameMax = 100;
 export const createExperimentResponseDesignSpecDescriptionMax = 2000;
 export const createExperimentResponseDesignSpecArmsItemArmNameMax = 100;
@@ -2077,6 +2106,9 @@ export const createExperimentResponseDesignSpecStrataFieldNamesMax = 150;
 export const createExperimentResponseDesignSpecMetricsItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentResponseDesignSpecMetricsMax = 150;
+export const createExperimentResponseDesignSpecFiltersItemFieldNameRegExp =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentResponseDesignSpecFiltersMax = 20;
 export const createExperimentResponseDesignSpecPowerDefault = 0.8;
 export const createExperimentResponseDesignSpecPowerMin = 0;
 
@@ -2089,6 +2121,7 @@ export const createExperimentResponseDesignSpecFstatThreshDefault = 0.6;
 export const createExperimentResponseDesignSpecFstatThreshMin = 0;
 
 export const createExperimentResponseDesignSpecFstatThreshMax = 1;
+export const createExperimentResponseDesignSpecParticipantTypeMaxOne = 100;
 export const createExperimentResponseDesignSpecExperimentNameMaxOne = 100;
 export const createExperimentResponseDesignSpecDescriptionMaxOne = 2000;
 export const createExperimentResponseDesignSpecArmsItemArmNameMaxOne = 100;
@@ -2102,6 +2135,9 @@ export const createExperimentResponseDesignSpecStrataFieldNamesMaxOne = 150;
 export const createExperimentResponseDesignSpecMetricsItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentResponseDesignSpecMetricsMaxOne = 150;
+export const createExperimentResponseDesignSpecFiltersItemFieldNameRegExpOne =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentResponseDesignSpecFiltersMaxOne = 20;
 export const createExperimentResponseDesignSpecPowerDefaultOne = 0.8;
 export const createExperimentResponseDesignSpecPowerMinOne = 0;
 
@@ -2114,10 +2150,6 @@ export const createExperimentResponseDesignSpecFstatThreshDefaultOne = 0.6;
 export const createExperimentResponseDesignSpecFstatThreshMinOne = 0;
 
 export const createExperimentResponseDesignSpecFstatThreshMaxOne = 1;
-export const createExperimentResponseAudienceSpecParticipantTypeMax = 100;
-export const createExperimentResponseAudienceSpecFiltersItemFieldNameRegExp =
-	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentResponseAudienceSpecFiltersMax = 20;
 export const createExperimentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentResponsePowerAnalysesAnalysesMax = 150;
@@ -2137,6 +2169,9 @@ export const createExperimentResponse = zod
 		design_spec: zod.discriminatedUnion("experiment_type", [
 			zod
 				.object({
+					participant_type: zod
+						.string()
+						.max(createExperimentResponseDesignSpecParticipantTypeMax),
 					experiment_id: zod
 						.string()
 						.or(zod.null())
@@ -2222,6 +2257,31 @@ export const createExperimentResponse = zod
 						.min(1)
 						.max(createExperimentResponseDesignSpecMetricsMax)
 						.describe("Primary and optional secondary metrics to target."),
+					filters: zod
+						.array(
+							zod
+								.object({
+									field_name: zod
+										.string()
+										.regex(
+											createExperimentResponseDesignSpecFiltersItemFieldNameRegExp,
+										),
+									relation: zod
+										.enum(["includes", "excludes", "between"])
+										.describe(
+											"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+										),
+									value: zod
+										.array(zod.number().or(zod.null()))
+										.or(zod.array(zod.number().or(zod.null())))
+										.or(zod.array(zod.string().or(zod.null())))
+										.or(zod.array(zod.boolean().or(zod.null()))),
+								})
+								.describe(
+									'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+								),
+						)
+						.max(createExperimentResponseDesignSpecFiltersMax),
 					power: zod
 						.number()
 						.min(createExperimentResponseDesignSpecPowerMin)
@@ -2252,6 +2312,9 @@ export const createExperimentResponse = zod
 				),
 			zod
 				.object({
+					participant_type: zod
+						.string()
+						.max(createExperimentResponseDesignSpecParticipantTypeMaxOne),
 					experiment_id: zod
 						.string()
 						.or(zod.null())
@@ -2339,6 +2402,31 @@ export const createExperimentResponse = zod
 						.min(1)
 						.max(createExperimentResponseDesignSpecMetricsMaxOne)
 						.describe("Primary and optional secondary metrics to target."),
+					filters: zod
+						.array(
+							zod
+								.object({
+									field_name: zod
+										.string()
+										.regex(
+											createExperimentResponseDesignSpecFiltersItemFieldNameRegExpOne,
+										),
+									relation: zod
+										.enum(["includes", "excludes", "between"])
+										.describe(
+											"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+										),
+									value: zod
+										.array(zod.number().or(zod.null()))
+										.or(zod.array(zod.number().or(zod.null())))
+										.or(zod.array(zod.string().or(zod.null())))
+										.or(zod.array(zod.boolean().or(zod.null()))),
+								})
+								.describe(
+									'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+								),
+						)
+						.max(createExperimentResponseDesignSpecFiltersMaxOne),
 					power: zod
 						.number()
 						.min(createExperimentResponseDesignSpecPowerMinOne)
@@ -2368,38 +2456,6 @@ export const createExperimentResponse = zod
 					"Use this type to randomly assign participants into arms during live experiment execution.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
 				),
 		]),
-		audience_spec: zod
-			.object({
-				participant_type: zod
-					.string()
-					.max(createExperimentResponseAudienceSpecParticipantTypeMax),
-				filters: zod
-					.array(
-						zod
-							.object({
-								field_name: zod
-									.string()
-									.regex(
-										createExperimentResponseAudienceSpecFiltersItemFieldNameRegExp,
-									),
-								relation: zod
-									.enum(["includes", "excludes", "between"])
-									.describe(
-										"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
-									),
-								value: zod
-									.array(zod.number().or(zod.null()))
-									.or(zod.array(zod.number().or(zod.null())))
-									.or(zod.array(zod.string().or(zod.null())))
-									.or(zod.array(zod.boolean().or(zod.null()))),
-							})
-							.describe(
-								'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
-							),
-					)
-					.max(createExperimentResponseAudienceSpecFiltersMax),
-			})
-			.describe("Defines target participants for an experiment using filters."),
 		power_analyses: zod
 			.object({
 				analyses: zod
@@ -2623,6 +2679,7 @@ export const listExperimentsParams = zod.object({
 	datasource_id: zod.string(),
 });
 
+export const listExperimentsResponseItemsItemDesignSpecParticipantTypeMax = 100;
 export const listExperimentsResponseItemsItemDesignSpecExperimentNameMax = 100;
 export const listExperimentsResponseItemsItemDesignSpecDescriptionMax = 2000;
 export const listExperimentsResponseItemsItemDesignSpecArmsItemArmNameMax = 100;
@@ -2636,6 +2693,9 @@ export const listExperimentsResponseItemsItemDesignSpecStrataFieldNamesMax = 150
 export const listExperimentsResponseItemsItemDesignSpecMetricsItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const listExperimentsResponseItemsItemDesignSpecMetricsMax = 150;
+export const listExperimentsResponseItemsItemDesignSpecFiltersItemFieldNameRegExp =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const listExperimentsResponseItemsItemDesignSpecFiltersMax = 20;
 export const listExperimentsResponseItemsItemDesignSpecPowerDefault = 0.8;
 export const listExperimentsResponseItemsItemDesignSpecPowerMin = 0;
 
@@ -2648,6 +2708,7 @@ export const listExperimentsResponseItemsItemDesignSpecFstatThreshDefault = 0.6;
 export const listExperimentsResponseItemsItemDesignSpecFstatThreshMin = 0;
 
 export const listExperimentsResponseItemsItemDesignSpecFstatThreshMax = 1;
+export const listExperimentsResponseItemsItemDesignSpecParticipantTypeMaxOne = 100;
 export const listExperimentsResponseItemsItemDesignSpecExperimentNameMaxOne = 100;
 export const listExperimentsResponseItemsItemDesignSpecDescriptionMaxOne = 2000;
 export const listExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxOne = 100;
@@ -2661,6 +2722,9 @@ export const listExperimentsResponseItemsItemDesignSpecStrataFieldNamesMaxOne = 
 export const listExperimentsResponseItemsItemDesignSpecMetricsItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const listExperimentsResponseItemsItemDesignSpecMetricsMaxOne = 150;
+export const listExperimentsResponseItemsItemDesignSpecFiltersItemFieldNameRegExpOne =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const listExperimentsResponseItemsItemDesignSpecFiltersMaxOne = 20;
 export const listExperimentsResponseItemsItemDesignSpecPowerDefaultOne = 0.8;
 export const listExperimentsResponseItemsItemDesignSpecPowerMinOne = 0;
 
@@ -2673,10 +2737,6 @@ export const listExperimentsResponseItemsItemDesignSpecFstatThreshDefaultOne = 0
 export const listExperimentsResponseItemsItemDesignSpecFstatThreshMinOne = 0;
 
 export const listExperimentsResponseItemsItemDesignSpecFstatThreshMaxOne = 1;
-export const listExperimentsResponseItemsItemAudienceSpecParticipantTypeMax = 100;
-export const listExperimentsResponseItemsItemAudienceSpecFiltersItemFieldNameRegExp =
-	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const listExperimentsResponseItemsItemAudienceSpecFiltersMax = 20;
 export const listExperimentsResponseItemsItemPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const listExperimentsResponseItemsItemPowerAnalysesAnalysesMax = 150;
@@ -2698,6 +2758,11 @@ export const listExperimentsResponse = zod.object({
 				design_spec: zod.discriminatedUnion("experiment_type", [
 					zod
 						.object({
+							participant_type: zod
+								.string()
+								.max(
+									listExperimentsResponseItemsItemDesignSpecParticipantTypeMax,
+								),
 							experiment_id: zod
 								.string()
 								.or(zod.null())
@@ -2789,6 +2854,31 @@ export const listExperimentsResponse = zod.object({
 								.min(1)
 								.max(listExperimentsResponseItemsItemDesignSpecMetricsMax)
 								.describe("Primary and optional secondary metrics to target."),
+							filters: zod
+								.array(
+									zod
+										.object({
+											field_name: zod
+												.string()
+												.regex(
+													listExperimentsResponseItemsItemDesignSpecFiltersItemFieldNameRegExp,
+												),
+											relation: zod
+												.enum(["includes", "excludes", "between"])
+												.describe(
+													"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+												),
+											value: zod
+												.array(zod.number().or(zod.null()))
+												.or(zod.array(zod.number().or(zod.null())))
+												.or(zod.array(zod.string().or(zod.null())))
+												.or(zod.array(zod.boolean().or(zod.null()))),
+										})
+										.describe(
+											'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+										),
+								)
+								.max(listExperimentsResponseItemsItemDesignSpecFiltersMax),
 							power: zod
 								.number()
 								.min(listExperimentsResponseItemsItemDesignSpecPowerMin)
@@ -2821,6 +2911,11 @@ export const listExperimentsResponse = zod.object({
 						),
 					zod
 						.object({
+							participant_type: zod
+								.string()
+								.max(
+									listExperimentsResponseItemsItemDesignSpecParticipantTypeMaxOne,
+								),
 							experiment_id: zod
 								.string()
 								.or(zod.null())
@@ -2914,6 +3009,31 @@ export const listExperimentsResponse = zod.object({
 								.min(1)
 								.max(listExperimentsResponseItemsItemDesignSpecMetricsMaxOne)
 								.describe("Primary and optional secondary metrics to target."),
+							filters: zod
+								.array(
+									zod
+										.object({
+											field_name: zod
+												.string()
+												.regex(
+													listExperimentsResponseItemsItemDesignSpecFiltersItemFieldNameRegExpOne,
+												),
+											relation: zod
+												.enum(["includes", "excludes", "between"])
+												.describe(
+													"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+												),
+											value: zod
+												.array(zod.number().or(zod.null()))
+												.or(zod.array(zod.number().or(zod.null())))
+												.or(zod.array(zod.string().or(zod.null())))
+												.or(zod.array(zod.boolean().or(zod.null()))),
+										})
+										.describe(
+											'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+										),
+								)
+								.max(listExperimentsResponseItemsItemDesignSpecFiltersMaxOne),
 							power: zod
 								.number()
 								.min(listExperimentsResponseItemsItemDesignSpecPowerMinOne)
@@ -2953,42 +3073,6 @@ export const listExperimentsResponse = zod.object({
 							"Use this type to randomly assign participants into arms during live experiment execution.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
 						),
 				]),
-				audience_spec: zod
-					.object({
-						participant_type: zod
-							.string()
-							.max(
-								listExperimentsResponseItemsItemAudienceSpecParticipantTypeMax,
-							),
-						filters: zod
-							.array(
-								zod
-									.object({
-										field_name: zod
-											.string()
-											.regex(
-												listExperimentsResponseItemsItemAudienceSpecFiltersItemFieldNameRegExp,
-											),
-										relation: zod
-											.enum(["includes", "excludes", "between"])
-											.describe(
-												"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
-											),
-										value: zod
-											.array(zod.number().or(zod.null()))
-											.or(zod.array(zod.number().or(zod.null())))
-											.or(zod.array(zod.string().or(zod.null())))
-											.or(zod.array(zod.boolean().or(zod.null()))),
-									})
-									.describe(
-										'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
-									),
-							)
-							.max(listExperimentsResponseItemsItemAudienceSpecFiltersMax),
-					})
-					.describe(
-						"Defines target participants for an experiment using filters.",
-					),
 				power_analyses: zod
 					.object({
 						analyses: zod
@@ -3362,6 +3446,7 @@ export const getExperimentParams = zod.object({
 	experiment_id: zod.string(),
 });
 
+export const getExperimentResponseDesignSpecParticipantTypeMax = 100;
 export const getExperimentResponseDesignSpecExperimentNameMax = 100;
 export const getExperimentResponseDesignSpecDescriptionMax = 2000;
 export const getExperimentResponseDesignSpecArmsItemArmNameMax = 100;
@@ -3375,6 +3460,9 @@ export const getExperimentResponseDesignSpecStrataFieldNamesMax = 150;
 export const getExperimentResponseDesignSpecMetricsItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentResponseDesignSpecMetricsMax = 150;
+export const getExperimentResponseDesignSpecFiltersItemFieldNameRegExp =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const getExperimentResponseDesignSpecFiltersMax = 20;
 export const getExperimentResponseDesignSpecPowerDefault = 0.8;
 export const getExperimentResponseDesignSpecPowerMin = 0;
 
@@ -3387,6 +3475,7 @@ export const getExperimentResponseDesignSpecFstatThreshDefault = 0.6;
 export const getExperimentResponseDesignSpecFstatThreshMin = 0;
 
 export const getExperimentResponseDesignSpecFstatThreshMax = 1;
+export const getExperimentResponseDesignSpecParticipantTypeMaxOne = 100;
 export const getExperimentResponseDesignSpecExperimentNameMaxOne = 100;
 export const getExperimentResponseDesignSpecDescriptionMaxOne = 2000;
 export const getExperimentResponseDesignSpecArmsItemArmNameMaxOne = 100;
@@ -3400,6 +3489,9 @@ export const getExperimentResponseDesignSpecStrataFieldNamesMaxOne = 150;
 export const getExperimentResponseDesignSpecMetricsItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentResponseDesignSpecMetricsMaxOne = 150;
+export const getExperimentResponseDesignSpecFiltersItemFieldNameRegExpOne =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const getExperimentResponseDesignSpecFiltersMaxOne = 20;
 export const getExperimentResponseDesignSpecPowerDefaultOne = 0.8;
 export const getExperimentResponseDesignSpecPowerMinOne = 0;
 
@@ -3412,10 +3504,6 @@ export const getExperimentResponseDesignSpecFstatThreshDefaultOne = 0.6;
 export const getExperimentResponseDesignSpecFstatThreshMinOne = 0;
 
 export const getExperimentResponseDesignSpecFstatThreshMaxOne = 1;
-export const getExperimentResponseAudienceSpecParticipantTypeMax = 100;
-export const getExperimentResponseAudienceSpecFiltersItemFieldNameRegExp =
-	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const getExperimentResponseAudienceSpecFiltersMax = 20;
 export const getExperimentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentResponsePowerAnalysesAnalysesMax = 150;
@@ -3435,6 +3523,9 @@ export const getExperimentResponse = zod
 		design_spec: zod.discriminatedUnion("experiment_type", [
 			zod
 				.object({
+					participant_type: zod
+						.string()
+						.max(getExperimentResponseDesignSpecParticipantTypeMax),
 					experiment_id: zod
 						.string()
 						.or(zod.null())
@@ -3520,6 +3611,31 @@ export const getExperimentResponse = zod
 						.min(1)
 						.max(getExperimentResponseDesignSpecMetricsMax)
 						.describe("Primary and optional secondary metrics to target."),
+					filters: zod
+						.array(
+							zod
+								.object({
+									field_name: zod
+										.string()
+										.regex(
+											getExperimentResponseDesignSpecFiltersItemFieldNameRegExp,
+										),
+									relation: zod
+										.enum(["includes", "excludes", "between"])
+										.describe(
+											"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+										),
+									value: zod
+										.array(zod.number().or(zod.null()))
+										.or(zod.array(zod.number().or(zod.null())))
+										.or(zod.array(zod.string().or(zod.null())))
+										.or(zod.array(zod.boolean().or(zod.null()))),
+								})
+								.describe(
+									'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+								),
+						)
+						.max(getExperimentResponseDesignSpecFiltersMax),
 					power: zod
 						.number()
 						.min(getExperimentResponseDesignSpecPowerMin)
@@ -3550,6 +3666,9 @@ export const getExperimentResponse = zod
 				),
 			zod
 				.object({
+					participant_type: zod
+						.string()
+						.max(getExperimentResponseDesignSpecParticipantTypeMaxOne),
 					experiment_id: zod
 						.string()
 						.or(zod.null())
@@ -3635,6 +3754,31 @@ export const getExperimentResponse = zod
 						.min(1)
 						.max(getExperimentResponseDesignSpecMetricsMaxOne)
 						.describe("Primary and optional secondary metrics to target."),
+					filters: zod
+						.array(
+							zod
+								.object({
+									field_name: zod
+										.string()
+										.regex(
+											getExperimentResponseDesignSpecFiltersItemFieldNameRegExpOne,
+										),
+									relation: zod
+										.enum(["includes", "excludes", "between"])
+										.describe(
+											"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+										),
+									value: zod
+										.array(zod.number().or(zod.null()))
+										.or(zod.array(zod.number().or(zod.null())))
+										.or(zod.array(zod.string().or(zod.null())))
+										.or(zod.array(zod.boolean().or(zod.null()))),
+								})
+								.describe(
+									'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+								),
+						)
+						.max(getExperimentResponseDesignSpecFiltersMaxOne),
 					power: zod
 						.number()
 						.min(getExperimentResponseDesignSpecPowerMinOne)
@@ -3664,38 +3808,6 @@ export const getExperimentResponse = zod
 					"Use this type to randomly assign participants into arms during live experiment execution.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
 				),
 		]),
-		audience_spec: zod
-			.object({
-				participant_type: zod
-					.string()
-					.max(getExperimentResponseAudienceSpecParticipantTypeMax),
-				filters: zod
-					.array(
-						zod
-							.object({
-								field_name: zod
-									.string()
-									.regex(
-										getExperimentResponseAudienceSpecFiltersItemFieldNameRegExp,
-									),
-								relation: zod
-									.enum(["includes", "excludes", "between"])
-									.describe(
-										"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
-									),
-								value: zod
-									.array(zod.number().or(zod.null()))
-									.or(zod.array(zod.number().or(zod.null())))
-									.or(zod.array(zod.string().or(zod.null())))
-									.or(zod.array(zod.boolean().or(zod.null()))),
-							})
-							.describe(
-								'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
-							),
-					)
-					.max(getExperimentResponseAudienceSpecFiltersMax),
-			})
-			.describe("Defines target participants for an experiment using filters."),
 		power_analyses: zod
 			.object({
 				analyses: zod
@@ -4111,6 +4223,7 @@ export const powerCheckParams = zod.object({
 	datasource_id: zod.string(),
 });
 
+export const powerCheckBodyDesignSpecParticipantTypeMax = 100;
 export const powerCheckBodyDesignSpecExperimentNameMax = 100;
 export const powerCheckBodyDesignSpecDescriptionMax = 2000;
 export const powerCheckBodyDesignSpecArmsItemArmNameMax = 100;
@@ -4126,6 +4239,10 @@ export const powerCheckBodyDesignSpecMetricsItemFieldNameRegExp = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
 export const powerCheckBodyDesignSpecMetricsMax = 150;
+export const powerCheckBodyDesignSpecFiltersItemFieldNameRegExp = new RegExp(
+	"^[a-zA-Z_][a-zA-Z0-9_]*$",
+);
+export const powerCheckBodyDesignSpecFiltersMax = 20;
 export const powerCheckBodyDesignSpecPowerDefault = 0.8;
 export const powerCheckBodyDesignSpecPowerMin = 0;
 
@@ -4138,6 +4255,7 @@ export const powerCheckBodyDesignSpecFstatThreshDefault = 0.6;
 export const powerCheckBodyDesignSpecFstatThreshMin = 0;
 
 export const powerCheckBodyDesignSpecFstatThreshMax = 1;
+export const powerCheckBodyDesignSpecParticipantTypeMaxOne = 100;
 export const powerCheckBodyDesignSpecExperimentNameMaxOne = 100;
 export const powerCheckBodyDesignSpecDescriptionMaxOne = 2000;
 export const powerCheckBodyDesignSpecArmsItemArmNameMaxOne = 100;
@@ -4153,6 +4271,10 @@ export const powerCheckBodyDesignSpecMetricsItemFieldNameRegExpOne = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
 export const powerCheckBodyDesignSpecMetricsMaxOne = 150;
+export const powerCheckBodyDesignSpecFiltersItemFieldNameRegExpOne = new RegExp(
+	"^[a-zA-Z_][a-zA-Z0-9_]*$",
+);
+export const powerCheckBodyDesignSpecFiltersMaxOne = 20;
 export const powerCheckBodyDesignSpecPowerDefaultOne = 0.8;
 export const powerCheckBodyDesignSpecPowerMinOne = 0;
 
@@ -4165,16 +4287,14 @@ export const powerCheckBodyDesignSpecFstatThreshDefaultOne = 0.6;
 export const powerCheckBodyDesignSpecFstatThreshMinOne = 0;
 
 export const powerCheckBodyDesignSpecFstatThreshMaxOne = 1;
-export const powerCheckBodyAudienceSpecParticipantTypeMax = 100;
-export const powerCheckBodyAudienceSpecFiltersItemFieldNameRegExp = new RegExp(
-	"^[a-zA-Z_][a-zA-Z0-9_]*$",
-);
-export const powerCheckBodyAudienceSpecFiltersMax = 20;
 
 export const powerCheckBody = zod.object({
 	design_spec: zod.discriminatedUnion("experiment_type", [
 		zod
 			.object({
+				participant_type: zod
+					.string()
+					.max(powerCheckBodyDesignSpecParticipantTypeMax),
 				experiment_id: zod
 					.string()
 					.or(zod.null())
@@ -4252,6 +4372,29 @@ export const powerCheckBody = zod.object({
 					.min(1)
 					.max(powerCheckBodyDesignSpecMetricsMax)
 					.describe("Primary and optional secondary metrics to target."),
+				filters: zod
+					.array(
+						zod
+							.object({
+								field_name: zod
+									.string()
+									.regex(powerCheckBodyDesignSpecFiltersItemFieldNameRegExp),
+								relation: zod
+									.enum(["includes", "excludes", "between"])
+									.describe(
+										"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+									),
+								value: zod
+									.array(zod.number().or(zod.null()))
+									.or(zod.array(zod.number().or(zod.null())))
+									.or(zod.array(zod.string().or(zod.null())))
+									.or(zod.array(zod.boolean().or(zod.null()))),
+							})
+							.describe(
+								'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+							),
+					)
+					.max(powerCheckBodyDesignSpecFiltersMax),
 				power: zod
 					.number()
 					.min(powerCheckBodyDesignSpecPowerMin)
@@ -4282,6 +4425,9 @@ export const powerCheckBody = zod.object({
 			),
 		zod
 			.object({
+				participant_type: zod
+					.string()
+					.max(powerCheckBodyDesignSpecParticipantTypeMaxOne),
 				experiment_id: zod
 					.string()
 					.or(zod.null())
@@ -4361,6 +4507,29 @@ export const powerCheckBody = zod.object({
 					.min(1)
 					.max(powerCheckBodyDesignSpecMetricsMaxOne)
 					.describe("Primary and optional secondary metrics to target."),
+				filters: zod
+					.array(
+						zod
+							.object({
+								field_name: zod
+									.string()
+									.regex(powerCheckBodyDesignSpecFiltersItemFieldNameRegExpOne),
+								relation: zod
+									.enum(["includes", "excludes", "between"])
+									.describe(
+										"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+									),
+								value: zod
+									.array(zod.number().or(zod.null()))
+									.or(zod.array(zod.number().or(zod.null())))
+									.or(zod.array(zod.string().or(zod.null())))
+									.or(zod.array(zod.boolean().or(zod.null()))),
+							})
+							.describe(
+								'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+							),
+					)
+					.max(powerCheckBodyDesignSpecFiltersMaxOne),
 				power: zod
 					.number()
 					.min(powerCheckBodyDesignSpecPowerMinOne)
@@ -4390,36 +4559,6 @@ export const powerCheckBody = zod.object({
 				"Use this type to randomly assign participants into arms during live experiment execution.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
 			),
 	]),
-	audience_spec: zod
-		.object({
-			participant_type: zod
-				.string()
-				.max(powerCheckBodyAudienceSpecParticipantTypeMax),
-			filters: zod
-				.array(
-					zod
-						.object({
-							field_name: zod
-								.string()
-								.regex(powerCheckBodyAudienceSpecFiltersItemFieldNameRegExp),
-							relation: zod
-								.enum(["includes", "excludes", "between"])
-								.describe(
-									"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
-								),
-							value: zod
-								.array(zod.number().or(zod.null()))
-								.or(zod.array(zod.number().or(zod.null())))
-								.or(zod.array(zod.string().or(zod.null())))
-								.or(zod.array(zod.boolean().or(zod.null()))),
-						})
-						.describe(
-							'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
-						),
-				)
-				.max(powerCheckBodyAudienceSpecFiltersMax),
-		})
-		.describe("Defines target participants for an experiment using filters."),
 });
 
 export const powerCheckResponseAnalysesItemMetricSpecFieldNameRegExp =

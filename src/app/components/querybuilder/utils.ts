@@ -1,10 +1,10 @@
-import { AudienceSpecFilter, DataType, FilterValueTypes } from '@/api/methods.schemas';
+import { DataType, Filter, FilterValueTypes } from '@/api/methods.schemas';
 
 export type SingleTypeArray<T> = Array<T | null>;
-export type TypedFilter<T> = AudienceSpecFilter & { value: SingleTypeArray<T> };
+export type TypedFilter<T> = Filter & { value: SingleTypeArray<T> };
 
 // Get default filter configuration for a given field type
-export function getDefaultFilterForType(fieldName: string, dataType: DataType): AudienceSpecFilter {
+export function getDefaultFilterForType(fieldName: string, dataType: DataType): Filter {
   switch (dataType) {
     case 'boolean':
       return {

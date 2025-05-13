@@ -2,13 +2,13 @@
 
 import { Button, Checkbox, Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
-import { AudienceSpecFilter, DataType } from '@/api/methods.schemas';
+import { DataType, Filter } from '@/api/methods.schemas';
 import { createDefaultValueForOperator, operatorToRelation, TypedFilter } from './utils';
 import React, { useEffect, useState } from 'react';
 
 export interface NumericFilterInputProps {
-  filter: AudienceSpecFilter & TypedFilter<number>;
-  onChange: (filter: AudienceSpecFilter) => void;
+  filter: Filter & TypedFilter<number>;
+  onChange: (filter: Filter) => void;
   dataType: DataType;
 }
 

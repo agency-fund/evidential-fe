@@ -21,11 +21,8 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
 
     setValidationError(null);
     try {
-      const { design_spec, audience_spec } = convertFormDataToCreateExperimentRequest(formData);
-      const response = await trigger({
-        design_spec,
-        audience_spec,
-      });
+      const { design_spec } = convertFormDataToCreateExperimentRequest(formData);
+      const response = await trigger({ design_spec });
       onFormDataChange({
         ...formData,
         powerCheckResponse: response,
