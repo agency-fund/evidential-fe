@@ -1,16 +1,16 @@
 'use client';
 import { Callout, Flex, Heading, Text } from '@radix-ui/themes';
-import { XSpinner } from '@/app/components/ui/x-spinner';
+import { XSpinner } from '@/components/ui/x-spinner';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
-import { ApiKeysSection } from '@/app/components/features/datasources/api-keys-section';
+import { ApiKeysSection } from '@/components/features/datasources/api-keys-section';
 import { useGetDatasource, useInspectDatasource } from '@/api/admin';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { EditDatasourceDialog } from '@/app/components/features/datasources/edit-datasource-dialog';
-import { ParticipantTypesSection } from '@/app/components/features/participants/participant-types-section';
-import { useCurrentOrganization } from '@/app/providers/organization-provider';
+import { EditDatasourceDialog } from '@/components/features/datasources/edit-datasource-dialog';
+import { ParticipantTypesSection } from '@/components/features/participants/participant-types-section';
+import { useCurrentOrganization } from '@/providers/organization-provider';
 import { useEffect, useState } from 'react';
-import { GenericErrorCallout } from '@/app/components/ui/generic-error';
+import { GenericErrorCallout } from '@/components/ui/generic-error';
 
 export default function Page() {
   const params = useParams();

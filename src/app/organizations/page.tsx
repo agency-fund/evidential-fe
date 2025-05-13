@@ -1,10 +1,11 @@
 'use client';
 import { Flex, Heading, Text } from '@radix-ui/themes';
-import { XSpinner } from '@/app/components/ui/x-spinner';
+import { XSpinner } from '@/components/ui/x-spinner';
 import { useListOrganizations } from '@/api/admin';
-import { CreateOrganizationDialog } from '@/app/components/features/organizations/create-organization-dialog';
-import { OrganizationsTable } from '@/app/components/features/organizations/organizations-table';
-import { EmptyStateCard } from '@/app/components/ui/cards/empty-state-card';
+import { CreateOrganizationDialog } from '@/components/features/organizations/create-organization-dialog';
+import { OrganizationsTable } from '@/components/features/organizations/organizations-table';
+import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
+
 export default function Page() {
   const { data, isLoading, error } = useListOrganizations();
 

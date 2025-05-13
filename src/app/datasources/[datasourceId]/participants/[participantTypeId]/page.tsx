@@ -1,12 +1,12 @@
 'use client';
 import { useGetParticipantTypes, useInspectParticipantTypes } from '@/api/admin';
 import { Flex, Heading, Text } from '@radix-ui/themes';
-import { XSpinner } from '@/app/components/ui/x-spinner';
+import { XSpinner } from '@/components/ui/x-spinner';
 import { useParams } from 'next/navigation';
-import { InspectParticipantTypesSummary } from '@/app/components/features/participants/inspect-participant-types-summary';
+import { InspectParticipantTypesSummary } from '@/components/features/participants/inspect-participant-types-summary';
 import Link from 'next/link';
-import { EditParticipantTypeDialog } from '@/app/components/features/participants/edit-participant-type-dialog';
-import { GenericErrorCallout } from '@/app/components/ui/generic-error';
+import { EditParticipantTypeDialog } from '@/components/features/participants/edit-participant-type-dialog';
+import { GenericErrorCallout } from '@/components/ui/generic-error';
 
 export default function Page() {
   const params = useParams();

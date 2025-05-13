@@ -1,17 +1,17 @@
 'use client';
-import { Button, Card, Flex, Grid, Heading, Separator, Table, Tabs, Text, Badge } from '@radix-ui/themes';
+import { Badge, Button, Card, Flex, Grid, Heading, Separator, Table, Tabs, Text } from '@radix-ui/themes';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeftIcon, CodeIcon, PersonIcon } from '@radix-ui/react-icons';
 import { useAnalyzeExperiment, useGetExperiment } from '@/api/admin';
-import { ForestPlot } from '@/app/components/features/experiments/forest-plot';
-import { XSpinner } from '@/app/components/ui/x-spinner';
-import { GenericErrorCallout } from '@/app/components/ui/generic-error';
-import { ExperimentStatusBadge } from '@/app/components/features/experiments/experiment-status-badge';
-import { CopyToClipBoard } from '@/app/components/ui/buttons/copy-to-clipboard';
+import { ForestPlot } from '@/components/features/experiments/forest-plot';
+import { XSpinner } from '@/components/ui/x-spinner';
+import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { ExperimentStatusBadge } from '@/components/features/experiments/experiment-status-badge';
+import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
 import { useState } from 'react';
 import * as Toast from '@radix-ui/react-toast';
-import { CodeSnippetCard } from '@/app/components/ui/cards/code-snippet-card';
-import { ExperimentTypeBadge } from '@/app/components/features/experiments/experiment-type-badge';
+import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
+import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import Link from 'next/link';
 
 export default function ExperimentViewPage() {
