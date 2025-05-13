@@ -1,0 +1,109 @@
+'use client';
+import { ParticipantsDef } from '@/api/methods.schemas';
+import { getGetParticipantTypesKey, getInspectParticipantTypesKey, useUpdateParticipantType } from '@/api/admin';
+import { useState } from 'react';
+import { mutate } from 'swr';
+import { Button, Dialog, Flex, IconButton } from '@radix-ui/themes';
+import { Pencil2Icon } from '@radix-ui/react-icons';
+import { XSpinner } from '@/app/components/ui/x-spinner';
+import { ParticipantDefEditor } from '@/app/components/features/participants/edit-participant-def';
+import { GenericErrorCallout } from '@/app/components/ui/generic-error';
+
+export function EditParticipantTypeDialog({
+  datasourceId,
+  participantType,
+  participantConfig,
+  variant = 'default',
+}: {
+  datasourceId: string;
+  participantType: string;
+  participantConfig: ParticipantsDef;
+  variant?: 'default' | 'icon';
+}) {
+  const {
+    trigger: updateParticipantType,
+    isMutating,
+    error,
+    reset,
+  } = useUpdateParticipantType(datasourceId, participantType, {
+    swr: {
+      onSuccess: async () => {
+        setOpen(false);
+        await Promise.all([
+          mutate(getGetParticipantTypesKey(datasourceId, participantType)),
+          mutate(getInspectParticipantTypesKey(datasourceId, participantType, {})),
+        ]);
+      },
+    },
+  });
+  const [editedDef, setEditedDef] = useState<ParticipantsDef | null>(null);
+  const [open, setOpen] = useState(false);
+
+  const handleSave = async () => {
+    if (!editedDef) return;
+
+    // Clear any previous errors
+    reset();
+
+    await updateParticipantType({
+      fields: editedDef.fields,
+    });
+  };
+
+  return (
+    <Dialog.Root
+      open={open}
+      onOpenChange={(isOpen) => {
+        setOpen(isOpen);
+        if (!isOpen) {
+          // Clear error state when dialog is closed
+          reset();
+        }
+      }}
+    >
+      <Dialog.Trigger>
+        {variant === 'icon' ? (
+          <IconButton variant="soft">
+            <Pencil2Icon />
+          </IconButton>
+        ) : (
+          <Button>
+            <Pencil2Icon /> Edit Participant Type
+          </Button>
+        )}
+      </Dialog.Trigger>
+      <Dialog.Content minWidth={'800px'} maxWidth={'90vw'} maxHeight={'90vh'}>
+        <Dialog.Title>Edit Participant Type</Dialog.Title>
+        {isMutating ? (
+          <XSpinner message={'Saving...'} />
+        ) : (
+          <>
+            {error && (
+              <Flex mb="4">
+                <GenericErrorCallout title="Failed to update participant type" error={error} />
+              </Flex>
+            )}
+            <ParticipantDefEditor participantDef={editedDef || participantConfig} onUpdate={setEditedDef} />
+            <Flex gap="3" mt="4" justify="end">
+              <Dialog.Close>
+                <Button
+                  variant="soft"
+                  color="gray"
+                  onClick={() => {
+                    setEditedDef(null);
+                    reset();
+                  }}
+                >
+                  Cancel
+                </Button>
+              </Dialog.Close>
+              <Button onClick={handleSave} disabled={!editedDef}>
+                Save Changes
+              </Button>
+            </Flex>
+          </>
+        )}
+      </Dialog.Content>
+    </Dialog.Root>
+  );
+}
