@@ -1,6 +1,6 @@
 'use client';
 import { Button, Dialog, Flex, IconButton, Text, TextField } from '@radix-ui/themes';
-import { ServiceAccountJsonField } from '@/components/service-account-json-field';
+import { ServiceAccountJsonField } from '@/components/features/datasources/service-account-json-field';
 import { EyeClosedIcon, EyeOpenIcon, GearIcon, InfoCircledIcon, Pencil2Icon } from '@radix-ui/react-icons';
 import {
   getGetDatasourceKey,

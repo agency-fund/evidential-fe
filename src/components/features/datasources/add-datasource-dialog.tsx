@@ -2,7 +2,7 @@
 import { getGetOrganizationKey, getListOrganizationDatasourcesKey, useCreateDatasource } from '@/api/admin';
 import { useState } from 'react';
 import { Button, Dialog, Flex, RadioGroup, Text, TextField } from '@radix-ui/themes';
-import { ServiceAccountJsonField } from '@/components/service-account-json-field';
+import { ServiceAccountJsonField } from '@/components/features/datasources/service-account-json-field';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { EyeClosedIcon, EyeOpenIcon, InfoCircledIcon, PlusIcon } from '@radix-ui/react-icons';
 import { BqDsnInput, Dsn } from '@/api/methods.schemas';
