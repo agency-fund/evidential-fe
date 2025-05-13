@@ -9,7 +9,6 @@ import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { useEffect, useState } from 'react';
 import { DatasourceSelector } from '@/components/features/datasources/datasource-selector';
-import { ExperimentStatusBadge } from '@/components/features/experiments/experiment-status-badge';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
