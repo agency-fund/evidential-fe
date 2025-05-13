@@ -107,7 +107,6 @@ export interface ArmSize {
 
 export interface AssignRequest {
 	design_spec: DesignSpecInput;
-	audience_spec: AudienceSpecInput;
 }
 
 /**
@@ -190,76 +189,6 @@ export interface Assignment {
 	arm_name: string;
 	/** List of properties and their values for this participant used for stratification or tracking metrics. If stratification is not used, this will be None. */
 	strata?: AssignmentStrata;
-}
-
-/**
- * Defines target participants for an experiment using filters.
- */
-export interface AudienceSpecInput {
-	/** @maxLength 100 */
-	participant_type: string;
-	/** @maxItems 20 */
-	filters: AudienceSpecFilter[];
-}
-
-/**
- * Defines target participants for an experiment using filters.
- */
-export interface AudienceSpecOutput {
-	/** @maxLength 100 */
-	participant_type: string;
-	/** @maxItems 20 */
-	filters: AudienceSpecFilter[];
-}
-
-/**
- * Defines criteria for filtering rows by value.
-
-## Examples
-
-| Relation | Value       | logical Result                                    |
-|----------|-------------|---------------------------------------------------|
-| INCLUDES | [None]      | Match when `x IS NULL`                            |
-| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |
-| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |
-| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |
-| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |
-| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |
-| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |
-| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |
-| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |
-
-String comparisons are case-sensitive.
-
-## Special Handling for Comma-Separated Fields
-
-When the filter name ends in "experiment_ids", the filter is interpreted as follows:
-
-| Value | Filter         | Result   |
-|-------|----------------|----------|
-| "a,b" | INCLUDES ["a"] | Match    |
-| "a,b" | INCLUDES ["d"] | No match |
-| "a,b" | EXCLUDES ["d"] | Match    |
-| "a,b" | EXCLUDES ["b"] | No match |
-
-Note: The BETWEEN relation is not supported for comma-separated values.
-
-Note: CSV field comparisons are case-insensitive.
-
-## Handling of datetime and timestamp values
-
-DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.
-
-Values must be expressed as ISO8601 datetime strings compatible with Python's datetime.fromisoformat()
-(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).
-
-If a timezone is provided, it must be UTC.
- */
-export interface AudienceSpecFilter {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-	field_name: string;
-	relation: Relation;
-	value: FilterValueTypes;
 }
 
 /**
@@ -356,7 +285,6 @@ export type CommitRequestPowerAnalyses = PowerResponseInput | null;
  */
 export interface CommitRequest {
 	design_spec: DesignSpecInput;
-	audience_spec: AudienceSpecInput;
 	/** Optionally include the power analyses of your tracking metrics if performed. */
 	power_analyses?: CommitRequestPowerAnalyses;
 	experiment_assignment: AssignResponseInput;
@@ -385,7 +313,6 @@ export type CreateExperimentRequestPowerAnalyses = PowerResponseInput | null;
 
 export interface CreateExperimentRequest {
 	design_spec: DesignSpecInput;
-	audience_spec: AudienceSpecInput;
 	power_analyses?: CreateExperimentRequestPowerAnalyses;
 }
 
@@ -399,7 +326,6 @@ export interface CreateExperimentResponse {
 	/** Current state of this experiment. */
 	state: ExperimentState;
 	design_spec: DesignSpecOutput;
-	audience_spec: AudienceSpecOutput;
 	power_analyses: CreateExperimentResponsePowerAnalyses;
 	assign_summary: AssignSummary;
 }
@@ -473,9 +399,13 @@ export interface DatasourceSummary {
 	organization_name: string;
 }
 
-export type DesignSpecInput = PreassignedExperimentSpec | OnlineExperimentSpec;
+export type DesignSpecInput =
+	| PreassignedExperimentSpecInput
+	| OnlineExperimentSpecInput;
 
-export type DesignSpecOutput = PreassignedExperimentSpec | OnlineExperimentSpec;
+export type DesignSpecOutput =
+	| PreassignedExperimentSpecOutput
+	| OnlineExperimentSpecOutput;
 
 /**
  * Percent change target relative to the metric_baseline.
@@ -648,7 +578,6 @@ export interface ExperimentConfig {
 	/** Current state of this experiment. */
 	state: ExperimentState;
 	design_spec: DesignSpecOutput;
-	audience_spec: AudienceSpecOutput;
 	power_analyses: ExperimentConfigPowerAnalyses;
 	assign_summary: AssignSummary;
 }
@@ -706,6 +635,56 @@ export interface FieldMetadata {
 	data_type: DataType;
 	/** @maxLength 2000 */
 	description: string;
+}
+
+/**
+ * Defines criteria for filtering rows by value.
+
+## Examples
+
+| Relation | Value       | logical Result                                    |
+|----------|-------------|---------------------------------------------------|
+| INCLUDES | [None]      | Match when `x IS NULL`                            |
+| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |
+| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |
+| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |
+| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |
+| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |
+| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |
+| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |
+| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |
+
+String comparisons are case-sensitive.
+
+## Special Handling for Comma-Separated Fields
+
+When the filter name ends in "experiment_ids", the filter is interpreted as follows:
+
+| Value | Filter         | Result   |
+|-------|----------------|----------|
+| "a,b" | INCLUDES ["a"] | Match    |
+| "a,b" | INCLUDES ["d"] | No match |
+| "a,b" | EXCLUDES ["d"] | Match    |
+| "a,b" | EXCLUDES ["b"] | No match |
+
+Note: The BETWEEN relation is not supported for comma-separated values.
+
+Note: CSV field comparisons are case-insensitive.
+
+## Handling of datetime and timestamp values
+
+DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.
+
+Values must be expressed as ISO8601 datetime strings compatible with Python's datetime.fromisoformat()
+(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).
+
+If a timezone is provided, it must be UTC.
+ */
+export interface Filter {
+	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	field_name: string;
+	relation: Relation;
+	value: FilterValueTypes;
 }
 
 export type FilterValueTypesAnyOfItem = number | null;
@@ -800,7 +779,6 @@ export interface GetExperimentResponse {
 	/** Current state of this experiment. */
 	state: ExperimentState;
 	design_spec: DesignSpecOutput;
-	audience_spec: AudienceSpecOutput;
 	power_analyses: GetExperimentResponsePowerAnalyses;
 	assign_summary: AssignSummary;
 }
@@ -1169,13 +1147,13 @@ export const MetricType = {
 /**
  * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
  */
-export type OnlineExperimentSpecExperimentId = string | null;
+export type OnlineExperimentSpecInputExperimentId = string | null;
 
-export type OnlineExperimentSpecExperimentType =
-	(typeof OnlineExperimentSpecExperimentType)[keyof typeof OnlineExperimentSpecExperimentType];
+export type OnlineExperimentSpecInputExperimentType =
+	(typeof OnlineExperimentSpecInputExperimentType)[keyof typeof OnlineExperimentSpecInputExperimentType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const OnlineExperimentSpecExperimentType = {
+export const OnlineExperimentSpecInputExperimentType = {
 	online: "online",
 } as const;
 
@@ -1184,10 +1162,12 @@ export const OnlineExperimentSpecExperimentType = {
 
 For example, you may wish to experiment on new users. Assignments are issued via API request.
  */
-export interface OnlineExperimentSpec {
+export interface OnlineExperimentSpecInput {
+	/** @maxLength 100 */
+	participant_type: string;
 	/** ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
-	experiment_id?: OnlineExperimentSpecExperimentId;
-	experiment_type: OnlineExperimentSpecExperimentType;
+	experiment_id?: OnlineExperimentSpecInputExperimentId;
+	experiment_type: OnlineExperimentSpecInputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
 	/** @maxLength 2000 */
@@ -1210,6 +1190,76 @@ export interface OnlineExperimentSpec {
 	 * @maxItems 150
 	 */
 	metrics: DesignSpecMetricRequest[];
+	/** @maxItems 20 */
+	filters: Filter[];
+	/**
+	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
+	 * @minimum 0
+	 * @maximum 1
+	 */
+	power?: number;
+	/**
+	 * The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.
+	 * @minimum 0
+	 * @maximum 1
+	 */
+	alpha?: number;
+	/**
+	 * Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".
+	 * @minimum 0
+	 * @maximum 1
+	 */
+	fstat_thresh?: number;
+}
+
+/**
+ * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
+ */
+export type OnlineExperimentSpecOutputExperimentId = string | null;
+
+export type OnlineExperimentSpecOutputExperimentType =
+	(typeof OnlineExperimentSpecOutputExperimentType)[keyof typeof OnlineExperimentSpecOutputExperimentType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const OnlineExperimentSpecOutputExperimentType = {
+	online: "online",
+} as const;
+
+/**
+ * Use this type to randomly assign participants into arms during live experiment execution.
+
+For example, you may wish to experiment on new users. Assignments are issued via API request.
+ */
+export interface OnlineExperimentSpecOutput {
+	/** @maxLength 100 */
+	participant_type: string;
+	/** ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
+	experiment_id?: OnlineExperimentSpecOutputExperimentId;
+	experiment_type: OnlineExperimentSpecOutputExperimentType;
+	/** @maxLength 100 */
+	experiment_name: string;
+	/** @maxLength 2000 */
+	description: string;
+	start_date: string;
+	end_date: string;
+	/**
+	 * @minItems 2
+	 * @maxItems 10
+	 */
+	arms: Arm[];
+	/**
+	 * List of participant_type variables to use for stratification.
+	 * @maxItems 150
+	 */
+	strata_field_names: string[];
+	/**
+	 * Primary and optional secondary metrics to target.
+	 * @minItems 1
+	 * @maxItems 150
+	 */
+	metrics: DesignSpecMetricRequest[];
+	/** @maxItems 20 */
+	filters: Filter[];
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
@@ -1279,7 +1329,6 @@ export interface ParticipantsSchemaOutput {
 
 export interface PowerRequest {
 	design_spec: DesignSpecInput;
-	audience_spec: AudienceSpecInput;
 }
 
 export interface PowerResponseInput {
@@ -1295,23 +1344,25 @@ export interface PowerResponseOutput {
 /**
  * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
  */
-export type PreassignedExperimentSpecExperimentId = string | null;
+export type PreassignedExperimentSpecInputExperimentId = string | null;
 
-export type PreassignedExperimentSpecExperimentType =
-	(typeof PreassignedExperimentSpecExperimentType)[keyof typeof PreassignedExperimentSpecExperimentType];
+export type PreassignedExperimentSpecInputExperimentType =
+	(typeof PreassignedExperimentSpecInputExperimentType)[keyof typeof PreassignedExperimentSpecInputExperimentType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const PreassignedExperimentSpecExperimentType = {
+export const PreassignedExperimentSpecInputExperimentType = {
 	preassigned: "preassigned",
 } as const;
 
 /**
  * Use this type to randomly select and assign from existing participants at design time.
  */
-export interface PreassignedExperimentSpec {
+export interface PreassignedExperimentSpecInput {
+	/** @maxLength 100 */
+	participant_type: string;
 	/** ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
-	experiment_id?: PreassignedExperimentSpecExperimentId;
-	experiment_type: PreassignedExperimentSpecExperimentType;
+	experiment_id?: PreassignedExperimentSpecInputExperimentId;
+	experiment_type: PreassignedExperimentSpecInputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
 	/** @maxLength 2000 */
@@ -1334,6 +1385,74 @@ export interface PreassignedExperimentSpec {
 	 * @maxItems 150
 	 */
 	metrics: DesignSpecMetricRequest[];
+	/** @maxItems 20 */
+	filters: Filter[];
+	/**
+	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
+	 * @minimum 0
+	 * @maximum 1
+	 */
+	power?: number;
+	/**
+	 * The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.
+	 * @minimum 0
+	 * @maximum 1
+	 */
+	alpha?: number;
+	/**
+	 * Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".
+	 * @minimum 0
+	 * @maximum 1
+	 */
+	fstat_thresh?: number;
+}
+
+/**
+ * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
+ */
+export type PreassignedExperimentSpecOutputExperimentId = string | null;
+
+export type PreassignedExperimentSpecOutputExperimentType =
+	(typeof PreassignedExperimentSpecOutputExperimentType)[keyof typeof PreassignedExperimentSpecOutputExperimentType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const PreassignedExperimentSpecOutputExperimentType = {
+	preassigned: "preassigned",
+} as const;
+
+/**
+ * Use this type to randomly select and assign from existing participants at design time.
+ */
+export interface PreassignedExperimentSpecOutput {
+	/** @maxLength 100 */
+	participant_type: string;
+	/** ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
+	experiment_id?: PreassignedExperimentSpecOutputExperimentId;
+	experiment_type: PreassignedExperimentSpecOutputExperimentType;
+	/** @maxLength 100 */
+	experiment_name: string;
+	/** @maxLength 2000 */
+	description: string;
+	start_date: string;
+	end_date: string;
+	/**
+	 * @minItems 2
+	 * @maxItems 10
+	 */
+	arms: Arm[];
+	/**
+	 * List of participant_type variables to use for stratification.
+	 * @maxItems 150
+	 */
+	strata_field_names: string[];
+	/**
+	 * Primary and optional secondary metrics to target.
+	 * @minItems 1
+	 * @maxItems 150
+	 */
+	metrics: DesignSpecMetricRequest[];
+	/** @maxItems 20 */
+	filters: Filter[];
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
