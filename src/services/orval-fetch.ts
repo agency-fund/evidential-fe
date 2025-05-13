@@ -1,6 +1,6 @@
-import { currentIdToken } from '@/app/providers/use-auth-storage';
+import { currentIdToken } from '@/providers/use-auth-storage';
 import { API_BASE_URL } from '@/services/constants';
-import { API_401_EVENT } from '@/app/providers/auth-provider';
+import { API_401_EVENT } from '@/providers/auth-provider';
 import { HTTPValidationError } from '@/api/methods.schemas';
 
 /** Error raised when the FastAPI backend returned a Pydantic HTTPValidationError. */
@@ -39,7 +39,8 @@ const getBody = (c: Response) => {
   if (c.status === 204) {
     return null;
   }
-  if (c.status === 304) {  // not modified
+  if (c.status === 304) {
+    // not modified
     return null;
   }
   throw Error('Backend returned unsupported content-type.');

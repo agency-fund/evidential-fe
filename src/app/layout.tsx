@@ -3,14 +3,14 @@ import '@radix-ui/themes/styles.css';
 
 import { Geist, Geist_Mono } from 'next/font/google';
 import { Container, Flex, Theme } from '@radix-ui/themes';
-import { OrganizationProvider } from '@/app/providers/organization-provider';
-import GoogleAuthProvider from '@/app/providers/auth-provider';
-import OurSwrConfig from '@/app/providers/our-swr-config';
+import { OrganizationProvider } from '@/providers/organization-provider';
+import GoogleAuthProvider from '@/providers/auth-provider';
+import OurSwrConfig from '@/providers/our-swr-config';
 import { Suspense } from 'react';
-import { NavigationBar } from '@/app/components/layout/nav/navigation-curtain';
-import { HeaderBar } from '@/app/components/layout/header/header-bar';
+import { NavigationBar } from '@/components/layout/nav/navigation-curtain';
+import { HeaderBar } from '@/components/layout/header/header-bar';
 import * as Toast from '@radix-ui/react-toast';
-import RequireLogin from '@/app/components/require-login';
+import RequireLogin from '@/components/require-login';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',

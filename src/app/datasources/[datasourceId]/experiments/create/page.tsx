@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
-import { InitialForm } from '@/app/components/features/experiments/initial-form';
-import { DesignForm } from '@/app/components/features/experiments/design-form';
-import { ConfirmationForm } from '@/app/components/features/experiments/confirmation-form';
+import { InitialForm } from '@/components/features/experiments/initial-form';
+import { DesignForm } from '@/components/features/experiments/design-form';
+import { ConfirmationForm } from '@/components/features/experiments/confirmation-form';
 import { Box, Container, Flex, Heading } from '@radix-ui/themes';
 import { Arm, CreateExperimentResponse, Filter, PowerResponseOutput } from '@/api/methods.schemas';
 import { useParams } from 'next/navigation';
