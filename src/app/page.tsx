@@ -187,8 +187,8 @@ export default function Page() {
                       <Table.Cell>
                         <ExperimentStatusBadge status={experiment.state} />
                       </Table.Cell>
-                      <Table.Cell>{experiment.design_spec.start_date}</Table.Cell>
-                      <Table.Cell>{experiment.design_spec.end_date}</Table.Cell>
+                      <Table.Cell>{new Date(experiment.design_spec.start_date).toLocaleDateString()}</Table.Cell>
+                      <Table.Cell>{new Date(experiment.design_spec.end_date).toLocaleDateString()}</Table.Cell>
                       <Table.Cell>{experiment.design_spec.description}</Table.Cell>
                       <Table.Cell>
                         <Flex direction={'row'} gap={'2'}>

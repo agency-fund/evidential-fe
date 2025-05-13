@@ -80,11 +80,11 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
             </Table.Row>
             <Table.Row>
               <Table.RowHeaderCell>Start Date</Table.RowHeaderCell>
-              <Table.Cell>{formData.startDate}</Table.Cell>
+              <Table.Cell>{new Date(formData.startDate).toLocaleDateString()}</Table.Cell>
             </Table.Row>
             <Table.Row>
               <Table.RowHeaderCell>End Date</Table.RowHeaderCell>
-              <Table.Cell>{formData.endDate}</Table.Cell>
+              <Table.Cell>{new Date(formData.endDate).toLocaleDateString()}</Table.Cell>
             </Table.Row>
           </Table.Body>
         </Table.Root>
