@@ -7,7 +7,7 @@ import { PlusIcon } from '@radix-ui/react-icons';
 import { mutate } from 'swr';
 import { GenericErrorCallout } from '@/app/components/ui/generic-error';
 import { AddWebhookToOrganizationResponse } from '@/api/methods.schemas';
-import { WebhookInfoContent } from './webhook-info-content';
+import { WebhookInfoContent } from '@/app/components/features/organizations/webhook-info-content';
 
 export function AddWebhookDialog({ organizationId, disabled = false }: { organizationId: string; disabled?: boolean }) {
   const { trigger, isMutating, error, reset } = useAddWebhookToOrganization(organizationId, {

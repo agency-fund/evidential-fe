@@ -3,7 +3,7 @@
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { exchangeCodeForTokens, generatePkceLoginInfo } from '@/services/pkce';
-import { XSpinner } from '../components/ui/x-spinner';
+import { XSpinner } from '@/app/components/ui/x-spinner';
 import { useAuthStorage } from '@/app/providers/use-auth-storage';
 import { AIRPLANE_MODE, API_BASE_URL } from '@/services/constants';
 import { useCustomEventListener } from '@/app/providers/use-custom-event-handler';

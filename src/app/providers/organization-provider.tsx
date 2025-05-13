@@ -3,7 +3,7 @@
 import { OrganizationSummary } from '@/api/methods.schemas';
 import { createContext, PropsWithChildren, useContext, useEffect } from 'react';
 import { useListOrganizations } from '@/api/admin';
-import { useAuth } from './auth-provider';
+import { useAuth } from '@/app/providers/auth-provider';
 import { useLocalStorage } from '@/app/providers/use-local-storage';
 import { Button, Callout, Flex, Text } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';

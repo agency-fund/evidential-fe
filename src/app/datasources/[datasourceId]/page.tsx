@@ -1,6 +1,6 @@
 'use client';
 import { Callout, Flex, Heading, Text } from '@radix-ui/themes';
-import { XSpinner } from '../../components/ui/x-spinner';
+import { XSpinner } from '@/app/components/ui/x-spinner';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { ApiKeysSection } from '@/app/components/features/datasources/api-keys-section';
 import { useGetDatasource, useInspectDatasource } from '@/api/admin';
