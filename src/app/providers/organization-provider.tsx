@@ -3,12 +3,12 @@
 import { OrganizationSummary } from '@/api/methods.schemas';
 import { createContext, PropsWithChildren, useContext, useEffect } from 'react';
 import { useListOrganizations } from '@/api/admin';
-import { useAuth } from './auth-provider';
+import { useAuth } from '@/app/providers/auth-provider';
 import { useLocalStorage } from '@/app/providers/use-local-storage';
 import { Button, Callout, Flex, Text } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
-import { XSpinner } from '@/app/components/x-spinner';
-import { GenericErrorCallout } from '@/app/components/generic-error';
+import { XSpinner } from '@/app/components/ui/x-spinner';
+import { GenericErrorCallout } from '@/app/components/ui/generic-error';
 import { ApiError } from '@/services/orval-fetch';
 import { SUPPORT_EMAIL } from '@/services/constants';
 

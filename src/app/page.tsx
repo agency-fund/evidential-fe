@@ -2,17 +2,17 @@
 import { Button, Flex, Heading, Table, TextArea } from '@radix-ui/themes';
 import { GearIcon, PlusIcon } from '@radix-ui/react-icons';
 import Link from 'next/link';
-import { DownloadAssignmentsCsvButton } from '@/app/experiments/download-assignments-csv-button';
+import { DownloadAssignmentsCsvButton } from '@/app/components/features/experiments/download-assignments-csv-button';
 import { analyzeExperiment, useListExperiments, useListOrganizationDatasources } from '@/api/admin';
-import { DeleteExperimentButton } from '@/app/experiments/delete-experiment-button';
-import { XSpinner } from '@/app/components/x-spinner';
-import { GenericErrorCallout } from '@/app/components/generic-error';
+import { DeleteExperimentButton } from '@/app/components/features/experiments/delete-experiment-button';
+import { XSpinner } from '@/app/components/ui/x-spinner';
+import { GenericErrorCallout } from '@/app/components/ui/generic-error';
 import { useEffect, useState } from 'react';
-import { DatasourceSelector } from '@/app/experiments/datasource-selector';
-import { ExperimentStatusBadge } from '@/app/experiments/experiment-status-badge';
-import { ExperimentTypeBadge } from '@/app/experiments/experiment-type-badge';
+import { DatasourceSelector } from '@/app/components/features/datasources/datasource-selector';
+import { ExperimentStatusBadge } from '@/app/components/features/experiments/experiment-status-badge';
+import { ExperimentTypeBadge } from '@/app/components/features/experiments/experiment-type-badge';
 import { useCurrentOrganization } from '@/app/providers/organization-provider';
-import { EmptyStateCard } from '@/app/components/cards/empty-state-card';
+import { EmptyStateCard } from '@/app/components/ui/cards/empty-state-card';
 import { useRouter } from 'next/navigation';
 import { PRODUCT_NAME } from '@/services/constants';
 
@@ -131,7 +131,7 @@ export default function Page() {
       )}
       <Flex justify="between" align="center">
         <Heading>Experiments</Heading>
-        <Link href={`/experiments/create?datasource_id=${selectedDatasource}`}>
+        <Link href={`/datasources/${selectedDatasource}/experiments/create`}>
           <Button disabled={selectedDatasource === ''}>
             <PlusIcon /> Create Experiment
           </Button>
@@ -148,7 +148,7 @@ export default function Page() {
           description="To get started with experiments you'll need to first add a datasource in settings."
           buttonText="Go to Settings"
           buttonIcon={<GearIcon />}
-          onClick={() => router.push(`/organizationdetails?id=${currentOrgId}`)}
+          onClick={() => router.push(`/organizations/${currentOrgId}`)}
         />
       ) : (
         experimentsData !== undefined && (
@@ -159,7 +159,7 @@ export default function Page() {
                 description="Get started by creating your first experiment."
                 buttonText="Create Experiment"
                 buttonIcon={<PlusIcon />}
-                onClick={() => router.push(`/experiments/create?datasource_id=${selectedDatasource}`)}
+                onClick={() => router.push(`/datasources/${selectedDatasource}/experiments/create`)}
               />
             ) : (
               <Table.Root>
@@ -180,7 +180,7 @@ export default function Page() {
                   {experimentsData.items.map((experiment) => (
                     <Table.Row key={experiment.design_spec.experiment_id}>
                       <Table.Cell>{experiment.design_spec.experiment_name}</Table.Cell>
-                      <Table.Cell>{experiment.audience_spec.participant_type}</Table.Cell>
+                      <Table.Cell>{experiment.design_spec.participant_type}</Table.Cell>
                       <Table.Cell>
                         <ExperimentTypeBadge type={experiment.design_spec.experiment_type} />
                       </Table.Cell>
@@ -194,7 +194,7 @@ export default function Page() {
                         <Flex direction={'row'} gap={'2'}>
                           <Button variant="soft" size="1" asChild>
                             <Link
-                              href={`/experiments/view/${experiment.design_spec.experiment_id}?datasource_id=${selectedDatasource}`}
+                              href={`/datasources/${selectedDatasource}/experiments/${experiment.design_spec.experiment_id}`}
                             >
                               View
                             </Link>
