@@ -1,16 +1,16 @@
 'use client';
 import { Callout, Flex, Heading, Text } from '@radix-ui/themes';
-import { XSpinner } from '../../components/x-spinner';
+import { XSpinner } from '../../components/ui/x-spinner';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
-import { ApiKeysSection } from '../api-keys-section';
+import { ApiKeysSection } from '@/app/components/features/datasources/api-keys-section';
 import { useGetDatasource, useInspectDatasource } from '@/api/admin';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { EditDatasourceDialog } from '@/app/organizationdetails/edit-datasource-dialog';
-import { ParticipantTypesSection } from '@/app/datasources/[datasourceId]/participants/participant-types-section';
+import { EditDatasourceDialog } from '@/app/components/features/datasources/edit-datasource-dialog';
+import { ParticipantTypesSection } from '@/app/components/features/participants/participant-types-section';
 import { useCurrentOrganization } from '@/app/providers/organization-provider';
 import { useEffect, useState } from 'react';
-import { GenericErrorCallout } from '@/app/components/generic-error';
+import { GenericErrorCallout } from '@/app/components/ui/generic-error';
 
 export default function Page() {
   const params = useParams();
@@ -112,7 +112,7 @@ export default function Page() {
     <Flex direction="column" gap="3">
       <Heading>Datasource Details: {datasourceName}</Heading>
       <Text>
-        Back to: <Link href={`/organizationdetails?id=${organizationId}`}>{organizationName}</Link>
+        Back to: <Link href={`/organizations/${organizationId}`}>{organizationName}</Link>
       </Text>
       <Flex gap="3">{editDatasourceDialogComponent}</Flex>
       {

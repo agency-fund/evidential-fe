@@ -1,4 +1,4 @@
-import { ExperimentFormData } from '@/app/experiments/create/page';
+import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
 import { CreateExperimentRequest, DesignSpecMetricRequest } from '@/api/methods.schemas';
 import { createExperimentBody } from '@/api/admin.zod';
 

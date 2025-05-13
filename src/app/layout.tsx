@@ -7,8 +7,8 @@ import { OrganizationProvider } from './providers/organization-provider';
 import GoogleAuthProvider from '@/app/providers/auth-provider';
 import OurSwrConfig from '@/app/providers/our-swr-config';
 import { Suspense } from 'react';
-import { NavigationBar } from '@/app/components/nav/navigation-curtain';
-import { HeaderBar } from '@/app/components/header/header-bar';
+import { NavigationBar } from '@/app/components/layout/nav/navigation-curtain';
+import { HeaderBar } from '@/app/components/layout/header/header-bar';
 import * as Toast from '@radix-ui/react-toast';
 import RequireLogin from '@/app/components/require-login';
 

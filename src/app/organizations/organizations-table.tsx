@@ -2,8 +2,8 @@
 import { OrganizationSummary } from '@/api/methods.schemas';
 import { Flex, Table } from '@radix-ui/themes';
 import Link from 'next/link';
-import { AddUserDialog } from '@/app/organizationdetails/add-user-dialog';
-import { AddDatasourceDialog } from '@/app/organizationdetails/add-datasource-dialog';
+import { AddUserDialog } from '@/app/organizations/add-user-dialog';
+import { AddDatasourceDialog } from '@/app/components/features/datasources/add-datasource-dialog';
 
 export function OrganizationsTable({ organizations }: { organizations: OrganizationSummary[] }) {
   return (
@@ -18,7 +18,7 @@ export function OrganizationsTable({ organizations }: { organizations: Organizat
         {organizations.map((item) => (
           <Table.Row key={item.id}>
             <Table.Cell>
-              <Link href={`/organizationdetails?id=${item.id}`}>{item.name}</Link>
+              <Link href={`/organizations/${item.id}`}>{item.name}</Link>
             </Table.Cell>
             <Table.Cell>
               <Flex gap="2">
