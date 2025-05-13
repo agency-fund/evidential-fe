@@ -8,8 +8,8 @@ import { ChevronLeftIcon, GearIcon, HamburgerMenuIcon, LightningBoltIcon } from 
 import { useState } from 'react';
 import * as NavigationMenu from '@radix-ui/react-navigation-menu';
 import { NavLink } from '@/components/layout/nav/nav-link';
-import { MotionBox, MotionNav } from '@/lib/utils/motion/motion-utils';
-import { transitions } from '@/lib/utils/motion/motion-tokens';
+import { MotionBox, MotionNav } from '@/services/motion/motion-utils';
+import { transitions } from '@/services/motion/motion-tokens';
 
 export const NavigationBar = () => {
   const [isOpen, setIsOpen] = useState(false);

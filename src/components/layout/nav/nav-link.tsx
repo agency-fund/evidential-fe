@@ -5,8 +5,8 @@ import { Flex, Text, Tooltip } from '@radix-ui/themes';
 import * as NavigationMenu from '@radix-ui/react-navigation-menu';
 import { AnimatePresence } from 'motion/react';
 import { AccessibleIcon } from '@radix-ui/react-accessible-icon';
-import { MotionBox } from '@/lib/utils/motion/motion-utils';
-import { transitions } from '@/lib/utils/motion/motion-tokens';
+import { MotionBox } from '@/services/motion/motion-utils';
+import { transitions } from '@/services/motion/motion-tokens';
 
 export interface NavLinkProps {
   href: string;
