@@ -13,7 +13,7 @@ import * as Toast from '@radix-ui/react-toast';
 import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import Link from 'next/link';
-
+import { ReadMoreText } from '@/components/ui/read-more-text';
 export default function ExperimentViewPage() {
   const [openToast, setOpenToast] = useState(false);
   const params = useParams();
@@ -57,12 +57,6 @@ export default function ExperimentViewPage() {
   const { design_spec, state, assign_summary } = experiment;
   const { experiment_name, description, start_date, end_date, arms } = design_spec;
 
-  // Format dates for display
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  };
-
   return (
     <Flex direction="column" gap="4">
       <Flex align="center" gap="2" justify="between">
@@ -92,9 +86,7 @@ export default function ExperimentViewPage() {
       <Card>
         <Heading size="3">Hypothesis</Heading>
         <Separator my="3" size="4" />
-        <Text color="gray" size="3" style={{ whiteSpace: 'pre-wrap' }}>
-          {description}
-        </Text>
+        <ReadMoreText text={description} />
       </Card>
 
       <Grid columns="2" gap="4">
@@ -106,11 +98,11 @@ export default function ExperimentViewPage() {
             <Table.Body>
               <Table.Row>
                 <Table.RowHeaderCell>Start Date</Table.RowHeaderCell>
-                <Table.Cell>{formatDate(start_date)}</Table.Cell>
+                <Table.Cell>{new Date(start_date).toLocaleDateString()}</Table.Cell>
               </Table.Row>
               <Table.Row>
                 <Table.RowHeaderCell>End Date</Table.RowHeaderCell>
-                <Table.Cell>{formatDate(end_date)}</Table.Cell>
+                <Table.Cell>{new Date(end_date).toLocaleDateString()}</Table.Cell>
               </Table.Row>
             </Table.Body>
           </Table.Root>

@@ -15,7 +15,7 @@ import { useCurrentOrganization } from '@/providers/organization-provider';
 import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
 import { useRouter } from 'next/navigation';
 import { PRODUCT_NAME } from '@/services/constants';
-
+import { ReadMoreText } from '@/components/ui/read-more-text';
 export default function Page() {
   const router = useRouter();
   // Get the current organization from context
@@ -187,9 +187,11 @@ export default function Page() {
                       <Table.Cell>
                         <ExperimentStatusBadge status={experiment.state} />
                       </Table.Cell>
-                      <Table.Cell>{experiment.design_spec.start_date}</Table.Cell>
-                      <Table.Cell>{experiment.design_spec.end_date}</Table.Cell>
-                      <Table.Cell>{experiment.design_spec.description}</Table.Cell>
+                      <Table.Cell>{new Date(experiment.design_spec.start_date).toLocaleDateString()}</Table.Cell>
+                      <Table.Cell>{new Date(experiment.design_spec.end_date).toLocaleDateString()}</Table.Cell>
+                      <Table.Cell>
+                        <ReadMoreText text={experiment.design_spec.description} />
+                      </Table.Cell>
                       <Table.Cell>
                         <Flex direction={'row'} gap={'2'}>
                           <Button variant="soft" size="1" asChild>
