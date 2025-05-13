@@ -1,6 +1,6 @@
 'use client';
 import { Button, Callout, Card, Flex, Heading, Table, Text } from '@radix-ui/themes';
-import { ExperimentFormData } from '../../../datasources/[datasourceId]/experiments/create/page';
+import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
 import { useRouter } from 'next/navigation';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useAbandonExperiment, useCommitExperiment } from '@/api/admin';

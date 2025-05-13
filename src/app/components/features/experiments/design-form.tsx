@@ -9,7 +9,7 @@ import { convertFormDataToCreateExperimentRequest } from '@/app/datasources/[dat
 import { FilterBuilder } from '@/app/components/querybuilder/filter-builder';
 import { GenericErrorCallout } from '@/app/components/ui/generic-error';
 import { PRODUCT_NAME } from '@/services/constants';
-import { MetricBuilder } from './metric-builder';
+import { MetricBuilder } from '@/app/components/features/experiments/metric-builder';
 
 interface DesignFormProps {
   formData: ExperimentFormData;

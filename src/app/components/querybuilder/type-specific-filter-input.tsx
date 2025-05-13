@@ -2,10 +2,10 @@
 
 import { Text } from '@radix-ui/themes';
 import { AudienceSpecFilter, DataType } from '@/api/methods.schemas';
-import { BooleanFilterInput } from './boolean-filter-input';
-import { StringFilterInput } from './string-filter-input';
-import { NumericFilterInput } from './numeric-filter-input';
-import { DateFilterInput } from './date-filter-input';
+import { BooleanFilterInput } from '@/app/components/querybuilder/boolean-filter-input';
+import { StringFilterInput } from '@/app/components/querybuilder/string-filter-input';
+import { NumericFilterInput } from '@/app/components/querybuilder/numeric-filter-input';
+import { DateFilterInput } from '@/app/components/querybuilder/date-filter-input';
 import { TypedFilter } from '@/app/components/querybuilder/utils';
 
 export interface TypeSpecificFilterInputProps {

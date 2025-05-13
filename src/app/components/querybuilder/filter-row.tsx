@@ -3,8 +3,8 @@
 import { Badge, Flex, Grid, IconButton, Select, Text } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
 import { AudienceSpecFilter, DataType } from '@/api/methods.schemas';
-import { TypeSpecificFilterInput } from './type-specific-filter-input';
-import { getDefaultFilterForType } from './utils';
+import { TypeSpecificFilterInput } from '@/app/components/querybuilder/type-specific-filter-input';
+import { getDefaultFilterForType } from '@/app/components/querybuilder/utils';
 
 export interface FilterRowProps {
   filter: AudienceSpecFilter;

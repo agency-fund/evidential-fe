@@ -13,7 +13,7 @@ import {
   TextArea,
   TextField,
 } from '@radix-ui/themes';
-import { ExperimentFormData } from '../../../datasources/[datasourceId]/experiments/create/page';
+import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 import { useListParticipantTypes } from '@/api/admin';

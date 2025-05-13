@@ -1,4 +1,4 @@
-import { ExperimentFormData } from '@/app/experiments/create/page';
+import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
 import { Heading, Table } from '@radix-ui/themes';
 
 export function ParametersSummaryTable({ formData }: { formData: ExperimentFormData }) {

@@ -3,7 +3,7 @@
 import { Button, Flex } from '@radix-ui/themes';
 import { PlusIcon } from '@radix-ui/react-icons';
 import { AudienceSpecFilter, DataType } from '@/api/methods.schemas';
-import { FilterRow } from './filter-row';
+import { FilterRow } from '@/app/components/querybuilder/filter-row';
 import React from 'react';
 
 export interface FilterBuilderProps {
