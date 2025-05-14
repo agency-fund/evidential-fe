@@ -9,7 +9,6 @@ import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { useEffect, useState } from 'react';
 import { DatasourceSelector } from '@/components/features/datasources/datasource-selector';
-import { ExperimentStatusBadge } from '@/components/features/experiments/experiment-status-badge';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
@@ -42,6 +41,10 @@ export default function Page() {
   } = useListExperiments(selectedDatasource!, {
     swr: { enabled: selectedDatasource !== '' },
   });
+
+  const filteredExperiments = experimentsData
+    ? experimentsData.items.filter((experiment) => experiment.state === 'committed')
+    : [];
 
   // State for analysis results
   const [analysisResults, setAnalysisResults] = useState<string>('');
@@ -153,7 +156,7 @@ export default function Page() {
       ) : (
         experimentsData !== undefined && (
           <Flex direction="column" gap="3">
-            {experimentsData.items.length === 0 ? (
+            {filteredExperiments.length === 0 ? (
               <EmptyStateCard
                 title="Create your first experiment"
                 description="Get started by creating your first experiment."
@@ -168,7 +171,6 @@ export default function Page() {
                     <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Participants</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Start Date</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>End Date</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell width="30%">Hypothesis</Table.ColumnHeaderCell>
@@ -177,15 +179,12 @@ export default function Page() {
                 </Table.Header>
 
                 <Table.Body>
-                  {experimentsData.items.map((experiment) => (
+                  {filteredExperiments.map((experiment) => (
                     <Table.Row key={experiment.design_spec.experiment_id}>
                       <Table.Cell>{experiment.design_spec.experiment_name}</Table.Cell>
                       <Table.Cell>{experiment.design_spec.participant_type}</Table.Cell>
                       <Table.Cell>
                         <ExperimentTypeBadge type={experiment.design_spec.experiment_type} />
-                      </Table.Cell>
-                      <Table.Cell>
-                        <ExperimentStatusBadge status={experiment.state} />
                       </Table.Cell>
                       <Table.Cell>{new Date(experiment.design_spec.start_date).toLocaleDateString()}</Table.Cell>
                       <Table.Cell>{new Date(experiment.design_spec.end_date).toLocaleDateString()}</Table.Cell>
