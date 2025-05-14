@@ -28,11 +28,14 @@ env:
 tasks:
   nodedeps:
     cmd: |
+      command -v node >/dev/null 2>&1 || error "Node.js is not installed or not in PATH. Tip: install nvm and run 'nvm use'."
       CURRENT_NODE_VERSION=$(node --version | sed 's/v//')
-      REQUIRED_NODE_VERSION=$(cat .nvmrc)
-      if [ "$CURRENT_NODE_VERSION" != "$REQUIRED_NODE_VERSION" ]; then
+      REQUIRED_NODE_VERSION=$(sed 's/v//' .nvmrc)
+      echo Current node version: "${CURRENT_NODE_VERSION}"
+      echo Desired node version: "${REQUIRED_NODE_VERSION}"
+      if ! [[ "${CURRENT_NODE_VERSION}" =~ ^${REQUIRED_NODE_VERSION} ]]; then
         echo "Error: node --version of $CURRENT_NODE_VERSION does not match required version $REQUIRED_NODE_VERSION from .nvmrc"
-        echo "Tip: Use 'nvm use' to switch to the correct version"
+        echo "Tip: Use 'nvm use' to switch to the correct version."
         exit 1
       fi
       npm install
