@@ -42,6 +42,10 @@ export default function Page() {
     swr: { enabled: selectedDatasource !== '' },
   });
 
+  const filteredExperiments = experimentsData
+    ? experimentsData.items.filter((experiment) => experiment.state === 'committed')
+    : [];
+
   // State for analysis results
   const [analysisResults, setAnalysisResults] = useState<string>('');
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
@@ -152,7 +156,7 @@ export default function Page() {
       ) : (
         experimentsData !== undefined && (
           <Flex direction="column" gap="3">
-            {experimentsData.items.length === 0 ? (
+            {filteredExperiments.length === 0 ? (
               <EmptyStateCard
                 title="Create your first experiment"
                 description="Get started by creating your first experiment."
@@ -175,50 +179,48 @@ export default function Page() {
                 </Table.Header>
 
                 <Table.Body>
-                  {experimentsData.items
-                    .filter((experiment) => experiment.state === 'committed')
-                    .map((experiment) => (
-                      <Table.Row key={experiment.design_spec.experiment_id}>
-                        <Table.Cell>{experiment.design_spec.experiment_name}</Table.Cell>
-                        <Table.Cell>{experiment.design_spec.participant_type}</Table.Cell>
-                        <Table.Cell>
-                          <ExperimentTypeBadge type={experiment.design_spec.experiment_type} />
-                        </Table.Cell>
-                        <Table.Cell>{new Date(experiment.design_spec.start_date).toLocaleDateString()}</Table.Cell>
-                        <Table.Cell>{new Date(experiment.design_spec.end_date).toLocaleDateString()}</Table.Cell>
-                        <Table.Cell>
-                          <ReadMoreText text={experiment.design_spec.description} />
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Flex direction={'row'} gap={'2'}>
-                            <Button variant="soft" size="1" asChild>
-                              <Link
-                                href={`/datasources/${selectedDatasource}/experiments/${experiment.design_spec.experiment_id}`}
-                              >
-                                View
-                              </Link>
-                            </Button>
-                            <DownloadAssignmentsCsvButton
-                              datasourceId={selectedDatasource}
-                              experimentId={experiment.design_spec.experiment_id!}
-                            />
-                            <DeleteExperimentButton
-                              datasourceId={selectedDatasource}
-                              experimentId={experiment.design_spec.experiment_id!}
-                            />
-                            <Button
-                              color="green"
-                              variant="soft"
-                              size="1"
-                              onClick={() => handlePeekClick(experiment.design_spec.experiment_id!)}
-                              disabled={isAnalyzing}
+                  {filteredExperiments.map((experiment) => (
+                    <Table.Row key={experiment.design_spec.experiment_id}>
+                      <Table.Cell>{experiment.design_spec.experiment_name}</Table.Cell>
+                      <Table.Cell>{experiment.design_spec.participant_type}</Table.Cell>
+                      <Table.Cell>
+                        <ExperimentTypeBadge type={experiment.design_spec.experiment_type} />
+                      </Table.Cell>
+                      <Table.Cell>{new Date(experiment.design_spec.start_date).toLocaleDateString()}</Table.Cell>
+                      <Table.Cell>{new Date(experiment.design_spec.end_date).toLocaleDateString()}</Table.Cell>
+                      <Table.Cell>
+                        <ReadMoreText text={experiment.design_spec.description} />
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Flex direction={'row'} gap={'2'}>
+                          <Button variant="soft" size="1" asChild>
+                            <Link
+                              href={`/datasources/${selectedDatasource}/experiments/${experiment.design_spec.experiment_id}`}
                             >
-                              {isAnalyzing ? 'Analyzing...' : 'Peek'}
-                            </Button>
-                          </Flex>
-                        </Table.Cell>
-                      </Table.Row>
-                    ))}
+                              View
+                            </Link>
+                          </Button>
+                          <DownloadAssignmentsCsvButton
+                            datasourceId={selectedDatasource}
+                            experimentId={experiment.design_spec.experiment_id!}
+                          />
+                          <DeleteExperimentButton
+                            datasourceId={selectedDatasource}
+                            experimentId={experiment.design_spec.experiment_id!}
+                          />
+                          <Button
+                            color="green"
+                            variant="soft"
+                            size="1"
+                            onClick={() => handlePeekClick(experiment.design_spec.experiment_id!)}
+                            disabled={isAnalyzing}
+                          >
+                            {isAnalyzing ? 'Analyzing...' : 'Peek'}
+                          </Button>
+                        </Flex>
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
                 </Table.Body>
               </Table.Root>
             )}
