@@ -1620,9 +1620,9 @@ export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOne = 2000;
 export const createExperimentBodyDesignSpecArmsMin = 2;
 
 export const createExperimentBodyDesignSpecArmsMax = 10;
-export const createExperimentBodyDesignSpecStrataFieldNamesItemRegExp =
+export const createExperimentBodyDesignSpecStrataItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentBodyDesignSpecStrataFieldNamesMax = 150;
+export const createExperimentBodyDesignSpecStrataMax = 150;
 export const createExperimentBodyDesignSpecMetricsItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyDesignSpecMetricsMax = 150;
@@ -1649,9 +1649,9 @@ export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxFour = 2000;
 export const createExperimentBodyDesignSpecArmsMinOne = 2;
 
 export const createExperimentBodyDesignSpecArmsMaxOne = 10;
-export const createExperimentBodyDesignSpecStrataFieldNamesItemRegExpOne =
+export const createExperimentBodyDesignSpecStrataItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentBodyDesignSpecStrataFieldNamesMaxOne = 150;
+export const createExperimentBodyDesignSpecStrataMaxOne = 150;
 export const createExperimentBodyDesignSpecMetricsItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyDesignSpecMetricsMaxOne = 150;
@@ -1723,15 +1723,21 @@ export const createExperimentBody = zod.object({
 					)
 					.min(createExperimentBodyDesignSpecArmsMin)
 					.max(createExperimentBodyDesignSpecArmsMax),
-				strata_field_names: zod
+				strata: zod
 					.array(
 						zod
-							.string()
-							.regex(createExperimentBodyDesignSpecStrataFieldNamesItemRegExp),
+							.object({
+								field_name: zod
+									.string()
+									.regex(
+										createExperimentBodyDesignSpecStrataItemFieldNameRegExp,
+									),
+							})
+							.describe("Describes a variable used for stratification."),
 					)
-					.max(createExperimentBodyDesignSpecStrataFieldNamesMax)
+					.max(createExperimentBodyDesignSpecStrataMax)
 					.describe(
-						"List of participant_type variables to use for stratification.",
+						"Optional participant_type fields to use for stratified assignment.",
 					),
 				metrics: zod
 					.array(
@@ -1788,7 +1794,10 @@ export const createExperimentBody = zod.object({
 								'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 							),
 					)
-					.max(createExperimentBodyDesignSpecFiltersMax),
+					.max(createExperimentBodyDesignSpecFiltersMax)
+					.describe(
+						"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+					),
 				power: zod
 					.number()
 					.min(createExperimentBodyDesignSpecPowerMin)
@@ -1864,17 +1873,21 @@ export const createExperimentBody = zod.object({
 					)
 					.min(createExperimentBodyDesignSpecArmsMinOne)
 					.max(createExperimentBodyDesignSpecArmsMaxOne),
-				strata_field_names: zod
+				strata: zod
 					.array(
 						zod
-							.string()
-							.regex(
-								createExperimentBodyDesignSpecStrataFieldNamesItemRegExpOne,
-							),
+							.object({
+								field_name: zod
+									.string()
+									.regex(
+										createExperimentBodyDesignSpecStrataItemFieldNameRegExpOne,
+									),
+							})
+							.describe("Describes a variable used for stratification."),
 					)
-					.max(createExperimentBodyDesignSpecStrataFieldNamesMaxOne)
+					.max(createExperimentBodyDesignSpecStrataMaxOne)
 					.describe(
-						"List of participant_type variables to use for stratification.",
+						"Optional participant_type fields to use for stratified assignment.",
 					),
 				metrics: zod
 					.array(
@@ -1931,7 +1944,10 @@ export const createExperimentBody = zod.object({
 								'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 							),
 					)
-					.max(createExperimentBodyDesignSpecFiltersMaxOne),
+					.max(createExperimentBodyDesignSpecFiltersMaxOne)
+					.describe(
+						"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+					),
 				power: zod
 					.number()
 					.min(createExperimentBodyDesignSpecPowerMinOne)
@@ -2100,9 +2116,9 @@ export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOne = 20
 export const createExperimentResponseDesignSpecArmsMin = 2;
 
 export const createExperimentResponseDesignSpecArmsMax = 10;
-export const createExperimentResponseDesignSpecStrataFieldNamesItemRegExp =
+export const createExperimentResponseDesignSpecStrataItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentResponseDesignSpecStrataFieldNamesMax = 150;
+export const createExperimentResponseDesignSpecStrataMax = 150;
 export const createExperimentResponseDesignSpecMetricsItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentResponseDesignSpecMetricsMax = 150;
@@ -2129,9 +2145,9 @@ export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxFour = 2
 export const createExperimentResponseDesignSpecArmsMinOne = 2;
 
 export const createExperimentResponseDesignSpecArmsMaxOne = 10;
-export const createExperimentResponseDesignSpecStrataFieldNamesItemRegExpOne =
+export const createExperimentResponseDesignSpecStrataItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentResponseDesignSpecStrataFieldNamesMaxOne = 150;
+export const createExperimentResponseDesignSpecStrataMaxOne = 150;
 export const createExperimentResponseDesignSpecMetricsItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentResponseDesignSpecMetricsMaxOne = 150;
@@ -2214,17 +2230,21 @@ export const createExperimentResponse = zod
 						)
 						.min(createExperimentResponseDesignSpecArmsMin)
 						.max(createExperimentResponseDesignSpecArmsMax),
-					strata_field_names: zod
+					strata: zod
 						.array(
 							zod
-								.string()
-								.regex(
-									createExperimentResponseDesignSpecStrataFieldNamesItemRegExp,
-								),
+								.object({
+									field_name: zod
+										.string()
+										.regex(
+											createExperimentResponseDesignSpecStrataItemFieldNameRegExp,
+										),
+								})
+								.describe("Describes a variable used for stratification."),
 						)
-						.max(createExperimentResponseDesignSpecStrataFieldNamesMax)
+						.max(createExperimentResponseDesignSpecStrataMax)
 						.describe(
-							"List of participant_type variables to use for stratification.",
+							"Optional participant_type fields to use for stratified assignment.",
 						),
 					metrics: zod
 						.array(
@@ -2281,7 +2301,10 @@ export const createExperimentResponse = zod
 									'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 								),
 						)
-						.max(createExperimentResponseDesignSpecFiltersMax),
+						.max(createExperimentResponseDesignSpecFiltersMax)
+						.describe(
+							"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+						),
 					power: zod
 						.number()
 						.min(createExperimentResponseDesignSpecPowerMin)
@@ -2359,17 +2382,21 @@ export const createExperimentResponse = zod
 						)
 						.min(createExperimentResponseDesignSpecArmsMinOne)
 						.max(createExperimentResponseDesignSpecArmsMaxOne),
-					strata_field_names: zod
+					strata: zod
 						.array(
 							zod
-								.string()
-								.regex(
-									createExperimentResponseDesignSpecStrataFieldNamesItemRegExpOne,
-								),
+								.object({
+									field_name: zod
+										.string()
+										.regex(
+											createExperimentResponseDesignSpecStrataItemFieldNameRegExpOne,
+										),
+								})
+								.describe("Describes a variable used for stratification."),
 						)
-						.max(createExperimentResponseDesignSpecStrataFieldNamesMaxOne)
+						.max(createExperimentResponseDesignSpecStrataMaxOne)
 						.describe(
-							"List of participant_type variables to use for stratification.",
+							"Optional participant_type fields to use for stratified assignment.",
 						),
 					metrics: zod
 						.array(
@@ -2426,7 +2453,10 @@ export const createExperimentResponse = zod
 									'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 								),
 						)
-						.max(createExperimentResponseDesignSpecFiltersMaxOne),
+						.max(createExperimentResponseDesignSpecFiltersMaxOne)
+						.describe(
+							"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+						),
 					power: zod
 						.number()
 						.min(createExperimentResponseDesignSpecPowerMinOne)
@@ -2687,9 +2717,9 @@ export const listExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMax
 export const listExperimentsResponseItemsItemDesignSpecArmsMin = 2;
 
 export const listExperimentsResponseItemsItemDesignSpecArmsMax = 10;
-export const listExperimentsResponseItemsItemDesignSpecStrataFieldNamesItemRegExp =
+export const listExperimentsResponseItemsItemDesignSpecStrataItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const listExperimentsResponseItemsItemDesignSpecStrataFieldNamesMax = 150;
+export const listExperimentsResponseItemsItemDesignSpecStrataMax = 150;
 export const listExperimentsResponseItemsItemDesignSpecMetricsItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const listExperimentsResponseItemsItemDesignSpecMetricsMax = 150;
@@ -2716,9 +2746,9 @@ export const listExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMax
 export const listExperimentsResponseItemsItemDesignSpecArmsMinOne = 2;
 
 export const listExperimentsResponseItemsItemDesignSpecArmsMaxOne = 10;
-export const listExperimentsResponseItemsItemDesignSpecStrataFieldNamesItemRegExpOne =
+export const listExperimentsResponseItemsItemDesignSpecStrataItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const listExperimentsResponseItemsItemDesignSpecStrataFieldNamesMaxOne = 150;
+export const listExperimentsResponseItemsItemDesignSpecStrataMaxOne = 150;
 export const listExperimentsResponseItemsItemDesignSpecMetricsItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const listExperimentsResponseItemsItemDesignSpecMetricsMaxOne = 150;
@@ -2809,19 +2839,21 @@ export const listExperimentsResponse = zod.object({
 								)
 								.min(listExperimentsResponseItemsItemDesignSpecArmsMin)
 								.max(listExperimentsResponseItemsItemDesignSpecArmsMax),
-							strata_field_names: zod
+							strata: zod
 								.array(
 									zod
-										.string()
-										.regex(
-											listExperimentsResponseItemsItemDesignSpecStrataFieldNamesItemRegExp,
-										),
+										.object({
+											field_name: zod
+												.string()
+												.regex(
+													listExperimentsResponseItemsItemDesignSpecStrataItemFieldNameRegExp,
+												),
+										})
+										.describe("Describes a variable used for stratification."),
 								)
-								.max(
-									listExperimentsResponseItemsItemDesignSpecStrataFieldNamesMax,
-								)
+								.max(listExperimentsResponseItemsItemDesignSpecStrataMax)
 								.describe(
-									"List of participant_type variables to use for stratification.",
+									"Optional participant_type fields to use for stratified assignment.",
 								),
 							metrics: zod
 								.array(
@@ -2878,7 +2910,10 @@ export const listExperimentsResponse = zod.object({
 											'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 										),
 								)
-								.max(listExperimentsResponseItemsItemDesignSpecFiltersMax),
+								.max(listExperimentsResponseItemsItemDesignSpecFiltersMax)
+								.describe(
+									"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+								),
 							power: zod
 								.number()
 								.min(listExperimentsResponseItemsItemDesignSpecPowerMin)
@@ -2964,19 +2999,21 @@ export const listExperimentsResponse = zod.object({
 								)
 								.min(listExperimentsResponseItemsItemDesignSpecArmsMinOne)
 								.max(listExperimentsResponseItemsItemDesignSpecArmsMaxOne),
-							strata_field_names: zod
+							strata: zod
 								.array(
 									zod
-										.string()
-										.regex(
-											listExperimentsResponseItemsItemDesignSpecStrataFieldNamesItemRegExpOne,
-										),
+										.object({
+											field_name: zod
+												.string()
+												.regex(
+													listExperimentsResponseItemsItemDesignSpecStrataItemFieldNameRegExpOne,
+												),
+										})
+										.describe("Describes a variable used for stratification."),
 								)
-								.max(
-									listExperimentsResponseItemsItemDesignSpecStrataFieldNamesMaxOne,
-								)
+								.max(listExperimentsResponseItemsItemDesignSpecStrataMaxOne)
 								.describe(
-									"List of participant_type variables to use for stratification.",
+									"Optional participant_type fields to use for stratified assignment.",
 								),
 							metrics: zod
 								.array(
@@ -3033,7 +3070,10 @@ export const listExperimentsResponse = zod.object({
 											'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 										),
 								)
-								.max(listExperimentsResponseItemsItemDesignSpecFiltersMaxOne),
+								.max(listExperimentsResponseItemsItemDesignSpecFiltersMaxOne)
+								.describe(
+									"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+								),
 							power: zod
 								.number()
 								.min(listExperimentsResponseItemsItemDesignSpecPowerMinOne)
@@ -3454,9 +3494,9 @@ export const getExperimentResponseDesignSpecArmsItemArmDescriptionMaxOne = 2000;
 export const getExperimentResponseDesignSpecArmsMin = 2;
 
 export const getExperimentResponseDesignSpecArmsMax = 10;
-export const getExperimentResponseDesignSpecStrataFieldNamesItemRegExp =
+export const getExperimentResponseDesignSpecStrataItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const getExperimentResponseDesignSpecStrataFieldNamesMax = 150;
+export const getExperimentResponseDesignSpecStrataMax = 150;
 export const getExperimentResponseDesignSpecMetricsItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentResponseDesignSpecMetricsMax = 150;
@@ -3483,9 +3523,9 @@ export const getExperimentResponseDesignSpecArmsItemArmDescriptionMaxFour = 2000
 export const getExperimentResponseDesignSpecArmsMinOne = 2;
 
 export const getExperimentResponseDesignSpecArmsMaxOne = 10;
-export const getExperimentResponseDesignSpecStrataFieldNamesItemRegExpOne =
+export const getExperimentResponseDesignSpecStrataItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const getExperimentResponseDesignSpecStrataFieldNamesMaxOne = 150;
+export const getExperimentResponseDesignSpecStrataMaxOne = 150;
 export const getExperimentResponseDesignSpecMetricsItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentResponseDesignSpecMetricsMaxOne = 150;
@@ -3568,17 +3608,21 @@ export const getExperimentResponse = zod
 						)
 						.min(getExperimentResponseDesignSpecArmsMin)
 						.max(getExperimentResponseDesignSpecArmsMax),
-					strata_field_names: zod
+					strata: zod
 						.array(
 							zod
-								.string()
-								.regex(
-									getExperimentResponseDesignSpecStrataFieldNamesItemRegExp,
-								),
+								.object({
+									field_name: zod
+										.string()
+										.regex(
+											getExperimentResponseDesignSpecStrataItemFieldNameRegExp,
+										),
+								})
+								.describe("Describes a variable used for stratification."),
 						)
-						.max(getExperimentResponseDesignSpecStrataFieldNamesMax)
+						.max(getExperimentResponseDesignSpecStrataMax)
 						.describe(
-							"List of participant_type variables to use for stratification.",
+							"Optional participant_type fields to use for stratified assignment.",
 						),
 					metrics: zod
 						.array(
@@ -3635,7 +3679,10 @@ export const getExperimentResponse = zod
 									'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 								),
 						)
-						.max(getExperimentResponseDesignSpecFiltersMax),
+						.max(getExperimentResponseDesignSpecFiltersMax)
+						.describe(
+							"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+						),
 					power: zod
 						.number()
 						.min(getExperimentResponseDesignSpecPowerMin)
@@ -3711,17 +3758,21 @@ export const getExperimentResponse = zod
 						)
 						.min(getExperimentResponseDesignSpecArmsMinOne)
 						.max(getExperimentResponseDesignSpecArmsMaxOne),
-					strata_field_names: zod
+					strata: zod
 						.array(
 							zod
-								.string()
-								.regex(
-									getExperimentResponseDesignSpecStrataFieldNamesItemRegExpOne,
-								),
+								.object({
+									field_name: zod
+										.string()
+										.regex(
+											getExperimentResponseDesignSpecStrataItemFieldNameRegExpOne,
+										),
+								})
+								.describe("Describes a variable used for stratification."),
 						)
-						.max(getExperimentResponseDesignSpecStrataFieldNamesMaxOne)
+						.max(getExperimentResponseDesignSpecStrataMaxOne)
 						.describe(
-							"List of participant_type variables to use for stratification.",
+							"Optional participant_type fields to use for stratified assignment.",
 						),
 					metrics: zod
 						.array(
@@ -3778,7 +3829,10 @@ export const getExperimentResponse = zod
 									'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 								),
 						)
-						.max(getExperimentResponseDesignSpecFiltersMaxOne),
+						.max(getExperimentResponseDesignSpecFiltersMaxOne)
+						.describe(
+							"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+						),
 					power: zod
 						.number()
 						.min(getExperimentResponseDesignSpecPowerMinOne)
@@ -4231,10 +4285,10 @@ export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOne = 2000;
 export const powerCheckBodyDesignSpecArmsMin = 2;
 
 export const powerCheckBodyDesignSpecArmsMax = 10;
-export const powerCheckBodyDesignSpecStrataFieldNamesItemRegExp = new RegExp(
+export const powerCheckBodyDesignSpecStrataItemFieldNameRegExp = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
-export const powerCheckBodyDesignSpecStrataFieldNamesMax = 150;
+export const powerCheckBodyDesignSpecStrataMax = 150;
 export const powerCheckBodyDesignSpecMetricsItemFieldNameRegExp = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
@@ -4263,10 +4317,10 @@ export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxFour = 2000;
 export const powerCheckBodyDesignSpecArmsMinOne = 2;
 
 export const powerCheckBodyDesignSpecArmsMaxOne = 10;
-export const powerCheckBodyDesignSpecStrataFieldNamesItemRegExpOne = new RegExp(
+export const powerCheckBodyDesignSpecStrataItemFieldNameRegExpOne = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
-export const powerCheckBodyDesignSpecStrataFieldNamesMaxOne = 150;
+export const powerCheckBodyDesignSpecStrataMaxOne = 150;
 export const powerCheckBodyDesignSpecMetricsItemFieldNameRegExpOne = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
@@ -4333,15 +4387,19 @@ export const powerCheckBody = zod.object({
 					)
 					.min(powerCheckBodyDesignSpecArmsMin)
 					.max(powerCheckBodyDesignSpecArmsMax),
-				strata_field_names: zod
+				strata: zod
 					.array(
 						zod
-							.string()
-							.regex(powerCheckBodyDesignSpecStrataFieldNamesItemRegExp),
+							.object({
+								field_name: zod
+									.string()
+									.regex(powerCheckBodyDesignSpecStrataItemFieldNameRegExp),
+							})
+							.describe("Describes a variable used for stratification."),
 					)
-					.max(powerCheckBodyDesignSpecStrataFieldNamesMax)
+					.max(powerCheckBodyDesignSpecStrataMax)
 					.describe(
-						"List of participant_type variables to use for stratification.",
+						"Optional participant_type fields to use for stratified assignment.",
 					),
 				metrics: zod
 					.array(
@@ -4394,7 +4452,10 @@ export const powerCheckBody = zod.object({
 								'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 							),
 					)
-					.max(powerCheckBodyDesignSpecFiltersMax),
+					.max(powerCheckBodyDesignSpecFiltersMax)
+					.describe(
+						"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+					),
 				power: zod
 					.number()
 					.min(powerCheckBodyDesignSpecPowerMin)
@@ -4468,15 +4529,19 @@ export const powerCheckBody = zod.object({
 					)
 					.min(powerCheckBodyDesignSpecArmsMinOne)
 					.max(powerCheckBodyDesignSpecArmsMaxOne),
-				strata_field_names: zod
+				strata: zod
 					.array(
 						zod
-							.string()
-							.regex(powerCheckBodyDesignSpecStrataFieldNamesItemRegExpOne),
+							.object({
+								field_name: zod
+									.string()
+									.regex(powerCheckBodyDesignSpecStrataItemFieldNameRegExpOne),
+							})
+							.describe("Describes a variable used for stratification."),
 					)
-					.max(powerCheckBodyDesignSpecStrataFieldNamesMaxOne)
+					.max(powerCheckBodyDesignSpecStrataMaxOne)
 					.describe(
-						"List of participant_type variables to use for stratification.",
+						"Optional participant_type fields to use for stratified assignment.",
 					),
 				metrics: zod
 					.array(
@@ -4529,7 +4594,10 @@ export const powerCheckBody = zod.object({
 								'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 							),
 					)
-					.max(powerCheckBodyDesignSpecFiltersMaxOne),
+					.max(powerCheckBodyDesignSpecFiltersMaxOne)
+					.describe(
+						"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+					),
 				power: zod
 					.number()
 					.min(powerCheckBodyDesignSpecPowerMinOne)
