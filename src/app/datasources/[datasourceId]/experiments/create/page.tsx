@@ -85,8 +85,9 @@ export default function CreateExperimentPage() {
 
   const handleFormDataChange = (data: ExperimentFormData) => {
     // Determine if we need to invalidate the power check response
-    const filtersChanged =
-      formData.filters.length !== data.filters.length ||
+    if (formData.powerCheckResponse) {
+      const filtersChanged =
+        formData.filters.length !== data.filters.length ||
       formData.filters.some(
         (filter, i) =>
           data.filters[i]?.field_name !== filter.field_name ||
@@ -94,29 +95,30 @@ export default function CreateExperimentPage() {
           JSON.stringify(filter.value) !== JSON.stringify(data.filters[i]?.value),
       );
 
-    const primaryMetricChanged =
-      formData.primaryMetric?.metricName !== data.primaryMetric?.metricName ||
-      formData.primaryMetric?.mde !== data.primaryMetric?.mde;
+      const primaryMetricChanged =
+        formData.primaryMetric?.metricName !== data.primaryMetric?.metricName ||
+        formData.primaryMetric?.mde !== data.primaryMetric?.mde;
 
-    const secondaryMetricsChanged =
-      formData.secondaryMetrics.length !== data.secondaryMetrics.length ||
-      formData.secondaryMetrics.some(
-        (metric, i) =>
-          data.secondaryMetrics[i]?.metricName !== metric.metricName || data.secondaryMetrics[i]?.mde !== metric.mde,
-      );
+      const secondaryMetricsChanged =
+        formData.secondaryMetrics.length !== data.secondaryMetrics.length ||
+        formData.secondaryMetrics.some(
+          (metric, i) =>
+            data.secondaryMetrics[i]?.metricName !== metric.metricName || data.secondaryMetrics[i]?.mde !== metric.mde,
+        );
 
-    const shouldInvalidatePowerCheck =
-      filtersChanged ||
-      primaryMetricChanged ||
-      secondaryMetricsChanged ||
-      formData.confidence !== data.confidence ||
-      formData.power !== data.power;
+      const shouldInvalidatePowerCheck =
+        filtersChanged ||
+        primaryMetricChanged ||
+        secondaryMetricsChanged ||
+        formData.confidence !== data.confidence ||
+        formData.power !== data.power;
 
-    // Only reset if we have a previous power check response and need to invalidate it
-    const newData =
-      shouldInvalidatePowerCheck && formData.powerCheckResponse ? { ...data, powerCheckResponse: undefined } : data;
-
-    setFormData(newData);
+      // Only reset if we have a previous power check response and need to invalidate it
+      const newData = shouldInvalidatePowerCheck ? { ...data, powerCheckResponse: undefined } : data;
+      setFormData(newData);
+    } else {
+      setFormData(data);
+    }
   };
 
   return (

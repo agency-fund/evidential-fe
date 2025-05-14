@@ -1180,17 +1180,20 @@ export interface OnlineExperimentSpecInput {
 	 */
 	arms: Arm[];
 	/**
-	 * List of participant_type variables to use for stratification.
+	 * Optional participant_type fields to use for stratified assignment.
 	 * @maxItems 150
 	 */
-	strata_field_names: string[];
+	strata: Stratum[];
 	/**
 	 * Primary and optional secondary metrics to target.
 	 * @minItems 1
 	 * @maxItems 150
 	 */
 	metrics: DesignSpecMetricRequest[];
-	/** @maxItems 20 */
+	/**
+	 * Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.
+	 * @maxItems 20
+	 */
 	filters: Filter[];
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
@@ -1248,17 +1251,20 @@ export interface OnlineExperimentSpecOutput {
 	 */
 	arms: Arm[];
 	/**
-	 * List of participant_type variables to use for stratification.
+	 * Optional participant_type fields to use for stratified assignment.
 	 * @maxItems 150
 	 */
-	strata_field_names: string[];
+	strata: Stratum[];
 	/**
 	 * Primary and optional secondary metrics to target.
 	 * @minItems 1
 	 * @maxItems 150
 	 */
 	metrics: DesignSpecMetricRequest[];
-	/** @maxItems 20 */
+	/**
+	 * Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.
+	 * @maxItems 20
+	 */
 	filters: Filter[];
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
@@ -1375,17 +1381,20 @@ export interface PreassignedExperimentSpecInput {
 	 */
 	arms: Arm[];
 	/**
-	 * List of participant_type variables to use for stratification.
+	 * Optional participant_type fields to use for stratified assignment.
 	 * @maxItems 150
 	 */
-	strata_field_names: string[];
+	strata: Stratum[];
 	/**
 	 * Primary and optional secondary metrics to target.
 	 * @minItems 1
 	 * @maxItems 150
 	 */
 	metrics: DesignSpecMetricRequest[];
-	/** @maxItems 20 */
+	/**
+	 * Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.
+	 * @maxItems 20
+	 */
 	filters: Filter[];
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
@@ -1441,17 +1450,20 @@ export interface PreassignedExperimentSpecOutput {
 	 */
 	arms: Arm[];
 	/**
-	 * List of participant_type variables to use for stratification.
+	 * Optional participant_type fields to use for stratified assignment.
 	 * @maxItems 150
 	 */
-	strata_field_names: string[];
+	strata: Stratum[];
 	/**
 	 * Primary and optional secondary metrics to target.
 	 * @minItems 1
 	 * @maxItems 150
 	 */
 	metrics: DesignSpecMetricRequest[];
-	/** @maxItems 20 */
+	/**
+	 * Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.
+	 * @maxItems 20
+	 */
 	filters: Filter[];
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
@@ -1526,6 +1538,14 @@ export interface Strata {
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
 	strata_value?: StrataStrataValue;
+}
+
+/**
+ * Describes a variable used for stratification.
+ */
+export interface Stratum {
+	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	field_name: string;
 }
 
 export interface TokenInfo {

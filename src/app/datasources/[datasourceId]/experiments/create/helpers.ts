@@ -52,7 +52,7 @@ export const convertFormDataToCreateExperimentRequest = (formData: ExperimentFor
       description: formData.hypothesis,
       filters: formData.filters,
       metrics: metrics,
-      strata_field_names: [],
+      strata: [], // TODO: https://github.com/agency-fund/xngin-dash/issues/13
       power: Number(formData.power) / 100.0,
       alpha: 1 - Number(formData.confidence) / 100.0,
       experiment_id: null,
