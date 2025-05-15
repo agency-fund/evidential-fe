@@ -1,9 +1,9 @@
 'use client';
-import { Button, Flex, Heading, Table, TextArea } from '@radix-ui/themes';
+import { Button, Flex, Heading, Table } from '@radix-ui/themes';
 import { GearIcon, PlusIcon } from '@radix-ui/react-icons';
 import Link from 'next/link';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
-import { analyzeExperiment, useListExperiments, useListOrganizationDatasources } from '@/api/admin';
+import { useListExperiments, useListOrganizationDatasources } from '@/api/admin';
 import { DeleteExperimentButton } from '@/components/features/experiments/delete-experiment-button';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -46,73 +46,12 @@ export default function Page() {
     ? experimentsData.items.filter((experiment) => experiment.state === 'committed')
     : [];
 
-  // State for analysis results
-  const [analysisResults, setAnalysisResults] = useState<string>('');
-  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
-  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
-
   // Set the selected datasource to the first one in the list when data loads
   useEffect(() => {
     if (datasourcesData && datasourcesData.items.length > 0 && selectedDatasource === '') {
       setSelectedDatasource(datasourcesData.items[0].id);
     }
   }, [datasourcesData, selectedDatasource]);
-
-  // Function to handle the Peek button click
-  const handlePeekClick = async (experimentId: string) => {
-    setIsAnalyzing(true);
-    setAnalyzeError(null);
-    setAnalysisResults(''); // Clear previous results
-
-    // Find the experiment to check its state
-    const experiment = experimentsData
-      ? experimentsData.items.find((exp) => exp.design_spec.experiment_id === experimentId)
-      : undefined;
-
-    if (experiment) {
-      console.log(`Experiment state: ${experiment.state}`);
-
-      // Check if experiment is in a state that can be analyzed
-      if (experiment.state === 'designing') {
-        setAnalyzeError('Cannot analyze experiment in DESIGNING state. The experiment must be running or completed.');
-        setIsAnalyzing(false);
-        return;
-      }
-    }
-
-    try {
-      console.log(`Analyzing experiment: ${experimentId} for datasource: ${selectedDatasource}`);
-      const response = await analyzeExperiment(selectedDatasource, experimentId);
-      console.log('Analysis response:', response);
-
-      if (Array.isArray(response) && response.length === 0) {
-        setAnalyzeError('No analysis results available. The experiment may not have enough data yet.');
-      } else {
-        setAnalysisResults(JSON.stringify(response, null, 2));
-      }
-    } catch (error) {
-      console.error('Analysis error:', error);
-      // Try to extract more detailed error information
-      let errorMessage = error instanceof Error ? error.message : String(error);
-
-      // Check for specific error cases
-      if (errorMessage.includes('500')) {
-        errorMessage = 'Server error (500): The server encountered an internal error. This could be due to:';
-        errorMessage += '\n- Insufficient data for analysis';
-        errorMessage += '\n- Invalid experiment configuration';
-        errorMessage += '\n- Server-side processing issue';
-        errorMessage += '\n\nPlease check that your experiment has collected enough data and try again later.';
-      } else if (errorMessage.includes('no data')) {
-        errorMessage = 'No data available for analysis. The experiment may not have collected enough data yet.';
-      } else if (errorMessage.includes('permission')) {
-        errorMessage = "You don't have permission to analyze this experiment.";
-      }
-
-      setAnalyzeError(`Error: ${errorMessage}`);
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
 
   if (datasourcesError) {
     return <GenericErrorCallout title={'Error with experiments list'} error={datasourcesError} />;
@@ -208,15 +147,6 @@ export default function Page() {
                             datasourceId={selectedDatasource}
                             experimentId={experiment.design_spec.experiment_id!}
                           />
-                          <Button
-                            color="green"
-                            variant="soft"
-                            size="1"
-                            onClick={() => handlePeekClick(experiment.design_spec.experiment_id!)}
-                            disabled={isAnalyzing}
-                          >
-                            {isAnalyzing ? 'Analyzing...' : 'Peek'}
-                          </Button>
                         </Flex>
                       </Table.Cell>
                     </Table.Row>
@@ -225,43 +155,6 @@ export default function Page() {
               </Table.Root>
             )}
 
-            {/* Analysis Results Section */}
-            {isAnalyzing && <XSpinner message="Analyzing experiment..." />}
-            {analyzeError && <GenericErrorCallout title="Analysis Error" message={analyzeError} />}
-            {analysisResults && (
-              <Flex direction="column" gap="2">
-                <Flex justify="between" align="center">
-                  <Heading size="3">Analysis Results</Heading>
-                  <Button
-                    size="1"
-                    variant="soft"
-                    onClick={() => {
-                      navigator.clipboard.writeText(analysisResults);
-                      // Could add a toast notification here if you have a toast component
-                    }}
-                  >
-                    Copy to Clipboard
-                  </Button>
-                </Flex>
-                <TextArea
-                  readOnly
-                  value={analysisResults}
-                  style={{
-                    fontFamily: 'monospace',
-                    height: '400px',
-                    width: '100%',
-                    whiteSpace: 'pre',
-                    overflowX: 'auto',
-                    padding: '12px',
-                    fontSize: '14px',
-                    lineHeight: '1.5',
-                    backgroundColor: '#f5f5f5',
-                    border: '1px solid #e0e0e0',
-                    borderRadius: '4px',
-                  }}
-                />
-              </Flex>
-            )}
           </Flex>
         )
       )}
