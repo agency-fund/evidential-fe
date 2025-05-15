@@ -171,10 +171,11 @@ export default function ExperimentViewPage() {
 
       {/* Analysis Section */}
       <Card>
-        <Heading size="3">Analysis</Heading>
+        <Flex gap="3">
+          <Heading size="3">Analysis</Heading>
+          {isLoadingAnalysis && <XSpinner message="Loading analysis data..." />}
+        </Flex>
         <Separator my="3" size="4" />
-
-        {isLoadingAnalysis && <XSpinner message="Loading analysis data..." />}
 
         {analysisError && (
           <GenericErrorCallout
