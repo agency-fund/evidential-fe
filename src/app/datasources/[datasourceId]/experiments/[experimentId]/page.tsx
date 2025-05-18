@@ -1,7 +1,7 @@
 'use client';
-import { Badge, Button, Card, Flex, Grid, Heading, Separator, Table, Tabs, Text } from '@radix-ui/themes';
+import { Badge, Button, Card, Flex, Grid, Heading, Separator, Table, Tabs, Text, Tooltip } from '@radix-ui/themes';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeftIcon, CodeIcon, PersonIcon } from '@radix-ui/react-icons';
+import { ArrowLeftIcon, CalendarIcon, CodeIcon, InfoCircledIcon, PersonIcon } from '@radix-ui/react-icons';
 import { useAnalyzeExperiment, useGetExperiment } from '@/api/admin';
 import { ForestPlot } from '@/components/features/experiments/forest-plot';
 import { XSpinner } from '@/components/ui/x-spinner';
@@ -82,96 +82,88 @@ export default function ExperimentViewPage() {
           </Flex>
         </Flex>
       </Flex>
-
+      {/* Timeline Section */}
       <Card>
-        <Heading size="3">Hypothesis</Heading>
+        <Heading size="4">Timeline</Heading>
+        <Separator my="3" size="4" />
+        <Grid columns="2" gap="4">
+          <Card>
+            <Flex gap="4" align="center" justify="between">
+              <Heading size="3">Start:</Heading>
+              <Flex gap="2" align="center">
+                <Text>{new Date(start_date).toLocaleDateString()}</Text>
+                <CalendarIcon />
+              </Flex>
+            </Flex>
+          </Card>
+          <Card>
+            <Flex gap="4" align="center" justify="between">
+              <Heading size="3">End:</Heading>
+              <Flex gap="2" align="center">
+                <Text>{new Date(end_date).toLocaleDateString()}</Text>
+                <CalendarIcon />
+              </Flex>
+            </Flex>
+          </Card>
+        </Grid>
+      </Card>
+
+      {/* Hypothesis Section */}
+      <Card>
+        <Heading size="4">Hypothesis</Heading>
         <Separator my="3" size="4" />
         <ReadMoreText text={description} />
       </Card>
 
-      <Grid columns="2" gap="4">
-        {/* Timeline Section */}
-        <Card>
-          <Heading size="3">Timeline</Heading>
-          <Separator my="3" size="4" />
-          <Table.Root>
-            <Table.Body>
-              <Table.Row>
-                <Table.RowHeaderCell>Start Date</Table.RowHeaderCell>
-                <Table.Cell>{new Date(start_date).toLocaleDateString()}</Table.Cell>
-              </Table.Row>
-              <Table.Row>
-                <Table.RowHeaderCell>End Date</Table.RowHeaderCell>
-                <Table.Cell>{new Date(end_date).toLocaleDateString()}</Table.Cell>
-              </Table.Row>
-            </Table.Body>
-          </Table.Root>
-        </Card>
-
-        {/* Parameters Section */}
-        <Card>
-          <Heading size="3">Parameters</Heading>
-          <Separator my="3" size="4" />
-          <Table.Root>
-            <Table.Body>
-              <Table.Row>
-                <Table.RowHeaderCell>Sample Size</Table.RowHeaderCell>
-                <Table.Cell>{assign_summary.sample_size.toLocaleString()}</Table.Cell>
-              </Table.Row>
-              <Table.Row>
-                <Table.RowHeaderCell>Confidence Level</Table.RowHeaderCell>
-                <Table.Cell>{(1 - (design_spec.alpha || 0.05)) * 100}%</Table.Cell>
-              </Table.Row>
-              <Table.Row>
-                <Table.RowHeaderCell>Power</Table.RowHeaderCell>
-                <Table.Cell>{design_spec.power ? `${design_spec.power * 100}%` : '?'}</Table.Cell>
-              </Table.Row>
-            </Table.Body>
-          </Table.Root>
-        </Card>
-      </Grid>
-
-      {/* Arms & Balance Section */}
+      {/* Arms & Allocations Section */}
       <Card>
-        <Heading size="3">Arms & Balance</Heading>
-        <Separator my="3" size="4" />
-        <Flex gap="4">
-          {arms.map((arm) => {
-            const armSize = assign_summary.arm_sizes?.find((a) => a.arm.arm_id === arm.arm_id)?.size || 0;
-            const percentage = (armSize / assign_summary.sample_size) * 100;
-            return (
-              <Card key={arm.arm_id} style={{ flex: 1 }}>
-                <Flex direction="column" gap="2">
-                  <Flex justify="between" align="center">
-                    <Flex gap="2" align="center">
-                      <Heading size="4">{arm.arm_name}</Heading>
-                      <CopyToClipBoard content={arm.arm_id || ''} tooltipContent="Copy arm ID" />
-                    </Flex>
-                    <Text color="gray" weight="bold">
-                      {percentage.toFixed(1)}%
-                    </Text>
-                  </Flex>
-                  <Flex gap="2" align="center" justify="end">
-                    <Badge>
-                      <PersonIcon />
-                      <Text size="2">{armSize.toLocaleString()} participants</Text>
-                    </Badge>
-                  </Flex>
-                  <Flex justify="between" align="center">
-                    <Text color="gray" style={{ whiteSpace: 'pre-wrap' }}>
-                      {arm.arm_description || 'No description'}
-                    </Text>
-                  </Flex>
-                </Flex>
-              </Card>
-            );
-          })}
+        <Flex direction="row" gap="4" align="center">
+          <Heading size="4">Arms & Allocations</Heading>
+          <Badge>
+            <PersonIcon />
+            <Text size="2">{assign_summary.sample_size.toLocaleString()} participants</Text>
+          </Badge>
         </Flex>
+        <Separator my="3" size="4" />
+        <Table.Root>
+          <Table.Body>
+            <Table.Row>
+              <Table.RowHeaderCell>Name</Table.RowHeaderCell>
+              <Table.RowHeaderCell>Description</Table.RowHeaderCell>
+            </Table.Row>
+            {arms.map((arm) => {
+              const armSize = assign_summary.arm_sizes?.find((a) => a.arm.arm_id === arm.arm_id)?.size || 0;
+              const percentage = (armSize / assign_summary.sample_size) * 100;
+              return (
+                <Table.Row key={arm.arm_id}>
+                  <Table.Cell>
+                    <Flex direction="column" gap="4" align="start">
+                      <Flex gap="2" align="center">
+                        <Heading size="3">{arm.arm_name}</Heading>
+                        <CopyToClipBoard content={arm.arm_id || ''} tooltipContent="Copy arm ID" />
+                      </Flex>
+                      <Flex direction="column" gap="3" align="start">
+                        <Badge>
+                          <PersonIcon />
+                          <Text>{armSize.toLocaleString()} participants</Text>
+                        </Badge>
+                        <Badge>{percentage.toFixed(1)}%</Badge>
+                      </Flex>
+                    </Flex>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <ReadMoreText text={arm.arm_description || 'No description'} />
+                  </Table.Cell>
+                </Table.Row>
+              );
+            })}
+          </Table.Body>
+        </Table.Root>
       </Card>
 
       {/* Analysis Section */}
       <Card>
-        <Heading size="3">Analysis</Heading>
+        <Heading size="4">Analysis</Heading>
         <Separator my="3" size="4" />
 
         {isLoadingAnalysis && <XSpinner message="Loading analysis data..." />}
@@ -184,33 +176,64 @@ export default function ExperimentViewPage() {
         )}
 
         {analysisData && (
-          <Tabs.Root defaultValue="visualization">
-            <Tabs.List>
-              <Tabs.Trigger value="visualization">Visualization</Tabs.Trigger>
-              <Tabs.Trigger value="raw">
-                Raw Data <CodeIcon />
-              </Tabs.Trigger>
-            </Tabs.List>
+          <Flex direction="column" gap="3">
+            <Card>
+              <Grid columns="3" gap="3" align="center" justify="between">
+                <Heading size="3">Stat Test Parameters:</Heading>
+                <Card>
+                  <Flex gap="4" align="center" justify="between">
+                    <Heading size="2">Confidence:</Heading>
+                    <Flex gap="2" align="center">
+                      <Text>{(1 - (design_spec.alpha || 0.05)) * 100}%</Text>
+                      <Tooltip content="Chance that our test correctly shows no significant difference, if there truly is none. (The probability of avoiding a false positive.)">
+                        <InfoCircledIcon />
+                      </Tooltip>
+                    </Flex>
+                  </Flex>
+                </Card>
+                <Card>
+                  <Flex gap="4" align="center" justify="between">
+                    <Heading size="2">Power:</Heading>
+                    <Flex gap="2" align="center">
+                      <Text>{design_spec.power ? `${design_spec.power * 100}%` : '?'}</Text>
+                      <Tooltip content="Chance of detecting a difference at least as large as the pre-specified minimum effect for the metric, if that difference truly exists. (The probability of avoiding a false negative.)">
+                        <InfoCircledIcon />
+                      </Tooltip>
+                    </Flex>
+                  </Flex>
+                </Card>
+              </Grid>
+            </Card>
+            <Card>
+              <Tabs.Root defaultValue="visualization">
+                <Tabs.List>
+                  <Tabs.Trigger value="visualization">Visualization</Tabs.Trigger>
+                  <Tabs.Trigger value="raw">
+                    Raw Data <CodeIcon />
+                  </Tabs.Trigger>
+                </Tabs.List>
 
-            <Tabs.Content value="visualization">
-              <Flex direction="column" gap="3" py="3">
-                {analysisData.metric_analyses.map((metric_analysis, index) => (
-                  <ForestPlot key={index} analysis={metric_analysis} experiment={experiment} />
-                ))}
-              </Flex>
-            </Tabs.Content>
+                <Tabs.Content value="visualization">
+                  <Flex direction="column" gap="3" py="3">
+                    {analysisData.metric_analyses.map((metric_analysis, index) => (
+                      <ForestPlot key={index} analysis={metric_analysis} experiment={experiment} />
+                    ))}
+                  </Flex>
+                </Tabs.Content>
 
-            <Tabs.Content value="raw">
-              <Flex direction="column" gap="3" py="3">
-                <CodeSnippetCard
-                  title="Raw Data"
-                  content={JSON.stringify(analysisData, null, 2)}
-                  height="200px"
-                  tooltipContent="Copy raw data"
-                />
-              </Flex>
-            </Tabs.Content>
-          </Tabs.Root>
+                <Tabs.Content value="raw">
+                  <Flex direction="column" gap="3" py="3">
+                    <CodeSnippetCard
+                      title="Raw Data"
+                      content={JSON.stringify(analysisData, null, 2)}
+                      height="200px"
+                      tooltipContent="Copy raw data"
+                    />
+                  </Flex>
+                </Tabs.Content>
+              </Tabs.Root>
+            </Card>
+          </Flex>
         )}
       </Card>
 
