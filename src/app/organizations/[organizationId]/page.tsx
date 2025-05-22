@@ -1,5 +1,5 @@
 'use client';
-import { Flex, Heading, Text, Separator } from '@radix-ui/themes';
+import { Flex, Heading, Text } from '@radix-ui/themes';
 import { RenameOrganizationDialog } from '@/components/features/organizations/rename-organization-dialog';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { useGetOrganization, useListOrganizationEvents, useListOrganizationWebhooks } from '@/api/admin';

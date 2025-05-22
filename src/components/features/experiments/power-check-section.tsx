@@ -1,5 +1,5 @@
 import { Button, Callout, Card, Flex, Spinner, Table, Text, TextField } from '@radix-ui/themes';
-import { CheckCircledIcon, CrossCircledIcon } from '@radix-ui/react-icons';
+import { CheckCircledIcon, CrossCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
 import { usePowerCheck } from '@/api/admin';
 import { convertFormDataToCreateExperimentRequest } from '@/app/datasources/[datasourceId]/experiments/create/helpers';
@@ -42,8 +42,17 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
   return (
     <Flex direction="column" gap="3" align="center">
       <Button disabled={isButtonDisabled} onClick={handlePowerCheck} style={{ minWidth: '25%' }}>
-        {isMutating && <Spinner size="1" />}
-        {isMutating ? 'Checking...' : 'Run Power Check'}
+        {isMutating ? (
+          <>
+            <Spinner size="1" />
+            Checking...
+          </>
+        ) : (
+          <>
+            <LightningBoltIcon />
+            Run Power Check
+          </>
+        )}
       </Button>
       {data !== undefined && (
         <>

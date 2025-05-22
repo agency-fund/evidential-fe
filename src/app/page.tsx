@@ -72,7 +72,7 @@ export default function Page() {
         />
       )}
       <Flex justify="between" align="center">
-        <Heading>Experiments</Heading>
+        <Heading size="8">Experiments</Heading>
         <Link href={`/datasources/${selectedDatasource}/experiments/create`}>
           <Button disabled={selectedDatasource === ''}>
             <PlusIcon /> Create Experiment
@@ -154,7 +154,6 @@ export default function Page() {
                 </Table.Body>
               </Table.Root>
             )}
-
           </Flex>
         )
       )}

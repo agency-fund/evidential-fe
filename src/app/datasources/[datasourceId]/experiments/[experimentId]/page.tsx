@@ -178,17 +178,17 @@ export default function ExperimentViewPage() {
               </Flex>
             )
           }
-          isLoading={isLoadingAnalysis}
-          error={analysisError}
-          loadingComponent={<XSpinner message="Loading analysis data..." />}
-          errorComponent={
+        >
+          {isLoadingAnalysis && <XSpinner message="Loading analysis data..." />}
+
+          {analysisError && (
             <GenericErrorCallout
               title="Error loading analysis"
               message="Analysis may not be available yet or the experiment hasn't collected enough data."
             />
-          }
-        >
-          {analysisData && (
+          )}
+
+          {!isLoadingAnalysis && !analysisError && analysisData && (
             <Flex direction="column" gap="3">
               <Tabs.Root defaultValue="visualization">
                 <Tabs.List>

@@ -1,7 +1,7 @@
 'use client';
-import { Button, Callout, Card, Flex, Heading, Spinner, Text, TextField } from '@radix-ui/themes';
+import { Button, Callout, Flex, Spinner, Text, TextField } from '@radix-ui/themes';
 import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
-import { InfoCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
+import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useCreateExperiment, useInspectParticipantTypes } from '@/api/admin';
 import { Filter, GetFiltersResponseElement, GetMetricsResponseElement } from '@/api/methods.schemas';
 import { PowerCheckSection } from '@/components/features/experiments/power-check-section';
@@ -10,6 +10,7 @@ import { FilterBuilder } from '@/components/features/experiments/querybuilder/fi
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { PRODUCT_NAME } from '@/services/constants';
 import { MetricBuilder } from '@/components/features/experiments/metric-builder';
+import { SectionCard } from '@/components/ui/cards/section-card';
 
 interface DesignFormProps {
   formData: ExperimentFormData;
@@ -72,10 +73,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
   return (
     <form onSubmit={handleSubmit}>
       <Flex direction="column" gap="4">
-        <Card>
-          <Heading size="4" mb="4">
-            Metrics
-          </Heading>
+        <SectionCard title="Metrics">
           {loadingParticipantTypes ? (
             <Flex align="center" gap="2">
               <Spinner size="1" />
@@ -84,12 +82,9 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
           ) : (
             <MetricBuilder formData={formData} onFormDataChange={onFormDataChange} metricFields={metricFields} />
           )}
-        </Card>
+        </SectionCard>
 
-        <Card>
-          <Heading size="4" mb="4">
-            Filters
-          </Heading>
+        <SectionCard title="Filters">
           <Flex direction="column" gap="3">
             <FilterBuilder
               availableFields={filterFields}
@@ -97,12 +92,9 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
               onChange={(filters: Filter[]) => onFormDataChange({ ...formData, filters })}
             />
           </Flex>
-        </Card>
+        </SectionCard>
 
-        <Card>
-          <Heading size="4" mb="4">
-            Experiment Parameters
-          </Heading>
+        <SectionCard title="Experiment Parameters">
           <Flex direction="row" gap="3">
             <Flex direction="column" gap="2">
               <Text as="label" size="2" weight="bold">
@@ -126,12 +118,9 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
               />
             </Flex>
           </Flex>
-        </Card>
+        </SectionCard>
 
-        <Card>
-          <Heading size="4" mb="4" color={supportsPowerCheck ? undefined : 'gray'}>
-            <LightningBoltIcon /> Power Check
-          </Heading>
+        <SectionCard title="Power Check">
           {supportsPowerCheck ? (
             <PowerCheckSection formData={formData} onFormDataChange={onFormDataChange} />
           ) : (
@@ -145,7 +134,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
               </Callout.Text>
             </Callout.Root>
           )}
-        </Card>
+        </SectionCard>
 
         {createExperimentError && (
           <GenericErrorCallout title="Failed to create experiment" error={createExperimentError} />

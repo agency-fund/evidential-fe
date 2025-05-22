@@ -124,7 +124,9 @@ export default function CreateExperimentPage() {
   return (
     <Container>
       <Flex direction="column" gap="4">
-        <Heading>{{ 1: 'Experiment Metadata', 2: 'Experiment Design', 3: 'Experiment Summary' }[currentStep]}</Heading>
+        <Heading size="8">
+          {{ 1: 'Experiment Metadata', 2: 'Experiment Design', 3: 'Experiment Summary' }[currentStep]}
+        </Heading>
         <Box>
           {currentStep === 1 && <InitialForm formData={formData} onFormDataChange={setFormData} onNext={handleNext} />}
           {currentStep === 2 && (
