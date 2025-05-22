@@ -63,9 +63,10 @@ export default function ExperimentViewPage() {
       <Flex align="start" direction="column" gap="5">
         <BackButton href="/" label="Back to Experiments" />
         <Separator my="3" size="4" />
-
-        <Heading size="8">{experiment_name}</Heading>
-
+        <Flex direction="row" gap="2" align="center">
+          <Heading size="8">{experiment_name}</Heading>
+          <CopyToClipBoard content={experimentId} tooltipContent="Copy experiment ID" />
+        </Flex>
         <Flex gap="4" align="center">
           <Flex align="center" gap="1">
             <Text weight="bold">Type:</Text>
