@@ -10,11 +10,11 @@ export type SectionCardProps = {
 export const SectionCard: React.FC<SectionCardProps> = ({ title, headerRight, children }) => {
   return (
     <Card>
-      <Flex direction="row" gap="4" align="center" justify="between" py="2">
+      <Flex direction="row" gap="4" align="center" justify="between" py="1">
         <Heading size="3">{title}</Heading>
         {headerRight}
       </Flex>
-      <Separator my="3" size="4" />
+      <Separator my="2" size="4" />
       {children}
     </Card>
   );

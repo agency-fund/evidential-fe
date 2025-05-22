@@ -1,5 +1,5 @@
 'use client';
-import { Badge, Card, Flex, Heading, Separator, Table, Tabs, Text, Tooltip } from '@radix-ui/themes';
+import { Badge, Box, Card, Flex, Heading, Separator, Table, Tabs, Text, Tooltip } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
 import { CodeIcon, InfoCircledIcon, PersonIcon, CalendarIcon } from '@radix-ui/react-icons';
 import { BackButton } from '@/components/ui/buttons/back-button';
@@ -73,7 +73,7 @@ export default function ExperimentViewPage() {
             <ExperimentTypeBadge type={design_spec.experiment_type} />
           </Flex>
 
-          <Text color="gray">|</Text>
+          <Separator orientation="vertical" />
 
           <Flex align="center" gap="1">
             <Text weight="bold">Participants:</Text>
@@ -84,7 +84,7 @@ export default function ExperimentViewPage() {
             </Link>
           </Flex>
 
-          <Text color="gray">|</Text>
+          <Separator orientation="vertical" />
 
           <Flex align="center" gap="2">
             <CalendarIcon />
@@ -195,28 +195,32 @@ export default function ExperimentViewPage() {
                 <Tabs.List>
                   <Tabs.Trigger value="visualization">Visualization</Tabs.Trigger>
                   <Tabs.Trigger value="raw">
-                    Raw Data <CodeIcon />
+                    <Flex gap="2" align="center">
+                      Raw Data <CodeIcon />
+                    </Flex>
                   </Tabs.Trigger>
                 </Tabs.List>
+                <Box px="4">
+                  <Tabs.Content value="visualization">
+                    <Flex direction="column" gap="3" py="3">
+                      {analysisData.metric_analyses.map((metric_analysis, index) => (
+                        <ForestPlot key={index} analysis={metric_analysis} experiment={experiment} />
+                      ))}
+                    </Flex>
+                  </Tabs.Content>
 
-                <Tabs.Content value="visualization">
-                  <Flex direction="column" gap="3" py="3">
-                    {analysisData.metric_analyses.map((metric_analysis, index) => (
-                      <ForestPlot key={index} analysis={metric_analysis} experiment={experiment} />
-                    ))}
-                  </Flex>
-                </Tabs.Content>
-
-                <Tabs.Content value="raw">
-                  <Flex direction="column" gap="3" py="3">
-                    <CodeSnippetCard
-                      title="Raw Data"
-                      content={JSON.stringify(analysisData, null, 2)}
-                      height="200px"
-                      tooltipContent="Copy raw data"
-                    />
-                  </Flex>
-                </Tabs.Content>
+                  <Tabs.Content value="raw">
+                    <Flex direction="column" gap="3" py="3">
+                      <CodeSnippetCard
+                        title="Raw Data"
+                        content={JSON.stringify(analysisData, null, 2)}
+                        height="200px"
+                        tooltipContent="Copy raw data"
+                        variant="ghost"
+                      />
+                    </Flex>
+                  </Tabs.Content>
+                </Box>
               </Tabs.Root>
             </Flex>
           )}

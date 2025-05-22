@@ -41,18 +41,11 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
 
   return (
     <Flex direction="column" gap="3" align="center">
-      <Button disabled={isButtonDisabled} onClick={handlePowerCheck} style={{ minWidth: '25%' }}>
-        {isMutating ? (
-          <>
-            <Spinner size="1" />
-            Checking...
-          </>
-        ) : (
-          <>
-            <LightningBoltIcon />
-            Run Power Check
-          </>
-        )}
+      <Button disabled={isButtonDisabled} onClick={handlePowerCheck} style={{ minWidth: '25%' }} loading={isMutating}>
+        <>
+          <LightningBoltIcon />
+          Run Power Check
+        </>
       </Button>
       {data !== undefined && (
         <>

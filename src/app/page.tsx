@@ -64,21 +64,24 @@ export default function Page() {
   return (
     <Flex direction="column" gap="3">
       {datasourcesIsLoading && <XSpinner message={'Datasources list loading...'} />}
-      {datasourcesData && datasourcesData.items.length > 0 && (
-        <DatasourceSelector
-          selectedDatasource={selectedDatasource}
-          setSelectedDatasource={setSelectedDatasource}
-          datasourcesData={datasourcesData}
-        />
-      )}
       <Flex justify="between" align="center">
-        <Heading size="8">Experiments</Heading>
+        <Flex align="end" gap="3">
+          <Heading size="8">Experiments</Heading>
+          {datasourcesData && datasourcesData.items.length > 0 && (
+            <DatasourceSelector
+              selectedDatasource={selectedDatasource}
+              setSelectedDatasource={setSelectedDatasource}
+              datasourcesData={datasourcesData}
+            />
+          )}
+        </Flex>
         <Link href={`/datasources/${selectedDatasource}/experiments/create`}>
           <Button disabled={selectedDatasource === ''}>
             <PlusIcon /> Create Experiment
           </Button>
         </Link>
       </Flex>
+
       {experimentsIsLoading && (
         <Flex>
           <XSpinner message={'Loading experiments list...'} />
