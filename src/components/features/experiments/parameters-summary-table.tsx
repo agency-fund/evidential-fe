@@ -1,12 +1,9 @@
 import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
-import { Heading, Table } from '@radix-ui/themes';
+import { Table } from '@radix-ui/themes';
 
 export function ParametersSummaryTable({ formData }: { formData: ExperimentFormData }) {
   return (
     <>
-      <Heading size="4" mb="4">
-        Parameters
-      </Heading>
       <Table.Root>
         <Table.Body>
           <Table.Row>

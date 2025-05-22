@@ -1,5 +1,5 @@
 'use client';
-import { Flex, Heading, Text } from '@radix-ui/themes';
+import { Flex, Heading, Text, Separator } from '@radix-ui/themes';
 import { RenameOrganizationDialog } from '@/components/features/organizations/rename-organization-dialog';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { useGetOrganization, useListOrganizationEvents, useListOrganizationWebhooks } from '@/api/admin';
@@ -61,11 +61,12 @@ export default function Page() {
   }
 
   return (
-    <Flex direction="column" gap="3">
-      <Heading>{organization.name}</Heading>
-      <Flex gap={'3'}>
+    <Flex direction="column" gap="6">
+      <Flex justify="between" align="end" width="100%">
+        <Heading size="8">{organization.name}</Heading>
         <RenameOrganizationDialog organizationId={organizationId} currentName={organization.name} />
       </Flex>
+
       <Flex direction="column" gap="3">
         <Flex justify="between" align="center">
           <Heading size="4">Users</Heading>
