@@ -154,7 +154,7 @@ export default function ExperimentViewPage() {
           headerRight={
             analysisData && (
               <Flex gap="3" align="center" justify="between">
-                <Card>
+                <Badge size="2">
                   <Flex gap="4" align="center">
                     <Heading size="2">Confidence:</Heading>
                     <Flex gap="2" align="center">
@@ -164,8 +164,8 @@ export default function ExperimentViewPage() {
                       </Tooltip>
                     </Flex>
                   </Flex>
-                </Card>
-                <Card>
+                </Badge>
+                <Badge size="2">
                   <Flex gap="4" align="center">
                     <Heading size="2">Power:</Heading>
                     <Flex gap="2" align="center">
@@ -175,7 +175,7 @@ export default function ExperimentViewPage() {
                       </Tooltip>
                     </Flex>
                   </Flex>
-                </Card>
+                </Badge>
               </Flex>
             )
           }
