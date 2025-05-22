@@ -170,6 +170,11 @@ export interface AssignSummary {
 }
 
 /**
+ * The date and time the assignment was created.
+ */
+export type AssignmentCreatedAt = string | null;
+
+/**
  * List of properties and their values for this participant used for stratification or tracking metrics. If stratification is not used, this will be None.
  */
 export type AssignmentStrata = Strata[] | null;
@@ -187,6 +192,8 @@ export interface Assignment {
 	 * @maxLength 100
 	 */
 	arm_name: string;
+	/** The date and time the assignment was created. */
+	created_at?: AssignmentCreatedAt;
 	/** List of properties and their values for this participant used for stratification or tracking metrics. If stratification is not used, this will be None. */
 	strata?: AssignmentStrata;
 }
