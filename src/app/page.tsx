@@ -27,7 +27,6 @@ export default function Page() {
   } = useListOrganizationDatasources(currentOrgId!, {
     swr: {
       enabled: !!currentOrgId,
-      revalidateOnFocus: true,
     },
   });
 
@@ -36,7 +35,7 @@ export default function Page() {
     isLoading: experimentsIsLoading,
     error: experimentsError,
   } = useListOrganizationExperiments(currentOrgId!, {
-    swr: { enabled: !!currentOrgId, revalidateOnFocus: true },
+    swr: { enabled: !!currentOrgId },
   });
 
   const filteredExperiments = experimentsData
