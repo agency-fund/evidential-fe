@@ -15,7 +15,6 @@ export const SectionCard: React.FC<SectionCardProps> = ({ title, headerRight, ch
         {headerRight}
       </Flex>
       <Separator my="3" size="4" />
-
       {children}
     </Card>
   );
