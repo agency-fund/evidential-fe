@@ -42,7 +42,13 @@ export default function RootLayout({
                         <Flex flexGrow="1" overflow="hidden">
                           <NavigationBar />
                           <Flex direction="column" flexGrow="1" overflowY="auto" position="relative">
-                            <Container p="4" flexGrow="1" width="100%">
+                            <Container
+                              py="8"
+                              px="4"
+                              flexGrow="1"
+                              width="100%"
+                              style={{ backgroundColor: 'var(--gray-2)', borderLeft: '1px solid var(--gray-4)' }}
+                            >
                               <Suspense>{children}</Suspense>
                             </Container>
                           </Flex>

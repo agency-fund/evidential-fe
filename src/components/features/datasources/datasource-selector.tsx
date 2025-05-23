@@ -14,9 +14,6 @@ export function DatasourceSelector({
 
   return (
     <Flex align="center" gap="2">
-      <Text size="2" weight="bold">
-        Data Source:
-      </Text>
       {hasDataSources ? (
         <Select.Root value={selectedDatasource} onValueChange={setSelectedDatasource}>
           <Select.Trigger placeholder="Select a datasource" />

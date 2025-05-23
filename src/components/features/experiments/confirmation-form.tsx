@@ -1,5 +1,5 @@
 'use client';
-import { Button, Callout, Card, Flex, Heading, Table, Text } from '@radix-ui/themes';
+import { Button, Callout, Flex, Grid, Table, Text } from '@radix-ui/themes';
 import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
 import { useRouter } from 'next/navigation';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
@@ -9,6 +9,8 @@ import { StatisticsSummaryTable } from '@/components/features/experiments/statis
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ApiError } from '@/services/orval-fetch';
+import { SectionCard } from '@/components/ui/cards/section-card';
+import { ReadMoreText } from '@/components/ui/read-more-text';
 
 interface ConfirmationFormProps {
   formData: ExperimentFormData;
@@ -49,10 +51,7 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
   const router = useRouter();
   return (
     <Flex direction="column" gap="4">
-      <Card>
-        <Heading size="4" mb="4">
-          Basic Information
-        </Heading>
+      <SectionCard title="Basic Information">
         <Table.Root>
           <Table.Body>
             <Table.Row>
@@ -71,7 +70,7 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
             <Table.Row>
               <Table.RowHeaderCell>Hypothesis</Table.RowHeaderCell>
               <Table.Cell>
-                <Text style={{ whiteSpace: 'pre-wrap' }}>{formData.hypothesis}</Text>
+                <ReadMoreText text={formData.hypothesis} />
               </Table.Cell>
             </Table.Row>
             <Table.Row>
@@ -88,11 +87,8 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
             </Table.Row>
           </Table.Body>
         </Table.Root>
-      </Card>
-      <Card>
-        <Heading size="4" mb="4">
-          Treatment Arms
-        </Heading>
+      </SectionCard>
+      <SectionCard title="Treatment Arms">
         <Table.Root>
           <Table.Header>
             <Table.Row>
@@ -112,18 +108,15 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
                 </Table.Cell>
                 <Table.Cell>{arm.arm_name}</Table.Cell>
                 <Table.Cell>
-                  <Text style={{ whiteSpace: 'pre-wrap' }}>{arm.arm_description || '-'}</Text>
+                  <ReadMoreText text={arm.arm_description || '-'} />
                 </Table.Cell>
               </Table.Row>
             ))}
           </Table.Body>
         </Table.Root>
-      </Card>
-      <Flex direction="row" gap="3">
-        <Card>
-          <Heading size="4" mb="4">
-            Metrics
-          </Heading>
+      </SectionCard>
+      <Grid columns="3" gap="3">
+        <SectionCard title="Metrics">
           <Flex direction="column" gap="3">
             <Flex direction="column" gap="1">
               <Text weight="bold">Primary Metric</Text>
@@ -148,18 +141,15 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
               )}
             </Flex>
           </Flex>
-        </Card>
-        <Card>
+        </SectionCard>
+        <SectionCard title="Parameters">
           <ParametersSummaryTable formData={formData} />
-        </Card>
-        <Card>
+        </SectionCard>
+        <SectionCard title="Statistics">
           <StatisticsSummaryTable formData={formData} />
-        </Card>
-      </Flex>
-      <Card>
-        <Heading size="4" mb="4">
-          Filters
-        </Heading>
+        </SectionCard>
+      </Grid>
+      <SectionCard title="Filters">
         {formData.filters.length > 0 ? (
           <Table.Root>
             <Table.Header>
@@ -182,7 +172,7 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
         ) : (
           <Text color="gray">No filters defined</Text>
         )}
-      </Card>
+      </SectionCard>
 
       <ExperimentErrorCallout error={commitError} type={'commit'} />
       <ExperimentErrorCallout error={abandonError} type={'abandon'} />

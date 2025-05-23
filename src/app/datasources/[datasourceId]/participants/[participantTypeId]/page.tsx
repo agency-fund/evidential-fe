@@ -1,12 +1,12 @@
 'use client';
 import { useGetParticipantTypes, useInspectParticipantTypes } from '@/api/admin';
-import { Flex, Heading, Text } from '@radix-ui/themes';
+import { Flex, Heading, Text, Separator } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { useParams } from 'next/navigation';
 import { InspectParticipantTypesSummary } from '@/components/features/participants/inspect-participant-types-summary';
-import Link from 'next/link';
 import { EditParticipantTypeDialog } from '@/components/features/participants/edit-participant-type-dialog';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { BackButton } from '@/components/ui/buttons/back-button';
 
 export default function Page() {
   const params = useParams();
@@ -58,8 +58,12 @@ export default function Page() {
 
   if (data.type === 'sheet') {
     return (
-      <Flex direction="column" gap="3">
-        <Heading>Participant Type Details: {participantType}</Heading>
+      <Flex direction="column" gap="6">
+        <Flex align="start" direction="column" gap="3">
+          <BackButton href={`/datasources/${datasourceId}`} label="Back to Datasource" />
+          <Separator my="3" size="4" />
+          <Heading size="8">Participant Type: {participantType}</Heading>
+        </Flex>
         <Text>Sheet Reference Configuration:</Text>
         <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(data, null, 2)}</pre>
       </Flex>
@@ -67,17 +71,18 @@ export default function Page() {
   }
 
   return (
-    <Flex direction="column" gap="3">
-      <Heading>Participant Type Details: {participantType}</Heading>
-      <Text>
-        Back to <Link href={`/datasources/${datasourceId}`}>Datasource</Link>
-      </Text>
-      <Flex gap={'3'}>
-        <EditParticipantTypeDialog
-          datasourceId={datasourceId}
-          participantType={participantType}
-          participantConfig={data}
-        />
+    <Flex direction="column" gap="6">
+      <Flex align="start" direction="column" gap="3">
+        <BackButton href={`/datasources/${datasourceId}`} label="Back to Datasource" />
+        <Separator my="3" size="4" />
+        <Flex justify="between" align="end" width="100%">
+          <Heading size="8">Participant Type: {participantType}</Heading>
+          <EditParticipantTypeDialog
+            datasourceId={datasourceId}
+            participantType={participantType}
+            participantConfig={data}
+          />
+        </Flex>
       </Flex>
       {inspectLoading || inspectValidating ? (
         <XSpinner message={`Inspecting participant type ${participantType}...`} />

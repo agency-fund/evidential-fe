@@ -7,6 +7,7 @@ interface CodeSnippetCardProps {
   content: string | object;
   height?: string;
   tooltipContent?: string;
+  variant?: 'ghost' | 'surface';
 }
 
 export function CodeSnippetCard({
@@ -14,6 +15,7 @@ export function CodeSnippetCard({
   content,
   height = 'auto',
   tooltipContent = 'Copy to clipboard',
+  variant = 'surface',
 }: CodeSnippetCardProps) {
   // Format the content as a JSON string if it's an object.
   const formattedContent = typeof content === 'object' ? JSON.stringify(content, null, 2) : content;
@@ -23,7 +25,7 @@ export function CodeSnippetCard({
 
   return (
     <Box my="2">
-      <Card>
+      <Card variant={variant}>
         <Flex direction="column" gap="4">
           <Flex direction="row" justify={title ? 'between' : 'end'} gap="2" align="center">
             {title && (
