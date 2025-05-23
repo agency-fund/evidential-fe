@@ -60,7 +60,7 @@ export default function ExperimentViewPage() {
 
   return (
     <Flex direction="column" gap="6">
-      <Flex align="start" direction="column" gap="5">
+      <Flex align="start" direction="column" gap="3">
         <BackButton href="/" label="Back to Experiments" />
         <Separator my="3" size="4" />
         <Flex direction="row" gap="2" align="center">

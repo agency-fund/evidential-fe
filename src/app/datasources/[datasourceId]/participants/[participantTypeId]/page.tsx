@@ -59,7 +59,7 @@ export default function Page() {
   if (data.type === 'sheet') {
     return (
       <Flex direction="column" gap="6">
-        <Flex align="start" direction="column" gap="5">
+        <Flex align="start" direction="column" gap="3">
           <BackButton href={`/datasources/${datasourceId}`} label="Back to Datasource" />
           <Separator my="3" size="4" />
           <Heading size="8">Participant Type: {participantType}</Heading>
@@ -72,7 +72,7 @@ export default function Page() {
 
   return (
     <Flex direction="column" gap="6">
-      <Flex align="start" direction="column" gap="5">
+      <Flex align="start" direction="column" gap="3">
         <BackButton href={`/datasources/${datasourceId}`} label="Back to Datasource" />
         <Separator my="3" size="4" />
         <Flex justify="between" align="end" width="100%">

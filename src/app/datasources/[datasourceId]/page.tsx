@@ -109,7 +109,7 @@ export default function Page() {
   const organizationId = datasourceMetadata.organization_id;
   return (
     <Flex direction="column" gap="6">
-      <Flex align="start" direction="column" gap="5">
+      <Flex align="start" direction="column" gap="3">
         <BackButton href={`/organizations/${organizationId}`} label={`Back to ${organizationName}`} />
         <Separator my="3" size="4" />
         <Flex justify="between" align="end" width="100%">
