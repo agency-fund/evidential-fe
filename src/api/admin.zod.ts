@@ -3511,6 +3511,699 @@ export const abandonExperimentParams = zod.object({
 export const abandonExperimentResponse = zod.any();
 
 /**
+ * Returns a list of experiments in the organization.
+ * @summary List Organization Experiments
+ */
+export const listOrganizationExperimentsParams = zod.object({
+	organization_id: zod.string(),
+});
+
+export const listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMax = 100;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMax = 100;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMax = 2000;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMax = 100;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOne = 2000;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMin = 2;
+
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMax = 10;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecStrataItemFieldNameRegExp =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const listOrganizationExperimentsResponseItemsItemDesignSpecStrataMax = 150;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecMetricsItemFieldNameRegExp =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const listOrganizationExperimentsResponseItemsItemDesignSpecMetricsMax = 150;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecFiltersItemFieldNameRegExp =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const listOrganizationExperimentsResponseItemsItemDesignSpecFiltersMax = 20;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerDefault = 0.8;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerMin = 0;
+
+export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerMax = 1;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecAlphaDefault = 0.05;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecAlphaMin = 0;
+
+export const listOrganizationExperimentsResponseItemsItemDesignSpecAlphaMax = 1;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshDefault = 0.6;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMin = 0;
+
+export const listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMax = 1;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxOne = 100;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxOne = 100;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxOne = 2000;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxOne = 100;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxFour = 2000;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinOne = 2;
+
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxOne = 10;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecStrataItemFieldNameRegExpOne =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const listOrganizationExperimentsResponseItemsItemDesignSpecStrataMaxOne = 150;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecMetricsItemFieldNameRegExpOne =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const listOrganizationExperimentsResponseItemsItemDesignSpecMetricsMaxOne = 150;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecFiltersItemFieldNameRegExpOne =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const listOrganizationExperimentsResponseItemsItemDesignSpecFiltersMaxOne = 20;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerDefaultOne = 0.8;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerMinOne = 0;
+
+export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerMaxOne = 1;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecAlphaDefaultOne = 0.05;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecAlphaMinOne = 0;
+
+export const listOrganizationExperimentsResponseItemsItemDesignSpecAlphaMaxOne = 1;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshDefaultOne = 0.6;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMinOne = 0;
+
+export const listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMaxOne = 1;
+export const listOrganizationExperimentsResponseItemsItemPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const listOrganizationExperimentsResponseItemsItemPowerAnalysesAnalysesMax = 150;
+export const listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesItemArmArmNameMax = 100;
+export const listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesItemArmArmDescriptionMaxOne = 2000;
+export const listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesItemSizeDefault = 0;
+export const listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesMaxOne = 10;
+
+export const listOrganizationExperimentsResponse = zod.object({
+	items: zod.array(
+		zod
+			.object({
+				datasource_id: zod.string(),
+				state: zod
+					.enum(["designing", "assigned", "abandoned", "committed", "aborted"])
+					.describe(
+						"Experiment lifecycle states.\n\nnote: [starting state], [[terminal state]]\n[DESIGNING]->[ASSIGNED]->{[[ABANDONED]], COMMITTED}->[[ABORTED]]",
+					),
+				design_spec: zod
+					.discriminatedUnion("experiment_type", [
+						zod
+							.object({
+								participant_type: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMax,
+									),
+								experiment_id: zod
+									.string()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+									),
+								experiment_type: zod.enum(["preassigned"]),
+								experiment_name: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMax,
+									),
+								description: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMax,
+									),
+								start_date: zod.string().datetime({}),
+								end_date: zod.string().datetime({}),
+								arms: zod
+									.array(
+										zod
+											.object({
+												arm_id: zod
+													.string()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+													),
+												arm_name: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMax,
+													),
+												arm_description: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOne,
+													)
+													.or(zod.null())
+													.optional(),
+											})
+											.describe("Describes an experiment treatment arm."),
+									)
+									.min(
+										listOrganizationExperimentsResponseItemsItemDesignSpecArmsMin,
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecArmsMax,
+									),
+								strata: zod
+									.array(
+										zod
+											.object({
+												field_name: zod
+													.string()
+													.regex(
+														listOrganizationExperimentsResponseItemsItemDesignSpecStrataItemFieldNameRegExp,
+													),
+											})
+											.describe(
+												"Describes a variable used for stratification.",
+											),
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecStrataMax,
+									)
+									.describe(
+										"Optional participant_type fields to use for stratified assignment.",
+									),
+								metrics: zod
+									.array(
+										zod
+											.object({
+												field_name: zod
+													.string()
+													.regex(
+														listOrganizationExperimentsResponseItemsItemDesignSpecMetricsItemFieldNameRegExp,
+													),
+												metric_pct_change: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+													),
+												metric_target: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+													),
+											})
+											.describe(
+												"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+											),
+									)
+									.min(1)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecMetricsMax,
+									)
+									.describe(
+										"Primary and optional secondary metrics to target.",
+									),
+								filters: zod
+									.array(
+										zod
+											.object({
+												field_name: zod
+													.string()
+													.regex(
+														listOrganizationExperimentsResponseItemsItemDesignSpecFiltersItemFieldNameRegExp,
+													),
+												relation: zod
+													.enum(["includes", "excludes", "between"])
+													.describe(
+														"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+													),
+												value: zod
+													.array(zod.number().or(zod.null()))
+													.or(zod.array(zod.number().or(zod.null())))
+													.or(zod.array(zod.string().or(zod.null())))
+													.or(zod.array(zod.boolean().or(zod.null()))),
+											})
+											.describe(
+												'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+											),
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecFiltersMax,
+									)
+									.describe(
+										"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+									),
+								power: zod
+									.number()
+									.min(
+										listOrganizationExperimentsResponseItemsItemDesignSpecPowerMin,
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecPowerMax,
+									)
+									.default(
+										listOrganizationExperimentsResponseItemsItemDesignSpecPowerDefault,
+									)
+									.describe(
+										"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
+									),
+								alpha: zod
+									.number()
+									.min(
+										listOrganizationExperimentsResponseItemsItemDesignSpecAlphaMin,
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecAlphaMax,
+									)
+									.default(
+										listOrganizationExperimentsResponseItemsItemDesignSpecAlphaDefault,
+									)
+									.describe(
+										"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
+									),
+								fstat_thresh: zod
+									.number()
+									.min(
+										listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMin,
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMax,
+									)
+									.default(
+										listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshDefault,
+									)
+									.describe(
+										'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
+									),
+							})
+							.describe(
+								"Use this type to randomly select and assign from existing participants at design time.",
+							),
+						zod
+							.object({
+								participant_type: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxOne,
+									),
+								experiment_id: zod
+									.string()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+									),
+								experiment_type: zod.enum(["online"]),
+								experiment_name: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxOne,
+									),
+								description: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxOne,
+									),
+								start_date: zod.string().datetime({}),
+								end_date: zod.string().datetime({}),
+								arms: zod
+									.array(
+										zod
+											.object({
+												arm_id: zod
+													.string()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+													),
+												arm_name: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxOne,
+													),
+												arm_description: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxFour,
+													)
+													.or(zod.null())
+													.optional(),
+											})
+											.describe("Describes an experiment treatment arm."),
+									)
+									.min(
+										listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinOne,
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxOne,
+									),
+								strata: zod
+									.array(
+										zod
+											.object({
+												field_name: zod
+													.string()
+													.regex(
+														listOrganizationExperimentsResponseItemsItemDesignSpecStrataItemFieldNameRegExpOne,
+													),
+											})
+											.describe(
+												"Describes a variable used for stratification.",
+											),
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecStrataMaxOne,
+									)
+									.describe(
+										"Optional participant_type fields to use for stratified assignment.",
+									),
+								metrics: zod
+									.array(
+										zod
+											.object({
+												field_name: zod
+													.string()
+													.regex(
+														listOrganizationExperimentsResponseItemsItemDesignSpecMetricsItemFieldNameRegExpOne,
+													),
+												metric_pct_change: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+													),
+												metric_target: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+													),
+											})
+											.describe(
+												"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+											),
+									)
+									.min(1)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecMetricsMaxOne,
+									)
+									.describe(
+										"Primary and optional secondary metrics to target.",
+									),
+								filters: zod
+									.array(
+										zod
+											.object({
+												field_name: zod
+													.string()
+													.regex(
+														listOrganizationExperimentsResponseItemsItemDesignSpecFiltersItemFieldNameRegExpOne,
+													),
+												relation: zod
+													.enum(["includes", "excludes", "between"])
+													.describe(
+														"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+													),
+												value: zod
+													.array(zod.number().or(zod.null()))
+													.or(zod.array(zod.number().or(zod.null())))
+													.or(zod.array(zod.string().or(zod.null())))
+													.or(zod.array(zod.boolean().or(zod.null()))),
+											})
+											.describe(
+												'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+											),
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecFiltersMaxOne,
+									)
+									.describe(
+										"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+									),
+								power: zod
+									.number()
+									.min(
+										listOrganizationExperimentsResponseItemsItemDesignSpecPowerMinOne,
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecPowerMaxOne,
+									)
+									.default(
+										listOrganizationExperimentsResponseItemsItemDesignSpecPowerDefaultOne,
+									)
+									.describe(
+										"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
+									),
+								alpha: zod
+									.number()
+									.min(
+										listOrganizationExperimentsResponseItemsItemDesignSpecAlphaMinOne,
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecAlphaMaxOne,
+									)
+									.default(
+										listOrganizationExperimentsResponseItemsItemDesignSpecAlphaDefaultOne,
+									)
+									.describe(
+										"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
+									),
+								fstat_thresh: zod
+									.number()
+									.min(
+										listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMinOne,
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMaxOne,
+									)
+									.default(
+										listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshDefaultOne,
+									)
+									.describe(
+										'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
+									),
+							})
+							.describe(
+								"Use this type to randomly assign participants into arms during live experiment execution.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+							),
+					])
+					.describe("Concrete type of experiment to run."),
+				power_analyses: zod
+					.object({
+						analyses: zod
+							.array(
+								zod
+									.object({
+										metric_spec: zod
+											.object({
+												field_name: zod
+													.string()
+													.regex(
+														listOrganizationExperimentsResponseItemsItemPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp,
+													),
+												metric_pct_change: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Percent change target relative to the metric_baseline.",
+													),
+												metric_target: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Absolute target value = metric_baseline*(1 + metric_pct_change)",
+													),
+												metric_type: zod
+													.enum(["binary", "numeric"])
+													.describe("Classifies metrics by their value type.")
+													.or(zod.null())
+													.optional()
+													.describe("Inferred from dwh type."),
+												metric_baseline: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe("Mean of the tracked metric."),
+												metric_stddev: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Standard deviation is set only for metric_type.NUMERIC metrics. Must be set for numeric metrics when available_n > 0.",
+													),
+												available_nonnull_n: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"The number of participants meeting the filtering criteria with a *non-null* value for this metric.",
+													),
+												available_n: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n.",
+													),
+											})
+											.describe(
+												"Defines a metric to measure in an experiment with its baseline stats.",
+											),
+										target_n: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"Minimum sample size needed to meet the design specs.",
+											),
+										sufficient_n: zod
+											.boolean()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"Whether or not there are enough available units to sample from to meet target_n.",
+											),
+										target_possible: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"If there is an insufficient sample size to meet the desired metric_target, we report what is possible given the available_n. This value is equivalent to the relative pct_change_possible. This is None when there is a sufficient sample size to detect the desired change.",
+											),
+										pct_change_possible: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.",
+											),
+										msg: zod
+											.object({
+												type: zod
+													.enum([
+														"sufficient",
+														"insufficient",
+														"no baseline",
+														"no available n",
+														"zero effect size",
+														"zero variation",
+													])
+													.describe(
+														"Classifies metric power analysis results.",
+													),
+												msg: zod
+													.string()
+													.describe(
+														"Main power analysis result stated in human-friendly English.",
+													),
+												source_msg: zod
+													.string()
+													.describe(
+														"Power analysis result formatted as a template string with curly-braced {} named placeholders. Use with the dictionary of values to support localization of messages.",
+													),
+												values: zod
+													.record(zod.string(), zod.number().or(zod.number()))
+													.or(zod.null())
+													.optional(),
+											})
+											.describe(
+												"Describes interpretation of power analysis results.",
+											)
+											.or(zod.null())
+											.optional()
+											.describe(
+												"Human friendly message about the above results.",
+											),
+									})
+									.describe("Describes analysis results of a single metric."),
+							)
+							.max(
+								listOrganizationExperimentsResponseItemsItemPowerAnalysesAnalysesMax,
+							),
+					})
+					.or(zod.null()),
+				assign_summary: zod
+					.object({
+						balance_check: zod
+							.object({
+								f_statistic: zod
+									.number()
+									.describe(
+										"F-statistic testing the overall significance of the model predicting treatment assignment.",
+									),
+								numerator_df: zod
+									.number()
+									.describe(
+										"The numerator degrees of freedom for the f-statistic related to number of dependent variables.",
+									),
+								denominator_df: zod
+									.number()
+									.describe(
+										"Denominator degrees of freedom related to the number of observations.",
+									),
+								p_value: zod
+									.number()
+									.describe(
+										"Probability of observing these data if strata do not predict treatment assignment, i.e. our randomization is balanced.",
+									),
+								balance_ok: zod
+									.boolean()
+									.describe(
+										"Whether the p-value for our observed f_statistic is greater than the f-stat threshold specified in our design specification. (See DesignSpec.fstat_thresh)",
+									),
+							})
+							.describe(
+								"Describes balance test results for treatment assignment.",
+							)
+							.or(zod.null())
+							.optional()
+							.describe(
+								"Balance test results if available. 'online' experiments do not have balance checks.",
+							),
+						sample_size: zod
+							.number()
+							.describe("The number of participants across all arms in total."),
+						arm_sizes: zod
+							.array(
+								zod
+									.object({
+										arm: zod
+											.object({
+												arm_id: zod
+													.string()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+													),
+												arm_name: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesItemArmArmNameMax,
+													),
+												arm_description: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesItemArmArmDescriptionMaxOne,
+													)
+													.or(zod.null())
+													.optional(),
+											})
+											.describe("Describes an experiment treatment arm."),
+										size: zod.number().optional(),
+									})
+									.describe(
+										"Describes the number of participants assigned to each arm.",
+									),
+							)
+							.max(
+								listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesMaxOne,
+							)
+							.or(zod.null())
+							.optional()
+							.describe(
+								"For each arm, the number of participants assigned. TODO: make required once development has stabilized. May be None if unknown due to persisting prior versions of an AssignSummary.",
+							),
+					})
+					.describe("Key pieces of an AssignResponse without the assignments."),
+			})
+			.describe("Representation of our stored Experiment information."),
+	),
+});
+
+/**
  * Returns the experiment with the specified ID.
  * @summary Get Experiment
  */
