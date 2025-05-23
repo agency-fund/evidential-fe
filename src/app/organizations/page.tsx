@@ -17,9 +17,8 @@ export default function Page() {
   }
   return (
     <Flex direction="column" gap="3">
-      <Heading>Manage Organizations</Heading>
       <Flex justify="between" align="center">
-        <Heading size="4">Organizations</Heading>
+        <Heading size="8">Manage Organizations</Heading>
         <CreateOrganizationDialog />
       </Flex>
       {data.items.length > 0 ? (

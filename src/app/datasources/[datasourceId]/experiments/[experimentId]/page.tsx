@@ -1,12 +1,12 @@
 'use client';
-import { Badge, Button, Card, Flex, Grid, Heading, Separator, Table, Tabs, Text } from '@radix-ui/themes';
-import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeftIcon, CodeIcon, PersonIcon } from '@radix-ui/react-icons';
+import { Badge, Box, Card, Flex, Heading, Separator, Table, Tabs, Text, Tooltip } from '@radix-ui/themes';
+import { useParams } from 'next/navigation';
+import { CodeIcon, InfoCircledIcon, PersonIcon, CalendarIcon } from '@radix-ui/react-icons';
+import { BackButton } from '@/components/ui/buttons/back-button';
 import { useAnalyzeExperiment, useGetExperiment } from '@/api/admin';
 import { ForestPlot } from '@/components/features/experiments/forest-plot';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { ExperimentStatusBadge } from '@/components/features/experiments/experiment-status-badge';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
 import { useState } from 'react';
 import * as Toast from '@radix-ui/react-toast';
@@ -14,10 +14,11 @@ import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import Link from 'next/link';
 import { ReadMoreText } from '@/components/ui/read-more-text';
+import { SectionCard } from '@/components/ui/cards/section-card';
+
 export default function ExperimentViewPage() {
   const [openToast, setOpenToast] = useState(false);
   const params = useParams();
-  const router = useRouter();
   const experimentId = params.experimentId as string;
   const datasourceId = params.datasourceId as string;
 
@@ -54,179 +55,191 @@ export default function ExperimentViewPage() {
     return <Text>No experiment data found</Text>;
   }
 
-  const { design_spec, state, assign_summary } = experiment;
+  const { design_spec, assign_summary } = experiment;
   const { experiment_name, description, start_date, end_date, arms } = design_spec;
 
   return (
-    <Flex direction="column" gap="4">
-      <Flex align="center" gap="2" justify="between">
-        <Flex align="center" gap="2">
-          <Button variant="soft" onClick={() => router.back()}>
-            <ArrowLeftIcon /> Back
-          </Button>
-          <Flex gap="2" align="center">
-            <Heading>{experiment_name}</Heading>
-            <CopyToClipBoard content={experimentId} tooltipContent="Copy experiment ID" />
-            <ExperimentStatusBadge status={state} />
+    <Flex direction="column" gap="6">
+      <Flex align="start" direction="column" gap="3">
+        <BackButton href="/" label="Back to Experiments" />
+        <Separator my="3" size="4" />
+        <Flex direction="row" gap="2" align="center">
+          <Heading size="8">{experiment_name}</Heading>
+          <CopyToClipBoard content={experimentId} tooltipContent="Copy experiment ID" />
+        </Flex>
+        <Flex gap="4" align="center">
+          <Flex align="center" gap="1">
+            <Text weight="bold">Type:</Text>
+            <ExperimentTypeBadge type={design_spec.experiment_type} />
           </Flex>
-          <Flex direction={'column'}>
-            <Text color={'gray'}>
-              This <ExperimentTypeBadge type={design_spec.experiment_type} /> experiment is on{' '}
-              <Link
-                href={`/datasources/${experiment.datasource_id}/participants/${experiment.design_spec.participant_type}`}
-              >
-                {experiment.design_spec.participant_type}
-              </Link>
-              .
-            </Text>
+
+          <Separator orientation="vertical" />
+
+          <Flex align="center" gap="1">
+            <Text weight="bold">Participants:</Text>
+            <Link
+              href={`/datasources/${experiment.datasource_id}/participants/${experiment.design_spec.participant_type}`}
+            >
+              {experiment.design_spec.participant_type}
+            </Link>
+          </Flex>
+
+          <Separator orientation="vertical" />
+
+          <Flex align="center" gap="2">
+            <CalendarIcon />
+            <Text>{new Date(start_date).toLocaleDateString()}</Text>
+            <Text>→</Text>
+            <Text>{new Date(end_date).toLocaleDateString()}</Text>
           </Flex>
         </Flex>
       </Flex>
+      <Flex direction="column" gap="4">
+        {/* Hypothesis Section */}
+        <SectionCard title="Hypothesis">
+          <ReadMoreText text={description} />
+        </SectionCard>
 
-      <Card>
-        <Heading size="3">Hypothesis</Heading>
-        <Separator my="3" size="4" />
-        <ReadMoreText text={description} />
-      </Card>
-
-      <Grid columns="2" gap="4">
-        {/* Timeline Section */}
-        <Card>
-          <Heading size="3">Timeline</Heading>
-          <Separator my="3" size="4" />
+        {/* Arms & Allocations Section */}
+        <SectionCard
+          title="Arms & Allocations"
+          headerRight={
+            <Badge>
+              <PersonIcon />
+              <Text size="2">{assign_summary.sample_size.toLocaleString()} participants</Text>
+            </Badge>
+          }
+        >
           <Table.Root>
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
+              </Table.Row>
+            </Table.Header>
             <Table.Body>
-              <Table.Row>
-                <Table.RowHeaderCell>Start Date</Table.RowHeaderCell>
-                <Table.Cell>{new Date(start_date).toLocaleDateString()}</Table.Cell>
-              </Table.Row>
-              <Table.Row>
-                <Table.RowHeaderCell>End Date</Table.RowHeaderCell>
-                <Table.Cell>{new Date(end_date).toLocaleDateString()}</Table.Cell>
-              </Table.Row>
+              {arms.map((arm) => {
+                const armSize = assign_summary.arm_sizes?.find((a) => a.arm.arm_id === arm.arm_id)?.size || 0;
+                const percentage = (armSize / assign_summary.sample_size) * 100;
+                return (
+                  <Table.Row key={arm.arm_id}>
+                    <Table.Cell>
+                      <Flex direction="column" gap="4" align="start">
+                        <Flex gap="2" align="center">
+                          <Heading size="2">{arm.arm_name}</Heading>
+                          <CopyToClipBoard content={arm.arm_id || ''} tooltipContent="Copy arm ID" />
+                        </Flex>
+                        <Flex direction="column" gap="3" align="start">
+                          <Badge>
+                            <PersonIcon />
+                            <Text>{armSize.toLocaleString()} participants</Text>
+                          </Badge>
+                          <Badge>{percentage.toFixed(1)}%</Badge>
+                        </Flex>
+                      </Flex>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <ReadMoreText text={arm.arm_description || 'No description'} />
+                    </Table.Cell>
+                  </Table.Row>
+                );
+              })}
             </Table.Body>
           </Table.Root>
-        </Card>
+        </SectionCard>
 
-        {/* Parameters Section */}
-        <Card>
-          <Heading size="3">Parameters</Heading>
-          <Separator my="3" size="4" />
-          <Table.Root>
-            <Table.Body>
-              <Table.Row>
-                <Table.RowHeaderCell>Sample Size</Table.RowHeaderCell>
-                <Table.Cell>{assign_summary.sample_size.toLocaleString()}</Table.Cell>
-              </Table.Row>
-              <Table.Row>
-                <Table.RowHeaderCell>Confidence Level</Table.RowHeaderCell>
-                <Table.Cell>{(1 - (design_spec.alpha || 0.05)) * 100}%</Table.Cell>
-              </Table.Row>
-              <Table.Row>
-                <Table.RowHeaderCell>Power</Table.RowHeaderCell>
-                <Table.Cell>{design_spec.power ? `${design_spec.power * 100}%` : '?'}</Table.Cell>
-              </Table.Row>
-            </Table.Body>
-          </Table.Root>
-        </Card>
-      </Grid>
-
-      {/* Arms & Balance Section */}
-      <Card>
-        <Heading size="3">Arms & Balance</Heading>
-        <Separator my="3" size="4" />
-        <Flex gap="4">
-          {arms.map((arm) => {
-            const armSize = assign_summary.arm_sizes?.find((a) => a.arm.arm_id === arm.arm_id)?.size || 0;
-            const percentage = (armSize / assign_summary.sample_size) * 100;
-            return (
-              <Card key={arm.arm_id} style={{ flex: 1 }}>
-                <Flex direction="column" gap="2">
-                  <Flex justify="between" align="center">
+        {/* Analysis Section */}
+        <SectionCard
+          title="Analysis"
+          headerRight={
+            analysisData && (
+              <Flex gap="3" align="center" justify="between">
+                <Badge size="2">
+                  <Flex gap="4" align="center">
+                    <Heading size="2">Confidence:</Heading>
                     <Flex gap="2" align="center">
-                      <Heading size="4">{arm.arm_name}</Heading>
-                      <CopyToClipBoard content={arm.arm_id || ''} tooltipContent="Copy arm ID" />
+                      <Text>{(1 - (design_spec.alpha || 0.05)) * 100}%</Text>
+                      <Tooltip content="Chance that our test correctly shows no significant difference, if there truly is none. (The probability of avoiding a false positive.)">
+                        <InfoCircledIcon />
+                      </Tooltip>
                     </Flex>
-                    <Text color="gray" weight="bold">
-                      {percentage.toFixed(1)}%
-                    </Text>
                   </Flex>
-                  <Flex gap="2" align="center" justify="end">
-                    <Badge>
-                      <PersonIcon />
-                      <Text size="2">{armSize.toLocaleString()} participants</Text>
-                    </Badge>
+                </Badge>
+                <Badge size="2">
+                  <Flex gap="4" align="center">
+                    <Heading size="2">Power:</Heading>
+                    <Flex gap="2" align="center">
+                      <Text>{design_spec.power ? `${design_spec.power * 100}%` : '?'}</Text>
+                      <Tooltip content="Chance of detecting a difference at least as large as the pre-specified minimum effect for the metric, if that difference truly exists. (The probability of avoiding a false negative.)">
+                        <InfoCircledIcon />
+                      </Tooltip>
+                    </Flex>
                   </Flex>
-                  <Flex justify="between" align="center">
-                    <Text color="gray" style={{ whiteSpace: 'pre-wrap' }}>
-                      {arm.arm_description || 'No description'}
-                    </Text>
-                  </Flex>
-                </Flex>
-              </Card>
-            );
-          })}
-        </Flex>
-      </Card>
-
-      {/* Analysis Section */}
-      <Card>
-        <Heading size="3">Analysis</Heading>
-        <Separator my="3" size="4" />
-
-        {isLoadingAnalysis && <XSpinner message="Loading analysis data..." />}
-
-        {analysisError && (
-          <GenericErrorCallout
-            title="Error loading analysis"
-            message="Analysis may not be available yet or the experiment hasn't collected enough data."
-          />
-        )}
-
-        {analysisData && (
-          <Tabs.Root defaultValue="visualization">
-            <Tabs.List>
-              <Tabs.Trigger value="visualization">Visualization</Tabs.Trigger>
-              <Tabs.Trigger value="raw">
-                Raw Data <CodeIcon />
-              </Tabs.Trigger>
-            </Tabs.List>
-
-            <Tabs.Content value="visualization">
-              <Flex direction="column" gap="3" py="3">
-                {analysisData.metric_analyses.map((metric_analysis, index) => (
-                  <ForestPlot key={index} analysis={metric_analysis} experiment={experiment} />
-                ))}
+                </Badge>
               </Flex>
-            </Tabs.Content>
+            )
+          }
+        >
+          {isLoadingAnalysis && <XSpinner message="Loading analysis data..." />}
 
-            <Tabs.Content value="raw">
-              <Flex direction="column" gap="3" py="3">
-                <CodeSnippetCard
-                  title="Raw Data"
-                  content={JSON.stringify(analysisData, null, 2)}
-                  height="200px"
-                  tooltipContent="Copy raw data"
-                />
-              </Flex>
-            </Tabs.Content>
-          </Tabs.Root>
-        )}
-      </Card>
+          {analysisError && (
+            <GenericErrorCallout
+              title="Error loading analysis"
+              message="Analysis may not be available yet or the experiment hasn't collected enough data."
+            />
+          )}
 
-      <Toast.Root
-        open={openToast}
-        onOpenChange={setOpenToast}
-        duration={2000}
-        style={{
-          background: 'white',
-          padding: '12px 16px',
-          borderRadius: '4px',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-        }}
-      >
-        <Toast.Title style={{ margin: 0 }}>🚧 Nothing to do here yet... 🚧</Toast.Title>
-      </Toast.Root>
+          {!isLoadingAnalysis && !analysisError && analysisData && (
+            <Flex direction="column" gap="3">
+              <Tabs.Root defaultValue="visualization">
+                <Tabs.List>
+                  <Tabs.Trigger value="visualization">Visualization</Tabs.Trigger>
+                  <Tabs.Trigger value="raw">
+                    <Flex gap="2" align="center">
+                      Raw Data <CodeIcon />
+                    </Flex>
+                  </Tabs.Trigger>
+                </Tabs.List>
+                <Box px="4">
+                  <Tabs.Content value="visualization">
+                    <Flex direction="column" gap="3" py="3">
+                      {analysisData.metric_analyses.map((metric_analysis, index) => (
+                        <ForestPlot key={index} analysis={metric_analysis} experiment={experiment} />
+                      ))}
+                    </Flex>
+                  </Tabs.Content>
+
+                  <Tabs.Content value="raw">
+                    <Flex direction="column" gap="3" py="3">
+                      <CodeSnippetCard
+                        title="Raw Data"
+                        content={JSON.stringify(analysisData, null, 2)}
+                        height="200px"
+                        tooltipContent="Copy raw data"
+                        variant="ghost"
+                      />
+                    </Flex>
+                  </Tabs.Content>
+                </Box>
+              </Tabs.Root>
+            </Flex>
+          )}
+        </SectionCard>
+
+        <Toast.Root
+          open={openToast}
+          onOpenChange={setOpenToast}
+          duration={2000}
+          style={{
+            background: 'white',
+            padding: '12px 16px',
+            borderRadius: '4px',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+          }}
+        >
+          <Toast.Title style={{ margin: 0 }}>🚧 Nothing to do here yet... 🚧</Toast.Title>
+        </Toast.Root>
+      </Flex>
     </Flex>
   );
 }

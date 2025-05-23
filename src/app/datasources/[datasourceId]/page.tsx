@@ -1,17 +1,16 @@
 'use client';
-import { Callout, Flex, Heading, Text } from '@radix-ui/themes';
+import { Callout, Flex, Heading, Text, Separator } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { ApiKeysSection } from '@/components/features/datasources/api-keys-section';
 import { useGetDatasource, useInspectDatasource } from '@/api/admin';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { EditDatasourceDialog } from '@/components/features/datasources/edit-datasource-dialog';
 import { ParticipantTypesSection } from '@/components/features/participants/participant-types-section';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { useEffect, useState } from 'react';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-
+import { BackButton } from '@/components/ui/buttons/back-button';
 export default function Page() {
   const params = useParams();
   const datasourceId = params.datasourceId as string;
@@ -109,12 +108,16 @@ export default function Page() {
   const organizationName = datasourceMetadata.organization_name;
   const organizationId = datasourceMetadata.organization_id;
   return (
-    <Flex direction="column" gap="3">
-      <Heading>Datasource Details: {datasourceName}</Heading>
-      <Text>
-        Back to: <Link href={`/organizations/${organizationId}`}>{organizationName}</Link>
-      </Text>
-      <Flex gap="3">{editDatasourceDialogComponent}</Flex>
+    <Flex direction="column" gap="6">
+      <Flex align="start" direction="column" gap="3">
+        <BackButton href={`/organizations/${organizationId}`} label={`Back to ${organizationName}`} />
+        <Separator my="3" size="4" />
+        <Flex justify="between" align="end" width="100%">
+          <Heading size="8">Datasource: {datasourceName}</Heading>
+          {editDatasourceDialogComponent}
+        </Flex>
+      </Flex>
+
       {
         <>
           <Callout.Root color={'green'}>
