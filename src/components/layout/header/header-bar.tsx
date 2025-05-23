@@ -39,7 +39,7 @@ export function HeaderBar() {
       }}
     >
       {/* Using Link instead of router.push for accessibility */}
-      <Link href="/public" style={{ textDecoration: 'none', color: 'inherit' }}>
+      <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
         <Heading>{PRODUCT_NAME}</Heading>
       </Link>
       <DropdownMenu.Root

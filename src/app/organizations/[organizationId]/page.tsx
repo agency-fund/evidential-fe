@@ -61,11 +61,12 @@ export default function Page() {
   }
 
   return (
-    <Flex direction="column" gap="3">
-      <Heading>{organization.name}</Heading>
-      <Flex gap={'3'}>
+    <Flex direction="column" gap="6">
+      <Flex justify="between" align="end" width="100%">
+        <Heading size="8">{organization.name}</Heading>
         <RenameOrganizationDialog organizationId={organizationId} currentName={organization.name} />
       </Flex>
+
       <Flex direction="column" gap="3">
         <Flex justify="between" align="center">
           <Heading size="4">Users</Heading>

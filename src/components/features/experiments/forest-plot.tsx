@@ -178,213 +178,211 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
   };
 
   return (
-    <Card>
-      <Flex direction="column" gap="3">
-        <Flex direction="row" align="baseline" wrap="wrap">
-          <Text weight="bold">Effect of {analysis.metric_name || 'Unknown Metric'}&nbsp;</Text>
-          <Text>
-            {(() => {
-              const mdePct = analysis.metric?.metric_pct_change;
-              if (typeof mdePct === 'number') {
-                return `(Target min effect: ${(mdePct * 100).toFixed(1)}%)`;
-              }
-              return '(Target min effect: unknown)';
-            })()}
-          </Text>
-        </Flex>
-
-        {effectSizes.some((e) => e.invalidStatTest) && (
-          <Callout.Root color="orange" size="1">
-            <Callout.Icon>
-              <ExclamationTriangleIcon />
-            </Callout.Icon>
-            <Callout.Text>
-              Statistical test is invalid for one or more arms. The experiment might not have enough data or no
-              variation in the metric right now.
-            </Callout.Text>
-          </Callout.Root>
-        )}
-
-        <Box style={{ height: 200 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 60 }}>
-              {/* Supply our own coordinates generator since default rendering is off for ratio metrics */}
-              <CartesianGrid strokeDasharray="3 3" verticalCoordinatesGenerator={scaleXGridPoints} />
-              <XAxis
-                type="number"
-                dataKey="absEffect"
-                interval={0} // show all ticks
-                scale="linear"
-                domain={[minX, maxX]}
-                ticks={xGridPoints} // use our own ticks due to auto rendering issues
-                tickFormatter={(value) => (value >= 1 ? value.toFixed() : value.toFixed(2))}
-              />
-              <YAxis
-                type="category"
-                domain={effectSizes.map((e, i) => i)}
-                // hide={true} - use ticks for arm names
-                tickFormatter={(index) => {
-                  return index >= 0 && index < effectSizes.length ? effectSizes[index].armName : '';
-                }}
-                allowDataOverflow={true} // bit of a hack since the ErrorBar is internally messing with the y-axis domain
-              />
-              <YAxis
-                yAxisId="stats"
-                type="category"
-                orientation="right"
-                // work with an index into our different effect sizes
-                domain={effectSizes.map((e, i) => i)}
-                width={80}
-                tick={(e) => {
-                  const {
-                    payload: { value },
-                  } = e;
-                  const armData = effectSizes[value];
-
-                  let percentChangeText = '';
-                  if (!armData.isBaseline) {
-                    const rawPercentChange =
-                      ((armData.absEffect - armData.baselineEffect) / armData.baselineEffect) * 100;
-                    // Handle cases where baselineEffect is 0 or very small to avoid Infinity or NaN
-                    if (isFinite(rawPercentChange)) {
-                      percentChangeText = `Δ= ${rawPercentChange.toFixed(1)}%`;
-                    } else {
-                      percentChangeText = 'change: N/A';
-                    }
-                  }
-
-                  const pValueText = `p = ${armData.pValue !== null ? armData.pValue.toFixed(3) : 'N/A'}`;
-
-                  // Common text properties
-                  const commonTextProps = {
-                    x: e.x,
-                    textAnchor: e.textAnchor,
-                    // Only bold/black if significant AND not baseline arm
-                    fill: armData.significant && !armData.isBaseline ? 'black' : undefined,
-                    fontWeight: armData.significant && !armData.isBaseline ? 'bold' : undefined,
-                    // fontSize will be set individually
-                  };
-
-                  return (
-                    <g>
-                      <text
-                        {...commonTextProps}
-                        y={e.y}
-                        // dy shift here and below to align the two lines of text around the tick mark better
-                        dy={!armData.isBaseline ? '-8px' : '0'}
-                        dominantBaseline="middle"
-                        // Purposely larger font size for the percent change
-                        fontSize="16px"
-                      >
-                        {percentChangeText}
-                      </text>
-                      <text
-                        {...commonTextProps}
-                        y={e.y}
-                        dy={!armData.isBaseline ? '8px' : '0'}
-                        dominantBaseline="middle"
-                        fontSize="12px"
-                      >
-                        {pValueText}
-                      </text>
-                    </g>
-                  );
-                }} // end tickFormatter, whew
-                allowDataOverflow={true}
-              />
-
-              <Tooltip content={<CustomTooltip />} />
-
-              {/* Confidence intervals - place under points */}
-              <Scatter
-                data={effectSizes}
-                fill="none"
-                // Draw a custom line for CIs since ErrorBars don't give us enough control
-                shape={(props: CustomShapeProps) => {
-                  // Always return an element even if empty.
-                  if (!props.payload || !props.xAxis?.width) return <g />;
-
-                  const { ci95, significant, effect, isBaseline } = props.payload;
-                  const {
-                    cx: centerX,
-                    cy: centerY,
-                    xAxis: { width: xAxisWidth },
-                  } = props;
-
-                  // Determine stroke color based on significance and direction
-                  let strokeColor: string = COLORS.DEFAULT_CI;
-                  if (significant && !isBaseline) {
-                    strokeColor = effect > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
-                  }
-                  return (
-                    <line
-                      x1={(centerX || 0) - scaleHalfIntervalToViewport(ci95, xAxisWidth)}
-                      y1={centerY}
-                      x2={(centerX || 0) + scaleHalfIntervalToViewport(ci95, xAxisWidth)}
-                      y2={centerY}
-                      stroke={strokeColor}
-                      strokeWidth={2}
-                    />
-                  );
-                }}
-              >
-                {/* <ErrorBar dataKey="ci95" width={0} strokeWidth={10} stroke={"red"} opacity={0.2} direction="x"/> */}
-              </Scatter>
-
-              {/* All arms */}
-              <Scatter
-                data={effectSizes}
-                shape={(props: CustomShapeProps) => {
-                  // Always return an element even if empty.
-                  if (!props.payload) return <g />;
-
-                  const { significant, isBaseline, effect } = props.payload;
-                  const { cx: centerX, cy: centerY } = props;
-
-                  let fillColor: string = COLORS.DEFAULT;
-                  if (significant && !isBaseline) {
-                    fillColor = effect > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
-                  }
-                  if (isBaseline) {
-                    // Mark the control arm with a larger diamond shape
-                    return (
-                      <polygon points={createDiamondShape(centerX, centerY, 8)} fill={COLORS.DEFAULT} stroke="none" />
-                    );
-                  } else {
-                    return <circle cx={centerX} cy={centerY} r={4} fill={fillColor} stroke="none" />;
-                  }
-                }}
-              />
-
-              {/* Control arm mean - vertical marker */}
-              <Scatter
-                data={effectSizes}
-                fill="none"
-                // Draw a custom SVG line for CIs since ErrorBars don't give us enough control
-                shape={(props: CustomShapeProps) => {
-                  // Always return an element even if empty.
-                  if (!props.payload?.isBaseline) return <g />;
-
-                  const { cx: centerX, yAxis } = props;
-
-                  return (
-                    <line
-                      x1={centerX}
-                      y1={0}
-                      x2={centerX}
-                      y2={(yAxis?.height || 0) + 20} // where's the extra 20 from? Margins?
-                      stroke={COLORS.BASELINE}
-                      strokeWidth={5}
-                      strokeDasharray="1 1"
-                      opacity={0.2}
-                    />
-                  );
-                }}
-              />
-            </ScatterChart>
-          </ResponsiveContainer>
-        </Box>
+    <Flex direction="column" gap="3">
+      <Flex direction="row" align="baseline" wrap="wrap">
+        <Text weight="bold">Effect of {analysis.metric_name || 'Unknown Metric'}&nbsp;</Text>
+        <Text>
+          {(() => {
+            const mdePct = analysis.metric?.metric_pct_change;
+            if (typeof mdePct === 'number') {
+              return `(Target min effect: ${(mdePct * 100).toFixed(1)}%)`;
+            }
+            return '(Target min effect: unknown)';
+          })()}
+        </Text>
       </Flex>
-    </Card>
+
+      {effectSizes.some((e) => e.invalidStatTest) && (
+        <Callout.Root color="orange" size="1">
+          <Callout.Icon>
+            <ExclamationTriangleIcon />
+          </Callout.Icon>
+          <Callout.Text>
+            Statistical test is invalid for one or more arms. The experiment might not have enough data or no variation
+            in the metric right now.
+          </Callout.Text>
+        </Callout.Root>
+      )}
+
+      <Box style={{ height: 200 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 60 }}>
+            {/* Supply our own coordinates generator since default rendering is off for ratio metrics */}
+            <CartesianGrid strokeDasharray="3 3" verticalCoordinatesGenerator={scaleXGridPoints} />
+            <XAxis
+              type="number"
+              dataKey="absEffect"
+              interval={0} // show all ticks
+              scale="linear"
+              domain={[minX, maxX]}
+              ticks={xGridPoints} // use our own ticks due to auto rendering issues
+              tickFormatter={(value) => (value >= 1 ? value.toFixed() : value.toFixed(2))}
+            />
+            <YAxis
+              type="category"
+              domain={effectSizes.map((e, i) => i)}
+              // hide={true} - use ticks for arm names
+              tickFormatter={(index) => {
+                return index >= 0 && index < effectSizes.length ? effectSizes[index].armName : '';
+              }}
+              allowDataOverflow={true} // bit of a hack since the ErrorBar is internally messing with the y-axis domain
+            />
+            <YAxis
+              yAxisId="stats"
+              type="category"
+              orientation="right"
+              // work with an index into our different effect sizes
+              domain={effectSizes.map((e, i) => i)}
+              width={80}
+              tick={(e) => {
+                const {
+                  payload: { value },
+                } = e;
+                const armData = effectSizes[value];
+
+                let percentChangeText = '';
+                if (!armData.isBaseline) {
+                  const rawPercentChange =
+                    ((armData.absEffect - armData.baselineEffect) / armData.baselineEffect) * 100;
+                  // Handle cases where baselineEffect is 0 or very small to avoid Infinity or NaN
+                  if (isFinite(rawPercentChange)) {
+                    percentChangeText = `Δ= ${rawPercentChange.toFixed(1)}%`;
+                  } else {
+                    percentChangeText = 'change: N/A';
+                  }
+                }
+
+                const pValueText = `p = ${armData.pValue !== null ? armData.pValue.toFixed(3) : 'N/A'}`;
+
+                // Common text properties
+                const commonTextProps = {
+                  x: e.x,
+                  textAnchor: e.textAnchor,
+                  // Only bold/black if significant AND not baseline arm
+                  fill: armData.significant && !armData.isBaseline ? 'black' : undefined,
+                  fontWeight: armData.significant && !armData.isBaseline ? 'bold' : undefined,
+                  // fontSize will be set individually
+                };
+
+                return (
+                  <g>
+                    <text
+                      {...commonTextProps}
+                      y={e.y}
+                      // dy shift here and below to align the two lines of text around the tick mark better
+                      dy={!armData.isBaseline ? '-8px' : '0'}
+                      dominantBaseline="middle"
+                      // Purposely larger font size for the percent change
+                      fontSize="16px"
+                    >
+                      {percentChangeText}
+                    </text>
+                    <text
+                      {...commonTextProps}
+                      y={e.y}
+                      dy={!armData.isBaseline ? '8px' : '0'}
+                      dominantBaseline="middle"
+                      fontSize="12px"
+                    >
+                      {pValueText}
+                    </text>
+                  </g>
+                );
+              }} // end tickFormatter, whew
+              allowDataOverflow={true}
+            />
+
+            <Tooltip content={<CustomTooltip />} />
+
+            {/* Confidence intervals - place under points */}
+            <Scatter
+              data={effectSizes}
+              fill="none"
+              // Draw a custom line for CIs since ErrorBars don't give us enough control
+              shape={(props: CustomShapeProps) => {
+                // Always return an element even if empty.
+                if (!props.payload || !props.xAxis?.width) return <g />;
+
+                const { ci95, significant, effect, isBaseline } = props.payload;
+                const {
+                  cx: centerX,
+                  cy: centerY,
+                  xAxis: { width: xAxisWidth },
+                } = props;
+
+                // Determine stroke color based on significance and direction
+                let strokeColor: string = COLORS.DEFAULT_CI;
+                if (significant && !isBaseline) {
+                  strokeColor = effect > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
+                }
+                return (
+                  <line
+                    x1={(centerX || 0) - scaleHalfIntervalToViewport(ci95, xAxisWidth)}
+                    y1={centerY}
+                    x2={(centerX || 0) + scaleHalfIntervalToViewport(ci95, xAxisWidth)}
+                    y2={centerY}
+                    stroke={strokeColor}
+                    strokeWidth={2}
+                  />
+                );
+              }}
+            >
+              {/* <ErrorBar dataKey="ci95" width={0} strokeWidth={10} stroke={"red"} opacity={0.2} direction="x"/> */}
+            </Scatter>
+
+            {/* All arms */}
+            <Scatter
+              data={effectSizes}
+              shape={(props: CustomShapeProps) => {
+                // Always return an element even if empty.
+                if (!props.payload) return <g />;
+
+                const { significant, isBaseline, effect } = props.payload;
+                const { cx: centerX, cy: centerY } = props;
+
+                let fillColor: string = COLORS.DEFAULT;
+                if (significant && !isBaseline) {
+                  fillColor = effect > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
+                }
+                if (isBaseline) {
+                  // Mark the control arm with a larger diamond shape
+                  return (
+                    <polygon points={createDiamondShape(centerX, centerY, 8)} fill={COLORS.DEFAULT} stroke="none" />
+                  );
+                } else {
+                  return <circle cx={centerX} cy={centerY} r={4} fill={fillColor} stroke="none" />;
+                }
+              }}
+            />
+
+            {/* Control arm mean - vertical marker */}
+            <Scatter
+              data={effectSizes}
+              fill="none"
+              // Draw a custom SVG line for CIs since ErrorBars don't give us enough control
+              shape={(props: CustomShapeProps) => {
+                // Always return an element even if empty.
+                if (!props.payload?.isBaseline) return <g />;
+
+                const { cx: centerX, yAxis } = props;
+
+                return (
+                  <line
+                    x1={centerX}
+                    y1={0}
+                    x2={centerX}
+                    y2={(yAxis?.height || 0) + 20} // where's the extra 20 from? Margins?
+                    stroke={COLORS.BASELINE}
+                    strokeWidth={5}
+                    strokeDasharray="1 1"
+                    opacity={0.2}
+                  />
+                );
+              }}
+            />
+          </ScatterChart>
+        </ResponsiveContainer>
+      </Box>
+    </Flex>
   );
 }

@@ -55,9 +55,10 @@ export default function Page() {
   return (
     <Flex direction="column" gap="3">
       <Flex justify="between" align="center">
-        <Heading>Experiments</Heading>
+        <Heading size={"8"}>Experiments</Heading>
         <CreateExperimentButton datasources={datasourcesData} loading={datasourcesIsLoading} />
       </Flex>
+
       {experimentsIsLoading && (
         <Flex>
           <XSpinner message={'Loading experiments list...'} />
