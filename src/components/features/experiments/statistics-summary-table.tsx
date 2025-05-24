@@ -1,3 +1,5 @@
+'use client';
+
 import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
 import { Table } from '@radix-ui/themes';
 

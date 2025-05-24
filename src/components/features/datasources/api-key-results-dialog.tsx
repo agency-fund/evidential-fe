@@ -1,3 +1,4 @@
+'use client';
 import { Button, Dialog, Flex } from '@radix-ui/themes';
 import { API_BASE_URL } from '@/services/constants';
 import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';

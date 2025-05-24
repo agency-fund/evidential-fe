@@ -1,27 +1,25 @@
 'use client';
 import { Button, Flex, Heading, Table } from '@radix-ui/themes';
-import { GearIcon, PlusIcon } from '@radix-ui/react-icons';
+import { GearIcon } from '@radix-ui/react-icons';
 import Link from 'next/link';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
-import { useListExperiments, useListOrganizationDatasources } from '@/api/admin';
+import { useListOrganizationDatasources, useListOrganizationExperiments } from '@/api/admin';
 import { DeleteExperimentButton } from '@/components/features/experiments/delete-experiment-button';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { useEffect, useState } from 'react';
-import { DatasourceSelector } from '@/components/features/datasources/datasource-selector';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
 import { useRouter } from 'next/navigation';
 import { PRODUCT_NAME } from '@/services/constants';
 import { ReadMoreText } from '@/components/ui/read-more-text';
+import { CreateExperimentButton } from '@/components/features/experiments/create-experiment-button';
+
 export default function Page() {
   const router = useRouter();
-  // Get the current organization from context
   const orgContext = useCurrentOrganization();
   const currentOrgId = orgContext?.current?.id;
 
-  // Fetch datasources for the current organization
   const {
     data: datasourcesData,
     isLoading: datasourcesIsLoading,
@@ -29,29 +27,20 @@ export default function Page() {
   } = useListOrganizationDatasources(currentOrgId!, {
     swr: {
       enabled: !!currentOrgId,
-      revalidateOnFocus: true,
     },
   });
 
-  const [selectedDatasource, setSelectedDatasource] = useState<string>('');
   const {
     data: experimentsData,
     isLoading: experimentsIsLoading,
     error: experimentsError,
-  } = useListExperiments(selectedDatasource!, {
-    swr: { enabled: selectedDatasource !== '' },
+  } = useListOrganizationExperiments(currentOrgId!, {
+    swr: { enabled: !!currentOrgId },
   });
 
   const filteredExperiments = experimentsData
     ? experimentsData.items.filter((experiment) => experiment.state === 'committed')
     : [];
-
-  // Set the selected datasource to the first one in the list when data loads
-  useEffect(() => {
-    if (datasourcesData && datasourcesData.items.length > 0 && selectedDatasource === '') {
-      setSelectedDatasource(datasourcesData.items[0].id);
-    }
-  }, [datasourcesData, selectedDatasource]);
 
   if (datasourcesError) {
     return <GenericErrorCallout title={'Error with experiments list'} error={datasourcesError} />;
@@ -61,25 +50,13 @@ export default function Page() {
     return <GenericErrorCallout title={'Error with experiments list'} error={experimentsError} />;
   }
 
+  const datasourcesToName = new Map(datasourcesData?.items.map((e) => [e.id, e.name]) || []);
+
   return (
     <Flex direction="column" gap="3">
-      {datasourcesIsLoading && <XSpinner message={'Datasources list loading...'} />}
       <Flex justify="between" align="center">
-        <Flex align="end" gap="3">
-          <Heading size="8">Experiments</Heading>
-          {datasourcesData && datasourcesData.items.length > 0 && (
-            <DatasourceSelector
-              selectedDatasource={selectedDatasource}
-              setSelectedDatasource={setSelectedDatasource}
-              datasourcesData={datasourcesData}
-            />
-          )}
-        </Flex>
-        <Link href={`/datasources/${selectedDatasource}/experiments/create`}>
-          <Button disabled={selectedDatasource === ''}>
-            <PlusIcon /> Create Experiment
-          </Button>
-        </Link>
+        <Heading size={"8"}>Experiments</Heading>
+        <CreateExperimentButton datasources={datasourcesData} loading={datasourcesIsLoading} />
       </Flex>
 
       {experimentsIsLoading && (
@@ -102,15 +79,15 @@ export default function Page() {
               <EmptyStateCard
                 title="Create your first experiment"
                 description="Get started by creating your first experiment."
-                buttonText="Create Experiment"
-                buttonIcon={<PlusIcon />}
-                onClick={() => router.push(`/datasources/${selectedDatasource}/experiments/create`)}
-              />
+              >
+                <CreateExperimentButton datasources={datasourcesData} loading={datasourcesIsLoading} />
+              </EmptyStateCard>
             ) : (
               <Table.Root>
                 <Table.Header>
                   <Table.Row>
                     <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Datasource</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Participants</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Start Date</Table.ColumnHeaderCell>
@@ -124,6 +101,7 @@ export default function Page() {
                   {filteredExperiments.map((experiment) => (
                     <Table.Row key={experiment.design_spec.experiment_id}>
                       <Table.Cell>{experiment.design_spec.experiment_name}</Table.Cell>
+                      <Table.Cell>{datasourcesToName.get(experiment.datasource_id)}</Table.Cell>
                       <Table.Cell>{experiment.design_spec.participant_type}</Table.Cell>
                       <Table.Cell>
                         <ExperimentTypeBadge type={experiment.design_spec.experiment_type} />
@@ -137,17 +115,17 @@ export default function Page() {
                         <Flex direction={'row'} gap={'2'}>
                           <Button variant="soft" size="1" asChild>
                             <Link
-                              href={`/datasources/${selectedDatasource}/experiments/${experiment.design_spec.experiment_id}`}
+                              href={`/datasources/${experiment.datasource_id}/experiments/${experiment.design_spec.experiment_id}`}
                             >
                               View
                             </Link>
                           </Button>
                           <DownloadAssignmentsCsvButton
-                            datasourceId={selectedDatasource}
+                            datasourceId={experiment.datasource_id}
                             experimentId={experiment.design_spec.experiment_id!}
                           />
                           <DeleteExperimentButton
-                            datasourceId={selectedDatasource}
+                            datasourceId={experiment.datasource_id}
                             experimentId={experiment.design_spec.experiment_id!}
                           />
                         </Flex>

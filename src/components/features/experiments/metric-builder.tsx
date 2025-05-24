@@ -1,3 +1,5 @@
+'use client';
+
 import { Badge, Button, Flex, Grid, Table, Text, TextField } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
