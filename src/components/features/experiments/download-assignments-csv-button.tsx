@@ -3,7 +3,6 @@ import { Button } from '@radix-ui/themes';
 import { useState } from 'react';
 import { getExperimentAssignmentsAsCsv } from '@/api/admin';
 import { DownloadIcon } from '@radix-ui/react-icons';
-import { XSpinner } from '@/components/ui/x-spinner';
 
 interface DownloadAssignmentsCsvButtonProps {
   datasourceId: string;
@@ -46,14 +45,8 @@ export function DownloadAssignmentsCsvButton({ datasourceId, experimentId }: Dow
   };
 
   return (
-    <Button variant="soft" size="1" onClick={handleDownload} disabled={isDownloading}>
-      {isDownloading ? (
-        <XSpinner />
-      ) : (
-        <>
-          <DownloadIcon /> CSV
-        </>
-      )}
+    <Button variant="soft" size="1" onClick={handleDownload} loading={isDownloading}>
+      <DownloadIcon /> CSV
     </Button>
   );
 }

@@ -1,20 +1,20 @@
 'use client';
 import { Button, Dialog, Flex } from '@radix-ui/themes';
 import { useState } from 'react';
-import { getListExperimentsKey, useDeleteExperiment } from '@/api/admin';
+import { getListOrganizationExperimentsKey, useDeleteExperiment } from '@/api/admin';
 import { mutate } from 'swr';
-import { XSpinner } from '@/components/ui/x-spinner';
 import { TrashIcon } from '@radix-ui/react-icons';
 
 interface DeleteExperimentButtonProps {
+  organizationId: string;
   datasourceId: string;
   experimentId: string;
 }
 
-export function DeleteExperimentButton({ datasourceId, experimentId }: DeleteExperimentButtonProps) {
+export function DeleteExperimentButton({ datasourceId, experimentId, organizationId }: DeleteExperimentButtonProps) {
   const [open, setOpen] = useState(false);
   const { trigger, isMutating } = useDeleteExperiment(datasourceId, experimentId, {
-    swr: { onSuccess: () => mutate(getListExperimentsKey(datasourceId)) },
+    swr: { onSuccess: () => mutate(getListOrganizationExperimentsKey(organizationId)) },
   });
 
   const handleDelete = async () => {
@@ -41,8 +41,8 @@ export function DeleteExperimentButton({ datasourceId, experimentId }: DeleteExp
                 Cancel
               </Button>
             </Dialog.Close>
-            <Button color="red" disabled={isMutating} onClick={handleDelete}>
-              {isMutating ? <XSpinner /> : 'Delete'}
+            <Button color="red" loading={isMutating} onClick={handleDelete}>
+              Delete
             </Button>
           </Flex>
         </Dialog.Content>

@@ -18,13 +18,13 @@ import { CreateExperimentButton } from '@/components/features/experiments/create
 export default function Page() {
   const router = useRouter();
   const orgContext = useCurrentOrganization();
-  const currentOrgId = orgContext?.current?.id;
+  const currentOrgId = orgContext!.current.id;
 
   const {
     data: datasourcesData,
     isLoading: datasourcesIsLoading,
     error: datasourcesError,
-  } = useListOrganizationDatasources(currentOrgId!, {
+  } = useListOrganizationDatasources(currentOrgId, {
     swr: {
       enabled: !!currentOrgId,
     },
@@ -34,7 +34,7 @@ export default function Page() {
     data: experimentsData,
     isLoading: experimentsIsLoading,
     error: experimentsError,
-  } = useListOrganizationExperiments(currentOrgId!, {
+  } = useListOrganizationExperiments(currentOrgId, {
     swr: { enabled: !!currentOrgId },
   });
 
@@ -55,7 +55,7 @@ export default function Page() {
   return (
     <Flex direction="column" gap="3">
       <Flex justify="between" align="center">
-        <Heading size={"8"}>Experiments</Heading>
+        <Heading size={'8'}>Experiments</Heading>
         <CreateExperimentButton datasources={datasourcesData} loading={datasourcesIsLoading} />
       </Flex>
 
@@ -125,6 +125,7 @@ export default function Page() {
                             experimentId={experiment.design_spec.experiment_id!}
                           />
                           <DeleteExperimentButton
+                            organizationId={currentOrgId}
                             datasourceId={experiment.datasource_id}
                             experimentId={experiment.design_spec.experiment_id!}
                           />
