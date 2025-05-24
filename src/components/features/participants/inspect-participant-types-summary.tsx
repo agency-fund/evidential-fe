@@ -1,3 +1,5 @@
+'use client';
+
 import { Button, Card, DataList, Flex, Grid, Heading, Text } from '@radix-ui/themes';
 import { InspectParticipantTypesResponse } from '@/api/methods.schemas';
 import { useState } from 'react';

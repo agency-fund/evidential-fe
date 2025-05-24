@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@radix-ui/themes';
 import { ArrowLeftIcon } from '@radix-ui/react-icons';

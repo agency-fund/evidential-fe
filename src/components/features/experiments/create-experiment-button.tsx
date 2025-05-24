@@ -1,3 +1,4 @@
+'use client';
 import { ListDatasourcesResponse } from '@/api/methods.schemas';
 import Link from 'next/link';
 import { Button, DropdownMenu } from '@radix-ui/themes';

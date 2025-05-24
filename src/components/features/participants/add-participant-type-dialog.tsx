@@ -1,3 +1,5 @@
+'use client';
+
 import { useCreateParticipantType, useInspectDatasource, useInspectTableInDatasource } from '@/api/admin';
 import { FieldDescriptor, FieldMetadata } from '@/api/methods.schemas';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';

@@ -1,3 +1,5 @@
+'use client';
+
 import { GetMetricsResponseElement } from '@/api/methods.schemas';
 import { Badge, Flex, HoverCard, Text } from '@radix-ui/themes';
 import { PlusIcon } from '@radix-ui/react-icons';

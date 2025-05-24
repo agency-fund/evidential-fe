@@ -1,3 +1,4 @@
+'use client';
 import { Callout, Code, Flex, Text } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { ApiError, ApiValidationError } from '@/services/orval-fetch';

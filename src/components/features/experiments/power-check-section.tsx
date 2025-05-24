@@ -1,3 +1,5 @@
+'use client';
+
 import { Button, Callout, Card, Flex, Spinner, Table, Text, TextField } from '@radix-ui/themes';
 import { CheckCircledIcon, CrossCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
