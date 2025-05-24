@@ -1,5 +1,5 @@
 'use client';
-import { Badge, Box, Card, Flex, Heading, Separator, Table, Tabs, Text, Tooltip } from '@radix-ui/themes';
+import { Badge, Box, Flex, Heading, Separator, Table, Tabs, Text, Tooltip } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
 import { CodeIcon, InfoCircledIcon, PersonIcon, CalendarIcon } from '@radix-ui/react-icons';
 import { BackButton } from '@/components/ui/buttons/back-button';
