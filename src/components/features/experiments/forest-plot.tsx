@@ -1,7 +1,7 @@
 'use client';
 import { MetricAnalysis, ExperimentConfig } from '@/api/methods.schemas';
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
-import { Box, Callout, Card, Flex, Text } from '@radix-ui/themes';
+import { ExclamationTriangleIcon, InfoCircledIcon } from '@radix-ui/react-icons';
+import { Badge, Box, Callout, Card, Flex, Heading, Text, Tooltip as RadixTooltip } from '@radix-ui/themes';
 import {
   CartesianGrid,
   ResponsiveContainer,
@@ -17,8 +17,8 @@ import { ChartOffset } from 'recharts/types/util/types';
 
 // Color constants
 const COLORS = {
-  DEFAULT: '#757575', // Gray for default/control
-  DEFAULT_CI: '#000000', // Black for default stroke
+  DEFAULT: '#bbbbbb', // Lighter gray for default/control
+  DEFAULT_CI: '#757575', // Gray for default stroke
   BASELINE: '#7575ff', // baseline vertical indicator
   POSITIVE: '#00c853', // Green for positive effects
   NEGATIVE: '#ff5252', // Red for negative effects
@@ -177,19 +177,27 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
     return (x / (maxX - minX)) * width;
   };
 
+  let mdePct: string;
+  if (analysis.metric?.metric_pct_change) {
+    mdePct = (analysis.metric?.metric_pct_change * 100).toFixed(1);
+  } else {
+    mdePct = 'unknown';
+  }
   return (
     <Flex direction="column" gap="3">
       <Flex direction="row" align="baseline" wrap="wrap">
         <Text weight="bold">Effect of {analysis.metric_name || 'Unknown Metric'}&nbsp;</Text>
-        <Text>
-          {(() => {
-            const mdePct = analysis.metric?.metric_pct_change;
-            if (typeof mdePct === 'number') {
-              return `(Target min effect: ${(mdePct * 100).toFixed(1)}%)`;
-            }
-            return '(Target min effect: unknown)';
-          })()}
-        </Text>
+        <Badge size="2">
+          <Flex gap="4" align="center">
+            <Heading size="2">MDE:</Heading>
+            <Flex gap="2" align="center">
+              <Text>{mdePct}%</Text>
+              <RadixTooltip content="This metric's minimum detectable effect as defined in the experiment's design that meets the confidence and power requirements.">
+                <InfoCircledIcon />
+              </RadixTooltip>
+            </Flex>
+          </Flex>
+        </Badge>
       </Flex>
 
       {effectSizes.some((e) => e.invalidStatTest) && (
@@ -322,7 +330,8 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
                     x2={(centerX || 0) + scaleHalfIntervalToViewport(ci95, xAxisWidth)}
                     y2={centerY}
                     stroke={strokeColor}
-                    strokeWidth={2}
+                    strokeWidth={4}
+                    strokeLinecap="round"
                   />
                 );
               }}
@@ -347,10 +356,16 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
                 if (isBaseline) {
                   // Mark the control arm with a larger diamond shape
                   return (
-                    <polygon points={createDiamondShape(centerX, centerY, 8)} fill={COLORS.DEFAULT} stroke="none" />
+                    <polygon
+                      points={createDiamondShape(centerX, centerY, 8)}
+                      fill={COLORS.DEFAULT}
+                      stroke={COLORS.DEFAULT_CI}
+                    />
                   );
                 } else {
-                  return <circle cx={centerX} cy={centerY} r={4} fill={fillColor} stroke="none" />;
+                  return (
+                    <circle cx={centerX} cy={centerY} r={5} fill={fillColor} stroke={COLORS.DEFAULT_CI} />
+                  );
                 }
               }}
             />
