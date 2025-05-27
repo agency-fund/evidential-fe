@@ -17,8 +17,8 @@ import { ChartOffset } from 'recharts/types/util/types';
 
 // Color constants
 const COLORS = {
-  DEFAULT: '#757575', // Gray for default/control
-  DEFAULT_CI: '#000000', // Black for default stroke
+  DEFAULT: '#bbbbbb', // Lighter gray for default/control
+  DEFAULT_CI: '#757575', // Gray for default stroke
   BASELINE: '#7575ff', // baseline vertical indicator
   POSITIVE: '#00c853', // Green for positive effects
   NEGATIVE: '#ff5252', // Red for negative effects
@@ -330,7 +330,8 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
                     x2={(centerX || 0) + scaleHalfIntervalToViewport(ci95, xAxisWidth)}
                     y2={centerY}
                     stroke={strokeColor}
-                    strokeWidth={2}
+                    strokeWidth={4}
+                    strokeLinecap="round"
                   />
                 );
               }}
@@ -355,10 +356,16 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
                 if (isBaseline) {
                   // Mark the control arm with a larger diamond shape
                   return (
-                    <polygon points={createDiamondShape(centerX, centerY, 8)} fill={COLORS.DEFAULT} stroke="none" />
+                    <polygon
+                      points={createDiamondShape(centerX, centerY, 8)}
+                      fill={COLORS.DEFAULT}
+                      stroke={COLORS.DEFAULT_CI}
+                    />
                   );
                 } else {
-                  return <circle cx={centerX} cy={centerY} r={4} fill={fillColor} stroke="none" />;
+                  return (
+                    <circle cx={centerX} cy={centerY} r={5} fill={fillColor} stroke={COLORS.DEFAULT_CI} />
+                  );
                 }
               }}
             />
