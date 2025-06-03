@@ -45,6 +45,9 @@ export const EditDatasourceDialog = ({
 
   // Notify parent when open state changes
   const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      setShowPassword(false);
+    }
     if (onOpenChange) {
       onOpenChange(newOpen);
     }

@@ -39,7 +39,7 @@ export function DeleteWebhookDialog({ organizationId, webhookId }: DeleteWebhook
               variant="solid"
               color="red"
               onClick={async () => {
-                await trigger({});
+                await trigger();
               }}
             >
               Delete

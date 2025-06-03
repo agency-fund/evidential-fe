@@ -1,5 +1,5 @@
 'use client';
-import { Callout, Flex, Heading, Text, Separator } from '@radix-ui/themes';
+import { Callout, Flex, Heading, Separator, Text } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { ApiKeysSection } from '@/components/features/datasources/api-keys-section';
@@ -11,6 +11,7 @@ import { useCurrentOrganization } from '@/providers/organization-provider';
 import { useEffect, useState } from 'react';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { BackButton } from '@/components/ui/buttons/back-button';
+
 export default function Page() {
   const params = useParams();
   const datasourceId = params.datasourceId as string;
@@ -37,17 +38,13 @@ export default function Page() {
     isLoading: inspectDatasourceLoading,
     error: inspectError,
     mutate: mutateInspect,
-  } = useInspectDatasource(
-    datasourceId!,
-    {},
-    {
-      swr: {
-        enabled: datasourceId !== null,
-        // Don't trigger the inspection if we're possibly editing the datasource.
-        isPaused: () => isDialogOpen,
-      },
+  } = useInspectDatasource(datasourceId!, undefined, {
+    swr: {
+      enabled: datasourceId !== null,
+      // Don't trigger the inspection if we're possibly editing the datasource.
+      isPaused: () => isDialogOpen,
     },
-  );
+  });
 
   // Only trigger revalidation when dialog transitions from open to closed,
   // while avoiding the initial load triggering a revalidation.

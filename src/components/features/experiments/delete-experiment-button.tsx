@@ -18,7 +18,7 @@ export function DeleteExperimentButton({ datasourceId, experimentId, organizatio
   });
 
   const handleDelete = async () => {
-    await trigger({});
+    await trigger();
     setOpen(false);
   };
 

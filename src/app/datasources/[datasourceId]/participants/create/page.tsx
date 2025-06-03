@@ -68,7 +68,7 @@ export default function CreateParticipantTypePage() {
   const { data: tableData, isLoading: loadingTableData } = useInspectTableInDatasource(
     datasourceId,
     selectedTable,
-    {},
+    undefined,
     {
       swr: {
         enabled: tableIsSelected,
