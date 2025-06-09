@@ -2,34 +2,14 @@
 
 import { useCreateParticipantType, useInspectDatasource, useInspectTableInDatasource } from '@/api/admin';
 import { FieldDescriptor, FieldMetadata } from '@/api/methods.schemas';
-import { TrashIcon } from '@radix-ui/react-icons';
-import {
-  Box,
-  Button,
-  Checkbox,
-  Flex,
-  Heading,
-  IconButton,
-  Radio,
-  Select,
-  Separator,
-  Switch,
-  Table,
-  Text,
-  TextField,
-  Tooltip,
-} from '@radix-ui/themes';
+import { Box, Button, Flex, Heading, Select, Separator, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { useEffect, useState } from 'react';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { isEligibleForUseAsMetric } from '@/services/genapi-helpers';
 import { useParams, useRouter } from 'next/navigation';
 import { BackButton } from '@/components/ui/buttons/back-button';
+import { ParticipantFieldsEditor } from '@/components/features/participants/participant-fields-editor';
 
-/** Creates a comparator function for ordering FieldDescriptors.
- *
- * TODO: When add-participant-type and edit-participant-type are consolidated, use the same ordering on both.
- */
 const makeFieldDescriptorComparator = (candidatesForUniqueIdField: string[]) => {
   const candidates = new Set(candidatesForUniqueIdField);
   return (left: FieldDescriptor, right: FieldDescriptor) => {
@@ -72,7 +52,7 @@ export default function CreateParticipantTypePage() {
 
   const [selectedTable, setSelectedTable] = useState<string>('');
   const [fields, setFields] = useState<FieldDescriptor[]>([]);
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [uniqueIdCandidates, setUniqueIdCandidates] = useState<string[]>([]);
 
   const tableIsSelected = selectedTable !== '';
   const { data: tableData, isLoading: loadingTableData } = useInspectTableInDatasource(
@@ -92,6 +72,7 @@ export default function CreateParticipantTypePage() {
   const updateSelectedTable = (table: string) => {
     setSelectedTable(table);
     setFields([]);
+    setUniqueIdCandidates([]);
     reset();
   };
 
@@ -101,30 +82,21 @@ export default function CreateParticipantTypePage() {
     }
     const recommended_id =
       tableData.detected_unique_id_fields.length > 0 ? tableData.detected_unique_id_fields[0] : null;
-    setFields(
-      tableData.fields
-        .map(
-          (field: FieldMetadata): FieldDescriptor => ({
-            is_unique_id: field.field_name === recommended_id,
-            is_strata: false,
-            is_filter: false,
-            is_metric: false,
-            ...field,
-          }),
-        )
-        .sort(makeFieldDescriptorComparator(tableData.detected_unique_id_fields)),
+
+    const initialFields = tableData.fields.map(
+      (field: FieldMetadata): FieldDescriptor => ({
+        is_unique_id: field.field_name === recommended_id,
+        is_strata: false,
+        is_filter: false,
+        is_metric: false,
+        ...field,
+      }),
     );
+
+    const sortedFields = [...initialFields].sort(makeFieldDescriptorComparator(tableData.detected_unique_id_fields));
+    setFields(sortedFields);
+    setUniqueIdCandidates(tableData.detected_unique_id_fields);
   }, [tableData]);
-
-  const updateField = (index: number, field: FieldDescriptor) => {
-    const newFields = [...fields];
-    newFields[index] = field;
-    setFields(newFields);
-  };
-
-  const removeField = (index: number) => {
-    setFields(fields.filter((_, i) => i !== index));
-  };
 
   const handleCancel = () => {
     router.push(`/datasources/${datasourceId}`);
@@ -222,122 +194,12 @@ export default function CreateParticipantTypePage() {
                 <Text as="div" size="3" weight="bold">
                   Fields
                 </Text>
-                <Flex align="center" gap="2">
-                  <Switch checked={showAdvanced} onCheckedChange={setShowAdvanced} />
-                  <Text size="2">Show Advanced Options</Text>
-                </Flex>
-                <Table.Root>
-                  <Table.Header>
-                    <Table.Row>
-                      <Table.ColumnHeaderCell>Field Name</Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell>Data Type</Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell justify={'center'}>Unique ID</Table.ColumnHeaderCell>
-                      {showAdvanced && <Table.ColumnHeaderCell justify={'center'}>Strata</Table.ColumnHeaderCell>}
-                      <Table.ColumnHeaderCell justify={'center'}>Filter</Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell justify={'center'}>Metric</Table.ColumnHeaderCell>
-                      {showAdvanced && <Table.ColumnHeaderCell justify={'center'}>Actions</Table.ColumnHeaderCell>}
-                    </Table.Row>
-                  </Table.Header>
-                  <Table.Body>
-                    {fields.map((field, index) => (
-                      <Table.Row key={index}>
-                        <Table.Cell>
-                          {tableData && tableData.detected_unique_id_fields.includes(field.field_name) ? (
-                            <Text weight={'bold'}>{field.field_name}</Text>
-                          ) : (
-                            <Text>{field.field_name}</Text>
-                          )}
-                        </Table.Cell>
-                        <Table.Cell>{field.data_type}</Table.Cell>
-                        <Table.Cell>
-                          <TextField.Root
-                            value={field.description}
-                            onChange={(e) =>
-                              updateField(index, {
-                                ...field,
-                                description: e.target.value,
-                              } as FieldDescriptor)
-                            }
-                          />
-                        </Table.Cell>
-                        <Table.Cell justify={'center'}>
-                          <Radio
-                            value={field.field_name}
-                            checked={field.is_unique_id}
-                            onValueChange={() => {
-                              // Update all fields to set is_unique_id to false
-                              const newFields = fields.map((f) => ({
-                                ...f,
-                                is_unique_id: false,
-                              }));
-                              // Then set the selected field to true
-                              newFields[index].is_unique_id = true;
-                              setFields(newFields);
-                            }}
-                            size="3"
-                          />
-                        </Table.Cell>
-                        {showAdvanced && (
-                          <Table.Cell justify={'center'}>
-                            <Checkbox
-                              checked={field.is_strata}
-                              onCheckedChange={(checked) =>
-                                updateField(index, {
-                                  ...field,
-                                  is_strata: checked,
-                                } as FieldDescriptor)
-                              }
-                              size="3"
-                            />
-                          </Table.Cell>
-                        )}
-                        <Table.Cell justify={'center'}>
-                          <Checkbox
-                            checked={field.is_filter}
-                            onCheckedChange={(checked) =>
-                              updateField(index, {
-                                ...field,
-                                is_filter: checked,
-                              } as FieldDescriptor)
-                            }
-                            size="3"
-                          />
-                        </Table.Cell>
-                        <Table.Cell justify={'center'}>
-                          {isEligibleForUseAsMetric(field.data_type) ? (
-                            <Checkbox
-                              checked={field.is_metric}
-                              onCheckedChange={(checked) =>
-                                updateField(index, {
-                                  ...field,
-                                  is_metric: checked,
-                                } as FieldDescriptor)
-                              }
-                              size="3"
-                            />
-                          ) : (
-                            <Tooltip content="Not eligible for use as a metric">
-                              <Checkbox disabled={true} size="3" />
-                            </Tooltip>
-                          )}
-                        </Table.Cell>
-                        {showAdvanced && (
-                          <Table.Cell justify={'center'}>
-                            <IconButton
-                              onClick={(e) => {
-                                e.preventDefault();
-                                removeField(index);
-                              }}
-                            >
-                              <TrashIcon />
-                            </IconButton>
-                          </Table.Cell>
-                        )}
-                      </Table.Row>
-                    ))}
-                  </Table.Body>
-                </Table.Root>
+                <ParticipantFieldsEditor
+                  fields={fields}
+                  onFieldsChange={setFields}
+                  uniqueIdCandidates={uniqueIdCandidates}
+                  allowFieldRemoval={true}
+                />
               </Flex>
             )}
           </Flex>

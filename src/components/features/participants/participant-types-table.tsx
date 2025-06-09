@@ -5,7 +5,6 @@ import { XSpinner } from '@/components/ui/x-spinner';
 import Link from 'next/link';
 import { DeleteParticipantTypeDialog } from '@/components/features/participants/delete-participant-type-dialog';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { EditParticipantTypeDialog } from '@/components/features/participants/edit-participant-type-dialog';
 import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
 import { PlusIcon } from '@radix-ui/react-icons';
 

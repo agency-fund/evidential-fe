@@ -10,7 +10,7 @@ import { useState } from 'react';
 import { mutate } from 'swr';
 import { Button, Flex, Heading, Separator, Text } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
-import { ParticipantDefEditor } from '@/components/features/participants/edit-participant-def';
+import { ParticipantFieldsEditor } from '@/components/features/participants/participant-fields-editor';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { useParams, useRouter } from 'next/navigation';
 import { BackButton } from '@/components/ui/buttons/back-button';
@@ -101,6 +101,13 @@ export default function EditParticipantTypePage() {
     router.push(`/datasources/${datasourceId}/participants/${participantType}`);
   };
 
+  const handleFieldsChange = (fields: typeof participantConfig.fields) => {
+    setEditedDef({
+      ...participantConfig,
+      fields,
+    });
+  };
+
   return (
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
@@ -122,7 +129,11 @@ export default function EditParticipantTypePage() {
             </Flex>
           )}
 
-          <ParticipantDefEditor participantDef={editedDef || participantConfig} onUpdate={setEditedDef} />
+          <ParticipantFieldsEditor
+            fields={(editedDef || participantConfig).fields}
+            onFieldsChange={handleFieldsChange}
+            allowFieldRemoval={false}
+          />
 
           <Flex gap="3" mt="4" justify="end">
             <Button variant="soft" color="gray" onClick={handleCancel}>
