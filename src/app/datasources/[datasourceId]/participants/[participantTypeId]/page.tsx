@@ -1,12 +1,13 @@
 'use client';
 import { useGetParticipantTypes, useInspectParticipantTypes } from '@/api/admin';
-import { Flex, Heading, Text, Separator } from '@radix-ui/themes';
+import { Button, Flex, Heading, Text, Separator } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { useParams } from 'next/navigation';
 import { InspectParticipantTypesSummary } from '@/components/features/participants/inspect-participant-types-summary';
-import { EditParticipantTypeDialog } from '@/components/features/participants/edit-participant-type-dialog';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { BackButton } from '@/components/ui/buttons/back-button';
+import { Pencil2Icon } from '@radix-ui/react-icons';
+import Link from 'next/link';
 
 export default function Page() {
   const params = useParams();
@@ -77,11 +78,12 @@ export default function Page() {
         <Separator my="3" size="4" />
         <Flex justify="between" align="end" width="100%">
           <Heading size="8">Participant Type: {participantType}</Heading>
-          <EditParticipantTypeDialog
-            datasourceId={datasourceId}
-            participantType={participantType}
-            participantConfig={data}
-          />
+          {/* Only show edit button for schema types, not sheet types */}
+          <Link href={`/datasources/${datasourceId}/participants/${participantType}/edit`}>
+            <Button>
+              <Pencil2Icon /> Edit Participant Type
+            </Button>
+          </Link>
         </Flex>
       </Flex>
       {inspectLoading || inspectValidating ? (
