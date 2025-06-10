@@ -1,25 +1,44 @@
 'use client';
-import { FieldDescriptor, ParticipantsDef } from '@/api/methods.schemas';
-import { Flex, Switch, Table, Text, TextField, Radio, Checkbox, Tooltip } from '@radix-ui/themes';
+import { FieldDescriptor } from '@/api/methods.schemas';
+import { Flex, Switch, Table, Text, TextField, Radio, Checkbox, Tooltip, IconButton } from '@radix-ui/themes';
 import { useState } from 'react';
 import { isEligibleForUseAsMetric } from '@/services/genapi-helpers';
+import { TrashIcon } from '@radix-ui/react-icons';
 
-export function ParticipantDefEditor({
-  participantDef,
-  onUpdate,
-}: {
-  participantDef: ParticipantsDef;
-  onUpdate: (updated: ParticipantsDef) => void;
-}) {
+export interface ParticipantFieldsEditorProps {
+  fields: FieldDescriptor[];
+  onFieldsChange: (fields: FieldDescriptor[]) => void;
+  uniqueIdCandidates?: string[];
+  allowFieldRemoval?: boolean;
+}
+
+export function ParticipantFieldsEditor({
+  fields,
+  onFieldsChange,
+  uniqueIdCandidates = [],
+  allowFieldRemoval = false,
+}: ParticipantFieldsEditorProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
+
   const updateField = (index: number, field: FieldDescriptor) => {
-    const newFields = [...participantDef.fields];
+    const newFields = [...fields];
     newFields[index] = field;
-    onUpdate({
-      ...participantDef,
-      fields: newFields,
-    });
+    onFieldsChange(newFields);
   };
+
+  const removeField = (index: number) => {
+    const newFields = fields.filter((_, i) => i !== index);
+    onFieldsChange(newFields);
+  };
+
+  const setUniqueIdField = (index: number) => {
+    const newFields = fields.map((f, i) => ({
+      ...f,
+      is_unique_id: i === index,
+    }));
+    onFieldsChange(newFields);
+  };
+
   return (
     <Flex direction="column" gap="3">
       <Flex align="center" gap="2">
@@ -36,16 +55,25 @@ export function ParticipantDefEditor({
             {showAdvanced && <Table.ColumnHeaderCell justify="center">Strata</Table.ColumnHeaderCell>}
             <Table.ColumnHeaderCell justify="center">Filter</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell justify="center">Metric</Table.ColumnHeaderCell>
+            {showAdvanced && allowFieldRemoval && (
+              <Table.ColumnHeaderCell justify="center">Actions</Table.ColumnHeaderCell>
+            )}
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {participantDef.fields.map((field, index) => (
-            <Table.Row key={index}>
-              <Table.Cell>{field.field_name}</Table.Cell>
+          {fields.map((field, index) => (
+            <Table.Row key={`${field.field_name}-${index}`}>
+              <Table.Cell>
+                {uniqueIdCandidates.includes(field.field_name) ? (
+                  <Text weight="bold">{field.field_name}</Text>
+                ) : (
+                  <Text>{field.field_name}</Text>
+                )}
+              </Table.Cell>
               <Table.Cell>{field.data_type}</Table.Cell>
               <Table.Cell>
                 <TextField.Root
-                  value={field.description}
+                  value={field.description || ''}
                   onChange={(e) =>
                     updateField(index, {
                       ...field,
@@ -57,30 +85,20 @@ export function ParticipantDefEditor({
               <Table.Cell style={{ textAlign: 'center' }}>
                 <Radio
                   value={field.field_name}
-                  checked={field.is_unique_id}
-                  onValueChange={() => {
-                    const newFields = [...participantDef.fields].map((f) => ({
-                      ...f,
-                      is_unique_id: false,
-                    }));
-                    newFields[index].is_unique_id = true;
-                    onUpdate({
-                      ...participantDef,
-                      fields: newFields,
-                    });
-                  }}
+                  checked={field.is_unique_id || false}
+                  onValueChange={() => setUniqueIdField(index)}
                   size="3"
                 />
               </Table.Cell>
               {showAdvanced && (
                 <Table.Cell style={{ textAlign: 'center' }}>
                   <Checkbox
-                    checked={field.is_strata}
+                    checked={field.is_strata || false}
                     onCheckedChange={(checked) =>
                       updateField(index, {
                         ...field,
-                        is_strata: checked,
-                      } as FieldDescriptor)
+                        is_strata: checked === true,
+                      })
                     }
                     size="3"
                   />
@@ -88,12 +106,12 @@ export function ParticipantDefEditor({
               )}
               <Table.Cell style={{ textAlign: 'center' }}>
                 <Checkbox
-                  checked={field.is_filter}
+                  checked={field.is_filter || false}
                   onCheckedChange={(checked) =>
                     updateField(index, {
                       ...field,
-                      is_filter: checked,
-                    } as FieldDescriptor)
+                      is_filter: checked === true,
+                    })
                   }
                   size="3"
                 />
@@ -101,12 +119,12 @@ export function ParticipantDefEditor({
               <Table.Cell style={{ textAlign: 'center' }}>
                 {isEligibleForUseAsMetric(field.data_type) ? (
                   <Checkbox
-                    checked={field.is_metric}
+                    checked={field.is_metric || false}
                     onCheckedChange={(checked) =>
                       updateField(index, {
                         ...field,
-                        is_metric: checked,
-                      } as FieldDescriptor)
+                        is_metric: checked === true,
+                      })
                     }
                     size="3"
                   />
@@ -116,6 +134,20 @@ export function ParticipantDefEditor({
                   </Tooltip>
                 )}
               </Table.Cell>
+              {showAdvanced && allowFieldRemoval && (
+                <Table.Cell style={{ textAlign: 'center' }}>
+                  <IconButton
+                    onClick={(e) => {
+                      e.preventDefault();
+                      removeField(index);
+                    }}
+                    variant="soft"
+                    color="red"
+                  >
+                    <TrashIcon />
+                  </IconButton>
+                </Table.Cell>
+              )}
             </Table.Row>
           ))}
         </Table.Body>

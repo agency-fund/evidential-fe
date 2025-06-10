@@ -1,7 +1,12 @@
 'use client';
 import { AlertDialog, Button, Flex, IconButton } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
-import { getListParticipantTypesKey, useDeleteParticipant } from '@/api/admin';
+import {
+  getGetDatasourceKey,
+  getInspectParticipantTypesKey,
+  getListParticipantTypesKey,
+  useDeleteParticipant,
+} from '@/api/admin';
 import { mutate } from 'swr';
 
 interface DeleteParticipantTypeDialogProps {
@@ -11,7 +16,14 @@ interface DeleteParticipantTypeDialogProps {
 
 export const DeleteParticipantTypeDialog = ({ datasourceId, participantType }: DeleteParticipantTypeDialogProps) => {
   const { trigger } = useDeleteParticipant(datasourceId, participantType, {
-    swr: { onSuccess: () => mutate(getListParticipantTypesKey(datasourceId)) },
+    swr: {
+      onSuccess: async () =>
+        await Promise.all([
+          mutate(getGetDatasourceKey(datasourceId)),
+          mutate(getInspectParticipantTypesKey(datasourceId, participantType)),
+          mutate(getListParticipantTypesKey(datasourceId)),
+        ]),
+    },
   });
 
   return (

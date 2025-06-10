@@ -1,13 +1,12 @@
 'use client';
 import { useListParticipantTypes } from '@/api/admin';
-import { Flex, Table } from '@radix-ui/themes';
+import { Button, Flex, IconButton, Table } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import Link from 'next/link';
 import { DeleteParticipantTypeDialog } from '@/components/features/participants/delete-participant-type-dialog';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { EditParticipantTypeDialog } from '@/components/features/participants/edit-participant-type-dialog';
 import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
-import { AddParticipantTypeDialog } from '@/components/features/participants/add-participant-type-dialog';
+import { Pencil2Icon, PlusIcon } from '@radix-ui/react-icons';
 
 export function ParticipantTypesTable({ datasourceId }: { datasourceId: string }) {
   const { data, isLoading, error } = useListParticipantTypes(datasourceId);
@@ -38,12 +37,11 @@ export function ParticipantTypesTable({ datasourceId }: { datasourceId: string }
                 <Table.Cell>
                   <Flex gap="2">
                     {item.type === 'schema' && (
-                      <EditParticipantTypeDialog
-                        datasourceId={datasourceId}
-                        participantType={item.participant_type}
-                        participantConfig={item}
-                        variant="icon"
-                      />
+                      <Link href={`/datasources/${datasourceId}/participants/${item.participant_type}/edit`}>
+                        <IconButton color="gray" variant="soft">
+                          <Pencil2Icon />
+                        </IconButton>
+                      </Link>
                     )}
                     <DeleteParticipantTypeDialog datasourceId={datasourceId} participantType={item.participant_type} />
                   </Flex>
@@ -54,7 +52,11 @@ export function ParticipantTypesTable({ datasourceId }: { datasourceId: string }
         </Table.Root>
       ) : (
         <EmptyStateCard title="No participant types found" description="Add a participant type to get started">
-          <AddParticipantTypeDialog datasourceId={datasourceId} />
+          <Link href={`/datasources/${datasourceId}/participants/create`}>
+            <Button>
+              <PlusIcon /> Add Participant Type
+            </Button>
+          </Link>
         </EmptyStateCard>
       )}
     </>
