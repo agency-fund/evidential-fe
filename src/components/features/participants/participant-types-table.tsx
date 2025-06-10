@@ -1,12 +1,12 @@
 'use client';
 import { useListParticipantTypes } from '@/api/admin';
-import { Button, Flex, Table } from '@radix-ui/themes';
+import { Button, Flex, IconButton, Table } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import Link from 'next/link';
 import { DeleteParticipantTypeDialog } from '@/components/features/participants/delete-participant-type-dialog';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
-import { PlusIcon } from '@radix-ui/react-icons';
+import { Pencil2Icon, PlusIcon } from '@radix-ui/react-icons';
 
 export function ParticipantTypesTable({ datasourceId }: { datasourceId: string }) {
   const { data, isLoading, error } = useListParticipantTypes(datasourceId);
@@ -38,9 +38,9 @@ export function ParticipantTypesTable({ datasourceId }: { datasourceId: string }
                   <Flex gap="2">
                     {item.type === 'schema' && (
                       <Link href={`/datasources/${datasourceId}/participants/${item.participant_type}/edit`}>
-                        <Button variant="soft" size="1">
-                          Edit
-                        </Button>
+                        <IconButton color="gray" variant="soft">
+                          <Pencil2Icon />
+                        </IconButton>
                       </Link>
                     )}
                     <DeleteParticipantTypeDialog datasourceId={datasourceId} participantType={item.participant_type} />
