@@ -1,8 +1,10 @@
 'use client';
 import { ParticipantsDef } from '@/api/methods.schemas';
 import {
+  getGetDatasourceKey,
   getGetParticipantTypesKey,
   getInspectParticipantTypesKey,
+  getListParticipantTypesKey,
   useGetParticipantTypes,
   useUpdateParticipantType,
 } from '@/api/admin';
@@ -40,8 +42,10 @@ export default function EditParticipantTypePage() {
     swr: {
       onSuccess: async () => {
         await Promise.all([
+          mutate(getGetDatasourceKey(datasourceId)),
           mutate(getGetParticipantTypesKey(datasourceId, participantType)),
           mutate(getInspectParticipantTypesKey(datasourceId, participantType, {})),
+          mutate(getListParticipantTypesKey(datasourceId)),
         ]);
         router.push(`/datasources/${datasourceId}/participants/${participantType}`);
       },

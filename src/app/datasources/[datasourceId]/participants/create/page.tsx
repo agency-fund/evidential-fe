@@ -1,6 +1,12 @@
 'use client';
 
-import { useCreateParticipantType, useInspectDatasource, useInspectTableInDatasource } from '@/api/admin';
+import {
+  getGetDatasourceKey,
+  getListParticipantTypesKey,
+  useCreateParticipantType,
+  useInspectDatasource,
+  useInspectTableInDatasource,
+} from '@/api/admin';
 import { FieldDescriptor, FieldMetadata } from '@/api/methods.schemas';
 import { Box, Button, Flex, Heading, Select, Separator, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
@@ -9,6 +15,7 @@ import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { useParams, useRouter } from 'next/navigation';
 import { BackButton } from '@/components/ui/buttons/back-button';
 import { ParticipantFieldsEditor } from '@/components/features/participants/participant-fields-editor';
+import { mutate } from 'swr';
 
 const makeFieldDescriptorComparator = (candidatesForUniqueIdField: string[]) => {
   const candidates = new Set(candidatesForUniqueIdField);
@@ -45,6 +52,10 @@ export default function CreateParticipantTypePage() {
   const { trigger, isMutating, error, reset } = useCreateParticipantType(datasourceId, {
     swr: {
       onSuccess: async (data) => {
+        await Promise.all([
+          mutate(getGetDatasourceKey(datasourceId)),
+          mutate(getListParticipantTypesKey(datasourceId)),
+        ]);
         router.push(`/datasources/${datasourceId}/participants/${data.participant_type}`);
       },
     },
