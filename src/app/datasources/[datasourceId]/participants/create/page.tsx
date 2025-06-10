@@ -63,7 +63,6 @@ export default function CreateParticipantTypePage() {
 
   const [selectedTable, setSelectedTable] = useState<string>('');
   const [fields, setFields] = useState<FieldDescriptor[]>([]);
-  const [uniqueIdCandidates, setUniqueIdCandidates] = useState<string[]>([]);
 
   const tableIsSelected = selectedTable !== '';
   const { data: tableData, isLoading: loadingTableData } = useInspectTableInDatasource(
@@ -83,10 +82,10 @@ export default function CreateParticipantTypePage() {
   const updateSelectedTable = (table: string) => {
     setSelectedTable(table);
     setFields([]);
-    setUniqueIdCandidates([]);
     reset();
   };
 
+  // TODO: This useEffect can be replaced with event handlers.
   useEffect(() => {
     if (tableData === undefined) {
       return;
@@ -106,8 +105,9 @@ export default function CreateParticipantTypePage() {
 
     const sortedFields = [...initialFields].sort(makeFieldDescriptorComparator(tableData.detected_unique_id_fields));
     setFields(sortedFields);
-    setUniqueIdCandidates(tableData.detected_unique_id_fields);
   }, [tableData]);
+
+  const uniqueIdCandidates = tableData ? tableData.detected_unique_id_fields : [];
 
   const handleCancel = () => {
     router.push(`/datasources/${datasourceId}`);
