@@ -95,6 +95,8 @@ export interface ArmAnalysis {
 	t_stat: ArmAnalysisTStat;
 	/** The standard error of the treatment effect estimate. */
 	std_error: number;
+	/** The number of participants assigned to this arm with missing values (NaNs) for this metric. These rows are excluded from the analysis. */
+	num_missing_values: number;
 }
 
 /**
@@ -323,6 +325,17 @@ export interface CreateExperimentRequest {
 	power_analyses?: CreateExperimentRequestPowerAnalyses;
 }
 
+/**
+ * The date and time assignments were stopped. Null if assignments are still allowed to be made.
+ */
+export type CreateExperimentResponseStoppedAssignmentsAt = string | null;
+
+/**
+ * The reason assignments were stopped. Null if assignments are still allowed to be made.
+ */
+export type CreateExperimentResponseStoppedAssignmentsReason =
+	StopAssignmentReason | null;
+
 export type CreateExperimentResponsePowerAnalyses = PowerResponseOutput | null;
 
 /**
@@ -332,6 +345,10 @@ export interface CreateExperimentResponse {
 	datasource_id: string;
 	/** Current state of this experiment. */
 	state: ExperimentState;
+	/** The date and time assignments were stopped. Null if assignments are still allowed to be made. */
+	stopped_assignments_at: CreateExperimentResponseStoppedAssignmentsAt;
+	/** The reason assignments were stopped. Null if assignments are still allowed to be made. */
+	stopped_assignments_reason: CreateExperimentResponseStoppedAssignmentsReason;
 	design_spec: DesignSpecOutput;
 	power_analyses: CreateExperimentResponsePowerAnalyses;
 	assign_summary: AssignSummary;
@@ -572,6 +589,11 @@ export interface EventSummary {
 }
 
 /**
+ * The number of participants assigned to the experiment across all arms that are not found in the data warehouse when pulling metrics.
+ */
+export type ExperimentAnalysisNumMissingParticipants = number | null;
+
+/**
  * Describes the change if any in metrics targeted by an experiment.
  */
 export interface ExperimentAnalysis {
@@ -579,7 +601,24 @@ export interface ExperimentAnalysis {
 	experiment_id: string;
 	/** Contains one analysis per metric targeted by the experiment. */
 	metric_analyses: MetricAnalysis[];
+	/** The number of participants assigned to the experiment pulled from the dwh across all arms. Metric outcomes are not guaranteed to be present for all participants. */
+	num_participants: number;
+	/** The number of participants assigned to the experiment across all arms that are not found in the data warehouse when pulling metrics. */
+	num_missing_participants?: ExperimentAnalysisNumMissingParticipants;
+	/** The date and time the experiment analysis was created. */
+	created_at: string;
 }
+
+/**
+ * The date and time assignments were stopped. Null if assignments are still allowed to be made.
+ */
+export type ExperimentConfigStoppedAssignmentsAt = string | null;
+
+/**
+ * The reason assignments were stopped. Null if assignments are still allowed to be made.
+ */
+export type ExperimentConfigStoppedAssignmentsReason =
+	StopAssignmentReason | null;
 
 export type ExperimentConfigPowerAnalyses = PowerResponseOutput | null;
 
@@ -590,6 +629,10 @@ export interface ExperimentConfig {
 	datasource_id: string;
 	/** Current state of this experiment. */
 	state: ExperimentState;
+	/** The date and time assignments were stopped. Null if assignments are still allowed to be made. */
+	stopped_assignments_at: ExperimentConfigStoppedAssignmentsAt;
+	/** The reason assignments were stopped. Null if assignments are still allowed to be made. */
+	stopped_assignments_reason: ExperimentConfigStoppedAssignmentsReason;
 	design_spec: DesignSpecOutput;
 	power_analyses: ExperimentConfigPowerAnalyses;
 	assign_summary: AssignSummary;
@@ -785,6 +828,17 @@ export interface GetExperimentAssignmentsResponse {
 	assignments: Assignment[];
 }
 
+/**
+ * The date and time assignments were stopped. Null if assignments are still allowed to be made.
+ */
+export type GetExperimentResponseStoppedAssignmentsAt = string | null;
+
+/**
+ * The reason assignments were stopped. Null if assignments are still allowed to be made.
+ */
+export type GetExperimentResponseStoppedAssignmentsReason =
+	StopAssignmentReason | null;
+
 export type GetExperimentResponsePowerAnalyses = PowerResponseOutput | null;
 
 /**
@@ -794,6 +848,10 @@ export interface GetExperimentResponse {
 	datasource_id: string;
 	/** Current state of this experiment. */
 	state: ExperimentState;
+	/** The date and time assignments were stopped. Null if assignments are still allowed to be made. */
+	stopped_assignments_at: GetExperimentResponseStoppedAssignmentsAt;
+	/** The reason assignments were stopped. Null if assignments are still allowed to be made. */
+	stopped_assignments_reason: GetExperimentResponseStoppedAssignmentsReason;
 	design_spec: DesignSpecOutput;
 	power_analyses: GetExperimentResponsePowerAnalyses;
 	assign_summary: AssignSummary;
@@ -1545,6 +1603,20 @@ export interface SheetRef {
 	worksheet: string;
 }
 
+/**
+ * The reason assignments were stopped.
+ */
+export type StopAssignmentReason =
+	(typeof StopAssignmentReason)[keyof typeof StopAssignmentReason];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const StopAssignmentReason = {
+	preassigned: "preassigned",
+	end_date: "end_date",
+	manual: "manual",
+	target_n: "target_n",
+} as const;
+
 export type StrataStrataValue = string | null;
 
 /**
@@ -1584,6 +1656,14 @@ export type UpdateOrganizationRequestName = string | null;
 
 export interface UpdateOrganizationRequest {
 	name?: UpdateOrganizationRequestName;
+}
+
+/**
+ * Request to update a webhook's URL.
+ */
+export interface UpdateOrganizationWebhookRequest {
+	/** @maxLength 500 */
+	url: string;
 }
 
 export type UpdateParticipantsTypeRequestParticipantType = string | null;
@@ -1724,4 +1804,11 @@ export type AnalyzeExperimentParams = {
 	 * UUID of the baseline arm. If None, the first design spec arm is used.
 	 */
 	baseline_arm_id?: string | null;
+};
+
+export type GetExperimentAssignmentForParticipantParams = {
+	/**
+	 * Create an assignment if none exists. Does nothing for preassigned experiments. Override if you just want to check if an assignment exists.
+	 */
+	create_if_none?: boolean;
 };

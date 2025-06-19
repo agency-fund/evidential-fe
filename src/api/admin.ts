@@ -28,6 +28,7 @@ import type {
 	ExperimentAnalysis,
 	ExperimentConfig,
 	GetDatasourceResponse,
+	GetExperimentAssignmentForParticipantParams,
 	GetExperimentAssignmentsResponse,
 	GetOrganizationResponse,
 	GetParticipantAssignmentResponse,
@@ -52,6 +53,7 @@ import type {
 	TokenInfo,
 	UpdateDatasourceRequest,
 	UpdateOrganizationRequest,
+	UpdateOrganizationWebhookRequest,
 	UpdateParticipantsTypeRequest,
 	UpdateParticipantsTypeResponse,
 } from "./methods.schemas";
@@ -379,6 +381,95 @@ export const useListOrganizationWebhooks = <
 		swrFn,
 		swrOptions,
 	);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * Updates a webhook's URL in an organization.
+ * @summary Update Organization Webhook
+ */
+export const getUpdateOrganizationWebhookUrl = (
+	organizationId: string,
+	webhookId: string,
+) => {
+	return `/v1/m/organizations/${organizationId}/webhooks/${webhookId}`;
+};
+
+export const updateOrganizationWebhook = async (
+	organizationId: string,
+	webhookId: string,
+	updateOrganizationWebhookRequest: UpdateOrganizationWebhookRequest,
+	options?: RequestInit,
+): Promise<void> => {
+	return orvalFetch<void>(
+		getUpdateOrganizationWebhookUrl(organizationId, webhookId),
+		{
+			...options,
+			method: "PATCH",
+			headers: { "Content-Type": "application/json", ...options?.headers },
+			body: JSON.stringify(updateOrganizationWebhookRequest),
+		},
+	);
+};
+
+export const getUpdateOrganizationWebhookMutationFetcher = (
+	organizationId: string,
+	webhookId: string,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (
+		_: Key,
+		{ arg }: { arg: UpdateOrganizationWebhookRequest },
+	): Promise<void> => {
+		return updateOrganizationWebhook(organizationId, webhookId, arg, options);
+	};
+};
+export const getUpdateOrganizationWebhookMutationKey = (
+	organizationId: string,
+	webhookId: string,
+) => [`/v1/m/organizations/${organizationId}/webhooks/${webhookId}`] as const;
+
+export type UpdateOrganizationWebhookMutationResult = NonNullable<
+	Awaited<ReturnType<typeof updateOrganizationWebhook>>
+>;
+export type UpdateOrganizationWebhookMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+/**
+ * @summary Update Organization Webhook
+ */
+export const useUpdateOrganizationWebhook = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	organizationId: string,
+	webhookId: string,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof updateOrganizationWebhook>>,
+			TError,
+			Key,
+			UpdateOrganizationWebhookRequest,
+			Awaited<ReturnType<typeof updateOrganizationWebhook>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey =
+		swrOptions?.swrKey ??
+		getUpdateOrganizationWebhookMutationKey(organizationId, webhookId);
+	const swrFn = getUpdateOrganizationWebhookMutationFetcher(
+		organizationId,
+		webhookId,
+		requestOptions,
+	);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
 	return {
 		swrKey,
@@ -2827,14 +2918,28 @@ export const getGetExperimentAssignmentForParticipantUrl = (
 	datasourceId: string,
 	experimentId: string,
 	participantId: string,
+	params?: GetExperimentAssignmentForParticipantParams,
 ) => {
-	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments/${participantId}`;
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments/${participantId}?${stringifiedParams}`
+		: `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments/${participantId}`;
 };
 
 export const getExperimentAssignmentForParticipant = async (
 	datasourceId: string,
 	experimentId: string,
 	participantId: string,
+	params?: GetExperimentAssignmentForParticipantParams,
 	options?: RequestInit,
 ): Promise<GetParticipantAssignmentResponse> => {
 	return orvalFetch<GetParticipantAssignmentResponse>(
@@ -2842,6 +2947,7 @@ export const getExperimentAssignmentForParticipant = async (
 			datasourceId,
 			experimentId,
 			participantId,
+			params,
 		),
 		{
 			...options,
@@ -2854,9 +2960,11 @@ export const getGetExperimentAssignmentForParticipantKey = (
 	datasourceId: string,
 	experimentId: string,
 	participantId: string,
+	params?: GetExperimentAssignmentForParticipantParams,
 ) =>
 	[
 		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments/${participantId}`,
+		...(params ? [params] : []),
 	] as const;
 
 export type GetExperimentAssignmentForParticipantQueryResult = NonNullable<
@@ -2875,6 +2983,7 @@ export const useGetExperimentAssignmentForParticipant = <
 	datasourceId: string,
 	experimentId: string,
 	participantId: string,
+	params?: GetExperimentAssignmentForParticipantParams,
 	options?: {
 		swr?: SWRConfiguration<
 			Awaited<ReturnType<typeof getExperimentAssignmentForParticipant>>,
@@ -2896,6 +3005,7 @@ export const useGetExperimentAssignmentForParticipant = <
 						datasourceId,
 						experimentId,
 						participantId,
+						params,
 					)
 				: null);
 	const swrFn = () =>
@@ -2903,6 +3013,7 @@ export const useGetExperimentAssignmentForParticipant = <
 			datasourceId,
 			experimentId,
 			participantId,
+			params,
 			requestOptions,
 		);
 
