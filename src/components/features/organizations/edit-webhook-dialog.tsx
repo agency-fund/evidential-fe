@@ -16,7 +16,6 @@ interface EditWebhookDialogProps {
 
 export function EditWebhookDialog({ organizationId, webhook }: EditWebhookDialogProps) {
   const [open, setOpen] = useState(false);
-  const [url, setUrl] = useState(webhook.url);
   const [error, setError] = useState<string | null>(null);
 
   const {
@@ -36,20 +35,29 @@ export function EditWebhookDialog({ organizationId, webhook }: EditWebhookDialog
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!url.trim()) {
+    const fd = new FormData(event.currentTarget as HTMLFormElement);
+    const newUrl = fd.get('url') as string;
+    
+    if (!newUrl.trim()) {
       setError('URL cannot be empty');
       return;
     }
 
-    setError(null);
-    await trigger({ url });
-    // Note: We don't need a try/catch here as the apiError from useUpdateOrganizationWebhook
-    // will be displayed in the GenericErrorCallout
+    // Only update if the URL has changed
+    if (newUrl !== webhook.url) {
+      setError(null);
+      try {
+        await trigger({ url: newUrl });
+      } catch (e) {
+        console.error('Failed to update webhook:', e);
+      }
+    } else {
+      setOpen(false);
+    }
   };
 
   const handleClose = () => {
     setOpen(false);
-    setUrl(webhook.url);
     setError(null);
     reset();
   };
@@ -88,9 +96,9 @@ export function EditWebhookDialog({ organizationId, webhook }: EditWebhookDialog
                   URL
                 </Text>
                 <TextField.Root
+                  name="url"
                   placeholder="https://your-webhook-endpoint.com"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
+                  defaultValue={webhook.url}
                   required
                 />
                 <Text as="div" size="1" color="gray" mt="1">
