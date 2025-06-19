@@ -1,6 +1,7 @@
 'use client';
 
 import { Button, Dialog, Flex, IconButton, Text, TextField } from '@radix-ui/themes';
+import { XSpinner } from '@/components/ui/x-spinner';
 import { Pencil2Icon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 import { WebhookSummary } from '@/api/methods.schemas';
@@ -25,9 +26,9 @@ export function EditWebhookDialog({ organizationId, webhook }: EditWebhookDialog
     reset,
   } = useUpdateOrganizationWebhook(organizationId, webhook.id, {
     swr: {
-      onSuccess: () => {
+      onSuccess: async () => {
         // Invalidate the webhooks list cache to refresh the data
-        mutate(getListOrganizationWebhooksKey(organizationId));
+        await mutate(getListOrganizationWebhooksKey(organizationId));
         setOpen(false);
       },
     },
@@ -41,11 +42,9 @@ export function EditWebhookDialog({ organizationId, webhook }: EditWebhookDialog
     }
 
     setError(null);
-    try {
-      await trigger({ url });
-    } catch (err) {
-      console.error('Failed to update webhook:', err);
-    }
+    await trigger({ url });
+    // Note: We don't need a try/catch here as the apiError from useUpdateOrganizationWebhook
+    // will be displayed in the GenericErrorCallout
   };
 
   const handleClose = () => {
@@ -72,44 +71,48 @@ export function EditWebhookDialog({ organizationId, webhook }: EditWebhookDialog
         </IconButton>
       </Dialog.Trigger>
       <Dialog.Content>
-        <form onSubmit={handleSubmit}>
-          <Dialog.Title>Edit Webhook URL</Dialog.Title>
-          <Dialog.Description size="2" mb="4">
-            Update the URL for this webhook.
-          </Dialog.Description>
+        {isMutating ? (
+          <XSpinner message="Updating webhook..." />
+        ) : (
+          <form onSubmit={handleSubmit}>
+            <Dialog.Title>Edit Webhook URL</Dialog.Title>
+            <Dialog.Description size="2" mb="4">
+              Update the URL for this webhook.
+            </Dialog.Description>
 
-          {apiError && <GenericErrorCallout title={'Failed to update webhook'} error={apiError} />}
+            {apiError && <GenericErrorCallout title={'Failed to update webhook'} error={apiError} />}
 
-          <Flex direction="column" gap="3">
-            <label>
-              <Text as="div" size="2" mb="1" weight="bold">
-                URL
-              </Text>
-              <TextField.Root
-                placeholder="https://your-webhook-endpoint.com"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                required
-              />
-              <Text as="div" size="1" color="gray" mt="1">
-                The URL that will receive webhook notifications.
-              </Text>
-            </label>
+            <Flex direction="column" gap="3">
+              <label>
+                <Text as="div" size="2" mb="1" weight="bold">
+                  URL
+                </Text>
+                <TextField.Root
+                  placeholder="https://your-webhook-endpoint.com"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  required
+                />
+                <Text as="div" size="1" color="gray" mt="1">
+                  The URL that will receive webhook notifications.
+                </Text>
+              </label>
 
-            {error && (
-              <Text color="red" size="2">
-                {error}
-              </Text>
-            )}
-          </Flex>
+              {error && (
+                <Text color="red" size="2">
+                  {error}
+                </Text>
+              )}
+            </Flex>
 
-          <Flex gap="3" mt="4" justify="end">
-            <Button variant="soft" color="gray" onClick={handleClose} loading={isMutating}>
-              Cancel
-            </Button>
-            <Button type="submit">Update</Button>
-          </Flex>
-        </form>
+            <Flex gap="3" mt="4" justify="end">
+              <Button variant="soft" color="gray" onClick={handleClose}>
+                Cancel
+              </Button>
+              <Button type="submit">Update</Button>
+            </Flex>
+          </form>
+        )}
       </Dialog.Content>
     </Dialog.Root>
   );
