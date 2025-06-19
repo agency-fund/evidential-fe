@@ -135,6 +135,15 @@ export const deleteWebhookFromOrganizationParams = zod.object({
 });
 
 /**
+ * Regenerates the auth token for a webhook in an organization.
+ * @summary Regenerate Webhook Auth Token
+ */
+export const regenerateWebhookAuthTokenParams = zod.object({
+	organization_id: zod.string(),
+	webhook_id: zod.string(),
+});
+
+/**
  * Returns the most recent 200 events in an organization.
  * @summary List Organization Events
  */

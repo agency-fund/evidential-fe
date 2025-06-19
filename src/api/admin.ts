@@ -560,6 +560,92 @@ export const useDeleteWebhookFromOrganization = <
 	};
 };
 /**
+ * Regenerates the auth token for a webhook in an organization.
+ * @summary Regenerate Webhook Auth Token
+ */
+export const getRegenerateWebhookAuthTokenUrl = (
+	organizationId: string,
+	webhookId: string,
+) => {
+	return `/v1/m/organizations/${organizationId}/webhooks/${webhookId}/authtoken`;
+};
+
+export const regenerateWebhookAuthToken = async (
+	organizationId: string,
+	webhookId: string,
+	options?: RequestInit,
+): Promise<void> => {
+	return orvalFetch<void>(
+		getRegenerateWebhookAuthTokenUrl(organizationId, webhookId),
+		{
+			...options,
+			method: "POST",
+		},
+	);
+};
+
+export const getRegenerateWebhookAuthTokenMutationFetcher = (
+	organizationId: string,
+	webhookId: string,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, __: { arg: Arguments }): Promise<void> => {
+		return regenerateWebhookAuthToken(organizationId, webhookId, options);
+	};
+};
+export const getRegenerateWebhookAuthTokenMutationKey = (
+	organizationId: string,
+	webhookId: string,
+) =>
+	[
+		`/v1/m/organizations/${organizationId}/webhooks/${webhookId}/authtoken`,
+	] as const;
+
+export type RegenerateWebhookAuthTokenMutationResult = NonNullable<
+	Awaited<ReturnType<typeof regenerateWebhookAuthToken>>
+>;
+export type RegenerateWebhookAuthTokenMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+/**
+ * @summary Regenerate Webhook Auth Token
+ */
+export const useRegenerateWebhookAuthToken = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	organizationId: string,
+	webhookId: string,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof regenerateWebhookAuthToken>>,
+			TError,
+			Key,
+			Arguments,
+			Awaited<ReturnType<typeof regenerateWebhookAuthToken>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey =
+		swrOptions?.swrKey ??
+		getRegenerateWebhookAuthTokenMutationKey(organizationId, webhookId);
+	const swrFn = getRegenerateWebhookAuthTokenMutationFetcher(
+		organizationId,
+		webhookId,
+		requestOptions,
+	);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
  * Returns the most recent 200 events in an organization.
  * @summary List Organization Events
  */
