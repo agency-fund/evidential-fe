@@ -35,13 +35,7 @@ export function RegenerateWebhookAuthDialog({ organizationId, webhookId }: Regen
             </Button>
           </AlertDialog.Cancel>
           <AlertDialog.Action>
-            <Button
-              variant="solid"
-              color="blue"
-              onClick={async () => {
-                await trigger({});
-              }}
-            >
+            <Button variant="solid" color="blue" onClick={async () => await trigger({})}>
               Regenerate
             </Button>
           </AlertDialog.Action>
