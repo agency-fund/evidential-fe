@@ -14,6 +14,8 @@ import { WebhooksTable } from '@/components/features/organizations/webhooks-tabl
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
 
+const WEBHOOK_LIMIT = 10;
+
 export default function Page() {
   const params = useParams();
   const organizationId = params.organizationId as string;
@@ -94,7 +96,7 @@ export default function Page() {
           <Heading size="4">Webhooks</Heading>
           <AddWebhookDialog
             organizationId={organizationId}
-            disabled={webhooksData?.items && webhooksData.items.length > 3}
+            disabled={webhooksData?.items && webhooksData.items.length >= WEBHOOK_LIMIT}
           />
         </Flex>
         {isLoadingWebhooks ? (
