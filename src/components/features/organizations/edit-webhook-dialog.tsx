@@ -16,20 +16,10 @@ interface EditWebhookDialogProps {
 
 export function EditWebhookDialog({ organizationId, webhook }: EditWebhookDialogProps) {
   const [open, setOpen] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const {
-    trigger,
-    isMutating,
-    error: apiError,
-    reset,
-  } = useUpdateOrganizationWebhook(organizationId, webhook.id, {
+  const { trigger, isMutating, error, reset } = useUpdateOrganizationWebhook(organizationId, webhook.id, {
     swr: {
-      onSuccess: async () => {
-        // Invalidate the webhooks list cache to refresh the data
-        await mutate(getListOrganizationWebhooksKey(organizationId));
-        setOpen(false);
-      },
+      onSuccess: () => mutate(getListOrganizationWebhooksKey(organizationId)),
     },
   });
 
@@ -37,28 +27,12 @@ export function EditWebhookDialog({ organizationId, webhook }: EditWebhookDialog
     event.preventDefault();
     const fd = new FormData(event.currentTarget as HTMLFormElement);
     const newUrl = fd.get('url') as string;
-    
-    if (!newUrl.trim()) {
-      setError('URL cannot be empty');
-      return;
-    }
-
-    // Only update if the URL has changed
-    if (newUrl !== webhook.url) {
-      setError(null);
-      try {
-        await trigger({ url: newUrl });
-      } catch (e) {
-        console.error('Failed to update webhook:', e);
-      }
-    } else {
-      setOpen(false);
-    }
+    await trigger({ url: newUrl });
+    setOpen(false);
   };
 
   const handleClose = () => {
     setOpen(false);
-    setError(null);
     reset();
   };
 
@@ -88,7 +62,7 @@ export function EditWebhookDialog({ organizationId, webhook }: EditWebhookDialog
               Update the URL for this webhook.
             </Dialog.Description>
 
-            {apiError && <GenericErrorCallout title={'Failed to update webhook'} error={apiError} />}
+            {error && <GenericErrorCallout title={'Failed to update webhook'} error={error} />}
 
             <Flex direction="column" gap="3">
               <label>
@@ -105,18 +79,14 @@ export function EditWebhookDialog({ organizationId, webhook }: EditWebhookDialog
                   The URL that will receive webhook notifications.
                 </Text>
               </label>
-
-              {error && (
-                <Text color="red" size="2">
-                  {error}
-                </Text>
-              )}
             </Flex>
 
             <Flex gap="3" mt="4" justify="end">
-              <Button variant="soft" color="gray" onClick={handleClose}>
-                Cancel
-              </Button>
+              <Dialog.Close>
+                <Button variant="soft" color="gray">
+                  Cancel
+                </Button>
+              </Dialog.Close>
               <Button type="submit">Update</Button>
             </Flex>
           </form>
