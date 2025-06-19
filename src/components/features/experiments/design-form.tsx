@@ -23,7 +23,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
   const { data: participantTypesData, isLoading: loadingParticipantTypes } = useInspectParticipantTypes(
     formData.datasourceId || '',
     formData.participantType || '',
-    {},
+    undefined,
     {
       swr: {
         enabled: !!(formData.datasourceId && formData.participantType),

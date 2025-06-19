@@ -1,6 +1,6 @@
 'use client';
 import { useGetParticipantTypes, useInspectParticipantTypes } from '@/api/admin';
-import { Button, Flex, Heading, Text, Separator } from '@radix-ui/themes';
+import { Button, Flex, Heading, Separator, Text } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { useParams } from 'next/navigation';
 import { InspectParticipantTypesSummary } from '@/components/features/participants/inspect-participant-types-summary';
@@ -23,16 +23,11 @@ export default function Page() {
     data: inspectData,
     isLoading: inspectLoading,
     isValidating: inspectValidating,
-  } = useInspectParticipantTypes(
-    datasourceId!,
-    participantType!,
-    {},
-    {
-      swr: {
-        enabled: datasourceId !== null && participantType !== null,
-      },
+  } = useInspectParticipantTypes(datasourceId!, participantType!, undefined, {
+    swr: {
+      enabled: datasourceId !== null && participantType !== null,
     },
-  );
+  });
 
   if (!datasourceId || !participantType) {
     return <Text>Error: Missing required parameters</Text>;

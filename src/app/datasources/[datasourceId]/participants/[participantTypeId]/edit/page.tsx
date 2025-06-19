@@ -44,7 +44,7 @@ export default function EditParticipantTypePage() {
         await Promise.all([
           mutate(getGetDatasourceKey(datasourceId)),
           mutate(getGetParticipantTypesKey(datasourceId, participantType)),
-          mutate(getInspectParticipantTypesKey(datasourceId, participantType, {})),
+          mutate(getInspectParticipantTypesKey(datasourceId, participantType)),
           mutate(getListParticipantTypesKey(datasourceId)),
         ]);
         router.push(`/datasources/${datasourceId}/participants/${participantType}`);

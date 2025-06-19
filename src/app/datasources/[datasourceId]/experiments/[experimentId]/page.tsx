@@ -1,7 +1,7 @@
 'use client';
 import { Badge, Box, Flex, Heading, Separator, Table, Tabs, Text, Tooltip } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
-import { CodeIcon, InfoCircledIcon, PersonIcon, CalendarIcon } from '@radix-ui/react-icons';
+import { CalendarIcon, CodeIcon, InfoCircledIcon, PersonIcon } from '@radix-ui/react-icons';
 import { BackButton } from '@/components/ui/buttons/back-button';
 import { useAnalyzeExperiment, useGetExperiment } from '@/api/admin';
 import { ForestPlot } from '@/components/features/experiments/forest-plot';
@@ -34,14 +34,9 @@ export default function ExperimentViewPage() {
     data: analysisData,
     isLoading: isLoadingAnalysis,
     error: analysisError,
-  } = useAnalyzeExperiment(
-    datasourceId || '',
-    experimentId,
-    {},
-    {
-      swr: { enabled: !!datasourceId && !!experiment, shouldRetryOnError: false },
-    },
-  );
+  } = useAnalyzeExperiment(datasourceId || '', experimentId, undefined, {
+    swr: { enabled: !!datasourceId && !!experiment, shouldRetryOnError: false },
+  });
 
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
