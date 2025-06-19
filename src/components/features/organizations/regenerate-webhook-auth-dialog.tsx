@@ -1,5 +1,5 @@
 'use client';
-import { AlertDialog, Button, Flex, IconButton, Tooltip } from '@radix-ui/themes';
+import { AlertDialog, Button, Flex, IconButton } from '@radix-ui/themes';
 import { LockClosedIcon } from '@radix-ui/react-icons';
 import { getListOrganizationWebhooksKey, useRegenerateWebhookAuthToken } from '@/api/admin';
 import { mutate } from 'swr';
@@ -19,11 +19,9 @@ export function RegenerateWebhookAuthDialog({ organizationId, webhookId }: Regen
   return (
     <AlertDialog.Root>
       <AlertDialog.Trigger>
-        <Tooltip content="Regenerate auth token">
-          <IconButton color="blue" variant="soft">
-            <LockClosedIcon />
-          </IconButton>
-        </Tooltip>
+        <IconButton color="blue" variant="soft">
+          <LockClosedIcon />
+        </IconButton>
       </AlertDialog.Trigger>
       <AlertDialog.Content>
         <AlertDialog.Title>Regenerate Auth Token</AlertDialog.Title>
