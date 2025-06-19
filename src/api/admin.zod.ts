@@ -109,6 +109,23 @@ export const listOrganizationWebhooksResponse = zod.object({
 });
 
 /**
+ * Updates a webhook's URL in an organization.
+ * @summary Update Organization Webhook
+ */
+export const updateOrganizationWebhookParams = zod.object({
+	organization_id: zod.string(),
+	webhook_id: zod.string(),
+});
+
+export const updateOrganizationWebhookBodyUrlMax = 500;
+
+export const updateOrganizationWebhookBody = zod
+	.object({
+		url: zod.string().max(updateOrganizationWebhookBodyUrlMax),
+	})
+	.describe("Request to update a webhook's URL.");
+
+/**
  * Removes a Webhook from an organization.
  * @summary Delete Webhook From Organization
  */
@@ -2195,6 +2212,20 @@ export const createExperimentResponse = zod
 			.describe(
 				"Experiment lifecycle states.\n\nnote: [starting state], [[terminal state]]\n[DESIGNING]->[ASSIGNED]->{[[ABANDONED]], COMMITTED}->[[ABORTED]]",
 			),
+		stopped_assignments_at: zod
+			.string()
+			.datetime({})
+			.or(zod.null())
+			.describe(
+				"The date and time assignments were stopped. Null if assignments are still allowed to be made.",
+			),
+		stopped_assignments_reason: zod
+			.enum(["preassigned", "end_date", "manual", "target_n"])
+			.describe("The reason assignments were stopped.")
+			.or(zod.null())
+			.describe(
+				"The reason assignments were stopped. Null if assignments are still allowed to be made.",
+			),
 		design_spec: zod
 			.discriminatedUnion("experiment_type", [
 				zod
@@ -2825,6 +2856,11 @@ export const analyzeExperimentResponse = zod
 										.describe(
 											"The standard error of the treatment effect estimate.",
 										),
+									num_missing_values: zod
+										.number()
+										.describe(
+											"The number of participants assigned to this arm with missing values (NaNs) for this metric. These rows are excluded from the analysis.",
+										),
 								}),
 							)
 							.describe(
@@ -2836,6 +2872,22 @@ export const analyzeExperimentResponse = zod
 					),
 			)
 			.describe("Contains one analysis per metric targeted by the experiment."),
+		num_participants: zod
+			.number()
+			.describe(
+				"The number of participants assigned to the experiment pulled from the dwh across all arms. Metric outcomes are not guaranteed to be present for all participants.",
+			),
+		num_missing_participants: zod
+			.number()
+			.or(zod.null())
+			.optional()
+			.describe(
+				"The number of participants assigned to the experiment across all arms that are not found in the data warehouse when pulling metrics.",
+			),
+		created_at: zod
+			.string()
+			.datetime({})
+			.describe("The date and time the experiment analysis was created."),
 	})
 	.describe(
 		"Describes the change if any in metrics targeted by an experiment.",
@@ -2944,6 +2996,20 @@ export const listOrganizationExperimentsResponse = zod.object({
 					.enum(["designing", "assigned", "abandoned", "committed", "aborted"])
 					.describe(
 						"Experiment lifecycle states.\n\nnote: [starting state], [[terminal state]]\n[DESIGNING]->[ASSIGNED]->{[[ABANDONED]], COMMITTED}->[[ABORTED]]",
+					),
+				stopped_assignments_at: zod
+					.string()
+					.datetime({})
+					.or(zod.null())
+					.describe(
+						"The date and time assignments were stopped. Null if assignments are still allowed to be made.",
+					),
+				stopped_assignments_reason: zod
+					.enum(["preassigned", "end_date", "manual", "target_n"])
+					.describe("The reason assignments were stopped.")
+					.or(zod.null())
+					.describe(
+						"The reason assignments were stopped. Null if assignments are still allowed to be made.",
 					),
 				design_spec: zod
 					.discriminatedUnion("experiment_type", [
@@ -3637,6 +3703,20 @@ export const getExperimentResponse = zod
 			.describe(
 				"Experiment lifecycle states.\n\nnote: [starting state], [[terminal state]]\n[DESIGNING]->[ASSIGNED]->{[[ABANDONED]], COMMITTED}->[[ABORTED]]",
 			),
+		stopped_assignments_at: zod
+			.string()
+			.datetime({})
+			.or(zod.null())
+			.describe(
+				"The date and time assignments were stopped. Null if assignments are still allowed to be made.",
+			),
+		stopped_assignments_reason: zod
+			.enum(["preassigned", "end_date", "manual", "target_n"])
+			.describe("The reason assignments were stopped.")
+			.or(zod.null())
+			.describe(
+				"The reason assignments were stopped. Null if assignments are still allowed to be made.",
+			),
 		design_spec: zod
 			.discriminatedUnion("experiment_type", [
 				zod
@@ -4293,6 +4373,17 @@ export const getExperimentAssignmentForParticipantParams = zod.object({
 	datasource_id: zod.string(),
 	experiment_id: zod.string(),
 	participant_id: zod.string(),
+});
+
+export const getExperimentAssignmentForParticipantQueryCreateIfNoneDefault = true;
+
+export const getExperimentAssignmentForParticipantQueryParams = zod.object({
+	create_if_none: zod
+		.boolean()
+		.default(getExperimentAssignmentForParticipantQueryCreateIfNoneDefault)
+		.describe(
+			"Create an assignment if none exists. Does nothing for preassigned experiments. Override if you just want to check if an assignment exists.",
+		),
 });
 
 export const getExperimentAssignmentForParticipantResponseAssignmentParticipantIdMax = 64;
