@@ -4,6 +4,7 @@ import { WebhookSummary } from '@/api/methods.schemas';
 import { EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons';
 import { DeleteWebhookDialog } from '@/components/features/organizations/delete-webhook-dialog';
 import { WebhookInfoDialog } from '@/components/features/organizations/webhook-info-dialog';
+import { EditWebhookDialog } from '@/components/features/organizations/edit-webhook-dialog';
 import { useState } from 'react';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
 
@@ -66,6 +67,7 @@ export function WebhooksTable({ webhooks, organizationId }: { webhooks: WebhookS
               <Table.Cell>
                 <Flex gap="2">
                   <WebhookInfoDialog webhook={webhook} />
+                  <EditWebhookDialog organizationId={organizationId} webhook={webhook} />
                   <DeleteWebhookDialog organizationId={organizationId} webhookId={webhook.id} />
                 </Flex>
               </Table.Cell>
