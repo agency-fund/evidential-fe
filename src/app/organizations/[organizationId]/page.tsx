@@ -94,7 +94,7 @@ export default function Page() {
           <Heading size="4">Webhooks</Heading>
           <AddWebhookDialog
             organizationId={organizationId}
-            disabled={webhooksData?.items && webhooksData.items.length > 0}
+            disabled={webhooksData?.items && webhooksData.items.length > 3}
           />
         </Flex>
         {isLoadingWebhooks ? (
