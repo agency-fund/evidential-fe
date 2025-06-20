@@ -1,11 +1,10 @@
 'use client';
 import { useGetParticipantTypes, useInspectParticipantTypes } from '@/api/admin';
-import { Button, Flex, Heading, Separator, Text } from '@radix-ui/themes';
+import { Button, Flex, Heading, Text } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { useParams } from 'next/navigation';
 import { InspectParticipantTypesSummary } from '@/components/features/participants/inspect-participant-types-summary';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { BackButton } from '@/components/ui/buttons/back-button';
 import { Pencil2Icon } from '@radix-ui/react-icons';
 import Link from 'next/link';
 
@@ -56,8 +55,6 @@ export default function Page() {
     return (
       <Flex direction="column" gap="6">
         <Flex align="start" direction="column" gap="3">
-          <BackButton href={`/datasources/${datasourceId}`} label="Back to Datasource" />
-          <Separator my="3" size="4" />
           <Heading size="8">Participant Type: {participantType}</Heading>
         </Flex>
         <Text>Sheet Reference Configuration:</Text>
@@ -69,8 +66,6 @@ export default function Page() {
   return (
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
-        <BackButton href={`/datasources/${datasourceId}`} label="Back to Datasource" />
-        <Separator my="3" size="4" />
         <Flex justify="between" align="end" width="100%">
           <Heading size="8">Participant Type: {participantType}</Heading>
           {/* Only show edit button for schema types, not sheet types */}

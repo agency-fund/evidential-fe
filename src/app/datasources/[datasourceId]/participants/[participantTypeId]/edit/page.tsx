@@ -10,12 +10,11 @@ import {
 } from '@/api/admin';
 import { useState } from 'react';
 import { mutate } from 'swr';
-import { Button, Flex, Heading, Separator, Text } from '@radix-ui/themes';
+import { Button, Flex, Heading, Text } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { ParticipantFieldsEditor } from '@/components/features/participants/participant-fields-editor';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { useParams, useRouter } from 'next/navigation';
-import { BackButton } from '@/components/ui/buttons/back-button';
 
 export default function EditParticipantTypePage() {
   const params = useParams();
@@ -75,11 +74,6 @@ export default function EditParticipantTypePage() {
     return (
       <Flex direction="column" gap="6">
         <Flex align="start" direction="column" gap="3">
-          <BackButton
-            href={`/datasources/${datasourceId}/participants/${participantType}`}
-            label="Back to Participant Type"
-          />
-          <Separator my="3" size="4" />
           <Heading size="8">Edit Participant Type: {participantType}</Heading>
         </Flex>
         <GenericErrorCallout
@@ -115,11 +109,6 @@ export default function EditParticipantTypePage() {
   return (
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
-        <BackButton
-          href={`/datasources/${datasourceId}/participants/${participantType}`}
-          label="Back to Participant Type"
-        />
-        <Separator my="3" size="4" />
         <Heading size="8">Edit Participant Type: {participantType}</Heading>
       </Flex>
 
