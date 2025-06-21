@@ -28,6 +28,8 @@ export type ExperimentFormData = {
   // which should be converted to numbers when making power or experiment creation requests.
   confidence: string;
   power: string;
+  // Selected webhook IDs for notifications
+  selectedWebhookIds: string[];
   // Populated when user clicks "Power Check" on DesignForm
   chosenN?: number;
   powerCheckResponse?: PowerResponseOutput;
@@ -72,6 +74,7 @@ export default function CreateExperimentPage() {
     filters: [],
     confidence: '95',
     power: '80',
+    selectedWebhookIds: [],
   });
   console.log('formData', formData);
 

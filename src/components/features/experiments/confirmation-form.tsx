@@ -11,6 +11,7 @@ import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ApiError } from '@/services/orval-fetch';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { ReadMoreText } from '@/components/ui/read-more-text';
+import { ListSelectedWebhooksCard } from '@/components/features/experiments/list-selected-webhooks-card';
 
 interface ConfirmationFormProps {
   formData: ExperimentFormData;
@@ -173,6 +174,8 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
           <Text color="gray">No filters defined</Text>
         )}
       </SectionCard>
+
+      <ListSelectedWebhooksCard webhookIds={formData.selectedWebhookIds} />
 
       <ExperimentErrorCallout error={commitError} type={'commit'} />
       <ExperimentErrorCallout error={abandonError} type={'abandon'} />

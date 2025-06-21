@@ -2,8 +2,11 @@
 import {
   Box,
   Button,
+  Callout,
   Card,
+  CheckboxCards,
   Flex,
+  Grid,
   Heading,
   IconButton,
   RadioGroup,
@@ -16,7 +19,8 @@ import {
 import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
-import { useListParticipantTypes } from '@/api/admin';
+import { useListOrganizationWebhooks, useListParticipantTypes } from '@/api/admin';
+import { useCurrentOrganization } from '@/providers/organization-provider';
 import Link from 'next/link';
 
 interface InitialFormProps {
@@ -34,6 +38,14 @@ export function InitialForm({ formData, onFormDataChange, onNext }: InitialFormP
       },
     },
   );
+
+  const org = useCurrentOrganization();
+  const organizationId = org?.current.id;
+  const { data: webhooksData, isLoading: loadingWebhooks } = useListOrganizationWebhooks(organizationId || '', {
+    swr: {
+      enabled: !!organizationId,
+    },
+  });
   const addArm = () => {
     const new_arm =
       formData.arms.length == 0
@@ -262,6 +274,48 @@ export function InitialForm({ formData, onFormDataChange, onNext }: InitialFormP
                 </Button>
               </Flex>
             </Flex>
+          </Flex>
+        </Card>
+
+        <Card>
+          <Flex direction="column" gap="3">
+            <Heading size="4">Webhooks (optional)</Heading>
+            {loadingWebhooks ? (
+              <Flex justify="center" py="4">
+                <Spinner />
+              </Flex>
+            ) : !webhooksData || webhooksData.items.length === 0 ? (
+              <Callout.Root>
+                <Callout.Text>
+                  Webhooks can be configured in the{' '}
+                  <Link href={`/organizations/${organizationId}`} style={{ textDecoration: 'underline' }}>
+                    settings
+                  </Link>
+                  .
+                </Callout.Text>
+              </Callout.Root>
+            ) : (
+              <>
+                <Text size="2" color="gray">
+                  Select which webhooks should receive notifications when this experiment is created.
+                </Text>
+                <CheckboxCards.Root
+                  value={formData.selectedWebhookIds}
+                  onValueChange={(value) => onFormDataChange({ ...formData, selectedWebhookIds: value })}
+                >
+                  <Grid columns="4" gap="3">
+                    {webhooksData.items.map((webhook) => (
+                      <CheckboxCards.Item key={webhook.id} value={webhook.id}>
+                        <Flex direction="column" width="100%">
+                          <Text weight="bold">{webhook.name}</Text>
+                          <Text>{webhook.url}</Text>
+                        </Flex>
+                      </CheckboxCards.Item>
+                    ))}
+                  </Grid>
+                </CheckboxCards.Root>
+              </>
+            )}
           </Flex>
         </Card>
 
