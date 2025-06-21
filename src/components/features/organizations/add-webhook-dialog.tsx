@@ -47,7 +47,7 @@ export function AddWebhookDialog({ organizationId, disabled = false }: { organiz
           <XSpinner message="Adding webhook..." />
         ) : webhookCreated && webhookResponse ? (
           <>
-            <Dialog.Title>Webhook Created Successfully</Dialog.Title>
+            <Dialog.Title>Webhook Created: {webhookResponse.name}</Dialog.Title>
             <Dialog.Description size="2" mb="4">
               Your webhook has been created. Please save the following information.
             </Dialog.Description>
@@ -56,6 +56,7 @@ export function AddWebhookDialog({ organizationId, disabled = false }: { organiz
               webhook={{
                 id: webhookResponse.id,
                 type: webhookResponse.type,
+                name: webhookResponse.name,
                 url: webhookResponse.url,
                 auth_token: webhookResponse.auth_token,
               }}
@@ -70,10 +71,12 @@ export function AddWebhookDialog({ organizationId, disabled = false }: { organiz
             onSubmit={async (event) => {
               event.preventDefault();
               const fd = new FormData(event.currentTarget);
+              const name = fd.get('name') as string;
               const url = fd.get('url') as string;
               try {
                 const response = await trigger({
                   type: 'experiment.created',
+                  name,
                   url,
                 });
                 setWebhookResponse(response);
@@ -91,6 +94,15 @@ export function AddWebhookDialog({ organizationId, disabled = false }: { organiz
             {error && <GenericErrorCallout title={'Failed to add webhook'} error={error} />}
 
             <Flex direction="column" gap="3">
+              <label>
+                <Text as="div" size="2" mb="1" weight="bold">
+                  Name
+                </Text>
+                <TextField.Root name="name" placeholder="My webhook name" required />
+                <Text as="div" size="1" color="gray" mt="1">
+                  A user-friendly name to identify this webhook.
+                </Text>
+              </label>
               <label>
                 <Text as="div" size="2" mb="1" weight="bold">
                   URL
