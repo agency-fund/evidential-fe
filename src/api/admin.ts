@@ -388,7 +388,7 @@ export const useListOrganizationWebhooks = <
 	};
 };
 /**
- * Updates a webhook's URL in an organization.
+ * Updates a webhook's name and URL in an organization.
  * @summary Update Organization Webhook
  */
 export const getUpdateOrganizationWebhookUrl = (
