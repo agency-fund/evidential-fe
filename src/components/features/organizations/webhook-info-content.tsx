@@ -15,7 +15,7 @@ export function WebhookInfoContent({ webhook }: { webhook: WebhookSummary }) {
     2,
   );
 
-  const webHookHeaders = `Content-Type: application/json \nAuthorization: ${webhook.auth_token || '[auth token]'}`;
+  const webHookHeaders = `Content-Type: application/json \nWebhook-Token: ${webhook.auth_token || '[auth token]'}`;
 
   return (
     <Flex direction="column" gap="3">
@@ -33,7 +33,7 @@ export function WebhookInfoContent({ webhook }: { webhook: WebhookSummary }) {
         <CodeSnippetCard title="Body" content={webHookBody} tooltipContent="Copy body" />
 
         <Text as="div" size="2" color="orange" mt="2">
-          Important: Your endpoint should validate the Authorization header to ensure requests are legitimate. Reject
+          Your endpoint may optionally validate the Webhook-Token header to ensure requests are legitimate by rejecting
           any requests that do not include the exact token shown above.
         </Text>
       </Box>
