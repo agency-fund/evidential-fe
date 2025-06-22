@@ -2,7 +2,6 @@
 import { Badge, Box, Flex, Heading, Separator, Table, Tabs, Text, Tooltip } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
 import { CalendarIcon, CodeIcon, InfoCircledIcon, PersonIcon } from '@radix-ui/react-icons';
-import { BackButton } from '@/components/ui/buttons/back-button';
 import { useAnalyzeExperiment, useGetExperiment } from '@/api/admin';
 import { ForestPlot } from '@/components/features/experiments/forest-plot';
 import { XSpinner } from '@/components/ui/x-spinner';
@@ -56,8 +55,6 @@ export default function ExperimentViewPage() {
   return (
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
-        <BackButton href="/" label="Back to Experiments" />
-        <Separator my="3" size="4" />
         <Flex direction="row" gap="2" align="center">
           <Heading size="8">{experiment_name}</Heading>
           <CopyToClipBoard content={experimentId} tooltipContent="Copy experiment ID" />
