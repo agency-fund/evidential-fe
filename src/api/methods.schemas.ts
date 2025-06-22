@@ -15,7 +15,7 @@ export interface AddWebhookToOrganizationRequest {
 }
 
 /**
- * The value of the Authorization: header that will be sent with the request to the configured URL.
+ * The value of the Webhook-Token: header that will be sent with the request to the configured URL.
  */
 export type AddWebhookToOrganizationResponseAuthToken = string | null;
 
@@ -29,7 +29,7 @@ export interface AddWebhookToOrganizationResponse {
 	type: string;
 	/** The URL to notify. */
 	url: string;
-	/** The value of the Authorization: header that will be sent with the request to the configured URL. */
+	/** The value of the Webhook-Token: header that will be sent with the request to the configured URL. */
 	auth_token: AddWebhookToOrganizationResponseAuthToken;
 }
 
@@ -1741,7 +1741,7 @@ export interface WebhookResponse {
 }
 
 /**
- * The value of the Authorization: header that will be sent with the request to the configured URL.
+ * The value of the Webhook-Token: header that will be sent with the request to the configured URL.
  */
 export type WebhookSummaryAuthToken = string | null;
 
@@ -1755,7 +1755,7 @@ export interface WebhookSummary {
 	type: string;
 	/** The URL to notify. */
 	url: string;
-	/** The value of the Authorization: header that will be sent with the request to the configured URL. */
+	/** The value of the Webhook-Token: header that will be sent with the request to the configured URL. */
 	auth_token: WebhookSummaryAuthToken;
 }
 
