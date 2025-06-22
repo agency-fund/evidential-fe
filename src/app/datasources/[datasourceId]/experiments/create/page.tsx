@@ -57,15 +57,12 @@ export default function CreateExperimentPage() {
     datasourceId: params.datasourceId as string,
     experimentType: 'preassigned',
     name: 'My Experiment',
-    hypothesis: 'To the moon!',
+    hypothesis: 'Hypothesis.',
     startDate: reasonableStartDate(),
     endDate: reasonableEndDate(),
     arms: [
-      {
-        arm_name: 'Control',
-        arm_description: 'No change. (Your Arm 1 will be used as baseline for comparison in analysis.)',
-      },
-      { arm_name: 'Treatment', arm_description: 'Change' },
+      { arm_name: 'Control', arm_description: 'Control' },
+      { arm_name: 'Treatment', arm_description: 'Treatment' },
     ],
     // primaryMetric will be undefined initially
     secondaryMetrics: [],

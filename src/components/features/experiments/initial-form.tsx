@@ -228,7 +228,7 @@ export function InitialForm({ formData, onFormDataChange, onNext }: InitialFormP
                   <Flex direction="column" gap="2">
                     <Flex justify="between" align="center">
                       <Text size="2" weight="bold">
-                        Arm {index + 1}
+                        Arm {index + 1} {0 == index && '(control)'}
                       </Text>
                       <IconButton size="1" color="red" variant="soft" onClick={() => removeArm(index)}>
                         <TrashIcon />
