@@ -1,5 +1,5 @@
 'use client';
-import { Button, Dialog, Flex } from '@radix-ui/themes';
+import { Button, Dialog, Flex, DropdownMenu } from '@radix-ui/themes';
 import { useState } from 'react';
 import { getListOrganizationExperimentsKey, useDeleteExperiment } from '@/api/admin';
 import { mutate } from 'swr';
@@ -9,9 +9,10 @@ interface DeleteExperimentButtonProps {
   organizationId: string;
   datasourceId: string;
   experimentId: string;
+  asDropdownItem?: boolean;
 }
 
-export function DeleteExperimentButton({ datasourceId, experimentId, organizationId }: DeleteExperimentButtonProps) {
+export function DeleteExperimentButton({ datasourceId, experimentId, organizationId, asDropdownItem = false }: DeleteExperimentButtonProps) {
   const [open, setOpen] = useState(false);
   const { trigger, isMutating } = useDeleteExperiment(datasourceId, experimentId, {
     swr: { onSuccess: () => mutate(getListOrganizationExperimentsKey(organizationId)) },
@@ -22,11 +23,20 @@ export function DeleteExperimentButton({ datasourceId, experimentId, organizatio
     setOpen(false);
   };
 
+  const triggerButton = asDropdownItem ? (
+    <DropdownMenu.Item color="red" onClick={() => setOpen(true)}>
+      <TrashIcon />
+      Delete
+    </DropdownMenu.Item>
+  ) : (
+    <Button color="red" variant="soft" size="1" onClick={() => setOpen(true)}>
+      <TrashIcon /> Delete
+    </Button>
+  );
+
   return (
     <>
-      <Button color="red" variant="soft" size="1" onClick={() => setOpen(true)}>
-        <TrashIcon /> Delete
-      </Button>
+      {triggerButton}
 
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Content>

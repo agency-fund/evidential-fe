@@ -1,5 +1,5 @@
 'use client';
-import { Button } from '@radix-ui/themes';
+import { Button, DropdownMenu } from '@radix-ui/themes';
 import { useState } from 'react';
 import { getExperimentAssignmentsAsCsv } from '@/api/admin';
 import { DownloadIcon } from '@radix-ui/react-icons';
@@ -7,9 +7,10 @@ import { DownloadIcon } from '@radix-ui/react-icons';
 interface DownloadAssignmentsCsvButtonProps {
   datasourceId: string;
   experimentId: string;
+  asDropdownItem?: boolean;
 }
 
-export function DownloadAssignmentsCsvButton({ datasourceId, experimentId }: DownloadAssignmentsCsvButtonProps) {
+export function DownloadAssignmentsCsvButton({ datasourceId, experimentId, asDropdownItem = false }: DownloadAssignmentsCsvButtonProps) {
   const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownload = async () => {
@@ -43,6 +44,15 @@ export function DownloadAssignmentsCsvButton({ datasourceId, experimentId }: Dow
       setIsDownloading(false);
     }
   };
+
+  if (asDropdownItem) {
+    return (
+      <DropdownMenu.Item onClick={handleDownload} disabled={isDownloading}>
+        <DownloadIcon />
+        {isDownloading ? 'Downloading...' : 'Download CSV'}
+      </DropdownMenu.Item>
+    );
+  }
 
   return (
     <Button variant="soft" size="1" onClick={handleDownload} loading={isDownloading}>
