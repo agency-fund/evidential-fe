@@ -1,9 +1,8 @@
 // src/components/features/experiments/experiment-card.tsx
 
-import { Card, Heading, Text, Flex, Badge, IconButton, Box, Button, DropdownMenu, Tooltip } from "@radix-ui/themes"
-import { TargetIcon, CalendarIcon, EyeOpenIcon, DownloadIcon, DotsVerticalIcon, LightningBoltIcon, TableIcon, PersonIcon, ComponentInstanceIcon } from "@radix-ui/react-icons";
+import { Card, Heading, Text, Flex, Badge, IconButton, Box, DropdownMenu, Tooltip } from "@radix-ui/themes"
+import { CalendarIcon, EyeOpenIcon, DownloadIcon, DotsVerticalIcon, LightningBoltIcon, TableIcon, PersonIcon, ComponentInstanceIcon } from "@radix-ui/react-icons";
 import { ReadMoreText } from "@/components/ui/read-more-text";
-import { DownloadAssignmentsCsvButton } from "@/components/features/experiments/download-assignments-csv-button";
 import { DeleteExperimentButton } from "@/components/features/experiments/delete-experiment-button";
 import { getExperimentAssignmentsAsCsv } from '@/api/admin';
 import Link from "next/link";
@@ -82,45 +81,36 @@ export default function ExperimentCard({title, hypothesis, type, startDate, endD
 
   return (
     <Card size="3">
-      {/* Header with title and status */}
-      <Flex justify="between" align="start" mb="5">
-        <Flex align="center" justify="start" gap="1">
-          <LightningBoltIcon width="16" height="16" color="var(--blue-9)" />
-          <Heading as="h3" size="4" weight="medium">
-            {title}
-          </Heading>
-          
-          {/* Quick action icons */}
-          <Flex align="center" gap="2" ml="3">
-            <Tooltip content="View experiment">
-              <IconButton variant="ghost" color="gray" size="1" asChild>
-                <Link href={`/datasources/${datasourceId}/experiments/${experimentId}`}>
-                  <EyeOpenIcon width="16" height="16" />
-                </Link>
-              </IconButton>
-            </Tooltip>
-            
-            <Tooltip content="Download CSV">
-              <IconButton 
-                variant="ghost" 
-                color="gray" 
-                size="1" 
-                onClick={handleDownload}
-                loading={isDownloading}
-              >
-                <DownloadIcon width="16" height="16" />
-              </IconButton>
-            </Tooltip>
-          </Flex>
+      {/* Header with title, status, and dots menu */}
+      <Flex justify="between" align="center" mb="6">
+        <Flex align="center" gap="2" style={{ minWidth: 0, flex: 1 }}>
+          <LightningBoltIcon width="16" height="16" color="var(--blue-9)" style={{ flexShrink: 0 }} />
+          <Tooltip content={title}>
+            <Heading 
+              as="h3" 
+              size="4" 
+              weight="medium" 
+              style={{ 
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                minWidth: 0
+              }}
+              asChild
+            >
+              <Link href={`/datasources/${datasourceId}/experiments/${experimentId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                {title}
+              </Link>
+            </Heading>
+          </Tooltip>
         </Flex>
         
-        {/* Right side: Always reserves space for both badge and actions */}
-        <Flex align="center" gap="3" minWidth="0">
+        {/* Right side: Status badge and actions menu */}
+        <Flex align="center" gap="3" style={{ flexShrink: 0 }}>
           <Badge color={getStatusBadgeColor()} variant="soft">
             {status}
           </Badge>
           
-          {/* Actions menu always visible */}
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
               <IconButton 
@@ -143,10 +133,26 @@ export default function ExperimentCard({title, hypothesis, type, startDate, endD
         </Flex>
       </Flex>
 
+      {/* Hypothesis section - Hero content */}
+      <Box mb="6">
+        <Text size="2" weight="medium" color="gray" mb="3">
+          Hypothesis
+        </Text>
+        <ReadMoreText text={hypothesis} maxWords={15} />
+      </Box>
+
       {/* Metadata section */}
-      <Box mb="5">
+      <Box mb="6" p="3" style={{ backgroundColor: 'var(--gray-2)', borderRadius: 'var(--radius-2)' }}>
         <Flex direction="column" gap="3">
-          {/* Datasource, participant, and type info as badges */}
+          {/* Date range - moved to top */}
+          <Flex align="center" gap="2">
+            <CalendarIcon width="14" height="14" color="var(--gray-9)" />
+            <Text size="2" color="gray">
+              {formatDate(startDate)} - {formatDate(endDate)}
+            </Text>
+          </Flex>
+
+          {/* Metadata badges with separators */}
           <Flex align="center" gap="2" wrap="wrap">
             <Badge variant="soft" color="gray" size="1" asChild>
               <Link href={`/datasources/${datasourceId}`}>
@@ -154,36 +160,44 @@ export default function ExperimentCard({title, hypothesis, type, startDate, endD
                 {datasource}
               </Link>
             </Badge>
+            <Text size="2" color="gray">•</Text>
             <Badge variant="soft" color="blue" size="1" asChild>
               <Link href={`/datasources/${datasourceId}`}>
                 <PersonIcon width="12" height="12" />
                 {participantType}
               </Link>
             </Badge>
+            <Text size="2" color="gray">•</Text>
             <Badge variant="soft" color="orange" size="1">
               <ComponentInstanceIcon width="12" height="12" />
               {type}
             </Badge>
           </Flex>
-
-          {/* Date range */}
-          <Flex align="center" gap="2">
-            <CalendarIcon width="14" height="14" color="var(--gray-9)" />
-            <Text size="2" color="gray">
-              {formatDate(startDate)} - {formatDate(endDate)}
-            </Text>
-          </Flex>
         </Flex>
       </Box>
 
-      {/* Hypothesis section */}
-      <Box>
-        <Text size="2" weight="medium" color="gray" mb="2">
-          Hypothesis
-        </Text>
-        <ReadMoreText text={hypothesis} maxWords={15} />
-      </Box>
-
+      {/* Bottom action buttons - right aligned */}
+      <Flex justify="end" gap="2">
+        <Tooltip content="View experiment">
+          <IconButton variant="soft" color="blue" size="2" asChild>
+            <Link href={`/datasources/${datasourceId}/experiments/${experimentId}`}>
+              <EyeOpenIcon width="16" height="16" />
+            </Link>
+          </IconButton>
+        </Tooltip>
+        
+        <Tooltip content="Download CSV">
+          <IconButton 
+            variant="soft" 
+            color="gray" 
+            size="2" 
+            onClick={handleDownload}
+            loading={isDownloading}
+          >
+            <DownloadIcon width="16" height="16" />
+          </IconButton>
+        </Tooltip>
+      </Flex>
 
     </Card>
   );
