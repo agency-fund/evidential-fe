@@ -1,17 +1,16 @@
 // src/components/features/experiments/experiment-card.tsx
 
-import { Card, Heading, Text, Flex, Badge, IconButton, DropdownMenu, Tooltip, Separator } from '@radix-ui/themes';
+import { Card, Heading, Text, Flex, Badge, IconButton, Tooltip, Separator } from '@radix-ui/themes';
 import {
   CalendarIcon,
   EyeOpenIcon,
-  DotsVerticalIcon,
   LightningBoltIcon,
   TableIcon,
   PersonIcon,
   ComponentInstanceIcon,
 } from '@radix-ui/react-icons';
 import { ReadMoreText } from '@/components/ui/read-more-text';
-import { DeleteExperimentButton } from '@/components/features/experiments/delete-experiment-button';
+import { ExperimentActionsMenu } from '@/components/features/experiments/experiment-actions-menu';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import Link from 'next/link';
 
@@ -53,7 +52,7 @@ export default function ExperimentCard({
     } else if (now > end) {
       return 'Completed';
     } else {
-      return 'Active';
+      return 'Current';
     }
   };
 
@@ -62,7 +61,7 @@ export default function ExperimentCard({
   // Get status badge color
   const getStatusBadgeColor = () => {
     switch (status) {
-      case 'Active':
+      case 'Current':
         return 'green';
       case 'Upcoming':
         return 'gray';
@@ -111,21 +110,11 @@ export default function ExperimentCard({
                 {status}
               </Badge>
 
-              <DropdownMenu.Root>
-                <DropdownMenu.Trigger>
-                  <IconButton variant="ghost" color="gray" size="1">
-                    <DotsVerticalIcon width="16" height="16" />
-                  </IconButton>
-                </DropdownMenu.Trigger>
-                <DropdownMenu.Content>
-                  <DeleteExperimentButton
-                    organizationId={organizationId}
-                    datasourceId={datasourceId}
-                    experimentId={experimentId}
-                    asDropdownItem={true}
-                  />
-                </DropdownMenu.Content>
-              </DropdownMenu.Root>
+              <ExperimentActionsMenu
+                organizationId={organizationId}
+                datasourceId={datasourceId}
+                experimentId={experimentId}
+              />
             </Flex>
           </Flex>
 
@@ -184,11 +173,7 @@ export default function ExperimentCard({
             </IconButton>
           </Tooltip>
 
-          <DownloadAssignmentsCsvButton 
-            datasourceId={datasourceId} 
-            experimentId={experimentId} 
-            asIconButton 
-          />
+          <DownloadAssignmentsCsvButton datasourceId={datasourceId} experimentId={experimentId} />
         </Flex>
       </Flex>
     </Card>

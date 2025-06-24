@@ -1,5 +1,5 @@
 'use client';
-import { Button, DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes';
+import { Button, Dialog, Flex, IconButton, Tooltip } from '@radix-ui/themes';
 import { useState } from 'react';
 import { getExperimentAssignmentsAsCsv } from '@/api/admin';
 import { DownloadIcon } from '@radix-ui/react-icons';
@@ -7,17 +7,11 @@ import { DownloadIcon } from '@radix-ui/react-icons';
 interface DownloadAssignmentsCsvButtonProps {
   datasourceId: string;
   experimentId: string;
-  asDropdownItem?: boolean;
-  asIconButton?: boolean;
 }
 
-export function DownloadAssignmentsCsvButton({ 
-  datasourceId, 
-  experimentId, 
-  asDropdownItem = false,
-  asIconButton = false 
-}: DownloadAssignmentsCsvButtonProps) {
+export function DownloadAssignmentsCsvButton({ datasourceId, experimentId }: DownloadAssignmentsCsvButtonProps) {
   const [isDownloading, setIsDownloading] = useState(false);
+  const [noDataDialog, setNoDataDialog] = useState(false);
 
   const handleDownload = async () => {
     setIsDownloading(true);
@@ -35,7 +29,8 @@ export function DownloadAssignmentsCsvButton({
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
       } else {
-        console.error('Failed to download CSV: No data received');
+        console.log('No data available');
+        setNoDataDialog(true);
       }
     } catch (error) {
       console.error('Error downloading CSV:', error);
@@ -44,28 +39,27 @@ export function DownloadAssignmentsCsvButton({
     }
   };
 
-  if (asDropdownItem) {
-    return (
-      <DropdownMenu.Item onClick={handleDownload} disabled={isDownloading}>
-        <DownloadIcon />
-        {isDownloading ? 'Downloading...' : 'Download CSV'}
-      </DropdownMenu.Item>
-    );
-  }
-
-  if (asIconButton) {
-    return (
+  return (
+    <>
       <Tooltip content="Download CSV">
         <IconButton variant="soft" color="gray" size="2" onClick={handleDownload} loading={isDownloading}>
           <DownloadIcon width="16" height="16" />
         </IconButton>
       </Tooltip>
-    );
-  }
 
-  return (
-    <Button variant="soft" size="1" onClick={handleDownload} loading={isDownloading}>
-      <DownloadIcon /> CSV
-    </Button>
+      <Dialog.Root open={noDataDialog} onOpenChange={setNoDataDialog}>
+        <Dialog.Content>
+          <Dialog.Title>No Data Available</Dialog.Title>
+          <Dialog.Description size="2" mb="4">
+            There are no assignments to download for this experiment yet.
+          </Dialog.Description>
+          <Flex gap="3" mt="4" justify="end">
+            <Dialog.Close>
+              <Button>Close</Button>
+            </Dialog.Close>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
+    </>
   );
 }
