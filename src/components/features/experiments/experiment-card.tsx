@@ -1,12 +1,21 @@
 // src/components/features/experiments/experiment-card.tsx
 
-import { Card, Heading, Text, Flex, Badge, IconButton, Box, DropdownMenu, Tooltip } from "@radix-ui/themes"
-import { CalendarIcon, EyeOpenIcon, DownloadIcon, DotsVerticalIcon, LightningBoltIcon, TableIcon, PersonIcon, ComponentInstanceIcon } from "@radix-ui/react-icons";
-import { ReadMoreText } from "@/components/ui/read-more-text";
-import { DeleteExperimentButton } from "@/components/features/experiments/delete-experiment-button";
+import { Card, Heading, Text, Flex, Badge, IconButton, Box, DropdownMenu, Tooltip, Separator } from '@radix-ui/themes';
+import {
+  CalendarIcon,
+  EyeOpenIcon,
+  DownloadIcon,
+  DotsVerticalIcon,
+  LightningBoltIcon,
+  TableIcon,
+  PersonIcon,
+  ComponentInstanceIcon,
+} from '@radix-ui/react-icons';
+import { ReadMoreText } from '@/components/ui/read-more-text';
+import { DeleteExperimentButton } from '@/components/features/experiments/delete-experiment-button';
 import { getExperimentAssignmentsAsCsv } from '@/api/admin';
-import Link from "next/link";
-import { useState } from "react";
+import Link from 'next/link';
+import { useState } from 'react';
 
 interface ExperimentCardProps {
   title: string;
@@ -21,7 +30,18 @@ interface ExperimentCardProps {
   organizationId: string;
 }
 
-export default function ExperimentCard({title, hypothesis, type, startDate, endDate, datasource, datasourceId, participantType, experimentId, organizationId}: ExperimentCardProps) {
+export default function ExperimentCard({
+  title,
+  hypothesis,
+  type,
+  startDate,
+  endDate,
+  datasource,
+  datasourceId,
+  participantType,
+  experimentId,
+  organizationId,
+}: ExperimentCardProps) {
   const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString();
   const [isDownloading, setIsDownloading] = useState(false);
 
@@ -53,7 +73,7 @@ export default function ExperimentCard({title, hypothesis, type, startDate, endD
     const now = new Date();
     const start = new Date(startDate);
     const end = new Date(endDate);
-    
+
     if (now < start) {
       return 'Draft';
     } else if (now > end) {
@@ -81,124 +101,119 @@ export default function ExperimentCard({title, hypothesis, type, startDate, endD
 
   return (
     <Card size="3">
-      {/* Header with title, status, and dots menu */}
-      <Flex justify="between" align="center" mb="6">
-        <Flex align="center" gap="2" style={{ minWidth: 0, flex: 1 }}>
-          <LightningBoltIcon width="16" height="16" color="var(--blue-9)" style={{ flexShrink: 0 }} />
-          <Tooltip content={title}>
-            <Heading 
-              as="h3" 
-              size="4" 
-              weight="medium" 
-              style={{ 
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                minWidth: 0
-              }}
-              asChild
-            >
-              <Link href={`/datasources/${datasourceId}/experiments/${experimentId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                {title}
+      <Flex direction="column" gap="4">
+        {/* Header with title, status, and dots menu */}
+        <Flex justify="between" align="center">
+          <Flex align="center" gap="2" style={{ minWidth: 0, flex: 1 }}>
+            <LightningBoltIcon width="16" height="16" color="var(--blue-9)" style={{ flexShrink: 0 }} />
+            <Tooltip content={title}>
+              <Heading
+                as="h3"
+                size="4"
+                weight="medium"
+                style={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  minWidth: 0,
+                }}
+                asChild
+              >
+                <Link
+                  href={`/datasources/${datasourceId}/experiments/${experimentId}`}
+                  style={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                  {title}
+                </Link>
+              </Heading>
+            </Tooltip>
+          </Flex>
+
+          {/* Right side: Status badge and actions menu */}
+          <Flex align="center" gap="3" style={{ flexShrink: 0 }}>
+            <Badge color={getStatusBadgeColor()} variant="soft">
+              {status}
+            </Badge>
+
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger>
+                <IconButton variant="ghost" color="gray" size="1">
+                  <DotsVerticalIcon width="16" height="16" />
+                </IconButton>
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Content>
+                <DeleteExperimentButton
+                  organizationId={organizationId}
+                  datasourceId={datasourceId}
+                  experimentId={experimentId}
+                  asDropdownItem={true}
+                />
+              </DropdownMenu.Content>
+            </DropdownMenu.Root>
+          </Flex>
+        </Flex>
+
+        {/* Date range - moved to top */}
+        <Flex align="center" gap="2">
+          <CalendarIcon width="14" height="14" color="var(--gray-9)" />
+          <Text size="2" color="gray">
+            {formatDate(startDate)} - {formatDate(endDate)}
+          </Text>
+        </Flex>
+
+        {/* Metadata badges with separators */}
+        <Flex align="center" gap="2" wrap="wrap">
+          <Badge variant="soft" color="gray" size="1" asChild>
+            <Link href={`/datasources/${datasourceId}`}>
+              <TableIcon width="12" height="12" />
+              {datasource}
+            </Link>
+          </Badge>
+          <Text size="2" color="gray">
+            •
+          </Text>
+          <Badge variant="soft" color="blue" size="1" asChild>
+            <Link href={`/datasources/${datasourceId}`}>
+              <PersonIcon width="12" height="12" />
+              {participantType}
+            </Link>
+          </Badge>
+          <Text size="2" color="gray">
+            •
+          </Text>
+          <Badge variant="soft" color="orange" size="1">
+            <ComponentInstanceIcon width="12" height="12" />
+            {type}
+          </Badge>
+        </Flex>
+
+        <Separator size="4" />
+
+        {/* Hypothesis section - Hero content */}
+        <Flex direction="column" gap="3">
+          <Text size="2" weight="bold">
+            Hypothesis
+          </Text>
+          <ReadMoreText text={hypothesis} maxWords={15} />
+        </Flex>
+
+        {/* Bottom action buttons - right aligned */}
+        <Flex justify="end" gap="2">
+          <Tooltip content="View experiment">
+            <IconButton variant="soft" color="blue" size="2" asChild>
+              <Link href={`/datasources/${datasourceId}/experiments/${experimentId}`}>
+                <EyeOpenIcon width="16" height="16" />
               </Link>
-            </Heading>
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip content="Download CSV">
+            <IconButton variant="soft" color="gray" size="2" onClick={handleDownload} loading={isDownloading}>
+              <DownloadIcon width="16" height="16" />
+            </IconButton>
           </Tooltip>
         </Flex>
-        
-        {/* Right side: Status badge and actions menu */}
-        <Flex align="center" gap="3" style={{ flexShrink: 0 }}>
-          <Badge color={getStatusBadgeColor()} variant="soft">
-            {status}
-          </Badge>
-          
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger>
-              <IconButton 
-                variant="ghost"
-                color="gray"
-                size="1"
-              >
-                <DotsVerticalIcon width="16" height="16" />
-              </IconButton>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content>
-              <DeleteExperimentButton
-                organizationId={organizationId}
-                datasourceId={datasourceId}
-                experimentId={experimentId}
-                asDropdownItem={true}
-              />
-            </DropdownMenu.Content>
-          </DropdownMenu.Root>
-        </Flex>
       </Flex>
-
-      {/* Hypothesis section - Hero content */}
-      <Box mb="6">
-        <Text size="2" weight="medium" color="gray" mb="3">
-          Hypothesis
-        </Text>
-        <ReadMoreText text={hypothesis} maxWords={15} />
-      </Box>
-
-      {/* Metadata section */}
-      <Box mb="6" p="3" style={{ backgroundColor: 'var(--gray-2)', borderRadius: 'var(--radius-2)' }}>
-        <Flex direction="column" gap="3">
-          {/* Date range - moved to top */}
-          <Flex align="center" gap="2">
-            <CalendarIcon width="14" height="14" color="var(--gray-9)" />
-            <Text size="2" color="gray">
-              {formatDate(startDate)} - {formatDate(endDate)}
-            </Text>
-          </Flex>
-
-          {/* Metadata badges with separators */}
-          <Flex align="center" gap="2" wrap="wrap">
-            <Badge variant="soft" color="gray" size="1" asChild>
-              <Link href={`/datasources/${datasourceId}`}>
-                <TableIcon width="12" height="12" />
-                {datasource}
-              </Link>
-            </Badge>
-            <Text size="2" color="gray">•</Text>
-            <Badge variant="soft" color="blue" size="1" asChild>
-              <Link href={`/datasources/${datasourceId}`}>
-                <PersonIcon width="12" height="12" />
-                {participantType}
-              </Link>
-            </Badge>
-            <Text size="2" color="gray">•</Text>
-            <Badge variant="soft" color="orange" size="1">
-              <ComponentInstanceIcon width="12" height="12" />
-              {type}
-            </Badge>
-          </Flex>
-        </Flex>
-      </Box>
-
-      {/* Bottom action buttons - right aligned */}
-      <Flex justify="end" gap="2">
-        <Tooltip content="View experiment">
-          <IconButton variant="soft" color="blue" size="2" asChild>
-            <Link href={`/datasources/${datasourceId}/experiments/${experimentId}`}>
-              <EyeOpenIcon width="16" height="16" />
-            </Link>
-          </IconButton>
-        </Tooltip>
-        
-        <Tooltip content="Download CSV">
-          <IconButton 
-            variant="soft" 
-            color="gray" 
-            size="2" 
-            onClick={handleDownload}
-            loading={isDownloading}
-          >
-            <DownloadIcon width="16" height="16" />
-          </IconButton>
-        </Tooltip>
-      </Flex>
-
     </Card>
   );
 }
