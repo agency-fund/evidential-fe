@@ -1,5 +1,4 @@
-// src/components/features/experiments/experiment-card.tsx
-
+'use client';
 import { Card, Heading, Text, Flex, Badge, IconButton, Tooltip, Separator } from '@radix-ui/themes';
 import {
   CalendarIcon,
@@ -50,7 +49,7 @@ export default function ExperimentCard({
     if (now < start) {
       return 'Upcoming';
     } else if (now > end) {
-      return 'Completed';
+      return 'Finished';
     } else {
       return 'Current';
     }
@@ -65,7 +64,7 @@ export default function ExperimentCard({
         return 'green';
       case 'Upcoming':
         return 'gray';
-      case 'Completed':
+      case 'Finished':
         return 'blue';
       default:
         return 'gray';
