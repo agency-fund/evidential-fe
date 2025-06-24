@@ -1,10 +1,9 @@
 // src/components/features/experiments/experiment-card.tsx
 
-import { Card, Heading, Text, Flex, Badge, IconButton, Box, DropdownMenu, Tooltip, Separator } from '@radix-ui/themes';
+import { Card, Heading, Text, Flex, Badge, IconButton, DropdownMenu, Tooltip, Separator } from '@radix-ui/themes';
 import {
   CalendarIcon,
   EyeOpenIcon,
-  DownloadIcon,
   DotsVerticalIcon,
   LightningBoltIcon,
   TableIcon,
@@ -13,9 +12,8 @@ import {
 } from '@radix-ui/react-icons';
 import { ReadMoreText } from '@/components/ui/read-more-text';
 import { DeleteExperimentButton } from '@/components/features/experiments/delete-experiment-button';
-import { getExperimentAssignmentsAsCsv } from '@/api/admin';
+import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import Link from 'next/link';
-import { useState } from 'react';
 
 interface ExperimentCardProps {
   title: string;
@@ -43,30 +41,6 @@ export default function ExperimentCard({
   organizationId,
 }: ExperimentCardProps) {
   const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString();
-  const [isDownloading, setIsDownloading] = useState(false);
-
-  const handleDownload = async () => {
-    setIsDownloading(true);
-    try {
-      const response = await getExperimentAssignmentsAsCsv(datasourceId, experimentId);
-
-      if (response) {
-        const blob = new Blob([response as BlobPart], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `experiment_${experimentId}_assignments.csv`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }
-    } catch (error) {
-      console.error('Error downloading CSV:', error);
-    } finally {
-      setIsDownloading(false);
-    }
-  };
 
   // Calculate experiment status
   const getExperimentStatus = () => {
@@ -75,7 +49,7 @@ export default function ExperimentCard({
     const end = new Date(endDate);
 
     if (now < start) {
-      return 'Draft';
+      return 'Upcoming';
     } else if (now > end) {
       return 'Completed';
     } else {
@@ -90,7 +64,7 @@ export default function ExperimentCard({
     switch (status) {
       case 'Active':
         return 'green';
-      case 'Draft':
+      case 'Upcoming':
         return 'gray';
       case 'Completed':
         return 'blue';
@@ -210,11 +184,11 @@ export default function ExperimentCard({
             </IconButton>
           </Tooltip>
 
-          <Tooltip content="Download CSV">
-            <IconButton variant="soft" color="gray" size="2" onClick={handleDownload} loading={isDownloading}>
-              <DownloadIcon width="16" height="16" />
-            </IconButton>
-          </Tooltip>
+          <DownloadAssignmentsCsvButton 
+            datasourceId={datasourceId} 
+            experimentId={experimentId} 
+            asIconButton 
+          />
         </Flex>
       </Flex>
     </Card>

@@ -1,5 +1,5 @@
 'use client';
-import { Button, DropdownMenu } from '@radix-ui/themes';
+import { Button, DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes';
 import { useState } from 'react';
 import { getExperimentAssignmentsAsCsv } from '@/api/admin';
 import { DownloadIcon } from '@radix-ui/react-icons';
@@ -8,9 +8,15 @@ interface DownloadAssignmentsCsvButtonProps {
   datasourceId: string;
   experimentId: string;
   asDropdownItem?: boolean;
+  asIconButton?: boolean;
 }
 
-export function DownloadAssignmentsCsvButton({ datasourceId, experimentId, asDropdownItem = false }: DownloadAssignmentsCsvButtonProps) {
+export function DownloadAssignmentsCsvButton({ 
+  datasourceId, 
+  experimentId, 
+  asDropdownItem = false,
+  asIconButton = false 
+}: DownloadAssignmentsCsvButtonProps) {
   const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownload = async () => {
@@ -19,20 +25,13 @@ export function DownloadAssignmentsCsvButton({ datasourceId, experimentId, asDro
       const response = await getExperimentAssignmentsAsCsv(datasourceId, experimentId);
 
       if (response) {
-        // Create a blob from the CSV data (typing is a hack)
         const blob = new Blob([response as BlobPart], { type: 'text/csv;charset=utf-8;' });
-
-        // Create a download link
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
         link.download = `experiment_${experimentId}_assignments.csv`;
-
-        // Trigger the download
         document.body.appendChild(link);
         link.click();
-
-        // Clean up
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
       } else {
@@ -51,6 +50,16 @@ export function DownloadAssignmentsCsvButton({ datasourceId, experimentId, asDro
         <DownloadIcon />
         {isDownloading ? 'Downloading...' : 'Download CSV'}
       </DropdownMenu.Item>
+    );
+  }
+
+  if (asIconButton) {
+    return (
+      <Tooltip content="Download CSV">
+        <IconButton variant="soft" color="gray" size="2" onClick={handleDownload} loading={isDownloading}>
+          <DownloadIcon width="16" height="16" />
+        </IconButton>
+      </Tooltip>
     );
   }
 
