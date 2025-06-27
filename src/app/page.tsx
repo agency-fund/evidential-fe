@@ -1,5 +1,5 @@
 'use client';
-import { Flex, Heading, Grid, TextField, Button } from '@radix-ui/themes';
+import { Button, Flex, Grid, Heading, TextField } from '@radix-ui/themes';
 import { GearIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { useListOrganizationDatasources, useListOrganizationExperiments } from '@/api/admin';
 import { XSpinner } from '@/components/ui/x-spinner';
@@ -11,6 +11,20 @@ import { PRODUCT_NAME } from '@/services/constants';
 import { CreateExperimentButton } from '@/components/features/experiments/create-experiment-button';
 import ExperimentCard from '@/components/features/experiments/experiment-card';
 import { useState } from 'react';
+
+const getExperimentStatus = (startDate: string, endDate: string) => {
+  const now = new Date();
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  if (now < start) {
+    return 'upcoming';
+  } else if (now > end) {
+    return 'finished';
+  } else {
+    return 'current';
+  }
+};
 
 export default function Page() {
   const router = useRouter();
@@ -38,20 +52,6 @@ export default function Page() {
   });
 
   const datasourcesToName = new Map(datasourcesData?.items.map((e) => [e.id, e.name]) || []);
-
-  const getExperimentStatus = (startDate: string, endDate: string) => {
-    const now = new Date();
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    if (now < start) {
-      return 'upcoming';
-    } else if (now > end) {
-      return 'finished';
-    } else {
-      return 'current';
-    }
-  };
 
   const statusOrder = ['all', 'current', 'upcoming', 'finished'] as const;
 

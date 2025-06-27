@@ -1,12 +1,12 @@
 'use client';
-import { Card, Heading, Text, Flex, Badge, IconButton, Tooltip, Separator } from '@radix-ui/themes';
+import { Badge, Card, Flex, Heading, IconButton, Separator, Text, Tooltip } from '@radix-ui/themes';
 import {
   CalendarIcon,
+  ComponentInstanceIcon,
   EyeOpenIcon,
   LightningBoltIcon,
-  TableIcon,
   PersonIcon,
-  ComponentInstanceIcon,
+  TableIcon,
 } from '@radix-ui/react-icons';
 import { ReadMoreText } from '@/components/ui/read-more-text';
 import { ExperimentActionsMenu } from '@/components/features/experiments/experiment-actions-menu';
@@ -26,6 +26,35 @@ interface ExperimentCardProps {
   organizationId: string;
 }
 
+const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString();
+
+const getExperimentStatus = (startDate: string, endDate: string) => {
+  const now = new Date();
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  if (now < start) {
+    return 'Upcoming';
+  } else if (now > end) {
+    return 'Finished';
+  } else {
+    return 'Current';
+  }
+};
+
+const getStatusBadgeColor = (status: string) => {
+  switch (status) {
+    case 'Current':
+      return 'green';
+    case 'Upcoming':
+      return 'gray';
+    case 'Finished':
+      return 'blue';
+    default:
+      return 'gray';
+  }
+};
+
 export default function ExperimentCard({
   title,
   hypothesis,
@@ -38,39 +67,8 @@ export default function ExperimentCard({
   experimentId,
   organizationId,
 }: ExperimentCardProps) {
-  const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString();
-
-  // Calculate experiment status
-  const getExperimentStatus = () => {
-    const now = new Date();
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    if (now < start) {
-      return 'Upcoming';
-    } else if (now > end) {
-      return 'Finished';
-    } else {
-      return 'Current';
-    }
-  };
-
-  const status = getExperimentStatus();
-
-  // Get status badge color
-  const getStatusBadgeColor = () => {
-    switch (status) {
-      case 'Current':
-        return 'green';
-      case 'Upcoming':
-        return 'gray';
-      case 'Finished':
-        return 'blue';
-      default:
-        return 'gray';
-    }
-  };
-
+  const status = getExperimentStatus(startDate, endDate);
+  const statusBadgeColor = getStatusBadgeColor(status);
   return (
     <Card size="3">
       <Flex direction="column" style={{ height: '100%' }}>
@@ -104,8 +102,8 @@ export default function ExperimentCard({
             </Flex>
 
             {/* Right side: Status badge and actions menu */}
-            <Flex align="center" gap="3" style={{ flexShrink: 0 }}>
-              <Badge color={getStatusBadgeColor()} variant="soft">
+            <Flex align="center" gap="3" flexShrink={'0'}>
+              <Badge color={statusBadgeColor} variant="soft">
                 {status}
               </Badge>
 
