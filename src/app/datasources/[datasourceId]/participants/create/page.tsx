@@ -8,12 +8,11 @@ import {
   useInspectTableInDatasource,
 } from '@/api/admin';
 import { FieldDescriptor, FieldMetadata } from '@/api/methods.schemas';
-import { Box, Button, Flex, Heading, Select, Separator, Text, TextField } from '@radix-ui/themes';
+import { Box, Button, Flex, Heading, Select, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { useEffect, useState } from 'react';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { useParams, useRouter } from 'next/navigation';
-import { BackButton } from '@/components/ui/buttons/back-button';
 import { ParticipantFieldsEditor } from '@/components/features/participants/participant-fields-editor';
 import { mutate } from 'swr';
 
@@ -128,8 +127,6 @@ export default function CreateParticipantTypePage() {
   return (
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
-        <BackButton href={`/datasources/${datasourceId}`} label="Back to Datasource" />
-        <Separator my="3" size="4" />
         <Heading size="8">Add Participant Type</Heading>
         <Text size="2" color="gray">
           Define a new participant type for this datasource.

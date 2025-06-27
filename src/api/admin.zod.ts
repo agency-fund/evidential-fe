@@ -88,7 +88,7 @@ export const addWebhookToOrganizationResponse = zod
 			.string()
 			.or(zod.null())
 			.describe(
-				"The value of the Authorization: header that will be sent with the request to the configured URL.",
+				"The value of the Webhook-Token: header that will be sent with the request to the configured URL.",
 			),
 	})
 	.describe("Information on the successfully created webhook.");
@@ -115,7 +115,7 @@ export const listOrganizationWebhooksResponse = zod.object({
 					.string()
 					.or(zod.null())
 					.describe(
-						"The value of the Authorization: header that will be sent with the request to the configured URL.",
+						"The value of the Webhook-Token: header that will be sent with the request to the configured URL.",
 					),
 			})
 			.describe("Summarizes a Webhook configuration for an organization."),
