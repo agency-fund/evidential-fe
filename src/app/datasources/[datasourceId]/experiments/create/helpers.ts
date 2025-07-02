@@ -58,5 +58,6 @@ export const convertFormDataToCreateExperimentRequest = (formData: ExperimentFor
       experiment_id: null,
     },
     power_analyses: formData.powerCheckResponse,
+    webhooks: formData.selectedWebhookIds.length > 0 ? formData.selectedWebhookIds : [],
   });
 };

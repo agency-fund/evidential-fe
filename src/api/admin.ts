@@ -50,7 +50,7 @@ import type {
 	ParticipantsConfig,
 	PowerRequest,
 	PowerResponseOutput,
-	TokenInfo,
+	Principal,
 	UpdateDatasourceRequest,
 	UpdateOrganizationRequest,
 	UpdateOrganizationWebhookRequest,
@@ -73,8 +73,8 @@ export const getCallerIdentityUrl = () => {
 
 export const callerIdentity = async (
 	options?: RequestInit,
-): Promise<TokenInfo> => {
-	return orvalFetch<TokenInfo>(getCallerIdentityUrl(), {
+): Promise<Principal> => {
+	return orvalFetch<Principal>(getCallerIdentityUrl(), {
 		...options,
 		method: "GET",
 	});
@@ -388,7 +388,7 @@ export const useListOrganizationWebhooks = <
 	};
 };
 /**
- * Updates a webhook's URL in an organization.
+ * Updates a webhook's name and URL in an organization.
  * @summary Update Organization Webhook
  */
 export const getUpdateOrganizationWebhookUrl = (

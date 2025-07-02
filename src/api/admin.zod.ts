@@ -59,17 +59,30 @@ export const addWebhookToOrganizationParams = zod.object({
 	organization_id: zod.string(),
 });
 
+export const addWebhookToOrganizationBodyNameMax = 100;
 export const addWebhookToOrganizationBodyUrlMax = 500;
 
 export const addWebhookToOrganizationBody = zod.object({
 	type: zod.string(),
-	url: zod.string().max(addWebhookToOrganizationBodyUrlMax),
+	name: zod
+		.string()
+		.max(addWebhookToOrganizationBodyNameMax)
+		.describe(
+			"User-friendly name for the webhook. This name is displayed in the UI and helps identify the webhook's purpose.",
+		),
+	url: zod
+		.string()
+		.max(addWebhookToOrganizationBodyUrlMax)
+		.describe(
+			"The HTTP or HTTPS URL that will receive webhook notifications when events occur.",
+		),
 });
 
 export const addWebhookToOrganizationResponse = zod
 	.object({
 		id: zod.string().describe("The ID of the newly created webhook."),
 		type: zod.string().describe("The type of webhook; e.g. experiment.created"),
+		name: zod.string().describe("User-friendly name for the webhook."),
 		url: zod.string().describe("The URL to notify."),
 		auth_token: zod
 			.string()
@@ -96,6 +109,7 @@ export const listOrganizationWebhooksResponse = zod.object({
 				type: zod
 					.string()
 					.describe("The type of webhook; e.g. experiment.created"),
+				name: zod.string().describe("User-friendly name for the webhook."),
 				url: zod.string().describe("The URL to notify."),
 				auth_token: zod
 					.string()
@@ -109,7 +123,7 @@ export const listOrganizationWebhooksResponse = zod.object({
 });
 
 /**
- * Updates a webhook's URL in an organization.
+ * Updates a webhook's name and URL in an organization.
  * @summary Update Organization Webhook
  */
 export const updateOrganizationWebhookParams = zod.object({
@@ -117,13 +131,25 @@ export const updateOrganizationWebhookParams = zod.object({
 	webhook_id: zod.string(),
 });
 
+export const updateOrganizationWebhookBodyNameMax = 100;
 export const updateOrganizationWebhookBodyUrlMax = 500;
 
 export const updateOrganizationWebhookBody = zod
 	.object({
-		url: zod.string().max(updateOrganizationWebhookBodyUrlMax),
+		name: zod
+			.string()
+			.max(updateOrganizationWebhookBodyNameMax)
+			.describe(
+				"User-friendly name for the webhook. This name is displayed in the UI and helps identify the webhook's purpose.",
+			),
+		url: zod
+			.string()
+			.max(updateOrganizationWebhookBodyUrlMax)
+			.describe(
+				"The HTTP or HTTPS URL that will receive webhook notifications when events occur.",
+			),
 	})
-	.describe("Request to update a webhook's URL.");
+	.describe("Request to update a webhook's name and URL.");
 
 /**
  * Removes a Webhook from an organization.
@@ -1710,6 +1736,7 @@ export const createExperimentBodyDesignSpecFstatThreshMaxOne = 1;
 export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyPowerAnalysesAnalysesMax = 150;
+export const createExperimentBodyWebhooksDefault = [];
 
 export const createExperimentBody = zod.object({
 	design_spec: zod
@@ -2145,6 +2172,12 @@ export const createExperimentBody = zod.object({
 		})
 		.or(zod.null())
 		.optional(),
+	webhooks: zod
+		.array(zod.string())
+		.default(createExperimentBodyWebhooksDefault)
+		.describe(
+			"List of webhook IDs to associate with this experiment. When the experiment is committed, these webhooks will be triggered with experiment details. Must contain unique values.",
+		),
 });
 
 export const createExperimentResponseDesignSpecParticipantTypeMax = 100;
@@ -2212,6 +2245,7 @@ export const createExperimentResponseAssignSummaryArmSizesItemArmArmNameMax = 10
 export const createExperimentResponseAssignSummaryArmSizesItemArmArmDescriptionMaxOne = 2000;
 export const createExperimentResponseAssignSummaryArmSizesItemSizeDefault = 0;
 export const createExperimentResponseAssignSummaryArmSizesMaxOne = 10;
+export const createExperimentResponseWebhooksDefault = [];
 
 export const createExperimentResponse = zod
 	.object({
@@ -2753,6 +2787,12 @@ export const createExperimentResponse = zod
 					),
 			})
 			.describe("Key pieces of an AssignResponse without the assignments."),
+		webhooks: zod
+			.array(zod.string())
+			.default(createExperimentResponseWebhooksDefault)
+			.describe(
+				"List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed.",
+			),
 	})
 	.describe(
 		"Same as the request but with ids filled for the experiment and arms, and summary info on the assignment.",
@@ -2995,6 +3035,7 @@ export const listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesIt
 export const listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesItemArmArmDescriptionMaxOne = 2000;
 export const listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesItemSizeDefault = 0;
 export const listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesMaxOne = 10;
+export const listOrganizationExperimentsResponseItemsItemWebhooksDefault = [];
 
 export const listOrganizationExperimentsResponse = zod.object({
 	items: zod.array(
@@ -3624,6 +3665,12 @@ export const listOrganizationExperimentsResponse = zod.object({
 							),
 					})
 					.describe("Key pieces of an AssignResponse without the assignments."),
+				webhooks: zod
+					.array(zod.string())
+					.default(listOrganizationExperimentsResponseItemsItemWebhooksDefault)
+					.describe(
+						"List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed.",
+					),
 			})
 			.describe("Representation of our stored Experiment information."),
 	),
@@ -3703,6 +3750,7 @@ export const getExperimentResponseAssignSummaryArmSizesItemArmArmNameMax = 100;
 export const getExperimentResponseAssignSummaryArmSizesItemArmArmDescriptionMaxOne = 2000;
 export const getExperimentResponseAssignSummaryArmSizesItemSizeDefault = 0;
 export const getExperimentResponseAssignSummaryArmSizesMaxOne = 10;
+export const getExperimentResponseWebhooksDefault = [];
 
 export const getExperimentResponse = zod
 	.object({
@@ -4242,6 +4290,12 @@ export const getExperimentResponse = zod
 					),
 			})
 			.describe("Key pieces of an AssignResponse without the assignments."),
+		webhooks: zod
+			.array(zod.string())
+			.default(getExperimentResponseWebhooksDefault)
+			.describe(
+				"List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed.",
+			),
 	})
 	.describe("Representation of our stored Experiment information.");
 

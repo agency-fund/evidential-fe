@@ -3,7 +3,9 @@ import {
   Box,
   Button,
   Card,
+  CheckboxCards,
   Flex,
+  Grid,
   Heading,
   IconButton,
   RadioGroup,
@@ -18,14 +20,16 @@ import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 import { useListParticipantTypes } from '@/api/admin';
 import Link from 'next/link';
+import { WebhookSummary } from '@/api/methods.schemas';
 
 interface InitialFormProps {
   formData: ExperimentFormData;
   onFormDataChange: (data: ExperimentFormData) => void;
   onNext: () => void;
+  webhooks: WebhookSummary[];
 }
 
-export function InitialForm({ formData, onFormDataChange, onNext }: InitialFormProps) {
+export function InitialForm({ formData, onFormDataChange, onNext, webhooks }: InitialFormProps) {
   const { data: participantTypesData, isLoading: loadingParticipantTypes } = useListParticipantTypes(
     formData.datasourceId || '',
     {
@@ -34,6 +38,7 @@ export function InitialForm({ formData, onFormDataChange, onNext }: InitialFormP
       },
     },
   );
+
   const addArm = () => {
     const new_arm =
       formData.arms.length == 0
@@ -264,6 +269,32 @@ export function InitialForm({ formData, onFormDataChange, onNext }: InitialFormP
             </Flex>
           </Flex>
         </Card>
+
+        {webhooks.length > 0 && (
+          <Card>
+            <Flex direction="column" gap="3">
+              <Heading size="4">Webhooks</Heading>
+              <Text size="2" color="gray">
+                Select which webhooks should receive notifications when this experiment is created.
+              </Text>
+              <CheckboxCards.Root
+                value={formData.selectedWebhookIds}
+                onValueChange={(value) => onFormDataChange({ ...formData, selectedWebhookIds: value })}
+              >
+                <Grid columns="4" gap="3">
+                  {webhooks.map((webhook) => (
+                    <CheckboxCards.Item key={webhook.id} value={webhook.id}>
+                      <Flex direction="column" width="100%">
+                        <Text weight="bold">{webhook.name}</Text>
+                        <Text>{webhook.url}</Text>
+                      </Flex>
+                    </CheckboxCards.Item>
+                  ))}
+                </Grid>
+              </CheckboxCards.Root>
+            </Flex>
+          </Card>
+        )}
 
         <Flex justify="end" mt="4">
           <Button type="submit">Next</Button>

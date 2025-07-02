@@ -24,6 +24,7 @@ export function WebhooksTable({ webhooks, organizationId }: { webhooks: WebhookS
     <Table.Root variant="surface">
       <Table.Header>
         <Table.Row>
+          <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>URL</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>Auth Key</Table.ColumnHeaderCell>
@@ -33,13 +34,14 @@ export function WebhooksTable({ webhooks, organizationId }: { webhooks: WebhookS
       <Table.Body>
         {webhooks.length === 0 ? (
           <Table.Row>
-            <Table.Cell colSpan={4}>
+            <Table.Cell colSpan={5}>
               <Text align="center">No webhooks found</Text>
             </Table.Cell>
           </Table.Row>
         ) : (
           webhooks.map((webhook) => (
             <Table.Row key={webhook.id}>
+              <Table.Cell>{webhook.name}</Table.Cell>
               <Table.Cell>{webhook.type}</Table.Cell>
               <Table.Cell>{webhook.url}</Table.Cell>
               <Table.Cell>

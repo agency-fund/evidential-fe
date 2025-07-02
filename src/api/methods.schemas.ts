@@ -10,7 +10,15 @@ export interface AddMemberToOrganizationRequest {
 
 export interface AddWebhookToOrganizationRequest {
 	type: "experiment.created";
-	/** @maxLength 500 */
+	/**
+	 * User-friendly name for the webhook. This name is displayed in the UI and helps identify the webhook's purpose.
+	 * @maxLength 100
+	 */
+	name: string;
+	/**
+	 * The HTTP or HTTPS URL that will receive webhook notifications when events occur.
+	 * @maxLength 500
+	 */
 	url: string;
 }
 
@@ -27,6 +35,8 @@ export interface AddWebhookToOrganizationResponse {
 	id: string;
 	/** The type of webhook; e.g. experiment.created */
 	type: string;
+	/** User-friendly name for the webhook. */
+	name: string;
 	/** The URL to notify. */
 	url: string;
 	/** The value of the Webhook-Token: header that will be sent with the request to the configured URL. */
@@ -323,6 +333,8 @@ export type CreateExperimentRequestPowerAnalyses = PowerResponseInput | null;
 export interface CreateExperimentRequest {
 	design_spec: DesignSpecInput;
 	power_analyses?: CreateExperimentRequestPowerAnalyses;
+	/** List of webhook IDs to associate with this experiment. When the experiment is committed, these webhooks will be triggered with experiment details. Must contain unique values. */
+	webhooks?: string[];
 }
 
 /**
@@ -352,6 +364,8 @@ export interface CreateExperimentResponse {
 	design_spec: DesignSpecOutput;
 	power_analyses: CreateExperimentResponsePowerAnalyses;
 	assign_summary: AssignSummary;
+	/** List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed. */
+	webhooks?: string[];
 }
 
 export interface CreateOrganizationRequest {
@@ -636,6 +650,8 @@ export interface ExperimentConfig {
 	design_spec: DesignSpecOutput;
 	power_analyses: ExperimentConfigPowerAnalyses;
 	assign_summary: AssignSummary;
+	/** List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed. */
+	webhooks?: string[];
 }
 
 /**
@@ -855,6 +871,8 @@ export interface GetExperimentResponse {
 	design_spec: DesignSpecOutput;
 	power_analyses: GetExperimentResponsePowerAnalyses;
 	assign_summary: AssignSummary;
+	/** List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed. */
+	webhooks?: string[];
 }
 
 /**
@@ -1559,6 +1577,13 @@ export interface PreassignedExperimentSpecOutput {
 	fstat_thresh?: number;
 }
 
+export interface Principal {
+	email: string;
+	iss: string;
+	sub: string;
+	hd: string;
+}
+
 /**
  * Defines operators for filtering values.
 
@@ -1636,13 +1661,6 @@ export interface Stratum {
 	field_name: string;
 }
 
-export interface TokenInfo {
-	email: string;
-	iss: string;
-	sub: string;
-	hd: string;
-}
-
 export type UpdateDatasourceRequestName = string | null;
 
 export type UpdateDatasourceRequestDwh = DwhInput | null;
@@ -1659,10 +1677,18 @@ export interface UpdateOrganizationRequest {
 }
 
 /**
- * Request to update a webhook's URL.
+ * Request to update a webhook's name and URL.
  */
 export interface UpdateOrganizationWebhookRequest {
-	/** @maxLength 500 */
+	/**
+	 * User-friendly name for the webhook. This name is displayed in the UI and helps identify the webhook's purpose.
+	 * @maxLength 100
+	 */
+	name: string;
+	/**
+	 * The HTTP or HTTPS URL that will receive webhook notifications when events occur.
+	 * @maxLength 500
+	 */
 	url: string;
 }
 
@@ -1753,6 +1779,8 @@ export interface WebhookSummary {
 	id: string;
 	/** The type of webhook; e.g. experiment.created */
 	type: string;
+	/** User-friendly name for the webhook. */
+	name: string;
 	/** The URL to notify. */
 	url: string;
 	/** The value of the Webhook-Token: header that will be sent with the request to the configured URL. */

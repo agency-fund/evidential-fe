@@ -26,8 +26,9 @@ export function EditWebhookDialog({ organizationId, webhook }: EditWebhookDialog
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     const fd = new FormData(event.currentTarget as HTMLFormElement);
+    const newName = fd.get('name') as string;
     const newUrl = fd.get('url') as string;
-    await trigger({ url: newUrl });
+    await trigger({ name: newName, url: newUrl });
     setOpen(false);
   };
 
@@ -57,14 +58,28 @@ export function EditWebhookDialog({ organizationId, webhook }: EditWebhookDialog
           <XSpinner message="Updating webhook..." />
         ) : (
           <form onSubmit={handleSubmit}>
-            <Dialog.Title>Edit Webhook URL</Dialog.Title>
+            <Dialog.Title>Edit Webhook</Dialog.Title>
             <Dialog.Description size="2" mb="4">
-              Update the URL for this webhook.
+              Update the name and URL for this webhook.
             </Dialog.Description>
 
             {error && <GenericErrorCallout title={'Failed to update webhook'} error={error} />}
 
             <Flex direction="column" gap="3">
+              <label>
+                <Text as="div" size="2" mb="1" weight="bold">
+                  Name
+                </Text>
+                <TextField.Root
+                  name="name"
+                  placeholder="My webhook name"
+                  defaultValue={webhook.name}
+                  required
+                />
+                <Text as="div" size="1" color="gray" mt="1">
+                  A user-friendly name to identify this webhook.
+                </Text>
+              </label>
               <label>
                 <Text as="div" size="2" mb="1" weight="bold">
                   URL
