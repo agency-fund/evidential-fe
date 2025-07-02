@@ -1,11 +1,57 @@
+/**
+ * Experiment Creation Flow Architecture
+ * -------------------------------------
+ * This page implements a multi-stage form for creating experiments.
+ *
+ * Key ideas:
+ * - The Page component blocks rendering of the form until all values needed to populate the default form state are
+ *   fetched.
+ * - The CreateExperimentMultiStageForm manages the default values, the user's selections, and the current page number.
+ * - The form data is defined by the ExperimentFormData type.
+ *
+ * The form has three pages:
+ * 1. Initial Form (Step 1): Basic experiment metadata like name, hypothesis, dates
+ * 2. Design Form (Step 2): Core experiment configuration including metrics, filters, arms, and power analysis
+ * 3. Confirmation Form (Step 3): Review and commit the experiment
+ */
+
 'use client';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { InitialForm } from '@/components/features/experiments/initial-form';
 import { DesignForm } from '@/components/features/experiments/design-form';
 import { ConfirmationForm } from '@/components/features/experiments/confirmation-form';
 import { Box, Container, Flex, Heading } from '@radix-ui/themes';
-import { Arm, CreateExperimentResponse, Filter, PowerResponseOutput } from '@/api/methods.schemas';
+import { Arm, CreateExperimentResponse, Filter, PowerResponseOutput, WebhookSummary } from '@/api/methods.schemas';
 import { useParams } from 'next/navigation';
+import { useCurrentOrganization } from '@/providers/organization-provider';
+import { useListOrganizationWebhooks } from '@/api/admin';
+import { XSpinner } from '@/components/ui/x-spinner';
+import { GenericErrorCallout } from '@/components/ui/generic-error';
+
+// Wraps the multi-stage form with blocking fetchers that acquire values for populating the default values.
+export default function Page() {
+  const org = useCurrentOrganization();
+
+  // The default form data will select the webhook if the organization has only one, or select none if the organization
+  // has none or more than one.
+  const { data, isLoading, error } = useListOrganizationWebhooks(org!.current.id, {
+    swr: {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      refreshInterval: 0,
+    },
+  });
+
+  if (isLoading) {
+    return <XSpinner message="Loading webhooks..." />;
+  }
+
+  if (error || org === null) {
+    return <GenericErrorCallout title={'An error occurred while loading webhooks.'} error={error} />;
+  }
+
+  return <CreateExperimentMultiStageForm webhooks={data!.items} organizationId={org!.current.id} />;
+}
 
 export type MetricWithMDE = {
   metricName: string;
@@ -52,7 +98,12 @@ const reasonableEndDate = () => {
   return date.toISOString().split('T')[0];
 };
 
-export default function CreateExperimentPage() {
+export type CreateExperimentMultiStageFormProps = {
+  webhooks: WebhookSummary[];
+  organizationId: string;
+};
+
+function CreateExperimentMultiStageForm({ webhooks, organizationId }: CreateExperimentMultiStageFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const params = useParams();
   const [formData, setFormData] = useState<ExperimentFormData>({
@@ -74,7 +125,9 @@ export default function CreateExperimentPage() {
     filters: [],
     confidence: '95',
     power: '80',
-    selectedWebhookIds: [],
+    // useState only sets default value on the initial render. This default value is not reactive to changes in the
+    // webhooks prop.
+    selectedWebhookIds: webhooks.length == 1 ? [webhooks[0].id] : [],
   });
   console.log('formData', formData);
 
@@ -131,7 +184,15 @@ export default function CreateExperimentPage() {
           {{ 1: 'Experiment Metadata', 2: 'Experiment Design', 3: 'Experiment Summary' }[currentStep]}
         </Heading>
         <Box>
-          {currentStep === 1 && <InitialForm formData={formData} onFormDataChange={setFormData} onNext={handleNext} />}
+          {currentStep === 1 && (
+            <InitialForm
+              formData={formData}
+              onFormDataChange={setFormData}
+              onNext={handleNext}
+              webhooks={webhooks}
+              organizationId={organizationId}
+            />
+          )}
           {currentStep === 2 && (
             <DesignForm
               formData={formData}

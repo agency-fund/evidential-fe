@@ -19,17 +19,19 @@ import {
 import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
-import { useListOrganizationWebhooks, useListParticipantTypes } from '@/api/admin';
-import { useCurrentOrganization } from '@/providers/organization-provider';
+import { useListParticipantTypes } from '@/api/admin';
 import Link from 'next/link';
+import { WebhookSummary } from '@/api/methods.schemas';
 
 interface InitialFormProps {
   formData: ExperimentFormData;
   onFormDataChange: (data: ExperimentFormData) => void;
   onNext: () => void;
+  organizationId: string;
+  webhooks: WebhookSummary[];
 }
 
-export function InitialForm({ formData, onFormDataChange, onNext }: InitialFormProps) {
+export function InitialForm({ formData, onFormDataChange, onNext, webhooks, organizationId }: InitialFormProps) {
   const { data: participantTypesData, isLoading: loadingParticipantTypes } = useListParticipantTypes(
     formData.datasourceId || '',
     {
@@ -39,13 +41,6 @@ export function InitialForm({ formData, onFormDataChange, onNext }: InitialFormP
     },
   );
 
-  const org = useCurrentOrganization();
-  const organizationId = org?.current.id;
-  const { data: webhooksData, isLoading: loadingWebhooks } = useListOrganizationWebhooks(organizationId || '', {
-    swr: {
-      enabled: !!organizationId,
-    },
-  });
   const addArm = () => {
     const new_arm =
       formData.arms.length == 0
@@ -280,11 +275,7 @@ export function InitialForm({ formData, onFormDataChange, onNext }: InitialFormP
         <Card>
           <Flex direction="column" gap="3">
             <Heading size="4">Webhooks (optional)</Heading>
-            {loadingWebhooks ? (
-              <Flex justify="center" py="4">
-                <Spinner />
-              </Flex>
-            ) : !webhooksData || webhooksData.items.length === 0 ? (
+            {webhooks.length === 0 ? (
               <Callout.Root>
                 <Callout.Text>
                   Webhooks can be configured in the{' '}
@@ -304,7 +295,7 @@ export function InitialForm({ formData, onFormDataChange, onNext }: InitialFormP
                   onValueChange={(value) => onFormDataChange({ ...formData, selectedWebhookIds: value })}
                 >
                   <Grid columns="4" gap="3">
-                    {webhooksData.items.map((webhook) => (
+                    {webhooks.map((webhook) => (
                       <CheckboxCards.Item key={webhook.id} value={webhook.id}>
                         <Flex direction="column" width="100%">
                           <Text weight="bold">{webhook.name}</Text>
