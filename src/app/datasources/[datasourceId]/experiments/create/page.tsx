@@ -50,7 +50,7 @@ export default function Page() {
     return <GenericErrorCallout title={'An error occurred while loading webhooks.'} error={error} />;
   }
 
-  return <CreateExperimentMultiStageForm webhooks={data!.items} organizationId={org!.current.id} />;
+  return <CreateExperimentMultiStageForm webhooks={data!.items} />;
 }
 
 export type MetricWithMDE = {
@@ -100,10 +100,9 @@ const reasonableEndDate = () => {
 
 export type CreateExperimentMultiStageFormProps = {
   webhooks: WebhookSummary[];
-  organizationId: string;
 };
 
-function CreateExperimentMultiStageForm({ webhooks, organizationId }: CreateExperimentMultiStageFormProps) {
+function CreateExperimentMultiStageForm({ webhooks }: CreateExperimentMultiStageFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const params = useParams();
   const [formData, setFormData] = useState<ExperimentFormData>({
@@ -185,13 +184,7 @@ function CreateExperimentMultiStageForm({ webhooks, organizationId }: CreateExpe
         </Heading>
         <Box>
           {currentStep === 1 && (
-            <InitialForm
-              formData={formData}
-              onFormDataChange={setFormData}
-              onNext={handleNext}
-              webhooks={webhooks}
-              organizationId={organizationId}
-            />
+            <InitialForm formData={formData} onFormDataChange={setFormData} onNext={handleNext} webhooks={webhooks} />
           )}
           {currentStep === 2 && (
             <DesignForm

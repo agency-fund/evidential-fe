@@ -2,7 +2,6 @@
 import {
   Box,
   Button,
-  Callout,
   Card,
   CheckboxCards,
   Flex,
@@ -27,11 +26,10 @@ interface InitialFormProps {
   formData: ExperimentFormData;
   onFormDataChange: (data: ExperimentFormData) => void;
   onNext: () => void;
-  organizationId: string;
   webhooks: WebhookSummary[];
 }
 
-export function InitialForm({ formData, onFormDataChange, onNext, webhooks, organizationId }: InitialFormProps) {
+export function InitialForm({ formData, onFormDataChange, onNext, webhooks }: InitialFormProps) {
   const { data: participantTypesData, isLoading: loadingParticipantTypes } = useListParticipantTypes(
     formData.datasourceId || '',
     {
@@ -272,43 +270,31 @@ export function InitialForm({ formData, onFormDataChange, onNext, webhooks, orga
           </Flex>
         </Card>
 
-        <Card>
-          <Flex direction="column" gap="3">
-            <Heading size="4">Webhooks (optional)</Heading>
-            {webhooks.length === 0 ? (
-              <Callout.Root>
-                <Callout.Text>
-                  Webhooks can be configured in the{' '}
-                  <Link href={`/organizations/${organizationId}`} style={{ textDecoration: 'underline' }}>
-                    settings
-                  </Link>
-                  .
-                </Callout.Text>
-              </Callout.Root>
-            ) : (
-              <>
-                <Text size="2" color="gray">
-                  Select which webhooks should receive notifications when this experiment is created.
-                </Text>
-                <CheckboxCards.Root
-                  value={formData.selectedWebhookIds}
-                  onValueChange={(value) => onFormDataChange({ ...formData, selectedWebhookIds: value })}
-                >
-                  <Grid columns="4" gap="3">
-                    {webhooks.map((webhook) => (
-                      <CheckboxCards.Item key={webhook.id} value={webhook.id}>
-                        <Flex direction="column" width="100%">
-                          <Text weight="bold">{webhook.name}</Text>
-                          <Text>{webhook.url}</Text>
-                        </Flex>
-                      </CheckboxCards.Item>
-                    ))}
-                  </Grid>
-                </CheckboxCards.Root>
-              </>
-            )}
-          </Flex>
-        </Card>
+        {webhooks.length > 0 && (
+          <Card>
+            <Flex direction="column" gap="3">
+              <Heading size="4">Webhooks</Heading>
+              <Text size="2" color="gray">
+                Select which webhooks should receive notifications when this experiment is created.
+              </Text>
+              <CheckboxCards.Root
+                value={formData.selectedWebhookIds}
+                onValueChange={(value) => onFormDataChange({ ...formData, selectedWebhookIds: value })}
+              >
+                <Grid columns="4" gap="3">
+                  {webhooks.map((webhook) => (
+                    <CheckboxCards.Item key={webhook.id} value={webhook.id}>
+                      <Flex direction="column" width="100%">
+                        <Text weight="bold">{webhook.name}</Text>
+                        <Text>{webhook.url}</Text>
+                      </Flex>
+                    </CheckboxCards.Item>
+                  ))}
+                </Grid>
+              </CheckboxCards.Root>
+            </Flex>
+          </Card>
+        )}
 
         <Flex justify="end" mt="4">
           <Button type="submit">Next</Button>
