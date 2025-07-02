@@ -1577,6 +1577,13 @@ export interface PreassignedExperimentSpecOutput {
 	fstat_thresh?: number;
 }
 
+export interface Principal {
+	email: string;
+	iss: string;
+	sub: string;
+	hd: string;
+}
+
 /**
  * Defines operators for filtering values.
 
@@ -1652,13 +1659,6 @@ export interface Strata {
 export interface Stratum {
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
-}
-
-export interface TokenInfo {
-	email: string;
-	iss: string;
-	sub: string;
-	hd: string;
 }
 
 export type UpdateDatasourceRequestName = string | null;
