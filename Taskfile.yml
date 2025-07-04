@@ -47,7 +47,7 @@ tasks:
     cmd: |
       npm run dev
   start-airplane:
-    desc: "Like start, but runs the frontend in airplane mode. The UI will identify you as testing@agency.fund automatically."
+    desc: "Like start, but runs the frontend in airplane mode. The UI will identify you as testing@example.com automatically."
     env:
       NEXT_PUBLIC_AIRPLANE_MODE: "true"
     interactive: true
