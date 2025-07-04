@@ -21,7 +21,6 @@ export function HeaderBar() {
 
   const organizations = orgsResponse?.items || [];
   const hasMultipleOrgs = organizations.length > 1;
-  const isPrivileged = auth.userEmail.endsWith('@agency.fund');
 
   const updateOrgId = (orgId: string) => {
     setOrgId(orgId);
@@ -70,7 +69,7 @@ export function HeaderBar() {
                 <DropdownMenu.Separator />
               </>
             )}
-            {isPrivileged && (
+            {auth.isPrivileged && (
               <>
                 <DropdownMenu.Item onClick={() => router.push('/organizations')}>
                   <GearIcon /> Manage Organizations
