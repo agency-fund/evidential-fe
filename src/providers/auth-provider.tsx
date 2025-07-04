@@ -125,7 +125,7 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
     contextValue = {
       isAuthenticated: true,
       idToken: 'airplane-mode-token',
-      userEmail: 'testing@agency.fund',
+      userEmail: 'testing@example.com',
       logout: () => console.log('Login and logout functionality is not available when AIRPLANE_MODE is set.'),
     };
   } else if (user) {
