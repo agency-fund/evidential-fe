@@ -10,12 +10,15 @@ import { z as zod } from "zod";
  * Returns basic metadata about the authenticated caller of this method.
  * @summary Caller Identity
  */
-export const callerIdentityResponse = zod.object({
-	email: zod.string(),
-	iss: zod.string(),
-	sub: zod.string(),
-	hd: zod.string(),
-});
+export const callerIdentityResponse = zod
+	.object({
+		email: zod.string(),
+		iss: zod.string(),
+		sub: zod.string(),
+		hd: zod.string(),
+		is_privileged: zod.boolean(),
+	})
+	.describe("Describes the user's identity.");
 
 /**
  * Returns a list of organizations that the authenticated user is a member of.
@@ -36,7 +39,7 @@ export const listOrganizationsResponse = zod.object({
 /**
  * Creates a new organization.
 
-Only users with an @agency.fund email address can create organizations.
+Only privileged users can create organizations.
  * @summary Create Organizations
  */
 export const createOrganizationsBodyNameMax = 100;

@@ -15,6 +15,7 @@ import type {
 	AddWebhookToOrganizationRequest,
 	AddWebhookToOrganizationResponse,
 	AnalyzeExperimentParams,
+	CallerIdentity,
 	CreateApiKeyResponse,
 	CreateDatasourceRequest,
 	CreateDatasourceResponse,
@@ -50,7 +51,6 @@ import type {
 	ParticipantsConfig,
 	PowerRequest,
 	PowerResponseOutput,
-	Principal,
 	UpdateDatasourceRequest,
 	UpdateOrganizationRequest,
 	UpdateOrganizationWebhookRequest,
@@ -73,8 +73,8 @@ export const getCallerIdentityUrl = () => {
 
 export const callerIdentity = async (
 	options?: RequestInit,
-): Promise<Principal> => {
-	return orvalFetch<Principal>(getCallerIdentityUrl(), {
+): Promise<CallerIdentity> => {
+	return orvalFetch<CallerIdentity>(getCallerIdentityUrl(), {
 		...options,
 		method: "GET",
 	});
@@ -175,7 +175,7 @@ export const useListOrganizations = <
 /**
  * Creates a new organization.
 
-Only users with an @agency.fund email address can create organizations.
+Only privileged users can create organizations.
  * @summary Create Organizations
  */
 export const getCreateOrganizationsUrl = () => {
