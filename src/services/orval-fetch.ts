@@ -1,5 +1,5 @@
 import { currentIdToken } from '@/providers/use-auth-storage';
-import { API_BASE_URL } from '@/services/constants';
+import { AIRPLANE_MODE, API_BASE_URL } from '@/services/constants';
 import { API_401_EVENT } from '@/providers/auth-provider';
 import { HTTPValidationError } from '@/api/methods.schemas';
 
@@ -49,7 +49,7 @@ const getBody = (c: Response) => {
 // Returns headers to send with API requests. If we currently have an idToken in localStorage, we also send that. Note
 // that this means we may generate requests that do not contain the idToken.
 const getHeaders = (options: RequestInit) => {
-  const idToken = currentIdToken();
+  const idToken = AIRPLANE_MODE ? 'airplane-mode-token' : currentIdToken();
   return {
     ...options.headers,
     'Content-Type': 'application/json',
