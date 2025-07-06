@@ -40,6 +40,7 @@ const setIdToken = (newValue: IdTokenStored | null) => {
 interface IdTokenStored {
   idToken: string;
   email: string;
+  isPrivileged?: boolean;
 }
 
 export const useAuthStorage = () => {

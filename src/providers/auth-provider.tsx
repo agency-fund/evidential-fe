@@ -15,6 +15,7 @@ interface AuthenticatedState {
   isAuthenticated: true;
   idToken: string;
   userEmail: string;
+  isPrivileged: boolean;
   logout: () => void;
 }
 
@@ -85,7 +86,8 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
         }
         const response = await checkCallerIdentity(newToken);
         if (response.status === 200) {
-          setUser({ idToken: newToken, email: (await response.json())['email'] });
+          const callerIdentity = await response.json();
+          setUser({ idToken: newToken, email: callerIdentity['email'], isPrivileged: callerIdentity['is_privileged'] });
           router.push('/');
         } else {
           console.log('checkCallerIdentity failed');
@@ -124,8 +126,9 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
   if (AIRPLANE_MODE) {
     contextValue = {
       isAuthenticated: true,
+      isPrivileged: true,
       idToken: 'airplane-mode-token',
-      userEmail: 'testing@agency.fund',
+      userEmail: 'testing@example.com',
       logout: () => console.log('Login and logout functionality is not available when AIRPLANE_MODE is set.'),
     };
   } else if (user) {
@@ -133,7 +136,8 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
       isAuthenticated: true,
       idToken: user.idToken,
       userEmail: user.email,
-      logout,
+      isPrivileged: !!user.isPrivileged,
+      logout: logout,
     };
   } else {
     contextValue = {
