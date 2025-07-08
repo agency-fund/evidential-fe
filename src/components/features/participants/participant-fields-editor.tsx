@@ -1,6 +1,6 @@
 'use client';
 import { FieldDescriptor } from '@/api/methods.schemas';
-import { Flex, Switch, Table, Text, TextField, Radio, Checkbox, Tooltip, IconButton } from '@radix-ui/themes';
+import { Checkbox, Flex, IconButton, Radio, Switch, Table, Text, TextField, Tooltip } from '@radix-ui/themes';
 import { useState } from 'react';
 import { isEligibleForUseAsMetric } from '@/services/genapi-helpers';
 import { TrashIcon } from '@radix-ui/react-icons';
@@ -82,7 +82,7 @@ export function ParticipantFieldsEditor({
                   }
                 />
               </Table.Cell>
-              <Table.Cell style={{ textAlign: 'center' }}>
+              <Table.Cell justify={'center'}>
                 <Radio
                   value={field.field_name}
                   checked={field.is_unique_id || false}
@@ -91,7 +91,7 @@ export function ParticipantFieldsEditor({
                 />
               </Table.Cell>
               {showAdvanced && (
-                <Table.Cell style={{ textAlign: 'center' }}>
+                <Table.Cell justify={'center'}>
                   <Checkbox
                     checked={field.is_strata || false}
                     onCheckedChange={(checked) =>
@@ -104,7 +104,7 @@ export function ParticipantFieldsEditor({
                   />
                 </Table.Cell>
               )}
-              <Table.Cell style={{ textAlign: 'center' }}>
+              <Table.Cell justify={'center'}>
                 <Checkbox
                   checked={field.is_filter || false}
                   onCheckedChange={(checked) =>
@@ -116,7 +116,7 @@ export function ParticipantFieldsEditor({
                   size="3"
                 />
               </Table.Cell>
-              <Table.Cell style={{ textAlign: 'center' }}>
+              <Table.Cell justify={'center'}>
                 {isEligibleForUseAsMetric(field.data_type) ? (
                   <Checkbox
                     checked={field.is_metric || false}
@@ -135,7 +135,7 @@ export function ParticipantFieldsEditor({
                 )}
               </Table.Cell>
               {showAdvanced && allowFieldRemoval && (
-                <Table.Cell style={{ textAlign: 'center' }}>
+                <Table.Cell justify={'center'}>
                   <IconButton
                     onClick={(e) => {
                       e.preventDefault();
