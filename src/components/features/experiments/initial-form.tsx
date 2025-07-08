@@ -241,7 +241,7 @@ export function InitialForm({ formData, onFormDataChange, onNext, webhooks }: In
                     </Flex>
 
                     <Flex direction="column" gap="2">
-                      <Box style={{ maxWidth: '50%' }}>
+                      <Box maxWidth={'50%'}>
                         <TextField.Root
                           value={arm.arm_name}
                           placeholder={'Arm Name'}

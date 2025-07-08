@@ -71,12 +71,12 @@ export default function ExperimentCard({
   const statusBadgeColor = getStatusBadgeColor(status);
   return (
     <Card size="3">
-      <Flex direction="column" style={{ height: '100%' }}>
+      <Flex height={'100%'} direction="column">
         {/* Content area that grows to fill space */}
-        <Flex direction="column" gap="4" style={{ flex: 1 }}>
+        <Flex direction="column" gap="4">
           {/* Header with title, status, and dots menu */}
           <Flex justify="between" align="center">
-            <Flex align="center" gap="2" style={{ minWidth: 0, flex: 1 }}>
+            <Flex minWidth={'0'} align="center" gap="2">
               <LightningBoltIcon width="16" height="16" color="var(--blue-9)" style={{ flexShrink: 0 }} />
               <Tooltip content={title}>
                 <Heading

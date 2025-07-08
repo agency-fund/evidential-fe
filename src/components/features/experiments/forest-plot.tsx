@@ -1,5 +1,5 @@
 'use client';
-import { MetricAnalysis, ExperimentConfig } from '@/api/methods.schemas';
+import { ExperimentConfig, MetricAnalysis } from '@/api/methods.schemas';
 import { ExclamationTriangleIcon, InfoCircledIcon } from '@radix-ui/react-icons';
 import { Badge, Box, Callout, Card, Flex, Heading, Text, Tooltip as RadixTooltip } from '@radix-ui/themes';
 import {
@@ -212,7 +212,7 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
         </Callout.Root>
       )}
 
-      <Box style={{ height: 200 }}>
+      <Box height={'200px'}>
         <ResponsiveContainer width="100%" height="100%">
           <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 60 }}>
             {/* Supply our own coordinates generator since default rendering is off for ratio metrics */}
@@ -363,9 +363,7 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
                     />
                   );
                 } else {
-                  return (
-                    <circle cx={centerX} cy={centerY} r={5} fill={fillColor} stroke={COLORS.DEFAULT_CI} />
-                  );
+                  return <circle cx={centerX} cy={centerY} r={5} fill={fillColor} stroke={COLORS.DEFAULT_CI} />;
                 }
               }}
             />
