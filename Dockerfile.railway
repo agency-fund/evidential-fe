@@ -13,11 +13,13 @@ FROM docker.io/node:22.14-bookworm AS build
 # These variables must be defined in the Railway settings with values appropriate for the deployment environment.
 # The default values are used when running this image to validate it in a local development environment. These defaults
 # will not work in production.
-ARG NEXT_PUBLIC_XNGIN_GOOGLE_CLIENT_ID=222213100775-qa1ajcrk48il70itcbdcvgr9ib5t08uf.apps.googleusercontent.com
+ARG NEXT_PUBLIC_SENTRY_DSN
 ARG NEXT_PUBLIC_XNGIN_API_BASE_URL=http://localhost:8000
+ARG NEXT_PUBLIC_XNGIN_API_DOCS
+ARG NEXT_PUBLIC_XNGIN_GOOGLE_CLIENT_ID=222213100775-qa1ajcrk48il70itcbdcvgr9ib5t08uf.apps.googleusercontent.com
 ARG NEXT_PUBLIC_XNGIN_OIDC_BASE_URL=http://localhost:8000/v1/a/oidc
 ARG NEXT_PUBLIC_XNGIN_OIDC_REDIRECT_URI=http://localhost:3000/
-ARG NEXT_PUBLIC_SENTRY_DSN
+ARG NEXT_PUBLIC_XNGIN_SUPPORT_EMAIL
 ARG SENTRY_AUTH_TOKEN
 ARG RAILWAY_GIT_COMMIT_SHA
 ENV NEXT_TELEMETRY_DISABLED=1
