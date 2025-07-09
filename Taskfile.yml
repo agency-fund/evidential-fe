@@ -73,8 +73,8 @@ tasks:
     cmd: npm run build
   railway-build:
     desc: 'Builds the Docker image used by the Railway deployment.'
-    cmd: docker build -t xngin-dash -f Dockerfile.railway .
+    cmd: docker build -t evidential-fe -f Dockerfile.railway .
   railway-run:
     desc: 'Runs the Docker image in a similar way to how Railway runs it.'
     interactive: true
-    cmd: docker run --rm -it -p 3000:3000 xngin-dash
+    cmd: docker run --rm -it -p 3000:3000 evidential-fe

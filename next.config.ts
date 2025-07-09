@@ -20,7 +20,7 @@ export default withSentryConfig(nextConfig, {
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
   org: 'agency-fund',
-  project: 'xngin-dash',
+  project: 'evidential-fe',
   silent: !process.env.CI,
   widenClientFileUpload: true,
   reactComponentAnnotation: {
