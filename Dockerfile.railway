@@ -21,8 +21,6 @@ ARG NEXT_PUBLIC_XNGIN_OIDC_BASE_URL=http://localhost:8000/v1/a/oidc
 ARG NEXT_PUBLIC_XNGIN_OIDC_REDIRECT_URI=http://localhost:3000/
 ARG NEXT_PUBLIC_XNGIN_SUPPORT_EMAIL
 ARG SENTRY_AUTH_TOKEN
-ARG SENTRY_ORG
-ARG SENTRY_PROJECT
 ARG RAILWAY_GIT_COMMIT_SHA
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NPM_CONFIG_AUDIT=false
@@ -36,7 +34,6 @@ COPY next.config.ts tsconfig.json ./
 COPY sentry.*.config.ts ./
 COPY src ./src
 COPY public ./public
-RUN env | grep SENTRY
 RUN npm run build
 
 # Defines a next server that delivers the compiled output of the build step.
