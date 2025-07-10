@@ -95,8 +95,6 @@ export interface ArmAnalysis {
 	/** @maxLength 100 */
 	arm_name: string;
 	arm_description?: ArmAnalysisArmDescription;
-	/** Whether this arm is the baseline/control arm for comparison. */
-	is_baseline: boolean;
 	/** The estimated treatment effect relative to the baseline arm. */
 	estimate: number;
 	/** The p-value indicating statistical significance of the treatment effect. Value may be None if the t-stat is not available, e.g. due to inability to calculate the standard error. */
@@ -107,6 +105,91 @@ export interface ArmAnalysis {
 	std_error: number;
 	/** The number of participants assigned to this arm with missing values (NaNs) for this metric. These rows are excluded from the analysis. */
 	num_missing_values: number;
+	/** Whether this arm is the baseline/control arm for comparison. */
+	is_baseline: boolean;
+}
+
+/**
+ * ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
+ */
+export type ArmBanditArmId = string | null;
+
+export type ArmBanditArmDescription = string | null;
+
+/**
+ * Initial alpha parameter for Beta prior
+ */
+export type ArmBanditAlphaInit = number | null;
+
+/**
+ * Initial beta parameter for Beta prior
+ */
+export type ArmBanditBetaInit = number | null;
+
+/**
+ * Initial mean parameter for Normal prior
+ */
+export type ArmBanditMuInit = number | null;
+
+/**
+ * Initial standard deviation parameter for Normal prior
+ */
+export type ArmBanditSigmaInit = number | null;
+
+/**
+ * Updated alpha parameter for Beta prior
+ */
+export type ArmBanditAlpha = number | null;
+
+/**
+ * Updated beta parameter for Beta prior
+ */
+export type ArmBanditBeta = number | null;
+
+/**
+ * Updated mean vector for Normal prior
+ */
+export type ArmBanditMu = number[] | null;
+
+/**
+ * Updated covariance matrix for Normal prior
+ */
+export type ArmBanditCovariance = number[][] | null;
+
+/**
+ * Whether this arm is the baseline/control arm for comparison.
+ */
+export type ArmBanditIsBaseline = boolean | null;
+
+/**
+ * Describes an experiment arm for bandit experiments.
+ */
+export interface ArmBandit {
+	/** ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
+	arm_id?: ArmBanditArmId;
+	/** @maxLength 100 */
+	arm_name: string;
+	arm_description?: ArmBanditArmDescription;
+	/** Initial alpha parameter for Beta prior */
+	alpha_init?: ArmBanditAlphaInit;
+	/** Initial beta parameter for Beta prior */
+	beta_init?: ArmBanditBetaInit;
+	/** Initial mean parameter for Normal prior */
+	mu_init?: ArmBanditMuInit;
+	/** Initial standard deviation parameter for Normal prior */
+	sigma_init?: ArmBanditSigmaInit;
+	/** The number of outcomes for this arm. */
+	n_outcomes?: number;
+	/** Updated alpha parameter for Beta prior */
+	alpha?: ArmBanditAlpha;
+	/** Updated beta parameter for Beta prior */
+	beta?: ArmBanditBeta;
+	/** Updated mean vector for Normal prior */
+	mu?: ArmBanditMu;
+	/** Updated covariance matrix for Normal prior */
+	covariance?: ArmBanditCovariance;
+	/** Whether this arm is the baseline/control arm for comparison. */
+	is_baseline: ArmBanditIsBaseline;
 }
 
 /**
@@ -192,13 +275,31 @@ export type AssignmentCreatedAt = string | null;
 export type AssignmentStrata = Strata[] | null;
 
 /**
- * Describes treatment assignment for an experiment participant.
+ * Unique identifier for the draw.
+ */
+export type AssignmentDrawId = string | null;
+
+/**
+ * The date and time the outcome was recorded.
+ */
+export type AssignmentObservedAt = string | null;
+
+/**
+ * The observed outcome for this assignment.
+ */
+export type AssignmentOutcome = number | null;
+
+/**
+ * Base class for treatment assignment in experiments.
  */
 export interface Assignment {
-	/** @maxLength 64 */
-	participant_id: string;
 	/** ID of the arm this participant was assigned to. Same as Arm.arm_id. */
 	arm_id: string;
+	/**
+	 * Unique identifier for the participant. This is the primary key for the participant in the data warehouse.
+	 * @maxLength 64
+	 */
+	participant_id?: string;
 	/**
 	 * The arm this participant was assigned to. Same as Arm.arm_name.
 	 * @maxLength 100
@@ -208,6 +309,17 @@ export interface Assignment {
 	created_at?: AssignmentCreatedAt;
 	/** List of properties and their values for this participant used for stratification or tracking metrics. If stratification is not used, this will be None. */
 	strata?: AssignmentStrata;
+	/** Unique identifier for the draw. */
+	draw_id?: AssignmentDrawId;
+	/** The date and time the outcome was recorded. */
+	observed_at?: AssignmentObservedAt;
+	/** The observed outcome for this assignment. */
+	outcome?: AssignmentOutcome;
+	/**
+	 * List of context values for this assignment. If no contexts are used, this will be None.
+	 * @maxItems 10
+	 */
+	context_values?: ContextInput[];
 }
 
 /**
@@ -224,6 +336,102 @@ export interface BalanceCheck {
 	p_value: number;
 	/** Whether the p-value for our observed f_statistic is greater than the f-stat threshold specified in our design specification. (See DesignSpec.fstat_thresh) */
 	balance_ok: boolean;
+}
+
+/**
+ * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
+ */
+export type BayesABExperimentSpecInputExperimentId = string | null;
+
+export type BayesABExperimentSpecInputExperimentType =
+	(typeof BayesABExperimentSpecInputExperimentType)[keyof typeof BayesABExperimentSpecInputExperimentType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const BayesABExperimentSpecInputExperimentType = {
+	bayes_ab_online: "bayes_ab_online",
+} as const;
+
+/**
+ * Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.
+ */
+export type BayesABExperimentSpecInputContexts = Context[] | null;
+
+/**
+ * Use this type to randomly assign participants into arms during live experiment execution with Bayesian A/B experiments.
+
+For example, you may wish to experiment on new users. Assignments are issued via API request.
+ */
+export interface BayesABExperimentSpecInput {
+	/** @maxLength 100 */
+	participant_type: string;
+	/** ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
+	experiment_id?: BayesABExperimentSpecInputExperimentId;
+	experiment_type: BayesABExperimentSpecInputExperimentType;
+	/** @maxLength 100 */
+	experiment_name: string;
+	/** @maxLength 2000 */
+	description: string;
+	start_date: string;
+	end_date: string;
+	/**
+	 * @minItems 2
+	 * @maxItems 10
+	 */
+	arms: ArmBandit[];
+	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
+	contexts?: BayesABExperimentSpecInputContexts;
+	/** The type of prior distribution for the arms. */
+	prior_type?: PriorTypes;
+	/** The type of reward we observe from the experiment. */
+	reward_type?: LikelihoodTypes;
+}
+
+/**
+ * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
+ */
+export type BayesABExperimentSpecOutputExperimentId = string | null;
+
+export type BayesABExperimentSpecOutputExperimentType =
+	(typeof BayesABExperimentSpecOutputExperimentType)[keyof typeof BayesABExperimentSpecOutputExperimentType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const BayesABExperimentSpecOutputExperimentType = {
+	bayes_ab_online: "bayes_ab_online",
+} as const;
+
+/**
+ * Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.
+ */
+export type BayesABExperimentSpecOutputContexts = Context[] | null;
+
+/**
+ * Use this type to randomly assign participants into arms during live experiment execution with Bayesian A/B experiments.
+
+For example, you may wish to experiment on new users. Assignments are issued via API request.
+ */
+export interface BayesABExperimentSpecOutput {
+	/** @maxLength 100 */
+	participant_type: string;
+	/** ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
+	experiment_id?: BayesABExperimentSpecOutputExperimentId;
+	experiment_type: BayesABExperimentSpecOutputExperimentType;
+	/** @maxLength 100 */
+	experiment_name: string;
+	/** @maxLength 2000 */
+	description: string;
+	start_date: string;
+	end_date: string;
+	/**
+	 * @minItems 2
+	 * @maxItems 10
+	 */
+	arms: ArmBandit[];
+	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
+	contexts?: BayesABExperimentSpecOutputContexts;
+	/** The type of prior distribution for the arms. */
+	prior_type?: PriorTypes;
+	/** The type of reward we observe from the experiment. */
+	reward_type?: LikelihoodTypes;
 }
 
 export type BqDsnInputDriver =
@@ -287,9 +495,105 @@ export interface BqDsnOutput {
 }
 
 /**
- * The credentials returned to the SPA.
+ * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
+ */
+export type CMABExperimentSpecInputExperimentId = string | null;
 
-TODO: replace this with a longer-lived session token.
+export type CMABExperimentSpecInputExperimentType =
+	(typeof CMABExperimentSpecInputExperimentType)[keyof typeof CMABExperimentSpecInputExperimentType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const CMABExperimentSpecInputExperimentType = {
+	cmab_online: "cmab_online",
+} as const;
+
+/**
+ * Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.
+ */
+export type CMABExperimentSpecInputContexts = Context[] | null;
+
+/**
+ * Use this type to randomly assign participants into arms during live experiment execution with contextual MAB experiments.
+
+For example, you may wish to experiment on new users. Assignments are issued via API request.
+ */
+export interface CMABExperimentSpecInput {
+	/** @maxLength 100 */
+	participant_type: string;
+	/** ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
+	experiment_id?: CMABExperimentSpecInputExperimentId;
+	experiment_type: CMABExperimentSpecInputExperimentType;
+	/** @maxLength 100 */
+	experiment_name: string;
+	/** @maxLength 2000 */
+	description: string;
+	start_date: string;
+	end_date: string;
+	/**
+	 * @minItems 2
+	 * @maxItems 10
+	 */
+	arms: ArmBandit[];
+	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
+	contexts?: CMABExperimentSpecInputContexts;
+	/** The type of prior distribution for the arms. */
+	prior_type?: PriorTypes;
+	/** The type of reward we observe from the experiment. */
+	reward_type?: LikelihoodTypes;
+}
+
+/**
+ * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
+ */
+export type CMABExperimentSpecOutputExperimentId = string | null;
+
+export type CMABExperimentSpecOutputExperimentType =
+	(typeof CMABExperimentSpecOutputExperimentType)[keyof typeof CMABExperimentSpecOutputExperimentType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const CMABExperimentSpecOutputExperimentType = {
+	cmab_online: "cmab_online",
+} as const;
+
+/**
+ * Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.
+ */
+export type CMABExperimentSpecOutputContexts = Context[] | null;
+
+/**
+ * Use this type to randomly assign participants into arms during live experiment execution with contextual MAB experiments.
+
+For example, you may wish to experiment on new users. Assignments are issued via API request.
+ */
+export interface CMABExperimentSpecOutput {
+	/** @maxLength 100 */
+	participant_type: string;
+	/** ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
+	experiment_id?: CMABExperimentSpecOutputExperimentId;
+	experiment_type: CMABExperimentSpecOutputExperimentType;
+	/** @maxLength 100 */
+	experiment_name: string;
+	/** @maxLength 2000 */
+	description: string;
+	start_date: string;
+	end_date: string;
+	/**
+	 * @minItems 2
+	 * @maxItems 10
+	 */
+	arms: ArmBandit[];
+	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
+	contexts?: CMABExperimentSpecOutputContexts;
+	/** The type of prior distribution for the arms. */
+	prior_type?: PriorTypes;
+	/** The type of reward we observe from the experiment. */
+	reward_type?: LikelihoodTypes;
+}
+
+/**
+ * The credentials returned to the SPA in exchange for a successful OIDC PKCE exchange.
+
+TODO: This is a placeholder for a longer-lived IDP-versatile session token.
  */
 export interface CallbackResponse {
 	/** The ID token as generated by Google. Represents a successful authentication. */
@@ -297,7 +601,7 @@ export interface CallbackResponse {
 }
 
 /**
- * Describes the user's identity.
+ * Describes the user's identity in a format suitable for use in the frontend.
  */
 export interface CallerIdentity {
 	email: string;
@@ -321,6 +625,47 @@ export interface CommitRequest {
 	power_analyses?: CommitRequestPowerAnalyses;
 	experiment_assignment: AssignResponseInput;
 }
+
+/**
+ * Unique identifier for the context, you should NOT set this when creating a new context.
+ */
+export type ContextContextId = number | null;
+
+export type ContextContextDescription = string | null;
+
+/**
+ * Pydantic model for context of the experiment.
+ */
+export interface Context {
+	/** Unique identifier for the context, you should NOT set this when creating a new context. */
+	context_id: ContextContextId;
+	/** @maxLength 100 */
+	context_name: string;
+	context_description?: ContextContextDescription;
+	/** Type of value the context can take */
+	value_type?: ContextType;
+}
+
+/**
+ * Pydantic model for a context input
+ */
+export interface ContextInput {
+	/** Unique identifier for the context. */
+	context_id: number;
+	/** Value of the context */
+	context_value: number;
+}
+
+/**
+ * Enum for the type of context.
+ */
+export type ContextType = (typeof ContextType)[keyof typeof ContextType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ContextType = {
+	binary: "binary",
+	"real-valued": "real-valued",
+} as const;
 
 export interface CreateApiKeyResponse {
 	/** @maxLength 64 */
@@ -363,6 +708,8 @@ export type CreateExperimentResponseStoppedAssignmentsReason =
 
 export type CreateExperimentResponsePowerAnalyses = PowerResponseOutput | null;
 
+export type CreateExperimentResponseAssignSummary = AssignSummary | null;
+
 /**
  * Same as the request but with ids filled for the experiment and arms, and summary info on the assignment.
  */
@@ -376,7 +723,7 @@ export interface CreateExperimentResponse {
 	stopped_assignments_reason: CreateExperimentResponseStoppedAssignmentsReason;
 	design_spec: DesignSpecOutput;
 	power_analyses: CreateExperimentResponsePowerAnalyses;
-	assign_summary: AssignSummary;
+	assign_summary: CreateExperimentResponseAssignSummary;
 	/** List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed. */
 	webhooks?: string[];
 }
@@ -402,28 +749,6 @@ export interface CreateParticipantsTypeResponse {
 	participant_type: string;
 	schema_def: ParticipantsSchemaOutput;
 }
-
-/**
- * Defines the supported data types for fields in the data source.
- */
-export type DataType = (typeof DataType)[keyof typeof DataType];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const DataType = {
-	boolean: "boolean",
-	character_varying: "character varying",
-	uuid: "uuid",
-	date: "date",
-	integer: "integer",
-	double_precision: "double precision",
-	numeric: "numeric",
-	timestamp_without_time_zone: "timestamp without time zone",
-	timestamp_with_time_zone: "timestamp with time zone",
-	bigint: "bigint",
-	"jsonb_(unsupported)": "jsonb (unsupported)",
-	"json_(unsupported)": "json (unsupported)",
-	unsupported: "unsupported",
-} as const;
 
 export type DatasourceConfigWebhookConfig = WebhookConfig | null;
 
@@ -451,18 +776,24 @@ export interface DatasourceSummary {
 }
 
 /**
- * Concrete type of experiment to run.
+ * The type of assignment and experiment design.
  */
 export type DesignSpecInput =
-	| PreassignedExperimentSpecInput
-	| OnlineExperimentSpecInput;
+	| PreassignedFrequentistExperimentSpecInput
+	| OnlineFrequentistExperimentSpecInput
+	| MABExperimentSpecInput
+	| CMABExperimentSpecInput
+	| BayesABExperimentSpecInput;
 
 /**
- * Concrete type of experiment to run.
+ * The type of assignment and experiment design.
  */
 export type DesignSpecOutput =
-	| PreassignedExperimentSpecOutput
-	| OnlineExperimentSpecOutput;
+	| PreassignedFrequentistExperimentSpecOutput
+	| OnlineFrequentistExperimentSpecOutput
+	| MABExperimentSpecOutput
+	| CMABExperimentSpecOutput
+	| BayesABExperimentSpecOutput;
 
 /**
  * Percent change target relative to the metric_baseline.
@@ -586,6 +917,28 @@ export type DwhInput = Dsn | BqDsnInput;
 export type DwhOutput = Dsn | BqDsnOutput;
 
 /**
+ * Defines the supported data types for fields in the data source.
+ */
+export type DwhDataType = (typeof DwhDataType)[keyof typeof DwhDataType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const DwhDataType = {
+	boolean: "boolean",
+	character_varying: "character varying",
+	uuid: "uuid",
+	date: "date",
+	integer: "integer",
+	double_precision: "double precision",
+	numeric: "numeric",
+	timestamp_without_time_zone: "timestamp without time zone",
+	timestamp_with_time_zone: "timestamp with time zone",
+	bigint: "bigint",
+	"jsonb_(unsupported)": "jsonb (unsupported)",
+	"json_(unsupported)": "json (unsupported)",
+	unsupported: "unsupported",
+} as const;
+
+/**
  * A navigable link to related information.
  */
 export type EventSummaryLink = string | null;
@@ -649,6 +1002,8 @@ export type ExperimentConfigStoppedAssignmentsReason =
 
 export type ExperimentConfigPowerAnalyses = PowerResponseOutput | null;
 
+export type ExperimentConfigAssignSummary = AssignSummary | null;
+
 /**
  * Representation of our stored Experiment information.
  */
@@ -662,7 +1017,7 @@ export interface ExperimentConfig {
 	stopped_assignments_reason: ExperimentConfigStoppedAssignmentsReason;
 	design_spec: DesignSpecOutput;
 	power_analyses: ExperimentConfigPowerAnalyses;
-	assign_summary: AssignSummary;
+	assign_summary: ExperimentConfigAssignSummary;
 	/** List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed. */
 	webhooks?: string[];
 }
@@ -696,7 +1051,7 @@ export interface FieldDescriptor {
 	/** Name of the field in the data source */
 	field_name: string;
 	/** The data type of this field */
-	data_type: DataType;
+	data_type: DwhDataType;
 	/** Human-readable description of the field */
 	description?: string;
 	/** Whether this field uniquely identifies records */
@@ -717,7 +1072,7 @@ export interface FieldDescriptor {
 export interface FieldMetadata {
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
-	data_type: DataType;
+	data_type: DwhDataType;
 	/** @maxLength 2000 */
 	description: string;
 }
@@ -765,26 +1120,72 @@ Values must be expressed as ISO8601 datetime strings compatible with Python's da
 
 If a timezone is provided, it must be UTC.
  */
-export interface Filter {
+export interface FilterInput {
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
 	relation: Relation;
 	value: FilterValueTypes;
 }
 
-export type FilterValueTypesAnyOfItem = number | null;
+/**
+ * Defines criteria for filtering rows by value.
 
-export type FilterValueTypesAnyOfTwoItem = number | null;
+## Examples
 
-export type FilterValueTypesAnyOfThreeItem = string | null;
+| Relation | Value       | logical Result                                    |
+|----------|-------------|---------------------------------------------------|
+| INCLUDES | [None]      | Match when `x IS NULL`                            |
+| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |
+| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |
+| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |
+| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |
+| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |
+| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |
+| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |
+| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |
 
-export type FilterValueTypesAnyOfFourItem = boolean | null;
+String comparisons are case-sensitive.
+
+## Special Handling for Comma-Separated Fields
+
+When the filter name ends in "experiment_ids", the filter is interpreted as follows:
+
+| Value | Filter         | Result   |
+|-------|----------------|----------|
+| "a,b" | INCLUDES ["a"] | Match    |
+| "a,b" | INCLUDES ["d"] | No match |
+| "a,b" | EXCLUDES ["d"] | Match    |
+| "a,b" | EXCLUDES ["b"] | No match |
+
+Note: The BETWEEN relation is not supported for comma-separated values.
+
+Note: CSV field comparisons are case-insensitive.
+
+## Handling of datetime and timestamp values
+
+DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.
+
+Values must be expressed as ISO8601 datetime strings compatible with Python's datetime.fromisoformat()
+(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).
+
+If a timezone is provided, it must be UTC.
+ */
+export interface FilterOutput {
+	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	field_name: string;
+	relation: Relation;
+	value: FilterValueTypes;
+}
+
+export type FilterValueTypesAnyOfItem = string | null;
+
+export type FilterValueTypesAnyOfTwoItem = boolean | null;
 
 export type FilterValueTypes =
+	| StrictInt[]
+	| StrictFloat[]
 	| FilterValueTypesAnyOfItem[]
-	| FilterValueTypesAnyOfTwoItem[]
-	| FilterValueTypesAnyOfThreeItem[]
-	| FilterValueTypesAnyOfFourItem[];
+	| FilterValueTypesAnyOfTwoItem[];
 
 /**
  * The Google Cloud Service Account credentials.
@@ -870,6 +1271,8 @@ export type GetExperimentResponseStoppedAssignmentsReason =
 
 export type GetExperimentResponsePowerAnalyses = PowerResponseOutput | null;
 
+export type GetExperimentResponseAssignSummary = AssignSummary | null;
+
 /**
  * An experiment configuration capturing all info at design time when assignment was made.
  */
@@ -883,7 +1286,7 @@ export interface GetExperimentResponse {
 	stopped_assignments_reason: GetExperimentResponseStoppedAssignmentsReason;
 	design_spec: DesignSpecOutput;
 	power_analyses: GetExperimentResponsePowerAnalyses;
-	assign_summary: AssignSummary;
+	assign_summary: GetExperimentResponseAssignSummary;
 	/** List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed. */
 	webhooks?: string[];
 }
@@ -909,7 +1312,7 @@ export interface GetFiltersResponseDiscrete {
 	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
 	 */
 	field_name: string;
-	data_type: DataType;
+	data_type: DwhDataType;
 	/**
 	 * @minItems 1
 	 * @maxItems 20
@@ -954,7 +1357,7 @@ export interface GetFiltersResponseNumericOrDate {
 	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
 	 */
 	field_name: string;
-	data_type: DataType;
+	data_type: DwhDataType;
 	/**
 	 * @minItems 1
 	 * @maxItems 20
@@ -981,7 +1384,7 @@ export interface GetMetricsResponse {
 export interface GetMetricsResponseElement {
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
-	data_type: DataType;
+	data_type: DwhDataType;
 	/** @maxLength 2000 */
 	description: string;
 }
@@ -1026,7 +1429,7 @@ export type GetStrataResponseElementExtra =
  * Describes a stratification variable.
  */
 export interface GetStrataResponseElement {
-	data_type: DataType;
+	data_type: DwhDataType;
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
 	/** @maxLength 2000 */
@@ -1077,6 +1480,18 @@ export interface InspectParticipantTypesResponse {
 	strata: GetStrataResponseElement[];
 }
 
+/**
+ * Enum for the likelihood distribution of the reward.
+ */
+export type LikelihoodTypes =
+	(typeof LikelihoodTypes)[keyof typeof LikelihoodTypes];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const LikelihoodTypes = {
+	binary: "binary",
+	"real-valued": "real-valued",
+} as const;
+
 export interface ListApiKeysResponse {
 	items: ApiKeySummary[];
 }
@@ -1103,6 +1518,102 @@ export interface ListParticipantsTypeResponse {
 
 export interface ListWebhooksResponse {
 	items: WebhookSummary[];
+}
+
+/**
+ * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
+ */
+export type MABExperimentSpecInputExperimentId = string | null;
+
+export type MABExperimentSpecInputExperimentType =
+	(typeof MABExperimentSpecInputExperimentType)[keyof typeof MABExperimentSpecInputExperimentType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const MABExperimentSpecInputExperimentType = {
+	mab_online: "mab_online",
+} as const;
+
+/**
+ * Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.
+ */
+export type MABExperimentSpecInputContexts = Context[] | null;
+
+/**
+ * Use this type to randomly assign participants into arms during live experiment execution with MAB experiments.
+
+For example, you may wish to experiment on new users. Assignments are issued via API request.
+ */
+export interface MABExperimentSpecInput {
+	/** @maxLength 100 */
+	participant_type: string;
+	/** ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
+	experiment_id?: MABExperimentSpecInputExperimentId;
+	experiment_type: MABExperimentSpecInputExperimentType;
+	/** @maxLength 100 */
+	experiment_name: string;
+	/** @maxLength 2000 */
+	description: string;
+	start_date: string;
+	end_date: string;
+	/**
+	 * @minItems 2
+	 * @maxItems 10
+	 */
+	arms: ArmBandit[];
+	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
+	contexts?: MABExperimentSpecInputContexts;
+	/** The type of prior distribution for the arms. */
+	prior_type?: PriorTypes;
+	/** The type of reward we observe from the experiment. */
+	reward_type?: LikelihoodTypes;
+}
+
+/**
+ * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
+ */
+export type MABExperimentSpecOutputExperimentId = string | null;
+
+export type MABExperimentSpecOutputExperimentType =
+	(typeof MABExperimentSpecOutputExperimentType)[keyof typeof MABExperimentSpecOutputExperimentType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const MABExperimentSpecOutputExperimentType = {
+	mab_online: "mab_online",
+} as const;
+
+/**
+ * Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.
+ */
+export type MABExperimentSpecOutputContexts = Context[] | null;
+
+/**
+ * Use this type to randomly assign participants into arms during live experiment execution with MAB experiments.
+
+For example, you may wish to experiment on new users. Assignments are issued via API request.
+ */
+export interface MABExperimentSpecOutput {
+	/** @maxLength 100 */
+	participant_type: string;
+	/** ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
+	experiment_id?: MABExperimentSpecOutputExperimentId;
+	experiment_type: MABExperimentSpecOutputExperimentType;
+	/** @maxLength 100 */
+	experiment_name: string;
+	/** @maxLength 2000 */
+	description: string;
+	start_date: string;
+	end_date: string;
+	/**
+	 * @minItems 2
+	 * @maxItems 10
+	 */
+	arms: ArmBandit[];
+	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
+	contexts?: MABExperimentSpecOutputContexts;
+	/** The type of prior distribution for the arms. */
+	prior_type?: PriorTypes;
+	/** The type of reward we observe from the experiment. */
+	reward_type?: LikelihoodTypes;
 }
 
 export type MetricAnalysisMetricName = string | null;
@@ -1252,27 +1763,27 @@ export const MetricType = {
 /**
  * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
  */
-export type OnlineExperimentSpecInputExperimentId = string | null;
+export type OnlineFrequentistExperimentSpecInputExperimentId = string | null;
 
-export type OnlineExperimentSpecInputExperimentType =
-	(typeof OnlineExperimentSpecInputExperimentType)[keyof typeof OnlineExperimentSpecInputExperimentType];
+export type OnlineFrequentistExperimentSpecInputExperimentType =
+	(typeof OnlineFrequentistExperimentSpecInputExperimentType)[keyof typeof OnlineFrequentistExperimentSpecInputExperimentType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const OnlineExperimentSpecInputExperimentType = {
-	online: "online",
+export const OnlineFrequentistExperimentSpecInputExperimentType = {
+	freq_online: "freq_online",
 } as const;
 
 /**
- * Use this type to randomly assign participants into arms during live experiment execution.
+ * Use this type to randomly assign participants into arms during live experiment execution with frequentist A/B experiments.
 
 For example, you may wish to experiment on new users. Assignments are issued via API request.
  */
-export interface OnlineExperimentSpecInput {
+export interface OnlineFrequentistExperimentSpecInput {
 	/** @maxLength 100 */
 	participant_type: string;
 	/** ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
-	experiment_id?: OnlineExperimentSpecInputExperimentId;
-	experiment_type: OnlineExperimentSpecInputExperimentType;
+	experiment_id?: OnlineFrequentistExperimentSpecInputExperimentId;
+	experiment_type: OnlineFrequentistExperimentSpecInputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
 	/** @maxLength 2000 */
@@ -1299,7 +1810,7 @@ export interface OnlineExperimentSpecInput {
 	 * Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.
 	 * @maxItems 20
 	 */
-	filters: Filter[];
+	filters: FilterInput[];
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
@@ -1323,27 +1834,27 @@ export interface OnlineExperimentSpecInput {
 /**
  * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
  */
-export type OnlineExperimentSpecOutputExperimentId = string | null;
+export type OnlineFrequentistExperimentSpecOutputExperimentId = string | null;
 
-export type OnlineExperimentSpecOutputExperimentType =
-	(typeof OnlineExperimentSpecOutputExperimentType)[keyof typeof OnlineExperimentSpecOutputExperimentType];
+export type OnlineFrequentistExperimentSpecOutputExperimentType =
+	(typeof OnlineFrequentistExperimentSpecOutputExperimentType)[keyof typeof OnlineFrequentistExperimentSpecOutputExperimentType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const OnlineExperimentSpecOutputExperimentType = {
-	online: "online",
+export const OnlineFrequentistExperimentSpecOutputExperimentType = {
+	freq_online: "freq_online",
 } as const;
 
 /**
- * Use this type to randomly assign participants into arms during live experiment execution.
+ * Use this type to randomly assign participants into arms during live experiment execution with frequentist A/B experiments.
 
 For example, you may wish to experiment on new users. Assignments are issued via API request.
  */
-export interface OnlineExperimentSpecOutput {
+export interface OnlineFrequentistExperimentSpecOutput {
 	/** @maxLength 100 */
 	participant_type: string;
 	/** ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
-	experiment_id?: OnlineExperimentSpecOutputExperimentId;
-	experiment_type: OnlineExperimentSpecOutputExperimentType;
+	experiment_id?: OnlineFrequentistExperimentSpecOutputExperimentId;
+	experiment_type: OnlineFrequentistExperimentSpecOutputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
 	/** @maxLength 2000 */
@@ -1370,7 +1881,7 @@ export interface OnlineExperimentSpecOutput {
 	 * Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.
 	 * @maxItems 20
 	 */
-	filters: Filter[];
+	filters: FilterOutput[];
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
@@ -1455,25 +1966,27 @@ export interface PowerResponseOutput {
 /**
  * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
  */
-export type PreassignedExperimentSpecInputExperimentId = string | null;
+export type PreassignedFrequentistExperimentSpecInputExperimentId =
+	| string
+	| null;
 
-export type PreassignedExperimentSpecInputExperimentType =
-	(typeof PreassignedExperimentSpecInputExperimentType)[keyof typeof PreassignedExperimentSpecInputExperimentType];
+export type PreassignedFrequentistExperimentSpecInputExperimentType =
+	(typeof PreassignedFrequentistExperimentSpecInputExperimentType)[keyof typeof PreassignedFrequentistExperimentSpecInputExperimentType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const PreassignedExperimentSpecInputExperimentType = {
-	preassigned: "preassigned",
+export const PreassignedFrequentistExperimentSpecInputExperimentType = {
+	freq_preassigned: "freq_preassigned",
 } as const;
 
 /**
- * Use this type to randomly select and assign from existing participants at design time.
+ * Use this type to randomly select and assign from existing participants at design time with frequentist A/B experiments.
  */
-export interface PreassignedExperimentSpecInput {
+export interface PreassignedFrequentistExperimentSpecInput {
 	/** @maxLength 100 */
 	participant_type: string;
 	/** ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
-	experiment_id?: PreassignedExperimentSpecInputExperimentId;
-	experiment_type: PreassignedExperimentSpecInputExperimentType;
+	experiment_id?: PreassignedFrequentistExperimentSpecInputExperimentId;
+	experiment_type: PreassignedFrequentistExperimentSpecInputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
 	/** @maxLength 2000 */
@@ -1500,7 +2013,7 @@ export interface PreassignedExperimentSpecInput {
 	 * Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.
 	 * @maxItems 20
 	 */
-	filters: Filter[];
+	filters: FilterInput[];
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
@@ -1524,25 +2037,27 @@ export interface PreassignedExperimentSpecInput {
 /**
  * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
  */
-export type PreassignedExperimentSpecOutputExperimentId = string | null;
+export type PreassignedFrequentistExperimentSpecOutputExperimentId =
+	| string
+	| null;
 
-export type PreassignedExperimentSpecOutputExperimentType =
-	(typeof PreassignedExperimentSpecOutputExperimentType)[keyof typeof PreassignedExperimentSpecOutputExperimentType];
+export type PreassignedFrequentistExperimentSpecOutputExperimentType =
+	(typeof PreassignedFrequentistExperimentSpecOutputExperimentType)[keyof typeof PreassignedFrequentistExperimentSpecOutputExperimentType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const PreassignedExperimentSpecOutputExperimentType = {
-	preassigned: "preassigned",
+export const PreassignedFrequentistExperimentSpecOutputExperimentType = {
+	freq_preassigned: "freq_preassigned",
 } as const;
 
 /**
- * Use this type to randomly select and assign from existing participants at design time.
+ * Use this type to randomly select and assign from existing participants at design time with frequentist A/B experiments.
  */
-export interface PreassignedExperimentSpecOutput {
+export interface PreassignedFrequentistExperimentSpecOutput {
 	/** @maxLength 100 */
 	participant_type: string;
 	/** ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
-	experiment_id?: PreassignedExperimentSpecOutputExperimentId;
-	experiment_type: PreassignedExperimentSpecOutputExperimentType;
+	experiment_id?: PreassignedFrequentistExperimentSpecOutputExperimentId;
+	experiment_type: PreassignedFrequentistExperimentSpecOutputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
 	/** @maxLength 2000 */
@@ -1569,7 +2084,7 @@ export interface PreassignedExperimentSpecOutput {
 	 * Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.
 	 * @maxItems 20
 	 */
-	filters: Filter[];
+	filters: FilterOutput[];
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
@@ -1589,6 +2104,17 @@ export interface PreassignedExperimentSpecOutput {
 	 */
 	fstat_thresh?: number;
 }
+
+/**
+ * Enum for the prior distribution of the arm.
+ */
+export type PriorTypes = (typeof PriorTypes)[keyof typeof PriorTypes];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const PriorTypes = {
+	beta: "beta",
+	normal: "normal",
+} as const;
 
 /**
  * Defines operators for filtering values.
@@ -1666,6 +2192,10 @@ export interface Stratum {
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
 }
+
+export type StrictFloat = number | null;
+
+export type StrictInt = number | null;
 
 export type UpdateDatasourceRequestName = string | null;
 

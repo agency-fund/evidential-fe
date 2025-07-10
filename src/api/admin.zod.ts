@@ -18,7 +18,9 @@ export const callerIdentityResponse = zod
 		hd: zod.string(),
 		is_privileged: zod.boolean(),
 	})
-	.describe("Describes the user's identity.");
+	.describe(
+		"Describes the user's identity in a format suitable for use in the frontend.",
+	);
 
 /**
  * Returns a list of organizations that the authenticated user is a member of.
@@ -1736,6 +1738,42 @@ export const createExperimentBodyDesignSpecFstatThreshDefaultOne = 0.6;
 export const createExperimentBodyDesignSpecFstatThreshMinOne = 0;
 
 export const createExperimentBodyDesignSpecFstatThreshMaxOne = 1;
+export const createExperimentBodyDesignSpecParticipantTypeMaxTwo = 100;
+export const createExperimentBodyDesignSpecExperimentNameMaxTwo = 100;
+export const createExperimentBodyDesignSpecDescriptionMaxTwo = 2000;
+export const createExperimentBodyDesignSpecArmsItemArmNameMaxTwo = 100;
+export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxSeven = 2000;
+export const createExperimentBodyDesignSpecArmsItemNOutcomesDefault = 0;
+export const createExperimentBodyDesignSpecArmsMinTwo = 2;
+
+export const createExperimentBodyDesignSpecArmsMaxTwo = 10;
+export const createExperimentBodyDesignSpecContextsItemContextNameMax = 100;
+export const createExperimentBodyDesignSpecContextsItemContextDescriptionMaxOne = 2000;
+export const createExperimentBodyDesignSpecContextsMaxOne = 150;
+export const createExperimentBodyDesignSpecParticipantTypeMaxThree = 100;
+export const createExperimentBodyDesignSpecExperimentNameMaxThree = 100;
+export const createExperimentBodyDesignSpecDescriptionMaxThree = 2000;
+export const createExperimentBodyDesignSpecArmsItemArmNameMaxThree = 100;
+export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnezero = 2000;
+export const createExperimentBodyDesignSpecArmsItemNOutcomesDefaultOne = 0;
+export const createExperimentBodyDesignSpecArmsMinThree = 2;
+
+export const createExperimentBodyDesignSpecArmsMaxThree = 10;
+export const createExperimentBodyDesignSpecContextsItemContextNameMaxOne = 100;
+export const createExperimentBodyDesignSpecContextsItemContextDescriptionMaxFour = 2000;
+export const createExperimentBodyDesignSpecContextsMaxFour = 150;
+export const createExperimentBodyDesignSpecParticipantTypeMaxFour = 100;
+export const createExperimentBodyDesignSpecExperimentNameMaxFour = 100;
+export const createExperimentBodyDesignSpecDescriptionMaxFour = 2000;
+export const createExperimentBodyDesignSpecArmsItemArmNameMaxFour = 100;
+export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
+export const createExperimentBodyDesignSpecArmsItemNOutcomesDefaultTwo = 0;
+export const createExperimentBodyDesignSpecArmsMinFour = 2;
+
+export const createExperimentBodyDesignSpecArmsMaxFour = 10;
+export const createExperimentBodyDesignSpecContextsItemContextNameMaxTwo = 100;
+export const createExperimentBodyDesignSpecContextsItemContextDescriptionMaxSeven = 2000;
+export const createExperimentBodyDesignSpecContextsMaxSeven = 150;
 export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyPowerAnalysesAnalysesMax = 150;
@@ -1756,7 +1794,7 @@ export const createExperimentBody = zod.object({
 						.describe(
 							"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 						),
-					experiment_type: zod.enum(["preassigned"]),
+					experiment_type: zod.enum(["freq_preassigned"]),
 					experiment_name: zod
 						.string()
 						.max(createExperimentBodyDesignSpecExperimentNameMax),
@@ -1892,7 +1930,7 @@ export const createExperimentBody = zod.object({
 						),
 				})
 				.describe(
-					"Use this type to randomly select and assign from existing participants at design time.",
+					"Use this type to randomly select and assign from existing participants at design time with frequentist A/B experiments.",
 				),
 			zod
 				.object({
@@ -1906,7 +1944,7 @@ export const createExperimentBody = zod.object({
 						.describe(
 							"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 						),
-					experiment_type: zod.enum(["online"]),
+					experiment_type: zod.enum(["freq_online"]),
 					experiment_name: zod
 						.string()
 						.max(createExperimentBodyDesignSpecExperimentNameMaxOne),
@@ -2042,10 +2080,454 @@ export const createExperimentBody = zod.object({
 						),
 				})
 				.describe(
-					"Use this type to randomly assign participants into arms during live experiment execution.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+					"Use this type to randomly assign participants into arms during live experiment execution with frequentist A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+				),
+			zod
+				.object({
+					participant_type: zod
+						.string()
+						.max(createExperimentBodyDesignSpecParticipantTypeMaxTwo),
+					experiment_id: zod
+						.string()
+						.or(zod.null())
+						.optional()
+						.describe(
+							"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+						),
+					experiment_type: zod.enum(["mab_online"]),
+					experiment_name: zod
+						.string()
+						.max(createExperimentBodyDesignSpecExperimentNameMaxTwo),
+					description: zod
+						.string()
+						.max(createExperimentBodyDesignSpecDescriptionMaxTwo),
+					start_date: zod.string().datetime({}),
+					end_date: zod.string().datetime({}),
+					arms: zod
+						.array(
+							zod
+								.object({
+									arm_id: zod
+										.string()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										),
+									arm_name: zod
+										.string()
+										.max(createExperimentBodyDesignSpecArmsItemArmNameMaxTwo),
+									arm_description: zod
+										.string()
+										.max(
+											createExperimentBodyDesignSpecArmsItemArmDescriptionMaxSeven,
+										)
+										.or(zod.null())
+										.optional(),
+									alpha_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Initial alpha parameter for Beta prior"),
+									beta_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Initial beta parameter for Beta prior"),
+									mu_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Initial mean parameter for Normal prior"),
+									sigma_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Initial standard deviation parameter for Normal prior",
+										),
+									n_outcomes: zod
+										.number()
+										.optional()
+										.describe("The number of outcomes for this arm."),
+									alpha: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Updated alpha parameter for Beta prior"),
+									beta: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Updated beta parameter for Beta prior"),
+									mu: zod
+										.array(zod.number())
+										.or(zod.null())
+										.optional()
+										.describe("Updated mean vector for Normal prior"),
+									covariance: zod
+										.array(zod.array(zod.number()))
+										.or(zod.null())
+										.optional()
+										.describe("Updated covariance matrix for Normal prior"),
+									is_baseline: zod
+										.boolean()
+										.or(zod.null())
+										.describe(
+											"Whether this arm is the baseline/control arm for comparison.",
+										),
+								})
+								.describe(
+									"Describes an experiment arm for bandit experiments.",
+								),
+						)
+						.min(createExperimentBodyDesignSpecArmsMinTwo)
+						.max(createExperimentBodyDesignSpecArmsMaxTwo),
+					contexts: zod
+						.array(
+							zod
+								.object({
+									context_id: zod
+										.number()
+										.or(zod.null())
+										.describe(
+											"Unique identifier for the context, you should NOT set this when creating a new context.",
+										),
+									context_name: zod
+										.string()
+										.max(
+											createExperimentBodyDesignSpecContextsItemContextNameMax,
+										),
+									context_description: zod
+										.string()
+										.max(
+											createExperimentBodyDesignSpecContextsItemContextDescriptionMaxOne,
+										)
+										.or(zod.null())
+										.optional(),
+									value_type: zod
+										.enum(["binary", "real-valued"])
+										.optional()
+										.describe("Enum for the type of context."),
+								})
+								.describe("Pydantic model for context of the experiment."),
+						)
+						.max(createExperimentBodyDesignSpecContextsMaxOne)
+						.or(zod.null())
+						.optional()
+						.describe(
+							"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+						),
+					prior_type: zod
+						.enum(["beta", "normal"])
+						.optional()
+						.describe("Enum for the prior distribution of the arm."),
+					reward_type: zod
+						.enum(["binary", "real-valued"])
+						.optional()
+						.describe("Enum for the likelihood distribution of the reward."),
+				})
+				.describe(
+					"Use this type to randomly assign participants into arms during live experiment execution with MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+				),
+			zod
+				.object({
+					participant_type: zod
+						.string()
+						.max(createExperimentBodyDesignSpecParticipantTypeMaxThree),
+					experiment_id: zod
+						.string()
+						.or(zod.null())
+						.optional()
+						.describe(
+							"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+						),
+					experiment_type: zod.enum(["cmab_online"]),
+					experiment_name: zod
+						.string()
+						.max(createExperimentBodyDesignSpecExperimentNameMaxThree),
+					description: zod
+						.string()
+						.max(createExperimentBodyDesignSpecDescriptionMaxThree),
+					start_date: zod.string().datetime({}),
+					end_date: zod.string().datetime({}),
+					arms: zod
+						.array(
+							zod
+								.object({
+									arm_id: zod
+										.string()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										),
+									arm_name: zod
+										.string()
+										.max(createExperimentBodyDesignSpecArmsItemArmNameMaxThree),
+									arm_description: zod
+										.string()
+										.max(
+											createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnezero,
+										)
+										.or(zod.null())
+										.optional(),
+									alpha_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Initial alpha parameter for Beta prior"),
+									beta_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Initial beta parameter for Beta prior"),
+									mu_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Initial mean parameter for Normal prior"),
+									sigma_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Initial standard deviation parameter for Normal prior",
+										),
+									n_outcomes: zod
+										.number()
+										.optional()
+										.describe("The number of outcomes for this arm."),
+									alpha: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Updated alpha parameter for Beta prior"),
+									beta: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Updated beta parameter for Beta prior"),
+									mu: zod
+										.array(zod.number())
+										.or(zod.null())
+										.optional()
+										.describe("Updated mean vector for Normal prior"),
+									covariance: zod
+										.array(zod.array(zod.number()))
+										.or(zod.null())
+										.optional()
+										.describe("Updated covariance matrix for Normal prior"),
+									is_baseline: zod
+										.boolean()
+										.or(zod.null())
+										.describe(
+											"Whether this arm is the baseline/control arm for comparison.",
+										),
+								})
+								.describe(
+									"Describes an experiment arm for bandit experiments.",
+								),
+						)
+						.min(createExperimentBodyDesignSpecArmsMinThree)
+						.max(createExperimentBodyDesignSpecArmsMaxThree),
+					contexts: zod
+						.array(
+							zod
+								.object({
+									context_id: zod
+										.number()
+										.or(zod.null())
+										.describe(
+											"Unique identifier for the context, you should NOT set this when creating a new context.",
+										),
+									context_name: zod
+										.string()
+										.max(
+											createExperimentBodyDesignSpecContextsItemContextNameMaxOne,
+										),
+									context_description: zod
+										.string()
+										.max(
+											createExperimentBodyDesignSpecContextsItemContextDescriptionMaxFour,
+										)
+										.or(zod.null())
+										.optional(),
+									value_type: zod
+										.enum(["binary", "real-valued"])
+										.optional()
+										.describe("Enum for the type of context."),
+								})
+								.describe("Pydantic model for context of the experiment."),
+						)
+						.max(createExperimentBodyDesignSpecContextsMaxFour)
+						.or(zod.null())
+						.optional()
+						.describe(
+							"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+						),
+					prior_type: zod
+						.enum(["beta", "normal"])
+						.optional()
+						.describe("Enum for the prior distribution of the arm."),
+					reward_type: zod
+						.enum(["binary", "real-valued"])
+						.optional()
+						.describe("Enum for the likelihood distribution of the reward."),
+				})
+				.describe(
+					"Use this type to randomly assign participants into arms during live experiment execution with contextual MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+				),
+			zod
+				.object({
+					participant_type: zod
+						.string()
+						.max(createExperimentBodyDesignSpecParticipantTypeMaxFour),
+					experiment_id: zod
+						.string()
+						.or(zod.null())
+						.optional()
+						.describe(
+							"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+						),
+					experiment_type: zod.enum(["bayes_ab_online"]),
+					experiment_name: zod
+						.string()
+						.max(createExperimentBodyDesignSpecExperimentNameMaxFour),
+					description: zod
+						.string()
+						.max(createExperimentBodyDesignSpecDescriptionMaxFour),
+					start_date: zod.string().datetime({}),
+					end_date: zod.string().datetime({}),
+					arms: zod
+						.array(
+							zod
+								.object({
+									arm_id: zod
+										.string()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										),
+									arm_name: zod
+										.string()
+										.max(createExperimentBodyDesignSpecArmsItemArmNameMaxFour),
+									arm_description: zod
+										.string()
+										.max(
+											createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnethree,
+										)
+										.or(zod.null())
+										.optional(),
+									alpha_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Initial alpha parameter for Beta prior"),
+									beta_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Initial beta parameter for Beta prior"),
+									mu_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Initial mean parameter for Normal prior"),
+									sigma_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Initial standard deviation parameter for Normal prior",
+										),
+									n_outcomes: zod
+										.number()
+										.optional()
+										.describe("The number of outcomes for this arm."),
+									alpha: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Updated alpha parameter for Beta prior"),
+									beta: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Updated beta parameter for Beta prior"),
+									mu: zod
+										.array(zod.number())
+										.or(zod.null())
+										.optional()
+										.describe("Updated mean vector for Normal prior"),
+									covariance: zod
+										.array(zod.array(zod.number()))
+										.or(zod.null())
+										.optional()
+										.describe("Updated covariance matrix for Normal prior"),
+									is_baseline: zod
+										.boolean()
+										.or(zod.null())
+										.describe(
+											"Whether this arm is the baseline/control arm for comparison.",
+										),
+								})
+								.describe(
+									"Describes an experiment arm for bandit experiments.",
+								),
+						)
+						.min(createExperimentBodyDesignSpecArmsMinFour)
+						.max(createExperimentBodyDesignSpecArmsMaxFour),
+					contexts: zod
+						.array(
+							zod
+								.object({
+									context_id: zod
+										.number()
+										.or(zod.null())
+										.describe(
+											"Unique identifier for the context, you should NOT set this when creating a new context.",
+										),
+									context_name: zod
+										.string()
+										.max(
+											createExperimentBodyDesignSpecContextsItemContextNameMaxTwo,
+										),
+									context_description: zod
+										.string()
+										.max(
+											createExperimentBodyDesignSpecContextsItemContextDescriptionMaxSeven,
+										)
+										.or(zod.null())
+										.optional(),
+									value_type: zod
+										.enum(["binary", "real-valued"])
+										.optional()
+										.describe("Enum for the type of context."),
+								})
+								.describe("Pydantic model for context of the experiment."),
+						)
+						.max(createExperimentBodyDesignSpecContextsMaxSeven)
+						.or(zod.null())
+						.optional()
+						.describe(
+							"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+						),
+					prior_type: zod
+						.enum(["beta", "normal"])
+						.optional()
+						.describe("Enum for the prior distribution of the arm."),
+					reward_type: zod
+						.enum(["binary", "real-valued"])
+						.optional()
+						.describe("Enum for the likelihood distribution of the reward."),
+				})
+				.describe(
+					"Use this type to randomly assign participants into arms during live experiment execution with Bayesian A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
 				),
 		])
-		.describe("Concrete type of experiment to run."),
+		.describe("The type of assignment and experiment design."),
 	power_analyses: zod
 		.object({
 			analyses: zod
@@ -2241,6 +2723,42 @@ export const createExperimentResponseDesignSpecFstatThreshDefaultOne = 0.6;
 export const createExperimentResponseDesignSpecFstatThreshMinOne = 0;
 
 export const createExperimentResponseDesignSpecFstatThreshMaxOne = 1;
+export const createExperimentResponseDesignSpecParticipantTypeMaxTwo = 100;
+export const createExperimentResponseDesignSpecExperimentNameMaxTwo = 100;
+export const createExperimentResponseDesignSpecDescriptionMaxTwo = 2000;
+export const createExperimentResponseDesignSpecArmsItemArmNameMaxTwo = 100;
+export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxSeven = 2000;
+export const createExperimentResponseDesignSpecArmsItemNOutcomesDefault = 0;
+export const createExperimentResponseDesignSpecArmsMinTwo = 2;
+
+export const createExperimentResponseDesignSpecArmsMaxTwo = 10;
+export const createExperimentResponseDesignSpecContextsItemContextNameMax = 100;
+export const createExperimentResponseDesignSpecContextsItemContextDescriptionMaxOne = 2000;
+export const createExperimentResponseDesignSpecContextsMaxOne = 150;
+export const createExperimentResponseDesignSpecParticipantTypeMaxThree = 100;
+export const createExperimentResponseDesignSpecExperimentNameMaxThree = 100;
+export const createExperimentResponseDesignSpecDescriptionMaxThree = 2000;
+export const createExperimentResponseDesignSpecArmsItemArmNameMaxThree = 100;
+export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnezero = 2000;
+export const createExperimentResponseDesignSpecArmsItemNOutcomesDefaultOne = 0;
+export const createExperimentResponseDesignSpecArmsMinThree = 2;
+
+export const createExperimentResponseDesignSpecArmsMaxThree = 10;
+export const createExperimentResponseDesignSpecContextsItemContextNameMaxOne = 100;
+export const createExperimentResponseDesignSpecContextsItemContextDescriptionMaxFour = 2000;
+export const createExperimentResponseDesignSpecContextsMaxFour = 150;
+export const createExperimentResponseDesignSpecParticipantTypeMaxFour = 100;
+export const createExperimentResponseDesignSpecExperimentNameMaxFour = 100;
+export const createExperimentResponseDesignSpecDescriptionMaxFour = 2000;
+export const createExperimentResponseDesignSpecArmsItemArmNameMaxFour = 100;
+export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
+export const createExperimentResponseDesignSpecArmsItemNOutcomesDefaultTwo = 0;
+export const createExperimentResponseDesignSpecArmsMinFour = 2;
+
+export const createExperimentResponseDesignSpecArmsMaxFour = 10;
+export const createExperimentResponseDesignSpecContextsItemContextNameMaxTwo = 100;
+export const createExperimentResponseDesignSpecContextsItemContextDescriptionMaxSeven = 2000;
+export const createExperimentResponseDesignSpecContextsMaxSeven = 150;
 export const createExperimentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentResponsePowerAnalysesAnalysesMax = 150;
@@ -2286,7 +2804,7 @@ export const createExperimentResponse = zod
 							.describe(
 								"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 							),
-						experiment_type: zod.enum(["preassigned"]),
+						experiment_type: zod.enum(["freq_preassigned"]),
 						experiment_name: zod
 							.string()
 							.max(createExperimentResponseDesignSpecExperimentNameMax),
@@ -2424,7 +2942,7 @@ export const createExperimentResponse = zod
 							),
 					})
 					.describe(
-						"Use this type to randomly select and assign from existing participants at design time.",
+						"Use this type to randomly select and assign from existing participants at design time with frequentist A/B experiments.",
 					),
 				zod
 					.object({
@@ -2438,7 +2956,7 @@ export const createExperimentResponse = zod
 							.describe(
 								"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 							),
-						experiment_type: zod.enum(["online"]),
+						experiment_type: zod.enum(["freq_online"]),
 						experiment_name: zod
 							.string()
 							.max(createExperimentResponseDesignSpecExperimentNameMaxOne),
@@ -2576,10 +3094,460 @@ export const createExperimentResponse = zod
 							),
 					})
 					.describe(
-						"Use this type to randomly assign participants into arms during live experiment execution.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+						"Use this type to randomly assign participants into arms during live experiment execution with frequentist A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+					),
+				zod
+					.object({
+						participant_type: zod
+							.string()
+							.max(createExperimentResponseDesignSpecParticipantTypeMaxTwo),
+						experiment_id: zod
+							.string()
+							.or(zod.null())
+							.optional()
+							.describe(
+								"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+							),
+						experiment_type: zod.enum(["mab_online"]),
+						experiment_name: zod
+							.string()
+							.max(createExperimentResponseDesignSpecExperimentNameMaxTwo),
+						description: zod
+							.string()
+							.max(createExperimentResponseDesignSpecDescriptionMaxTwo),
+						start_date: zod.string().datetime({}),
+						end_date: zod.string().datetime({}),
+						arms: zod
+							.array(
+								zod
+									.object({
+										arm_id: zod
+											.string()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+											),
+										arm_name: zod
+											.string()
+											.max(
+												createExperimentResponseDesignSpecArmsItemArmNameMaxTwo,
+											),
+										arm_description: zod
+											.string()
+											.max(
+												createExperimentResponseDesignSpecArmsItemArmDescriptionMaxSeven,
+											)
+											.or(zod.null())
+											.optional(),
+										alpha_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Initial alpha parameter for Beta prior"),
+										beta_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Initial beta parameter for Beta prior"),
+										mu_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Initial mean parameter for Normal prior"),
+										sigma_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"Initial standard deviation parameter for Normal prior",
+											),
+										n_outcomes: zod
+											.number()
+											.optional()
+											.describe("The number of outcomes for this arm."),
+										alpha: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Updated alpha parameter for Beta prior"),
+										beta: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Updated beta parameter for Beta prior"),
+										mu: zod
+											.array(zod.number())
+											.or(zod.null())
+											.optional()
+											.describe("Updated mean vector for Normal prior"),
+										covariance: zod
+											.array(zod.array(zod.number()))
+											.or(zod.null())
+											.optional()
+											.describe("Updated covariance matrix for Normal prior"),
+										is_baseline: zod
+											.boolean()
+											.or(zod.null())
+											.describe(
+												"Whether this arm is the baseline/control arm for comparison.",
+											),
+									})
+									.describe(
+										"Describes an experiment arm for bandit experiments.",
+									),
+							)
+							.min(createExperimentResponseDesignSpecArmsMinTwo)
+							.max(createExperimentResponseDesignSpecArmsMaxTwo),
+						contexts: zod
+							.array(
+								zod
+									.object({
+										context_id: zod
+											.number()
+											.or(zod.null())
+											.describe(
+												"Unique identifier for the context, you should NOT set this when creating a new context.",
+											),
+										context_name: zod
+											.string()
+											.max(
+												createExperimentResponseDesignSpecContextsItemContextNameMax,
+											),
+										context_description: zod
+											.string()
+											.max(
+												createExperimentResponseDesignSpecContextsItemContextDescriptionMaxOne,
+											)
+											.or(zod.null())
+											.optional(),
+										value_type: zod
+											.enum(["binary", "real-valued"])
+											.optional()
+											.describe("Enum for the type of context."),
+									})
+									.describe("Pydantic model for context of the experiment."),
+							)
+							.max(createExperimentResponseDesignSpecContextsMaxOne)
+							.or(zod.null())
+							.optional()
+							.describe(
+								"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+							),
+						prior_type: zod
+							.enum(["beta", "normal"])
+							.optional()
+							.describe("Enum for the prior distribution of the arm."),
+						reward_type: zod
+							.enum(["binary", "real-valued"])
+							.optional()
+							.describe("Enum for the likelihood distribution of the reward."),
+					})
+					.describe(
+						"Use this type to randomly assign participants into arms during live experiment execution with MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+					),
+				zod
+					.object({
+						participant_type: zod
+							.string()
+							.max(createExperimentResponseDesignSpecParticipantTypeMaxThree),
+						experiment_id: zod
+							.string()
+							.or(zod.null())
+							.optional()
+							.describe(
+								"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+							),
+						experiment_type: zod.enum(["cmab_online"]),
+						experiment_name: zod
+							.string()
+							.max(createExperimentResponseDesignSpecExperimentNameMaxThree),
+						description: zod
+							.string()
+							.max(createExperimentResponseDesignSpecDescriptionMaxThree),
+						start_date: zod.string().datetime({}),
+						end_date: zod.string().datetime({}),
+						arms: zod
+							.array(
+								zod
+									.object({
+										arm_id: zod
+											.string()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+											),
+										arm_name: zod
+											.string()
+											.max(
+												createExperimentResponseDesignSpecArmsItemArmNameMaxThree,
+											),
+										arm_description: zod
+											.string()
+											.max(
+												createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnezero,
+											)
+											.or(zod.null())
+											.optional(),
+										alpha_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Initial alpha parameter for Beta prior"),
+										beta_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Initial beta parameter for Beta prior"),
+										mu_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Initial mean parameter for Normal prior"),
+										sigma_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"Initial standard deviation parameter for Normal prior",
+											),
+										n_outcomes: zod
+											.number()
+											.optional()
+											.describe("The number of outcomes for this arm."),
+										alpha: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Updated alpha parameter for Beta prior"),
+										beta: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Updated beta parameter for Beta prior"),
+										mu: zod
+											.array(zod.number())
+											.or(zod.null())
+											.optional()
+											.describe("Updated mean vector for Normal prior"),
+										covariance: zod
+											.array(zod.array(zod.number()))
+											.or(zod.null())
+											.optional()
+											.describe("Updated covariance matrix for Normal prior"),
+										is_baseline: zod
+											.boolean()
+											.or(zod.null())
+											.describe(
+												"Whether this arm is the baseline/control arm for comparison.",
+											),
+									})
+									.describe(
+										"Describes an experiment arm for bandit experiments.",
+									),
+							)
+							.min(createExperimentResponseDesignSpecArmsMinThree)
+							.max(createExperimentResponseDesignSpecArmsMaxThree),
+						contexts: zod
+							.array(
+								zod
+									.object({
+										context_id: zod
+											.number()
+											.or(zod.null())
+											.describe(
+												"Unique identifier for the context, you should NOT set this when creating a new context.",
+											),
+										context_name: zod
+											.string()
+											.max(
+												createExperimentResponseDesignSpecContextsItemContextNameMaxOne,
+											),
+										context_description: zod
+											.string()
+											.max(
+												createExperimentResponseDesignSpecContextsItemContextDescriptionMaxFour,
+											)
+											.or(zod.null())
+											.optional(),
+										value_type: zod
+											.enum(["binary", "real-valued"])
+											.optional()
+											.describe("Enum for the type of context."),
+									})
+									.describe("Pydantic model for context of the experiment."),
+							)
+							.max(createExperimentResponseDesignSpecContextsMaxFour)
+							.or(zod.null())
+							.optional()
+							.describe(
+								"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+							),
+						prior_type: zod
+							.enum(["beta", "normal"])
+							.optional()
+							.describe("Enum for the prior distribution of the arm."),
+						reward_type: zod
+							.enum(["binary", "real-valued"])
+							.optional()
+							.describe("Enum for the likelihood distribution of the reward."),
+					})
+					.describe(
+						"Use this type to randomly assign participants into arms during live experiment execution with contextual MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+					),
+				zod
+					.object({
+						participant_type: zod
+							.string()
+							.max(createExperimentResponseDesignSpecParticipantTypeMaxFour),
+						experiment_id: zod
+							.string()
+							.or(zod.null())
+							.optional()
+							.describe(
+								"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+							),
+						experiment_type: zod.enum(["bayes_ab_online"]),
+						experiment_name: zod
+							.string()
+							.max(createExperimentResponseDesignSpecExperimentNameMaxFour),
+						description: zod
+							.string()
+							.max(createExperimentResponseDesignSpecDescriptionMaxFour),
+						start_date: zod.string().datetime({}),
+						end_date: zod.string().datetime({}),
+						arms: zod
+							.array(
+								zod
+									.object({
+										arm_id: zod
+											.string()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+											),
+										arm_name: zod
+											.string()
+											.max(
+												createExperimentResponseDesignSpecArmsItemArmNameMaxFour,
+											),
+										arm_description: zod
+											.string()
+											.max(
+												createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnethree,
+											)
+											.or(zod.null())
+											.optional(),
+										alpha_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Initial alpha parameter for Beta prior"),
+										beta_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Initial beta parameter for Beta prior"),
+										mu_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Initial mean parameter for Normal prior"),
+										sigma_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"Initial standard deviation parameter for Normal prior",
+											),
+										n_outcomes: zod
+											.number()
+											.optional()
+											.describe("The number of outcomes for this arm."),
+										alpha: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Updated alpha parameter for Beta prior"),
+										beta: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Updated beta parameter for Beta prior"),
+										mu: zod
+											.array(zod.number())
+											.or(zod.null())
+											.optional()
+											.describe("Updated mean vector for Normal prior"),
+										covariance: zod
+											.array(zod.array(zod.number()))
+											.or(zod.null())
+											.optional()
+											.describe("Updated covariance matrix for Normal prior"),
+										is_baseline: zod
+											.boolean()
+											.or(zod.null())
+											.describe(
+												"Whether this arm is the baseline/control arm for comparison.",
+											),
+									})
+									.describe(
+										"Describes an experiment arm for bandit experiments.",
+									),
+							)
+							.min(createExperimentResponseDesignSpecArmsMinFour)
+							.max(createExperimentResponseDesignSpecArmsMaxFour),
+						contexts: zod
+							.array(
+								zod
+									.object({
+										context_id: zod
+											.number()
+											.or(zod.null())
+											.describe(
+												"Unique identifier for the context, you should NOT set this when creating a new context.",
+											),
+										context_name: zod
+											.string()
+											.max(
+												createExperimentResponseDesignSpecContextsItemContextNameMaxTwo,
+											),
+										context_description: zod
+											.string()
+											.max(
+												createExperimentResponseDesignSpecContextsItemContextDescriptionMaxSeven,
+											)
+											.or(zod.null())
+											.optional(),
+										value_type: zod
+											.enum(["binary", "real-valued"])
+											.optional()
+											.describe("Enum for the type of context."),
+									})
+									.describe("Pydantic model for context of the experiment."),
+							)
+							.max(createExperimentResponseDesignSpecContextsMaxSeven)
+							.or(zod.null())
+							.optional()
+							.describe(
+								"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+							),
+						prior_type: zod
+							.enum(["beta", "normal"])
+							.optional()
+							.describe("Enum for the prior distribution of the arm."),
+						reward_type: zod
+							.enum(["binary", "real-valued"])
+							.optional()
+							.describe("Enum for the likelihood distribution of the reward."),
+					})
+					.describe(
+						"Use this type to randomly assign participants into arms during live experiment execution with Bayesian A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
 					),
 			])
-			.describe("Concrete type of experiment to run."),
+			.describe("The type of assignment and experiment design."),
 		power_analyses: zod
 			.object({
 				analyses: zod
@@ -2789,7 +3757,8 @@ export const createExperimentResponse = zod
 						"For each arm, the number of participants assigned. TODO: make required once development has stabilized. May be None if unknown due to persisting prior versions of an AssignSummary.",
 					),
 			})
-			.describe("Key pieces of an AssignResponse without the assignments."),
+			.describe("Key pieces of an AssignResponse without the assignments.")
+			.or(zod.null()),
 		webhooks: zod
 			.array(zod.string())
 			.default(createExperimentResponseWebhooksDefault)
@@ -2881,11 +3850,6 @@ export const analyzeExperimentResponse = zod
 										)
 										.or(zod.null())
 										.optional(),
-									is_baseline: zod
-										.boolean()
-										.describe(
-											"Whether this arm is the baseline/control arm for comparison.",
-										),
 									estimate: zod
 										.number()
 										.describe(
@@ -2912,6 +3876,11 @@ export const analyzeExperimentResponse = zod
 										.number()
 										.describe(
 											"The number of participants assigned to this arm with missing values (NaNs) for this metric. These rows are excluded from the analysis.",
+										),
+									is_baseline: zod
+										.boolean()
+										.describe(
+											"Whether this arm is the baseline/control arm for comparison.",
 										),
 								}),
 							)
@@ -3031,6 +4000,42 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshDe
 export const listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMinOne = 0;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMaxOne = 1;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxTwo = 100;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxTwo = 100;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxTwo = 2000;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxTwo = 100;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxSeven = 2000;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemNOutcomesDefault = 0;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinTwo = 2;
+
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxTwo = 10;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextNameMax = 100;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextDescriptionMaxOne = 2000;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxOne = 150;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxThree = 100;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxThree = 100;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxThree = 2000;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxThree = 100;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOnezero = 2000;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemNOutcomesDefaultOne = 0;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinThree = 2;
+
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxThree = 10;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextNameMaxOne = 100;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextDescriptionMaxFour = 2000;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxFour = 150;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxFour = 100;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxFour = 100;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxFour = 2000;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxFour = 100;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemNOutcomesDefaultTwo = 0;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinFour = 2;
+
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxFour = 10;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextNameMaxTwo = 100;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextDescriptionMaxSeven = 2000;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxSeven = 150;
 export const listOrganizationExperimentsResponseItemsItemPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const listOrganizationExperimentsResponseItemsItemPowerAnalysesAnalysesMax = 150;
@@ -3080,7 +4085,7 @@ export const listOrganizationExperimentsResponse = zod.object({
 									.describe(
 										"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 									),
-								experiment_type: zod.enum(["preassigned"]),
+								experiment_type: zod.enum(["freq_preassigned"]),
 								experiment_name: zod
 									.string()
 									.max(
@@ -3254,7 +4259,7 @@ export const listOrganizationExperimentsResponse = zod.object({
 									),
 							})
 							.describe(
-								"Use this type to randomly select and assign from existing participants at design time.",
+								"Use this type to randomly select and assign from existing participants at design time with frequentist A/B experiments.",
 							),
 						zod
 							.object({
@@ -3270,7 +4275,7 @@ export const listOrganizationExperimentsResponse = zod.object({
 									.describe(
 										"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 									),
-								experiment_type: zod.enum(["online"]),
+								experiment_type: zod.enum(["freq_online"]),
 								experiment_name: zod
 									.string()
 									.max(
@@ -3444,10 +4449,514 @@ export const listOrganizationExperimentsResponse = zod.object({
 									),
 							})
 							.describe(
-								"Use this type to randomly assign participants into arms during live experiment execution.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+								"Use this type to randomly assign participants into arms during live experiment execution with frequentist A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+							),
+						zod
+							.object({
+								participant_type: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxTwo,
+									),
+								experiment_id: zod
+									.string()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+									),
+								experiment_type: zod.enum(["mab_online"]),
+								experiment_name: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxTwo,
+									),
+								description: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxTwo,
+									),
+								start_date: zod.string().datetime({}),
+								end_date: zod.string().datetime({}),
+								arms: zod
+									.array(
+										zod
+											.object({
+												arm_id: zod
+													.string()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+													),
+												arm_name: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxTwo,
+													),
+												arm_description: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxSeven,
+													)
+													.or(zod.null())
+													.optional(),
+												alpha_init: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe("Initial alpha parameter for Beta prior"),
+												beta_init: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe("Initial beta parameter for Beta prior"),
+												mu_init: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe("Initial mean parameter for Normal prior"),
+												sigma_init: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Initial standard deviation parameter for Normal prior",
+													),
+												n_outcomes: zod
+													.number()
+													.optional()
+													.describe("The number of outcomes for this arm."),
+												alpha: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe("Updated alpha parameter for Beta prior"),
+												beta: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe("Updated beta parameter for Beta prior"),
+												mu: zod
+													.array(zod.number())
+													.or(zod.null())
+													.optional()
+													.describe("Updated mean vector for Normal prior"),
+												covariance: zod
+													.array(zod.array(zod.number()))
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Updated covariance matrix for Normal prior",
+													),
+												is_baseline: zod
+													.boolean()
+													.or(zod.null())
+													.describe(
+														"Whether this arm is the baseline/control arm for comparison.",
+													),
+											})
+											.describe(
+												"Describes an experiment arm for bandit experiments.",
+											),
+									)
+									.min(
+										listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinTwo,
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxTwo,
+									),
+								contexts: zod
+									.array(
+										zod
+											.object({
+												context_id: zod
+													.number()
+													.or(zod.null())
+													.describe(
+														"Unique identifier for the context, you should NOT set this when creating a new context.",
+													),
+												context_name: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextNameMax,
+													),
+												context_description: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextDescriptionMaxOne,
+													)
+													.or(zod.null())
+													.optional(),
+												value_type: zod
+													.enum(["binary", "real-valued"])
+													.optional()
+													.describe("Enum for the type of context."),
+											})
+											.describe(
+												"Pydantic model for context of the experiment.",
+											),
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxOne,
+									)
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+									),
+								prior_type: zod
+									.enum(["beta", "normal"])
+									.optional()
+									.describe("Enum for the prior distribution of the arm."),
+								reward_type: zod
+									.enum(["binary", "real-valued"])
+									.optional()
+									.describe(
+										"Enum for the likelihood distribution of the reward.",
+									),
+							})
+							.describe(
+								"Use this type to randomly assign participants into arms during live experiment execution with MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+							),
+						zod
+							.object({
+								participant_type: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxThree,
+									),
+								experiment_id: zod
+									.string()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+									),
+								experiment_type: zod.enum(["cmab_online"]),
+								experiment_name: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxThree,
+									),
+								description: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxThree,
+									),
+								start_date: zod.string().datetime({}),
+								end_date: zod.string().datetime({}),
+								arms: zod
+									.array(
+										zod
+											.object({
+												arm_id: zod
+													.string()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+													),
+												arm_name: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxThree,
+													),
+												arm_description: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOnezero,
+													)
+													.or(zod.null())
+													.optional(),
+												alpha_init: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe("Initial alpha parameter for Beta prior"),
+												beta_init: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe("Initial beta parameter for Beta prior"),
+												mu_init: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe("Initial mean parameter for Normal prior"),
+												sigma_init: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Initial standard deviation parameter for Normal prior",
+													),
+												n_outcomes: zod
+													.number()
+													.optional()
+													.describe("The number of outcomes for this arm."),
+												alpha: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe("Updated alpha parameter for Beta prior"),
+												beta: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe("Updated beta parameter for Beta prior"),
+												mu: zod
+													.array(zod.number())
+													.or(zod.null())
+													.optional()
+													.describe("Updated mean vector for Normal prior"),
+												covariance: zod
+													.array(zod.array(zod.number()))
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Updated covariance matrix for Normal prior",
+													),
+												is_baseline: zod
+													.boolean()
+													.or(zod.null())
+													.describe(
+														"Whether this arm is the baseline/control arm for comparison.",
+													),
+											})
+											.describe(
+												"Describes an experiment arm for bandit experiments.",
+											),
+									)
+									.min(
+										listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinThree,
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxThree,
+									),
+								contexts: zod
+									.array(
+										zod
+											.object({
+												context_id: zod
+													.number()
+													.or(zod.null())
+													.describe(
+														"Unique identifier for the context, you should NOT set this when creating a new context.",
+													),
+												context_name: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextNameMaxOne,
+													),
+												context_description: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextDescriptionMaxFour,
+													)
+													.or(zod.null())
+													.optional(),
+												value_type: zod
+													.enum(["binary", "real-valued"])
+													.optional()
+													.describe("Enum for the type of context."),
+											})
+											.describe(
+												"Pydantic model for context of the experiment.",
+											),
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxFour,
+									)
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+									),
+								prior_type: zod
+									.enum(["beta", "normal"])
+									.optional()
+									.describe("Enum for the prior distribution of the arm."),
+								reward_type: zod
+									.enum(["binary", "real-valued"])
+									.optional()
+									.describe(
+										"Enum for the likelihood distribution of the reward.",
+									),
+							})
+							.describe(
+								"Use this type to randomly assign participants into arms during live experiment execution with contextual MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+							),
+						zod
+							.object({
+								participant_type: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxFour,
+									),
+								experiment_id: zod
+									.string()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+									),
+								experiment_type: zod.enum(["bayes_ab_online"]),
+								experiment_name: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxFour,
+									),
+								description: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxFour,
+									),
+								start_date: zod.string().datetime({}),
+								end_date: zod.string().datetime({}),
+								arms: zod
+									.array(
+										zod
+											.object({
+												arm_id: zod
+													.string()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+													),
+												arm_name: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxFour,
+													),
+												arm_description: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOnethree,
+													)
+													.or(zod.null())
+													.optional(),
+												alpha_init: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe("Initial alpha parameter for Beta prior"),
+												beta_init: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe("Initial beta parameter for Beta prior"),
+												mu_init: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe("Initial mean parameter for Normal prior"),
+												sigma_init: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Initial standard deviation parameter for Normal prior",
+													),
+												n_outcomes: zod
+													.number()
+													.optional()
+													.describe("The number of outcomes for this arm."),
+												alpha: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe("Updated alpha parameter for Beta prior"),
+												beta: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe("Updated beta parameter for Beta prior"),
+												mu: zod
+													.array(zod.number())
+													.or(zod.null())
+													.optional()
+													.describe("Updated mean vector for Normal prior"),
+												covariance: zod
+													.array(zod.array(zod.number()))
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Updated covariance matrix for Normal prior",
+													),
+												is_baseline: zod
+													.boolean()
+													.or(zod.null())
+													.describe(
+														"Whether this arm is the baseline/control arm for comparison.",
+													),
+											})
+											.describe(
+												"Describes an experiment arm for bandit experiments.",
+											),
+									)
+									.min(
+										listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinFour,
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxFour,
+									),
+								contexts: zod
+									.array(
+										zod
+											.object({
+												context_id: zod
+													.number()
+													.or(zod.null())
+													.describe(
+														"Unique identifier for the context, you should NOT set this when creating a new context.",
+													),
+												context_name: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextNameMaxTwo,
+													),
+												context_description: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextDescriptionMaxSeven,
+													)
+													.or(zod.null())
+													.optional(),
+												value_type: zod
+													.enum(["binary", "real-valued"])
+													.optional()
+													.describe("Enum for the type of context."),
+											})
+											.describe(
+												"Pydantic model for context of the experiment.",
+											),
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxSeven,
+									)
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+									),
+								prior_type: zod
+									.enum(["beta", "normal"])
+									.optional()
+									.describe("Enum for the prior distribution of the arm."),
+								reward_type: zod
+									.enum(["binary", "real-valued"])
+									.optional()
+									.describe(
+										"Enum for the likelihood distribution of the reward.",
+									),
+							})
+							.describe(
+								"Use this type to randomly assign participants into arms during live experiment execution with Bayesian A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
 							),
 					])
-					.describe("Concrete type of experiment to run."),
+					.describe("The type of assignment and experiment design."),
 				power_analyses: zod
 					.object({
 						analyses: zod
@@ -3667,7 +5176,8 @@ export const listOrganizationExperimentsResponse = zod.object({
 								"For each arm, the number of participants assigned. TODO: make required once development has stabilized. May be None if unknown due to persisting prior versions of an AssignSummary.",
 							),
 					})
-					.describe("Key pieces of an AssignResponse without the assignments."),
+					.describe("Key pieces of an AssignResponse without the assignments.")
+					.or(zod.null()),
 				webhooks: zod
 					.array(zod.string())
 					.default(listOrganizationExperimentsResponseItemsItemWebhooksDefault)
@@ -3746,6 +5256,42 @@ export const getExperimentResponseDesignSpecFstatThreshDefaultOne = 0.6;
 export const getExperimentResponseDesignSpecFstatThreshMinOne = 0;
 
 export const getExperimentResponseDesignSpecFstatThreshMaxOne = 1;
+export const getExperimentResponseDesignSpecParticipantTypeMaxTwo = 100;
+export const getExperimentResponseDesignSpecExperimentNameMaxTwo = 100;
+export const getExperimentResponseDesignSpecDescriptionMaxTwo = 2000;
+export const getExperimentResponseDesignSpecArmsItemArmNameMaxTwo = 100;
+export const getExperimentResponseDesignSpecArmsItemArmDescriptionMaxSeven = 2000;
+export const getExperimentResponseDesignSpecArmsItemNOutcomesDefault = 0;
+export const getExperimentResponseDesignSpecArmsMinTwo = 2;
+
+export const getExperimentResponseDesignSpecArmsMaxTwo = 10;
+export const getExperimentResponseDesignSpecContextsItemContextNameMax = 100;
+export const getExperimentResponseDesignSpecContextsItemContextDescriptionMaxOne = 2000;
+export const getExperimentResponseDesignSpecContextsMaxOne = 150;
+export const getExperimentResponseDesignSpecParticipantTypeMaxThree = 100;
+export const getExperimentResponseDesignSpecExperimentNameMaxThree = 100;
+export const getExperimentResponseDesignSpecDescriptionMaxThree = 2000;
+export const getExperimentResponseDesignSpecArmsItemArmNameMaxThree = 100;
+export const getExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnezero = 2000;
+export const getExperimentResponseDesignSpecArmsItemNOutcomesDefaultOne = 0;
+export const getExperimentResponseDesignSpecArmsMinThree = 2;
+
+export const getExperimentResponseDesignSpecArmsMaxThree = 10;
+export const getExperimentResponseDesignSpecContextsItemContextNameMaxOne = 100;
+export const getExperimentResponseDesignSpecContextsItemContextDescriptionMaxFour = 2000;
+export const getExperimentResponseDesignSpecContextsMaxFour = 150;
+export const getExperimentResponseDesignSpecParticipantTypeMaxFour = 100;
+export const getExperimentResponseDesignSpecExperimentNameMaxFour = 100;
+export const getExperimentResponseDesignSpecDescriptionMaxFour = 2000;
+export const getExperimentResponseDesignSpecArmsItemArmNameMaxFour = 100;
+export const getExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
+export const getExperimentResponseDesignSpecArmsItemNOutcomesDefaultTwo = 0;
+export const getExperimentResponseDesignSpecArmsMinFour = 2;
+
+export const getExperimentResponseDesignSpecArmsMaxFour = 10;
+export const getExperimentResponseDesignSpecContextsItemContextNameMaxTwo = 100;
+export const getExperimentResponseDesignSpecContextsItemContextDescriptionMaxSeven = 2000;
+export const getExperimentResponseDesignSpecContextsMaxSeven = 150;
 export const getExperimentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentResponsePowerAnalysesAnalysesMax = 150;
@@ -3791,7 +5337,7 @@ export const getExperimentResponse = zod
 							.describe(
 								"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 							),
-						experiment_type: zod.enum(["preassigned"]),
+						experiment_type: zod.enum(["freq_preassigned"]),
 						experiment_name: zod
 							.string()
 							.max(getExperimentResponseDesignSpecExperimentNameMax),
@@ -3927,7 +5473,7 @@ export const getExperimentResponse = zod
 							),
 					})
 					.describe(
-						"Use this type to randomly select and assign from existing participants at design time.",
+						"Use this type to randomly select and assign from existing participants at design time with frequentist A/B experiments.",
 					),
 				zod
 					.object({
@@ -3941,7 +5487,7 @@ export const getExperimentResponse = zod
 							.describe(
 								"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 							),
-						experiment_type: zod.enum(["online"]),
+						experiment_type: zod.enum(["freq_online"]),
 						experiment_name: zod
 							.string()
 							.max(getExperimentResponseDesignSpecExperimentNameMaxOne),
@@ -4079,10 +5625,460 @@ export const getExperimentResponse = zod
 							),
 					})
 					.describe(
-						"Use this type to randomly assign participants into arms during live experiment execution.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+						"Use this type to randomly assign participants into arms during live experiment execution with frequentist A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+					),
+				zod
+					.object({
+						participant_type: zod
+							.string()
+							.max(getExperimentResponseDesignSpecParticipantTypeMaxTwo),
+						experiment_id: zod
+							.string()
+							.or(zod.null())
+							.optional()
+							.describe(
+								"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+							),
+						experiment_type: zod.enum(["mab_online"]),
+						experiment_name: zod
+							.string()
+							.max(getExperimentResponseDesignSpecExperimentNameMaxTwo),
+						description: zod
+							.string()
+							.max(getExperimentResponseDesignSpecDescriptionMaxTwo),
+						start_date: zod.string().datetime({}),
+						end_date: zod.string().datetime({}),
+						arms: zod
+							.array(
+								zod
+									.object({
+										arm_id: zod
+											.string()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+											),
+										arm_name: zod
+											.string()
+											.max(
+												getExperimentResponseDesignSpecArmsItemArmNameMaxTwo,
+											),
+										arm_description: zod
+											.string()
+											.max(
+												getExperimentResponseDesignSpecArmsItemArmDescriptionMaxSeven,
+											)
+											.or(zod.null())
+											.optional(),
+										alpha_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Initial alpha parameter for Beta prior"),
+										beta_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Initial beta parameter for Beta prior"),
+										mu_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Initial mean parameter for Normal prior"),
+										sigma_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"Initial standard deviation parameter for Normal prior",
+											),
+										n_outcomes: zod
+											.number()
+											.optional()
+											.describe("The number of outcomes for this arm."),
+										alpha: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Updated alpha parameter for Beta prior"),
+										beta: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Updated beta parameter for Beta prior"),
+										mu: zod
+											.array(zod.number())
+											.or(zod.null())
+											.optional()
+											.describe("Updated mean vector for Normal prior"),
+										covariance: zod
+											.array(zod.array(zod.number()))
+											.or(zod.null())
+											.optional()
+											.describe("Updated covariance matrix for Normal prior"),
+										is_baseline: zod
+											.boolean()
+											.or(zod.null())
+											.describe(
+												"Whether this arm is the baseline/control arm for comparison.",
+											),
+									})
+									.describe(
+										"Describes an experiment arm for bandit experiments.",
+									),
+							)
+							.min(getExperimentResponseDesignSpecArmsMinTwo)
+							.max(getExperimentResponseDesignSpecArmsMaxTwo),
+						contexts: zod
+							.array(
+								zod
+									.object({
+										context_id: zod
+											.number()
+											.or(zod.null())
+											.describe(
+												"Unique identifier for the context, you should NOT set this when creating a new context.",
+											),
+										context_name: zod
+											.string()
+											.max(
+												getExperimentResponseDesignSpecContextsItemContextNameMax,
+											),
+										context_description: zod
+											.string()
+											.max(
+												getExperimentResponseDesignSpecContextsItemContextDescriptionMaxOne,
+											)
+											.or(zod.null())
+											.optional(),
+										value_type: zod
+											.enum(["binary", "real-valued"])
+											.optional()
+											.describe("Enum for the type of context."),
+									})
+									.describe("Pydantic model for context of the experiment."),
+							)
+							.max(getExperimentResponseDesignSpecContextsMaxOne)
+							.or(zod.null())
+							.optional()
+							.describe(
+								"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+							),
+						prior_type: zod
+							.enum(["beta", "normal"])
+							.optional()
+							.describe("Enum for the prior distribution of the arm."),
+						reward_type: zod
+							.enum(["binary", "real-valued"])
+							.optional()
+							.describe("Enum for the likelihood distribution of the reward."),
+					})
+					.describe(
+						"Use this type to randomly assign participants into arms during live experiment execution with MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+					),
+				zod
+					.object({
+						participant_type: zod
+							.string()
+							.max(getExperimentResponseDesignSpecParticipantTypeMaxThree),
+						experiment_id: zod
+							.string()
+							.or(zod.null())
+							.optional()
+							.describe(
+								"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+							),
+						experiment_type: zod.enum(["cmab_online"]),
+						experiment_name: zod
+							.string()
+							.max(getExperimentResponseDesignSpecExperimentNameMaxThree),
+						description: zod
+							.string()
+							.max(getExperimentResponseDesignSpecDescriptionMaxThree),
+						start_date: zod.string().datetime({}),
+						end_date: zod.string().datetime({}),
+						arms: zod
+							.array(
+								zod
+									.object({
+										arm_id: zod
+											.string()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+											),
+										arm_name: zod
+											.string()
+											.max(
+												getExperimentResponseDesignSpecArmsItemArmNameMaxThree,
+											),
+										arm_description: zod
+											.string()
+											.max(
+												getExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnezero,
+											)
+											.or(zod.null())
+											.optional(),
+										alpha_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Initial alpha parameter for Beta prior"),
+										beta_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Initial beta parameter for Beta prior"),
+										mu_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Initial mean parameter for Normal prior"),
+										sigma_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"Initial standard deviation parameter for Normal prior",
+											),
+										n_outcomes: zod
+											.number()
+											.optional()
+											.describe("The number of outcomes for this arm."),
+										alpha: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Updated alpha parameter for Beta prior"),
+										beta: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Updated beta parameter for Beta prior"),
+										mu: zod
+											.array(zod.number())
+											.or(zod.null())
+											.optional()
+											.describe("Updated mean vector for Normal prior"),
+										covariance: zod
+											.array(zod.array(zod.number()))
+											.or(zod.null())
+											.optional()
+											.describe("Updated covariance matrix for Normal prior"),
+										is_baseline: zod
+											.boolean()
+											.or(zod.null())
+											.describe(
+												"Whether this arm is the baseline/control arm for comparison.",
+											),
+									})
+									.describe(
+										"Describes an experiment arm for bandit experiments.",
+									),
+							)
+							.min(getExperimentResponseDesignSpecArmsMinThree)
+							.max(getExperimentResponseDesignSpecArmsMaxThree),
+						contexts: zod
+							.array(
+								zod
+									.object({
+										context_id: zod
+											.number()
+											.or(zod.null())
+											.describe(
+												"Unique identifier for the context, you should NOT set this when creating a new context.",
+											),
+										context_name: zod
+											.string()
+											.max(
+												getExperimentResponseDesignSpecContextsItemContextNameMaxOne,
+											),
+										context_description: zod
+											.string()
+											.max(
+												getExperimentResponseDesignSpecContextsItemContextDescriptionMaxFour,
+											)
+											.or(zod.null())
+											.optional(),
+										value_type: zod
+											.enum(["binary", "real-valued"])
+											.optional()
+											.describe("Enum for the type of context."),
+									})
+									.describe("Pydantic model for context of the experiment."),
+							)
+							.max(getExperimentResponseDesignSpecContextsMaxFour)
+							.or(zod.null())
+							.optional()
+							.describe(
+								"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+							),
+						prior_type: zod
+							.enum(["beta", "normal"])
+							.optional()
+							.describe("Enum for the prior distribution of the arm."),
+						reward_type: zod
+							.enum(["binary", "real-valued"])
+							.optional()
+							.describe("Enum for the likelihood distribution of the reward."),
+					})
+					.describe(
+						"Use this type to randomly assign participants into arms during live experiment execution with contextual MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+					),
+				zod
+					.object({
+						participant_type: zod
+							.string()
+							.max(getExperimentResponseDesignSpecParticipantTypeMaxFour),
+						experiment_id: zod
+							.string()
+							.or(zod.null())
+							.optional()
+							.describe(
+								"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+							),
+						experiment_type: zod.enum(["bayes_ab_online"]),
+						experiment_name: zod
+							.string()
+							.max(getExperimentResponseDesignSpecExperimentNameMaxFour),
+						description: zod
+							.string()
+							.max(getExperimentResponseDesignSpecDescriptionMaxFour),
+						start_date: zod.string().datetime({}),
+						end_date: zod.string().datetime({}),
+						arms: zod
+							.array(
+								zod
+									.object({
+										arm_id: zod
+											.string()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+											),
+										arm_name: zod
+											.string()
+											.max(
+												getExperimentResponseDesignSpecArmsItemArmNameMaxFour,
+											),
+										arm_description: zod
+											.string()
+											.max(
+												getExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnethree,
+											)
+											.or(zod.null())
+											.optional(),
+										alpha_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Initial alpha parameter for Beta prior"),
+										beta_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Initial beta parameter for Beta prior"),
+										mu_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Initial mean parameter for Normal prior"),
+										sigma_init: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"Initial standard deviation parameter for Normal prior",
+											),
+										n_outcomes: zod
+											.number()
+											.optional()
+											.describe("The number of outcomes for this arm."),
+										alpha: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Updated alpha parameter for Beta prior"),
+										beta: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe("Updated beta parameter for Beta prior"),
+										mu: zod
+											.array(zod.number())
+											.or(zod.null())
+											.optional()
+											.describe("Updated mean vector for Normal prior"),
+										covariance: zod
+											.array(zod.array(zod.number()))
+											.or(zod.null())
+											.optional()
+											.describe("Updated covariance matrix for Normal prior"),
+										is_baseline: zod
+											.boolean()
+											.or(zod.null())
+											.describe(
+												"Whether this arm is the baseline/control arm for comparison.",
+											),
+									})
+									.describe(
+										"Describes an experiment arm for bandit experiments.",
+									),
+							)
+							.min(getExperimentResponseDesignSpecArmsMinFour)
+							.max(getExperimentResponseDesignSpecArmsMaxFour),
+						contexts: zod
+							.array(
+								zod
+									.object({
+										context_id: zod
+											.number()
+											.or(zod.null())
+											.describe(
+												"Unique identifier for the context, you should NOT set this when creating a new context.",
+											),
+										context_name: zod
+											.string()
+											.max(
+												getExperimentResponseDesignSpecContextsItemContextNameMaxTwo,
+											),
+										context_description: zod
+											.string()
+											.max(
+												getExperimentResponseDesignSpecContextsItemContextDescriptionMaxSeven,
+											)
+											.or(zod.null())
+											.optional(),
+										value_type: zod
+											.enum(["binary", "real-valued"])
+											.optional()
+											.describe("Enum for the type of context."),
+									})
+									.describe("Pydantic model for context of the experiment."),
+							)
+							.max(getExperimentResponseDesignSpecContextsMaxSeven)
+							.or(zod.null())
+							.optional()
+							.describe(
+								"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+							),
+						prior_type: zod
+							.enum(["beta", "normal"])
+							.optional()
+							.describe("Enum for the prior distribution of the arm."),
+						reward_type: zod
+							.enum(["binary", "real-valued"])
+							.optional()
+							.describe("Enum for the likelihood distribution of the reward."),
+					})
+					.describe(
+						"Use this type to randomly assign participants into arms during live experiment execution with Bayesian A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
 					),
 			])
-			.describe("Concrete type of experiment to run."),
+			.describe("The type of assignment and experiment design."),
 		power_analyses: zod
 			.object({
 				analyses: zod
@@ -4292,7 +6288,8 @@ export const getExperimentResponse = zod
 						"For each arm, the number of participants assigned. TODO: make required once development has stabilized. May be None if unknown due to persisting prior versions of an AssignSummary.",
 					),
 			})
-			.describe("Key pieces of an AssignResponse without the assignments."),
+			.describe("Key pieces of an AssignResponse without the assignments.")
+			.or(zod.null()),
 		webhooks: zod
 			.array(zod.string())
 			.default(getExperimentResponseWebhooksDefault)
@@ -4300,7 +6297,9 @@ export const getExperimentResponse = zod
 				"List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed.",
 			),
 	})
-	.describe("Representation of our stored Experiment information.");
+	.describe(
+		"An experiment configuration capturing all info at design time when assignment was made.",
+	);
 
 /**
  * Deletes the experiment with the specified ID.
@@ -4324,6 +6323,9 @@ export const getExperimentAssignmentsResponseAssignmentsItemArmNameMax = 100;
 export const getExperimentAssignmentsResponseAssignmentsItemStrataItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentAssignmentsResponseAssignmentsItemStrataMaxOne = 150;
+export const getExperimentAssignmentsResponseAssignmentsItemContextValuesDefault =
+	[];
+export const getExperimentAssignmentsResponseAssignmentsItemContextValuesMax = 10;
 
 export const getExperimentAssignmentsResponse = zod
 	.object({
@@ -4366,15 +6368,19 @@ export const getExperimentAssignmentsResponse = zod
 		assignments: zod.array(
 			zod
 				.object({
-					participant_id: zod
-						.string()
-						.max(
-							getExperimentAssignmentsResponseAssignmentsItemParticipantIdMax,
-						),
 					arm_id: zod
 						.string()
 						.describe(
 							"ID of the arm this participant was assigned to. Same as Arm.arm_id.",
+						),
+					participant_id: zod
+						.string()
+						.max(
+							getExperimentAssignmentsResponseAssignmentsItemParticipantIdMax,
+						)
+						.optional()
+						.describe(
+							"Unique identifier for the participant. This is the primary key for the participant in the data warehouse.",
 						),
 					arm_name: zod
 						.string()
@@ -4409,10 +6415,44 @@ export const getExperimentAssignmentsResponse = zod
 						.describe(
 							"List of properties and their values for this participant used for stratification or tracking metrics. If stratification is not used, this will be None.",
 						),
+					draw_id: zod
+						.string()
+						.or(zod.null())
+						.optional()
+						.describe("Unique identifier for the draw."),
+					observed_at: zod
+						.string()
+						.datetime({})
+						.or(zod.null())
+						.optional()
+						.describe("The date and time the outcome was recorded."),
+					outcome: zod
+						.number()
+						.or(zod.null())
+						.optional()
+						.describe("The observed outcome for this assignment."),
+					context_values: zod
+						.array(
+							zod
+								.object({
+									context_id: zod
+										.number()
+										.describe("Unique identifier for the context."),
+									context_value: zod.number().describe("Value of the context"),
+								})
+								.describe("Pydantic model for a context input"),
+						)
+						.max(
+							getExperimentAssignmentsResponseAssignmentsItemContextValuesMax,
+						)
+						.default(
+							getExperimentAssignmentsResponseAssignmentsItemContextValuesDefault,
+						)
+						.describe(
+							"List of context values for this assignment. If no contexts are used, this will be None.",
+						),
 				})
-				.describe(
-					"Describes treatment assignment for an experiment participant.",
-				),
+				.describe("Base class for treatment assignment in experiments."),
 		),
 	})
 	.describe(
@@ -4457,6 +6497,9 @@ export const getExperimentAssignmentForParticipantResponseAssignmentArmNameMax =
 export const getExperimentAssignmentForParticipantResponseAssignmentStrataItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentAssignmentForParticipantResponseAssignmentStrataMaxOne = 150;
+export const getExperimentAssignmentForParticipantResponseAssignmentContextValuesDefault =
+	[];
+export const getExperimentAssignmentForParticipantResponseAssignmentContextValuesMax = 10;
 
 export const getExperimentAssignmentForParticipantResponse = zod
 	.object({
@@ -4464,15 +6507,19 @@ export const getExperimentAssignmentForParticipantResponse = zod
 		participant_id: zod.string(),
 		assignment: zod
 			.object({
-				participant_id: zod
-					.string()
-					.max(
-						getExperimentAssignmentForParticipantResponseAssignmentParticipantIdMax,
-					),
 				arm_id: zod
 					.string()
 					.describe(
 						"ID of the arm this participant was assigned to. Same as Arm.arm_id.",
+					),
+				participant_id: zod
+					.string()
+					.max(
+						getExperimentAssignmentForParticipantResponseAssignmentParticipantIdMax,
+					)
+					.optional()
+					.describe(
+						"Unique identifier for the participant. This is the primary key for the participant in the data warehouse.",
 					),
 				arm_name: zod
 					.string()
@@ -4511,8 +6558,44 @@ export const getExperimentAssignmentForParticipantResponse = zod
 					.describe(
 						"List of properties and their values for this participant used for stratification or tracking metrics. If stratification is not used, this will be None.",
 					),
+				draw_id: zod
+					.string()
+					.or(zod.null())
+					.optional()
+					.describe("Unique identifier for the draw."),
+				observed_at: zod
+					.string()
+					.datetime({})
+					.or(zod.null())
+					.optional()
+					.describe("The date and time the outcome was recorded."),
+				outcome: zod
+					.number()
+					.or(zod.null())
+					.optional()
+					.describe("The observed outcome for this assignment."),
+				context_values: zod
+					.array(
+						zod
+							.object({
+								context_id: zod
+									.number()
+									.describe("Unique identifier for the context."),
+								context_value: zod.number().describe("Value of the context"),
+							})
+							.describe("Pydantic model for a context input"),
+					)
+					.max(
+						getExperimentAssignmentForParticipantResponseAssignmentContextValuesMax,
+					)
+					.default(
+						getExperimentAssignmentForParticipantResponseAssignmentContextValuesDefault,
+					)
+					.describe(
+						"List of context values for this assignment. If no contexts are used, this will be None.",
+					),
 			})
-			.describe("Describes treatment assignment for an experiment participant.")
+			.describe("Base class for treatment assignment in experiments.")
 			.or(zod.null())
 			.describe("Null if no assignment. assignment.strata are not included."),
 	})
@@ -4591,6 +6674,42 @@ export const powerCheckBodyDesignSpecFstatThreshDefaultOne = 0.6;
 export const powerCheckBodyDesignSpecFstatThreshMinOne = 0;
 
 export const powerCheckBodyDesignSpecFstatThreshMaxOne = 1;
+export const powerCheckBodyDesignSpecParticipantTypeMaxTwo = 100;
+export const powerCheckBodyDesignSpecExperimentNameMaxTwo = 100;
+export const powerCheckBodyDesignSpecDescriptionMaxTwo = 2000;
+export const powerCheckBodyDesignSpecArmsItemArmNameMaxTwo = 100;
+export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxSeven = 2000;
+export const powerCheckBodyDesignSpecArmsItemNOutcomesDefault = 0;
+export const powerCheckBodyDesignSpecArmsMinTwo = 2;
+
+export const powerCheckBodyDesignSpecArmsMaxTwo = 10;
+export const powerCheckBodyDesignSpecContextsItemContextNameMax = 100;
+export const powerCheckBodyDesignSpecContextsItemContextDescriptionMaxOne = 2000;
+export const powerCheckBodyDesignSpecContextsMaxOne = 150;
+export const powerCheckBodyDesignSpecParticipantTypeMaxThree = 100;
+export const powerCheckBodyDesignSpecExperimentNameMaxThree = 100;
+export const powerCheckBodyDesignSpecDescriptionMaxThree = 2000;
+export const powerCheckBodyDesignSpecArmsItemArmNameMaxThree = 100;
+export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOnezero = 2000;
+export const powerCheckBodyDesignSpecArmsItemNOutcomesDefaultOne = 0;
+export const powerCheckBodyDesignSpecArmsMinThree = 2;
+
+export const powerCheckBodyDesignSpecArmsMaxThree = 10;
+export const powerCheckBodyDesignSpecContextsItemContextNameMaxOne = 100;
+export const powerCheckBodyDesignSpecContextsItemContextDescriptionMaxFour = 2000;
+export const powerCheckBodyDesignSpecContextsMaxFour = 150;
+export const powerCheckBodyDesignSpecParticipantTypeMaxFour = 100;
+export const powerCheckBodyDesignSpecExperimentNameMaxFour = 100;
+export const powerCheckBodyDesignSpecDescriptionMaxFour = 2000;
+export const powerCheckBodyDesignSpecArmsItemArmNameMaxFour = 100;
+export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
+export const powerCheckBodyDesignSpecArmsItemNOutcomesDefaultTwo = 0;
+export const powerCheckBodyDesignSpecArmsMinFour = 2;
+
+export const powerCheckBodyDesignSpecArmsMaxFour = 10;
+export const powerCheckBodyDesignSpecContextsItemContextNameMaxTwo = 100;
+export const powerCheckBodyDesignSpecContextsItemContextDescriptionMaxSeven = 2000;
+export const powerCheckBodyDesignSpecContextsMaxSeven = 150;
 
 export const powerCheckBody = zod.object({
 	design_spec: zod
@@ -4607,7 +6726,7 @@ export const powerCheckBody = zod.object({
 						.describe(
 							"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 						),
-					experiment_type: zod.enum(["preassigned"]),
+					experiment_type: zod.enum(["freq_preassigned"]),
 					experiment_name: zod
 						.string()
 						.max(powerCheckBodyDesignSpecExperimentNameMax),
@@ -4733,7 +6852,7 @@ export const powerCheckBody = zod.object({
 						),
 				})
 				.describe(
-					"Use this type to randomly select and assign from existing participants at design time.",
+					"Use this type to randomly select and assign from existing participants at design time with frequentist A/B experiments.",
 				),
 			zod
 				.object({
@@ -4747,7 +6866,7 @@ export const powerCheckBody = zod.object({
 						.describe(
 							"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 						),
-					experiment_type: zod.enum(["online"]),
+					experiment_type: zod.enum(["freq_online"]),
 					experiment_name: zod
 						.string()
 						.max(powerCheckBodyDesignSpecExperimentNameMaxOne),
@@ -4881,10 +7000,446 @@ export const powerCheckBody = zod.object({
 						),
 				})
 				.describe(
-					"Use this type to randomly assign participants into arms during live experiment execution.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+					"Use this type to randomly assign participants into arms during live experiment execution with frequentist A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+				),
+			zod
+				.object({
+					participant_type: zod
+						.string()
+						.max(powerCheckBodyDesignSpecParticipantTypeMaxTwo),
+					experiment_id: zod
+						.string()
+						.or(zod.null())
+						.optional()
+						.describe(
+							"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+						),
+					experiment_type: zod.enum(["mab_online"]),
+					experiment_name: zod
+						.string()
+						.max(powerCheckBodyDesignSpecExperimentNameMaxTwo),
+					description: zod
+						.string()
+						.max(powerCheckBodyDesignSpecDescriptionMaxTwo),
+					start_date: zod.string().datetime({}),
+					end_date: zod.string().datetime({}),
+					arms: zod
+						.array(
+							zod
+								.object({
+									arm_id: zod
+										.string()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										),
+									arm_name: zod
+										.string()
+										.max(powerCheckBodyDesignSpecArmsItemArmNameMaxTwo),
+									arm_description: zod
+										.string()
+										.max(powerCheckBodyDesignSpecArmsItemArmDescriptionMaxSeven)
+										.or(zod.null())
+										.optional(),
+									alpha_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Initial alpha parameter for Beta prior"),
+									beta_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Initial beta parameter for Beta prior"),
+									mu_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Initial mean parameter for Normal prior"),
+									sigma_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Initial standard deviation parameter for Normal prior",
+										),
+									n_outcomes: zod
+										.number()
+										.optional()
+										.describe("The number of outcomes for this arm."),
+									alpha: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Updated alpha parameter for Beta prior"),
+									beta: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Updated beta parameter for Beta prior"),
+									mu: zod
+										.array(zod.number())
+										.or(zod.null())
+										.optional()
+										.describe("Updated mean vector for Normal prior"),
+									covariance: zod
+										.array(zod.array(zod.number()))
+										.or(zod.null())
+										.optional()
+										.describe("Updated covariance matrix for Normal prior"),
+									is_baseline: zod
+										.boolean()
+										.or(zod.null())
+										.describe(
+											"Whether this arm is the baseline/control arm for comparison.",
+										),
+								})
+								.describe(
+									"Describes an experiment arm for bandit experiments.",
+								),
+						)
+						.min(powerCheckBodyDesignSpecArmsMinTwo)
+						.max(powerCheckBodyDesignSpecArmsMaxTwo),
+					contexts: zod
+						.array(
+							zod
+								.object({
+									context_id: zod
+										.number()
+										.or(zod.null())
+										.describe(
+											"Unique identifier for the context, you should NOT set this when creating a new context.",
+										),
+									context_name: zod
+										.string()
+										.max(powerCheckBodyDesignSpecContextsItemContextNameMax),
+									context_description: zod
+										.string()
+										.max(
+											powerCheckBodyDesignSpecContextsItemContextDescriptionMaxOne,
+										)
+										.or(zod.null())
+										.optional(),
+									value_type: zod
+										.enum(["binary", "real-valued"])
+										.optional()
+										.describe("Enum for the type of context."),
+								})
+								.describe("Pydantic model for context of the experiment."),
+						)
+						.max(powerCheckBodyDesignSpecContextsMaxOne)
+						.or(zod.null())
+						.optional()
+						.describe(
+							"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+						),
+					prior_type: zod
+						.enum(["beta", "normal"])
+						.optional()
+						.describe("Enum for the prior distribution of the arm."),
+					reward_type: zod
+						.enum(["binary", "real-valued"])
+						.optional()
+						.describe("Enum for the likelihood distribution of the reward."),
+				})
+				.describe(
+					"Use this type to randomly assign participants into arms during live experiment execution with MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+				),
+			zod
+				.object({
+					participant_type: zod
+						.string()
+						.max(powerCheckBodyDesignSpecParticipantTypeMaxThree),
+					experiment_id: zod
+						.string()
+						.or(zod.null())
+						.optional()
+						.describe(
+							"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+						),
+					experiment_type: zod.enum(["cmab_online"]),
+					experiment_name: zod
+						.string()
+						.max(powerCheckBodyDesignSpecExperimentNameMaxThree),
+					description: zod
+						.string()
+						.max(powerCheckBodyDesignSpecDescriptionMaxThree),
+					start_date: zod.string().datetime({}),
+					end_date: zod.string().datetime({}),
+					arms: zod
+						.array(
+							zod
+								.object({
+									arm_id: zod
+										.string()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										),
+									arm_name: zod
+										.string()
+										.max(powerCheckBodyDesignSpecArmsItemArmNameMaxThree),
+									arm_description: zod
+										.string()
+										.max(
+											powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOnezero,
+										)
+										.or(zod.null())
+										.optional(),
+									alpha_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Initial alpha parameter for Beta prior"),
+									beta_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Initial beta parameter for Beta prior"),
+									mu_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Initial mean parameter for Normal prior"),
+									sigma_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Initial standard deviation parameter for Normal prior",
+										),
+									n_outcomes: zod
+										.number()
+										.optional()
+										.describe("The number of outcomes for this arm."),
+									alpha: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Updated alpha parameter for Beta prior"),
+									beta: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Updated beta parameter for Beta prior"),
+									mu: zod
+										.array(zod.number())
+										.or(zod.null())
+										.optional()
+										.describe("Updated mean vector for Normal prior"),
+									covariance: zod
+										.array(zod.array(zod.number()))
+										.or(zod.null())
+										.optional()
+										.describe("Updated covariance matrix for Normal prior"),
+									is_baseline: zod
+										.boolean()
+										.or(zod.null())
+										.describe(
+											"Whether this arm is the baseline/control arm for comparison.",
+										),
+								})
+								.describe(
+									"Describes an experiment arm for bandit experiments.",
+								),
+						)
+						.min(powerCheckBodyDesignSpecArmsMinThree)
+						.max(powerCheckBodyDesignSpecArmsMaxThree),
+					contexts: zod
+						.array(
+							zod
+								.object({
+									context_id: zod
+										.number()
+										.or(zod.null())
+										.describe(
+											"Unique identifier for the context, you should NOT set this when creating a new context.",
+										),
+									context_name: zod
+										.string()
+										.max(powerCheckBodyDesignSpecContextsItemContextNameMaxOne),
+									context_description: zod
+										.string()
+										.max(
+											powerCheckBodyDesignSpecContextsItemContextDescriptionMaxFour,
+										)
+										.or(zod.null())
+										.optional(),
+									value_type: zod
+										.enum(["binary", "real-valued"])
+										.optional()
+										.describe("Enum for the type of context."),
+								})
+								.describe("Pydantic model for context of the experiment."),
+						)
+						.max(powerCheckBodyDesignSpecContextsMaxFour)
+						.or(zod.null())
+						.optional()
+						.describe(
+							"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+						),
+					prior_type: zod
+						.enum(["beta", "normal"])
+						.optional()
+						.describe("Enum for the prior distribution of the arm."),
+					reward_type: zod
+						.enum(["binary", "real-valued"])
+						.optional()
+						.describe("Enum for the likelihood distribution of the reward."),
+				})
+				.describe(
+					"Use this type to randomly assign participants into arms during live experiment execution with contextual MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+				),
+			zod
+				.object({
+					participant_type: zod
+						.string()
+						.max(powerCheckBodyDesignSpecParticipantTypeMaxFour),
+					experiment_id: zod
+						.string()
+						.or(zod.null())
+						.optional()
+						.describe(
+							"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+						),
+					experiment_type: zod.enum(["bayes_ab_online"]),
+					experiment_name: zod
+						.string()
+						.max(powerCheckBodyDesignSpecExperimentNameMaxFour),
+					description: zod
+						.string()
+						.max(powerCheckBodyDesignSpecDescriptionMaxFour),
+					start_date: zod.string().datetime({}),
+					end_date: zod.string().datetime({}),
+					arms: zod
+						.array(
+							zod
+								.object({
+									arm_id: zod
+										.string()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										),
+									arm_name: zod
+										.string()
+										.max(powerCheckBodyDesignSpecArmsItemArmNameMaxFour),
+									arm_description: zod
+										.string()
+										.max(
+											powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOnethree,
+										)
+										.or(zod.null())
+										.optional(),
+									alpha_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Initial alpha parameter for Beta prior"),
+									beta_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Initial beta parameter for Beta prior"),
+									mu_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Initial mean parameter for Normal prior"),
+									sigma_init: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Initial standard deviation parameter for Normal prior",
+										),
+									n_outcomes: zod
+										.number()
+										.optional()
+										.describe("The number of outcomes for this arm."),
+									alpha: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Updated alpha parameter for Beta prior"),
+									beta: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe("Updated beta parameter for Beta prior"),
+									mu: zod
+										.array(zod.number())
+										.or(zod.null())
+										.optional()
+										.describe("Updated mean vector for Normal prior"),
+									covariance: zod
+										.array(zod.array(zod.number()))
+										.or(zod.null())
+										.optional()
+										.describe("Updated covariance matrix for Normal prior"),
+									is_baseline: zod
+										.boolean()
+										.or(zod.null())
+										.describe(
+											"Whether this arm is the baseline/control arm for comparison.",
+										),
+								})
+								.describe(
+									"Describes an experiment arm for bandit experiments.",
+								),
+						)
+						.min(powerCheckBodyDesignSpecArmsMinFour)
+						.max(powerCheckBodyDesignSpecArmsMaxFour),
+					contexts: zod
+						.array(
+							zod
+								.object({
+									context_id: zod
+										.number()
+										.or(zod.null())
+										.describe(
+											"Unique identifier for the context, you should NOT set this when creating a new context.",
+										),
+									context_name: zod
+										.string()
+										.max(powerCheckBodyDesignSpecContextsItemContextNameMaxTwo),
+									context_description: zod
+										.string()
+										.max(
+											powerCheckBodyDesignSpecContextsItemContextDescriptionMaxSeven,
+										)
+										.or(zod.null())
+										.optional(),
+									value_type: zod
+										.enum(["binary", "real-valued"])
+										.optional()
+										.describe("Enum for the type of context."),
+								})
+								.describe("Pydantic model for context of the experiment."),
+						)
+						.max(powerCheckBodyDesignSpecContextsMaxSeven)
+						.or(zod.null())
+						.optional()
+						.describe(
+							"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+						),
+					prior_type: zod
+						.enum(["beta", "normal"])
+						.optional()
+						.describe("Enum for the prior distribution of the arm."),
+					reward_type: zod
+						.enum(["binary", "real-valued"])
+						.optional()
+						.describe("Enum for the likelihood distribution of the reward."),
+				})
+				.describe(
+					"Use this type to randomly assign participants into arms during live experiment execution with Bayesian A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
 				),
 		])
-		.describe("Concrete type of experiment to run."),
+		.describe("The type of assignment and experiment design."),
 });
 
 export const powerCheckResponseAnalysesItemMetricSpecFieldNameRegExp =

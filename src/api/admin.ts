@@ -27,10 +27,10 @@ import type {
 	CreateParticipantsTypeRequest,
 	CreateParticipantsTypeResponse,
 	ExperimentAnalysis,
-	ExperimentConfig,
 	GetDatasourceResponse,
 	GetExperimentAssignmentForParticipantParams,
 	GetExperimentAssignmentsResponse,
+	GetExperimentResponse,
 	GetOrganizationResponse,
 	GetParticipantAssignmentResponse,
 	HTTPExceptionError,
@@ -2697,8 +2697,8 @@ export const getExperiment = async (
 	datasourceId: string,
 	experimentId: string,
 	options?: RequestInit,
-): Promise<ExperimentConfig> => {
-	return orvalFetch<ExperimentConfig>(
+): Promise<GetExperimentResponse> => {
+	return orvalFetch<GetExperimentResponse>(
 		getGetExperimentUrl(datasourceId, experimentId),
 		{
 			...options,
