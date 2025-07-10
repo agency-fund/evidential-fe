@@ -14,6 +14,18 @@ import { ExperimentTypeBadge } from '@/components/features/experiments/experimen
 import Link from 'next/link';
 import { ReadMoreText } from '@/components/ui/read-more-text';
 import { SectionCard } from '@/components/ui/cards/section-card';
+import {
+  DesignSpecOutput,
+  OnlineFrequentistExperimentSpecOutput,
+  PreassignedFrequentistExperimentSpecOutput,
+} from '@/api/methods.schemas';
+
+// Type guard to assure TypeScript that a DesignSpec is one of two types.
+function isFrequentistDesign(
+  designSpec: DesignSpecOutput,
+): designSpec is PreassignedFrequentistExperimentSpecOutput | OnlineFrequentistExperimentSpecOutput {
+  return designSpec.experiment_type === 'freq_preassigned' || designSpec.experiment_type === 'freq_online';
+}
 
 export default function ExperimentViewPage() {
   const [openToast, setOpenToast] = useState(false);
@@ -93,58 +105,61 @@ export default function ExperimentViewPage() {
         </SectionCard>
 
         {/* Arms & Allocations Section */}
-        <SectionCard
-          title="Arms & Allocations"
-          headerRight={
-            <Badge>
-              <PersonIcon />
-              <Text size="2">{assign_summary.sample_size.toLocaleString()} participants</Text>
-            </Badge>
-          }
-        >
-          <Table.Root>
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {arms.map((arm) => {
-                const armSize = assign_summary.arm_sizes?.find((a) => a.arm.arm_id === arm.arm_id)?.size || 0;
-                const percentage = (armSize / assign_summary.sample_size) * 100;
-                return (
-                  <Table.Row key={arm.arm_id}>
-                    <Table.Cell>
-                      <Flex direction="column" gap="4" align="start">
-                        <Flex gap="2" align="center">
-                          <Heading size="2">{arm.arm_name}</Heading>
-                          <CopyToClipBoard content={arm.arm_id || ''} tooltipContent="Copy arm ID" />
+        {assign_summary && (
+          <SectionCard
+            title="Arms & Allocations"
+            headerRight={
+              <Badge>
+                <PersonIcon />
+                <Text size="2">{assign_summary.sample_size.toLocaleString()} participants</Text>
+              </Badge>
+            }
+          >
+            <Table.Root>
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {arms.map((arm) => {
+                  const armSize = assign_summary.arm_sizes?.find((a) => a.arm.arm_id === arm.arm_id)?.size || 0;
+                  const percentage = (armSize / assign_summary.sample_size) * 100;
+                  return (
+                    <Table.Row key={arm.arm_id}>
+                      <Table.Cell>
+                        <Flex direction="column" gap="4" align="start">
+                          <Flex gap="2" align="center">
+                            <Heading size="2">{arm.arm_name}</Heading>
+                            <CopyToClipBoard content={arm.arm_id || ''} tooltipContent="Copy arm ID" />
+                          </Flex>
+                          <Flex direction="column" gap="3" align="start">
+                            <Badge>
+                              <PersonIcon />
+                              <Text>{armSize.toLocaleString()} participants</Text>
+                            </Badge>
+                            <Badge>{percentage.toFixed(1)}%</Badge>
+                          </Flex>
                         </Flex>
-                        <Flex direction="column" gap="3" align="start">
-                          <Badge>
-                            <PersonIcon />
-                            <Text>{armSize.toLocaleString()} participants</Text>
-                          </Badge>
-                          <Badge>{percentage.toFixed(1)}%</Badge>
-                        </Flex>
-                      </Flex>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <ReadMoreText text={arm.arm_description || 'No description'} />
-                    </Table.Cell>
-                  </Table.Row>
-                );
-              })}
-            </Table.Body>
-          </Table.Root>
-        </SectionCard>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <ReadMoreText text={arm.arm_description || 'No description'} />
+                      </Table.Cell>
+                    </Table.Row>
+                  );
+                })}
+              </Table.Body>
+            </Table.Root>
+          </SectionCard>
+        )}
 
         {/* Analysis Section */}
         <SectionCard
           title="Analysis"
           headerRight={
-            analysisData && (
+            analysisData &&
+            (design_spec?.experiment_type === 'freq_online' || design_spec?.experiment_type === 'freq_preassigned') && (
               <Flex gap="3" align="center" justify="between">
                 <Badge size="2">
                   <Flex gap="4" align="center">
@@ -195,9 +210,16 @@ export default function ExperimentViewPage() {
                 <Box px="4">
                   <Tabs.Content value="visualization">
                     <Flex direction="column" gap="3" py="3">
-                      {analysisData.metric_analyses.map((metric_analysis, index) => (
-                        <ForestPlot key={index} analysis={metric_analysis} experiment={experiment} />
-                      ))}
+                      {isFrequentistDesign(design_spec) &&
+                        assign_summary &&
+                        analysisData.metric_analyses.map((metric_analysis, index) => (
+                          <ForestPlot
+                            key={index}
+                            analysis={metric_analysis}
+                            designSpec={design_spec}
+                            assignSummary={assign_summary}
+                          />
+                        ))}
                     </Flex>
                   </Tabs.Content>
 

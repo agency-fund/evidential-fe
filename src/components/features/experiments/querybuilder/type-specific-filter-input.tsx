@@ -1,7 +1,7 @@
 'use client';
 
 import { Text } from '@radix-ui/themes';
-import { DataType, Filter } from '@/api/methods.schemas';
+import { DwhDataType, FilterInput } from '@/api/methods.schemas';
 import { BooleanFilterInput } from '@/components/features/experiments/querybuilder/boolean-filter-input';
 import { StringFilterInput } from '@/components/features/experiments/querybuilder/string-filter-input';
 import { NumericFilterInput } from '@/components/features/experiments/querybuilder/numeric-filter-input';
@@ -9,9 +9,9 @@ import { DateFilterInput } from '@/components/features/experiments/querybuilder/
 import { TypedFilter } from '@/components/features/experiments/querybuilder/utils';
 
 export interface TypeSpecificFilterInputProps {
-  dataType: DataType;
-  filter: Filter;
-  onChange: (filter: Filter) => void;
+  dataType: DwhDataType;
+  filter: FilterInput;
+  onChange: (filter: FilterInput) => void;
 }
 
 export function TypeSpecificFilterInput({ dataType, filter, onChange }: TypeSpecificFilterInputProps) {

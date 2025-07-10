@@ -2,18 +2,18 @@
 
 import { Badge, Flex, Grid, IconButton, Select, Text } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
-import { DataType, Filter } from '@/api/methods.schemas';
+import { DwhDataType, FilterInput } from '@/api/methods.schemas';
 import { TypeSpecificFilterInput } from '@/components/features/experiments/querybuilder/type-specific-filter-input';
 import { getDefaultFilterForType } from '@/components/features/experiments/querybuilder/utils';
 
 export interface FilterRowProps {
-  filter: Filter;
+  filter: FilterInput;
   availableFields: Array<{
     field_name: string;
-    data_type: DataType;
+    data_type: DwhDataType;
     description: string;
   }>;
-  onChange: (filter: Filter) => void;
+  onChange: (filter: FilterInput) => void;
   onRemove: () => void;
 }
 

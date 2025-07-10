@@ -1,10 +1,10 @@
-import { DataType, Filter, FilterValueTypes } from '@/api/methods.schemas';
+import { DwhDataType, FilterInput, FilterValueTypes } from '@/api/methods.schemas';
 
 export type SingleTypeArray<T> = Array<T | null>;
-export type TypedFilter<T> = Filter & { value: SingleTypeArray<T> };
+export type TypedFilter<T> = FilterInput & { value: SingleTypeArray<T> };
 
 // Get default filter configuration for a given field type
-export function getDefaultFilterForType(fieldName: string, dataType: DataType): Filter {
+export function getDefaultFilterForType(fieldName: string, dataType: DwhDataType): FilterInput {
   switch (dataType) {
     case 'boolean':
       return {
@@ -75,7 +75,7 @@ export function operatorToRelation(operator: string): 'includes' | 'excludes' | 
 }
 
 // Create a default value array based on operator and data type
-export function createDefaultValueForOperator(operator: string, dataType: DataType): FilterValueTypes {
+export function createDefaultValueForOperator(operator: string, dataType: DwhDataType): FilterValueTypes {
   switch (operator) {
     case 'equals':
     case 'not-equals':

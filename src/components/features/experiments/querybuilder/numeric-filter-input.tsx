@@ -2,7 +2,7 @@
 
 import { Button, Checkbox, Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
-import { DataType, Filter } from '@/api/methods.schemas';
+import { DwhDataType, FilterInput } from '@/api/methods.schemas';
 import {
   createDefaultValueForOperator,
   operatorToRelation,
@@ -11,9 +11,9 @@ import {
 import React, { useEffect, useState } from 'react';
 
 export interface NumericFilterInputProps {
-  filter: Filter & TypedFilter<number>;
-  onChange: (filter: Filter) => void;
-  dataType: DataType;
+  filter: FilterInput & TypedFilter<number>;
+  onChange: (filter: FilterInput) => void;
+  dataType: DwhDataType;
 }
 
 export function NumericFilterInput({ filter, onChange, dataType }: NumericFilterInputProps) {
