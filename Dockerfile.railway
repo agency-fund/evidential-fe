@@ -29,7 +29,6 @@ ENV NPM_CONFIG_AUDIT=false
 ENV NPM_CONFIG_FUND=false
 ENV NPM_CONFIG_UPDATE_NOTIFIER=false
 ENV SENTRY_RELEASE=${RAILWAY_GIT_COMMIT_SHA}
-ENV SENTRY_LOG_LEVEL=debug
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/package.json ./
