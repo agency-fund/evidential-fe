@@ -107,7 +107,7 @@ function CreateExperimentMultiStageForm({ webhooks }: CreateExperimentMultiStage
   const params = useParams();
   const [formData, setFormData] = useState<ExperimentFormData>({
     datasourceId: params.datasourceId as string,
-    experimentType: 'preassigned',
+    experimentType: 'freq_preassigned',
     name: 'My Experiment',
     hypothesis: 'Hypothesis.',
     startDate: reasonableStartDate(),
