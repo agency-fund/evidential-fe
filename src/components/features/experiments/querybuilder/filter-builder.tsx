@@ -2,14 +2,14 @@
 
 import { Button, Flex } from '@radix-ui/themes';
 import { PlusIcon } from '@radix-ui/react-icons';
-import { DwhDataType, FilterInput } from '@/api/methods.schemas';
+import { DataType, FilterInput } from '@/api/methods.schemas';
 import { FilterRow } from '@/components/features/experiments/querybuilder/filter-row';
 import React from 'react';
 
 export interface FilterBuilderProps {
   availableFields: Array<{
     field_name: string;
-    data_type: DwhDataType;
+    data_type: DataType;
     description: string;
   }>;
   filters: FilterInput[];

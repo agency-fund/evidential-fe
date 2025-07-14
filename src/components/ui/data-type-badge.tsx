@@ -12,10 +12,10 @@ import {
   TextIcon,
 } from '@radix-ui/react-icons';
 import { Badge, Flex } from '@radix-ui/themes';
-import { DwhDataType } from '@/api/methods.schemas';
+import { DataType } from '@/api/methods.schemas';
 
 const dataTypeConfig: Record<
-  DwhDataType,
+  DataType,
   { color: 'orange' | 'gold' | 'cyan' | 'green' | 'lime' | 'iris' | 'purple' | 'red'; icon: React.ReactNode }
 > = {
   boolean: { color: 'iris', icon: <CheckCircledIcon /> },
@@ -33,7 +33,7 @@ const dataTypeConfig: Record<
   unsupported: { color: 'red', icon: <QuestionMarkCircledIcon /> },
 };
 
-export function DataTypeBadge({ type }: { type: DwhDataType }) {
+export function DataTypeBadge({ type }: { type: DataType }) {
   const config = dataTypeConfig[type] || dataTypeConfig.unsupported;
   return (
     <Badge color={config.color}>

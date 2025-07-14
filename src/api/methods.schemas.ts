@@ -299,7 +299,7 @@ export interface Assignment {
 	 * Unique identifier for the participant. This is the primary key for the participant in the data warehouse.
 	 * @maxLength 64
 	 */
-	participant_id?: string;
+	participant_id: string;
 	/**
 	 * The arm this participant was assigned to. Same as Arm.arm_name.
 	 * @maxLength 100
@@ -750,6 +750,28 @@ export interface CreateParticipantsTypeResponse {
 	schema_def: ParticipantsSchemaOutput;
 }
 
+/**
+ * Defines the supported data types for fields in the data source.
+ */
+export type DataType = (typeof DataType)[keyof typeof DataType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const DataType = {
+	boolean: "boolean",
+	character_varying: "character varying",
+	uuid: "uuid",
+	date: "date",
+	integer: "integer",
+	double_precision: "double precision",
+	numeric: "numeric",
+	timestamp_without_time_zone: "timestamp without time zone",
+	timestamp_with_time_zone: "timestamp with time zone",
+	bigint: "bigint",
+	"jsonb_(unsupported)": "jsonb (unsupported)",
+	"json_(unsupported)": "json (unsupported)",
+	unsupported: "unsupported",
+} as const;
+
 export type DatasourceConfigWebhookConfig = WebhookConfig | null;
 
 /**
@@ -917,28 +939,6 @@ export type DwhInput = Dsn | BqDsnInput;
 export type DwhOutput = Dsn | BqDsnOutput;
 
 /**
- * Defines the supported data types for fields in the data source.
- */
-export type DwhDataType = (typeof DwhDataType)[keyof typeof DwhDataType];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const DwhDataType = {
-	boolean: "boolean",
-	character_varying: "character varying",
-	uuid: "uuid",
-	date: "date",
-	integer: "integer",
-	double_precision: "double precision",
-	numeric: "numeric",
-	timestamp_without_time_zone: "timestamp without time zone",
-	timestamp_with_time_zone: "timestamp with time zone",
-	bigint: "bigint",
-	"jsonb_(unsupported)": "jsonb (unsupported)",
-	"json_(unsupported)": "json (unsupported)",
-	unsupported: "unsupported",
-} as const;
-
-/**
  * A navigable link to related information.
  */
 export type EventSummaryLink = string | null;
@@ -1051,7 +1051,7 @@ export interface FieldDescriptor {
 	/** Name of the field in the data source */
 	field_name: string;
 	/** The data type of this field */
-	data_type: DwhDataType;
+	data_type: DataType;
 	/** Human-readable description of the field */
 	description?: string;
 	/** Whether this field uniquely identifies records */
@@ -1072,7 +1072,7 @@ export interface FieldDescriptor {
 export interface FieldMetadata {
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
-	data_type: DwhDataType;
+	data_type: DataType;
 	/** @maxLength 2000 */
 	description: string;
 }
@@ -1312,7 +1312,7 @@ export interface GetFiltersResponseDiscrete {
 	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
 	 */
 	field_name: string;
-	data_type: DwhDataType;
+	data_type: DataType;
 	/**
 	 * @minItems 1
 	 * @maxItems 20
@@ -1357,7 +1357,7 @@ export interface GetFiltersResponseNumericOrDate {
 	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
 	 */
 	field_name: string;
-	data_type: DwhDataType;
+	data_type: DataType;
 	/**
 	 * @minItems 1
 	 * @maxItems 20
@@ -1384,7 +1384,7 @@ export interface GetMetricsResponse {
 export interface GetMetricsResponseElement {
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
-	data_type: DwhDataType;
+	data_type: DataType;
 	/** @maxLength 2000 */
 	description: string;
 }
@@ -1429,7 +1429,7 @@ export type GetStrataResponseElementExtra =
  * Describes a stratification variable.
  */
 export interface GetStrataResponseElement {
-	data_type: DwhDataType;
+	data_type: DataType;
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
 	/** @maxLength 2000 */

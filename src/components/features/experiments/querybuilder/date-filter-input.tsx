@@ -2,7 +2,7 @@
 
 import { Button, Checkbox, Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
-import { DwhDataType, FilterInput } from '@/api/methods.schemas';
+import { DataType, FilterInput } from '@/api/methods.schemas';
 import {
   createDefaultValueForOperator,
   operatorToRelation,
@@ -13,7 +13,7 @@ import { useState } from 'react';
 export interface DateFilterInputProps {
   filter: FilterInput & TypedFilter<string>;
   onChange: (filter: FilterInput) => void;
-  dataType: DwhDataType;
+  dataType: DataType;
 }
 
 export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputProps) {

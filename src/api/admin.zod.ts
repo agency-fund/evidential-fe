@@ -6378,7 +6378,6 @@ export const getExperimentAssignmentsResponse = zod
 						.max(
 							getExperimentAssignmentsResponseAssignmentsItemParticipantIdMax,
 						)
-						.optional()
 						.describe(
 							"Unique identifier for the participant. This is the primary key for the participant in the data warehouse.",
 						),
@@ -6517,7 +6516,6 @@ export const getExperimentAssignmentForParticipantResponse = zod
 					.max(
 						getExperimentAssignmentForParticipantResponseAssignmentParticipantIdMax,
 					)
-					.optional()
 					.describe(
 						"Unique identifier for the participant. This is the primary key for the participant in the data warehouse.",
 					),
