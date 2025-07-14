@@ -1,10 +1,10 @@
-import { DataType, Filter, FilterValueTypes } from '@/api/methods.schemas';
+import { DataType, FilterInput, FilterValueTypes } from '@/api/methods.schemas';
 
 export type SingleTypeArray<T> = Array<T | null>;
-export type TypedFilter<T> = Filter & { value: SingleTypeArray<T> };
+export type TypedFilter<T> = FilterInput & { value: SingleTypeArray<T> };
 
 // Get default filter configuration for a given field type
-export function getDefaultFilterForType(fieldName: string, dataType: DataType): Filter {
+export function getDefaultFilterForType(fieldName: string, dataType: DataType): FilterInput {
   switch (dataType) {
     case 'boolean':
       return {
