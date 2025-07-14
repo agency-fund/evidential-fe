@@ -1,16 +1,14 @@
-
 Reviewer:
 
----
+______________________________________________________________________
 
 ## Ticket
 
-Fixes: <issue number + link>
+Fixes: \<issue number + link>
 
 ## Related PRs
 
-Backend: \<PR number + link>
-Docs: \<PR number + link>
+Backend: \<PR number + link> Docs: \<PR number + link>
 
 ## Description
 
@@ -26,7 +24,7 @@ Docs: \<PR number + link>
 
 ## Checklist
 
-Fill with `x` for completed. 
+Fill with `x` for completed.
 
 - [ ] My code follows the style guidelines of this project
 - [ ] I have reviewed my own code to ensure good quality
@@ -34,8 +32,9 @@ Fill with `x` for completed.
 - [ ] I have resolved merge conflicts
 
 (Delete any items below that are not relevant)
+
 - [ ] I have updated the automated tests
-- [ ] I have updated dependencies 
+- [ ] I have updated dependencies
 - [ ] I have updated the README file
 - [ ] I have updated affected documentation
 - [ ] I have added a blogpost in Latest Updates
