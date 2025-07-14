@@ -9,8 +9,8 @@ Fixes: <issue number + link>
 
 ## Related PRs
 
-Backend: <PR number + link>
-Docs: <PR number + link>
+Backend: \<PR number + link>
+Docs: \<PR number + link>
 
 ## Description
 
