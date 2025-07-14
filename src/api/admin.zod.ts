@@ -1663,7 +1663,7 @@ export const deleteApiKeyParams = zod.object({
  * @summary Create Experiment
  */
 export const createExperimentParams = zod.object({
-	datasource_id: zod.string(),
+	datasource_id: zod.string().or(zod.null()),
 });
 
 export const createExperimentQueryStratifyOnMetricsDefault = true;
@@ -3757,8 +3757,7 @@ export const createExperimentResponse = zod
 						"For each arm, the number of participants assigned. TODO: make required once development has stabilized. May be None if unknown due to persisting prior versions of an AssignSummary.",
 					),
 			})
-			.describe("Key pieces of an AssignResponse without the assignments.")
-			.or(zod.null()),
+			.describe("Key pieces of an AssignResponse without the assignments."),
 		webhooks: zod
 			.array(zod.string())
 			.default(createExperimentResponseWebhooksDefault)
@@ -5176,8 +5175,7 @@ export const listOrganizationExperimentsResponse = zod.object({
 								"For each arm, the number of participants assigned. TODO: make required once development has stabilized. May be None if unknown due to persisting prior versions of an AssignSummary.",
 							),
 					})
-					.describe("Key pieces of an AssignResponse without the assignments.")
-					.or(zod.null()),
+					.describe("Key pieces of an AssignResponse without the assignments."),
 				webhooks: zod
 					.array(zod.string())
 					.default(listOrganizationExperimentsResponseItemsItemWebhooksDefault)
@@ -6288,8 +6286,7 @@ export const getExperimentResponse = zod
 						"For each arm, the number of participants assigned. TODO: make required once development has stabilized. May be None if unknown due to persisting prior versions of an AssignSummary.",
 					),
 			})
-			.describe("Key pieces of an AssignResponse without the assignments.")
-			.or(zod.null()),
+			.describe("Key pieces of an AssignResponse without the assignments."),
 		webhooks: zod
 			.array(zod.string())
 			.default(getExperimentResponseWebhooksDefault)

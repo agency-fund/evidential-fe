@@ -708,8 +708,6 @@ export type CreateExperimentResponseStoppedAssignmentsReason =
 
 export type CreateExperimentResponsePowerAnalyses = PowerResponseOutput | null;
 
-export type CreateExperimentResponseAssignSummary = AssignSummary | null;
-
 /**
  * Same as the request but with ids filled for the experiment and arms, and summary info on the assignment.
  */
@@ -723,7 +721,7 @@ export interface CreateExperimentResponse {
 	stopped_assignments_reason: CreateExperimentResponseStoppedAssignmentsReason;
 	design_spec: DesignSpecOutput;
 	power_analyses: CreateExperimentResponsePowerAnalyses;
-	assign_summary: CreateExperimentResponseAssignSummary;
+	assign_summary: AssignSummary;
 	/** List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed. */
 	webhooks?: string[];
 }
@@ -1002,8 +1000,6 @@ export type ExperimentConfigStoppedAssignmentsReason =
 
 export type ExperimentConfigPowerAnalyses = PowerResponseOutput | null;
 
-export type ExperimentConfigAssignSummary = AssignSummary | null;
-
 /**
  * Representation of our stored Experiment information.
  */
@@ -1017,7 +1013,7 @@ export interface ExperimentConfig {
 	stopped_assignments_reason: ExperimentConfigStoppedAssignmentsReason;
 	design_spec: DesignSpecOutput;
 	power_analyses: ExperimentConfigPowerAnalyses;
-	assign_summary: ExperimentConfigAssignSummary;
+	assign_summary: AssignSummary;
 	/** List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed. */
 	webhooks?: string[];
 }
@@ -1271,8 +1267,6 @@ export type GetExperimentResponseStoppedAssignmentsReason =
 
 export type GetExperimentResponsePowerAnalyses = PowerResponseOutput | null;
 
-export type GetExperimentResponseAssignSummary = AssignSummary | null;
-
 /**
  * An experiment configuration capturing all info at design time when assignment was made.
  */
@@ -1286,7 +1280,7 @@ export interface GetExperimentResponse {
 	stopped_assignments_reason: GetExperimentResponseStoppedAssignmentsReason;
 	design_spec: DesignSpecOutput;
 	power_analyses: GetExperimentResponsePowerAnalyses;
-	assign_summary: GetExperimentResponseAssignSummary;
+	assign_summary: AssignSummary;
 	/** List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed. */
 	webhooks?: string[];
 }

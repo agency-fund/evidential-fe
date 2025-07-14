@@ -2250,7 +2250,7 @@ export const useDeleteApiKey = <
  * @summary Create Experiment
  */
 export const getCreateExperimentUrl = (
-	datasourceId: string,
+	datasourceId: string | null,
 	params?: CreateExperimentParams,
 ) => {
 	const normalizedParams = new URLSearchParams();
@@ -2269,7 +2269,7 @@ export const getCreateExperimentUrl = (
 };
 
 export const createExperiment = async (
-	datasourceId: string,
+	datasourceId: string | null,
 	createExperimentRequest: CreateExperimentRequest,
 	params?: CreateExperimentParams,
 	options?: RequestInit,
@@ -2286,7 +2286,7 @@ export const createExperiment = async (
 };
 
 export const getCreateExperimentMutationFetcher = (
-	datasourceId: string,
+	datasourceId: string | null,
 	params?: CreateExperimentParams,
 	options?: SecondParameter<typeof orvalFetch>,
 ) => {
@@ -2298,7 +2298,7 @@ export const getCreateExperimentMutationFetcher = (
 	};
 };
 export const getCreateExperimentMutationKey = (
-	datasourceId: string,
+	datasourceId: string | null,
 	params?: CreateExperimentParams,
 ) =>
 	[
@@ -2319,7 +2319,7 @@ export type CreateExperimentMutationError = ErrorType<
 export const useCreateExperiment = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
-	datasourceId: string,
+	datasourceId: string | null,
 	params?: CreateExperimentParams,
 	options?: {
 		swr?: SWRMutationConfiguration<
