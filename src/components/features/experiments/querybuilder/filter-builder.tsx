@@ -2,7 +2,7 @@
 
 import { Button, Flex } from '@radix-ui/themes';
 import { PlusIcon } from '@radix-ui/react-icons';
-import { DataType, Filter } from '@/api/methods.schemas';
+import { DataType, FilterInput } from '@/api/methods.schemas';
 import { FilterRow } from '@/components/features/experiments/querybuilder/filter-row';
 import React from 'react';
 
@@ -12,8 +12,8 @@ export interface FilterBuilderProps {
     data_type: DataType;
     description: string;
   }>;
-  filters: Filter[];
-  onChange: (filters: Filter[]) => void;
+  filters: FilterInput[];
+  onChange: (filters: FilterInput[]) => void;
 }
 
 export function FilterBuilder({ availableFields, filters, onChange }: FilterBuilderProps) {
@@ -46,7 +46,7 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
         defaultValue = [''];
     }
 
-    const defaultFilter: Filter = {
+    const defaultFilter: FilterInput = {
       field_name: defaultField.field_name,
       relation: 'includes',
       value: defaultValue,
@@ -55,7 +55,7 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
     onChange([...filters, defaultFilter]);
   };
 
-  const updateFilter = (index: number, filter: Filter) => {
+  const updateFilter = (index: number, filter: FilterInput) => {
     // Get the field's data type
     const field = availableFields.find((f) => f.field_name === filter.field_name);
 
@@ -96,7 +96,7 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
   };
 
   // Sanitize filter to ensure no NaN values are passed to the API
-  const sanitizeFilter = (filter: Filter): Filter => {
+  const sanitizeFilter = (filter: FilterInput): FilterInput => {
     // For numeric fields, ensure no NaN values
     const field = availableFields.find((f) => f.field_name === filter.field_name);
     const isNumeric =

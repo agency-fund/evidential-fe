@@ -3,7 +3,7 @@ import { Button, Callout, Flex, Spinner, Text, TextField } from '@radix-ui/theme
 import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useCreateExperiment, useInspectParticipantTypes } from '@/api/admin';
-import { Filter, GetFiltersResponseElement, GetMetricsResponseElement } from '@/api/methods.schemas';
+import { FilterInput, GetFiltersResponseElement, GetMetricsResponseElement } from '@/api/methods.schemas';
 import { PowerCheckSection } from '@/components/features/experiments/power-check-section';
 import { convertFormDataToCreateExperimentRequest } from '@/app/datasources/[datasourceId]/experiments/create/helpers';
 import { FilterBuilder } from '@/components/features/experiments/querybuilder/filter-builder';
@@ -89,7 +89,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
             <FilterBuilder
               availableFields={filterFields}
               filters={formData.filters}
-              onChange={(filters: Filter[]) => onFormDataChange({ ...formData, filters })}
+              onChange={(filters: FilterInput[]) => onFormDataChange({ ...formData, filters })}
             />
           </Flex>
         </SectionCard>

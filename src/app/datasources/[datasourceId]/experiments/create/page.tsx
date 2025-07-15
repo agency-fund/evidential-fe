@@ -21,7 +21,7 @@ import { InitialForm } from '@/components/features/experiments/initial-form';
 import { DesignForm } from '@/components/features/experiments/design-form';
 import { ConfirmationForm } from '@/components/features/experiments/confirmation-form';
 import { Box, Container, Flex, Heading } from '@radix-ui/themes';
-import { Arm, CreateExperimentResponse, Filter, PowerResponseOutput, WebhookSummary } from '@/api/methods.schemas';
+import { Arm, CreateExperimentResponse, FilterInput, PowerResponseOutput, WebhookSummary } from '@/api/methods.schemas';
 import { useParams } from 'next/navigation';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { useListOrganizationWebhooks } from '@/api/admin';
@@ -69,7 +69,7 @@ export type ExperimentFormData = {
   arms: Omit<Arm, 'arm_id'>[];
   primaryMetric?: MetricWithMDE;
   secondaryMetrics: MetricWithMDE[];
-  filters: Filter[];
+  filters: FilterInput[];
   // These next 2 Experiment Parameters are strings to allow for empty values,
   // which should be converted to numbers when making power or experiment creation requests.
   confidence: string;

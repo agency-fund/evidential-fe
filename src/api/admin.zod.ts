@@ -18,7 +18,9 @@ export const callerIdentityResponse = zod
 		hd: zod.string(),
 		is_privileged: zod.boolean(),
 	})
-	.describe("Describes the user's identity.");
+	.describe(
+		"Describes the user's identity in a format suitable for use in the frontend.",
+	);
 
 /**
  * Returns a list of organizations that the authenticated user is a member of.

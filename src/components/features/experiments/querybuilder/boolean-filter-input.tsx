@@ -1,12 +1,12 @@
 'use client';
 
 import { Checkbox, Flex, Select, Text } from '@radix-ui/themes';
-import { Filter } from '@/api/methods.schemas';
+import { FilterInput } from '@/api/methods.schemas';
 import { TypedFilter } from '@/components/features/experiments/querybuilder/utils';
 
 export interface BooleanFilterInputProps {
-  filter: Filter & TypedFilter<boolean>;
-  onChange: (filter: Filter) => void;
+  filter: FilterInput & TypedFilter<boolean>;
+  onChange: (filter: FilterInput) => void;
 }
 
 export function BooleanFilterInput({ filter, onChange }: BooleanFilterInputProps) {
