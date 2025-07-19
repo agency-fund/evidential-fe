@@ -15,16 +15,21 @@ interface DeleteParticipantTypeDialogProps {
 }
 
 export const DeleteParticipantTypeDialog = ({ datasourceId, participantType }: DeleteParticipantTypeDialogProps) => {
-  const { trigger } = useDeleteParticipant(datasourceId, participantType, {
-    swr: {
-      onSuccess: async () =>
-        await Promise.all([
-          mutate(getGetDatasourceKey(datasourceId)),
-          mutate(getInspectParticipantTypesKey(datasourceId, participantType)),
-          mutate(getListParticipantTypesKey(datasourceId)),
-        ]),
+  const { trigger } = useDeleteParticipant(
+    datasourceId,
+    participantType,
+    { allow_missing: true },
+    {
+      swr: {
+        onSuccess: async () =>
+          await Promise.all([
+            mutate(getGetDatasourceKey(datasourceId)),
+            mutate(getInspectParticipantTypesKey(datasourceId, participantType)),
+            mutate(getListParticipantTypesKey(datasourceId)),
+          ]),
+      },
     },
-  });
+  );
 
   return (
     <AlertDialog.Root>
