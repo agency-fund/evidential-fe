@@ -1851,6 +1851,10 @@ export interface WebhookUrl {
 	url: string;
 }
 
+export type DeleteWebhookFromOrganizationParams = {
+	allow_missing?: boolean;
+};
+
 export type InspectDatasourceParams = {
 	/**
 	 * Refresh the cache.
@@ -1865,11 +1869,23 @@ export type InspectTableInDatasourceParams = {
 	refresh?: boolean;
 };
 
+export type DeleteDatasourceParams = {
+	allow_missing?: boolean;
+};
+
 export type InspectParticipantTypesParams = {
 	/**
 	 * Refresh the cache.
 	 */
 	refresh?: boolean;
+};
+
+export type DeleteParticipantParams = {
+	allow_missing?: boolean;
+};
+
+export type DeleteApiKeyParams = {
+	allow_missing?: boolean;
 };
 
 export type CreateExperimentParams = {
@@ -1888,6 +1904,10 @@ export type AnalyzeExperimentParams = {
 	 * UUID of the baseline arm. If None, the first design spec arm is used.
 	 */
 	baseline_arm_id?: string | null;
+};
+
+export type DeleteExperimentParams = {
+	allow_missing?: boolean;
 };
 
 export type GetExperimentAssignmentForParticipantParams = {

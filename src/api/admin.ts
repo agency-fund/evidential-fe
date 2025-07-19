@@ -26,6 +26,11 @@ import type {
 	CreateOrganizationResponse,
 	CreateParticipantsTypeRequest,
 	CreateParticipantsTypeResponse,
+	DeleteApiKeyParams,
+	DeleteDatasourceParams,
+	DeleteExperimentParams,
+	DeleteParticipantParams,
+	DeleteWebhookFromOrganizationParams,
 	ExperimentAnalysis,
 	ExperimentConfig,
 	GetDatasourceResponse,
@@ -483,17 +488,31 @@ export const useUpdateOrganizationWebhook = <
 export const getDeleteWebhookFromOrganizationUrl = (
 	organizationId: string,
 	webhookId: string,
+	params?: DeleteWebhookFromOrganizationParams,
 ) => {
-	return `/v1/m/organizations/${organizationId}/webhooks/${webhookId}`;
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/v1/m/organizations/${organizationId}/webhooks/${webhookId}?${stringifiedParams}`
+		: `/v1/m/organizations/${organizationId}/webhooks/${webhookId}`;
 };
 
 export const deleteWebhookFromOrganization = async (
 	organizationId: string,
 	webhookId: string,
+	params?: DeleteWebhookFromOrganizationParams,
 	options?: RequestInit,
 ): Promise<void> => {
 	return orvalFetch<void>(
-		getDeleteWebhookFromOrganizationUrl(organizationId, webhookId),
+		getDeleteWebhookFromOrganizationUrl(organizationId, webhookId, params),
 		{
 			...options,
 			method: "DELETE",
@@ -504,16 +523,27 @@ export const deleteWebhookFromOrganization = async (
 export const getDeleteWebhookFromOrganizationMutationFetcher = (
 	organizationId: string,
 	webhookId: string,
+	params?: DeleteWebhookFromOrganizationParams,
 	options?: SecondParameter<typeof orvalFetch>,
 ) => {
 	return (_: Key, __: { arg: Arguments }): Promise<void> => {
-		return deleteWebhookFromOrganization(organizationId, webhookId, options);
+		return deleteWebhookFromOrganization(
+			organizationId,
+			webhookId,
+			params,
+			options,
+		);
 	};
 };
 export const getDeleteWebhookFromOrganizationMutationKey = (
 	organizationId: string,
 	webhookId: string,
-) => [`/v1/m/organizations/${organizationId}/webhooks/${webhookId}`] as const;
+	params?: DeleteWebhookFromOrganizationParams,
+) =>
+	[
+		`/v1/m/organizations/${organizationId}/webhooks/${webhookId}`,
+		...(params ? [params] : []),
+	] as const;
 
 export type DeleteWebhookFromOrganizationMutationResult = NonNullable<
 	Awaited<ReturnType<typeof deleteWebhookFromOrganization>>
@@ -530,6 +560,7 @@ export const useDeleteWebhookFromOrganization = <
 >(
 	organizationId: string,
 	webhookId: string,
+	params?: DeleteWebhookFromOrganizationParams,
 	options?: {
 		swr?: SWRMutationConfiguration<
 			Awaited<ReturnType<typeof deleteWebhookFromOrganization>>,
@@ -545,10 +576,15 @@ export const useDeleteWebhookFromOrganization = <
 
 	const swrKey =
 		swrOptions?.swrKey ??
-		getDeleteWebhookFromOrganizationMutationKey(organizationId, webhookId);
+		getDeleteWebhookFromOrganizationMutationKey(
+			organizationId,
+			webhookId,
+			params,
+		);
 	const swrFn = getDeleteWebhookFromOrganizationMutationFetcher(
 		organizationId,
 		webhookId,
+		params,
 		requestOptions,
 	);
 
@@ -1291,78 +1327,6 @@ export const useGetDatasource = <
 	};
 };
 /**
- * Deletes a datasource.
-
-The user must be a member of the organization that owns the datasource.
- * @summary Delete Datasource
- */
-export const getDeleteDatasourceUrl = (datasourceId: string) => {
-	return `/v1/m/datasources/${datasourceId}`;
-};
-
-export const deleteDatasource = async (
-	datasourceId: string,
-	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(getDeleteDatasourceUrl(datasourceId), {
-		...options,
-		method: "DELETE",
-	});
-};
-
-export const getDeleteDatasourceMutationFetcher = (
-	datasourceId: string,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (_: Key, __: { arg: Arguments }): Promise<void> => {
-		return deleteDatasource(datasourceId, options);
-	};
-};
-export const getDeleteDatasourceMutationKey = (datasourceId: string) =>
-	[`/v1/m/datasources/${datasourceId}`] as const;
-
-export type DeleteDatasourceMutationResult = NonNullable<
-	Awaited<ReturnType<typeof deleteDatasource>>
->;
-export type DeleteDatasourceMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-/**
- * @summary Delete Datasource
- */
-export const useDeleteDatasource = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof deleteDatasource>>,
-			TError,
-			Key,
-			Arguments,
-			Awaited<ReturnType<typeof deleteDatasource>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ?? getDeleteDatasourceMutationKey(datasourceId);
-	const swrFn = getDeleteDatasourceMutationFetcher(
-		datasourceId,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-/**
  * Verifies connectivity to a datasource and returns a list of readable tables.
  * @summary Inspect Datasource
  */
@@ -1541,6 +1505,113 @@ export const useInspectTableInDatasource = <
 		swrFn,
 		swrOptions,
 	);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * Deletes a datasource.
+
+The user must be a member of the organization that owns the datasource.
+ * @summary Delete Datasource
+ */
+export const getDeleteDatasourceUrl = (
+	organizationId: string,
+	datasourceId: string,
+	params?: DeleteDatasourceParams,
+) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/v1/m/organizations/${organizationId}/datasources/${datasourceId}?${stringifiedParams}`
+		: `/v1/m/organizations/${organizationId}/datasources/${datasourceId}`;
+};
+
+export const deleteDatasource = async (
+	organizationId: string,
+	datasourceId: string,
+	params?: DeleteDatasourceParams,
+	options?: RequestInit,
+): Promise<void> => {
+	return orvalFetch<void>(
+		getDeleteDatasourceUrl(organizationId, datasourceId, params),
+		{
+			...options,
+			method: "DELETE",
+		},
+	);
+};
+
+export const getDeleteDatasourceMutationFetcher = (
+	organizationId: string,
+	datasourceId: string,
+	params?: DeleteDatasourceParams,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, __: { arg: Arguments }): Promise<void> => {
+		return deleteDatasource(organizationId, datasourceId, params, options);
+	};
+};
+export const getDeleteDatasourceMutationKey = (
+	organizationId: string,
+	datasourceId: string,
+	params?: DeleteDatasourceParams,
+) =>
+	[
+		`/v1/m/organizations/${organizationId}/datasources/${datasourceId}`,
+		...(params ? [params] : []),
+	] as const;
+
+export type DeleteDatasourceMutationResult = NonNullable<
+	Awaited<ReturnType<typeof deleteDatasource>>
+>;
+export type DeleteDatasourceMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+/**
+ * @summary Delete Datasource
+ */
+export const useDeleteDatasource = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	organizationId: string,
+	datasourceId: string,
+	params?: DeleteDatasourceParams,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof deleteDatasource>>,
+			TError,
+			Key,
+			Arguments,
+			Awaited<ReturnType<typeof deleteDatasource>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey =
+		swrOptions?.swrKey ??
+		getDeleteDatasourceMutationKey(organizationId, datasourceId, params);
+	const swrFn = getDeleteDatasourceMutationFetcher(
+		organizationId,
+		datasourceId,
+		params,
+		requestOptions,
+	);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
 	return {
 		swrKey,
@@ -1963,17 +2034,31 @@ export const useUpdateParticipantType = <
 export const getDeleteParticipantUrl = (
 	datasourceId: string,
 	participantId: string,
+	params?: DeleteParticipantParams,
 ) => {
-	return `/v1/m/datasources/${datasourceId}/participants/${participantId}`;
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/v1/m/datasources/${datasourceId}/participants/${participantId}?${stringifiedParams}`
+		: `/v1/m/datasources/${datasourceId}/participants/${participantId}`;
 };
 
 export const deleteParticipant = async (
 	datasourceId: string,
 	participantId: string,
+	params?: DeleteParticipantParams,
 	options?: RequestInit,
 ): Promise<void> => {
 	return orvalFetch<void>(
-		getDeleteParticipantUrl(datasourceId, participantId),
+		getDeleteParticipantUrl(datasourceId, participantId, params),
 		{
 			...options,
 			method: "DELETE",
@@ -1984,17 +2069,22 @@ export const deleteParticipant = async (
 export const getDeleteParticipantMutationFetcher = (
 	datasourceId: string,
 	participantId: string,
+	params?: DeleteParticipantParams,
 	options?: SecondParameter<typeof orvalFetch>,
 ) => {
 	return (_: Key, __: { arg: Arguments }): Promise<void> => {
-		return deleteParticipant(datasourceId, participantId, options);
+		return deleteParticipant(datasourceId, participantId, params, options);
 	};
 };
 export const getDeleteParticipantMutationKey = (
 	datasourceId: string,
 	participantId: string,
+	params?: DeleteParticipantParams,
 ) =>
-	[`/v1/m/datasources/${datasourceId}/participants/${participantId}`] as const;
+	[
+		`/v1/m/datasources/${datasourceId}/participants/${participantId}`,
+		...(params ? [params] : []),
+	] as const;
 
 export type DeleteParticipantMutationResult = NonNullable<
 	Awaited<ReturnType<typeof deleteParticipant>>
@@ -2011,6 +2101,7 @@ export const useDeleteParticipant = <
 >(
 	datasourceId: string,
 	participantId: string,
+	params?: DeleteParticipantParams,
 	options?: {
 		swr?: SWRMutationConfiguration<
 			Awaited<ReturnType<typeof deleteParticipant>>,
@@ -2026,10 +2117,11 @@ export const useDeleteParticipant = <
 
 	const swrKey =
 		swrOptions?.swrKey ??
-		getDeleteParticipantMutationKey(datasourceId, participantId);
+		getDeleteParticipantMutationKey(datasourceId, participantId, params);
 	const swrFn = getDeleteParticipantMutationFetcher(
 		datasourceId,
 		participantId,
+		params,
 		requestOptions,
 	);
 
@@ -2174,16 +2266,33 @@ export const useCreateApiKey = <
  * Deletes the specified API key.
  * @summary Delete Api Key
  */
-export const getDeleteApiKeyUrl = (datasourceId: string, apiKeyId: string) => {
-	return `/v1/m/datasources/${datasourceId}/apikeys/${apiKeyId}`;
+export const getDeleteApiKeyUrl = (
+	datasourceId: string,
+	apiKeyId: string,
+	params?: DeleteApiKeyParams,
+) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/v1/m/datasources/${datasourceId}/apikeys/${apiKeyId}?${stringifiedParams}`
+		: `/v1/m/datasources/${datasourceId}/apikeys/${apiKeyId}`;
 };
 
 export const deleteApiKey = async (
 	datasourceId: string,
 	apiKeyId: string,
+	params?: DeleteApiKeyParams,
 	options?: RequestInit,
 ): Promise<void> => {
-	return orvalFetch<void>(getDeleteApiKeyUrl(datasourceId, apiKeyId), {
+	return orvalFetch<void>(getDeleteApiKeyUrl(datasourceId, apiKeyId, params), {
 		...options,
 		method: "DELETE",
 	});
@@ -2192,16 +2301,22 @@ export const deleteApiKey = async (
 export const getDeleteApiKeyMutationFetcher = (
 	datasourceId: string,
 	apiKeyId: string,
+	params?: DeleteApiKeyParams,
 	options?: SecondParameter<typeof orvalFetch>,
 ) => {
 	return (_: Key, __: { arg: Arguments }): Promise<void> => {
-		return deleteApiKey(datasourceId, apiKeyId, options);
+		return deleteApiKey(datasourceId, apiKeyId, params, options);
 	};
 };
 export const getDeleteApiKeyMutationKey = (
 	datasourceId: string,
 	apiKeyId: string,
-) => [`/v1/m/datasources/${datasourceId}/apikeys/${apiKeyId}`] as const;
+	params?: DeleteApiKeyParams,
+) =>
+	[
+		`/v1/m/datasources/${datasourceId}/apikeys/${apiKeyId}`,
+		...(params ? [params] : []),
+	] as const;
 
 export type DeleteApiKeyMutationResult = NonNullable<
 	Awaited<ReturnType<typeof deleteApiKey>>
@@ -2218,6 +2333,7 @@ export const useDeleteApiKey = <
 >(
 	datasourceId: string,
 	apiKeyId: string,
+	params?: DeleteApiKeyParams,
 	options?: {
 		swr?: SWRMutationConfiguration<
 			Awaited<ReturnType<typeof deleteApiKey>>,
@@ -2232,10 +2348,12 @@ export const useDeleteApiKey = <
 	const { swr: swrOptions, request: requestOptions } = options ?? {};
 
 	const swrKey =
-		swrOptions?.swrKey ?? getDeleteApiKeyMutationKey(datasourceId, apiKeyId);
+		swrOptions?.swrKey ??
+		getDeleteApiKeyMutationKey(datasourceId, apiKeyId, params);
 	const swrFn = getDeleteApiKeyMutationFetcher(
 		datasourceId,
 		apiKeyId,
+		params,
 		requestOptions,
 	);
 
@@ -2763,34 +2881,57 @@ export const useGetExperiment = <
 export const getDeleteExperimentUrl = (
 	datasourceId: string,
 	experimentId: string,
+	params?: DeleteExperimentParams,
 ) => {
-	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}`;
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/v1/m/datasources/${datasourceId}/experiments/${experimentId}?${stringifiedParams}`
+		: `/v1/m/datasources/${datasourceId}/experiments/${experimentId}`;
 };
 
 export const deleteExperiment = async (
 	datasourceId: string,
 	experimentId: string,
+	params?: DeleteExperimentParams,
 	options?: RequestInit,
 ): Promise<void> => {
-	return orvalFetch<void>(getDeleteExperimentUrl(datasourceId, experimentId), {
-		...options,
-		method: "DELETE",
-	});
+	return orvalFetch<void>(
+		getDeleteExperimentUrl(datasourceId, experimentId, params),
+		{
+			...options,
+			method: "DELETE",
+		},
+	);
 };
 
 export const getDeleteExperimentMutationFetcher = (
 	datasourceId: string,
 	experimentId: string,
+	params?: DeleteExperimentParams,
 	options?: SecondParameter<typeof orvalFetch>,
 ) => {
 	return (_: Key, __: { arg: Arguments }): Promise<void> => {
-		return deleteExperiment(datasourceId, experimentId, options);
+		return deleteExperiment(datasourceId, experimentId, params, options);
 	};
 };
 export const getDeleteExperimentMutationKey = (
 	datasourceId: string,
 	experimentId: string,
-) => [`/v1/m/datasources/${datasourceId}/experiments/${experimentId}`] as const;
+	params?: DeleteExperimentParams,
+) =>
+	[
+		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}`,
+		...(params ? [params] : []),
+	] as const;
 
 export type DeleteExperimentMutationResult = NonNullable<
 	Awaited<ReturnType<typeof deleteExperiment>>
@@ -2807,6 +2948,7 @@ export const useDeleteExperiment = <
 >(
 	datasourceId: string,
 	experimentId: string,
+	params?: DeleteExperimentParams,
 	options?: {
 		swr?: SWRMutationConfiguration<
 			Awaited<ReturnType<typeof deleteExperiment>>,
@@ -2822,10 +2964,11 @@ export const useDeleteExperiment = <
 
 	const swrKey =
 		swrOptions?.swrKey ??
-		getDeleteExperimentMutationKey(datasourceId, experimentId);
+		getDeleteExperimentMutationKey(datasourceId, experimentId, params);
 	const swrFn = getDeleteExperimentMutationFetcher(
 		datasourceId,
 		experimentId,
+		params,
 		requestOptions,
 	);
 
