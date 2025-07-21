@@ -115,9 +115,29 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
                     <Table.Cell>{metricAnalysis.target_n || '?'}</Table.Cell>
                   </Table.Row>
                   <Table.Row>
-                    <Table.RowHeaderCell>Available Sample Size</Table.RowHeaderCell>
+                    <Table.RowHeaderCell>Available Samples</Table.RowHeaderCell>
                     <Table.Cell>
-                      {metricAnalysis.metric_spec.available_n === null ? '?' : metricAnalysis.metric_spec.available_n}
+                      {metricAnalysis.metric_spec.available_n == null ? (
+                        '?'
+                      ) : metricAnalysis.metric_spec.available_n === 0 ||
+                          metricAnalysis.metric_spec.available_n < (metricAnalysis.target_n ?? 0) ? (
+                        <span style={{ color: 'var(--red-11)' }}>{metricAnalysis.metric_spec.available_n}</span>
+                      ) : (
+                        metricAnalysis.metric_spec.available_n
+                      )}
+                    </Table.Cell>
+                  </Table.Row>
+                  <Table.Row>
+                    <Table.RowHeaderCell>Available non-null Samples</Table.RowHeaderCell>
+                    <Table.Cell>
+                      {metricAnalysis.metric_spec.available_nonnull_n == null ? (
+                        '?'
+                      ) : metricAnalysis.metric_spec.available_nonnull_n === 0 ||
+                          metricAnalysis.metric_spec.available_nonnull_n < (metricAnalysis.target_n ?? 0) ? (
+                        <span style={{ color: 'var(--red-11)' }}>{metricAnalysis.metric_spec.available_nonnull_n}</span>
+                      ) : (
+                        metricAnalysis.metric_spec.available_nonnull_n
+                      )}
                     </Table.Cell>
                   </Table.Row>
                   {metricAnalysis.pct_change_possible !== null && metricAnalysis.pct_change_possible !== undefined && (

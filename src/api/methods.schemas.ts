@@ -497,6 +497,7 @@ export interface BqDsnOutput {
 }
 
 /**
+<<<<<<< HEAD
  * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
  */
 export type CMABExperimentSpecInputExperimentId = string | null;
@@ -595,6 +596,10 @@ export interface CMABExperimentSpecOutput {
 /**
  * The credentials returned to the SPA in exchange for a successful OIDC PKCE exchange.
 
+=======
+ * The credentials returned to the SPA in exchange for a successful OIDC PKCE exchange.
+
+>>>>>>> main
 TODO: This is a placeholder for a longer-lived IDP-versatile session token.
  */
 export interface CallbackResponse {
