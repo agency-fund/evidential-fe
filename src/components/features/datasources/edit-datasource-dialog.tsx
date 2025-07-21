@@ -81,7 +81,7 @@ export const EditDatasourceDialog = ({
           setProjectId(dwh.project_id);
           setDataset(dwh.dataset_id);
           setCredentialsJson(atob(dwh.credentials.content_base64));
-        } else {
+        } else if (dwh.driver === 'postgresql+psycopg2') {
           setHost(dwh.host);
           setPort(dwh.port ? dwh.port.toString() : '5432');
           setDbname(dwh.dbname);

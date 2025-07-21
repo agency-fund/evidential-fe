@@ -157,11 +157,6 @@ export type ArmBanditMu = number[] | null;
 export type ArmBanditCovariance = number[][] | null;
 
 /**
- * Whether this arm is the baseline/control arm for comparison.
- */
-export type ArmBanditIsBaseline = boolean | null;
-
-/**
  * Describes an experiment arm for bandit experiments.
  */
 export interface ArmBandit {
@@ -178,8 +173,6 @@ export interface ArmBandit {
 	mu_init?: ArmBanditMuInit;
 	/** Initial standard deviation parameter for Normal prior */
 	sigma_init?: ArmBanditSigmaInit;
-	/** The number of outcomes for this arm. */
-	n_outcomes?: number;
 	/** Updated alpha parameter for Beta prior */
 	alpha?: ArmBanditAlpha;
 	/** Updated beta parameter for Beta prior */
@@ -188,8 +181,6 @@ export interface ArmBandit {
 	mu?: ArmBanditMu;
 	/** Updated covariance matrix for Normal prior */
 	covariance?: ArmBanditCovariance;
-	/** Whether this arm is the baseline/control arm for comparison. */
-	is_baseline: ArmBanditIsBaseline;
 }
 
 /**
@@ -275,11 +266,6 @@ export type AssignmentCreatedAt = string | null;
 export type AssignmentStrata = Strata[] | null;
 
 /**
- * Unique identifier for the draw.
- */
-export type AssignmentDrawId = string | null;
-
-/**
  * The date and time the outcome was recorded.
  */
 export type AssignmentObservedAt = string | null;
@@ -309,8 +295,6 @@ export interface Assignment {
 	created_at?: AssignmentCreatedAt;
 	/** List of properties and their values for this participant used for stratification or tracking metrics. If stratification is not used, this will be None. */
 	strata?: AssignmentStrata;
-	/** Unique identifier for the draw. */
-	draw_id?: AssignmentDrawId;
 	/** The date and time the outcome was recorded. */
 	observed_at?: AssignmentObservedAt;
 	/** The observed outcome for this assignment. */
@@ -336,6 +320,24 @@ export interface BalanceCheck {
 	p_value: number;
 	/** Whether the p-value for our observed f_statistic is greater than the f-stat threshold specified in our design specification. (See DesignSpec.fstat_thresh) */
 	balance_ok: boolean;
+}
+
+/**
+ * Describes changes in arms for a bandit experiment
+ */
+export interface BanditExperimentAnalysis {
+	/** ID of the experiment. */
+	experiment_id: string;
+	/** The number of trials conducted for this experiment. */
+	n_trials: number;
+	/** The number of outcomes observed for this experiment. */
+	n_outcomes: number;
+	/** Posterior means for each arm in the experiment. */
+	posterior_means: number[];
+	/** Posterior standard deviations for each arm in the experiment. */
+	posterior_stds: number[];
+	/** Volume of participants for each arm in the experiment. */
+	volumes: number[];
 }
 
 /**
@@ -934,9 +936,9 @@ export interface Dsn {
 	search_path?: DsnSearchPath;
 }
 
-export type DwhInput = Dsn | BqDsnInput;
+export type DwhInput = Dsn | BqDsnInput | NoDwh;
 
-export type DwhOutput = Dsn | BqDsnOutput;
+export type DwhOutput = Dsn | BqDsnOutput | NoDwh;
 
 /**
  * A navigable link to related information.
@@ -966,27 +968,6 @@ export interface EventSummary {
 	link?: EventSummaryLink;
 	/** Details */
 	details: EventSummaryDetails;
-}
-
-/**
- * The number of participants assigned to the experiment across all arms that are not found in the data warehouse when pulling metrics.
- */
-export type ExperimentAnalysisNumMissingParticipants = number | null;
-
-/**
- * Describes the change if any in metrics targeted by an experiment.
- */
-export interface ExperimentAnalysis {
-	/** ID of the experiment. */
-	experiment_id: string;
-	/** Contains one analysis per metric targeted by the experiment. */
-	metric_analyses: MetricAnalysis[];
-	/** The number of participants assigned to the experiment pulled from the dwh across all arms. Metric outcomes are not guaranteed to be present for all participants. */
-	num_participants: number;
-	/** The number of participants assigned to the experiment across all arms that are not found in the data warehouse when pulling metrics. */
-	num_missing_participants?: ExperimentAnalysisNumMissingParticipants;
-	/** The date and time the experiment analysis was created. */
-	created_at: string;
 }
 
 /**
@@ -1186,6 +1167,27 @@ export type FilterValueTypes =
 	| StrictFloat[]
 	| FilterValueTypesAnyOfItem[]
 	| FilterValueTypesAnyOfTwoItem[];
+
+/**
+ * The number of participants assigned to the experiment across all arms that are not found in the data warehouse when pulling metrics.
+ */
+export type FreqExperimentAnalysisNumMissingParticipants = number | null;
+
+/**
+ * Describes the change if any in metrics targeted by an experiment.
+ */
+export interface FreqExperimentAnalysis {
+	/** ID of the experiment. */
+	experiment_id: string;
+	/** Contains one analysis per metric targeted by the experiment. */
+	metric_analyses: MetricAnalysis[];
+	/** The number of participants assigned to the experiment pulled from the dwh across all arms. Metric outcomes are not guaranteed to be present for all participants. */
+	num_participants: number;
+	/** The number of participants assigned to the experiment across all arms that are not found in the data warehouse when pulling metrics. */
+	num_missing_participants?: FreqExperimentAnalysisNumMissingParticipants;
+	/** The date and time the experiment analysis was created. */
+	created_at: string;
+}
 
 /**
  * The Google Cloud Service Account credentials.
@@ -1759,6 +1761,20 @@ export const MetricType = {
 	binary: "binary",
 	numeric: "numeric",
 } as const;
+
+export type NoDwhDriver = (typeof NoDwhDriver)[keyof typeof NoDwhDriver];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const NoDwhDriver = {
+	none: "none",
+} as const;
+
+/**
+ * NoDwh is used to indicate that no data warehouse is configured.
+ */
+export interface NoDwh {
+	driver: NoDwhDriver;
+}
 
 /**
  * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
@@ -2369,6 +2385,10 @@ export type AnalyzeExperimentParams = {
 	 */
 	baseline_arm_id?: string | null;
 };
+
+export type AnalyzeExperiment200 =
+	| FreqExperimentAnalysis
+	| BanditExperimentAnalysis;
 
 export type GetExperimentAssignmentForParticipantParams = {
 	/**

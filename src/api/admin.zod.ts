@@ -423,6 +423,13 @@ export const createDatasourceBody = zod.object({
 					.describe("The Google Cloud Service Account credentials."),
 			})
 			.describe("Describes a BigQuery connection."),
+		zod
+			.object({
+				driver: zod.enum(["none"]),
+			})
+			.describe(
+				"NoDwh is used to indicate that no data warehouse is configured.",
+			),
 	]),
 });
 
@@ -533,6 +540,13 @@ export const updateDatasourceBody = zod.object({
 						.describe("The Google Cloud Service Account credentials."),
 				})
 				.describe("Describes a BigQuery connection."),
+			zod
+				.object({
+					driver: zod.enum(["none"]),
+				})
+				.describe(
+					"NoDwh is used to indicate that no data warehouse is configured.",
+				),
 		])
 		.or(zod.null())
 		.optional(),
@@ -769,6 +783,13 @@ export const getDatasourceResponse = zod.object({
 							.describe("The Google Cloud Service Account credentials."),
 					})
 					.describe("Describes a BigQuery connection."),
+				zod
+					.object({
+						driver: zod.enum(["none"]),
+					})
+					.describe(
+						"NoDwh is used to indicate that no data warehouse is configured.",
+					),
 			]),
 		})
 		.describe(
@@ -1660,6 +1681,7 @@ export const deleteApiKeyParams = zod.object({
 });
 
 /**
+ * Creates a new experiment in the specified datasource.
  * @summary Create Experiment
  */
 export const createExperimentParams = zod.object({
@@ -1743,7 +1765,6 @@ export const createExperimentBodyDesignSpecExperimentNameMaxTwo = 100;
 export const createExperimentBodyDesignSpecDescriptionMaxTwo = 2000;
 export const createExperimentBodyDesignSpecArmsItemArmNameMaxTwo = 100;
 export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxSeven = 2000;
-export const createExperimentBodyDesignSpecArmsItemNOutcomesDefault = 0;
 export const createExperimentBodyDesignSpecArmsMinTwo = 2;
 
 export const createExperimentBodyDesignSpecArmsMaxTwo = 10;
@@ -1755,7 +1776,6 @@ export const createExperimentBodyDesignSpecExperimentNameMaxThree = 100;
 export const createExperimentBodyDesignSpecDescriptionMaxThree = 2000;
 export const createExperimentBodyDesignSpecArmsItemArmNameMaxThree = 100;
 export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnezero = 2000;
-export const createExperimentBodyDesignSpecArmsItemNOutcomesDefaultOne = 0;
 export const createExperimentBodyDesignSpecArmsMinThree = 2;
 
 export const createExperimentBodyDesignSpecArmsMaxThree = 10;
@@ -1767,7 +1787,6 @@ export const createExperimentBodyDesignSpecExperimentNameMaxFour = 100;
 export const createExperimentBodyDesignSpecDescriptionMaxFour = 2000;
 export const createExperimentBodyDesignSpecArmsItemArmNameMaxFour = 100;
 export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
-export const createExperimentBodyDesignSpecArmsItemNOutcomesDefaultTwo = 0;
 export const createExperimentBodyDesignSpecArmsMinFour = 2;
 
 export const createExperimentBodyDesignSpecArmsMaxFour = 10;
@@ -2146,10 +2165,6 @@ export const createExperimentBody = zod.object({
 										.describe(
 											"Initial standard deviation parameter for Normal prior",
 										),
-									n_outcomes: zod
-										.number()
-										.optional()
-										.describe("The number of outcomes for this arm."),
 									alpha: zod
 										.number()
 										.or(zod.null())
@@ -2170,12 +2185,6 @@ export const createExperimentBody = zod.object({
 										.or(zod.null())
 										.optional()
 										.describe("Updated covariance matrix for Normal prior"),
-									is_baseline: zod
-										.boolean()
-										.or(zod.null())
-										.describe(
-											"Whether this arm is the baseline/control arm for comparison.",
-										),
 								})
 								.describe(
 									"Describes an experiment arm for bandit experiments.",
@@ -2294,10 +2303,6 @@ export const createExperimentBody = zod.object({
 										.describe(
 											"Initial standard deviation parameter for Normal prior",
 										),
-									n_outcomes: zod
-										.number()
-										.optional()
-										.describe("The number of outcomes for this arm."),
 									alpha: zod
 										.number()
 										.or(zod.null())
@@ -2318,12 +2323,6 @@ export const createExperimentBody = zod.object({
 										.or(zod.null())
 										.optional()
 										.describe("Updated covariance matrix for Normal prior"),
-									is_baseline: zod
-										.boolean()
-										.or(zod.null())
-										.describe(
-											"Whether this arm is the baseline/control arm for comparison.",
-										),
 								})
 								.describe(
 									"Describes an experiment arm for bandit experiments.",
@@ -2442,10 +2441,6 @@ export const createExperimentBody = zod.object({
 										.describe(
 											"Initial standard deviation parameter for Normal prior",
 										),
-									n_outcomes: zod
-										.number()
-										.optional()
-										.describe("The number of outcomes for this arm."),
 									alpha: zod
 										.number()
 										.or(zod.null())
@@ -2466,12 +2461,6 @@ export const createExperimentBody = zod.object({
 										.or(zod.null())
 										.optional()
 										.describe("Updated covariance matrix for Normal prior"),
-									is_baseline: zod
-										.boolean()
-										.or(zod.null())
-										.describe(
-											"Whether this arm is the baseline/control arm for comparison.",
-										),
 								})
 								.describe(
 									"Describes an experiment arm for bandit experiments.",
@@ -2728,7 +2717,6 @@ export const createExperimentResponseDesignSpecExperimentNameMaxTwo = 100;
 export const createExperimentResponseDesignSpecDescriptionMaxTwo = 2000;
 export const createExperimentResponseDesignSpecArmsItemArmNameMaxTwo = 100;
 export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxSeven = 2000;
-export const createExperimentResponseDesignSpecArmsItemNOutcomesDefault = 0;
 export const createExperimentResponseDesignSpecArmsMinTwo = 2;
 
 export const createExperimentResponseDesignSpecArmsMaxTwo = 10;
@@ -2740,7 +2728,6 @@ export const createExperimentResponseDesignSpecExperimentNameMaxThree = 100;
 export const createExperimentResponseDesignSpecDescriptionMaxThree = 2000;
 export const createExperimentResponseDesignSpecArmsItemArmNameMaxThree = 100;
 export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnezero = 2000;
-export const createExperimentResponseDesignSpecArmsItemNOutcomesDefaultOne = 0;
 export const createExperimentResponseDesignSpecArmsMinThree = 2;
 
 export const createExperimentResponseDesignSpecArmsMaxThree = 10;
@@ -2752,7 +2739,6 @@ export const createExperimentResponseDesignSpecExperimentNameMaxFour = 100;
 export const createExperimentResponseDesignSpecDescriptionMaxFour = 2000;
 export const createExperimentResponseDesignSpecArmsItemArmNameMaxFour = 100;
 export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
-export const createExperimentResponseDesignSpecArmsItemNOutcomesDefaultTwo = 0;
 export const createExperimentResponseDesignSpecArmsMinFour = 2;
 
 export const createExperimentResponseDesignSpecArmsMaxFour = 10;
@@ -3162,10 +3148,6 @@ export const createExperimentResponse = zod
 											.describe(
 												"Initial standard deviation parameter for Normal prior",
 											),
-										n_outcomes: zod
-											.number()
-											.optional()
-											.describe("The number of outcomes for this arm."),
 										alpha: zod
 											.number()
 											.or(zod.null())
@@ -3186,12 +3168,6 @@ export const createExperimentResponse = zod
 											.or(zod.null())
 											.optional()
 											.describe("Updated covariance matrix for Normal prior"),
-										is_baseline: zod
-											.boolean()
-											.or(zod.null())
-											.describe(
-												"Whether this arm is the baseline/control arm for comparison.",
-											),
 									})
 									.describe(
 										"Describes an experiment arm for bandit experiments.",
@@ -3312,10 +3288,6 @@ export const createExperimentResponse = zod
 											.describe(
 												"Initial standard deviation parameter for Normal prior",
 											),
-										n_outcomes: zod
-											.number()
-											.optional()
-											.describe("The number of outcomes for this arm."),
 										alpha: zod
 											.number()
 											.or(zod.null())
@@ -3336,12 +3308,6 @@ export const createExperimentResponse = zod
 											.or(zod.null())
 											.optional()
 											.describe("Updated covariance matrix for Normal prior"),
-										is_baseline: zod
-											.boolean()
-											.or(zod.null())
-											.describe(
-												"Whether this arm is the baseline/control arm for comparison.",
-											),
 									})
 									.describe(
 										"Describes an experiment arm for bandit experiments.",
@@ -3462,10 +3428,6 @@ export const createExperimentResponse = zod
 											.describe(
 												"Initial standard deviation parameter for Normal prior",
 											),
-										n_outcomes: zod
-											.number()
-											.optional()
-											.describe("The number of outcomes for this arm."),
 										alpha: zod
 											.number()
 											.or(zod.null())
@@ -3486,12 +3448,6 @@ export const createExperimentResponse = zod
 											.or(zod.null())
 											.optional()
 											.describe("Updated covariance matrix for Normal prior"),
-										is_baseline: zod
-											.boolean()
-											.or(zod.null())
-											.describe(
-												"Whether this arm is the baseline/control arm for comparison.",
-											),
 									})
 									.describe(
 										"Describes an experiment arm for bandit experiments.",
@@ -3910,8 +3866,30 @@ export const analyzeExperimentResponse = zod
 			.datetime({})
 			.describe("The date and time the experiment analysis was created."),
 	})
-	.describe(
-		"Describes the change if any in metrics targeted by an experiment.",
+	.describe("Describes the change if any in metrics targeted by an experiment.")
+	.or(
+		zod
+			.object({
+				experiment_id: zod.string().describe("ID of the experiment."),
+				n_trials: zod
+					.number()
+					.describe("The number of trials conducted for this experiment."),
+				n_outcomes: zod
+					.number()
+					.describe("The number of outcomes observed for this experiment."),
+				posterior_means: zod
+					.array(zod.number())
+					.describe("Posterior means for each arm in the experiment."),
+				posterior_stds: zod
+					.array(zod.number())
+					.describe(
+						"Posterior standard deviations for each arm in the experiment.",
+					),
+				volumes: zod
+					.array(zod.number())
+					.describe("Volume of participants for each arm in the experiment."),
+			})
+			.describe("Describes changes in arms for a bandit experiment"),
 	);
 
 /**
@@ -4005,7 +3983,6 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNam
 export const listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxTwo = 2000;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxTwo = 100;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxSeven = 2000;
-export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemNOutcomesDefault = 0;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinTwo = 2;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxTwo = 10;
@@ -4017,7 +3994,6 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNam
 export const listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxThree = 2000;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxThree = 100;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOnezero = 2000;
-export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemNOutcomesDefaultOne = 0;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinThree = 2;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxThree = 10;
@@ -4029,7 +4005,6 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNam
 export const listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxFour = 2000;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxFour = 100;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
-export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemNOutcomesDefaultTwo = 0;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinFour = 2;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxFour = 10;
@@ -4523,10 +4498,6 @@ export const listOrganizationExperimentsResponse = zod.object({
 													.describe(
 														"Initial standard deviation parameter for Normal prior",
 													),
-												n_outcomes: zod
-													.number()
-													.optional()
-													.describe("The number of outcomes for this arm."),
 												alpha: zod
 													.number()
 													.or(zod.null())
@@ -4548,12 +4519,6 @@ export const listOrganizationExperimentsResponse = zod.object({
 													.optional()
 													.describe(
 														"Updated covariance matrix for Normal prior",
-													),
-												is_baseline: zod
-													.boolean()
-													.or(zod.null())
-													.describe(
-														"Whether this arm is the baseline/control arm for comparison.",
 													),
 											})
 											.describe(
@@ -4691,10 +4656,6 @@ export const listOrganizationExperimentsResponse = zod.object({
 													.describe(
 														"Initial standard deviation parameter for Normal prior",
 													),
-												n_outcomes: zod
-													.number()
-													.optional()
-													.describe("The number of outcomes for this arm."),
 												alpha: zod
 													.number()
 													.or(zod.null())
@@ -4716,12 +4677,6 @@ export const listOrganizationExperimentsResponse = zod.object({
 													.optional()
 													.describe(
 														"Updated covariance matrix for Normal prior",
-													),
-												is_baseline: zod
-													.boolean()
-													.or(zod.null())
-													.describe(
-														"Whether this arm is the baseline/control arm for comparison.",
 													),
 											})
 											.describe(
@@ -4859,10 +4814,6 @@ export const listOrganizationExperimentsResponse = zod.object({
 													.describe(
 														"Initial standard deviation parameter for Normal prior",
 													),
-												n_outcomes: zod
-													.number()
-													.optional()
-													.describe("The number of outcomes for this arm."),
 												alpha: zod
 													.number()
 													.or(zod.null())
@@ -4884,12 +4835,6 @@ export const listOrganizationExperimentsResponse = zod.object({
 													.optional()
 													.describe(
 														"Updated covariance matrix for Normal prior",
-													),
-												is_baseline: zod
-													.boolean()
-													.or(zod.null())
-													.describe(
-														"Whether this arm is the baseline/control arm for comparison.",
 													),
 											})
 											.describe(
@@ -5261,7 +5206,6 @@ export const getExperimentResponseDesignSpecExperimentNameMaxTwo = 100;
 export const getExperimentResponseDesignSpecDescriptionMaxTwo = 2000;
 export const getExperimentResponseDesignSpecArmsItemArmNameMaxTwo = 100;
 export const getExperimentResponseDesignSpecArmsItemArmDescriptionMaxSeven = 2000;
-export const getExperimentResponseDesignSpecArmsItemNOutcomesDefault = 0;
 export const getExperimentResponseDesignSpecArmsMinTwo = 2;
 
 export const getExperimentResponseDesignSpecArmsMaxTwo = 10;
@@ -5273,7 +5217,6 @@ export const getExperimentResponseDesignSpecExperimentNameMaxThree = 100;
 export const getExperimentResponseDesignSpecDescriptionMaxThree = 2000;
 export const getExperimentResponseDesignSpecArmsItemArmNameMaxThree = 100;
 export const getExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnezero = 2000;
-export const getExperimentResponseDesignSpecArmsItemNOutcomesDefaultOne = 0;
 export const getExperimentResponseDesignSpecArmsMinThree = 2;
 
 export const getExperimentResponseDesignSpecArmsMaxThree = 10;
@@ -5285,7 +5228,6 @@ export const getExperimentResponseDesignSpecExperimentNameMaxFour = 100;
 export const getExperimentResponseDesignSpecDescriptionMaxFour = 2000;
 export const getExperimentResponseDesignSpecArmsItemArmNameMaxFour = 100;
 export const getExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
-export const getExperimentResponseDesignSpecArmsItemNOutcomesDefaultTwo = 0;
 export const getExperimentResponseDesignSpecArmsMinFour = 2;
 
 export const getExperimentResponseDesignSpecArmsMaxFour = 10;
@@ -5693,10 +5635,6 @@ export const getExperimentResponse = zod
 											.describe(
 												"Initial standard deviation parameter for Normal prior",
 											),
-										n_outcomes: zod
-											.number()
-											.optional()
-											.describe("The number of outcomes for this arm."),
 										alpha: zod
 											.number()
 											.or(zod.null())
@@ -5717,12 +5655,6 @@ export const getExperimentResponse = zod
 											.or(zod.null())
 											.optional()
 											.describe("Updated covariance matrix for Normal prior"),
-										is_baseline: zod
-											.boolean()
-											.or(zod.null())
-											.describe(
-												"Whether this arm is the baseline/control arm for comparison.",
-											),
 									})
 									.describe(
 										"Describes an experiment arm for bandit experiments.",
@@ -5843,10 +5775,6 @@ export const getExperimentResponse = zod
 											.describe(
 												"Initial standard deviation parameter for Normal prior",
 											),
-										n_outcomes: zod
-											.number()
-											.optional()
-											.describe("The number of outcomes for this arm."),
 										alpha: zod
 											.number()
 											.or(zod.null())
@@ -5867,12 +5795,6 @@ export const getExperimentResponse = zod
 											.or(zod.null())
 											.optional()
 											.describe("Updated covariance matrix for Normal prior"),
-										is_baseline: zod
-											.boolean()
-											.or(zod.null())
-											.describe(
-												"Whether this arm is the baseline/control arm for comparison.",
-											),
 									})
 									.describe(
 										"Describes an experiment arm for bandit experiments.",
@@ -5993,10 +5915,6 @@ export const getExperimentResponse = zod
 											.describe(
 												"Initial standard deviation parameter for Normal prior",
 											),
-										n_outcomes: zod
-											.number()
-											.optional()
-											.describe("The number of outcomes for this arm."),
 										alpha: zod
 											.number()
 											.or(zod.null())
@@ -6017,12 +5935,6 @@ export const getExperimentResponse = zod
 											.or(zod.null())
 											.optional()
 											.describe("Updated covariance matrix for Normal prior"),
-										is_baseline: zod
-											.boolean()
-											.or(zod.null())
-											.describe(
-												"Whether this arm is the baseline/control arm for comparison.",
-											),
 									})
 									.describe(
 										"Describes an experiment arm for bandit experiments.",
@@ -6414,11 +6326,6 @@ export const getExperimentAssignmentsResponse = zod
 						.describe(
 							"List of properties and their values for this participant used for stratification or tracking metrics. If stratification is not used, this will be None.",
 						),
-					draw_id: zod
-						.string()
-						.or(zod.null())
-						.optional()
-						.describe("Unique identifier for the draw."),
 					observed_at: zod
 						.string()
 						.datetime({})
@@ -6556,11 +6463,6 @@ export const getExperimentAssignmentForParticipantResponse = zod
 					.describe(
 						"List of properties and their values for this participant used for stratification or tracking metrics. If stratification is not used, this will be None.",
 					),
-				draw_id: zod
-					.string()
-					.or(zod.null())
-					.optional()
-					.describe("Unique identifier for the draw."),
 				observed_at: zod
 					.string()
 					.datetime({})
@@ -6602,6 +6504,83 @@ export const getExperimentAssignmentForParticipantResponse = zod
 	);
 
 /**
+ * Get the assignment for a specific participant, excluding strata if any.
+    For 'preassigned' experiments, the participant's Assignment is returned if it exists.
+    For 'online', returns the assignment if it exists, else generates an assignment.
+ * @summary Update Experiment Arm For Participant
+ */
+export const updateExperimentArmForParticipantParams = zod.object({
+	datasource_id: zod.string(),
+	experiment_id: zod.string(),
+	participant_id: zod.string(),
+	outcome: zod.number(),
+});
+
+export const updateExperimentArmForParticipantResponseArmNameMax = 100;
+export const updateExperimentArmForParticipantResponseArmDescriptionMaxOne = 2000;
+
+export const updateExperimentArmForParticipantResponse = zod
+	.object({
+		arm_id: zod
+			.string()
+			.or(zod.null())
+			.optional()
+			.describe(
+				"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+			),
+		arm_name: zod
+			.string()
+			.max(updateExperimentArmForParticipantResponseArmNameMax),
+		arm_description: zod
+			.string()
+			.max(updateExperimentArmForParticipantResponseArmDescriptionMaxOne)
+			.or(zod.null())
+			.optional(),
+		alpha_init: zod
+			.number()
+			.or(zod.null())
+			.optional()
+			.describe("Initial alpha parameter for Beta prior"),
+		beta_init: zod
+			.number()
+			.or(zod.null())
+			.optional()
+			.describe("Initial beta parameter for Beta prior"),
+		mu_init: zod
+			.number()
+			.or(zod.null())
+			.optional()
+			.describe("Initial mean parameter for Normal prior"),
+		sigma_init: zod
+			.number()
+			.or(zod.null())
+			.optional()
+			.describe("Initial standard deviation parameter for Normal prior"),
+		alpha: zod
+			.number()
+			.or(zod.null())
+			.optional()
+			.describe("Updated alpha parameter for Beta prior"),
+		beta: zod
+			.number()
+			.or(zod.null())
+			.optional()
+			.describe("Updated beta parameter for Beta prior"),
+		mu: zod
+			.array(zod.number())
+			.or(zod.null())
+			.optional()
+			.describe("Updated mean vector for Normal prior"),
+		covariance: zod
+			.array(zod.array(zod.number()))
+			.or(zod.null())
+			.optional()
+			.describe("Updated covariance matrix for Normal prior"),
+	})
+	.describe("Describes an experiment arm for bandit experiments.");
+
+/**
+ * Performs a power check for the specified datasource.
  * @summary Power Check
  */
 export const powerCheckParams = zod.object({
@@ -6677,7 +6656,6 @@ export const powerCheckBodyDesignSpecExperimentNameMaxTwo = 100;
 export const powerCheckBodyDesignSpecDescriptionMaxTwo = 2000;
 export const powerCheckBodyDesignSpecArmsItemArmNameMaxTwo = 100;
 export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxSeven = 2000;
-export const powerCheckBodyDesignSpecArmsItemNOutcomesDefault = 0;
 export const powerCheckBodyDesignSpecArmsMinTwo = 2;
 
 export const powerCheckBodyDesignSpecArmsMaxTwo = 10;
@@ -6689,7 +6667,6 @@ export const powerCheckBodyDesignSpecExperimentNameMaxThree = 100;
 export const powerCheckBodyDesignSpecDescriptionMaxThree = 2000;
 export const powerCheckBodyDesignSpecArmsItemArmNameMaxThree = 100;
 export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOnezero = 2000;
-export const powerCheckBodyDesignSpecArmsItemNOutcomesDefaultOne = 0;
 export const powerCheckBodyDesignSpecArmsMinThree = 2;
 
 export const powerCheckBodyDesignSpecArmsMaxThree = 10;
@@ -6701,7 +6678,6 @@ export const powerCheckBodyDesignSpecExperimentNameMaxFour = 100;
 export const powerCheckBodyDesignSpecDescriptionMaxFour = 2000;
 export const powerCheckBodyDesignSpecArmsItemArmNameMaxFour = 100;
 export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
-export const powerCheckBodyDesignSpecArmsItemNOutcomesDefaultTwo = 0;
 export const powerCheckBodyDesignSpecArmsMinFour = 2;
 
 export const powerCheckBodyDesignSpecArmsMaxFour = 10;
@@ -7062,10 +7038,6 @@ export const powerCheckBody = zod.object({
 										.describe(
 											"Initial standard deviation parameter for Normal prior",
 										),
-									n_outcomes: zod
-										.number()
-										.optional()
-										.describe("The number of outcomes for this arm."),
 									alpha: zod
 										.number()
 										.or(zod.null())
@@ -7086,12 +7058,6 @@ export const powerCheckBody = zod.object({
 										.or(zod.null())
 										.optional()
 										.describe("Updated covariance matrix for Normal prior"),
-									is_baseline: zod
-										.boolean()
-										.or(zod.null())
-										.describe(
-											"Whether this arm is the baseline/control arm for comparison.",
-										),
 								})
 								.describe(
 									"Describes an experiment arm for bandit experiments.",
@@ -7208,10 +7174,6 @@ export const powerCheckBody = zod.object({
 										.describe(
 											"Initial standard deviation parameter for Normal prior",
 										),
-									n_outcomes: zod
-										.number()
-										.optional()
-										.describe("The number of outcomes for this arm."),
 									alpha: zod
 										.number()
 										.or(zod.null())
@@ -7232,12 +7194,6 @@ export const powerCheckBody = zod.object({
 										.or(zod.null())
 										.optional()
 										.describe("Updated covariance matrix for Normal prior"),
-									is_baseline: zod
-										.boolean()
-										.or(zod.null())
-										.describe(
-											"Whether this arm is the baseline/control arm for comparison.",
-										),
 								})
 								.describe(
 									"Describes an experiment arm for bandit experiments.",
@@ -7354,10 +7310,6 @@ export const powerCheckBody = zod.object({
 										.describe(
 											"Initial standard deviation parameter for Normal prior",
 										),
-									n_outcomes: zod
-										.number()
-										.optional()
-										.describe("The number of outcomes for this arm."),
 									alpha: zod
 										.number()
 										.or(zod.null())
@@ -7378,12 +7330,6 @@ export const powerCheckBody = zod.object({
 										.or(zod.null())
 										.optional()
 										.describe("Updated covariance matrix for Normal prior"),
-									is_baseline: zod
-										.boolean()
-										.or(zod.null())
-										.describe(
-											"Whether this arm is the baseline/control arm for comparison.",
-										),
 								})
 								.describe(
 									"Describes an experiment arm for bandit experiments.",

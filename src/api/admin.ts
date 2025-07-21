@@ -14,7 +14,9 @@ import type {
 	AddMemberToOrganizationRequest,
 	AddWebhookToOrganizationRequest,
 	AddWebhookToOrganizationResponse,
+	AnalyzeExperiment200,
 	AnalyzeExperimentParams,
+	ArmBandit,
 	CallerIdentity,
 	CreateApiKeyResponse,
 	CreateDatasourceRequest,
@@ -26,7 +28,6 @@ import type {
 	CreateOrganizationResponse,
 	CreateParticipantsTypeRequest,
 	CreateParticipantsTypeResponse,
-	ExperimentAnalysis,
 	GetDatasourceResponse,
 	GetExperimentAssignmentForParticipantParams,
 	GetExperimentAssignmentsResponse,
@@ -2247,6 +2248,7 @@ export const useDeleteApiKey = <
 	};
 };
 /**
+ * Creates a new experiment in the specified datasource.
  * @summary Create Experiment
  */
 export const getCreateExperimentUrl = (
@@ -2377,8 +2379,8 @@ export const analyzeExperiment = async (
 	experimentId: string,
 	params?: AnalyzeExperimentParams,
 	options?: RequestInit,
-): Promise<ExperimentAnalysis> => {
-	return orvalFetch<ExperimentAnalysis>(
+): Promise<AnalyzeExperiment200> => {
+	return orvalFetch<AnalyzeExperiment200>(
 		getAnalyzeExperimentUrl(datasourceId, experimentId, params),
 		{
 			...options,
@@ -3115,6 +3117,123 @@ export const useGetExperimentAssignmentForParticipant = <
 	};
 };
 /**
+ * Get the assignment for a specific participant, excluding strata if any.
+    For 'preassigned' experiments, the participant's Assignment is returned if it exists.
+    For 'online', returns the assignment if it exists, else generates an assignment.
+ * @summary Update Experiment Arm For Participant
+ */
+export const getUpdateExperimentArmForParticipantUrl = (
+	datasourceId: string,
+	experimentId: string,
+	participantId: string,
+	outcome: number,
+) => {
+	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments/${participantId}/${outcome}`;
+};
+
+export const updateExperimentArmForParticipant = async (
+	datasourceId: string,
+	experimentId: string,
+	participantId: string,
+	outcome: number,
+	options?: RequestInit,
+): Promise<ArmBandit> => {
+	return orvalFetch<ArmBandit>(
+		getUpdateExperimentArmForParticipantUrl(
+			datasourceId,
+			experimentId,
+			participantId,
+			outcome,
+		),
+		{
+			...options,
+			method: "POST",
+		},
+	);
+};
+
+export const getUpdateExperimentArmForParticipantMutationFetcher = (
+	datasourceId: string,
+	experimentId: string,
+	participantId: string,
+	outcome: number,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, __: { arg: Arguments }): Promise<ArmBandit> => {
+		return updateExperimentArmForParticipant(
+			datasourceId,
+			experimentId,
+			participantId,
+			outcome,
+			options,
+		);
+	};
+};
+export const getUpdateExperimentArmForParticipantMutationKey = (
+	datasourceId: string,
+	experimentId: string,
+	participantId: string,
+	outcome: number,
+) =>
+	[
+		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments/${participantId}/${outcome}`,
+	] as const;
+
+export type UpdateExperimentArmForParticipantMutationResult = NonNullable<
+	Awaited<ReturnType<typeof updateExperimentArmForParticipant>>
+>;
+export type UpdateExperimentArmForParticipantMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+/**
+ * @summary Update Experiment Arm For Participant
+ */
+export const useUpdateExperimentArmForParticipant = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	datasourceId: string,
+	experimentId: string,
+	participantId: string,
+	outcome: number,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof updateExperimentArmForParticipant>>,
+			TError,
+			Key,
+			Arguments,
+			Awaited<ReturnType<typeof updateExperimentArmForParticipant>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey =
+		swrOptions?.swrKey ??
+		getUpdateExperimentArmForParticipantMutationKey(
+			datasourceId,
+			experimentId,
+			participantId,
+			outcome,
+		);
+	const swrFn = getUpdateExperimentArmForParticipantMutationFetcher(
+		datasourceId,
+		experimentId,
+		participantId,
+		outcome,
+		requestOptions,
+	);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * Performs a power check for the specified datasource.
  * @summary Power Check
  */
 export const getPowerCheckUrl = (datasourceId: string) => {

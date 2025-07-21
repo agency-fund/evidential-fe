@@ -19,6 +19,7 @@ import {
   OnlineFrequentistExperimentSpecOutput,
   PreassignedFrequentistExperimentSpecOutput,
 } from '@/api/methods.schemas';
+import { FreqExperimentAnalysis } from '@/api/methods.schemas';
 
 // Type guard to assure TypeScript that a DesignSpec is one of two types.
 function isFrequentistDesign(
@@ -48,7 +49,7 @@ export default function ExperimentViewPage() {
   } = useAnalyzeExperiment(datasourceId || '', experimentId, undefined, {
     swr: { enabled: !!datasourceId && !!experiment, shouldRetryOnError: false },
   });
-
+  
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
   }
@@ -212,7 +213,7 @@ export default function ExperimentViewPage() {
                     <Flex direction="column" gap="3" py="3">
                       {isFrequentistDesign(design_spec) &&
                         assign_summary &&
-                        analysisData.metric_analyses.map((metric_analysis, index) => (
+                        (analysisData as FreqExperimentAnalysis).metric_analyses.map((metric_analysis, index) => (
                           <ForestPlot
                             key={index}
                             analysis={metric_analysis}
