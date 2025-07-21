@@ -49,7 +49,8 @@ export default function ExperimentViewPage() {
   } = useAnalyzeExperiment(datasourceId || '', experimentId, undefined, {
     swr: { enabled: !!datasourceId && !!experiment, shouldRetryOnError: false },
   });
-  
+
+
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
   }
