@@ -1,6 +1,6 @@
 'use client';
 import { Button, Callout, Flex, Spinner, Text, TextField } from '@radix-ui/themes';
-import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
+import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useCreateExperiment, useInspectParticipantTypes } from '@/api/admin';
 import { FilterInput, GetFiltersResponseElement, GetMetricsResponseElement } from '@/api/methods.schemas';

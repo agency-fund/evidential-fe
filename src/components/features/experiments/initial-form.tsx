@@ -8,19 +8,18 @@ import {
   Grid,
   Heading,
   IconButton,
-  RadioGroup,
   Select,
   Spinner,
   Text,
   TextArea,
   TextField,
 } from '@radix-ui/themes';
-import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 import { useListParticipantTypes } from '@/api/admin';
 import Link from 'next/link';
 import { WebhookSummary } from '@/api/methods.schemas';
+import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 
 interface InitialFormProps {
   formData: ExperimentFormData;
@@ -89,77 +88,47 @@ export function InitialForm({ formData, onFormDataChange, onNext, webhooks }: In
     <form onSubmit={handleSubmit}>
       <Flex direction="column" gap="4">
         <Card>
-          <Flex gap="4">
-            <Flex direction="column" gap="3" flexGrow="1">
-              <Text as="label" size="2" weight="bold">
-                Choose Participants
-              </Text>
+          <Flex direction="column" gap="3">
+            <Text as="label" size="2" weight="bold">
+              Choose Participants
+            </Text>
 
-              <Flex direction="row" gap="2">
-                {formData.datasourceId &&
-                  (loadingParticipantTypes ? (
-                    <Flex align="center" gap="2">
-                      <Spinner size="1" />
-                      <Text size="2">Loading participant types...</Text>
-                    </Flex>
-                  ) : !participantTypesData || participantTypesData.items.length === 0 ? (
-                    <Flex direction="column" gap="2">
-                      <Text color="gray">No participant types available</Text>
-                      <Link href={`/datasources/${formData.datasourceId}`} passHref>
-                        <Button size="2" variant="soft">
-                          Add a Participant Type
-                        </Button>
-                      </Link>
-                    </Flex>
-                  ) : (
-                    <Select.Root
-                      value={formData.participantType || ''}
-                      onValueChange={(value) =>
-                        onFormDataChange({
-                          ...formData,
-                          participantType: value,
-                        })
-                      }
-                    >
-                      <Select.Trigger placeholder="Select a participant type" />
-                      <Select.Content>
-                        {participantTypesData.items.map((pt) => (
-                          <Select.Item key={pt.participant_type} value={pt.participant_type}>
-                            {pt.participant_type}
-                          </Select.Item>
-                        ))}
-                      </Select.Content>
-                    </Select.Root>
-                  ))}
-              </Flex>
-            </Flex>
-
-            <Flex direction="column" gap="3" flexGrow="1">
-              <Text as="label" size="2" weight="bold">
-                Experiment Type
-              </Text>
-              <RadioGroup.Root
-                value={formData.experimentType || 'preassigned'}
-                onValueChange={(value) =>
-                  onFormDataChange({
-                    ...formData,
-                    experimentType: value,
-                  })
-                }
-              >
-                <Flex direction="column" gap="2">
-                  <Text as="label" size="2">
-                    <Flex gap="2">
-                      <RadioGroup.Item value="preassigned" /> Preassigned
-                    </Flex>
-                  </Text>
-                  <Text as="label" size="2">
-                    <Flex gap="2">
-                      <RadioGroup.Item value="online" /> Online
-                    </Flex>
-                  </Text>
-                </Flex>
-              </RadioGroup.Root>
+            <Flex direction="row" gap="2">
+              {formData.datasourceId &&
+                (loadingParticipantTypes ? (
+                  <Flex align="center" gap="2">
+                    <Spinner size="1" />
+                    <Text size="2">Loading participant types...</Text>
+                  </Flex>
+                ) : !participantTypesData || participantTypesData.items.length === 0 ? (
+                  <Flex direction="column" gap="2">
+                    <Text color="gray">No participant types available</Text>
+                    <Link href={`/datasources/${formData.datasourceId}`} passHref>
+                      <Button size="2" variant="soft">
+                        Add a Participant Type
+                      </Button>
+                    </Link>
+                  </Flex>
+                ) : (
+                  <Select.Root
+                    value={formData.participantType || ''}
+                    onValueChange={(value) =>
+                      onFormDataChange({
+                        ...formData,
+                        participantType: value,
+                      })
+                    }
+                  >
+                    <Select.Trigger placeholder="Select a participant type" />
+                    <Select.Content>
+                      {participantTypesData.items.map((pt) => (
+                        <Select.Item key={pt.participant_type} value={pt.participant_type}>
+                          {pt.participant_type}
+                        </Select.Item>
+                      ))}
+                    </Select.Content>
+                  </Select.Root>
+                ))}
             </Flex>
           </Flex>
         </Card>
