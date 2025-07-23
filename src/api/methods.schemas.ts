@@ -1852,6 +1852,9 @@ export interface WebhookUrl {
 }
 
 export type DeleteWebhookFromOrganizationParams = {
+	/**
+	 * If true, return a 204 even if the resource does not exist.
+	 */
 	allow_missing?: boolean;
 };
 
@@ -1870,6 +1873,9 @@ export type InspectTableInDatasourceParams = {
 };
 
 export type DeleteDatasourceParams = {
+	/**
+	 * If true, return a 204 even if the resource does not exist.
+	 */
 	allow_missing?: boolean;
 };
 
@@ -1881,10 +1887,16 @@ export type InspectParticipantTypesParams = {
 };
 
 export type DeleteParticipantParams = {
+	/**
+	 * If true, return a 204 even if the resource does not exist.
+	 */
 	allow_missing?: boolean;
 };
 
 export type DeleteApiKeyParams = {
+	/**
+	 * If true, return a 204 even if the resource does not exist.
+	 */
 	allow_missing?: boolean;
 };
 
@@ -1907,6 +1919,9 @@ export type AnalyzeExperimentParams = {
 };
 
 export type DeleteExperimentParams = {
+	/**
+	 * If true, return a 204 even if the resource does not exist.
+	 */
 	allow_missing?: boolean;
 };
 

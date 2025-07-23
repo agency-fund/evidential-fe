@@ -168,7 +168,10 @@ export const deleteWebhookFromOrganizationParams = zod.object({
 export const deleteWebhookFromOrganizationQueryAllowMissingDefault = false;
 
 export const deleteWebhookFromOrganizationQueryParams = zod.object({
-	allow_missing: zod.boolean().optional(),
+	allow_missing: zod
+		.boolean()
+		.optional()
+		.describe("If true, return a 204 even if the resource does not exist."),
 });
 
 /**
@@ -876,7 +879,10 @@ export const deleteDatasourceParams = zod.object({
 export const deleteDatasourceQueryAllowMissingDefault = false;
 
 export const deleteDatasourceQueryParams = zod.object({
-	allow_missing: zod.boolean().optional(),
+	allow_missing: zod
+		.boolean()
+		.optional()
+		.describe("If true, return a 204 even if the resource does not exist."),
 });
 
 /**
@@ -1618,7 +1624,10 @@ export const deleteParticipantParams = zod.object({
 export const deleteParticipantQueryAllowMissingDefault = false;
 
 export const deleteParticipantQueryParams = zod.object({
-	allow_missing: zod.boolean().optional(),
+	allow_missing: zod
+		.boolean()
+		.optional()
+		.describe("If true, return a 204 even if the resource does not exist."),
 });
 
 /**
@@ -1681,7 +1690,10 @@ export const deleteApiKeyParams = zod.object({
 export const deleteApiKeyQueryAllowMissingDefault = false;
 
 export const deleteApiKeyQueryParams = zod.object({
-	allow_missing: zod.boolean().optional(),
+	allow_missing: zod
+		.boolean()
+		.optional()
+		.describe("If true, return a 204 even if the resource does not exist."),
 });
 
 /**
@@ -4341,7 +4353,10 @@ export const deleteExperimentParams = zod.object({
 export const deleteExperimentQueryAllowMissingDefault = false;
 
 export const deleteExperimentQueryParams = zod.object({
-	allow_missing: zod.boolean().optional(),
+	allow_missing: zod
+		.boolean()
+		.optional()
+		.describe("If true, return a 204 even if the resource does not exist."),
 });
 
 /**
