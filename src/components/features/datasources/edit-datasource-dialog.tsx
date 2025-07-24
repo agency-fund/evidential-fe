@@ -113,7 +113,7 @@ export const EditDatasourceDialog = ({
     return null;
   }
 
-  const isNone = config.dwh.driver === 'none';
+  const isNoDWH = config.dwh.driver === 'none';
   const isBigQuery = config.dwh.driver === 'bigquery';
   const usesBigQueryServiceAccount = config.dwh.driver === 'bigquery' && config.dwh.credentials.type == 'serviceaccountinfo';
   const isRedshift = config.dwh.driver === 'postgresql+psycopg2' && config.dwh.host.endsWith('redshift.amazonaws.com');
@@ -149,7 +149,7 @@ export const EditDatasourceDialog = ({
               name,
             };
 
-            if (isNone) {
+            if (isNoDWH) {
               updateData.dwh = {
                 driver: 'none',
               };
@@ -195,7 +195,7 @@ export const EditDatasourceDialog = ({
               <TextField.Root name="name" value={name} onChange={(e) => setName(e.target.value)} required />
             </label>
 
-            {isNone && (
+            {isNoDWH && (
               <label>
                 <Text as="div" size="2" mb="1" weight="bold">
                   This datasource is not connected to a data warehouse.
@@ -210,7 +210,7 @@ export const EditDatasourceDialog = ({
               </label>
             )}
 
-            {!isNone && !isBigQuery && (
+            {!isNoDWH && !isBigQuery && (
               <>
                 <label>
                   <Text as="div" size="2" mb="1" weight="bold">
