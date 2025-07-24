@@ -42,6 +42,7 @@ export function DatasourcesTable({
               {datasource.driver === 'bigquery' && 'Google BigQuery'}
               {datasource.driver === 'postgresql+psycopg' && 'PostgreSQL'}
               {datasource.driver === 'postgresql+psycopg2' && 'Redshift'}
+              {datasource.driver === 'none' && <em>no warehouse</em>}
             </Table.Cell>
             <Table.Cell>
               <Flex gap="2">
