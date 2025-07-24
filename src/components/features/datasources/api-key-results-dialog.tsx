@@ -16,7 +16,7 @@ export const ApiKeyResultsDialog = ({
 }) => {
   const exampleCurlSnippet =
     createdKey !== undefined
-      ? `curl -H "X-API-Key: ${createdKey.key}" -H "Datasource-ID: ${datasourceId}" ${API_BASE_URL}/v1/_authcheck`
+      ? `curl -H "X-API-Key: ${createdKey.key}" -i -H "Datasource-ID: ${datasourceId}" ${API_BASE_URL}/v1/experiments`
       : '';
 
   return (
