@@ -139,7 +139,7 @@ export function InitialForm({ formData, onFormDataChange, onNext, webhooks }: In
                 Experiment Type
               </Text>
               <RadioGroup.Root
-                value={formData.experimentType || 'preassigned'}
+                value={formData.experimentType || 'freq_preassigned'}
                 onValueChange={(value) =>
                   onFormDataChange({
                     ...formData,
@@ -150,12 +150,12 @@ export function InitialForm({ formData, onFormDataChange, onNext, webhooks }: In
                 <Flex direction="column" gap="2">
                   <Text as="label" size="2">
                     <Flex gap="2">
-                      <RadioGroup.Item value="preassigned" /> Preassigned
+                      <RadioGroup.Item value="freq_preassigned" /> Preassigned
                     </Flex>
                   </Text>
                   <Text as="label" size="2">
                     <Flex gap="2">
-                      <RadioGroup.Item value="online" /> Online
+                      <RadioGroup.Item value="freq_online" /> Online
                     </Flex>
                   </Text>
                 </Flex>

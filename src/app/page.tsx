@@ -89,8 +89,15 @@ export default function Page() {
   return (
     <Flex direction="column" gap="4">
       <Flex justify="between" align="center">
-        <Heading size={'8'}>Experiments</Heading>
-        <CreateExperimentButton datasources={datasourcesData} loading={datasourcesIsLoading} />
+        <Heading size={'8'}>
+          Experiments
+          {orgContext && orgContext.available.length > 1 && (
+            <> for {orgContext.current.name}</>
+          )}
+        </Heading>
+        {datasourcesData && datasourcesData.items.length > 0 && (
+          <CreateExperimentButton datasources={datasourcesData} loading={datasourcesIsLoading} />
+        )}
       </Flex>
 
       {experimentsIsLoading && (

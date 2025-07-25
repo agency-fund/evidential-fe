@@ -101,6 +101,8 @@ export default function Page() {
 
   // We can safely use data properties now that we've handled all error cases
   const datasourceName = datasourceMetadata.name;
+  const isNoDWH = datasourceMetadata.config.dwh.driver === 'none';
+
   return (
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
@@ -110,7 +112,7 @@ export default function Page() {
         </Flex>
       </Flex>
 
-      {
+      {!isNoDWH && (
         <>
           <Callout.Root color={'green'}>
             <Callout.Icon>
@@ -128,9 +130,11 @@ export default function Page() {
               <Callout.Text>Note: Expecting some tables? Check your connection settings.</Callout.Text>
             </Callout.Root>
           )}
+
+          <ParticipantTypesSection datasourceId={datasourceId} />
         </>
-      }
-      <ParticipantTypesSection datasourceId={datasourceId} />
+      )}
+
       <ApiKeysSection datasourceId={datasourceId} />
     </Flex>
   );
