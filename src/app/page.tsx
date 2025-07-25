@@ -95,7 +95,9 @@ export default function Page() {
             <> for {orgContext.current.name}</>
           )}
         </Heading>
-        <CreateExperimentButton datasources={datasourcesData} loading={datasourcesIsLoading} />
+        {datasourcesData && datasourcesData.items.length > 0 && (
+          <CreateExperimentButton datasources={datasourcesData} loading={datasourcesIsLoading} />
+        )}
       </Flex>
 
       {experimentsIsLoading && (
