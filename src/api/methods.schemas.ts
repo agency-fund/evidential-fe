@@ -1232,14 +1232,6 @@ export interface GcpServiceAccountInfo {
 	content_base64: string;
 }
 
-/**
- * Describes the outcome of a bandit experiment.
- */
-export interface GetBanditOutcome {
-	participant_id: string;
-	outcome: number;
-}
-
 export interface GetDatasourceResponse {
 	/** @maxLength 64 */
 	id: string;
@@ -2220,6 +2212,14 @@ export interface Stratum {
 export type StrictFloat = number | null;
 
 export type StrictInt = number | null;
+
+/**
+ * Describes the outcome of a bandit experiment.
+ */
+export interface UpdateBanditArmOutcomeRequest {
+	participant_id: string;
+	outcome: number;
+}
 
 export type UpdateDatasourceRequestName = string | null;
 
