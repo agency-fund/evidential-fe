@@ -11,9 +11,14 @@ import { ApiKeyResultsDialog } from '@/components/features/datasources/api-key-r
 
 export function ApiKeysTable({ apiKeys, datasourceId }: { apiKeys: ApiKeySummary[]; datasourceId: string }) {
   const [confirmingDeleteForKeyId, setConfirmingDeleteForKeyId] = useState<string | null>(null);
-  const { trigger } = useDeleteApiKey(datasourceId, confirmingDeleteForKeyId ?? '', {
-    swr: { onSuccess: () => mutate(getListApiKeysKey(datasourceId)) },
-  });
+  const { trigger } = useDeleteApiKey(
+    datasourceId,
+    confirmingDeleteForKeyId ?? '',
+    { allow_missing: true },
+    {
+      swr: { onSuccess: () => mutate(getListApiKeysKey(datasourceId)) },
+    },
+  );
 
   const [newlyCreatedKey, setNewlyCreatedKey] = useState<{ key: string } | undefined>(undefined);
 

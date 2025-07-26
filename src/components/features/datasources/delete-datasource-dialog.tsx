@@ -10,11 +10,16 @@ interface DeleteDatasourceDialogProps {
 }
 
 export function DeleteDatasourceDialog({ organizationId, datasourceId }: DeleteDatasourceDialogProps) {
-  const { trigger } = useDeleteDatasource(datasourceId, {
-    swr: {
-      onSuccess: () => mutate(getGetOrganizationKey(organizationId)),
+  const { trigger } = useDeleteDatasource(
+    organizationId,
+    datasourceId,
+    { allow_missing: true },
+    {
+      swr: {
+        onSuccess: () => mutate(getGetOrganizationKey(organizationId)),
+      },
     },
-  });
+  );
 
   return (
     <AlertDialog.Root>

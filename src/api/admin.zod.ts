@@ -165,6 +165,15 @@ export const deleteWebhookFromOrganizationParams = zod.object({
 	webhook_id: zod.string(),
 });
 
+export const deleteWebhookFromOrganizationQueryAllowMissingDefault = false;
+
+export const deleteWebhookFromOrganizationQueryParams = zod.object({
+	allow_missing: zod
+		.boolean()
+		.optional()
+		.describe("If true, return a 204 even if the resource does not exist."),
+});
+
 /**
  * Regenerates the auth token for a webhook in an organization.
  * @summary Regenerate Webhook Auth Token
@@ -800,16 +809,6 @@ export const getDatasourceResponse = zod.object({
 });
 
 /**
- * Deletes a datasource.
-
-The user must be a member of the organization that owns the datasource.
- * @summary Delete Datasource
- */
-export const deleteDatasourceParams = zod.object({
-	datasource_id: zod.string(),
-});
-
-/**
  * Verifies connectivity to a datasource and returns a list of readable tables.
  * @summary Inspect Datasource
  */
@@ -886,6 +885,26 @@ export const inspectTableInDatasourceResponse = zod
 			.describe("Fields in the table."),
 	})
 	.describe("Describes a table in the datasource.");
+
+/**
+ * Deletes a datasource.
+
+The user must be a member of the organization that owns the datasource.
+ * @summary Delete Datasource
+ */
+export const deleteDatasourceParams = zod.object({
+	organization_id: zod.string(),
+	datasource_id: zod.string(),
+});
+
+export const deleteDatasourceQueryAllowMissingDefault = false;
+
+export const deleteDatasourceQueryParams = zod.object({
+	allow_missing: zod
+		.boolean()
+		.optional()
+		.describe("If true, return a 204 even if the resource does not exist."),
+});
 
 /**
  * @summary List Participant Types
@@ -1623,6 +1642,15 @@ export const deleteParticipantParams = zod.object({
 	participant_id: zod.string(),
 });
 
+export const deleteParticipantQueryAllowMissingDefault = false;
+
+export const deleteParticipantQueryParams = zod.object({
+	allow_missing: zod
+		.boolean()
+		.optional()
+		.describe("If true, return a 204 even if the resource does not exist."),
+});
+
 /**
  * Returns API keys that have access to the datasource.
  * @summary List Api Keys
@@ -1678,6 +1706,15 @@ export const createApiKeyResponse = zod.object({
 export const deleteApiKeyParams = zod.object({
 	datasource_id: zod.string(),
 	api_key_id: zod.string(),
+});
+
+export const deleteApiKeyQueryAllowMissingDefault = false;
+
+export const deleteApiKeyQueryParams = zod.object({
+	allow_missing: zod
+		.boolean()
+		.optional()
+		.describe("If true, return a 204 even if the resource does not exist."),
 });
 
 /**
@@ -6220,6 +6257,15 @@ export const getExperimentResponse = zod
 export const deleteExperimentParams = zod.object({
 	datasource_id: zod.string(),
 	experiment_id: zod.string(),
+});
+
+export const deleteExperimentQueryAllowMissingDefault = false;
+
+export const deleteExperimentQueryParams = zod.object({
+	allow_missing: zod
+		.boolean()
+		.optional()
+		.describe("If true, return a 204 even if the resource does not exist."),
 });
 
 /**

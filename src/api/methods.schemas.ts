@@ -2357,6 +2357,13 @@ export interface WebhookUrl {
 	url: string;
 }
 
+export type DeleteWebhookFromOrganizationParams = {
+	/**
+	 * If true, return a 204 even if the resource does not exist.
+	 */
+	allow_missing?: boolean;
+};
+
 export type InspectDatasourceParams = {
 	/**
 	 * Refresh the cache.
@@ -2371,11 +2378,32 @@ export type InspectTableInDatasourceParams = {
 	refresh?: boolean;
 };
 
+export type DeleteDatasourceParams = {
+	/**
+	 * If true, return a 204 even if the resource does not exist.
+	 */
+	allow_missing?: boolean;
+};
+
 export type InspectParticipantTypesParams = {
 	/**
 	 * Refresh the cache.
 	 */
 	refresh?: boolean;
+};
+
+export type DeleteParticipantParams = {
+	/**
+	 * If true, return a 204 even if the resource does not exist.
+	 */
+	allow_missing?: boolean;
+};
+
+export type DeleteApiKeyParams = {
+	/**
+	 * If true, return a 204 even if the resource does not exist.
+	 */
+	allow_missing?: boolean;
 };
 
 export type CreateExperimentParams = {
@@ -2399,6 +2427,13 @@ export type AnalyzeExperimentParams = {
 export type AnalyzeExperiment200 =
 	| FreqExperimentAnalysisResponse
 	| BanditExperimentAnalysisResponse;
+
+export type DeleteExperimentParams = {
+	/**
+	 * If true, return a 204 even if the resource does not exist.
+	 */
+	allow_missing?: boolean;
+};
 
 export type GetExperimentAssignmentForParticipantParams = {
 	/**

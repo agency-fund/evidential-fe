@@ -1,9 +1,9 @@
 'use client';
-import { Button, Dialog, Flex, DropdownMenu, IconButton } from '@radix-ui/themes';
+import { Button, Dialog, DropdownMenu, Flex, IconButton } from '@radix-ui/themes';
 import { useState } from 'react';
 import { getListOrganizationExperimentsKey, useDeleteExperiment } from '@/api/admin';
 import { mutate } from 'swr';
-import { TrashIcon, DotsVerticalIcon } from '@radix-ui/react-icons';
+import { DotsVerticalIcon, TrashIcon } from '@radix-ui/react-icons';
 
 interface ExperimentActionsMenuProps {
   organizationId: string;
@@ -13,9 +13,14 @@ interface ExperimentActionsMenuProps {
 
 export function ExperimentActionsMenu({ datasourceId, experimentId, organizationId }: ExperimentActionsMenuProps) {
   const [open, setOpen] = useState(false);
-  const { trigger, isMutating } = useDeleteExperiment(datasourceId, experimentId, {
-    swr: { onSuccess: () => mutate(getListOrganizationExperimentsKey(organizationId)) },
-  });
+  const { trigger, isMutating } = useDeleteExperiment(
+    datasourceId,
+    experimentId,
+    { allow_missing: true },
+    {
+      swr: { onSuccess: () => mutate(getListOrganizationExperimentsKey(organizationId)) },
+    },
+  );
 
   const handleDelete = async () => {
     await trigger();
