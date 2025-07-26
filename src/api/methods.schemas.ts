@@ -325,7 +325,7 @@ export interface BalanceCheck {
 /**
  * Describes changes in arms for a bandit experiment
  */
-export interface BanditExperimentAnalysis {
+export interface BanditExperimentAnalysisResponse {
 	/** ID of the experiment. */
 	experiment_id: string;
 	/** The number of trials conducted for this experiment. */
@@ -1171,12 +1171,14 @@ export type FilterValueTypes =
 /**
  * The number of participants assigned to the experiment across all arms that are not found in the data warehouse when pulling metrics.
  */
-export type FreqExperimentAnalysisNumMissingParticipants = number | null;
+export type FreqExperimentAnalysisResponseNumMissingParticipants =
+	| number
+	| null;
 
 /**
  * Describes the change if any in metrics targeted by an experiment.
  */
-export interface FreqExperimentAnalysis {
+export interface FreqExperimentAnalysisResponse {
 	/** ID of the experiment. */
 	experiment_id: string;
 	/** Contains one analysis per metric targeted by the experiment. */
@@ -1184,7 +1186,7 @@ export interface FreqExperimentAnalysis {
 	/** The number of participants assigned to the experiment pulled from the dwh across all arms. Metric outcomes are not guaranteed to be present for all participants. */
 	num_participants: number;
 	/** The number of participants assigned to the experiment across all arms that are not found in the data warehouse when pulling metrics. */
-	num_missing_participants?: FreqExperimentAnalysisNumMissingParticipants;
+	num_missing_participants?: FreqExperimentAnalysisResponseNumMissingParticipants;
 	/** The date and time the experiment analysis was created. */
 	created_at: string;
 }
@@ -2395,8 +2397,8 @@ export type AnalyzeExperimentParams = {
 };
 
 export type AnalyzeExperiment200 =
-	| FreqExperimentAnalysis
-	| BanditExperimentAnalysis;
+	| FreqExperimentAnalysisResponse
+	| BanditExperimentAnalysisResponse;
 
 export type GetExperimentAssignmentForParticipantParams = {
 	/**
