@@ -14,6 +14,7 @@ import type {
 	AddMemberToOrganizationRequest,
 	AddWebhookToOrganizationRequest,
 	AddWebhookToOrganizationResponse,
+	AnalyzeExperiment200,
 	AnalyzeExperimentParams,
 	CallerIdentity,
 	CreateApiKeyResponse,
@@ -31,11 +32,10 @@ import type {
 	DeleteExperimentParams,
 	DeleteParticipantParams,
 	DeleteWebhookFromOrganizationParams,
-	ExperimentAnalysis,
-	ExperimentConfig,
 	GetDatasourceResponse,
 	GetExperimentAssignmentForParticipantParams,
 	GetExperimentAssignmentsResponse,
+	GetExperimentResponse,
 	GetOrganizationResponse,
 	GetParticipantAssignmentResponse,
 	HTTPExceptionError,
@@ -2365,6 +2365,7 @@ export const useDeleteApiKey = <
 	};
 };
 /**
+ * Creates a new experiment in the specified datasource.
  * @summary Create Experiment
  */
 export const getCreateExperimentUrl = (
@@ -2495,8 +2496,8 @@ export const analyzeExperiment = async (
 	experimentId: string,
 	params?: AnalyzeExperimentParams,
 	options?: RequestInit,
-): Promise<ExperimentAnalysis> => {
-	return orvalFetch<ExperimentAnalysis>(
+): Promise<AnalyzeExperiment200> => {
+	return orvalFetch<AnalyzeExperiment200>(
 		getAnalyzeExperimentUrl(datasourceId, experimentId, params),
 		{
 			...options,
@@ -2815,8 +2816,8 @@ export const getExperiment = async (
 	datasourceId: string,
 	experimentId: string,
 	options?: RequestInit,
-): Promise<ExperimentConfig> => {
-	return orvalFetch<ExperimentConfig>(
+): Promise<GetExperimentResponse> => {
+	return orvalFetch<GetExperimentResponse>(
 		getGetExperimentUrl(datasourceId, experimentId),
 		{
 			...options,
@@ -3258,6 +3259,7 @@ export const useGetExperimentAssignmentForParticipant = <
 	};
 };
 /**
+ * Performs a power check for the specified datasource.
  * @summary Power Check
  */
 export const getPowerCheckUrl = (datasourceId: string) => {

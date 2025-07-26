@@ -1,5 +1,10 @@
 'use client';
-import { ExperimentConfig, MetricAnalysis } from '@/api/methods.schemas';
+import {
+  AssignSummary,
+  MetricAnalysis,
+  OnlineFrequentistExperimentSpecOutput,
+  PreassignedFrequentistExperimentSpecOutput,
+} from '@/api/methods.schemas';
 import { ExclamationTriangleIcon, InfoCircledIcon } from '@radix-ui/react-icons';
 import { Badge, Box, Callout, Card, Flex, Heading, Text, Tooltip as RadixTooltip } from '@radix-ui/themes';
 import {
@@ -45,7 +50,8 @@ interface EffectSizeData {
 
 interface ForestPlotProps {
   analysis: MetricAnalysis;
-  experiment: ExperimentConfig;
+  assignSummary: AssignSummary;
+  designSpec: OnlineFrequentistExperimentSpecOutput | PreassignedFrequentistExperimentSpecOutput;
 }
 
 // Define a type for the shape props that matches what we need; leverages the fact that
@@ -87,9 +93,9 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   );
 }
 
-export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
+export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotProps) {
   // Get total sample size from assign summary
-  const availableN = experiment.assign_summary.sample_size;
+  const availableN = assignSummary.sample_size;
 
   // Extract data for visualization
   const controlArmIndex = analysis.arm_analyses.findIndex((a) => a.is_baseline);
@@ -100,7 +106,7 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
   const effectSizes: EffectSizeData[] = analysis.arm_analyses.map((armAnalysis, index) => {
     const isBaseline = armAnalysis.is_baseline;
     const armId = armAnalysis.arm_id || 'MISSING_ARM_ID'; // should be impossible
-    const armSize = experiment.assign_summary.arm_sizes?.find((a) => a.arm.arm_id === armId)?.size || 0;
+    const armSize = assignSummary.arm_sizes?.find((a) => a.arm.arm_id === armId)?.size || 0;
 
     const estimate = armAnalysis.estimate; // regression coefficient
     const stdError = armAnalysis.std_error;
@@ -130,7 +136,7 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
       absCI95Upper,
       pValue,
       invalidStatTest,
-      significant: !!(pValue && pValue < (experiment.design_spec.alpha || 0.05)),
+      significant: !!(pValue && pValue < (designSpec.alpha || 0.05)),
       sampleSize: armSize,
       totalSampleSize: availableN,
     };
@@ -154,6 +160,7 @@ export function ForestPlot({ analysis, experiment }: ForestPlotProps) {
     }
     return [minX, maxX];
   }
+
   const [minX, maxX] = getMinMaxX(effectSizes);
   // Space 3 ticks evenly across the domain, but filter out duplicates,
   // which can occur when the effect is 0.
