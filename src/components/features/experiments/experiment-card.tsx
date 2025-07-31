@@ -145,7 +145,7 @@ export default function ExperimentCard({
             </Text>
             <Badge variant="soft" color="orange" size="1">
               <ComponentInstanceIcon width="12" height="12" />
-              {type}
+              {type==="freq_online" ? "Online" : type==="freq_preassigned" ? "Preassigned" : null}
             </Badge>
           </Flex>
 
