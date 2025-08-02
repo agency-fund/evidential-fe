@@ -2,16 +2,15 @@
 import { Badge, Card, Flex, Heading, IconButton, Separator, Text, Tooltip } from '@radix-ui/themes';
 import {
   CalendarIcon,
-  ComponentInstanceIcon,
   EyeOpenIcon,
   LightningBoltIcon,
-  PersonIcon,
   TableIcon,
 } from '@radix-ui/react-icons';
 import { ReadMoreText } from '@/components/ui/read-more-text';
 import { ExperimentActionsMenu } from '@/components/features/experiments/experiment-actions-menu';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
+import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
 import Link from 'next/link';
 
 interface ExperimentCardProps {
@@ -135,12 +134,7 @@ export default function ExperimentCard({
             <Text size="2" color="gray">
               •
             </Text>
-            <Badge variant="soft" color="blue" size="1" asChild>
-              <Link href={`/datasources/${datasourceId}`}>
-                <PersonIcon width="12" height="12" />
-                {participantType}
-              </Link>
-            </Badge>
+            <ParticipantTypeBadge datasourceId={datasourceId} participantType={participantType} />
             <Text size="2" color="gray">
               •
             </Text>
