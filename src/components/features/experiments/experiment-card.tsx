@@ -11,6 +11,7 @@ import {
 import { ReadMoreText } from '@/components/ui/read-more-text';
 import { ExperimentActionsMenu } from '@/components/features/experiments/experiment-actions-menu';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
+import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import Link from 'next/link';
 
 interface ExperimentCardProps {
@@ -143,10 +144,7 @@ export default function ExperimentCard({
             <Text size="2" color="gray">
               •
             </Text>
-            <Badge variant="soft" color="orange" size="1">
-              <ComponentInstanceIcon width="12" height="12" />
-              {type==="freq_online" ? "Online" : type==="freq_preassigned" ? "Preassigned" : null}
-            </Badge>
+            <ExperimentTypeBadge type={type} />
           </Flex>
 
           <Separator size="4" />

@@ -3,16 +3,16 @@
 import { Badge } from '@radix-ui/themes';
 
 export const ExperimentTypeBadge = ({ type }: { type: string }) => {
-  const colorMap: Record<string, { color: 'green' | 'blue' | 'red'; variant?: 'soft' | 'outline' }> = {
-    preassigned: { color: 'blue' },
-    online: { color: 'green' },
-    unknown: { color: 'red', variant: 'outline' },
+  const typeMap: Record<string, { name: string; color: 'green' | 'blue' | 'red' | 'orange'; variant?: 'soft' | 'outline' }> = {
+    freq_preassigned: { name: 'Preassigned', color: 'orange' },
+    freq_online: { name: 'Online', color: 'orange' },
+    unknown: { name: 'Unknown', color: 'red', variant: 'outline' },
   };
 
-  const { color, variant = 'soft' } = colorMap[type] || colorMap.unknown;
+  const { name, color, variant = 'soft' } = typeMap[type] || typeMap.unknown;
   return (
     <Badge color={color} variant={variant}>
-      {type}
+      {name}
     </Badge>
   );
 };
