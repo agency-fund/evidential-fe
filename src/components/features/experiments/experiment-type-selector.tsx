@@ -14,14 +14,14 @@ interface ExperimentTypeOption {
 
 const EXPERIMENT_TYPE_OPTIONS: ExperimentTypeOption[] = [
   {
-    type: 'frequent_ab',
+    type: 'freq_online',
     title: 'Frequent A/B Testing',
     badge: 'A/B',
     badgeColor: 'blue',
     description: 'Fixed allocation hypothesis testing with statistical significance. Best for clear hypotheses with sufficient traffic.',
   },
   {
-    type: 'multi_armed_bandit',
+    type: 'mab_online',
     title: 'Multi-Armed Bandit',
     badge: 'MAB',
     badgeColor: 'green',
@@ -29,20 +29,20 @@ const EXPERIMENT_TYPE_OPTIONS: ExperimentTypeOption[] = [
     // comingSoon: true,
   },
   {
-    type: 'bayesian_ab',
+    type: 'bayes_ab_online',
     title: 'Bayesian A/B Testing',
     badge: 'BAB',
     badgeColor: 'purple',
     description: 'Bayesian statistics with credible intervals and probability statements. More intuitive interpretation of results.',
-    // comingSoon: true,
+    comingSoon: true,
   },
   {
-    type: 'contextual_bandit',
+    type: 'cmab_online',
     title: 'Contextual Bandit',
     badge: 'CMAB',
     badgeColor: 'orange',
     description: 'Context-aware optimization for personalized experiences. Adapts recommendations based on user or environmental context.',
-    // comingSoon: true,
+    comingSoon: true,
   },
 ];
 
@@ -72,20 +72,18 @@ const ASSIGNMENT_OPTIONS: AssignmentOption[] = [
 
 interface ExperimentTypeSelectorProps {
   selectedType?: ExperimentType;
-  selectedAssignmentType?: AssignmentType;
-  onTypeSelect: (type: ExperimentType, assignmentType?: AssignmentType) => void;
+  onTypeSelect: (type: ExperimentType) => void;
 }
 
-export function ExperimentTypeSelector({ 
-  selectedType, 
-  selectedAssignmentType,
-  onTypeSelect 
+export function ExperimentTypeSelector({
+  selectedType,
+  onTypeSelect
 }: ExperimentTypeSelectorProps) {
   const [showAssignmentDialog, setShowAssignmentDialog] = useState(false);
   const [tempSelectedAssignment, setTempSelectedAssignment] = useState<AssignmentType>();
 
   const handleTypeSelect = (type: ExperimentType) => {
-    if (type === 'frequent_ab') {
+    if (type.includes('freq')) {
       setShowAssignmentDialog(true);
     } else if (!EXPERIMENT_TYPE_OPTIONS.find(opt => opt.type === type)?.comingSoon) {
       onTypeSelect(type);
@@ -94,7 +92,11 @@ export function ExperimentTypeSelector({
 
   const handleAssignmentConfirm = () => {
     if (tempSelectedAssignment) {
-      onTypeSelect('frequent_ab', tempSelectedAssignment);
+      if (tempSelectedAssignment === "preassigned") {
+        onTypeSelect('freq_preassigned')
+      } else {
+        onTypeSelect('freq_online')
+      }
       setShowAssignmentDialog(false);
       setTempSelectedAssignment(undefined);
     }
@@ -118,7 +120,7 @@ export function ExperimentTypeSelector({
         <Dialog.Content style={{ maxWidth: '600px' }}>
           <Dialog.Title>Choose Assignment Method</Dialog.Title>
           <Dialog.Description size="2" mb="4">
-            Select how participants will be assigned to experiment arms for your Frequent A/B Test.
+            Select how participants will be assigned to experiment arms for your A/B Test.
           </Dialog.Description>
 
           <Flex direction="column" gap="3" mb="6">
@@ -170,7 +172,7 @@ export function ExperimentTypeSelector({
                         <Badge color="gray" size="1">{option.badge}</Badge>
                       )}
                     </Flex>
-                    
+
                     <Text size="2" color="gray" style={{ lineHeight: 1.4 }}>
                       {option.description}
                     </Text>
@@ -186,7 +188,7 @@ export function ExperimentTypeSelector({
                 Cancel
               </Button>
             </Dialog.Close>
-            <Button 
+            <Button
               onClick={handleAssignmentConfirm}
               disabled={!tempSelectedAssignment}
             >
@@ -250,7 +252,7 @@ function ExperimentTypeCard({ option, isSelected, onSelect }: ExperimentTypeCard
             )}
           </Flex>
         </Flex>
-        
+
         <Text size="2" color="gray" style={{ lineHeight: 1.5, marginLeft: '32px' }}>
           {option.description}
         </Text>

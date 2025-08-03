@@ -18,13 +18,13 @@ type MABStep = 'design' | 'metadata' | 'summary';
 
 const STEP_TITLES = {
   design: 'Experiment Design',
-  metadata: 'Experiment Metadata', 
+  metadata: 'Experiment Metadata',
   summary: 'Experiment Summary',
 } as const;
 
-export function MABContainer({ 
-  webhooks, 
-  initialFormData, 
+export function MABContainer({
+  webhooks,
+  initialFormData,
   onBack
 }: MABContainerProps) {
   const [currentStep, setCurrentStep] = useState<MABStep>('design');
@@ -76,7 +76,7 @@ export function MABContainer({
     console.log('🔍 CURRENT STEP:', currentStep);
     console.log('🔍 EXPERIMENT TYPE:', formData.experimentType);
     console.log('🔍 STEP NUMBER FOR BREADCRUMB:', getStepNumber());
-    
+
     switch (currentStep) {
       case 'design':
         return (
@@ -87,7 +87,7 @@ export function MABContainer({
             onBack={handleBackStep}
           />
         );
-        
+
       case 'metadata':
         return (
           <MABMetadataForm
@@ -97,7 +97,7 @@ export function MABContainer({
             onBack={handleBackStep}
           />
         );
-        
+
       case 'summary':
         return (
           <MABConfirmationForm
@@ -106,7 +106,7 @@ export function MABContainer({
             onBack={handleBackStep}
           />
         );
-        
+
       default:
         return null;
     }
@@ -115,7 +115,7 @@ export function MABContainer({
   return (
     <Box>
       <AdaptiveBreadcrumbs
-        experimentType="multi_armed_bandit"
+        experimentType="mab_online"
         currentStep={getStepNumber()}
       />
 

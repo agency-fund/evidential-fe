@@ -32,24 +32,24 @@ const OUTCOME_OPTIONS: OutcomeOption[] = [
   },
 ];
 
-export function MABDesignForm({ 
-  formData, 
-  onFormDataChange, 
-  onNext, 
-  onBack 
+export function MABDesignForm({
+  formData,
+  onFormDataChange,
+  onNext,
+  onBack
 }: MABDesignFormProps) {
 
   const handleOutcomeChange = (outcomeType: OutcomeType) => {
     // Auto-map prior type based on outcome type for MAB
     const priorType: PriorType = outcomeType === 'binary' ? 'beta' : 'normal';
-    
+
     // Update existing arms to have the correct prior parameters
     const updatedArms = formData.arms.map(arm => {
       const baseArm = {
         arm_name: arm.arm_name,
         arm_description: arm.arm_description,
       };
-      
+
       if (priorType === 'beta') {
         // Convert to beta parameters (or use defaults)
         return {
@@ -66,15 +66,15 @@ export function MABDesignForm({
           ...baseArm,
           mean_prior: arm.mean_prior ?? 0,
           stddev_prior: arm.stddev_prior || 1,
-          // Remove beta parameters  
+          // Remove beta parameters
           alpha_prior: undefined,
           beta_prior: undefined,
         };
       }
     });
-    
-    const updatedData = { 
-      ...formData, 
+
+    const updatedData = {
+      ...formData,
       outcomeType,
       priorType, // Automatically set based on outcome
       arms: updatedArms, // Update arms with correct parameters
@@ -89,13 +89,13 @@ export function MABDesignForm({
       {/* Outcome Type Section */}
       <SectionCard title="Outcome Type">
         <Text size="2" color="gray" style={{ marginBottom: '20px' }}>
-          Define the type of outcome you'll be measuring in this experiment. The prior distribution will be automatically selected based on your choice.
+          Define the type of outcome measured in this experiment. The prior distribution will be automatically selected based on your choice.
         </Text>
-        
+
         <Text size="2" weight="medium" style={{ marginBottom: '12px' }}>
           Select outcome type
         </Text>
-        
+
         <Flex direction="column" gap="3">
           {OUTCOME_OPTIONS.map((option) => (
             <OutcomeOptionCard
@@ -109,10 +109,10 @@ export function MABDesignForm({
 
         {/* Show selected prior distribution */}
         {formData.outcomeType && (
-          <Box style={{ 
-            background: 'var(--accent-2)', 
-            border: '1px solid var(--accent-6)', 
-            borderRadius: '6px', 
+          <Box style={{
+            background: 'var(--accent-2)',
+            border: '1px solid var(--accent-6)',
+            borderRadius: '6px',
             padding: '12px',
             marginTop: '16px'
           }}>
@@ -135,7 +135,7 @@ export function MABDesignForm({
           <InfoCircledIcon />
         </Callout.Icon>
         <Callout.Text>
-          Multi-Armed Bandit experiments don't require power analysis or sample size planning. The algorithm automatically adapts allocation based on performance.
+          Multi-Armed Bandit experiments do not require power analysis or sample size planning. The algorithm automatically adapts allocation based on performance.
         </Callout.Text>
       </Callout.Root>
 

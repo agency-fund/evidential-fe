@@ -2,21 +2,16 @@
 import React, { useState } from 'react';
 import { Container, Flex, Heading, Box } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
-import { 
-  ExperimentType, 
-  ExperimentFormData, 
+import {
+  ExperimentType,
+  ExperimentFormData,
   FrequentABFormData,
-  MABFormData,
-  BayesianABFormData,
-  CMABFormData,
-  AssignmentType
+  MABFormData
 } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { WebhookSummary } from '@/api/methods.schemas';
 import { ExperimentTypeSelector } from '@/components/features/experiments/experiment-type-selector';
 import { FrequentABContainer } from '@/app/datasources/[datasourceId]/experiments/create/containers/frequent_ab/frequent-ab-container';
 import { MABContainer } from '@/app/datasources/[datasourceId]/experiments/create/containers/mab/mab-container';
-import { BayesianABContainer } from '@/app/datasources/[datasourceId]/experiments/create/containers/bayesian_ab/bayesian-ab-container';
-import { CMABContainer } from '@/app/datasources/[datasourceId]/experiments/create/containers/cmab/cmab-container';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 
 interface CreateExperimentContainerProps {
@@ -26,13 +21,12 @@ interface CreateExperimentContainerProps {
 export function CreateExperimentContainer({ webhooks }: CreateExperimentContainerProps) {
   const params = useParams();
   const datasourceId = params.datasourceId as string;
-  
+
   const [selectedExperimentType, setSelectedExperimentType] = useState<ExperimentType>();
-  const [selectedAssignmentType, setSelectedAssignmentType] = useState<AssignmentType>();
   const [showTypeSelection, setShowTypeSelection] = useState(true);
 
   // Helper function to create initial form data for each experiment type
-  const createInitialFormData = (experimentType: ExperimentType, assignmentType?: AssignmentType): ExperimentFormData => {
+  const createInitialFormData = (experimentType: ExperimentType): ExperimentFormData => {
     const baseData = {
       datasourceId,
       experimentType,
@@ -44,11 +38,11 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
     };
 
     switch (experimentType) {
-      case 'frequent_ab':
+      case 'freq_preassigned':
+      case 'freq_online':
         return {
           ...baseData,
-          experimentType: 'frequent_ab',
-          assignmentType: assignmentType || 'preassigned',
+          experimentType: experimentType,
           arms: [
             { arm_name: 'Control', arm_description: 'Control' },
             { arm_name: 'Treatment', arm_description: 'Treatment' },
@@ -59,21 +53,22 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
           power: '80',
         } as FrequentABFormData;
 
-      case 'multi_armed_bandit':
+
+      case 'mab_online':
         return {
           ...baseData,
-          experimentType: 'multi_armed_bandit',
+          experimentType: 'mab_online',
           priorType: 'beta',
           outcomeType: 'binary',
           arms: [
-            { 
-              arm_name: 'Current Button', 
+            {
+              arm_name: 'Current Button',
               arm_description: 'Existing blue "Sign Up" button',
               alpha_prior: 1,
               beta_prior: 1,
             },
-            { 
-              arm_name: 'Green Button', 
+            {
+              arm_name: 'Green Button',
               arm_description: 'Green "Join Now" button with larger size',
               alpha_prior: 2,
               beta_prior: 1,
@@ -81,84 +76,18 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
           ],
         } as MABFormData;
 
-      case 'bayesian_ab':
-        return {
-          ...baseData,
-          experimentType: 'bayesian_ab',
-          priorType: 'normal',
-          outcomeType: 'binary',
-          arms: [
-            { 
-              arm_name: 'Control', 
-              arm_description: 'Original version',
-              mean_prior: 0,
-              stddev_prior: 1,
-            },
-            { 
-              arm_name: 'Treatment', 
-              arm_description: 'New version',
-              mean_prior: 0,
-              stddev_prior: 1,
-            },
-          ],
-        } as BayesianABFormData;
-
-      case 'contextual_bandit':
-        return {
-          ...baseData,
-          experimentType: 'contextual_bandit',
-          priorType: 'normal',
-          outcomeType: 'binary',
-          contextVariables: [
-            {
-              name: 'device_type',
-              description: 'Whether the user is on mobile or desktop device',
-              type: 'binary'
-            }
-          ],
-          arms: [
-            { 
-              arm_name: 'Control', 
-              arm_description: 'Original version',
-              mean_prior: 0,
-              stddev_prior: 1,
-            },
-            { 
-              arm_name: 'Treatment', 
-              arm_description: 'New personalized version',
-              mean_prior: 0,
-              stddev_prior: 1,
-            },
-          ],
-        } as CMABFormData;
-        
       default:
         throw new Error(`Unsupported experiment type: ${experimentType}`);
     }
   };
 
-  const handleExperimentTypeSelect = (type: ExperimentType, assignmentType?: AssignmentType) => {
-    if (type === 'frequent_ab' && assignmentType) {
-      setSelectedExperimentType(type);
-      setSelectedAssignmentType(assignmentType);
-      setShowTypeSelection(false);
-    } else if (type === 'multi_armed_bandit') {
-      setSelectedExperimentType(type);
-      setSelectedAssignmentType('online');
-      setShowTypeSelection(false);
-    } else if (type === 'bayesian_ab') {
-      setSelectedExperimentType(type);
-      setSelectedAssignmentType('online');
-      setShowTypeSelection(false);
-    } else if (type === 'contextual_bandit') {
-      setSelectedExperimentType(type);
-      setSelectedAssignmentType('online');
-      setShowTypeSelection(false);
+  const handleExperimentTypeSelect = (type: ExperimentType) => {
+    setSelectedExperimentType(type);
+    setShowTypeSelection(false);
     }
-  };
 
   const handleContinue = () => {
-    if (selectedExperimentType && (selectedAssignmentType || selectedExperimentType !== 'frequent_ab')) {
+    if (selectedExperimentType && (!selectedExperimentType.includes("freq"))) {
       setShowTypeSelection(false);
     }
   };
@@ -166,7 +95,6 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
   const handleBackToTypeSelection = () => {
     setShowTypeSelection(true);
     setSelectedExperimentType(undefined);
-    setSelectedAssignmentType(undefined);
   };
 
   const renderExperimentFlow = () => {
@@ -175,7 +103,8 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
     const initialFormData = createInitialFormData(selectedExperimentType, selectedAssignmentType);
 
     switch (selectedExperimentType) {
-      case 'frequent_ab':
+      case 'freq_online':
+      case 'freq_preassigned':
         return (
           <FrequentABContainer
             webhooks={webhooks}
@@ -184,7 +113,7 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
           />
         );
 
-      case 'multi_armed_bandit':
+      case 'mab_online':
         return (
           <MABContainer
             webhooks={webhooks}
@@ -192,25 +121,6 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
             onBack={handleBackToTypeSelection}
           />
         );
-
-      case 'bayesian_ab':
-        return (
-          <BayesianABContainer
-            webhooks={webhooks}
-            initialFormData={initialFormData as BayesianABFormData}
-            onBack={handleBackToTypeSelection}
-          />
-        );
-
-      case 'contextual_bandit':
-        return (
-          <CMABContainer
-            webhooks={webhooks}
-            initialFormData={initialFormData as CMABFormData}
-            onBack={handleBackToTypeSelection}
-          />
-        );
-        
       default:
         return null;
     }
@@ -226,17 +136,16 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
               Choose the type of experiment you want to create
             </p>
           </Box>
-          
+
           <ExperimentTypeSelector
             selectedType={selectedExperimentType}
-            selectedAssignmentType={selectedAssignmentType}
             onTypeSelect={handleExperimentTypeSelect}
           />
-          
+
           <NavigationButtons
-            onNext={selectedExperimentType && (selectedAssignmentType || selectedExperimentType !== 'frequent_ab') ? handleContinue : undefined}
+            onNext={selectedExperimentType && (!selectedExperimentType.includes('freq')) ? handleContinue : undefined}
             nextLabel="Continue"
-            nextDisabled={!selectedExperimentType || (selectedExperimentType === 'frequent_ab' && !selectedAssignmentType)}
+            nextDisabled={!selectedExperimentType || selectedExperimentType.includes('freq')}
             showBack={false}
           />
         </Flex>

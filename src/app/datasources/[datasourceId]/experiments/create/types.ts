@@ -1,12 +1,13 @@
-import { 
-  Arm, 
-  FilterInput, 
-  PowerResponseOutput, 
-  CreateExperimentResponse 
+import {
+  Arm,
+  FilterInput,
+  PowerResponseOutput,
+  CreateExperimentResponse
 } from '@/api/methods.schemas';
 
-export type ExperimentType = 'frequent_ab' | 'multi_armed_bandit' | 'bayesian_ab' | 'contextual_bandit';
-export type AssignmentType = 'preassigned' | 'online';
+export type ExperimentType = 'freq_preassigned' | 'freq_online' | 'mab_online' | 'bayes_ab_online' | 'cmab_online';
+export type FreqExperimentType = 'freq_preassigned' | 'freq_online'
+export type AssignmentType = 'preassigned' | 'online'
 export type PriorType = 'beta' | 'normal';
 export type OutcomeType = 'binary' | 'real_valued';
 export type ContextVariableType = 'binary' | 'real_valued';
@@ -28,7 +29,7 @@ export type MABArm = Omit<Arm, 'arm_id'> & {
   // For Beta distribution
   alpha_prior?: number;
   beta_prior?: number;
-  // For Normal distribution  
+  // For Normal distribution
   mean_prior?: number;
   stddev_prior?: number;
 };
@@ -51,8 +52,7 @@ export type BaseExperimentFormData = {
 };
 
 export type FrequentABFormData = BaseExperimentFormData & {
-  experimentType: 'frequent_ab';
-  assignmentType: AssignmentType;
+  experimentType: FreqExperimentType;
   arms: Omit<Arm, 'arm_id'>[];
   primaryMetric?: MetricWithMDE;
   secondaryMetrics: MetricWithMDE[];
@@ -70,7 +70,7 @@ export type FrequentABFormData = BaseExperimentFormData & {
 };
 
 export type MABFormData = BaseExperimentFormData & {
-  experimentType: 'multi_armed_bandit';
+  experimentType: 'mab_online';
   arms: MABArm[];
   priorType: PriorType;
   outcomeType: OutcomeType;
@@ -79,7 +79,7 @@ export type MABFormData = BaseExperimentFormData & {
 };
 
 export type BayesianABFormData = BaseExperimentFormData & {
-  experimentType: 'bayesian_ab';
+  experimentType: 'bayes_ab_online';
   arms: BayesianABArm[];
   priorType: 'normal'; // Always normal for Bayesian A/B
   outcomeType: OutcomeType;
@@ -88,7 +88,7 @@ export type BayesianABFormData = BaseExperimentFormData & {
 };
 
 export type CMABFormData = BaseExperimentFormData & {
-  experimentType: 'contextual_bandit';
+  experimentType: 'cmab_online';
   contextVariables: ContextVariable[]; // Configured in context step
   arms: BayesianABArm[]; // Use BayesianABArm (Normal only), not MABArm
   priorType: 'normal'; // Always normal, like Bayesian A/B
@@ -100,15 +100,15 @@ export type CMABFormData = BaseExperimentFormData & {
 export type ExperimentFormData = FrequentABFormData | MABFormData | BayesianABFormData | CMABFormData;
 
 export const EXPERIMENT_STEP_FLOWS = {
-  frequent_ab: ['type', 'metadata', 'design', 'summary'],
-  multi_armed_bandit: ['type', 'design', 'metadata', 'summary'],
+  freq_ab: ['type', 'metadata', 'design', 'summary'],
+  mab: ['type', 'design', 'metadata', 'summary'],
   bayesian_ab: ['type', 'design', 'metadata', 'summary'],
-  contextual_bandit: ['type', 'context', 'design', 'metadata', 'summary']
+  cmab: ['type', 'context', 'design', 'metadata', 'summary']
 } as const;
 
 export const EXPERIMENT_TYPE_LABELS = {
-  frequent_ab: 'Traditional A/B Testing',
-  multi_armed_bandit: 'Multi-Armed Bandit',
+  freq_ab: 'Traditional A/B Testing',
+  mab: 'Multi-Armed Bandit',
   bayesian_ab: 'Bayesian A/B Testing',
-  contextual_bandit: 'Contextual Bandit'
+  cmab: 'Contextual Bandit'
 } as const;
