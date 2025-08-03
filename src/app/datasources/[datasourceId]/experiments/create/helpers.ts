@@ -90,31 +90,15 @@ function convertMABFormData(formData: MABFormData): CreateExperimentRequest {
     arm_description: arm.arm_description || '',
   }));
 
-  // Create minimal metrics array - MAB doesn't require specific metrics like A/B tests
-  const metrics: DesignSpecMetricRequest[] = [
-    {
-      field_name: 'conversion', // Default conversion metric
-      metric_pct_change: 0.1, // 10% default effect size
-    }
-  ];
-
   return createExperimentBody.parse({
     design_spec: {
-      participant_type: formData.participantType!,
       experiment_name: formData.name,
-      experiment_type: 'online', // MAB experiments use online assignment
+      experiment_type: 'mab_online', // MAB experiments use online assignment
       arms: standardArms,
       end_date: new Date(Date.parse(formData.endDate)).toISOString(),
       start_date: new Date(Date.parse(formData.startDate)).toISOString(),
       description: formData.hypothesis,
-      filters: [], // MAB doesn't use complex filtering initially
-      metrics: metrics,
-      strata: [],
-      power: 0.8, // Default power for MAB
-      alpha: 0.05, // Default alpha for MAB
-      experiment_id: null,
-    },
-    power_analyses: null, // MAB doesn't use power analysis
+      },
     webhooks: formData.selectedWebhookIds.length > 0 ? formData.selectedWebhookIds : [],
   });
 }

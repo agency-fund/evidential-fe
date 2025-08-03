@@ -68,10 +68,6 @@ export function FrequentABContainer({
     }
   };
 
-  // TODO: Remove the transformFormDataForLegacyComponents and pass newData directly
-  // This is just a temporary solution to adapt the new form data structure
-  // to the existing components that expect the old structure.
-  // Once all components are updated, we can remove this transformation.
   const handleFormDataChange = (newData: ExperimentFormData) => {
     setFormData(prev => ({ ...prev, ...(newData as FrequentABFormData) }));
   };

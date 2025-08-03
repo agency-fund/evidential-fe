@@ -5,7 +5,7 @@ import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { MABFormData, MABArm } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import { SectionCard } from '@/components/ui/cards/section-card';
-import { infinite } from 'swr/infinite';
+
 
 interface MABMetadataFormProps {
   formData: MABFormData;
@@ -84,7 +84,6 @@ export function MABMetadataForm({
   const isFormValid = () => {
     const basicValid = formData.name.trim() &&
                       formData.hypothesis.trim() &&
-                      formData.participantType &&
                       formData.priorType && // Prior type must be selected in design step
                       formData.outcomeType && // Outcome type must be selected in design step
                       formData.arms.length >= 2;
@@ -125,16 +124,6 @@ export function MABMetadataForm({
                 value={formData.name}
                 onChange={(e) => updateBasicInfo('name', e.target.value)}
                 placeholder="Enter experiment name"
-              />
-            </Box>
-            <Box style={{ flex: 1 }}>
-              <Text as="label" size="2" weight="bold" style={{ marginBottom: '6px', display: 'block' }}>
-                Participant Type
-              </Text>
-              <TextField.Root
-                value={formData.participantType || ''}
-                onChange={(e) => updateBasicInfo('participantType', e.target.value)}
-                placeholder="users"
               />
             </Box>
           </Flex>

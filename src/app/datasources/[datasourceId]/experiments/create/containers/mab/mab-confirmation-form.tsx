@@ -3,24 +3,49 @@ import React from 'react';
 import { Flex, Table, Text, Callout } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { MABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
+import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { ReadMoreText } from '@/components/ui/read-more-text';
+import { useCreateExperiment } from '@/api/admin';
+import { convertFormDataToCreateExperimentRequest } from '../../helpers';
 
 interface MABConfirmationFormProps {
   formData: MABFormData;
+  onNext: () => void;
   onBack: () => void;
   onFormDataChange: (data: MABFormData) => void;
 }
 
-export function MABConfirmationForm({ 
-  formData, 
-  onBack, 
-  onFormDataChange 
+export function MABConfirmationForm({
+  formData,
+  onNext,
+  onBack,
+  onFormDataChange
 }: MABConfirmationFormProps) {
-  
-  const handleSaveExperiment = () => {
-    alert('MAB experiment creation not yet implemented');
+
+
+  const {
+    trigger: triggerCreateExperiment,
+    error: createExperimentError,
+  } = useCreateExperiment(formData.datasourceId!, {
+    chosen_n: formData.chosenN!,
+  });
+
+  const handleSaveExperiment = async () => {
+    try {
+      const request = convertFormDataToCreateExperimentRequest(formData);
+      const response = await triggerCreateExperiment(request);
+      onFormDataChange({
+        ...formData,
+        experimentId: response.design_spec.experiment_id!,
+        createExperimentResponse: response,
+      });
+      onNext();
+    } catch (error) {
+      console.error('Error creating experiment:', error);
+      throw new Error('Failed to create experiment');
+    }
   };
 
   return (
@@ -74,7 +99,7 @@ export function MABConfirmationForm({
               <Table.Cell>
                 {formData.priorType === 'beta' ? 'Beta Distribution' : 'Normal Distribution'}
                 <Text size="1" color="gray" style={{ display: 'block', marginTop: '4px' }}>
-                  {formData.priorType === 'beta' 
+                  {formData.priorType === 'beta'
                     ? 'Alpha/Beta parameters for binary outcomes'
                     : 'Mean/Standard Deviation parameters for continuous outcomes'
                   }
@@ -142,10 +167,14 @@ export function MABConfirmationForm({
           <InfoCircledIcon />
         </Callout.Icon>
         <Callout.Text>
-          Multi-Armed Bandit experiments automatically adapt traffic allocation based on performance. 
+          Multi-Armed Bandit experiments automatically adapt traffic allocation based on performance.
           No power analysis or sample size planning is required.
         </Callout.Text>
       </Callout.Root>
+
+      {createExperimentError && (
+        <GenericErrorCallout title="Failed to create experiment" error={createExperimentError} />
+        )}
 
       <NavigationButtons
         onBack={onBack}
