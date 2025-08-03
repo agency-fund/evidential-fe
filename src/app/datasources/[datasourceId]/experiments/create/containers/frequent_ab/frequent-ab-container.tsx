@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { Box, Heading } from '@radix-ui/themes';
-import { FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
+import { ExperimentFormData, FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { AdaptiveBreadcrumbs } from '@/components/features/experiments/adaptive-bread-crumbs';
 import { InitialForm } from '@/components/features/experiments/initial-form';
 import { DesignForm } from '@/app/datasources/[datasourceId]/experiments/create/containers/frequent_ab/design-form';
@@ -18,13 +18,13 @@ type FrequentABStep = 'metadata' | 'design' | 'summary';
 
 const STEP_TITLES = {
   metadata: 'Experiment Metadata',
-  design: 'Experiment Design', 
+  design: 'Experiment Design',
   summary: 'Experiment Summary',
 } as const;
 
-export function FrequentABContainer({ 
-  webhooks, 
-  initialFormData, 
+export function FrequentABContainer({
+  webhooks,
+  initialFormData,
   onBack
 }: FrequentABContainerProps) {
   const [currentStep, setCurrentStep] = useState<FrequentABStep>('metadata');
@@ -72,17 +72,10 @@ export function FrequentABContainer({
   // This is just a temporary solution to adapt the new form data structure
   // to the existing components that expect the old structure.
   // Once all components are updated, we can remove this transformation.
-  const handleFormDataChange = (newData: any) => {
-    const transformedData = transformFormDataForLegacyComponents(newData);
-    setFormData(prev => ({ ...prev, ...transformedData }));
+  const handleFormDataChange = (newData: ExperimentFormData) => {
+    setFormData(prev => ({ ...prev, ...(newData as FrequentABFormData) }));
   };
 
-  const transformFormDataForLegacyComponents = (data: any) => {
-    return {
-      ...data,
-      experimentType: data.assignmentType, // Map 'preassigned' or 'online' to experimentType
-    };
-  };
 
   const renderCurrentStep = () => {
     switch (currentStep) {
@@ -95,7 +88,7 @@ export function FrequentABContainer({
             webhooks={webhooks}
           />
         );
-        
+
       case 'design':
         return (
           <DesignForm
@@ -105,7 +98,7 @@ export function FrequentABContainer({
             onBack={handleBackStep}
           />
         );
-        
+
       case 'summary':
         return (
           <ConfirmationForm
@@ -114,7 +107,7 @@ export function FrequentABContainer({
             onBack={handleBackStep}
           />
         );
-        
+
       default:
         return null;
     }

@@ -3,8 +3,7 @@ import React from 'react';
 import { Flex, Text, Box } from '@radix-ui/themes';
 import {
     ExperimentType,
-    EXPERIMENT_STEP_FLOWS,
-    EXPERIMENT_TYPE_LABELS
+    EXPERIMENT_STEP_FLOWS
 } from '@/app/datasources/[datasourceId]/experiments/create/types';
 
 interface BreadcrumbStep {
@@ -29,10 +28,10 @@ const STEP_LABELS = {
   summary: 'Experiment Summary',
 } as const;
 
-export function AdaptiveBreadcrumbs({ 
-  experimentType, 
-  currentStep, 
-  onStepClick 
+export function AdaptiveBreadcrumbs({
+  experimentType,
+  currentStep,
+  onStepClick
 }: AdaptiveBreadcrumbsProps) {
   if (!experimentType) {
     return null;
@@ -48,12 +47,12 @@ export function AdaptiveBreadcrumbs({
   }));
 
   return (
-    <Box style={{ 
-      backgroundColor: 'var(--gray-2)', 
-      border: '1px solid var(--gray-6)', 
+    <Box style={{
+      backgroundColor: 'var(--gray-2)',
+      border: '1px solid var(--gray-6)',
       borderRadius: '8px',
       padding: '16px 20px',
-      marginBottom: '24px' 
+      marginBottom: '24px'
     }}>
       <Flex align="center" gap="2" wrap="wrap">
         {steps.map((step, index) => (
@@ -81,7 +80,7 @@ interface BreadcrumbItemProps {
 
 function BreadcrumbItem({ step, onClick }: BreadcrumbItemProps) {
   const isClickable = onClick && step.isAccessible;
-  
+
   return (
     <Box
       style={{
@@ -98,16 +97,16 @@ function BreadcrumbItem({ step, onClick }: BreadcrumbItemProps) {
       }}
       onClick={isClickable ? onClick : undefined}
     >
-      <Text 
-        size="2" 
+      <Text
+        size="2"
         weight={step.isCurrent ? 'bold' : 'medium'}
         style={{
-          color: step.isCurrent 
-            ? 'var(--accent-11)' 
-            : step.isCompleted 
-              ? 'var(--accent-9)' 
-              : step.isAccessible 
-                ? 'var(--gray-11)' 
+          color: step.isCurrent
+            ? 'var(--accent-11)'
+            : step.isCompleted
+              ? 'var(--accent-9)'
+              : step.isAccessible
+                ? 'var(--gray-11)'
                 : 'var(--gray-8)'
         }}
       >

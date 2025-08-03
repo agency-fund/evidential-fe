@@ -76,39 +76,23 @@ export type MABFormData = BaseExperimentFormData & {
   outcomeType: OutcomeType;
   experimentId?: string;
   createExperimentResponse?: CreateExperimentResponse;
+  chosenN?: number;
 };
 
-export type BayesianABFormData = BaseExperimentFormData & {
-  experimentType: 'bayes_ab_online';
-  arms: BayesianABArm[];
-  priorType: 'normal'; // Always normal for Bayesian A/B
-  outcomeType: OutcomeType;
-  experimentId?: string;
-  createExperimentResponse?: CreateExperimentResponse;
-};
-
-export type CMABFormData = BaseExperimentFormData & {
-  experimentType: 'cmab_online';
-  contextVariables: ContextVariable[]; // Configured in context step
-  arms: BayesianABArm[]; // Use BayesianABArm (Normal only), not MABArm
-  priorType: 'normal'; // Always normal, like Bayesian A/B
-  outcomeType: OutcomeType;
-  experimentId?: string;
-  createExperimentResponse?: CreateExperimentResponse;
-};
-
-export type ExperimentFormData = FrequentABFormData | MABFormData | BayesianABFormData | CMABFormData;
+export type ExperimentFormData = FrequentABFormData | MABFormData
 
 export const EXPERIMENT_STEP_FLOWS = {
-  freq_ab: ['type', 'metadata', 'design', 'summary'],
-  mab: ['type', 'design', 'metadata', 'summary'],
-  bayesian_ab: ['type', 'design', 'metadata', 'summary'],
-  cmab: ['type', 'context', 'design', 'metadata', 'summary']
+  freq_online: ['type', 'metadata', 'design', 'summary'],
+  freq_preassigned: ['type', 'metadata', 'design', 'summary'],
+  mab_online: ['type', 'design', 'metadata', 'summary'],
+  bayes_ab_online: ['type', 'design', 'metadata', 'summary'],
+  cmab_online: ['type', 'context', 'design', 'metadata', 'summary']
 } as const;
 
 export const EXPERIMENT_TYPE_LABELS = {
-  freq_ab: 'Traditional A/B Testing',
-  mab: 'Multi-Armed Bandit',
-  bayesian_ab: 'Bayesian A/B Testing',
-  cmab: 'Contextual Bandit'
+  freq_online: 'Traditional A/B Testing',
+  freq_preassigned: 'Traditional A/B Testing',
+  mab_online: 'Multi-Armed Bandit',
+  bayes_ab_online: 'Bayesian A/B Testing',
+  cmab_online: 'Contextual Bandit'
 } as const;

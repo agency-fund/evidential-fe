@@ -1,6 +1,6 @@
 'use client';
 import { Button, Callout, Flex, Spinner, Text, TextField } from '@radix-ui/themes';
-import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
+import { ExperimentFormData, FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useCreateExperiment, useInspectParticipantTypes } from '@/api/admin';
 import { FilterInput, GetFiltersResponseElement, GetMetricsResponseElement } from '@/api/methods.schemas';
@@ -66,8 +66,8 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
 
   const supportsPowerCheck = formData.experimentType === 'freq_preassigned';
   const isNextButtonDisabled =
-    !formData.primaryMetric?.metricName ||
-    !formData.primaryMetric?.mde ||
+    !(formData as FrequentABFormData).primaryMetric?.metricName ||
+    !(formData as FrequentABFormData).primaryMetric?.mde ||
     (supportsPowerCheck && (formData.powerCheckResponse === undefined || isMutating));
 
   return (
@@ -88,8 +88,8 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
           <Flex direction="column" gap="3">
             <FilterBuilder
               availableFields={filterFields}
-              filters={formData.filters}
-              onChange={(filters: FilterInput[]) => onFormDataChange({ ...formData, filters })}
+              filters={(formData as FrequentABFormData).filters}
+              onChange={(filters: FilterInput[]) => onFormDataChange({ ...(formData as FrequentABFormData), filters })}
             />
           </Flex>
         </SectionCard>
@@ -102,8 +102,8 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
               </Text>
               <TextField.Root
                 type="number"
-                value={formData.confidence}
-                onChange={(e) => onFormDataChange({ ...formData, confidence: e.target.value })}
+                value={(formData as FrequentABFormData).confidence}
+                onChange={(e) => onFormDataChange({ ...(formData as FrequentABFormData), confidence: e.target.value })}
               />
             </Flex>
 
@@ -113,8 +113,8 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
               </Text>
               <TextField.Root
                 type="number"
-                value={formData.power}
-                onChange={(e) => onFormDataChange({ ...formData, power: e.target.value })}
+                value={(formData as FrequentABFormData).power}
+                onChange={(e) => onFormDataChange({ ...(formData as FrequentABFormData), power: e.target.value })}
               />
             </Flex>
           </Flex>

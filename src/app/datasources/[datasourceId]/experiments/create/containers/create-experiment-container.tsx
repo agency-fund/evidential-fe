@@ -100,7 +100,7 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
   const renderExperimentFlow = () => {
     if (!selectedExperimentType) return null;
 
-    const initialFormData = createInitialFormData(selectedExperimentType, selectedAssignmentType);
+    const initialFormData = createInitialFormData(selectedExperimentType);
 
     switch (selectedExperimentType) {
       case 'freq_online':
