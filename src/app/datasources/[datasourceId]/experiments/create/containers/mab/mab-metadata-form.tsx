@@ -5,6 +5,7 @@ import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { MABFormData, MABArm } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import { SectionCard } from '@/components/ui/cards/section-card';
+import { infinite } from 'swr/infinite';
 
 interface MABMetadataFormProps {
   formData: MABFormData;
@@ -13,14 +14,14 @@ interface MABMetadataFormProps {
   onBack: () => void;
 }
 
-export function MABMetadataForm({ 
-  formData, 
-  onFormDataChange, 
-  onNext, 
-  onBack 
+export function MABMetadataForm({
+  formData,
+  onFormDataChange,
+  onNext,
+  onBack
 }: MABMetadataFormProps) {
-  
-  const updateBasicInfo = (field: keyof MABFormData, value: any) => {
+
+  const updateBasicInfo = (field: keyof MABFormData, value: string) => {
     onFormDataChange({
       ...formData,
       [field]: value,
@@ -28,7 +29,7 @@ export function MABMetadataForm({
   };
 
   const updateArm = (index: number, updatedArm: Partial<MABArm>) => {
-    const updatedArms = formData.arms.map((arm, i) => 
+    const updatedArms = formData.arms.map((arm, i) =>
       i === index ? { ...arm, ...updatedArm } : arm
     );
     onFormDataChange({
@@ -42,7 +43,7 @@ export function MABMetadataForm({
       arm_name: '',
       arm_description: '',
     };
-    
+
     // Add the correct prior parameters based on current priorType
     if (formData.priorType === 'beta') {
       newArm.alpha_prior = 1;
@@ -51,7 +52,7 @@ export function MABMetadataForm({
       newArm.mean_prior = 0;
       newArm.stddev_prior = 1;
     }
-    
+
     onFormDataChange({
       ...formData,
       arms: [...formData.arms, newArm],
@@ -60,7 +61,7 @@ export function MABMetadataForm({
 
   const deleteArm = (index: number) => {
     if (formData.arms.length <= 2) return; // Minimum 2 arms required
-    
+
     onFormDataChange({
       ...formData,
       arms: formData.arms.filter((_, i) => i !== index),
@@ -69,29 +70,29 @@ export function MABMetadataForm({
 
   const isPriorParamValid = (arm: MABArm) => {
     if (!formData.priorType) return false; // Prior type must be set
-    
+
     if (formData.priorType === 'beta') {
-      return arm.alpha_prior !== undefined && arm.alpha_prior > 0 && 
+      return arm.alpha_prior !== undefined && arm.alpha_prior > 0 &&
              arm.beta_prior !== undefined && arm.beta_prior > 0;
     } else if (formData.priorType === 'normal') {
-      return arm.mean_prior !== undefined && 
+      return arm.mean_prior !== undefined &&
              arm.stddev_prior !== undefined && arm.stddev_prior > 0;
     }
     return false;
   };
 
   const isFormValid = () => {
-    const basicValid = formData.name.trim() && 
-                      formData.hypothesis.trim() && 
+    const basicValid = formData.name.trim() &&
+                      formData.hypothesis.trim() &&
                       formData.participantType &&
                       formData.priorType && // Prior type must be selected in design step
                       formData.outcomeType && // Outcome type must be selected in design step
                       formData.arms.length >= 2;
-    
-    const armsValid = formData.arms.every(arm => 
+
+    const armsValid = formData.arms.every(arm =>
       arm.arm_name.trim() && isPriorParamValid(arm)
     );
-    
+
     console.log('🔍 Form validation:', {
       basicValid,
       armsValid,
@@ -106,7 +107,7 @@ export function MABMetadataForm({
         valid: arm.arm_name.trim() && isPriorParamValid(arm)
       }))
     });
-    
+
     return basicValid && armsValid;
   };
 
@@ -137,7 +138,7 @@ export function MABMetadataForm({
               />
             </Box>
           </Flex>
-          
+
           <Box>
             <Text as="label" size="2" weight="bold" style={{ marginBottom: '6px', display: 'block' }}>
               Hypothesis
@@ -182,17 +183,17 @@ export function MABMetadataForm({
             Configure your experiment arms with prior beliefs.
           </Text>
           {formData.priorType && formData.outcomeType && (
-            <Box style={{ 
-              background: 'var(--accent-2)', 
-              border: '1px solid var(--accent-6)', 
-              borderRadius: '6px', 
-              padding: '12px' 
+            <Box style={{
+              background: 'var(--accent-2)',
+              border: '1px solid var(--accent-6)',
+              borderRadius: '6px',
+              padding: '12px'
             }}>
               <Text size="2" weight="medium" style={{ color: 'var(--accent-11)' }}>
                 Selected Configuration: {formData.priorType === 'beta' ? 'Beta Distribution' : 'Normal Distribution'} × {formData.outcomeType === 'binary' ? 'Binary' : 'Real-valued'} Outcome
               </Text>
               <Text size="1" color="gray" style={{ marginTop: '4px', display: 'block' }}>
-                {formData.priorType === 'beta' 
+                {formData.priorType === 'beta'
                   ? 'Using Alpha (prior successes) and Beta (prior failures) parameters'
                   : 'Using Mean and Standard Deviation parameters'
                 }
@@ -200,11 +201,11 @@ export function MABMetadataForm({
             </Box>
           )}
           {!formData.priorType || !formData.outcomeType && (
-            <Box style={{ 
-              background: 'var(--orange-2)', 
-              border: '1px solid var(--orange-6)', 
-              borderRadius: '6px', 
-              padding: '12px' 
+            <Box style={{
+              background: 'var(--orange-2)',
+              border: '1px solid var(--orange-6)',
+              borderRadius: '6px',
+              padding: '12px'
             }}>
               <Text size="2" weight="medium" style={{ color: 'var(--orange-11)' }}>
                 ⚠️ Prior distribution and outcome type must be selected in the Design step first
@@ -225,7 +226,7 @@ export function MABMetadataForm({
               onDelete={() => deleteArm(index)}
             />
           ))}
-          
+
           <Flex justify="center" style={{ marginTop: '16px' }}>
             <Button onClick={addArm} variant="outline">
               <PlusIcon />
@@ -258,10 +259,10 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
   return (
     <Card style={{ padding: '0', border: '1px solid var(--gray-6)' }}>
       {/* Header */}
-      <Flex 
-        align="center" 
+      <Flex
+        align="center"
         justify="between"
-        style={{ 
+        style={{
           padding: '16px 20px',
           backgroundColor: 'var(--gray-2)',
           borderBottom: '1px solid var(--gray-6)'
@@ -288,7 +289,7 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
             {armIndex === 0 ? 'Control Arm' : 'Treatment Arm'}
           </Text>
         </Flex>
-        
+
         <IconButton
           onClick={onDelete}
           disabled={!canDelete}
@@ -314,7 +315,7 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
                 placeholder="Enter arm name"
               />
             </Box>
-            
+
             <Box>
               <Text as="label" size="2" weight="bold" style={{ marginBottom: '6px', display: 'block' }}>
                 Description
@@ -330,10 +331,10 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
 
           <Flex direction="column" gap="4" style={{ flex: 1 }}>
             {!priorType && (
-              <Box style={{ 
-                background: 'var(--orange-2)', 
-                border: '1px solid var(--orange-6)', 
-                borderRadius: '6px', 
+              <Box style={{
+                background: 'var(--orange-2)',
+                border: '1px solid var(--orange-6)',
+                borderRadius: '6px',
                 padding: '12px',
                 textAlign: 'center'
               }}>
@@ -342,7 +343,7 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
                 </Text>
               </Box>
             )}
-            
+
             {priorType === 'beta' && (
               <Flex gap="3">
                 <Box style={{ flex: 1 }}>
@@ -371,18 +372,18 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
                 </Box>
               </Flex>
             )}
-            
+
             {priorType === 'normal' && (
               <Flex gap="3">
                 <Box style={{ flex: 1 }}>
                   <Text as="label" size="2" weight="bold" style={{ marginBottom: '6px', display: 'block' }}>
-                    Mean Prior
+                  Mean Prior
                   </Text>
                   <TextField.Root
-                    type="number"
-                    value={arm.mean_prior?.toString() || '0'}
-                    onChange={(e) => onUpdate({ mean_prior: Number(e.target.value) })}
-                    placeholder="Prior mean"
+                  type="number"
+                  value={arm.mean_prior ?? ''}
+                  onChange={(e) => onUpdate({ mean_prior: e.target.value ? Number(e.target.value) : undefined })}
+                  placeholder="Prior mean"
                   />
                 </Box>
                 <Box style={{ flex: 1 }}>
@@ -391,8 +392,6 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
                   </Text>
                   <TextField.Root
                     type="number"
-                    min="0.1"
-                    step="0.1"
                     value={arm.stddev_prior?.toString() || '1'}
                     onChange={(e) => onUpdate({ stddev_prior: Number(e.target.value) })}
                     placeholder="Prior std dev"

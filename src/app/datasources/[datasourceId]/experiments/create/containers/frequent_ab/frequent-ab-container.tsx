@@ -116,7 +116,7 @@ export function FrequentABContainer({
   return (
     <Box>
       <AdaptiveBreadcrumbs
-        experimentType="frequent_ab"
+        experimentType={formData.experimentType}
         currentStep={getStepNumber()}
       />
 
