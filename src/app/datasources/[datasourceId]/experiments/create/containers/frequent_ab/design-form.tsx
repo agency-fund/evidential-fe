@@ -64,7 +64,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
     }
   };
 
-  const supportsPowerCheck = formData.experimentType === 'preassigned';
+  const supportsPowerCheck = formData.experimentType === 'freq_preassigned';
   const isNextButtonDisabled =
     !formData.primaryMetric?.metricName ||
     !formData.primaryMetric?.mde ||

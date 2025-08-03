@@ -14,6 +14,7 @@ import { mutate } from 'swr';
 import { DsnDriver, UpdateDatasourceRequest } from '@/api/methods.schemas';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { PostgresSslModes } from '@/services/typehelper';
+import { XNGIN_API_DOCS_LINK } from '@/services/constants';
 
 export const EditDatasourceDialog = ({
   organizationId,
@@ -81,7 +82,7 @@ export const EditDatasourceDialog = ({
           setProjectId(dwh.project_id);
           setDataset(dwh.dataset_id);
           setCredentialsJson(atob(dwh.credentials.content_base64));
-        } else {
+        } else if (dwh.driver === 'postgresql+psycopg2') {
           setHost(dwh.host);
           setPort(dwh.port ? dwh.port.toString() : '5432');
           setDbname(dwh.dbname);
@@ -112,7 +113,9 @@ export const EditDatasourceDialog = ({
     return null;
   }
 
+  const isNoDWH = config.dwh.driver === 'none';
   const isBigQuery = config.dwh.driver === 'bigquery';
+  const usesBigQueryServiceAccount = config.dwh.driver === 'bigquery' && config.dwh.credentials.type == 'serviceaccountinfo';
   const isRedshift = config.dwh.driver === 'postgresql+psycopg2' && config.dwh.host.endsWith('redshift.amazonaws.com');
 
   return (
@@ -146,7 +149,21 @@ export const EditDatasourceDialog = ({
               name,
             };
 
-            if (!isBigQuery) {
+            if (isNoDWH) {
+              updateData.dwh = {
+                driver: 'none',
+              };
+            } else if (isBigQuery) {
+              updateData.dwh = {
+                driver: 'bigquery',
+                project_id: projectId,
+                dataset_id: dataset,
+                credentials: {
+                  type: 'serviceaccountinfo',
+                  content_base64: btoa(credentialsJson),
+                },
+              };
+            } else {
               updateData.dwh = {
                 driver: config.dwh.driver as DsnDriver, // Don't change the driver type!
                 host,
@@ -156,16 +173,6 @@ export const EditDatasourceDialog = ({
                 password,
                 sslmode,
                 search_path: searchPath || null,
-              };
-            } else {
-              updateData.dwh = {
-                driver: 'bigquery',
-                project_id: projectId,
-                dataset_id: dataset,
-                credentials: {
-                  type: 'serviceaccountinfo',
-                  content_base64: btoa(credentialsJson),
-                },
               };
             }
 
@@ -188,7 +195,22 @@ export const EditDatasourceDialog = ({
               <TextField.Root name="name" value={name} onChange={(e) => setName(e.target.value)} required />
             </label>
 
-            {config.dwh.driver !== 'bigquery' && (
+            {isNoDWH && (
+              <label>
+                <Text as="div" size="2" mb="1" weight="bold">
+                  This datasource is not connected to a data warehouse.
+                </Text>
+                <Text as="div" size="2" mb="1">
+                  Experiments associated with this source must request draws (arm assignments) and
+                  supply metric outcomes through the{' '}
+                  <a href={XNGIN_API_DOCS_LINK} target="_blank" rel="noopener noreferrer">
+                    Experiment Integration APIs
+                  </a>.
+                </Text>
+              </label>
+            )}
+
+            {!isNoDWH && !isBigQuery && (
               <>
                 <label>
                   <Text as="div" size="2" mb="1" weight="bold">
@@ -275,7 +297,7 @@ export const EditDatasourceDialog = ({
               </>
             )}
 
-            {config.dwh.driver === 'bigquery' && config.dwh.credentials.type == 'serviceaccountinfo' && (
+            {usesBigQueryServiceAccount && (
               <>
                 <label>
                   <Text as="div" size="2" mb="1" weight="bold">

@@ -82,10 +82,12 @@ export default function Page() {
           <Heading size="4">Datasources</Heading>
           <AddDatasourceDialog organizationId={organizationId} />
         </Flex>
-        {organization.datasources.length > 0 ? (
+        {organization.datasources.length > 0 && (
           <DatasourcesTable datasources={organization.datasources} organizationId={organizationId} />
-        ) : (
-          <EmptyStateCard title="No datasources found" description="Add a datasource to get started">
+        )}
+        {(organization.datasources.length === 0 ||
+          (organization.datasources.length === 1 && organization.datasources[0].driver === "none")) && (
+          <EmptyStateCard title="No data warehouse found" description="Add a new datasource to get started">
             <AddDatasourceDialog organizationId={organizationId} />
           </EmptyStateCard>
         )}

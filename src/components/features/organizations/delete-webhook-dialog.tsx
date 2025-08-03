@@ -10,11 +10,16 @@ interface DeleteWebhookDialogProps {
 }
 
 export function DeleteWebhookDialog({ organizationId, webhookId }: DeleteWebhookDialogProps) {
-  const { trigger } = useDeleteWebhookFromOrganization(organizationId, webhookId, {
-    swr: {
-      onSuccess: () => mutate(getListOrganizationWebhooksKey(organizationId)),
+  const { trigger } = useDeleteWebhookFromOrganization(
+    organizationId,
+    webhookId,
+    { allow_missing: true },
+    {
+      swr: {
+        onSuccess: () => mutate(getListOrganizationWebhooksKey(organizationId)),
+      },
     },
-  });
+  );
 
   return (
     <AlertDialog.Root>

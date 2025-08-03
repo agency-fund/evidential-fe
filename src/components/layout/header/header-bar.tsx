@@ -1,5 +1,5 @@
 'use client';
-import { DropdownMenu, Flex, Heading, IconButton } from '@radix-ui/themes';
+import { DropdownMenu, Flex, Heading, IconButton, Text } from '@radix-ui/themes';
 import { useAuth } from '@/providers/auth-provider';
 import { ArrowLeftIcon, AvatarIcon, BackpackIcon, ExitIcon, GearIcon, RocketIcon } from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
@@ -7,7 +7,7 @@ import { PRODUCT_NAME, XNGIN_API_DOCS_LINK } from '@/services/constants';
 import { useListOrganizations } from '@/api/admin';
 import { useState } from 'react';
 import { useLocalStorage } from '@/providers/use-local-storage';
-import { CURRENT_ORG_ID_KEY } from '@/providers/organization-provider';
+import { CURRENT_ORG_ID_KEY, useCurrentOrganization } from '@/providers/organization-provider';
 import Link from 'next/link';
 
 export function HeaderBar() {
@@ -16,6 +16,7 @@ export function HeaderBar() {
   const { data: orgsResponse } = useListOrganizations();
   const [dropdownOpen, setDropdownOpen] = useState<'closed' | 'main' | 'organizations'>('closed');
   const [orgId, setOrgId] = useLocalStorage<string>(CURRENT_ORG_ID_KEY);
+  const currentOrganization = useCurrentOrganization();
 
   if (!auth.isAuthenticated) return null;
 
@@ -58,13 +59,21 @@ export function HeaderBar() {
             {/* Main menu */}
             {hasMultipleOrgs && (
               <>
+              <DropdownMenu.Label>
+                    {currentOrganization && (
+                      <Text size="1" color="gray" align="center" style={{ width: '100%', display: 'block' }}>
+                        {currentOrganization.current.name}
+                      </Text>
+                    )}
+                </DropdownMenu.Label>
+
                 <DropdownMenu.Item
                   onSelect={(event) => {
                     event.preventDefault();
                     setDropdownOpen('organizations');
                   }}
                 >
-                  <BackpackIcon /> Organizations
+                      <BackpackIcon /> Organizations
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator />
               </>

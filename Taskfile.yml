@@ -42,6 +42,8 @@ tasks:
   start:
     desc: 'Starts the development server'
     interactive: true
+    dotenv:
+      - .env
     deps:
       - nodedeps
     cmd: |
