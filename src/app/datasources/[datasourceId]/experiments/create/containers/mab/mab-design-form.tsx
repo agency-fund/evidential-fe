@@ -26,7 +26,7 @@ const OUTCOME_OPTIONS: OutcomeOption[] = [
     description: 'Yes/No outcomes: conversions, clicks, sign-ups, purchases. Results are expressed as percentages or rates.',
   },
   {
-    type: 'real_valued',
+    type: 'real-valued',
     title: 'Real-valued',
     description: 'Continuous numeric outcomes: revenue per user, time spent, satisfaction scores, any measurable quantity.',
   },

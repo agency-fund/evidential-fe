@@ -12,14 +12,12 @@ import { convertFormDataToCreateExperimentRequest } from '../../helpers';
 
 interface MABConfirmationFormProps {
   formData: MABFormData;
-  onNext: () => void;
   onBack: () => void;
   onFormDataChange: (data: MABFormData) => void;
 }
 
 export function MABConfirmationForm({
   formData,
-  onNext,
   onBack,
   onFormDataChange
 }: MABConfirmationFormProps) {
@@ -41,7 +39,6 @@ export function MABConfirmationForm({
         experimentId: response.design_spec.experiment_id!,
         createExperimentResponse: response,
       });
-      onNext();
     } catch (error) {
       console.error('Error creating experiment:', error);
       throw new Error('Failed to create experiment');

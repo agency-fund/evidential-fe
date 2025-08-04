@@ -92,21 +92,6 @@ export function MABMetadataForm({
       arm.arm_name.trim() && isPriorParamValid(arm)
     );
 
-    console.log('🔍 Form validation:', {
-      basicValid,
-      armsValid,
-      priorType: formData.priorType,
-      outcomeType: formData.outcomeType,
-      arms: formData.arms.map(arm => ({
-        name: arm.arm_name,
-        alpha_prior: arm.alpha_prior,
-        beta_prior: arm.beta_prior,
-        mean_prior: arm.mean_prior,
-        stddev_prior: arm.stddev_prior,
-        valid: arm.arm_name.trim() && isPriorParamValid(arm)
-      }))
-    });
-
     return basicValid && armsValid;
   };
 

@@ -30,10 +30,6 @@ export function FrequentABContainer({
   const [currentStep, setCurrentStep] = useState<FrequentABStep>('metadata');
   const [formData, setFormData] = useState<FrequentABFormData>(initialFormData);
 
-    console.log('FrequentABContainer - Initial formData:', initialFormData);
-    console.log('FrequentABContainer - Current formData:', formData);
-    console.log('FrequentABContainer - Participant type:', formData.participantType);
-
   // Calculate step number for breadcrumbs (1-based, includes type selection)
   const getStepNumber = () => {
     const stepMap = { metadata: 2, design: 3, summary: 4 };

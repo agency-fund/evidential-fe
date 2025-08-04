@@ -7,6 +7,7 @@ import { createExperimentBody } from '@/api/admin.zod';
 
 import { ExperimentFormData, FrequentABFormData, MABFormData } from './types';
 
+
 // Zod helper for validating string inputs as if they are numeric values.
 export const zodNumberFromForm = (configure?: (num: z.ZodNumber) => z.ZodNumber) =>
   z.preprocess(
@@ -84,20 +85,28 @@ function convertFrequentABFormData(formData: FrequentABFormData): CreateExperime
 
 function convertMABFormData(formData: MABFormData): CreateExperimentRequest {
   // Map MAB arms to standard arms format
+
   const standardArms = formData.arms.map(arm => ({
     arm_id: null,
     arm_name: arm.arm_name,
     arm_description: arm.arm_description || '',
+    alpha_init: arm.alpha_prior?.toString()? arm.alpha_prior : null,
+    beta_init: arm.beta_prior?.toString()? arm.beta_prior : null,
+    mu_init: arm.mean_prior?.toString() ? arm.mean_prior : null,
+    sigma_init: arm.stddev_prior?.toString()? arm.stddev_prior : null,
   }));
 
   return createExperimentBody.parse({
     design_spec: {
       experiment_name: formData.name,
+      participant_type: 'user',
       experiment_type: 'mab_online', // MAB experiments use online assignment
       arms: standardArms,
       end_date: new Date(Date.parse(formData.endDate)).toISOString(),
       start_date: new Date(Date.parse(formData.startDate)).toISOString(),
       description: formData.hypothesis,
+      prior_type: formData.priorType,
+      reward_type: formData.outcomeType,
       },
     webhooks: formData.selectedWebhookIds.length > 0 ? formData.selectedWebhookIds : [],
   });

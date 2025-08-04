@@ -30,10 +30,6 @@ export function MABContainer({
   const [currentStep, setCurrentStep] = useState<MABStep>('design');
   const [formData, setFormData] = useState<MABFormData>(initialFormData);
 
-  console.log('MABContainer - Initial formData:', initialFormData);
-  console.log('MABContainer - Current formData:', formData);
-  console.log('MABContainer - Experiment type:', formData.experimentType);
-
   // Calculate step number for breadcrumbs (1-based, includes type selection)
   const getStepNumber = () => {
     const stepMap = { design: 2, metadata: 3, summary: 4 };
@@ -73,9 +69,6 @@ export function MABContainer({
   };
 
   const renderCurrentStep = () => {
-    console.log('🔍 CURRENT STEP:', currentStep);
-    console.log('🔍 EXPERIMENT TYPE:', formData.experimentType);
-    console.log('🔍 STEP NUMBER FOR BREADCRUMB:', getStepNumber());
 
     switch (currentStep) {
       case 'design':

@@ -9,8 +9,8 @@ export type ExperimentType = 'freq_preassigned' | 'freq_online' | 'mab_online' |
 export type FreqExperimentType = 'freq_preassigned' | 'freq_online'
 export type AssignmentType = 'preassigned' | 'online'
 export type PriorType = 'beta' | 'normal';
-export type OutcomeType = 'binary' | 'real_valued';
-export type ContextVariableType = 'binary' | 'real_valued';
+export type OutcomeType = 'binary' | 'real-valued';
+export type ContextVariableType = 'binary' | 'real-valued';
 
 export type MetricWithMDE = {
   metricName: string;
