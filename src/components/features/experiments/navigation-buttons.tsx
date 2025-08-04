@@ -22,19 +22,19 @@ export function NavigationButtons({
   className,
 }: NavigationButtonsProps) {
   return (
-    <Flex 
+    <Flex
       gap="3"
-      justify="between" 
-      align="center" 
+      justify="between"
+      align="center"
       className={className}
-      style={{ 
-        paddingTop: '24px', 
-        borderTop: '1px solid var(--gray-6)' 
+      style={{
+        paddingTop: '24px',
+        borderTop: '1px solid var(--gray-6)'
       }}
     >
       {showBack ? (
-        <Button 
-          variant="soft" 
+        <Button
+          variant="soft"
           color="gray"
           onClick={onBack}
           disabled={!onBack}
@@ -44,9 +44,9 @@ export function NavigationButtons({
       ) : (
         <div />
       )}
-      
+
       {onNext && (
-        <Button 
+        <Button
           onClick={onNext}
           disabled={nextDisabled}
           loading={nextLoading}

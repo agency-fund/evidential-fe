@@ -1,6 +1,6 @@
 'use client';
 import { Button, Callout, Flex, Grid, Table, Text } from '@radix-ui/themes';
-import { ExperimentFormData, FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
+import { FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { useRouter } from 'next/navigation';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useAbandonExperiment, useCommitExperiment } from '@/api/admin';
@@ -14,9 +14,9 @@ import { ReadMoreText } from '@/components/ui/read-more-text';
 import { ListSelectedWebhooksCard } from '@/components/features/experiments/list-selected-webhooks-card';
 
 interface ConfirmationFormProps {
-  formData: ExperimentFormData;
+  formData: FrequentABFormData;
   onBack: () => void;
-  onFormDataChange: (data: ExperimentFormData) => void;
+  onFormDataChange: (data: FrequentABFormData) => void;
 }
 
 function ExperimentErrorCallout({ error, type }: { error?: Error; type: 'commit' | 'abandon' }) {
@@ -45,7 +45,7 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
   const handleAbandonCommit = async () => {
     await abandon();
     // TODO: move these state resets to CreateExperimentPage so that all page-to-page state transitions are in one place
-    onFormDataChange({ ...(formData as FrequentABFormData), powerCheckResponse: undefined, experimentId: undefined });
+    onFormDataChange({ ...formData, powerCheckResponse: undefined, experimentId: undefined });
     onBack();
   };
 
@@ -121,9 +121,9 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
           <Flex direction="column" gap="3">
             <Flex direction="column" gap="1">
               <Text weight="bold">Primary Metric</Text>
-              {(formData as FrequentABFormData).primaryMetric ? (
+              {formData.primaryMetric ? (
                 <Text>
-                  {(formData as FrequentABFormData).primaryMetric?.metricName} (min effect: {(formData as FrequentABFormData).primaryMetric?.mde}%)
+                  {formData.primaryMetric?.metricName} (min effect: {formData.primaryMetric?.mde}%)
                 </Text>
               ) : (
                 <Text>-</Text>
@@ -131,8 +131,8 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
             </Flex>
             <Flex direction="column" gap="1">
               <Text weight="bold">Secondary Metrics</Text>
-              {(formData as FrequentABFormData).secondaryMetrics.length > 0 ? (
-                (formData as FrequentABFormData).secondaryMetrics.map((metric) => (
+              {formData.secondaryMetrics.length > 0 ? (
+                formData.secondaryMetrics.map((metric) => (
                   <Text key={metric.metricName}>
                     {metric.metricName} (min effect: {metric.mde}%)
                   </Text>
@@ -151,7 +151,7 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
         </SectionCard>
       </Grid>
       <SectionCard title="Filters">
-        {(formData as FrequentABFormData).filters.length > 0 ? (
+        {formData.filters.length > 0 ? (
           <Table.Root>
             <Table.Header>
               <Table.Row>
@@ -161,7 +161,7 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {(formData as FrequentABFormData).filters.map((filter, index) => (
+              {formData.filters.map((filter, index) => (
                 <Table.Row key={index}>
                   <Table.Cell>{filter.field_name}</Table.Cell>
                   <Table.Cell>{filter.relation}</Table.Cell>

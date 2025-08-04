@@ -2,15 +2,15 @@
 
 import { Badge, Button, Flex, Grid, Table, Text, TextField } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
-import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
+import { FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { GetMetricsResponseElement } from '@/api/methods.schemas';
 import { ClickableBadge } from '@/components/features/experiments/clickable-badge';
 
 const DEFAULT_MDE = '10';
 
 type MetricBuilderProps = {
-  formData: ExperimentFormData;
-  onFormDataChange: (data: ExperimentFormData) => void;
+  formData: FrequentABFormData;
+  onFormDataChange: (data: FrequentABFormData) => void;
   metricFields: GetMetricsResponseElement[];
 };
 
@@ -43,7 +43,10 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
     if (type === 'primary' && formData.primaryMetric) {
       onFormDataChange({
         ...formData,
-        primaryMetric: { ...formData.primaryMetric, mde },
+        primaryMetric: {
+          metricName: formData.primaryMetric?.metricName || '',
+          mde: mde || ''
+        },
       });
     } else if (type === 'secondary') {
       const newSecondaryMetrics = formData.secondaryMetrics.map((m) =>
@@ -93,12 +96,12 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
             {formData.primaryMetric && (
               <Table.Row>
                 <Table.Cell>
-                  {formData.primaryMetric.metricName} <Badge color={'green'}>Primary</Badge>
+                  {formData.primaryMetric?.metricName} <Badge color={'green'}>Primary</Badge>
                 </Table.Cell>
                 <Table.Cell>
                   <TextField.Root
                     type={'number'}
-                    value={formData.primaryMetric.mde}
+                    value={formData.primaryMetric?.mde}
                     onChange={(e) => handleMdeChange('primary', formData.primaryMetric!.metricName, e.target.value)}
                     placeholder="MDE %"
                   />

@@ -2,7 +2,7 @@
 
 import { Button, Callout, Card, Flex, Spinner, Table, Text, TextField } from '@radix-ui/themes';
 import { CheckCircledIcon, CrossCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
-import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
+import { FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { usePowerCheck } from '@/api/admin';
 import { convertFormDataToCreateExperimentRequest } from '@/app/datasources/[datasourceId]/experiments/create/helpers';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -10,8 +10,8 @@ import { ZodError } from 'zod';
 import { useState } from 'react';
 
 interface PowerCheckSectionProps {
-  formData: ExperimentFormData;
-  onFormDataChange: (data: ExperimentFormData) => void;
+  formData: FrequentABFormData;
+  onFormDataChange: (data: FrequentABFormData) => void;
 }
 
 export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSectionProps) {

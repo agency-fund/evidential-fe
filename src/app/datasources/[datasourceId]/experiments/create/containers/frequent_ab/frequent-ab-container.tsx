@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { Box, Heading } from '@radix-ui/themes';
-import { ExperimentFormData, FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
+import { FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { AdaptiveBreadcrumbs } from '@/components/features/experiments/adaptive-bread-crumbs';
 import { InitialForm } from '@/components/features/experiments/initial-form';
 import { DesignForm } from '@/app/datasources/[datasourceId]/experiments/create/containers/frequent_ab/design-form';
@@ -64,8 +64,8 @@ export function FrequentABContainer({
     }
   };
 
-  const handleFormDataChange = (newData: ExperimentFormData) => {
-    setFormData(prev => ({ ...prev, ...(newData as FrequentABFormData) }));
+  const handleFormDataChange = (newData: FrequentABFormData) => {
+    setFormData(prev => ({ ...prev, ...newData }));
   };
 
 
@@ -75,7 +75,7 @@ export function FrequentABContainer({
         return (
           <InitialForm
             formData={formData}
-            onFormDataChange={handleFormDataChange}
+            onFormDataChange={(data) => handleFormDataChange(data as FrequentABFormData)}
             onNext={() => setCurrentStep('design')}
             webhooks={webhooks}
           />
@@ -95,7 +95,7 @@ export function FrequentABContainer({
         return (
           <ConfirmationForm
             formData={formData}
-            onFormDataChange={handleFormDataChange}
+            onFormDataChange={(data) => handleFormDataChange(data as FrequentABFormData)}
             onBack={handleBackStep}
           />
         );
