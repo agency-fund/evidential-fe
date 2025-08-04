@@ -5,7 +5,9 @@ import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { MABFormData, MABArm } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import { SectionCard } from '@/components/ui/cards/section-card';
-
+import { useCreateExperiment } from '@/api/admin';
+import { convertFormDataToCreateExperimentRequest } from '../../helpers';
+import { GenericErrorCallout } from '@/components/ui/generic-error';
 
 interface MABMetadataFormProps {
   formData: MABFormData;
@@ -20,6 +22,29 @@ export function MABMetadataForm({
   onNext,
   onBack
 }: MABMetadataFormProps) {
+
+  const {
+      trigger: triggerCreateExperiment,
+      error: createExperimentError,
+    } = useCreateExperiment(formData.datasourceId!, {
+      chosen_n: formData.chosenN!,
+    });
+
+    const handleSaveExperiment = async () => {
+      try {
+        const request = convertFormDataToCreateExperimentRequest(formData);
+        const response = await triggerCreateExperiment(request);
+        onFormDataChange({
+          ...formData,
+          experimentId: response.design_spec.experiment_id!,
+          createExperimentResponse: response,
+        });
+        onNext();
+      } catch (error) {
+        console.error('Error creating experiment:', error);
+        throw new Error('Failed to create experiment');
+      }
+    };
 
   const updateBasicInfo = (field: keyof MABFormData, value: string) => {
     onFormDataChange({
@@ -210,9 +235,13 @@ export function MABMetadataForm({
         </Flex>
       </SectionCard>
 
+      {createExperimentError && (
+      <GenericErrorCallout title="Failed to create experiment" error={createExperimentError} />
+      )}
+
       <NavigationButtons
         onBack={onBack}
-        onNext={onNext}
+        onNext={handleSaveExperiment}
         nextLabel="Continue to Summary"
         nextDisabled={!isFormValid()}
       />

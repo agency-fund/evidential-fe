@@ -1,20 +1,35 @@
 'use client';
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { Flex, Table, Text, Callout } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { MABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
-import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { ReadMoreText } from '@/components/ui/read-more-text';
-import { useCreateExperiment } from '@/api/admin';
-import { convertFormDataToCreateExperimentRequest } from '../../helpers';
+import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { ApiError } from '@/services/orval-fetch';
+import { useAbandonExperiment, useCommitExperiment } from '@/api/admin';
+import { ListSelectedWebhooksCard } from '@/components/features/experiments/list-selected-webhooks-card';
+
 
 interface MABConfirmationFormProps {
   formData: MABFormData;
   onBack: () => void;
+  onNext: () => void;
   onFormDataChange: (data: MABFormData) => void;
 }
+
+function MABExperimentErrorCallout({ error, type }: { error?: Error; type: 'commit' | 'abandon' }) {
+  if (!error) return null;
+
+  const title = `Failed to ${type} MAB experiment`;
+  // Specify a message if the error is a 304 since it has no content.
+  const message = type === 'commit' ? 'Experiment already committed.' : 'Experiment already abandoned.';
+  const is304 = error instanceof ApiError && error.response.status === 304;
+  return <GenericErrorCallout title={title} message={is304 ? message : undefined} error={is304 ? undefined : error} />;
+}
+
 
 export function MABConfirmationForm({
   formData,
@@ -22,29 +37,25 @@ export function MABConfirmationForm({
   onFormDataChange
 }: MABConfirmationFormProps) {
 
+  const { trigger: abandon, error: abandonError } = useAbandonExperiment(
+      formData.datasourceId!,
+      formData.experimentId!,
+    );
+    const { trigger: commit, error: commitError } = useCommitExperiment(formData.datasourceId!, formData.experimentId!);
 
-  const {
-    trigger: triggerCreateExperiment,
-    error: createExperimentError,
-  } = useCreateExperiment(formData.datasourceId!, {
-    chosen_n: formData.chosenN!,
-  });
+    const handleSaveCommit = async () => {
+      await commit();
+      router.push('/experiments');
+    };
 
-  const handleSaveExperiment = async () => {
-    try {
-      const request = convertFormDataToCreateExperimentRequest(formData);
-      const response = await triggerCreateExperiment(request);
-      onFormDataChange({
-        ...formData,
-        experimentId: response.design_spec.experiment_id!,
-        createExperimentResponse: response,
-      });
-    } catch (error) {
-      console.error('Error creating experiment:', error);
-      throw new Error('Failed to create experiment');
-    }
-  };
+    const handleAbandonCommit = async () => {
+      await abandon();
+      // TODO: move these state resets to CreateExperimentPage so that all page-to-page state transitions are in one place
+      onFormDataChange({ ...(formData as MABFormData), experimentId: undefined });
+      onBack();
+    };
 
+  const router = useRouter();
   return (
     <Flex direction="column" gap="6">
       {/* Basic Information */}
@@ -158,6 +169,11 @@ export function MABConfirmationForm({
         </Table.Root>
       </SectionCard>
 
+      <ListSelectedWebhooksCard webhookIds={formData.selectedWebhookIds} />
+
+      <MABExperimentErrorCallout error={commitError} type={'commit'} />
+      <MABExperimentErrorCallout error={abandonError} type={'abandon'} />
+
       {/* Info about MAB */}
       <Callout.Root>
         <Callout.Icon>
@@ -169,13 +185,9 @@ export function MABConfirmationForm({
         </Callout.Text>
       </Callout.Root>
 
-      {createExperimentError && (
-        <GenericErrorCallout title="Failed to create experiment" error={createExperimentError} />
-        )}
-
       <NavigationButtons
-        onBack={onBack}
-        onNext={handleSaveExperiment}
+        onBack={handleAbandonCommit}
+        onNext={handleSaveCommit}
         nextLabel="Save Experiment"
         showBack={true}
       />

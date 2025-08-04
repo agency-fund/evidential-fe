@@ -97,6 +97,7 @@ export function MABContainer({
             formData={formData}
             onFormDataChange={handleFormDataChange}
             onBack={handleBackStep}
+            onNext={handleNext} // This should handle final submission
           />
         );
 
