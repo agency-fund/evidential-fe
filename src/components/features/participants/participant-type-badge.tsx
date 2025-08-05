@@ -12,7 +12,7 @@ interface ParticipantTypeBadgeProps {
 export const ParticipantTypeBadge = ({ datasourceId, participantType }: ParticipantTypeBadgeProps) => {
   return (
     <Badge variant="soft" color="blue" size="1" asChild>
-      <Link href={`/datasources/${datasourceId}`}>
+      <Link href={`/datasources/${datasourceId}/participants/${participantType}`}>
         <PersonIcon width="12" height="12" />
         {participantType}
       </Link>
