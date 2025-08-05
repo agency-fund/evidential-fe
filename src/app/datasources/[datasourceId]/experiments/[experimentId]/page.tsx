@@ -11,7 +11,7 @@ import { useState } from 'react';
 import * as Toast from '@radix-ui/react-toast';
 import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
-import Link from 'next/link';
+import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
 import { ReadMoreText } from '@/components/ui/read-more-text';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import {
@@ -82,11 +82,10 @@ export default function ExperimentViewPage() {
 
           <Flex align="center" gap="1">
             <Text weight="bold">Participants:</Text>
-            <Link
-              href={`/datasources/${experiment.datasource_id}/participants/${experiment.design_spec.participant_type}`}
-            >
-              {experiment.design_spec.participant_type}
-            </Link>
+            <ParticipantTypeBadge
+              datasourceId={experiment.datasource_id}
+              participantType={experiment.design_spec.participant_type}
+            />
           </Flex>
 
           <Separator orientation="vertical" />
