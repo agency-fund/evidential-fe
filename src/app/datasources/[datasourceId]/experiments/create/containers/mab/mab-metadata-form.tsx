@@ -1,6 +1,18 @@
 'use client';
 import React from 'react';
-import { Box, Card, Flex, Text, TextField, TextArea, Button, IconButton } from '@radix-ui/themes';
+import {
+  Box,
+  Card,
+  Flex,
+  Text,
+  TextField,
+  TextArea,
+  Button,
+  IconButton,
+  CheckboxCards,
+  Grid,
+  Heading,
+   } from '@radix-ui/themes';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { MABFormData, MABArm } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
@@ -8,8 +20,11 @@ import { SectionCard } from '@/components/ui/cards/section-card';
 import { useCreateExperiment } from '@/api/admin';
 import { convertFormDataToCreateExperimentRequest } from '../../helpers';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { WebhookSummary } from '@/api/methods.schemas';
+
 
 interface MABMetadataFormProps {
+  webhooks: WebhookSummary[];
   formData: MABFormData;
   onFormDataChange: (data: MABFormData) => void;
   onNext: () => void;
@@ -17,6 +32,7 @@ interface MABMetadataFormProps {
 }
 
 export function MABMetadataForm({
+  webhooks,
   formData,
   onFormDataChange,
   onNext,
@@ -234,6 +250,32 @@ export function MABMetadataForm({
           </Flex>
         </Flex>
       </SectionCard>
+
+      {webhooks.length > 0 && (
+          <Card>
+            <Flex direction="column" gap="3">
+              <Heading size="4">Webhooks</Heading>
+              <Text size="2" color="gray">
+                Select which webhooks should receive notifications when this experiment is created.
+              </Text>
+              <CheckboxCards.Root
+                value={formData.selectedWebhookIds}
+                onValueChange={(value) => onFormDataChange({ ...formData, selectedWebhookIds: value })}
+              >
+                <Grid columns="4" gap="3">
+                  {webhooks.map((webhook) => (
+                    <CheckboxCards.Item key={webhook.id} value={webhook.id}>
+                      <Flex direction="column" width="100%">
+                        <Text weight="bold">{webhook.name}</Text>
+                        <Text>{webhook.url}</Text>
+                      </Flex>
+                    </CheckboxCards.Item>
+                  ))}
+                </Grid>
+              </CheckboxCards.Root>
+            </Flex>
+          </Card>
+        )}
 
       {createExperimentError && (
       <GenericErrorCallout title="Failed to create experiment" error={createExperimentError} />

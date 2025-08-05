@@ -70,7 +70,7 @@ export default function EditParticipantTypePage() {
   }
 
   // Check if this is a sheet type - sheets cannot be edited
-  if (participantConfig.type === 'sheet') {
+  if (participantConfig.type !== 'schema') {
     return (
       <Flex direction="column" gap="6">
         <Flex align="start" direction="column" gap="3">

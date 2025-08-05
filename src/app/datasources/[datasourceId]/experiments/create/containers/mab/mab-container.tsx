@@ -84,6 +84,7 @@ export function MABContainer({
       case 'metadata':
         return (
           <MABMetadataForm
+            webhooks={webhooks}
             formData={formData}
             onFormDataChange={handleFormDataChange}
             onNext={handleNext} // This should set to 'summary'

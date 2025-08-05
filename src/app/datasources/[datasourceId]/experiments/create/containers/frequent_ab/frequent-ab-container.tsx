@@ -76,7 +76,7 @@ export function FrequentABContainer({
           <InitialForm
             formData={formData}
             onFormDataChange={(data) => handleFormDataChange(data as FrequentABFormData)}
-            onNext={() => setCurrentStep('design')}
+            onNext={handleNext}
             webhooks={webhooks}
           />
         );
@@ -86,7 +86,7 @@ export function FrequentABContainer({
           <DesignForm
             formData={formData}
             onFormDataChange={handleFormDataChange}
-            onNext={() => setCurrentStep('summary')}
+            onNext={handleNext}
             onBack={handleBackStep}
           />
         );
