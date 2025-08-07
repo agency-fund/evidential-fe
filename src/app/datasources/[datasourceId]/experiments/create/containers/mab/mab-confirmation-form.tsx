@@ -12,7 +12,6 @@ import { ApiError } from '@/services/orval-fetch';
 import { useAbandonExperiment, useCommitExperiment } from '@/api/admin';
 import { ListSelectedWebhooksCard } from '@/components/features/experiments/list-selected-webhooks-card';
 
-
 interface MABConfirmationFormProps {
   formData: MABFormData;
   onBack: () => void;
@@ -30,30 +29,24 @@ function MABExperimentErrorCallout({ error, type }: { error?: Error; type: 'comm
   return <GenericErrorCallout title={title} message={is304 ? message : undefined} error={is304 ? undefined : error} />;
 }
 
-
-export function MABConfirmationForm({
-  formData,
-  onBack,
-  onFormDataChange
-}: MABConfirmationFormProps) {
-
+export function MABConfirmationForm({ formData, onBack, onFormDataChange }: MABConfirmationFormProps) {
   const { trigger: abandon, error: abandonError } = useAbandonExperiment(
-      formData.datasourceId!,
-      formData.experimentId!,
-    );
-    const { trigger: commit, error: commitError } = useCommitExperiment(formData.datasourceId!, formData.experimentId!);
+    formData.datasourceId!,
+    formData.experimentId!,
+  );
+  const { trigger: commit, error: commitError } = useCommitExperiment(formData.datasourceId!, formData.experimentId!);
 
-    const handleSaveCommit = async () => {
-      await commit();
-      router.push('/experiments');
-    };
+  const handleSaveCommit = async () => {
+    await commit();
+    router.push('/experiments');
+  };
 
-    const handleAbandonCommit = async () => {
-      await abandon();
-      // TODO: move these state resets to CreateExperimentPage so that all page-to-page state transitions are in one place
-      onFormDataChange({ ...(formData as MABFormData), experimentId: undefined });
-      onBack();
-    };
+  const handleAbandonCommit = async () => {
+    await abandon();
+    // TODO: move these state resets to CreateExperimentPage so that all page-to-page state transitions are in one place
+    onFormDataChange({ ...(formData as MABFormData), experimentId: undefined });
+    onBack();
+  };
 
   const router = useRouter();
   return (
@@ -98,9 +91,7 @@ export function MABConfirmationForm({
           <Table.Body>
             <Table.Row>
               <Table.RowHeaderCell>Outcome Type</Table.RowHeaderCell>
-              <Table.Cell>
-                {formData.outcomeType === 'binary' ? 'Binary' : 'Real-valued'}
-              </Table.Cell>
+              <Table.Cell>{formData.outcomeType === 'binary' ? 'Binary' : 'Real-valued'}</Table.Cell>
             </Table.Row>
             <Table.Row>
               <Table.RowHeaderCell>Prior Distribution</Table.RowHeaderCell>
@@ -109,8 +100,7 @@ export function MABConfirmationForm({
                 <Text size="1" color="gray" style={{ display: 'block', marginTop: '4px' }}>
                   {formData.priorType === 'beta'
                     ? 'Alpha/Beta parameters for binary outcomes'
-                    : 'Mean/Standard Deviation parameters for continuous outcomes'
-                  }
+                    : 'Mean/Standard Deviation parameters for continuous outcomes'}
                 </Text>
               </Table.Cell>
             </Table.Row>
@@ -180,8 +170,8 @@ export function MABConfirmationForm({
           <InfoCircledIcon />
         </Callout.Icon>
         <Callout.Text>
-          Multi-Armed Bandit experiments automatically adapt traffic allocation based on performance.
-          No power analysis or sample size planning is required.
+          Multi-Armed Bandit experiments automatically adapt traffic allocation based on performance. No power analysis
+          or sample size planning is required.
         </Callout.Text>
       </Callout.Root>
 
