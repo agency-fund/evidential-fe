@@ -70,19 +70,6 @@ export default function EditParticipantTypePage() {
   }
 
   // Check if this is a sheet type - sheets cannot be edited
-  if (participantConfig.type !== 'schema') {
-    return (
-      <Flex direction="column" gap="6">
-        <Flex align="start" direction="column" gap="3">
-          <Heading size="8">Edit Participant Type: {participantType}</Heading>
-        </Flex>
-        <GenericErrorCallout
-          title="Cannot Edit Sheet Participant Type"
-          message="Sheet participant types cannot be edited through this interface. They are managed through the source spreadsheet."
-        />
-      </Flex>
-    );
-  }
 
   const handleSave = async () => {
     if (!editedDef) return;

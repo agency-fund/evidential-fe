@@ -42,24 +42,13 @@ export default function Page() {
   }
 
   // Sort fields only in the initial config, putting unique_id field at top
-  if (data.type === 'schema') {
-    data.fields = [...data.fields].sort((a, b) => {
-      if (a.is_unique_id === b.is_unique_id) {
-        return a.field_name.localeCompare(b.field_name);
-      }
-      return a.is_unique_id ? -1 : 1;
-    });
-  } else if (data.type === 'sheet') {
-    return (
-      <Flex direction="column" gap="6">
-        <Flex align="start" direction="column" gap="3">
-          <Heading size="8">Participant Type: {participantType}</Heading>
-        </Flex>
-        <Text>Sheet Reference Configuration:</Text>
-        <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(data, null, 2)}</pre>
-      </Flex>
-    );
-  }
+  data.fields = [...data.fields].sort((a, b) => {
+    if (a.is_unique_id === b.is_unique_id) {
+      return a.field_name.localeCompare(b.field_name);
+    }
+    return a.is_unique_id ? -1 : 1;
+  });
+
 
   return (
     <Flex direction="column" gap="6">
