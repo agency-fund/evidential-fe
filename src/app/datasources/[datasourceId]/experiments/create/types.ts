@@ -1,13 +1,8 @@
-import {
-  Arm,
-  FilterInput,
-  PowerResponseOutput,
-  CreateExperimentResponse
-} from '@/api/methods.schemas';
+import { Arm, FilterInput, PowerResponseOutput, CreateExperimentResponse } from '@/api/methods.schemas';
 
 export type ExperimentType = 'freq_preassigned' | 'freq_online' | 'mab_online' | 'bayes_ab_online' | 'cmab_online';
-export type FreqExperimentType = 'freq_preassigned' | 'freq_online'
-export type AssignmentType = 'preassigned' | 'online'
+export type FreqExperimentType = 'freq_preassigned' | 'freq_online';
+export type AssignmentType = 'preassigned' | 'online';
 export type PriorType = 'beta' | 'normal';
 export type OutcomeType = 'binary' | 'real-valued';
 export type ContextVariableType = 'binary' | 'real-valued';
@@ -79,14 +74,14 @@ export type MABFormData = BaseExperimentFormData & {
   chosenN?: number;
 };
 
-export type ExperimentFormData = FrequentABFormData | MABFormData
+export type ExperimentFormData = FrequentABFormData | MABFormData;
 
 export const EXPERIMENT_STEP_FLOWS = {
   freq_online: ['type', 'metadata', 'design', 'summary'],
   freq_preassigned: ['type', 'metadata', 'design', 'summary'],
   mab_online: ['type', 'design', 'metadata', 'summary'],
   bayes_ab_online: ['type', 'design', 'metadata', 'summary'],
-  cmab_online: ['type', 'context', 'design', 'metadata', 'summary']
+  cmab_online: ['type', 'context', 'design', 'metadata', 'summary'],
 } as const;
 
 export const EXPERIMENT_TYPE_LABELS = {
@@ -94,5 +89,5 @@ export const EXPERIMENT_TYPE_LABELS = {
   freq_preassigned: 'Traditional A/B Testing',
   mab_online: 'Multi-Armed Bandit',
   bayes_ab_online: 'Bayesian A/B Testing',
-  cmab_online: 'Contextual Bandit'
+  cmab_online: 'Contextual Bandit',
 } as const;

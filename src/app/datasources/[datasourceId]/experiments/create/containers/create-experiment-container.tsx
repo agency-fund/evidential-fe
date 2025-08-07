@@ -6,7 +6,7 @@ import {
   ExperimentType,
   ExperimentFormData,
   FrequentABFormData,
-  MABFormData
+  MABFormData,
 } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { WebhookSummary } from '@/api/methods.schemas';
 import { ExperimentTypeSelector } from '@/components/features/experiments/experiment-type-selector';
@@ -53,7 +53,6 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
           power: '80',
         } as FrequentABFormData;
 
-
       case 'mab_online':
         return {
           ...baseData,
@@ -84,10 +83,10 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
   const handleExperimentTypeSelect = (type: ExperimentType) => {
     setSelectedExperimentType(type);
     setShowTypeSelection(false);
-    }
+  };
 
   const handleContinue = () => {
-    if (selectedExperimentType && (!selectedExperimentType.includes("freq"))) {
+    if (selectedExperimentType && !selectedExperimentType.includes('freq')) {
       setShowTypeSelection(false);
     }
   };
@@ -131,19 +130,18 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
       <Container>
         <Flex direction="column" gap="6">
           <Box>
-            <Heading size="8" mb="2">Create Experiment</Heading>
+            <Heading size="8" mb="2">
+              Create Experiment
+            </Heading>
             <p style={{ color: 'var(--gray-11)', fontSize: '16px', margin: 0 }}>
               Choose the type of experiment you want to create
             </p>
           </Box>
 
-          <ExperimentTypeSelector
-            selectedType={selectedExperimentType}
-            onTypeSelect={handleExperimentTypeSelect}
-          />
+          <ExperimentTypeSelector selectedType={selectedExperimentType} onTypeSelect={handleExperimentTypeSelect} />
 
           <NavigationButtons
-            onNext={selectedExperimentType && (!selectedExperimentType.includes('freq')) ? handleContinue : undefined}
+            onNext={selectedExperimentType && !selectedExperimentType.includes('freq') ? handleContinue : undefined}
             nextLabel="Continue"
             nextDisabled={!selectedExperimentType || selectedExperimentType.includes('freq')}
             showBack={false}

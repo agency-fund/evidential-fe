@@ -12,7 +12,7 @@ import {
   CheckboxCards,
   Grid,
   Heading,
-   } from '@radix-ui/themes';
+} from '@radix-ui/themes';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { MABFormData, MABArm } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
@@ -22,7 +22,6 @@ import { convertFormDataToCreateExperimentRequest } from '../../helpers';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { WebhookSummary } from '@/api/methods.schemas';
 
-
 interface MABMetadataFormProps {
   webhooks: WebhookSummary[];
   formData: MABFormData;
@@ -31,36 +30,29 @@ interface MABMetadataFormProps {
   onBack: () => void;
 }
 
-export function MABMetadataForm({
-  webhooks,
-  formData,
-  onFormDataChange,
-  onNext,
-  onBack
-}: MABMetadataFormProps) {
-
-  const {
-      trigger: triggerCreateExperiment,
-      error: createExperimentError,
-    } = useCreateExperiment(formData.datasourceId!, {
+export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, onBack }: MABMetadataFormProps) {
+  const { trigger: triggerCreateExperiment, error: createExperimentError } = useCreateExperiment(
+    formData.datasourceId!,
+    {
       chosen_n: formData.chosenN!,
-    });
+    },
+  );
 
-    const handleSaveExperiment = async () => {
-      try {
-        const request = convertFormDataToCreateExperimentRequest(formData);
-        const response = await triggerCreateExperiment(request);
-        onFormDataChange({
-          ...formData,
-          experimentId: response.design_spec.experiment_id!,
-          createExperimentResponse: response,
-        });
-        onNext();
-      } catch (error) {
-        console.error('Error creating experiment:', error);
-        throw new Error('Failed to create experiment');
-      }
-    };
+  const handleSaveExperiment = async () => {
+    try {
+      const request = convertFormDataToCreateExperimentRequest(formData);
+      const response = await triggerCreateExperiment(request);
+      onFormDataChange({
+        ...formData,
+        experimentId: response.design_spec.experiment_id!,
+        createExperimentResponse: response,
+      });
+      onNext();
+    } catch (error) {
+      console.error('Error creating experiment:', error);
+      throw new Error('Failed to create experiment');
+    }
+  };
 
   const updateBasicInfo = (field: keyof MABFormData, value: string) => {
     onFormDataChange({
@@ -70,9 +62,7 @@ export function MABMetadataForm({
   };
 
   const updateArm = (index: number, updatedArm: Partial<MABArm>) => {
-    const updatedArms = formData.arms.map((arm, i) =>
-      i === index ? { ...arm, ...updatedArm } : arm
-    );
+    const updatedArms = formData.arms.map((arm, i) => (i === index ? { ...arm, ...updatedArm } : arm));
     onFormDataChange({
       ...formData,
       arms: updatedArms,
@@ -113,25 +103,22 @@ export function MABMetadataForm({
     if (!formData.priorType) return false; // Prior type must be set
 
     if (formData.priorType === 'beta') {
-      return arm.alpha_prior !== undefined && arm.alpha_prior > 0 &&
-             arm.beta_prior !== undefined && arm.beta_prior > 0;
+      return arm.alpha_prior !== undefined && arm.alpha_prior > 0 && arm.beta_prior !== undefined && arm.beta_prior > 0;
     } else if (formData.priorType === 'normal') {
-      return arm.mean_prior !== undefined &&
-             arm.stddev_prior !== undefined && arm.stddev_prior > 0;
+      return arm.mean_prior !== undefined && arm.stddev_prior !== undefined && arm.stddev_prior > 0;
     }
     return false;
   };
 
   const isFormValid = () => {
-    const basicValid = formData.name.trim() &&
-                      formData.hypothesis.trim() &&
-                      formData.priorType && // Prior type must be selected in design step
-                      formData.outcomeType && // Outcome type must be selected in design step
-                      formData.arms.length >= 2;
+    const basicValid =
+      formData.name.trim() &&
+      formData.hypothesis.trim() &&
+      formData.priorType && // Prior type must be selected in design step
+      formData.outcomeType && // Outcome type must be selected in design step
+      formData.arms.length >= 2;
 
-    const armsValid = formData.arms.every(arm =>
-      arm.arm_name.trim() && isPriorParamValid(arm)
-    );
+    const armsValid = formData.arms.every((arm) => arm.arm_name.trim() && isPriorParamValid(arm));
 
     return basicValid && armsValid;
   };
@@ -198,35 +185,40 @@ export function MABMetadataForm({
             Configure your experiment arms with prior beliefs.
           </Text>
           {formData.priorType && formData.outcomeType && (
-            <Box style={{
-              background: 'var(--accent-2)',
-              border: '1px solid var(--accent-6)',
-              borderRadius: '6px',
-              padding: '12px'
-            }}>
+            <Box
+              style={{
+                background: 'var(--accent-2)',
+                border: '1px solid var(--accent-6)',
+                borderRadius: '6px',
+                padding: '12px',
+              }}
+            >
               <Text size="2" weight="medium" style={{ color: 'var(--accent-11)' }}>
-                Selected Configuration: {formData.priorType === 'beta' ? 'Beta Distribution' : 'Normal Distribution'} × {formData.outcomeType === 'binary' ? 'Binary' : 'Real-valued'} Outcome
+                Selected Configuration: {formData.priorType === 'beta' ? 'Beta Distribution' : 'Normal Distribution'} ×{' '}
+                {formData.outcomeType === 'binary' ? 'Binary' : 'Real-valued'} Outcome
               </Text>
               <Text size="1" color="gray" style={{ marginTop: '4px', display: 'block' }}>
                 {formData.priorType === 'beta'
                   ? 'Using Alpha (prior successes) and Beta (prior failures) parameters'
-                  : 'Using Mean and Standard Deviation parameters'
-                }
+                  : 'Using Mean and Standard Deviation parameters'}
               </Text>
             </Box>
           )}
-          {!formData.priorType || !formData.outcomeType && (
-            <Box style={{
-              background: 'var(--orange-2)',
-              border: '1px solid var(--orange-6)',
-              borderRadius: '6px',
-              padding: '12px'
-            }}>
-              <Text size="2" weight="medium" style={{ color: 'var(--orange-11)' }}>
-                ⚠️ Prior distribution and outcome type must be selected in the Design step first
-              </Text>
-            </Box>
-          )}
+          {!formData.priorType ||
+            (!formData.outcomeType && (
+              <Box
+                style={{
+                  background: 'var(--orange-2)',
+                  border: '1px solid var(--orange-6)',
+                  borderRadius: '6px',
+                  padding: '12px',
+                }}
+              >
+                <Text size="2" weight="medium" style={{ color: 'var(--orange-11)' }}>
+                  ⚠️ Prior distribution and outcome type must be selected in the Design step first
+                </Text>
+              </Box>
+            ))}
         </Flex>
 
         <Flex direction="column" gap="4">
@@ -252,33 +244,33 @@ export function MABMetadataForm({
       </SectionCard>
 
       {webhooks.length > 0 && (
-          <Card>
-            <Flex direction="column" gap="3">
-              <Heading size="4">Webhooks</Heading>
-              <Text size="2" color="gray">
-                Select which webhooks should receive notifications when this experiment is created.
-              </Text>
-              <CheckboxCards.Root
-                value={formData.selectedWebhookIds}
-                onValueChange={(value) => onFormDataChange({ ...formData, selectedWebhookIds: value })}
-              >
-                <Grid columns="4" gap="3">
-                  {webhooks.map((webhook) => (
-                    <CheckboxCards.Item key={webhook.id} value={webhook.id}>
-                      <Flex direction="column" width="100%">
-                        <Text weight="bold">{webhook.name}</Text>
-                        <Text>{webhook.url}</Text>
-                      </Flex>
-                    </CheckboxCards.Item>
-                  ))}
-                </Grid>
-              </CheckboxCards.Root>
-            </Flex>
-          </Card>
-        )}
+        <Card>
+          <Flex direction="column" gap="3">
+            <Heading size="4">Webhooks</Heading>
+            <Text size="2" color="gray">
+              Select which webhooks should receive notifications when this experiment is created.
+            </Text>
+            <CheckboxCards.Root
+              value={formData.selectedWebhookIds}
+              onValueChange={(value) => onFormDataChange({ ...formData, selectedWebhookIds: value })}
+            >
+              <Grid columns="4" gap="3">
+                {webhooks.map((webhook) => (
+                  <CheckboxCards.Item key={webhook.id} value={webhook.id}>
+                    <Flex direction="column" width="100%">
+                      <Text weight="bold">{webhook.name}</Text>
+                      <Text>{webhook.url}</Text>
+                    </Flex>
+                  </CheckboxCards.Item>
+                ))}
+              </Grid>
+            </CheckboxCards.Root>
+          </Flex>
+        </Card>
+      )}
 
       {createExperimentError && (
-      <GenericErrorCallout title="Failed to create experiment" error={createExperimentError} />
+        <GenericErrorCallout title="Failed to create experiment" error={createExperimentError} />
       )}
 
       <NavigationButtons
@@ -310,7 +302,7 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
         style={{
           padding: '16px 20px',
           backgroundColor: 'var(--gray-2)',
-          borderBottom: '1px solid var(--gray-6)'
+          borderBottom: '1px solid var(--gray-6)',
         }}
       >
         <Flex align="center" gap="2">
@@ -330,18 +322,10 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
           >
             {armIndex + 1}
           </Box>
-          <Text weight="bold">
-            {armIndex === 0 ? 'Control Arm' : 'Treatment Arm'}
-          </Text>
+          <Text weight="bold">{armIndex === 0 ? 'Control Arm' : 'Treatment Arm'}</Text>
         </Flex>
 
-        <IconButton
-          onClick={onDelete}
-          disabled={!canDelete}
-          color="red"
-          variant="soft"
-          size="1"
-        >
+        <IconButton onClick={onDelete} disabled={!canDelete} color="red" variant="soft" size="1">
           <TrashIcon />
         </IconButton>
       </Flex>
@@ -376,13 +360,15 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
 
           <Flex direction="column" gap="4" style={{ flex: 1 }}>
             {!priorType && (
-              <Box style={{
-                background: 'var(--orange-2)',
-                border: '1px solid var(--orange-6)',
-                borderRadius: '6px',
-                padding: '12px',
-                textAlign: 'center'
-              }}>
+              <Box
+                style={{
+                  background: 'var(--orange-2)',
+                  border: '1px solid var(--orange-6)',
+                  borderRadius: '6px',
+                  padding: '12px',
+                  textAlign: 'center',
+                }}
+              >
                 <Text size="2" style={{ color: 'var(--orange-11)' }}>
                   Select prior distribution in Design step first
                 </Text>
@@ -422,13 +408,13 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
               <Flex gap="3">
                 <Box style={{ flex: 1 }}>
                   <Text as="label" size="2" weight="bold" style={{ marginBottom: '6px', display: 'block' }}>
-                  Mean Prior
+                    Mean Prior
                   </Text>
                   <TextField.Root
-                  type="number"
-                  value={arm.mean_prior ?? ''}
-                  onChange={(e) => onUpdate({ mean_prior: e.target.value ? Number(e.target.value) : undefined })}
-                  placeholder="Prior mean"
+                    type="number"
+                    value={arm.mean_prior ?? ''}
+                    onChange={(e) => onUpdate({ mean_prior: e.target.value ? Number(e.target.value) : undefined })}
+                    placeholder="Prior mean"
                   />
                 </Box>
                 <Box style={{ flex: 1 }}>

@@ -23,28 +23,24 @@ const OUTCOME_OPTIONS: OutcomeOption[] = [
   {
     type: 'binary',
     title: 'Binary',
-    description: 'Yes/No outcomes: conversions, clicks, sign-ups, purchases. Results are expressed as percentages or rates.',
+    description:
+      'Yes/No outcomes: conversions, clicks, sign-ups, purchases. Results are expressed as percentages or rates.',
   },
   {
     type: 'real-valued',
     title: 'Real-valued',
-    description: 'Continuous numeric outcomes: revenue per user, time spent, satisfaction scores, any measurable quantity.',
+    description:
+      'Continuous numeric outcomes: revenue per user, time spent, satisfaction scores, any measurable quantity.',
   },
 ];
 
-export function MABDesignForm({
-  formData,
-  onFormDataChange,
-  onNext,
-  onBack
-}: MABDesignFormProps) {
-
+export function MABDesignForm({ formData, onFormDataChange, onNext, onBack }: MABDesignFormProps) {
   const handleOutcomeChange = (outcomeType: OutcomeType) => {
     // Auto-map prior type based on outcome type for MAB
     const priorType: PriorType = outcomeType === 'binary' ? 'beta' : 'normal';
 
     // Update existing arms to have the correct prior parameters
-    const updatedArms = formData.arms.map(arm => {
+    const updatedArms = formData.arms.map((arm) => {
       const baseArm = {
         arm_name: arm.arm_name,
         arm_description: arm.arm_description,
@@ -89,7 +85,8 @@ export function MABDesignForm({
       {/* Outcome Type Section */}
       <SectionCard title="Outcome Type">
         <Text size="2" color="gray" style={{ marginBottom: '20px' }}>
-          Define the type of outcome measured in this experiment. The prior distribution will be automatically selected based on your choice.
+          Define the type of outcome measured in this experiment. The prior distribution will be automatically selected
+          based on your choice.
         </Text>
 
         <Text size="2" weight="medium" style={{ marginBottom: '12px' }}>
@@ -109,21 +106,24 @@ export function MABDesignForm({
 
         {/* Show selected prior distribution */}
         {formData.outcomeType && (
-          <Box style={{
-            background: 'var(--accent-2)',
-            border: '1px solid var(--accent-6)',
-            borderRadius: '6px',
-            padding: '12px',
-            marginTop: '16px'
-          }}>
+          <Box
+            style={{
+              background: 'var(--accent-2)',
+              border: '1px solid var(--accent-6)',
+              borderRadius: '6px',
+              padding: '12px',
+              marginTop: '16px',
+            }}
+          >
             <Text size="2" weight="medium" style={{ color: 'var(--accent-11)' }}>
-              ✓ Selected Configuration: {formData.outcomeType === 'binary' ? 'Beta Distribution' : 'Normal Distribution'} × {formData.outcomeType === 'binary' ? 'Binary' : 'Real-valued'} Outcome
+              ✓ Selected Configuration:{' '}
+              {formData.outcomeType === 'binary' ? 'Beta Distribution' : 'Normal Distribution'} ×{' '}
+              {formData.outcomeType === 'binary' ? 'Binary' : 'Real-valued'} Outcome
             </Text>
             <Text size="1" color="gray" style={{ marginTop: '4px', display: 'block' }}>
               {formData.outcomeType === 'binary'
                 ? 'Using Alpha (prior successes) and Beta (prior failures) parameters'
-                : 'Using Mean and Standard Deviation parameters'
-              }
+                : 'Using Mean and Standard Deviation parameters'}
             </Text>
           </Box>
         )}
@@ -135,7 +135,8 @@ export function MABDesignForm({
           <InfoCircledIcon />
         </Callout.Icon>
         <Callout.Text>
-          Multi-Armed Bandit experiments do not require power analysis or sample size planning. The algorithm automatically adapts allocation based on performance.
+          Multi-Armed Bandit experiments do not require power analysis or sample size planning. The algorithm
+          automatically adapts allocation based on performance.
         </Callout.Text>
       </Callout.Root>
 
@@ -195,7 +196,9 @@ function OutcomeOptionCard({ option, isSelected, onSelect }: OutcomeOptionCardPr
         </Box>
 
         <Flex direction="column" gap="1" style={{ flex: 1 }}>
-          <Text size="3" weight="bold">{option.title}</Text>
+          <Text size="3" weight="bold">
+            {option.title}
+          </Text>
           <Text size="2" color="gray" style={{ lineHeight: 1.4 }}>
             {option.description}
           </Text>

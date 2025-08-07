@@ -29,16 +29,11 @@ export function NavigationButtons({
       className={className}
       style={{
         paddingTop: '24px',
-        borderTop: '1px solid var(--gray-6)'
+        borderTop: '1px solid var(--gray-6)',
       }}
     >
       {showBack ? (
-        <Button
-          variant="soft"
-          color="gray"
-          onClick={onBack}
-          disabled={!onBack}
-        >
+        <Button variant="soft" color="gray" onClick={onBack} disabled={!onBack}>
           Back
         </Button>
       ) : (
@@ -46,11 +41,7 @@ export function NavigationButtons({
       )}
 
       {onNext && (
-        <Button
-          onClick={onNext}
-          disabled={nextDisabled}
-          loading={nextLoading}
-        >
+        <Button onClick={onNext} disabled={nextDisabled} loading={nextLoading}>
           {nextLabel}
         </Button>
       )}

@@ -18,14 +18,16 @@ const EXPERIMENT_TYPE_OPTIONS: ExperimentTypeOption[] = [
     title: 'Frequent A/B Testing',
     badge: 'A/B',
     badgeColor: 'blue',
-    description: 'Fixed allocation hypothesis testing with statistical significance. Best for clear hypotheses with sufficient traffic.',
+    description:
+      'Fixed allocation hypothesis testing with statistical significance. Best for clear hypotheses with sufficient traffic.',
   },
   {
     type: 'mab_online',
     title: 'Multi-Armed Bandit',
     badge: 'MAB',
     badgeColor: 'green',
-    description: 'Adaptive allocation that learns and optimizes automatically. Minimizes opportunity cost by converging to the best performing variant.',
+    description:
+      'Adaptive allocation that learns and optimizes automatically. Minimizes opportunity cost by converging to the best performing variant.',
     // comingSoon: true,
   },
   {
@@ -33,7 +35,8 @@ const EXPERIMENT_TYPE_OPTIONS: ExperimentTypeOption[] = [
     title: 'Bayesian A/B Testing',
     badge: 'BAB',
     badgeColor: 'purple',
-    description: 'Bayesian statistics with credible intervals and probability statements. More intuitive interpretation of results.',
+    description:
+      'Bayesian statistics with credible intervals and probability statements. More intuitive interpretation of results.',
     comingSoon: true,
   },
   {
@@ -41,7 +44,8 @@ const EXPERIMENT_TYPE_OPTIONS: ExperimentTypeOption[] = [
     title: 'Contextual Bandit',
     badge: 'CMAB',
     badgeColor: 'orange',
-    description: 'Context-aware optimization for personalized experiences. Adapts recommendations based on user or environmental context.',
+    description:
+      'Context-aware optimization for personalized experiences. Adapts recommendations based on user or environmental context.',
     comingSoon: true,
   },
 ];
@@ -58,14 +62,16 @@ const ASSIGNMENT_OPTIONS: AssignmentOption[] = [
   {
     type: 'preassigned',
     title: 'Preassigned',
-    description: 'Participants are assigned to experiment arms at design time. Suitable for controlled experiments with fixed sample sizes.',
+    description:
+      'Participants are assigned to experiment arms at design time. Suitable for controlled experiments with fixed sample sizes.',
     badge: 'Recommended',
     recommended: true,
   },
   {
     type: 'online',
     title: 'Online Assignment',
-    description: 'Participants are assigned to experiment arms dynamically as they arrive. Better for real-time experiments with unknown traffic.',
+    description:
+      'Participants are assigned to experiment arms dynamically as they arrive. Better for real-time experiments with unknown traffic.',
     badge: 'Advanced',
   },
 ];
@@ -75,27 +81,24 @@ interface ExperimentTypeSelectorProps {
   onTypeSelect: (type: ExperimentType) => void;
 }
 
-export function ExperimentTypeSelector({
-  selectedType,
-  onTypeSelect
-}: ExperimentTypeSelectorProps) {
+export function ExperimentTypeSelector({ selectedType, onTypeSelect }: ExperimentTypeSelectorProps) {
   const [showAssignmentDialog, setShowAssignmentDialog] = useState(false);
   const [tempSelectedAssignment, setTempSelectedAssignment] = useState<AssignmentType>();
 
   const handleTypeSelect = (type: ExperimentType) => {
     if (type.includes('freq')) {
       setShowAssignmentDialog(true);
-    } else if (!EXPERIMENT_TYPE_OPTIONS.find(opt => opt.type === type)?.comingSoon) {
+    } else if (!EXPERIMENT_TYPE_OPTIONS.find((opt) => opt.type === type)?.comingSoon) {
       onTypeSelect(type);
     }
   };
 
   const handleAssignmentConfirm = () => {
     if (tempSelectedAssignment) {
-      if (tempSelectedAssignment === "preassigned") {
-        onTypeSelect('freq_preassigned')
+      if (tempSelectedAssignment === 'preassigned') {
+        onTypeSelect('freq_preassigned');
       } else {
-        onTypeSelect('freq_online')
+        onTypeSelect('freq_online');
       }
       setShowAssignmentDialog(false);
       setTempSelectedAssignment(undefined);
@@ -129,7 +132,8 @@ export function ExperimentTypeSelector({
                 key={option.type}
                 style={{
                   cursor: 'pointer',
-                  border: tempSelectedAssignment === option.type ? '2px solid var(--accent-9)' : '1px solid var(--gray-6)',
+                  border:
+                    tempSelectedAssignment === option.type ? '2px solid var(--accent-9)' : '1px solid var(--gray-6)',
                   backgroundColor: tempSelectedAssignment === option.type ? 'var(--accent-2)' : 'white',
                   padding: '16px',
                   transition: 'all 0.2s ease',
@@ -164,12 +168,18 @@ export function ExperimentTypeSelector({
 
                   <Flex direction="column" gap="2" style={{ flex: 1 }}>
                     <Flex align="center" gap="2">
-                      <Text size="3" weight="bold">{option.title}</Text>
+                      <Text size="3" weight="bold">
+                        {option.title}
+                      </Text>
                       {option.recommended && (
-                        <Badge color="green" size="1">{option.badge}</Badge>
+                        <Badge color="green" size="1">
+                          {option.badge}
+                        </Badge>
                       )}
                       {!option.recommended && (
-                        <Badge color="gray" size="1">{option.badge}</Badge>
+                        <Badge color="gray" size="1">
+                          {option.badge}
+                        </Badge>
                       )}
                     </Flex>
 
@@ -188,10 +198,7 @@ export function ExperimentTypeSelector({
                 Cancel
               </Button>
             </Dialog.Close>
-            <Button
-              onClick={handleAssignmentConfirm}
-              disabled={!tempSelectedAssignment}
-            >
+            <Button onClick={handleAssignmentConfirm} disabled={!tempSelectedAssignment}>
               Continue
             </Button>
           </Flex>
@@ -238,17 +245,25 @@ function ExperimentTypeCard({ option, isSelected, onSelect }: ExperimentTypeCard
             }}
           >
             {isSelected && (
-              <Text size="1" style={{ color: 'white', fontWeight: 'bold' }}>✓</Text>
+              <Text size="1" style={{ color: 'white', fontWeight: 'bold' }}>
+                ✓
+              </Text>
             )}
           </Box>
 
           <Flex direction="column" gap="1" style={{ flex: 1 }}>
             <Flex align="center" gap="2">
-              <Text size="4" weight="bold">{option.title}</Text>
-              <Badge color={option.badgeColor} size="1">{option.badge}</Badge>
+              <Text size="4" weight="bold">
+                {option.title}
+              </Text>
+              <Badge color={option.badgeColor} size="1">
+                {option.badge}
+              </Badge>
             </Flex>
             {option.comingSoon && (
-              <Badge color="gray" size="1" style={{ alignSelf: 'flex-start' }}>Coming Soon</Badge>
+              <Badge color="gray" size="1" style={{ alignSelf: 'flex-start' }}>
+                Coming Soon
+              </Badge>
             )}
           </Flex>
         </Flex>

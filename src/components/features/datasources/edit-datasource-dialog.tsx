@@ -115,7 +115,8 @@ export const EditDatasourceDialog = ({
 
   const isNoDWH = config.dwh.driver === 'none';
   const isBigQuery = config.dwh.driver === 'bigquery';
-  const usesBigQueryServiceAccount = config.dwh.driver === 'bigquery' && config.dwh.credentials.type == 'serviceaccountinfo';
+  const usesBigQueryServiceAccount =
+    config.dwh.driver === 'bigquery' && config.dwh.credentials.type == 'serviceaccountinfo';
   const isRedshift = config.dwh.driver === 'postgresql+psycopg2' && config.dwh.host.endsWith('redshift.amazonaws.com');
 
   return (
@@ -201,11 +202,12 @@ export const EditDatasourceDialog = ({
                   This datasource is not connected to a data warehouse.
                 </Text>
                 <Text as="div" size="2" mb="1">
-                  Experiments associated with this source must request draws (arm assignments) and
-                  supply metric outcomes through the{' '}
+                  Experiments associated with this source must request draws (arm assignments) and supply metric
+                  outcomes through the{' '}
                   <a href={XNGIN_API_DOCS_LINK} target="_blank" rel="noopener noreferrer">
                     Experiment Integration APIs
-                  </a>.
+                  </a>
+                  .
                 </Text>
               </label>
             )}

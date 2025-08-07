@@ -1,12 +1,8 @@
 import { z } from 'zod';
-import {
-  CreateExperimentRequest,
-  DesignSpecMetricRequest,
-} from '@/api/methods.schemas';
+import { CreateExperimentRequest, DesignSpecMetricRequest } from '@/api/methods.schemas';
 import { createExperimentBody } from '@/api/admin.zod';
 
 import { ExperimentFormData, FrequentABFormData, MABFormData } from './types';
-
 
 // Zod helper for validating string inputs as if they are numeric values.
 export const zodNumberFromForm = (configure?: (num: z.ZodNumber) => z.ZodNumber) =>
@@ -26,9 +22,7 @@ export const zodNumberFromForm = (configure?: (num: z.ZodNumber) => z.ZodNumber)
 
 const zodMde = zodNumberFromForm((num) => num.int().safe().min(0).max(100));
 
-export const convertFormDataToCreateExperimentRequest = (
-  formData: ExperimentFormData
-): CreateExperimentRequest => {
+export const convertFormDataToCreateExperimentRequest = (formData: ExperimentFormData): CreateExperimentRequest => {
   switch (formData.experimentType) {
     case 'freq_online':
     case 'freq_preassigned':
@@ -36,7 +30,6 @@ export const convertFormDataToCreateExperimentRequest = (
 
     case 'mab_online':
       return convertMABFormData(formData);
-
 
     default:
       throw new Error(`Unknown experiment type: ${(formData as ExperimentFormData).experimentType}`);
@@ -86,14 +79,14 @@ function convertFrequentABFormData(formData: FrequentABFormData): CreateExperime
 function convertMABFormData(formData: MABFormData): CreateExperimentRequest {
   // Map MAB arms to standard arms format
 
-  const standardArms = formData.arms.map(arm => ({
+  const standardArms = formData.arms.map((arm) => ({
     arm_id: null,
     arm_name: arm.arm_name,
     arm_description: arm.arm_description || '',
-    alpha_init: arm.alpha_prior?.toString()? arm.alpha_prior : null,
-    beta_init: arm.beta_prior?.toString()? arm.beta_prior : null,
+    alpha_init: arm.alpha_prior?.toString() ? arm.alpha_prior : null,
+    beta_init: arm.beta_prior?.toString() ? arm.beta_prior : null,
     mu_init: arm.mean_prior?.toString() ? arm.mean_prior : null,
-    sigma_init: arm.stddev_prior?.toString()? arm.stddev_prior : null,
+    sigma_init: arm.stddev_prior?.toString() ? arm.stddev_prior : null,
   }));
 
   return createExperimentBody.parse({
@@ -107,7 +100,7 @@ function convertMABFormData(formData: MABFormData): CreateExperimentRequest {
       description: formData.hypothesis,
       prior_type: formData.priorType,
       reward_type: formData.outcomeType,
-      },
+    },
     webhooks: formData.selectedWebhookIds.length > 0 ? formData.selectedWebhookIds : [],
   });
 }
@@ -131,14 +124,12 @@ export const validateFormData = (formData: ExperimentFormData): string[] => {
   }
 
   // Type-specific validation
-  if (formData.experimentType === "mab_online") {
-      return [...errors, ...validateMABFormData(formData)];
+  if (formData.experimentType === 'mab_online') {
+    return [...errors, ...validateMABFormData(formData)];
   }
 
-  return errors
-
+  return errors;
 };
-
 
 function validateMABFormData(formData: MABFormData): string[] {
   const errors: string[] = [];

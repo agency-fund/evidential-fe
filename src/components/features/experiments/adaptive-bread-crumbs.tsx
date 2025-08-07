@@ -1,10 +1,7 @@
 'use client';
 import React from 'react';
 import { Flex, Text, Box } from '@radix-ui/themes';
-import {
-    ExperimentType,
-    EXPERIMENT_STEP_FLOWS
-} from '@/app/datasources/[datasourceId]/experiments/create/types';
+import { ExperimentType, EXPERIMENT_STEP_FLOWS } from '@/app/datasources/[datasourceId]/experiments/create/types';
 
 interface BreadcrumbStep {
   id: string;
@@ -28,11 +25,7 @@ const STEP_LABELS = {
   summary: 'Experiment Summary',
 } as const;
 
-export function AdaptiveBreadcrumbs({
-  experimentType,
-  currentStep,
-  onStepClick
-}: AdaptiveBreadcrumbsProps) {
+export function AdaptiveBreadcrumbs({ experimentType, currentStep, onStepClick }: AdaptiveBreadcrumbsProps) {
   if (!experimentType) {
     return null;
   }
@@ -47,20 +40,19 @@ export function AdaptiveBreadcrumbs({
   }));
 
   return (
-    <Box style={{
-      backgroundColor: 'var(--gray-2)',
-      border: '1px solid var(--gray-6)',
-      borderRadius: '8px',
-      padding: '16px 20px',
-      marginBottom: '24px'
-    }}>
+    <Box
+      style={{
+        backgroundColor: 'var(--gray-2)',
+        border: '1px solid var(--gray-6)',
+        borderRadius: '8px',
+        padding: '16px 20px',
+        marginBottom: '24px',
+      }}
+    >
       <Flex align="center" gap="2" wrap="wrap">
         {steps.map((step, index) => (
           <React.Fragment key={step.id}>
-            <BreadcrumbItem
-              step={step}
-              onClick={onStepClick ? () => onStepClick(index + 1) : undefined}
-            />
+            <BreadcrumbItem step={step} onClick={onStepClick ? () => onStepClick(index + 1) : undefined} />
             {index < steps.length - 1 && (
               <Text size="2" color="gray" style={{ margin: '0 4px' }}>
                 →
@@ -92,8 +84,8 @@ function BreadcrumbItem({ step, onClick }: BreadcrumbItemProps) {
         ...(isClickable && {
           ':hover': {
             backgroundColor: 'var(--gray-3)',
-          }
-        })
+          },
+        }),
       }}
       onClick={isClickable ? onClick : undefined}
     >
@@ -107,7 +99,7 @@ function BreadcrumbItem({ step, onClick }: BreadcrumbItemProps) {
               ? 'var(--accent-9)'
               : step.isAccessible
                 ? 'var(--gray-11)'
-                : 'var(--gray-8)'
+                : 'var(--gray-8)',
         }}
       >
         {step.label}

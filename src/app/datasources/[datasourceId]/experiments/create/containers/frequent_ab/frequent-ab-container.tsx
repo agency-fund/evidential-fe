@@ -22,11 +22,7 @@ const STEP_TITLES = {
   summary: 'Experiment Summary',
 } as const;
 
-export function FrequentABContainer({
-  webhooks,
-  initialFormData,
-  onBack
-}: FrequentABContainerProps) {
+export function FrequentABContainer({ webhooks, initialFormData, onBack }: FrequentABContainerProps) {
   const [currentStep, setCurrentStep] = useState<FrequentABStep>('metadata');
   const [formData, setFormData] = useState<FrequentABFormData>(initialFormData);
 
@@ -65,9 +61,8 @@ export function FrequentABContainer({
   };
 
   const handleFormDataChange = (newData: FrequentABFormData) => {
-    setFormData(prev => ({ ...prev, ...newData }));
+    setFormData((prev) => ({ ...prev, ...newData }));
   };
-
 
   const renderCurrentStep = () => {
     switch (currentStep) {
@@ -107,10 +102,7 @@ export function FrequentABContainer({
 
   return (
     <Box>
-      <AdaptiveBreadcrumbs
-        experimentType={formData.experimentType}
-        currentStep={getStepNumber()}
-      />
+      <AdaptiveBreadcrumbs experimentType={formData.experimentType} currentStep={getStepNumber()} />
 
       <Box mb="6">
         <Heading size="8" mb="2">

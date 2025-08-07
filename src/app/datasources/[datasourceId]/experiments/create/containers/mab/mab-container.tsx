@@ -22,11 +22,7 @@ const STEP_TITLES = {
   summary: 'Experiment Summary',
 } as const;
 
-export function MABContainer({
-  webhooks,
-  initialFormData,
-  onBack
-}: MABContainerProps) {
+export function MABContainer({ webhooks, initialFormData, onBack }: MABContainerProps) {
   const [currentStep, setCurrentStep] = useState<MABStep>('design');
   const [formData, setFormData] = useState<MABFormData>(initialFormData);
 
@@ -69,7 +65,6 @@ export function MABContainer({
   };
 
   const renderCurrentStep = () => {
-
     switch (currentStep) {
       case 'design':
         return (
@@ -109,10 +104,7 @@ export function MABContainer({
 
   return (
     <Box>
-      <AdaptiveBreadcrumbs
-        experimentType="mab_online"
-        currentStep={getStepNumber()}
-      />
+      <AdaptiveBreadcrumbs experimentType="mab_online" currentStep={getStepNumber()} />
 
       <Box mb="6">
         <Heading size="8" mb="2">

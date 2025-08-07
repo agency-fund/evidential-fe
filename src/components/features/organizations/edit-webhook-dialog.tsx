@@ -70,12 +70,7 @@ export function EditWebhookDialog({ organizationId, webhook }: EditWebhookDialog
                 <Text as="div" size="2" mb="1" weight="bold">
                   Name
                 </Text>
-                <TextField.Root
-                  name="name"
-                  placeholder="My webhook name"
-                  defaultValue={webhook.name}
-                  required
-                />
+                <TextField.Root name="name" placeholder="My webhook name" defaultValue={webhook.name} required />
                 <Text as="div" size="1" color="gray" mt="1">
                   A user-friendly name to identify this webhook.
                 </Text>

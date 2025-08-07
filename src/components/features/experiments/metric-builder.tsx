@@ -45,7 +45,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
         ...formData,
         primaryMetric: {
           metricName: formData.primaryMetric?.metricName || '',
-          mde: mde || ''
+          mde: mde || '',
         },
       });
     } else if (type === 'secondary') {
