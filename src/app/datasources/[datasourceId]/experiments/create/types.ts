@@ -83,11 +83,3 @@ export const EXPERIMENT_STEP_FLOWS = {
   bayes_ab_online: ['type', 'design', 'metadata', 'summary'],
   cmab_online: ['type', 'context', 'design', 'metadata', 'summary'],
 } as const;
-
-export const EXPERIMENT_TYPE_LABELS = {
-  freq_online: 'Traditional A/B Testing',
-  freq_preassigned: 'Traditional A/B Testing',
-  mab_online: 'Multi-Armed Bandit',
-  bayes_ab_online: 'Bayesian A/B Testing',
-  cmab_online: 'Contextual Bandit',
-} as const;
