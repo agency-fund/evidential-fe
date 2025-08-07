@@ -11,6 +11,7 @@ import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { PRODUCT_NAME } from '@/services/constants';
 import { MetricBuilder } from '@/components/features/experiments/metric-builder';
 import { SectionCard } from '@/components/ui/cards/section-card';
+import { StrataBuilder } from './strata-builder';
 
 interface DesignFormProps {
   formData: ExperimentFormData;
@@ -44,6 +45,9 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
 
   const filterFields: GetFiltersResponseElement[] =
     participantTypesData !== undefined ? participantTypesData.filters : [];
+
+  // 2. Get the available strata fields
+  const strataFields = participantTypesData?.strata || [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,6 +97,19 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
             />
           </Flex>
         </SectionCard>
+
+        {/* 3. Conditionally render the StrataBuilder */}
+        {strataFields.length > 0 && (
+          <SectionCard title="Stratification">
+            <StrataBuilder
+              availableStrata={strataFields}
+              selectedStrata={formData.strata || []}
+              onStrataChange={(newStrata) => {
+                onFormDataChange({ ...formData, strata: newStrata });
+              }}
+            />
+          </SectionCard>
+        )}
 
         <SectionCard title="Experiment Parameters">
           <Flex direction="row" gap="3">
