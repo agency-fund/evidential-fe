@@ -129,8 +129,8 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
       <SectionCard title="Basic Information">
         <Flex direction="column" gap="4">
           <Flex gap="4">
-            <Box style={{ flex: 1 }}>
-              <Text as="label" size="2" weight="bold" style={{ marginBottom: '6px', display: 'block' }}>
+            <Box width="100%">
+              <Text as="label" size="2" weight="bold" mb="6px" style={{ display: 'block' }}>
                 Experiment Name
               </Text>
               <TextField.Root
@@ -142,7 +142,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
           </Flex>
 
           <Box>
-            <Text as="label" size="2" weight="bold" style={{ marginBottom: '6px', display: 'block' }}>
+            <Text as="label" size="2" weight="bold" mb="6px" style={{ display: 'block' }}>
               Hypothesis
             </Text>
             <TextArea
@@ -155,7 +155,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
 
           <Flex gap="4">
             <Box style={{ flex: 1 }}>
-              <Text as="label" size="2" weight="bold" style={{ marginBottom: '6px', display: 'block' }}>
+              <Text as="label" size="2" weight="bold" mb="6px" style={{ display: 'block' }}>
                 Start Date
               </Text>
               <TextField.Root
@@ -165,7 +165,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
               />
             </Box>
             <Box style={{ flex: 1 }}>
-              <Text as="label" size="2" weight="bold" style={{ marginBottom: '6px', display: 'block' }}>
+              <Text as="label" size="2" weight="bold" mb="6px" style={{ display: 'block' }}>
                 End Date
               </Text>
               <TextField.Root
@@ -180,24 +180,24 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
 
       {/* Treatment Arms */}
       <SectionCard title="Treatment Arms">
-        <Flex direction="column" gap="3" style={{ marginBottom: '20px' }}>
+        <Flex direction="column" gap="3" mb="20px">
           <Text size="2" color="gray">
             Configure your experiment arms with prior beliefs.
           </Text>
           {formData.priorType && formData.outcomeType && (
             <Box
+              p="3"
               style={{
                 background: 'var(--accent-2)',
                 border: '1px solid var(--accent-6)',
                 borderRadius: '6px',
-                padding: '12px',
               }}
             >
               <Text size="2" weight="medium" style={{ color: 'var(--accent-11)' }}>
                 Selected Configuration: {formData.priorType === 'beta' ? 'Beta Distribution' : 'Normal Distribution'} ×{' '}
                 {formData.outcomeType === 'binary' ? 'Binary' : 'Real-valued'} Outcome
               </Text>
-              <Text size="1" color="gray" style={{ marginTop: '4px', display: 'block' }}>
+              <Text size="1" color="gray" mt="4px" style={{ display: 'block' }}>
                 {formData.priorType === 'beta'
                   ? 'Using Alpha (prior successes) and Beta (prior failures) parameters'
                   : 'Using Mean and Standard Deviation parameters'}
@@ -207,11 +207,11 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
           {!formData.priorType ||
             (!formData.outcomeType && (
               <Box
+                p="3"
                 style={{
                   background: 'var(--orange-2)',
                   border: '1px solid var(--orange-6)',
                   borderRadius: '6px',
-                  padding: '12px',
                 }}
               >
                 <Text size="2" weight="medium" style={{ color: 'var(--orange-11)' }}>
@@ -234,7 +234,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
             />
           ))}
 
-          <Flex justify="center" style={{ marginTop: '16px' }}>
+          <Flex justify="center" mt="4">
             <Button onClick={addArm} variant="outline">
               <PlusIcon />
               Add Arm
@@ -299,17 +299,18 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
       <Flex
         align="center"
         justify="between"
+        px="5"
+        py="3"
         style={{
-          padding: '16px 20px',
           backgroundColor: 'var(--gray-2)',
           borderBottom: '1px solid var(--gray-6)',
         }}
       >
         <Flex align="center" gap="2">
           <Box
+            width="6"
+            height="6"
             style={{
-              width: '24px',
-              height: '24px',
               borderRadius: '50%',
               backgroundColor: 'var(--accent-9)',
               color: 'white',
@@ -331,7 +332,7 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
       </Flex>
 
       {/* Content */}
-      <Box style={{ padding: '20px' }}>
+      <Box p="5">
         <Flex gap="6">
           <Flex direction="column" gap="4" style={{ flex: 1 }}>
             <Box>
@@ -361,11 +362,11 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
           <Flex direction="column" gap="4" style={{ flex: 1 }}>
             {!priorType && (
               <Box
+                p="3"
                 style={{
                   background: 'var(--orange-2)',
                   border: '1px solid var(--orange-6)',
                   borderRadius: '6px',
-                  padding: '12px',
                   textAlign: 'center',
                 }}
               >

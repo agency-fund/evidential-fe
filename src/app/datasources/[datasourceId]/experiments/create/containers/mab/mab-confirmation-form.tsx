@@ -97,7 +97,7 @@ export function MABConfirmationForm({ formData, onBack, onFormDataChange }: MABC
               <Table.RowHeaderCell>Prior Distribution</Table.RowHeaderCell>
               <Table.Cell>
                 {formData.priorType === 'beta' ? 'Beta Distribution' : 'Normal Distribution'}
-                <Text size="1" color="gray" style={{ display: 'block', marginTop: '4px' }}>
+                <Text size="1" color="gray" mt="4px">
                   {formData.priorType === 'beta'
                     ? 'Alpha/Beta parameters for binary outcomes'
                     : 'Mean/Standard Deviation parameters for continuous outcomes'}

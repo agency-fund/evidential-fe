@@ -41,12 +41,13 @@ export function AdaptiveBreadcrumbs({ experimentType, currentStep, onStepClick }
 
   return (
     <Box
+      mb="24px"
+      px="16px"
+      py="20px"
       style={{
         backgroundColor: 'var(--gray-2)',
         border: '1px solid var(--gray-6)',
         borderRadius: '8px',
-        padding: '16px 20px',
-        marginBottom: '24px',
       }}
     >
       <Flex align="center" gap="2" wrap="wrap">
@@ -54,7 +55,7 @@ export function AdaptiveBreadcrumbs({ experimentType, currentStep, onStepClick }
           <React.Fragment key={step.id}>
             <BreadcrumbItem step={step} onClick={onStepClick ? () => onStepClick(index + 1) : undefined} />
             {index < steps.length - 1 && (
-              <Text size="2" color="gray" style={{ margin: '0 4px' }}>
+              <Text size="2" color="gray" mx="2">
                 →
               </Text>
             )}

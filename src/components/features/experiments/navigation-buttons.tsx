@@ -27,8 +27,8 @@ export function NavigationButtons({
       justify="between"
       align="center"
       className={className}
+      mt="6"
       style={{
-        paddingTop: '24px',
         borderTop: '1px solid var(--gray-6)',
       }}
     >

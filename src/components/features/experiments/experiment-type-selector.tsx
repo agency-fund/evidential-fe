@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Box, Card, Flex, Text, Badge, Dialog, Button } from '@radix-ui/themes';
+import { Box, Card, Flex, Text, Badge, Dialog, Button, Grid } from '@radix-ui/themes';
 import { ExperimentType, AssignmentType } from '@/app/datasources/[datasourceId]/experiments/create/types';
 
 interface ExperimentTypeOption {
@@ -15,7 +15,7 @@ interface ExperimentTypeOption {
 const EXPERIMENT_TYPE_OPTIONS: ExperimentTypeOption[] = [
   {
     type: 'freq_online',
-    title: 'Frequent A/B Testing',
+    title: 'Traditional A/B Testing',
     badge: 'A/B',
     badgeColor: 'blue',
     description:
@@ -106,7 +106,7 @@ export function ExperimentTypeSelector({ selectedType, onTypeSelect }: Experimen
   };
 
   return (
-    <Box>
+    <Grid>
       <Box style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
         {EXPERIMENT_TYPE_OPTIONS.map((option) => (
           <ExperimentTypeCard
@@ -118,7 +118,7 @@ export function ExperimentTypeSelector({ selectedType, onTypeSelect }: Experimen
         ))}
       </Box>
 
-      {/* Assignment Type Dialog for Frequent A/B */}
+      {/* Assignment Type Dialog for Traditional A/B */}
       <Dialog.Root open={showAssignmentDialog} onOpenChange={setShowAssignmentDialog}>
         <Dialog.Content style={{ maxWidth: '600px' }}>
           <Dialog.Title>Choose Assignment Method</Dialog.Title>
@@ -204,7 +204,7 @@ export function ExperimentTypeSelector({ selectedType, onTypeSelect }: Experimen
           </Flex>
         </Dialog.Content>
       </Dialog.Root>
-    </Box>
+    </Grid>
   );
 }
 

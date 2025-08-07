@@ -12,7 +12,7 @@
  * The flow now includes:
  * 1. Experiment Type Selection: Choose from 4 experiment types
  * 2. Type-specific flows:
- *    - Frequent A/B: Assignment → Metadata → Design → Summary
+ *    - Traditional A/B: Assignment → Metadata → Design → Summary
  *    - MAB: Metadata → Design → Summary
  *    - Bayesian A/B: Metadata → Design → Summary
  *    - CMAB: Metadata → Design → Context → Summary

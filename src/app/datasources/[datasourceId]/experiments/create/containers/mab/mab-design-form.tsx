@@ -84,12 +84,12 @@ export function MABDesignForm({ formData, onFormDataChange, onNext, onBack }: MA
     <Flex direction="column" gap="6">
       {/* Outcome Type Section */}
       <SectionCard title="Outcome Type">
-        <Text size="2" color="gray" style={{ marginBottom: '20px' }}>
+        <Text size="2" color="gray" mb="20px">
           Define the type of outcome measured in this experiment. The prior distribution will be automatically selected
           based on your choice.
         </Text>
 
-        <Text size="2" weight="medium" style={{ marginBottom: '12px' }}>
+        <Text size="2" weight="medium" mb="12px">
           Select outcome type
         </Text>
 
@@ -107,20 +107,18 @@ export function MABDesignForm({ formData, onFormDataChange, onNext, onBack }: MA
         {/* Show selected prior distribution */}
         {formData.outcomeType && (
           <Box
+            p="4"
+            mt="4"
             style={{
               background: 'var(--accent-2)',
-              border: '1px solid var(--accent-6)',
-              borderRadius: '6px',
-              padding: '12px',
-              marginTop: '16px',
             }}
           >
-            <Text size="2" weight="medium" style={{ color: 'var(--accent-11)' }}>
+            <Text size="2" weight="medium">
               ✓ Selected Configuration:{' '}
               {formData.outcomeType === 'binary' ? 'Beta Distribution' : 'Normal Distribution'} ×{' '}
               {formData.outcomeType === 'binary' ? 'Binary' : 'Real-valued'} Outcome
             </Text>
-            <Text size="1" color="gray" style={{ marginTop: '4px', display: 'block' }}>
+            <Text size="1" color="gray" mt="1" as="div">
               {formData.outcomeType === 'binary'
                 ? 'Using Alpha (prior successes) and Beta (prior failures) parameters'
                 : 'Using Mean and Standard Deviation parameters'}
@@ -130,7 +128,7 @@ export function MABDesignForm({ formData, onFormDataChange, onNext, onBack }: MA
       </SectionCard>
 
       {/* Info Note */}
-      <Callout.Root style={{ marginTop: '20px' }}>
+      <Callout.Root mt="20px">
         <Callout.Icon>
           <InfoCircledIcon />
         </Callout.Icon>
@@ -159,47 +157,48 @@ interface OutcomeOptionCardProps {
 function OutcomeOptionCard({ option, isSelected, onSelect }: OutcomeOptionCardProps) {
   return (
     <Card
+      variant={isSelected ? 'surface' : 'classic'}
+      size="2"
       style={{
         cursor: 'pointer',
-        border: isSelected ? '2px solid var(--accent-9)' : '1px solid var(--gray-6)',
-        backgroundColor: isSelected ? 'var(--accent-2)' : 'white',
-        padding: '16px',
+        borderColor: isSelected ? 'var(--accent-9)' : undefined,
+        borderWidth: isSelected ? '2px' : '1px',
         transition: 'all 0.2s ease',
       }}
       onClick={onSelect}
     >
       <Flex align="start" gap="3">
-        {/* Radio button indicator */}
-        <Box
-          style={{
-            width: '16px',
-            height: '16px',
-            borderRadius: '50%',
-            border: `2px solid ${isSelected ? 'var(--accent-9)' : 'var(--gray-6)'}`,
-            backgroundColor: isSelected ? 'var(--accent-9)' : 'white',
-            marginTop: '2px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          {isSelected && (
-            <Box
-              style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                backgroundColor: 'white',
-              }}
-            />
-          )}
+        <Box>
+          <Flex
+            align="center"
+            justify="center"
+            p="1"
+            mt="1"
+            style={{
+              borderRadius: '9999px',
+              borderWidth: '2px',
+              borderColor: isSelected ? 'var(--accent-9)' : 'var(--gray-6)',
+              backgroundColor: isSelected ? 'var(--accent-9)' : 'white',
+            }}
+          >
+            {isSelected && (
+              <Box
+                width="1"
+                height="1"
+                style={{
+                  borderRadius: '9999px',
+                  backgroundColor: 'white',
+                }}
+              />
+            )}
+          </Flex>
         </Box>
 
-        <Flex direction="column" gap="1" style={{ flex: 1 }}>
+        <Flex direction="column" gap="1" style={{ flex: '1' }}>
           <Text size="3" weight="bold">
             {option.title}
           </Text>
-          <Text size="2" color="gray" style={{ lineHeight: 1.4 }}>
+          <Text size="2" color="gray" style={{ lineHeight: 'normal' }}>
             {option.description}
           </Text>
         </Flex>
