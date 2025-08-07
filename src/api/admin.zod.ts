@@ -6493,7 +6493,7 @@ export const getExperimentAssignmentForParticipantResponse = zod
 	);
 
 /**
- * Create a CMAB arm assignment for a specific participant. This endpoint is used for creating CMAB experiment assignments only.
+ * Get or create a CMAB arm assignment for a specific participant. This endpoint is used only for CMAB assignments.
  * @summary Get Cmab Experiment Assignment For Participant
  */
 export const getCmabExperimentAssignmentForParticipantParams = zod.object({
@@ -6502,15 +6502,32 @@ export const getCmabExperimentAssignmentForParticipantParams = zod.object({
 	participant_id: zod.string(),
 });
 
-export const getCmabExperimentAssignmentForParticipantBodyItem = zod
+export const getCmabExperimentAssignmentForParticipantBodyTypeDefault =
+	"cmab_assignment";
+
+export const getCmabExperimentAssignmentForParticipantBody = zod
 	.object({
-		context_id: zod.string().describe("Unique identifier for the context."),
-		context_value: zod.number().describe("Value of the context"),
+		type: zod
+			.string()
+			.default(getCmabExperimentAssignmentForParticipantBodyTypeDefault),
+		context_inputs: zod
+			.array(
+				zod
+					.object({
+						context_id: zod
+							.string()
+							.describe("Unique identifier for the context."),
+						context_value: zod.number().describe("Value of the context"),
+					})
+					.describe("Pydantic model for a context input"),
+			)
+			.describe(
+				"\n            List of context values for the assignment.\n            Must include exactly the same number contexts defined in the experiment.\n            The values are matched to the experiment's contexts by context_id, not by position in the list.\n            Each context_id must correspond to one of the IDs of the contexts defined in the experiment.\n            ",
+			),
 	})
-	.describe("Pydantic model for a context input");
-export const getCmabExperimentAssignmentForParticipantBody = zod.array(
-	getCmabExperimentAssignmentForParticipantBodyItem,
-);
+	.describe(
+		'Request model for creating a new CMAB assignment.\n\nWhen submitting context values for a CMAB experiment, the following rules apply:\n1. Each context_input must reference a valid context_id from the experiment\'s defined contexts\n2. The order of context_inputs does not need to match the order of contexts in the experiment\n3. You must provide values for all contexts defined in the experiment\n4. Number of input context values must match the number of contexts defined in the experiment\n\nExample:\n    If an experiment defines contexts with IDs ["ctx_1", "ctx_2"], your request must include\n    both of these context_ids in the context_inputs list, but they can be in any order.',
+	);
 
 export const getCmabExperimentAssignmentForParticipantResponseAssignmentParticipantIdMax = 64;
 export const getCmabExperimentAssignmentForParticipantResponseAssignmentArmNameMax = 100;

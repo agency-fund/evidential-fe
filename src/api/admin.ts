@@ -17,8 +17,8 @@ import type {
 	AnalyzeExperiment200,
 	AnalyzeExperimentParams,
 	CallerIdentity,
-	ContextInputRequest,
 	CreateApiKeyResponse,
+	CreateCMABAssignmentRequest,
 	CreateDatasourceRequest,
 	CreateDatasourceResponse,
 	CreateExperimentParams,
@@ -3260,7 +3260,7 @@ export const useGetExperimentAssignmentForParticipant = <
 	};
 };
 /**
- * Create a CMAB arm assignment for a specific participant. This endpoint is used for creating CMAB experiment assignments only.
+ * Get or create a CMAB arm assignment for a specific participant. This endpoint is used only for CMAB assignments.
  * @summary Get Cmab Experiment Assignment For Participant
  */
 export const getGetCmabExperimentAssignmentForParticipantUrl = (
@@ -3268,14 +3268,14 @@ export const getGetCmabExperimentAssignmentForParticipantUrl = (
 	experimentId: string,
 	participantId: string,
 ) => {
-	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments/${participantId}`;
+	return `/v1/m/datasources/${datasourceId}/experiments/cmab/${experimentId}/assignments/${participantId}`;
 };
 
 export const getCmabExperimentAssignmentForParticipant = async (
 	datasourceId: string,
 	experimentId: string,
 	participantId: string,
-	contextInputRequest: ContextInputRequest[],
+	createCMABAssignmentRequest: CreateCMABAssignmentRequest,
 	options?: RequestInit,
 ): Promise<GetParticipantAssignmentResponse> => {
 	return orvalFetch<GetParticipantAssignmentResponse>(
@@ -3288,7 +3288,7 @@ export const getCmabExperimentAssignmentForParticipant = async (
 			...options,
 			method: "POST",
 			headers: { "Content-Type": "application/json", ...options?.headers },
-			body: JSON.stringify(contextInputRequest),
+			body: JSON.stringify(createCMABAssignmentRequest),
 		},
 	);
 };
@@ -3301,7 +3301,7 @@ export const getGetCmabExperimentAssignmentForParticipantMutationFetcher = (
 ) => {
 	return (
 		_: Key,
-		{ arg }: { arg: ContextInputRequest[] },
+		{ arg }: { arg: CreateCMABAssignmentRequest },
 	): Promise<GetParticipantAssignmentResponse> => {
 		return getCmabExperimentAssignmentForParticipant(
 			datasourceId,
@@ -3318,7 +3318,7 @@ export const getGetCmabExperimentAssignmentForParticipantMutationKey = (
 	participantId: string,
 ) =>
 	[
-		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments/${participantId}`,
+		`/v1/m/datasources/${datasourceId}/experiments/cmab/${experimentId}/assignments/${participantId}`,
 	] as const;
 
 export type GetCmabExperimentAssignmentForParticipantMutationResult =
@@ -3343,7 +3343,7 @@ export const useGetCmabExperimentAssignmentForParticipant = <
 			Awaited<ReturnType<typeof getCmabExperimentAssignmentForParticipant>>,
 			TError,
 			Key,
-			ContextInputRequest[],
+			CreateCMABAssignmentRequest,
 			Awaited<ReturnType<typeof getCmabExperimentAssignmentForParticipant>>
 		> & { swrKey?: string };
 		request?: SecondParameter<typeof orvalFetch>;

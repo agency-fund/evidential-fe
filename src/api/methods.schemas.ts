@@ -596,7 +596,7 @@ export interface Context {
 /**
  * Pydantic model for a context input
  */
-export interface ContextInputRequest {
+export interface ContextInput {
 	/** Unique identifier for the context. */
 	context_id: string;
 	/** Value of the context */
@@ -619,6 +619,30 @@ export interface CreateApiKeyResponse {
 	id: string;
 	datasource_id: string;
 	key: string;
+}
+
+/**
+ * Request model for creating a new CMAB assignment.
+
+When submitting context values for a CMAB experiment, the following rules apply:
+1. Each context_input must reference a valid context_id from the experiment's defined contexts
+2. The order of context_inputs does not need to match the order of contexts in the experiment
+3. You must provide values for all contexts defined in the experiment
+4. Number of input context values must match the number of contexts defined in the experiment
+
+Example:
+    If an experiment defines contexts with IDs ["ctx_1", "ctx_2"], your request must include
+    both of these context_ids in the context_inputs list, but they can be in any order.
+ */
+export interface CreateCMABAssignmentRequest {
+	type?: "cmab_assignment";
+	/** 
+            List of context values for the assignment.
+            Must include exactly the same number contexts defined in the experiment.
+            The values are matched to the experiment's contexts by context_id, not by position in the list.
+            Each context_id must correspond to one of the IDs of the contexts defined in the experiment.
+             */
+	context_inputs: ContextInput[];
 }
 
 export interface CreateDatasourceRequest {
