@@ -8,13 +8,14 @@ import {
   useInspectTableInDatasource,
 } from '@/api/admin';
 import { FieldDescriptor, FieldMetadata } from '@/api/methods.schemas';
-import { Box, Button, Flex, Heading, Select, Text, TextField } from '@radix-ui/themes';
+import { Box, Button, Flex, Heading, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { useParams, useRouter } from 'next/navigation';
 import { ParticipantFieldsEditor } from '@/components/features/participants/participant-fields-editor';
 import { mutate } from 'swr';
+import { ChevronDownIcon } from '@radix-ui/react-icons';
 
 const makeFieldDescriptorComparator = (candidatesForUniqueIdField: string[]) => {
   const candidates = new Set(candidatesForUniqueIdField);
@@ -63,6 +64,11 @@ export default function CreateParticipantTypePage() {
   const [selectedTable, setSelectedTable] = useState<string>('');
   const [fields, setFields] = useState<FieldDescriptor[]>([]);
 
+  // New state for searchable dropdown
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   const tableIsSelected = selectedTable !== '';
   const { data: tableData, isLoading: loadingTableData } = useInspectTableInDatasource(
     datasourceId,
@@ -80,9 +86,29 @@ export default function CreateParticipantTypePage() {
 
   const updateSelectedTable = (table: string) => {
     setSelectedTable(table);
+    setSearchQuery(table);
     setFields([]);
+    setIsDropdownOpen(false);
     reset();
   };
+
+  const filteredTables = datasourceData?.tables.filter((table: string) =>
+    table.toLowerCase().includes(searchQuery.toLowerCase())
+  ) || [];
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // TODO: This useEffect can be replaced with event handlers.
   useEffect(() => {
@@ -141,7 +167,7 @@ export default function CreateParticipantTypePage() {
             event.preventDefault();
             const fd = new FormData(event.currentTarget);
             const participant_type = fd.get('participant_type') as string;
-            const table_name = fd.get('table_name') as string;
+            const table_name = selectedTable; // Use selectedTable instead of form data
             await trigger({
               participant_type,
               schema_def: {
@@ -161,22 +187,83 @@ export default function CreateParticipantTypePage() {
               <Text as="div" size={'2'} color="gray">
                 Please select the name of the data warehouse table.
               </Text>
-              <Box>
-                <Select.Root
+              <Box style={{ position: 'relative' }} ref={dropdownRef}>
+                <div style={{ position: 'relative' }}>
+                  <TextField.Root
+                    placeholder="Search for a table..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setIsDropdownOpen(true);
+                    }}
+                    onFocus={() => setIsDropdownOpen(true)}
+                    style={{ paddingRight: '2rem' }}
+                  />
+                  <ChevronDownIcon
+                    style={{
+                      position: 'absolute',
+                      right: '0.75rem',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      cursor: 'pointer',
+                      pointerEvents: 'none'
+                    }}
+                  />
+                </div>
+
+                {isDropdownOpen && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      right: 0,
+                      zIndex: 50,
+                      backgroundColor: 'white',
+                      border: '1px solid var(--gray-6)',
+                      borderRadius: 'var(--radius-2)',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                      maxHeight: '200px',
+                      overflowY: 'auto',
+                      marginTop: '2px'
+                    }}
+                  >
+                    {filteredTables.length > 0 ? (
+                      filteredTables.map((table: string) => (
+                        <div
+                          key={table}
+                          onClick={() => updateSelectedTable(table)}
+                          style={{
+                            padding: '0.5rem 0.75rem',
+                            cursor: 'pointer',
+                            borderBottom: '1px solid var(--gray-3)',
+                            backgroundColor: selectedTable === table ? 'var(--gray-3)' : 'transparent'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = 'var(--gray-2)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = selectedTable === table ? 'var(--gray-3)' : 'transparent';
+                          }}
+                        >
+                          <Text size="2">{table}</Text>
+                        </div>
+                      ))
+                    ) : (
+                      <div style={{ padding: '0.5rem 0.75rem' }}>
+                        <Text size="2" color="gray">No tables found</Text>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Hidden input for form submission */}
+                <input
+                  type="hidden"
                   name="table_name"
-                  required
                   value={selectedTable}
-                  onValueChange={(value) => updateSelectedTable(value)}
-                >
-                  <Select.Trigger placeholder="Select a table" />
-                  <Select.Content>
-                    {datasourceData.tables.map((table: string) => (
-                      <Select.Item key={table} value={table}>
-                        {table}
-                      </Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Root>
+                  required
+                />
               </Box>
             </Flex>
 
