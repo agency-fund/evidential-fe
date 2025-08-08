@@ -93,15 +93,7 @@ function BreadcrumbItem({ step, onClick }: BreadcrumbItemProps) {
       <Text
         size="2"
         weight={step.isCurrent ? 'bold' : 'medium'}
-        style={{
-          color: step.isCurrent
-            ? 'var(--accent-11)'
-            : step.isCompleted
-              ? 'var(--accent-9)'
-              : step.isAccessible
-                ? 'var(--gray-11)'
-                : 'var(--gray-8)',
-        }}
+        color={step.isCurrent ? 'gray' : step.isCompleted ? 'gray' : step.isAccessible ? 'blue' : 'gray'}
       >
         {step.label}
       </Text>

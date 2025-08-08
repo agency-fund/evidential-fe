@@ -121,7 +121,7 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
                         '?'
                       ) : metricAnalysis.metric_spec.available_n === 0 ||
                         metricAnalysis.metric_spec.available_n < (metricAnalysis.target_n ?? 0) ? (
-                        <span style={{ color: 'var(--red-11)' }}>{metricAnalysis.metric_spec.available_n}</span>
+                        <span color="crimson">{metricAnalysis.metric_spec.available_n}</span>
                       ) : (
                         metricAnalysis.metric_spec.available_n
                       )}
@@ -134,7 +134,7 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
                         '?'
                       ) : metricAnalysis.metric_spec.available_nonnull_n === 0 ||
                         metricAnalysis.metric_spec.available_nonnull_n < (metricAnalysis.target_n ?? 0) ? (
-                        <span style={{ color: 'var(--red-11)' }}>{metricAnalysis.metric_spec.available_nonnull_n}</span>
+                        <span color="crimson">{metricAnalysis.metric_spec.available_nonnull_n}</span>
                       ) : (
                         metricAnalysis.metric_spec.available_nonnull_n
                       )}

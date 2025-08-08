@@ -22,16 +22,7 @@ export function NavigationButtons({
   className,
 }: NavigationButtonsProps) {
   return (
-    <Flex
-      gap="3"
-      justify="between"
-      align="center"
-      className={className}
-      mt="6"
-      style={{
-        borderTop: '1px solid var(--gray-6)',
-      }}
-    >
+    <Flex gap="3" justify="end" align="center" className={className} mt="6">
       {showBack ? (
         <Button variant="soft" color="gray" onClick={onBack} disabled={!onBack}>
           Back

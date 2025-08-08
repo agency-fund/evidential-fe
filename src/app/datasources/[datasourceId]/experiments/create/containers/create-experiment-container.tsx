@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Container, Flex, Heading, Box } from '@radix-ui/themes';
+import { Container, Flex, Heading, Box, Text } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
 import {
   ExperimentType,
@@ -133,9 +133,9 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
             <Heading size="8" mb="2">
               Create Experiment
             </Heading>
-            <p style={{ color: 'var(--gray-11)', fontSize: '16px', margin: 0 }}>
+            <Text color="gray" size="3" mb="0">
               Choose the type of experiment you want to create
-            </p>
+            </Text>
           </Box>
 
           <ExperimentTypeSelector selectedType={selectedExperimentType} onTypeSelect={handleExperimentTypeSelect} />

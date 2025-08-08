@@ -130,7 +130,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
         <Flex direction="column" gap="4">
           <Flex gap="4">
             <Box width="100%">
-              <Text as="label" size="2" weight="bold" mb="6px" style={{ display: 'block' }}>
+              <Text as="label" size="2" weight="bold" mb="6px">
                 Experiment Name
               </Text>
               <TextField.Root
@@ -142,7 +142,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
           </Flex>
 
           <Box>
-            <Text as="label" size="2" weight="bold" mb="6px" style={{ display: 'block' }}>
+            <Text as="label" size="2" weight="bold" mb="6px">
               Hypothesis
             </Text>
             <TextArea
@@ -155,7 +155,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
 
           <Flex gap="4">
             <Box style={{ flex: 1 }}>
-              <Text as="label" size="2" weight="bold" mb="6px" style={{ display: 'block' }}>
+              <Text as="label" size="2" weight="bold" mb="6px">
                 Start Date
               </Text>
               <TextField.Root
@@ -165,7 +165,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
               />
             </Box>
             <Box style={{ flex: 1 }}>
-              <Text as="label" size="2" weight="bold" mb="6px" style={{ display: 'block' }}>
+              <Text as="label" size="2" weight="bold" mb="6px">
                 End Date
               </Text>
               <TextField.Root
@@ -185,19 +185,12 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
             Configure your experiment arms with prior beliefs.
           </Text>
           {formData.priorType && formData.outcomeType && (
-            <Box
-              p="3"
-              style={{
-                background: 'var(--accent-2)',
-                border: '1px solid var(--accent-6)',
-                borderRadius: '6px',
-              }}
-            >
-              <Text size="2" weight="medium" style={{ color: 'var(--accent-11)' }}>
+            <Box p="3">
+              <Text size="2" weight="medium" color="blue">
                 Selected Configuration: {formData.priorType === 'beta' ? 'Beta Distribution' : 'Normal Distribution'} ×{' '}
                 {formData.outcomeType === 'binary' ? 'Binary' : 'Real-valued'} Outcome
               </Text>
-              <Text size="1" color="gray" mt="4px" style={{ display: 'block' }}>
+              <Text size="1" color="gray" mt="4px">
                 {formData.priorType === 'beta'
                   ? 'Using Alpha (prior successes) and Beta (prior failures) parameters'
                   : 'Using Mean and Standard Deviation parameters'}
@@ -206,15 +199,8 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
           )}
           {!formData.priorType ||
             (!formData.outcomeType && (
-              <Box
-                p="3"
-                style={{
-                  background: 'var(--orange-2)',
-                  border: '1px solid var(--orange-6)',
-                  borderRadius: '6px',
-                }}
-              >
-                <Text size="2" weight="medium" style={{ color: 'var(--orange-11)' }}>
+              <Box p="3">
+                <Text size="2" weight="medium" color="blue">
                   ⚠️ Prior distribution and outcome type must be selected in the Design step first
                 </Text>
               </Box>
@@ -294,33 +280,11 @@ interface ArmCardProps {
 
 function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: ArmCardProps) {
   return (
-    <Card style={{ padding: '0', border: '1px solid var(--gray-6)' }}>
+    <Card>
       {/* Header */}
-      <Flex
-        align="center"
-        justify="between"
-        px="5"
-        py="3"
-        style={{
-          backgroundColor: 'var(--gray-2)',
-          borderBottom: '1px solid var(--gray-6)',
-        }}
-      >
+      <Flex align="center" justify="between" px="5" py="3">
         <Flex align="center" gap="2">
-          <Box
-            width="6"
-            height="6"
-            style={{
-              borderRadius: '50%',
-              backgroundColor: 'var(--accent-9)',
-              color: 'white',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '12px',
-              fontWeight: '600',
-            }}
-          >
+          <Box width="6" height="6">
             {armIndex + 1}
           </Box>
           <Text weight="bold">{armIndex === 0 ? 'Control Arm' : 'Treatment Arm'}</Text>
@@ -334,9 +298,9 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
       {/* Content */}
       <Box p="5">
         <Flex gap="6">
-          <Flex direction="column" gap="4" style={{ flex: 1 }}>
+          <Flex direction="column" gap="4">
             <Box>
-              <Text as="label" size="2" weight="bold" style={{ marginBottom: '6px', display: 'block' }}>
+              <Text as="label" size="2" weight="bold" mb="6px">
                 Arm Name
               </Text>
               <TextField.Root
@@ -347,30 +311,21 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
             </Box>
 
             <Box>
-              <Text as="label" size="2" weight="bold" style={{ marginBottom: '6px', display: 'block' }}>
+              <Text as="label" size="2" weight="bold" mb="6px">
                 Description
               </Text>
               <TextArea
                 value={arm.arm_description || ''}
                 onChange={(e) => onUpdate({ arm_description: e.target.value })}
                 placeholder="Describe this arm..."
-                style={{ minHeight: '80px' }}
               />
             </Box>
           </Flex>
 
-          <Flex direction="column" gap="4" style={{ flex: 1 }}>
+          <Flex direction="column" gap="4">
             {!priorType && (
-              <Box
-                p="3"
-                style={{
-                  background: 'var(--orange-2)',
-                  border: '1px solid var(--orange-6)',
-                  borderRadius: '6px',
-                  textAlign: 'center',
-                }}
-              >
-                <Text size="2" style={{ color: 'var(--orange-11)' }}>
+              <Box p="3">
+                <Text size="2" color="orange">
                   Select prior distribution in Design step first
                 </Text>
               </Box>
@@ -379,7 +334,7 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
             {priorType === 'beta' && (
               <Flex gap="3">
                 <Box style={{ flex: 1 }}>
-                  <Text as="label" size="2" weight="bold" style={{ marginBottom: '6px', display: 'block' }}>
+                  <Text as="label" size="2" weight="bold" mb="6px">
                     Alpha Prior
                   </Text>
                   <TextField.Root
@@ -391,7 +346,7 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
                   />
                 </Box>
                 <Box style={{ flex: 1 }}>
-                  <Text as="label" size="2" weight="bold" style={{ marginBottom: '6px', display: 'block' }}>
+                  <Text as="label" size="2" weight="bold" mb="6px">
                     Beta Prior
                   </Text>
                   <TextField.Root
@@ -408,7 +363,7 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
             {priorType === 'normal' && (
               <Flex gap="3">
                 <Box style={{ flex: 1 }}>
-                  <Text as="label" size="2" weight="bold" style={{ marginBottom: '6px', display: 'block' }}>
+                  <Text as="label" size="2" weight="bold" mb="6px">
                     Mean Prior
                   </Text>
                   <TextField.Root
@@ -419,7 +374,7 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
                   />
                 </Box>
                 <Box style={{ flex: 1 }}>
-                  <Text as="label" size="2" weight="bold" style={{ marginBottom: '6px', display: 'block' }}>
+                  <Text as="label" size="2" weight="bold" mb="6px">
                     Std Dev Prior
                   </Text>
                   <TextField.Root

@@ -134,7 +134,7 @@ export function MABConfirmationForm({ formData, onBack, onFormDataChange }: MABC
                 <Table.Cell>
                   <Text weight="bold">{arm.arm_name}</Text>
                   {index === 0 && (
-                    <Text size="1" color="gray" style={{ display: 'block' }}>
+                    <Text size="1" color="gray">
                       Control
                     </Text>
                   )}

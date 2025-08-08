@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Box, Card, Flex, Text, Callout } from '@radix-ui/themes';
+import { Box, Card, Flex, Text, Callout, Separator } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { MABFormData, PriorType, OutcomeType } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
@@ -88,8 +88,7 @@ export function MABDesignForm({ formData, onFormDataChange, onNext, onBack }: MA
           Define the type of outcome measured in this experiment. The prior distribution will be automatically selected
           based on your choice.
         </Text>
-
-        <Text size="2" weight="medium" mb="12px">
+        <Text size="2" weight="medium" mb="12px" mt="12px" as="div">
           Select outcome type
         </Text>
 
@@ -106,24 +105,19 @@ export function MABDesignForm({ formData, onFormDataChange, onNext, onBack }: MA
 
         {/* Show selected prior distribution */}
         {formData.outcomeType && (
-          <Box
-            p="4"
-            mt="4"
-            style={{
-              background: 'var(--accent-2)',
-            }}
-          >
-            <Text size="2" weight="medium">
-              ✓ Selected Configuration:{' '}
-              {formData.outcomeType === 'binary' ? 'Beta Distribution' : 'Normal Distribution'} ×{' '}
-              {formData.outcomeType === 'binary' ? 'Binary' : 'Real-valued'} Outcome
-            </Text>
-            <Text size="1" color="gray" mt="1" as="div">
-              {formData.outcomeType === 'binary'
-                ? 'Using Alpha (prior successes) and Beta (prior failures) parameters'
-                : 'Using Mean and Standard Deviation parameters'}
-            </Text>
-          </Box>
+          <Flex direction="column" gap="2">
+            <Box p="4" mt="4" as="div">
+              <Text size="2" weight="bold" color="blue">
+                ✓ Selected Configuration: {formData.outcomeType === 'binary' ? 'Beta' : 'Normal'} Prior ×{' '}
+                {formData.outcomeType === 'binary' ? 'Binary' : 'Real-valued'} Outcome
+              </Text>
+              <Text ml="16px" size="1" color="blue" mt="1" as="div">
+                {formData.outcomeType === 'binary'
+                  ? 'Using Alpha (prior successes) and Beta (prior failures) parameters'
+                  : 'Using Mean and Standard Deviation parameters'}
+              </Text>
+            </Box>
+          </Flex>
         )}
       </SectionCard>
 
@@ -157,52 +151,21 @@ interface OutcomeOptionCardProps {
 function OutcomeOptionCard({ option, isSelected, onSelect }: OutcomeOptionCardProps) {
   return (
     <Card
-      variant={isSelected ? 'surface' : 'classic'}
       size="2"
-      style={{
-        cursor: 'pointer',
-        borderColor: isSelected ? 'var(--accent-9)' : undefined,
-        borderWidth: isSelected ? '2px' : '1px',
-        transition: 'all 0.2s ease',
-      }}
       onClick={onSelect}
+      asChild
+      style={isSelected ? { border: '2px solid var(--accent-9)', backgroundColor: 'var(--accent-2)' } : {}}
     >
-      <Flex align="start" gap="3">
-        <Box>
-          <Flex
-            align="center"
-            justify="center"
-            p="1"
-            mt="1"
-            style={{
-              borderRadius: '9999px',
-              borderWidth: '2px',
-              borderColor: isSelected ? 'var(--accent-9)' : 'var(--gray-6)',
-              backgroundColor: isSelected ? 'var(--accent-9)' : 'white',
-            }}
-          >
-            {isSelected && (
-              <Box
-                width="1"
-                height="1"
-                style={{
-                  borderRadius: '9999px',
-                  backgroundColor: 'white',
-                }}
-              />
-            )}
-          </Flex>
-        </Box>
-
-        <Flex direction="column" gap="1" style={{ flex: '1' }}>
+      <Box as="div">
+        <Flex direction="column" gap="1">
           <Text size="3" weight="bold">
             {option.title}
           </Text>
-          <Text size="2" color="gray" style={{ lineHeight: 'normal' }}>
+          <Text size="2" color="gray">
             {option.description}
           </Text>
         </Flex>
-      </Flex>
+      </Box>
     </Card>
   );
 }

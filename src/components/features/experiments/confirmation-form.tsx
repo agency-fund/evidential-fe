@@ -187,7 +187,7 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
           </Callout.Icon>
           <Callout.Text>Assignments will be downloadable after the experiment is saved.</Callout.Text>
         </Callout.Root>
-        <Flex gap="3">
+        <Flex gap="3" justify="end">
           <Button variant="soft" onClick={handleAbandonCommit}>
             Back
           </Button>

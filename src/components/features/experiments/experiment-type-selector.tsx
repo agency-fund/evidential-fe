@@ -106,8 +106,8 @@ export function ExperimentTypeSelector({ selectedType, onTypeSelect }: Experimen
   };
 
   return (
-    <Grid>
-      <Box style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+    <Box>
+      <Grid columns="2" gap="4">
         {EXPERIMENT_TYPE_OPTIONS.map((option) => (
           <ExperimentTypeCard
             key={option.type}
@@ -116,7 +116,7 @@ export function ExperimentTypeSelector({ selectedType, onTypeSelect }: Experimen
             onSelect={() => handleTypeSelect(option.type)}
           />
         ))}
-      </Box>
+      </Grid>
 
       {/* Assignment Type Dialog for Traditional A/B */}
       <Dialog.Root open={showAssignmentDialog} onOpenChange={setShowAssignmentDialog}>
@@ -130,63 +130,33 @@ export function ExperimentTypeSelector({ selectedType, onTypeSelect }: Experimen
             {ASSIGNMENT_OPTIONS.map((option) => (
               <Card
                 key={option.type}
-                style={{
-                  cursor: 'pointer',
-                  border:
-                    tempSelectedAssignment === option.type ? '2px solid var(--accent-9)' : '1px solid var(--gray-6)',
-                  backgroundColor: tempSelectedAssignment === option.type ? 'var(--accent-2)' : 'white',
-                  padding: '16px',
-                  transition: 'all 0.2s ease',
-                }}
+                style={
+                  tempSelectedAssignment === option.type
+                    ? { border: '2px solid var(--accent-9)', backgroundColor: 'var(--accent-2)' }
+                    : {}
+                }
                 onClick={() => setTempSelectedAssignment(option.type)}
               >
-                <Flex align="start" gap="3">
-                  <Box
-                    style={{
-                      width: '16px',
-                      height: '16px',
-                      borderRadius: '50%',
-                      border: `2px solid ${tempSelectedAssignment === option.type ? 'var(--accent-9)' : 'var(--gray-6)'}`,
-                      backgroundColor: tempSelectedAssignment === option.type ? 'var(--accent-9)' : 'white',
-                      marginTop: '2px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    {tempSelectedAssignment === option.type && (
-                      <Box
-                        style={{
-                          width: '6px',
-                          height: '6px',
-                          borderRadius: '50%',
-                          backgroundColor: 'white',
-                        }}
-                      />
-                    )}
-                  </Box>
-
-                  <Flex direction="column" gap="2" style={{ flex: 1 }}>
-                    <Flex align="center" gap="2">
-                      <Text size="3" weight="bold">
-                        {option.title}
-                      </Text>
-                      {option.recommended && (
-                        <Badge color="green" size="1">
-                          {option.badge}
-                        </Badge>
-                      )}
-                      {!option.recommended && (
-                        <Badge color="gray" size="1">
-                          {option.badge}
-                        </Badge>
-                      )}
-                    </Flex>
-
-                    <Text size="2" color="gray" style={{ lineHeight: 1.4 }}>
-                      {option.description}
+                <Flex direction="column" gap="2">
+                  <Flex align="center" gap="2">
+                    <Text size="3" weight="bold">
+                      {option.title}
                     </Text>
+                    {option.recommended && (
+                      <Badge color="green" size="1">
+                        {option.badge}
+                      </Badge>
+                    )}
+                    {!option.recommended && (
+                      <Badge color="gray" size="1">
+                        {option.badge}
+                      </Badge>
+                    )}
                   </Flex>
+
+                  <Text size="2" color="gray">
+                    {option.description}
+                  </Text>
                 </Flex>
               </Card>
             ))}
@@ -204,7 +174,7 @@ export function ExperimentTypeSelector({ selectedType, onTypeSelect }: Experimen
           </Flex>
         </Dialog.Content>
       </Dialog.Root>
-    </Grid>
+    </Box>
   );
 }
 
@@ -216,62 +186,27 @@ interface ExperimentTypeCardProps {
 
 function ExperimentTypeCard({ option, isSelected, onSelect }: ExperimentTypeCardProps) {
   return (
-    <Card
-      style={{
-        cursor: option.comingSoon ? 'not-allowed' : 'pointer',
-        opacity: option.comingSoon ? 0.6 : 1,
-        border: isSelected ? '2px solid var(--accent-9)' : '2px solid var(--gray-6)',
-        backgroundColor: isSelected ? 'var(--accent-2)' : 'white',
-        position: 'relative',
-        padding: '24px',
-        transition: 'all 0.2s ease',
-      }}
-      onClick={onSelect}
-    >
-      <Flex direction="column" gap="3">
-        <Flex align="center" gap="3">
-          {/* Radio button indicator */}
-          <Box
-            style={{
-              width: '20px',
-              height: '20px',
-              borderRadius: '50%',
-              border: `2px solid ${isSelected ? 'var(--accent-9)' : 'var(--gray-6)'}`,
-              backgroundColor: isSelected ? 'var(--accent-9)' : 'white',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
-            {isSelected && (
-              <Text size="1" style={{ color: 'white', fontWeight: 'bold' }}>
-                ✓
-              </Text>
-            )}
-          </Box>
-
-          <Flex direction="column" gap="1" style={{ flex: 1 }}>
-            <Flex align="center" gap="2">
-              <Text size="4" weight="bold">
-                {option.title}
-              </Text>
-              <Badge color={option.badgeColor} size="1">
-                {option.badge}
-              </Badge>
-            </Flex>
-            {option.comingSoon && (
-              <Badge color="gray" size="1" style={{ alignSelf: 'flex-start' }}>
-                Coming Soon
-              </Badge>
-            )}
-          </Flex>
+    <Card onClick={option.comingSoon ? undefined : onSelect}>
+      <Box style={{ borderColor: isSelected ? 'var(--accent-9)' : 'var(--gray-6)' }}>
+        <Flex align="center" gap="2">
+          <Text size="4" weight={option.comingSoon ? 'regular' : 'bold'}>
+            {option.title}
+          </Text>
+          <Badge color={option.badgeColor} size="1">
+            {option.badge}
+          </Badge>
         </Flex>
-
-        <Text size="2" color="gray" style={{ lineHeight: 1.5, marginLeft: '32px' }}>
-          {option.description}
-        </Text>
-      </Flex>
+        {option.comingSoon && (
+          <Badge color="gray" size="1" mt="20px">
+            Coming Soon
+          </Badge>
+        )}
+        <Flex direction="column" gap="1">
+          <Text size="2" weight={option.comingSoon ? 'light' : 'regular'} mt="20px">
+            {option.description}
+          </Text>
+        </Flex>
+      </Box>
     </Card>
   );
 }
