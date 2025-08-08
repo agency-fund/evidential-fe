@@ -1,6 +1,6 @@
 'use client';
 import { Button, Callout, Flex, Grid, Table, Text } from '@radix-ui/themes';
-import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
+import { FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { useRouter } from 'next/navigation';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useAbandonExperiment, useCommitExperiment } from '@/api/admin';
@@ -14,9 +14,9 @@ import { ReadMoreText } from '@/components/ui/read-more-text';
 import { ListSelectedWebhooksCard } from '@/components/features/experiments/list-selected-webhooks-card';
 
 interface ConfirmationFormProps {
-  formData: ExperimentFormData;
+  formData: FrequentABFormData;
   onBack: () => void;
-  onFormDataChange: (data: ExperimentFormData) => void;
+  onFormDataChange: (data: FrequentABFormData) => void;
 }
 
 function ExperimentErrorCallout({ error, type }: { error?: Error; type: 'commit' | 'abandon' }) {
@@ -123,7 +123,7 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
               <Text weight="bold">Primary Metric</Text>
               {formData.primaryMetric ? (
                 <Text>
-                  {formData.primaryMetric.metricName} (min effect: {formData.primaryMetric.mde}%)
+                  {formData.primaryMetric?.metricName} (min effect: {formData.primaryMetric?.mde}%)
                 </Text>
               ) : (
                 <Text>-</Text>
@@ -187,7 +187,7 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
           </Callout.Icon>
           <Callout.Text>Assignments will be downloadable after the experiment is saved.</Callout.Text>
         </Callout.Root>
-        <Flex gap="3">
+        <Flex gap="3" justify="end">
           <Button variant="soft" onClick={handleAbandonCommit}>
             Back
           </Button>

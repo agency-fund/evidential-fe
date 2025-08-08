@@ -86,7 +86,7 @@ export default function Page() {
           <DatasourcesTable datasources={organization.datasources} organizationId={organizationId} />
         )}
         {(organization.datasources.length === 0 ||
-          (organization.datasources.length === 1 && organization.datasources[0].driver === "none")) && (
+          (organization.datasources.length === 1 && organization.datasources[0].driver === 'none')) && (
           <EmptyStateCard title="No data warehouse found" description="Add a new datasource to get started">
             <AddDatasourceDialog organizationId={organizationId} />
           </EmptyStateCard>

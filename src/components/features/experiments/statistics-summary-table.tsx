@@ -1,6 +1,6 @@
 'use client';
 
-import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
+import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { Table } from '@radix-ui/themes';
 
 export function StatisticsSummaryTable({ formData }: { formData: ExperimentFormData }) {

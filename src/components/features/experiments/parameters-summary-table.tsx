@@ -1,9 +1,9 @@
 'use client';
 
-import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
+import { FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { Table } from '@radix-ui/themes';
 
-export function ParametersSummaryTable({ formData }: { formData: ExperimentFormData }) {
+export function ParametersSummaryTable({ formData }: { formData: FrequentABFormData }) {
   return (
     <>
       <Table.Root>
