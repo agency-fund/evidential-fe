@@ -188,28 +188,19 @@ export default function CreateParticipantTypePage() {
                 Please select the name of the data warehouse table.
               </Text>
               <Box style={{ position: 'relative' }} ref={dropdownRef}>
-                <div style={{ position: 'relative' }}>
-                  <TextField.Root
-                    placeholder="Search for a table..."
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      setIsDropdownOpen(true);
-                    }}
-                    onFocus={() => setIsDropdownOpen(true)}
-                    style={{ paddingRight: '2rem' }}
-                  />
-                  <ChevronDownIcon
-                    style={{
-                      position: 'absolute',
-                      right: '0.75rem',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      cursor: 'pointer',
-                      pointerEvents: 'none'
-                    }}
-                  />
-                </div>
+                <TextField.Root
+                  placeholder="Search for a table..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setIsDropdownOpen(true);
+                  }}
+                  onFocus={() => setIsDropdownOpen(true)}
+                >
+                  <TextField.Slot side="right">
+                    <ChevronDownIcon />
+                  </TextField.Slot>
+                </TextField.Root>
 
                 {isDropdownOpen && (
                   <div
