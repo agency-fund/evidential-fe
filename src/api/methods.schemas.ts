@@ -413,7 +413,7 @@ export const BqDsnType = {
 	bigquery: "bigquery",
 } as const;
 
-export type BqDsnCredentials = GcpServiceAccount | HiddenValue;
+export type BqDsnCredentials = GcpServiceAccount | Hidden;
 
 export interface BqDsn {
 	type: BqDsnType;
@@ -1268,10 +1268,10 @@ export interface HTTPValidationError {
 	detail?: ValidationError[];
 }
 
-export const HiddenValueValue = {
+export const HiddenValue = {
 	type: "hidden",
 } as const;
-export type HiddenValue = typeof HiddenValueValue;
+export type Hidden = typeof HiddenValue;
 
 export interface InspectDatasourceResponse {
 	tables: string[];
@@ -1773,7 +1773,7 @@ export const PostgresDsnType = {
 	postgres: "postgres",
 } as const;
 
-export type PostgresDsnPassword = RevealedStr | HiddenValue;
+export type PostgresDsnPassword = RevealedStr | Hidden;
 
 export type PostgresDsnSslmode =
 	(typeof PostgresDsnSslmode)[keyof typeof PostgresDsnSslmode];
@@ -1978,7 +1978,7 @@ export const RedshiftDsnType = {
 	redshift: "redshift",
 } as const;
 
-export type RedshiftDsnPassword = RevealedStr | HiddenValue;
+export type RedshiftDsnPassword = RevealedStr | Hidden;
 
 export type RedshiftDsnSearchPath = string | null;
 

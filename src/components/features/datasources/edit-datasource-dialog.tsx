@@ -11,7 +11,7 @@ import {
 } from '@/api/admin';
 import { useEffect, useState } from 'react';
 import { mutate } from 'swr';
-import { DsnDriver, UpdateDatasourceRequest } from '@/api/methods.schemas';
+import { GcpServiceAccount, Hidden, RevealedStr, UpdateDatasourceRequest } from '@/api/methods.schemas';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { PostgresSslModes } from '@/services/typehelper';
 import { XNGIN_API_DOCS_LINK } from '@/services/constants';
@@ -61,44 +61,43 @@ export const EditDatasourceDialog = ({
   const [port, setPort] = useState('');
   const [dbname, setDbname] = useState('');
   const [user, setUser] = useState('');
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState<RevealedStr | Hidden>({ type: 'hidden' });
   const [searchPath, setSearchPath] = useState('');
   const [sslmode, setSslmode] = useState<PostgresSslModes>('require');
   const [projectId, setProjectId] = useState('');
   const [dataset, setDataset] = useState('');
-  const [credentialsJson, setCredentialsJson] = useState('');
+  const [credentialsJson, setCredentialsJson] = useState<GcpServiceAccount | Hidden>({ type: 'hidden' });
 
   useEffect(() => {
     if (open && data) {
-      const datasource = data;
-      setName(datasource.name);
-      if (datasource.config.type === 'remote') {
-        const dwh = datasource.config.dwh;
-
-        if (dwh.driver === 'bigquery') {
-          if (dwh.credentials.type !== 'serviceaccountinfo') {
-            throw new Error('only serviceaccountinfo is supported');
-          }
-          setProjectId(dwh.project_id);
-          setDataset(dwh.dataset_id);
-          setCredentialsJson(atob(dwh.credentials.content_base64));
-        } else if (dwh.driver === 'postgresql+psycopg2') {
-          setHost(dwh.host);
-          setPort(dwh.port ? dwh.port.toString() : '5432');
-          setDbname(dwh.dbname);
-          setUser(dwh.user);
-          setPassword(dwh.password);
+      const dsn = data.dsn;
+      setName(data.name);
+      if (dsn.type === 'api_only') {
+        return;
+      }
+      if (dsn.type === 'bigquery') {
+        setProjectId(dsn.project_id);
+        setDataset(dsn.dataset_id);
+        setCredentialsJson(dsn.credentials);
+      } else if (dsn.type === 'postgres' || dsn.type == 'redshift') {
+        setHost(dsn.host);
+        setPort(dsn.port ? dsn.port.toString() : '5432');
+        setDbname(dsn.dbname);
+        setUser(dsn.user);
+        setPassword(dsn.password);
+        // Only send sslmode for postgres.
+        if (dsn.type === 'postgres') {
           // Only use a subset of the possible configuration options.
           const fallbackType = 'require';
           const obsolete_modes = ['prefer', 'allow'];
-          const sslmode = dwh.sslmode
-            ? obsolete_modes.includes(dwh.sslmode)
+          const sslmode = dsn.sslmode
+            ? obsolete_modes.includes(dsn.sslmode)
               ? fallbackType
-              : (dwh.sslmode as PostgresSslModes)
+              : (dsn.sslmode as PostgresSslModes)
             : fallbackType;
           setSslmode(sslmode);
-          setSearchPath(dwh.search_path || '');
         }
+        setSearchPath(dsn.search_path || '');
       }
     }
   }, [open, data]);
@@ -107,16 +106,11 @@ export const EditDatasourceDialog = ({
     return null;
   }
 
-  const config = data.config;
+  const dsn = data.dsn;
 
-  if (config.type !== 'remote') {
-    return null;
-  }
-
-  const isNoDWH = config.dwh.driver === 'none';
-  const isBigQuery = config.dwh.driver === 'bigquery';
-  const usesBigQueryServiceAccount = config.dwh.driver === 'bigquery' && config.dwh.credentials.type == 'serviceaccountinfo';
-  const isRedshift = config.dwh.driver === 'postgresql+psycopg2' && config.dwh.host.endsWith('redshift.amazonaws.com');
+  const isBigQuery = dsn.type === 'bigquery';
+  const isNoDWH = dsn.type === 'api_only';
+  const isRedshift = dsn.type === 'redshift';
 
   return (
     <Dialog.Root
@@ -150,22 +144,29 @@ export const EditDatasourceDialog = ({
             };
 
             if (isNoDWH) {
-              updateData.dwh = {
-                driver: 'none',
+              updateData.dsn = {
+                type: 'api_only',
               };
             } else if (isBigQuery) {
-              updateData.dwh = {
-                driver: 'bigquery',
+              updateData.dsn = {
+                type: 'bigquery',
                 project_id: projectId,
                 dataset_id: dataset,
-                credentials: {
-                  type: 'serviceaccountinfo',
-                  content_base64: btoa(credentialsJson),
-                },
+                credentials: credentialsJson,
+              };
+            } else if (isRedshift) {
+              updateData.dsn = {
+                type: 'redshift',
+                host,
+                port: parseInt(port),
+                dbname,
+                user,
+                password,
+                search_path: searchPath || null,
               };
             } else {
-              updateData.dwh = {
-                driver: config.dwh.driver as DsnDriver, // Don't change the driver type!
+              updateData.dsn = {
+                type: 'postgres',
                 host,
                 port: parseInt(port),
                 dbname,
@@ -201,11 +202,12 @@ export const EditDatasourceDialog = ({
                   This datasource is not connected to a data warehouse.
                 </Text>
                 <Text as="div" size="2" mb="1">
-                  Experiments associated with this source must request draws (arm assignments) and
-                  supply metric outcomes through the{' '}
+                  Experiments associated with this source must request draws (arm assignments) and supply metric
+                  outcomes through the{' '}
                   <a href={XNGIN_API_DOCS_LINK} target="_blank" rel="noopener noreferrer">
                     Experiment Integration APIs
-                  </a>.
+                  </a>
+                  .
                 </Text>
               </label>
             )}
@@ -250,11 +252,17 @@ export const EditDatasourceDialog = ({
                     <TextField.Root
                       name="password"
                       type={showPassword ? 'text' : 'password'}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
+                      onChange={(e) => setPassword({ type: 'revealed', value: e.target.value })}
+                      placeholder={password.type === 'hidden' ? '(hidden)' : undefined}
+                      required={password.type !== 'hidden'}
+                      value={password.type === 'revealed' ? password.value : ''}
                     />
-                    <Button type="button" variant="soft" onClick={() => setShowPassword(!showPassword)}>
+                    <Button
+                      type="button"
+                      variant="soft"
+                      onClick={() => setShowPassword(!showPassword)}
+                      disabled={password.type === 'hidden'}
+                    >
                       {showPassword ? <EyeOpenIcon /> : <EyeClosedIcon />}
                     </Button>
                   </Flex>
@@ -297,7 +305,7 @@ export const EditDatasourceDialog = ({
               </>
             )}
 
-            {usesBigQueryServiceAccount && (
+            {isBigQuery && (
               <>
                 <label>
                   <Text as="div" size="2" mb="1" weight="bold">
@@ -322,9 +330,11 @@ export const EditDatasourceDialog = ({
                   />
                 </label>
                 <ServiceAccountJsonField
-                  value={credentialsJson}
-                  onChange={setCredentialsJson}
+                  onChange={(value) => setCredentialsJson({ type: 'serviceaccountinfo', content: value })}
                   onProjectIdFound={setProjectId}
+                  placeholder={credentialsJson.type === 'hidden' ? '(hidden)' : undefined}
+                  required={credentialsJson.type !== 'hidden'}
+                  value={credentialsJson.type === 'hidden' ? '' : credentialsJson.content}
                 />
               </>
             )}
