@@ -5,7 +5,7 @@ import { Button, Dialog, Flex, RadioGroup, Text, TextField } from '@radix-ui/the
 import { ServiceAccountJsonField } from '@/components/features/datasources/service-account-json-field';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { EyeClosedIcon, EyeOpenIcon, InfoCircledIcon, PlusIcon } from '@radix-ui/react-icons';
-import { BqDsnInput, Dsn } from '@/api/methods.schemas';
+import { BqDsn, PostgresDsn, RedshiftDsn } from '@/api/methods.schemas';
 import { mutate } from 'swr';
 import { PostgresSslModes } from '@/services/typehelper';
 
@@ -48,37 +48,36 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
               const fd = new FormData(event.currentTarget);
               const name = fd.get('name') as string;
 
-              let dwh: Dsn | BqDsnInput;
+              let dsn: PostgresDsn | RedshiftDsn | BqDsn;
               if (dwhType === 'postgres') {
-                dwh = {
-                  driver: 'postgresql+psycopg',
+                dsn = {
+                  type: 'postgres',
                   host: fd.get('host') as string,
                   port: parseInt(fd.get('port') as string),
                   dbname: fd.get('database') as string,
                   user: fd.get('user') as string,
-                  password: fd.get('password') as string,
+                  password: { type: 'revealed', value: fd.get('password') as string },
                   sslmode: fd.get('sslmode') as PostgresSslModes,
                   search_path: (fd.get('search_path') as string) || null,
                 };
               } else if (dwhType === 'redshift') {
-                dwh = {
-                  driver: 'postgresql+psycopg2',
+                dsn = {
+                  type: 'redshift',
                   host: fd.get('host') as string,
                   port: parseInt(fd.get('port') as string),
                   dbname: fd.get('database') as string,
                   user: fd.get('user') as string,
-                  password: fd.get('password') as string,
-                  sslmode: 'verify-full',
+                  password: { type: 'revealed', value: fd.get('password') as string },
                   search_path: (fd.get('search_path') as string) || null,
                 };
               } else {
-                dwh = {
-                  driver: 'bigquery',
+                dsn = {
+                  type: 'bigquery',
                   project_id: fd.get('project_id') as string,
                   dataset_id: fd.get('dataset') as string,
                   credentials: {
                     type: 'serviceaccountinfo',
-                    content_base64: btoa(fd.get('credentials_json') as string),
+                    content: fd.get('credentials_json') as string,
                   },
                 };
               }
@@ -86,7 +85,7 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
               await trigger({
                 organization_id: organizationId,
                 name,
-                dwh,
+                dsn,
               });
               setDwhType('postgres');
               setOpen(false);
@@ -227,6 +226,7 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                     <TextField.Root name="dataset" required key={'dataset'} />
                   </label>
                   <ServiceAccountJsonField
+                    required
                     value={credentialsJson}
                     onChange={setCredentialsJson}
                     onProjectIdFound={setProjectId}

@@ -1,16 +1,24 @@
 'use client';
-import { Text, TextArea, Callout } from '@radix-ui/themes';
+import { Callout, Text, TextArea } from '@radix-ui/themes';
 import { gcpServiceAccountSchema } from '@/services/gcp-schema';
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 
 interface ServiceAccountJsonFieldProps {
-  value: string;
   onChange: (value: string) => void;
   onProjectIdFound?: (projectId: string) => void;
+  placeholder?: string;
+  required: boolean;
+  value?: string;
 }
 
-export function ServiceAccountJsonField({ value, onChange, onProjectIdFound }: ServiceAccountJsonFieldProps) {
+export function ServiceAccountJsonField({
+  onChange,
+  onProjectIdFound,
+  placeholder,
+  required,
+  value,
+}: ServiceAccountJsonFieldProps) {
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const validateJson = (jsonString: string): boolean => {
@@ -63,8 +71,8 @@ export function ServiceAccountJsonField({ value, onChange, onProjectIdFound }: S
           const isValid = validateJson(e.target.value);
           e.target.setCustomValidity(isValid ? '' : 'Please enter valid JSON');
         }}
-        placeholder="Paste your service account JSON here"
-        required
+        placeholder={placeholder ? placeholder : 'Paste your service account JSON here'}
+        required={required}
         style={{ height: '200px' }}
         onPaste={handleCredentialsPaste}
       />
