@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Card, Flex, Text, Badge, Dialog, Button, Grid } from '@radix-ui/themes';
 import { ExperimentType, AssignmentType } from '@/app/datasources/[datasourceId]/experiments/create/types';
 
@@ -9,7 +9,7 @@ interface ExperimentTypeOption {
   badge: string;
   badgeColor: 'blue' | 'green' | 'purple' | 'orange';
   description: string;
-  comingSoon?: boolean;
+  comingSoon: boolean;
 }
 
 const EXPERIMENT_TYPE_OPTIONS: ExperimentTypeOption[] = [
@@ -20,6 +20,7 @@ const EXPERIMENT_TYPE_OPTIONS: ExperimentTypeOption[] = [
     badgeColor: 'blue',
     description:
       'Fixed allocation hypothesis testing with statistical significance. Best for clear hypotheses with sufficient traffic.',
+    comingSoon: false,
   },
   {
     type: 'mab_online',
@@ -28,7 +29,7 @@ const EXPERIMENT_TYPE_OPTIONS: ExperimentTypeOption[] = [
     badgeColor: 'green',
     description:
       'Adaptive allocation that learns and optimizes automatically. Minimizes opportunity cost by converging to the best performing variant.',
-    // comingSoon: true,
+    comingSoon: false,
   },
   {
     type: 'bayes_ab_online',
@@ -78,10 +79,11 @@ const ASSIGNMENT_OPTIONS: AssignmentOption[] = [
 
 interface ExperimentTypeSelectorProps {
   selectedType?: ExperimentType;
+  ds_driver: string;
   onTypeSelect: (type: ExperimentType) => void;
 }
 
-export function ExperimentTypeSelector({ selectedType, onTypeSelect }: ExperimentTypeSelectorProps) {
+export function ExperimentTypeSelector({ selectedType, ds_driver, onTypeSelect }: ExperimentTypeSelectorProps) {
   const [showAssignmentDialog, setShowAssignmentDialog] = useState(false);
   const [tempSelectedAssignment, setTempSelectedAssignment] = useState<AssignmentType>();
 
@@ -113,6 +115,7 @@ export function ExperimentTypeSelector({ selectedType, onTypeSelect }: Experimen
             key={option.type}
             option={option}
             isSelected={selectedType === option.type}
+            isDisabled={(option.type.includes('freq') && ds_driver === 'none') || option.comingSoon}
             onSelect={() => handleTypeSelect(option.type)}
           />
         ))}
@@ -181,15 +184,16 @@ export function ExperimentTypeSelector({ selectedType, onTypeSelect }: Experimen
 interface ExperimentTypeCardProps {
   option: ExperimentTypeOption;
   isSelected: boolean;
+  isDisabled: boolean;
   onSelect: () => void;
 }
 
-function ExperimentTypeCard({ option, isSelected, onSelect }: ExperimentTypeCardProps) {
+function ExperimentTypeCard({ option, isSelected, isDisabled, onSelect }: ExperimentTypeCardProps) {
   return (
-    <Card onClick={option.comingSoon ? undefined : onSelect}>
+    <Card onClick={isDisabled ? undefined : onSelect}>
       <Box style={{ borderColor: isSelected ? 'var(--accent-9)' : 'var(--gray-6)' }}>
         <Flex align="center" gap="2">
-          <Text size="4" weight={option.comingSoon ? 'regular' : 'bold'}>
+          <Text size="4" weight={isDisabled ? 'regular' : 'bold'}>
             {option.title}
           </Text>
           <Badge color={option.badgeColor} size="1">
@@ -202,7 +206,7 @@ function ExperimentTypeCard({ option, isSelected, onSelect }: ExperimentTypeCard
           </Badge>
         )}
         <Flex direction="column" gap="1">
-          <Text size="2" weight={option.comingSoon ? 'light' : 'regular'} mt="20px">
+          <Text size="2" weight={isDisabled ? 'light' : 'regular'} mt="20px">
             {option.description}
           </Text>
         </Flex>

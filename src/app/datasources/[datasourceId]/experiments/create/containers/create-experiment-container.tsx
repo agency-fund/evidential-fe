@@ -13,6 +13,7 @@ import { ExperimentTypeSelector } from '@/components/features/experiments/experi
 import { FrequentABContainer } from '@/app/datasources/[datasourceId]/experiments/create/containers/frequent_ab/frequent-ab-container';
 import { MABContainer } from '@/app/datasources/[datasourceId]/experiments/create/containers/mab/mab-container';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
+import { useGetDatasource } from '@/api/admin';
 
 interface CreateExperimentContainerProps {
   webhooks: WebhookSummary[];
@@ -21,6 +22,8 @@ interface CreateExperimentContainerProps {
 export function CreateExperimentContainer({ webhooks }: CreateExperimentContainerProps) {
   const params = useParams();
   const datasourceId = params.datasourceId as string;
+  const { data } = useGetDatasource(datasourceId);
+  const ds_driver = data?.config.dwh.driver;
 
   const [selectedExperimentType, setSelectedExperimentType] = useState<ExperimentType>();
   const [showTypeSelection, setShowTypeSelection] = useState(true);
@@ -138,7 +141,11 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
             </Text>
           </Box>
 
-          <ExperimentTypeSelector selectedType={selectedExperimentType} onTypeSelect={handleExperimentTypeSelect} />
+          <ExperimentTypeSelector
+            ds_driver={ds_driver || 'none'}
+            selectedType={selectedExperimentType}
+            onTypeSelect={handleExperimentTypeSelect}
+          />
 
           <NavigationButtons
             onNext={selectedExperimentType && !selectedExperimentType.includes('freq') ? handleContinue : undefined}
