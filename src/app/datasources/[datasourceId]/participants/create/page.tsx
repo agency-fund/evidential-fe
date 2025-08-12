@@ -92,9 +92,8 @@ export default function CreateParticipantTypePage() {
     reset();
   };
 
-  const filteredTables = datasourceData?.tables.filter((table: string) =>
-    table.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+  const filteredTables =
+    datasourceData?.tables.filter((table: string) => table.toLowerCase().includes(searchQuery.toLowerCase())) || [];
 
   // Handle click outside to close dropdown
   useEffect(() => {
@@ -216,7 +215,7 @@ export default function CreateParticipantTypePage() {
                       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                       maxHeight: '200px',
                       overflowY: 'auto',
-                      marginTop: '2px'
+                      marginTop: '2px',
                     }}
                   >
                     {filteredTables.length > 0 ? (
@@ -228,13 +227,14 @@ export default function CreateParticipantTypePage() {
                             padding: '0.5rem 0.75rem',
                             cursor: 'pointer',
                             borderBottom: '1px solid var(--gray-3)',
-                            backgroundColor: selectedTable === table ? 'var(--gray-3)' : 'transparent'
+                            backgroundColor: selectedTable === table ? 'var(--gray-3)' : 'transparent',
                           }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.backgroundColor = 'var(--gray-2)';
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = selectedTable === table ? 'var(--gray-3)' : 'transparent';
+                            e.currentTarget.style.backgroundColor =
+                              selectedTable === table ? 'var(--gray-3)' : 'transparent';
                           }}
                         >
                           <Text size="2">{table}</Text>
@@ -242,19 +242,16 @@ export default function CreateParticipantTypePage() {
                       ))
                     ) : (
                       <div style={{ padding: '0.5rem 0.75rem' }}>
-                        <Text size="2" color="gray">No tables found</Text>
+                        <Text size="2" color="gray">
+                          No tables found
+                        </Text>
                       </div>
                     )}
                   </div>
                 )}
 
                 {/* Hidden input for form submission */}
-                <input
-                  type="hidden"
-                  name="table_name"
-                  value={selectedTable}
-                  required
-                />
+                <input type="hidden" name="table_name" value={selectedTable} required />
               </Box>
             </Flex>
 

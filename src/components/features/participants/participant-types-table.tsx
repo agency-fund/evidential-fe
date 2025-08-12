@@ -36,13 +36,12 @@ export function ParticipantTypesTable({ datasourceId }: { datasourceId: string }
                 <Table.Cell>{item.table_name}</Table.Cell>
                 <Table.Cell>
                   <Flex gap="2">
-                    {item.type === 'schema' && (
-                      <Link href={`/datasources/${datasourceId}/participants/${item.participant_type}/edit`}>
-                        <IconButton color="gray" variant="soft">
-                          <Pencil2Icon />
-                        </IconButton>
-                      </Link>
-                    )}
+                    <Link href={`/datasources/${datasourceId}/participants/${item.participant_type}/edit`}>
+                      <IconButton color="gray" variant="soft">
+                        <Pencil2Icon />
+                      </IconButton>
+                    </Link>
+
                     <DeleteParticipantTypeDialog datasourceId={datasourceId} participantType={item.participant_type} />
                   </Flex>
                 </Table.Cell>

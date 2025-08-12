@@ -1,11 +1,6 @@
 'use client';
 import { Badge, Card, Flex, Heading, IconButton, Separator, Text, Tooltip } from '@radix-ui/themes';
-import {
-  CalendarIcon,
-  EyeOpenIcon,
-  LightningBoltIcon,
-  TableIcon,
-} from '@radix-ui/react-icons';
+import { CalendarIcon, EyeOpenIcon, LightningBoltIcon, TableIcon } from '@radix-ui/react-icons';
 import { ReadMoreText } from '@/components/ui/read-more-text';
 import { ExperimentActionsMenu } from '@/components/features/experiments/experiment-actions-menu';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';

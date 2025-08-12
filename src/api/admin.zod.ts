@@ -676,6 +676,33 @@ export const getDatasourceResponse = zod.object({
 					}),
 				]),
 			),
+			webhook_config: zod
+				.object({
+					actions: zod
+						.object({
+							commit: zod
+								.object({
+									method: zod.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
+									url: zod.string(),
+								})
+								.describe("Represents a url and HTTP method to use with it.")
+								.or(zod.null())
+								.optional(),
+						})
+						.describe(
+							"The set of supported actions that trigger a user callback.",
+						),
+					common_headers: zod
+						.object({
+							authorization: zod.string().or(zod.null()),
+						})
+						.describe(
+							"Enumerates supported headers to attach to all webhook requests.",
+						),
+				})
+				.describe("Top-level configuration object for user-defined webhooks.")
+				.or(zod.null())
+				.optional(),
 			type: zod.string(),
 			dwh: zod.discriminatedUnion("driver", [
 				zod
