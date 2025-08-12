@@ -32,14 +32,6 @@ const EXPERIMENT_TYPE_OPTIONS: ExperimentTypeOption[] = [
     description:
       'Adaptive allocation that learns and optimizes automatically. Minimizes opportunity cost by converging to the best performing variant.',
   },
-  {
-    type: 'cmab_online',
-    title: 'Contextual Bandit',
-    badge: 'CMAB',
-    badgeColor: 'orange',
-    description:
-      'Context-aware optimization for personalized experiences. Adapts recommendations based on user or environmental context.',
-  },
 ];
 
 interface AssignmentOption {

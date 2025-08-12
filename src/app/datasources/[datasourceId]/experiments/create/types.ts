@@ -86,6 +86,7 @@ export const EXPERIMENT_STEP_FLOWS = {
 } as const;
 
 export const STEP_TITLES: Record<string, string> = {
+  type: 'Experiment Type',
   design: 'Experiment Design',
   metadata: 'Experiment Metadata',
   summary: 'Experiment Summary',
