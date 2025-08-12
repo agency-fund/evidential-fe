@@ -12,6 +12,7 @@ import { ApiError } from '@/services/orval-fetch';
 import { useAbandonExperiment, useCommitExperiment } from '@/api/admin';
 import { ListSelectedWebhooksCard } from '@/components/features/experiments/list-selected-webhooks-card';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
+import { ArmBandit } from '@/api/methods.schemas';
 
 interface MABConfirmationFormProps {
   formData: MABFormData;
@@ -133,7 +134,7 @@ export function MABConfirmationForm({ formData, onBack, onFormDataChange }: MABC
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {formData.createExperimentResponse?.design_spec.arms.map((arm, index) => (
+            {formData.createExperimentResponse?.design_spec.arms.map((arm: ArmBandit, index) => (
               <Table.Row key={index}>
                 <Table.Cell>
                   <Flex gap="2" align="center">
