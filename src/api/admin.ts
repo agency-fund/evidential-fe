@@ -18,7 +18,6 @@ import type {
 	AnalyzeExperimentParams,
 	CallerIdentity,
 	CreateApiKeyResponse,
-	CreateCMABAssignmentRequest,
 	CreateDatasourceRequest,
 	CreateDatasourceResponse,
 	CreateExperimentParams,
@@ -3253,119 +3252,6 @@ export const useGetExperimentAssignmentForParticipant = <
 		swrFn,
 		swrOptions,
 	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-/**
- * Get or create a CMAB arm assignment for a specific participant. This endpoint is used only for CMAB assignments.
- * @summary Get Cmab Experiment Assignment For Participant
- */
-export const getGetCmabExperimentAssignmentForParticipantUrl = (
-	datasourceId: string,
-	experimentId: string,
-	participantId: string,
-) => {
-	return `/v1/m/datasources/${datasourceId}/experiments/cmab/${experimentId}/assignments/${participantId}`;
-};
-
-export const getCmabExperimentAssignmentForParticipant = async (
-	datasourceId: string,
-	experimentId: string,
-	participantId: string,
-	createCMABAssignmentRequest: CreateCMABAssignmentRequest,
-	options?: RequestInit,
-): Promise<GetParticipantAssignmentResponse> => {
-	return orvalFetch<GetParticipantAssignmentResponse>(
-		getGetCmabExperimentAssignmentForParticipantUrl(
-			datasourceId,
-			experimentId,
-			participantId,
-		),
-		{
-			...options,
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...options?.headers },
-			body: JSON.stringify(createCMABAssignmentRequest),
-		},
-	);
-};
-
-export const getGetCmabExperimentAssignmentForParticipantMutationFetcher = (
-	datasourceId: string,
-	experimentId: string,
-	participantId: string,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (
-		_: Key,
-		{ arg }: { arg: CreateCMABAssignmentRequest },
-	): Promise<GetParticipantAssignmentResponse> => {
-		return getCmabExperimentAssignmentForParticipant(
-			datasourceId,
-			experimentId,
-			participantId,
-			arg,
-			options,
-		);
-	};
-};
-export const getGetCmabExperimentAssignmentForParticipantMutationKey = (
-	datasourceId: string,
-	experimentId: string,
-	participantId: string,
-) =>
-	[
-		`/v1/m/datasources/${datasourceId}/experiments/cmab/${experimentId}/assignments/${participantId}`,
-	] as const;
-
-export type GetCmabExperimentAssignmentForParticipantMutationResult =
-	NonNullable<
-		Awaited<ReturnType<typeof getCmabExperimentAssignmentForParticipant>>
-	>;
-export type GetCmabExperimentAssignmentForParticipantMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-/**
- * @summary Get Cmab Experiment Assignment For Participant
- */
-export const useGetCmabExperimentAssignmentForParticipant = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	experimentId: string,
-	participantId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof getCmabExperimentAssignmentForParticipant>>,
-			TError,
-			Key,
-			CreateCMABAssignmentRequest,
-			Awaited<ReturnType<typeof getCmabExperimentAssignmentForParticipant>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ??
-		getGetCmabExperimentAssignmentForParticipantMutationKey(
-			datasourceId,
-			experimentId,
-			participantId,
-		);
-	const swrFn = getGetCmabExperimentAssignmentForParticipantMutationFetcher(
-		datasourceId,
-		experimentId,
-		participantId,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
 	return {
 		swrKey,
