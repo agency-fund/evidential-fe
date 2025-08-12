@@ -261,12 +261,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
         <GenericErrorCallout title="Failed to create experiment" error={createExperimentError} />
       )}
 
-      <NavigationButtons
-        onBack={onBack}
-        onNext={handleSaveExperiment}
-        nextLabel="Continue to Summary"
-        nextDisabled={!isFormValid()}
-      />
+      <NavigationButtons onBack={onBack} onNext={handleSaveExperiment} nextLabel="Next" nextDisabled={!isFormValid()} />
     </Flex>
   );
 }

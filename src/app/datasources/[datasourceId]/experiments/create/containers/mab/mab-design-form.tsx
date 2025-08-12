@@ -132,12 +132,7 @@ export function MABDesignForm({ formData, onFormDataChange, onNext, onBack }: MA
         </Callout.Text>
       </Callout.Root>
 
-      <NavigationButtons
-        onBack={onBack}
-        onNext={onNext}
-        nextLabel="Continue to Metadata"
-        nextDisabled={isNextDisabled}
-      />
+      <NavigationButtons onBack={onBack} onNext={onNext} nextLabel="Next" nextDisabled={isNextDisabled} />
     </Flex>
   );
 }

@@ -1,7 +1,8 @@
 import { Arm, FilterInput, PowerResponseOutput, CreateExperimentResponse } from '@/api/methods.schemas';
 
 export type ExperimentType = 'freq_preassigned' | 'freq_online' | 'mab_online' | 'bayes_ab_online' | 'cmab_online';
-export type FreqExperimentType = 'freq_preassigned' | 'freq_online';
+type FreqExperimentType = 'freq_preassigned' | 'freq_online';
+export const FreqExperimentsList = ['freq_preassigned', 'freq_online'];
 export type AssignmentType = 'preassigned' | 'online';
 export type PriorType = 'beta' | 'normal';
 export type OutcomeType = 'binary' | 'real-valued';
@@ -13,7 +14,7 @@ export type MetricWithMDE = {
 };
 
 // Context variable configuration for CMAB
-export type ContextVariable = {
+export type Context = {
   name: string;
   description: string;
   type: ContextVariableType;
@@ -82,4 +83,10 @@ export const EXPERIMENT_STEP_FLOWS = {
   mab_online: ['type', 'design', 'metadata', 'summary'],
   bayes_ab_online: ['type', 'design', 'metadata', 'summary'],
   cmab_online: ['type', 'context', 'design', 'metadata', 'summary'],
+} as const;
+
+export const STEP_TITLES: Record<string, string> = {
+  design: 'Experiment Design',
+  metadata: 'Experiment Metadata',
+  summary: 'Experiment Summary',
 } as const;

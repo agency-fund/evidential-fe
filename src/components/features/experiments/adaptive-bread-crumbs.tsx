@@ -20,7 +20,6 @@ interface AdaptiveBreadcrumbsProps {
 const STEP_LABELS = {
   type: 'Experiment Type',
   design: 'Experiment Design',
-  context: 'Context Variables',
   metadata: 'Experiment Metadata',
   summary: 'Experiment Summary',
 } as const;

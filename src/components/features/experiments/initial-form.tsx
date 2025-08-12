@@ -14,6 +14,7 @@ import {
   TextArea,
   TextField,
 } from '@radix-ui/themes';
+import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 import { useListParticipantTypes } from '@/api/admin';
@@ -25,10 +26,11 @@ interface InitialFormProps {
   formData: ExperimentFormData;
   onFormDataChange: (data: ExperimentFormData) => void;
   onNext: () => void;
+  onBack: () => void;
   webhooks: WebhookSummary[];
 }
 
-export function InitialForm({ formData, onFormDataChange, onNext, webhooks }: InitialFormProps) {
+export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhooks }: InitialFormProps) {
   const { data: participantTypesData, isLoading: loadingParticipantTypes } = useListParticipantTypes(
     formData.datasourceId || '',
     {
@@ -265,9 +267,7 @@ export function InitialForm({ formData, onFormDataChange, onNext, webhooks }: In
           </Card>
         )}
 
-        <Flex justify="end" mt="4">
-          <Button type="submit">Next</Button>
-        </Flex>
+        <NavigationButtons onBack={onBack} onNext={onNext} nextLabel="Next" />
       </Flex>
     </form>
   );

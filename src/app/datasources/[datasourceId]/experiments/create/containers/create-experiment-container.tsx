@@ -4,9 +4,11 @@ import { Container, Flex, Heading, Box, Text } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
 import {
   ExperimentType,
+  FreqExperimentsList,
   ExperimentFormData,
   FrequentABFormData,
   MABFormData,
+  CMABFormData,
 } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { WebhookSummary } from '@/api/methods.schemas';
 import { ExperimentTypeSelector } from '@/components/features/experiments/experiment-type-selector';
@@ -64,14 +66,14 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
           outcomeType: 'binary',
           arms: [
             {
-              arm_name: 'Current Button',
-              arm_description: 'Existing blue "Sign Up" button',
+              arm_name: 'Control',
+              arm_description: 'Control',
               alpha_prior: 1,
               beta_prior: 1,
             },
             {
-              arm_name: 'Green Button',
-              arm_description: 'Green "Join Now" button with larger size',
+              arm_name: 'Treatment',
+              arm_description: 'Treatment',
               alpha_prior: 2,
               beta_prior: 1,
             },
@@ -89,7 +91,7 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
   };
 
   const handleContinue = () => {
-    if (selectedExperimentType && !selectedExperimentType.includes('freq')) {
+    if (selectedExperimentType && !FreqExperimentsList.includes(selectedExperimentType)) {
       setShowTypeSelection(false);
     }
   };
@@ -148,9 +150,13 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
           />
 
           <NavigationButtons
-            onNext={selectedExperimentType && !selectedExperimentType.includes('freq') ? handleContinue : undefined}
+            onNext={
+              selectedExperimentType && !FreqExperimentsList.includes(selectedExperimentType)
+                ? handleContinue
+                : undefined
+            }
             nextLabel="Continue"
-            nextDisabled={!selectedExperimentType || selectedExperimentType.includes('freq')}
+            nextDisabled={!selectedExperimentType || FreqExperimentsList.includes(selectedExperimentType)}
             showBack={false}
           />
         </Flex>
