@@ -8,7 +8,6 @@ import {
 } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { AdaptiveBreadcrumbs } from '@/components/features/experiments/adaptive-bread-crumbs';
 import { WebhookSummary } from '@/api/methods.schemas';
-import { MABDesignForm } from './mab-design-form';
 import { MABMetadataForm } from './mab-metadata-form';
 import { MABConfirmationForm } from '@/app/datasources/[datasourceId]/experiments/create/containers/mab/mab-confirmation-form';
 
