@@ -65,6 +65,10 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
               </Table.Cell>
             </Table.Row>
             <Table.Row>
+              <Table.RowHeaderCell>Experiment Type</Table.RowHeaderCell>
+              <Table.Cell>{formData.experimentType}</Table.Cell>
+            </Table.Row>
+            <Table.Row>
               <Table.RowHeaderCell>Name</Table.RowHeaderCell>
               <Table.Cell>{formData.name}</Table.Cell>
             </Table.Row>

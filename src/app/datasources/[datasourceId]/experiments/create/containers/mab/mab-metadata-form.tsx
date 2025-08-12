@@ -179,22 +179,24 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
       </SectionCard>
 
       {/* Treatment Arms */}
-      <SectionCard title="Treatment Arms">
+      <SectionCard title="Arms">
         <Flex direction="column" gap="3" mb="20px">
           <Text size="2" color="gray">
             Configure your experiment arms with prior beliefs.
           </Text>
           {formData.priorType && formData.outcomeType && (
             <Box p="3">
-              <Text size="2" weight="medium" color="blue">
-                Selected Configuration: {formData.priorType === 'beta' ? 'Beta Distribution' : 'Normal Distribution'} ×{' '}
-                {formData.outcomeType === 'binary' ? 'Binary' : 'Real-valued'} Outcome
-              </Text>
-              <Text size="1" color="gray" mt="4px">
-                {formData.priorType === 'beta'
-                  ? 'Using Alpha (prior successes) and Beta (prior failures) parameters'
-                  : 'Using Mean and Standard Deviation parameters'}
-              </Text>
+              <Flex direction="column" gap="1">
+                <Text size="2" weight="medium" color="blue">
+                  Selected Configuration: {formData.priorType === 'beta' ? 'Beta Distribution' : 'Normal Distribution'}{' '}
+                  × {formData.outcomeType === 'binary' ? 'Binary' : 'Real-valued'} Outcome
+                </Text>
+                <Text size="1" color="gray" mt="4px">
+                  {formData.priorType === 'beta'
+                    ? 'Using Alpha (prior successes) and Beta (prior failures) parameters'
+                    : 'Using Mean and Standard Deviation parameters'}
+                </Text>
+              </Flex>
             </Box>
           )}
           {!formData.priorType ||
@@ -284,10 +286,7 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
       {/* Header */}
       <Flex align="center" justify="between" px="5" py="3">
         <Flex align="center" gap="2">
-          <Box width="6" height="6">
-            {armIndex + 1}
-          </Box>
-          <Text weight="bold">{armIndex === 0 ? 'Control Arm' : 'Treatment Arm'}</Text>
+          <Text weight="bold">{armIndex === 0 ? `Arm ${armIndex + 1} (control)` : `Arm ${armIndex + 1}`}</Text>
         </Flex>
 
         <IconButton onClick={onDelete} disabled={!canDelete} color="red" variant="soft" size="1">

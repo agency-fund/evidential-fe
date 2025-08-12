@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Box, Card, Flex, Text, Badge, Dialog, Button, Grid } from '@radix-ui/themes';
 import { ExperimentType, AssignmentType } from '@/app/datasources/[datasourceId]/experiments/create/types';
 
@@ -9,7 +9,6 @@ interface ExperimentTypeOption {
   badge: string;
   badgeColor: 'blue' | 'green' | 'purple' | 'orange';
   description: string;
-  comingSoon: boolean;
 }
 
 const EXPERIMENT_TYPE_OPTIONS: ExperimentTypeOption[] = [
@@ -20,7 +19,6 @@ const EXPERIMENT_TYPE_OPTIONS: ExperimentTypeOption[] = [
     badgeColor: 'blue',
     description:
       'Fixed allocation hypothesis testing with statistical significance. Best for clear hypotheses with sufficient traffic.',
-    comingSoon: false,
   },
   {
     type: 'mab_online',
@@ -29,25 +27,6 @@ const EXPERIMENT_TYPE_OPTIONS: ExperimentTypeOption[] = [
     badgeColor: 'green',
     description:
       'Adaptive allocation that learns and optimizes automatically. Minimizes opportunity cost by converging to the best performing variant.',
-    comingSoon: false,
-  },
-  {
-    type: 'bayes_ab_online',
-    title: 'Bayesian A/B Testing',
-    badge: 'BAB',
-    badgeColor: 'purple',
-    description:
-      'Bayesian statistics with credible intervals and probability statements. More intuitive interpretation of results.',
-    comingSoon: true,
-  },
-  {
-    type: 'cmab_online',
-    title: 'Contextual Bandit',
-    badge: 'CMAB',
-    badgeColor: 'orange',
-    description:
-      'Context-aware optimization for personalized experiences. Adapts recommendations based on user or environmental context.',
-    comingSoon: true,
   },
 ];
 
@@ -90,7 +69,7 @@ export function ExperimentTypeSelector({ selectedType, ds_driver, onTypeSelect }
   const handleTypeSelect = (type: ExperimentType) => {
     if (type.includes('freq')) {
       setShowAssignmentDialog(true);
-    } else if (!EXPERIMENT_TYPE_OPTIONS.find((opt) => opt.type === type)?.comingSoon) {
+    } else {
       onTypeSelect(type);
     }
   };
@@ -115,7 +94,7 @@ export function ExperimentTypeSelector({ selectedType, ds_driver, onTypeSelect }
             key={option.type}
             option={option}
             isSelected={selectedType === option.type}
-            isDisabled={(option.type.includes('freq') && ds_driver === 'none') || option.comingSoon}
+            isDisabled={(option.type.includes('freq') && ds_driver === 'none') || false}
             onSelect={() => handleTypeSelect(option.type)}
           />
         ))}
@@ -200,11 +179,6 @@ function ExperimentTypeCard({ option, isSelected, isDisabled, onSelect }: Experi
             {option.badge}
           </Badge>
         </Flex>
-        {option.comingSoon && (
-          <Badge color="gray" size="1" mt="20px">
-            Coming Soon
-          </Badge>
-        )}
         <Flex direction="column" gap="1">
           <Text size="2" weight={isDisabled ? 'light' : 'regular'} mt="20px">
             {option.description}

@@ -11,6 +11,7 @@ import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ApiError } from '@/services/orval-fetch';
 import { useAbandonExperiment, useCommitExperiment } from '@/api/admin';
 import { ListSelectedWebhooksCard } from '@/components/features/experiments/list-selected-webhooks-card';
+import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
 
 interface MABConfirmationFormProps {
   formData: MABFormData;
@@ -50,14 +51,23 @@ export function MABConfirmationForm({ formData, onBack, onFormDataChange }: MABC
 
   const router = useRouter();
   return (
-    <Flex direction="column" gap="6">
+    <Flex direction="column" gap="4">
       {/* Basic Information */}
       <SectionCard title="Basic Information">
         <Table.Root>
           <Table.Body>
             <Table.Row>
+              <Table.RowHeaderCell>Experiment ID</Table.RowHeaderCell>
+              <Table.Cell>
+                <Flex gap="2" align="center">
+                  <Text>{formData.experimentId}</Text>
+                  <CopyToClipBoard content={formData.experimentId!} />
+                </Flex>
+              </Table.Cell>
+            </Table.Row>
+            <Table.Row>
               <Table.RowHeaderCell>Experiment Type</Table.RowHeaderCell>
-              <Table.Cell>Multi-Armed Bandit</Table.Cell>
+              <Table.Cell>{formData.experimentType}</Table.Cell>
             </Table.Row>
             <Table.Row>
               <Table.RowHeaderCell>Name</Table.RowHeaderCell>
@@ -95,14 +105,7 @@ export function MABConfirmationForm({ formData, onBack, onFormDataChange }: MABC
             </Table.Row>
             <Table.Row>
               <Table.RowHeaderCell>Prior Distribution</Table.RowHeaderCell>
-              <Table.Cell>
-                {formData.priorType === 'beta' ? 'Beta Distribution' : 'Normal Distribution'}
-                <Text size="1" color="gray" mt="4px">
-                  {formData.priorType === 'beta'
-                    ? 'Alpha/Beta parameters for binary outcomes'
-                    : 'Mean/Standard Deviation parameters for continuous outcomes'}
-                </Text>
-              </Table.Cell>
+              <Table.Cell>{formData.priorType === 'beta' ? 'Beta' : 'Normal'}</Table.Cell>
             </Table.Row>
           </Table.Body>
         </Table.Root>
@@ -113,6 +116,7 @@ export function MABConfirmationForm({ formData, onBack, onFormDataChange }: MABC
         <Table.Root>
           <Table.Header>
             <Table.Row>
+              <Table.ColumnHeaderCell>ID</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
               {formData.priorType === 'beta' ? (
@@ -129,13 +133,19 @@ export function MABConfirmationForm({ formData, onBack, onFormDataChange }: MABC
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {formData.arms.map((arm, index) => (
+            {formData.createExperimentResponse?.design_spec.arms.map((arm, index) => (
               <Table.Row key={index}>
                 <Table.Cell>
-                  <Text weight="bold">{arm.arm_name}</Text>
+                  <Flex gap="2" align="center">
+                    <Text>{arm.arm_id}</Text>
+                    <CopyToClipBoard content={arm.arm_id!} />
+                  </Flex>
+                </Table.Cell>
+                <Table.Cell>
+                  <Text weight="bold">{arm.arm_name} </Text>
                   {index === 0 && (
                     <Text size="1" color="gray">
-                      Control
+                      (Control)
                     </Text>
                   )}
                 </Table.Cell>
@@ -144,13 +154,13 @@ export function MABConfirmationForm({ formData, onBack, onFormDataChange }: MABC
                 </Table.Cell>
                 {formData.priorType === 'beta' ? (
                   <>
-                    <Table.Cell>{arm.alpha_prior || 1}</Table.Cell>
-                    <Table.Cell>{arm.beta_prior || 1}</Table.Cell>
+                    <Table.Cell>{arm.alpha_init ?? 1}</Table.Cell>
+                    <Table.Cell>{arm.beta_init ?? 1}</Table.Cell>
                   </>
                 ) : (
                   <>
-                    <Table.Cell>{arm.mean_prior ?? 0}</Table.Cell>
-                    <Table.Cell>{arm.stddev_prior || 1}</Table.Cell>
+                    <Table.Cell>{arm.mu_init ?? 0}</Table.Cell>
+                    <Table.Cell>{arm.sigma_init ?? 1}</Table.Cell>
                   </>
                 )}
               </Table.Row>
