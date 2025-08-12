@@ -756,11 +756,14 @@ export const DataType = {
 	unsupported: "unsupported",
 } as const;
 
+export type DatasourceConfigWebhookConfig = WebhookConfig | null;
+
 /**
  * RemoteDatabaseConfig defines a configuration for a remote data warehouse.
  */
 export interface DatasourceConfig {
 	participants: ParticipantsConfig[];
+	webhook_config?: DatasourceConfigWebhookConfig;
 	type: "remote";
 	dwh: DwhOutput;
 }
@@ -1406,6 +1409,18 @@ export interface HTTPExceptionError {
 export interface HTTPValidationError {
 	detail?: ValidationError[];
 }
+
+export type HttpMethodTypes =
+	(typeof HttpMethodTypes)[keyof typeof HttpMethodTypes];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const HttpMethodTypes = {
+	GET: "GET",
+	POST: "POST",
+	PUT: "PUT",
+	PATCH: "PATCH",
+	DELETE: "DELETE",
+} as const;
 
 export interface InspectDatasourceResponse {
 	tables: string[];
@@ -2217,6 +2232,32 @@ export interface ValidationError {
 	type: string;
 }
 
+export type WebhookActionsCommit = WebhookUrl | null;
+
+/**
+ * The set of supported actions that trigger a user callback.
+ */
+export interface WebhookActions {
+	commit?: WebhookActionsCommit;
+}
+
+export type WebhookCommonHeadersAuthorization = string | null;
+
+/**
+ * Enumerates supported headers to attach to all webhook requests.
+ */
+export interface WebhookCommonHeaders {
+	authorization: WebhookCommonHeadersAuthorization;
+}
+
+/**
+ * Top-level configuration object for user-defined webhooks.
+ */
+export interface WebhookConfig {
+	actions: WebhookActions;
+	common_headers: WebhookCommonHeaders;
+}
+
 /**
  * The value of the Webhook-Token: header that will be sent with the request to the configured URL.
  */
@@ -2236,6 +2277,14 @@ export interface WebhookSummary {
 	url: string;
 	/** The value of the Webhook-Token: header that will be sent with the request to the configured URL. */
 	auth_token: WebhookSummaryAuthToken;
+}
+
+/**
+ * Represents a url and HTTP method to use with it.
+ */
+export interface WebhookUrl {
+	method: HttpMethodTypes;
+	url: string;
 }
 
 export type DeleteWebhookFromOrganizationParams = {
