@@ -37,16 +37,6 @@ export function MABContainer({ webhooks, initialFormData, onBack }: MABContainer
 
   const renderCurrentStep = () => {
     switch (MABSteps[currentStep - 1]) {
-      case 'design':
-        return (
-          <MABDesignForm
-            formData={formData}
-            onFormDataChange={handleFormDataChange}
-            onNext={handleNext} // This should set to 'metadata'
-            onBack={onBack}
-          />
-        );
-
       case 'metadata':
         return (
           <MABMetadataForm
@@ -54,7 +44,7 @@ export function MABContainer({ webhooks, initialFormData, onBack }: MABContainer
             formData={formData}
             onFormDataChange={handleFormDataChange}
             onNext={handleNext} // This should set to 'summary'
-            onBack={handleBackStep}
+            onBack={onBack}
           />
         );
 

@@ -80,7 +80,7 @@ export type ExperimentFormData = FrequentABFormData | MABFormData;
 export const EXPERIMENT_STEP_FLOWS = {
   freq_online: ['type', 'metadata', 'design', 'summary'],
   freq_preassigned: ['type', 'metadata', 'design', 'summary'],
-  mab_online: ['type', 'design', 'metadata', 'summary'],
+  mab_online: ['type', 'metadata', 'summary'],
   bayes_ab_online: ['type', 'design', 'metadata', 'summary'],
   cmab_online: ['type', 'context', 'design', 'metadata', 'summary'],
 } as const;
