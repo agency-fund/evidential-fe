@@ -8,7 +8,6 @@ import {
   ExperimentFormData,
   FrequentABFormData,
   MABFormData,
-  CMABFormData,
 } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { WebhookSummary } from '@/api/methods.schemas';
 import { ExperimentTypeSelector } from '@/components/features/experiments/experiment-type-selector';

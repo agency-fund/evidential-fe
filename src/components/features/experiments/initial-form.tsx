@@ -213,6 +213,9 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
 
                     <Flex direction="column" gap="2">
                       <Box maxWidth={'50%'}>
+                        <Text as="label" size="2" weight="bold">
+                          Arm Name
+                        </Text>
                         <TextField.Root
                           value={arm.arm_name}
                           placeholder={'Arm Name'}
@@ -223,6 +226,9 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
                     </Flex>
 
                     <Flex direction="column" gap="2">
+                      <Text as="label" size="2" weight="bold">
+                        Arm Description
+                      </Text>
                       <TextArea
                         placeholder="Description"
                         value={arm.arm_description || ''}

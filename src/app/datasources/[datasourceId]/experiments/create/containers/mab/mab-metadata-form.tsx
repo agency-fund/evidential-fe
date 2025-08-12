@@ -124,10 +124,10 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
   };
 
   return (
-    <Flex direction="column" gap="6">
+    <Flex direction="column" gap="4">
       {/* Basic Information */}
       <SectionCard title="Basic Information">
-        <Flex direction="column" gap="4">
+        <Flex direction="column" gap="3">
           <Flex gap="4">
             <Box width="100%">
               <Text as="label" size="2" weight="bold" mb="6px">
@@ -180,7 +180,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
 
       {/* Treatment Arms */}
       <SectionCard title="Arms">
-        <Flex direction="column" gap="3" mb="20px">
+        <Flex direction="column" gap="1">
           <Text size="2" color="gray">
             Configure your experiment arms with prior beliefs.
           </Text>
@@ -209,7 +209,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
             ))}
         </Flex>
 
-        <Flex direction="column" gap="4">
+        <Flex direction="column" gap="3">
           {formData.arms.map((arm, index) => (
             <ArmCard
               key={index}
@@ -279,110 +279,103 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
   return (
     <Card>
       {/* Header */}
-      <Flex align="center" justify="between" px="5" py="3">
-        <Flex align="center" gap="2">
+      <Flex direction="column" gap="2">
+        <Flex align="center" justify="between">
           <Text weight="bold">{armIndex === 0 ? `Arm ${armIndex + 1} (control)` : `Arm ${armIndex + 1}`}</Text>
+          <IconButton onClick={onDelete} disabled={!canDelete} color="red" variant="soft" size="1">
+            <TrashIcon />
+          </IconButton>
         </Flex>
-
-        <IconButton onClick={onDelete} disabled={!canDelete} color="red" variant="soft" size="1">
-          <TrashIcon />
-        </IconButton>
-      </Flex>
-
-      {/* Content */}
-      <Box p="5">
-        <Flex gap="6">
-          <Flex direction="column" gap="4">
-            <Box>
-              <Text as="label" size="2" weight="bold" mb="6px">
-                Arm Name
+        {/* Content */}
+        <Flex direction="column" gap="2">
+          <Box maxWidth={'50%'}>
+            <Text as="label" size="2" weight="bold">
+              Arm Name
+            </Text>
+            <TextField.Root
+              value={arm.arm_name}
+              onChange={(e) => onUpdate({ arm_name: e.target.value })}
+              placeholder={'Arm Name'}
+              required
+            />
+          </Box>
+        </Flex>
+        <Flex direction="column" gap="2">
+          <Text as="label" size="2" weight="bold">
+            Arm Description
+          </Text>
+          <TextArea
+            value={arm.arm_description || ''}
+            onChange={(e) => onUpdate({ arm_description: e.target.value })}
+            placeholder="Description"
+          />
+        </Flex>
+        <Flex direction="column" gap="4">
+          {!priorType && (
+            <Box p="3">
+              <Text size="2" color="orange">
+                Select prior distribution in Design step first
               </Text>
-              <TextField.Root
-                value={arm.arm_name}
-                onChange={(e) => onUpdate({ arm_name: e.target.value })}
-                placeholder="Enter arm name"
-              />
             </Box>
+          )}
 
-            <Box>
-              <Text as="label" size="2" weight="bold" mb="6px">
-                Description
-              </Text>
-              <TextArea
-                value={arm.arm_description || ''}
-                onChange={(e) => onUpdate({ arm_description: e.target.value })}
-                placeholder="Describe this arm..."
-              />
-            </Box>
-          </Flex>
-
-          <Flex direction="column" gap="4">
-            {!priorType && (
-              <Box p="3">
-                <Text size="2" color="orange">
-                  Select prior distribution in Design step first
+          {priorType === 'beta' && (
+            <Flex gap="3">
+              <Box>
+                <Text as="label" size="2" weight="bold" mb="6px">
+                  Alpha Prior
                 </Text>
+                <TextField.Root
+                  type="number"
+                  min="1"
+                  value={arm.alpha_prior?.toString() || '1'}
+                  onChange={(e) => onUpdate({ alpha_prior: Number(e.target.value) })}
+                  placeholder="Prior successes"
+                />
               </Box>
-            )}
+              <Box>
+                <Text as="label" size="2" weight="bold" mb="6px">
+                  Beta Prior
+                </Text>
+                <TextField.Root
+                  type="number"
+                  min="1"
+                  value={arm.beta_prior?.toString() || '1'}
+                  onChange={(e) => onUpdate({ beta_prior: Number(e.target.value) })}
+                  placeholder="Prior failures"
+                />
+              </Box>
+            </Flex>
+          )}
 
-            {priorType === 'beta' && (
-              <Flex gap="3">
-                <Box style={{ flex: 1 }}>
-                  <Text as="label" size="2" weight="bold" mb="6px">
-                    Alpha Prior
-                  </Text>
-                  <TextField.Root
-                    type="number"
-                    min="1"
-                    value={arm.alpha_prior?.toString() || '1'}
-                    onChange={(e) => onUpdate({ alpha_prior: Number(e.target.value) })}
-                    placeholder="Prior successes"
-                  />
-                </Box>
-                <Box style={{ flex: 1 }}>
-                  <Text as="label" size="2" weight="bold" mb="6px">
-                    Beta Prior
-                  </Text>
-                  <TextField.Root
-                    type="number"
-                    min="1"
-                    value={arm.beta_prior?.toString() || '1'}
-                    onChange={(e) => onUpdate({ beta_prior: Number(e.target.value) })}
-                    placeholder="Prior failures"
-                  />
-                </Box>
-              </Flex>
-            )}
-
-            {priorType === 'normal' && (
-              <Flex gap="3">
-                <Box style={{ flex: 1 }}>
-                  <Text as="label" size="2" weight="bold" mb="6px">
-                    Mean Prior
-                  </Text>
-                  <TextField.Root
-                    type="number"
-                    value={arm.mean_prior ?? ''}
-                    onChange={(e) => onUpdate({ mean_prior: e.target.value ? Number(e.target.value) : undefined })}
-                    placeholder="Prior mean"
-                  />
-                </Box>
-                <Box style={{ flex: 1 }}>
-                  <Text as="label" size="2" weight="bold" mb="6px">
-                    Std Dev Prior
-                  </Text>
-                  <TextField.Root
-                    type="number"
-                    value={arm.stddev_prior?.toString() || '1'}
-                    onChange={(e) => onUpdate({ stddev_prior: Number(e.target.value) })}
-                    placeholder="Prior std dev"
-                  />
-                </Box>
-              </Flex>
-            )}
-          </Flex>
+          {priorType === 'normal' && (
+            <Flex gap="3">
+              <Box maxWidth={'30%'}>
+                <Text as="label" size="2" weight="bold" mb="6px">
+                  Prior Mean
+                </Text>
+                <TextField.Root
+                  type="number"
+                  value={arm.mean_prior ?? ''}
+                  onChange={(e) => onUpdate({ mean_prior: e.target.value ? Number(e.target.value) : undefined })}
+                  placeholder="Prior Mean"
+                />
+              </Box>
+              <Box maxWidth={'30%'}>
+                <Text as="label" size="2" weight="bold" mb="6px">
+                  Prior Standard Deviation
+                </Text>
+                <TextField.Root
+                  type="number"
+                  value={arm.stddev_prior?.toString() || '1'}
+                  onChange={(e) => onUpdate({ stddev_prior: Number(e.target.value) })}
+                  placeholder="Prior Standard Deviation"
+                />
+              </Box>
+            </Flex>
+          )}
         </Flex>
-      </Box>
+      </Flex>
     </Card>
   );
 }
