@@ -69,8 +69,6 @@ export default function EditParticipantTypePage() {
     return <GenericErrorCallout title={'Failed to fetch participant type details'} message={'data is missing'} />;
   }
 
-  // Check if this is a sheet type - sheets cannot be edited
-
   const handleSave = async () => {
     if (!editedDef) return;
 
