@@ -146,10 +146,11 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
         );
 
       case 'mab_online':
+      case 'cmab_online':
         return (
           <MABContainer
             webhooks={webhooks}
-            initialFormData={initialFormData as MABFormData}
+            initialFormData={initialFormData as MABFormData | CMABFormData}
             onBack={handleBackToTypeSelection}
           />
         );

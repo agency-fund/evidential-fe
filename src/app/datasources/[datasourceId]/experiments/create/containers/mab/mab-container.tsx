@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Box, Heading } from '@radix-ui/themes';
 import {
   MABFormData,
+  CMABFormData,
   EXPERIMENT_STEP_FLOWS,
   STEP_TITLES,
 } from '@/app/datasources/[datasourceId]/experiments/create/types';
@@ -13,14 +14,14 @@ import { MABConfirmationForm } from '@/app/datasources/[datasourceId]/experiment
 
 interface MABContainerProps {
   webhooks: WebhookSummary[];
-  initialFormData: MABFormData;
+  initialFormData: MABFormData | CMABFormData;
   onBack: () => void;
 }
 
 export function MABContainer({ webhooks, initialFormData, onBack }: MABContainerProps) {
   const [currentStep, setCurrentStep] = useState<number>(2);
-  const [formData, setFormData] = useState<MABFormData>(initialFormData);
-  const MABSteps = EXPERIMENT_STEP_FLOWS['mab_online'];
+  const [formData, setFormData] = useState<MABFormData | CMABFormData>(initialFormData);
+  const BanditSteps = EXPERIMENT_STEP_FLOWS[formData.experimentType];
 
   const handleNext = () => {
     setCurrentStep((prevStep) => prevStep + 1);
@@ -30,17 +31,17 @@ export function MABContainer({ webhooks, initialFormData, onBack }: MABContainer
     setCurrentStep((prevStep) => prevStep - 1);
   };
 
-  const handleFormDataChange = (newData: MABFormData) => {
+  const handleFormDataChange = (newData: MABFormData | CMABFormData) => {
     setFormData(newData);
   };
 
   const renderCurrentStep = () => {
-    switch (MABSteps[currentStep - 1]) {
+    switch (BanditSteps[currentStep - 1]) {
       case 'metadata':
         return (
           <MABMetadataForm
             webhooks={webhooks}
-            formData={formData}
+            formData={formData as MABFormData | CMABFormData}
             onFormDataChange={handleFormDataChange}
             onNext={handleNext} // This should set to 'summary'
             onBack={onBack}
@@ -50,7 +51,7 @@ export function MABContainer({ webhooks, initialFormData, onBack }: MABContainer
       case 'summary':
         return (
           <MABConfirmationForm
-            formData={formData}
+            formData={formData as MABFormData}
             onFormDataChange={handleFormDataChange}
             onBack={handleBackStep}
             onNext={handleNext} // This should handle final submission
@@ -64,11 +65,11 @@ export function MABContainer({ webhooks, initialFormData, onBack }: MABContainer
 
   return (
     <Box>
-      <AdaptiveBreadcrumbs experimentType="mab_online" currentStep={currentStep} />
+      <AdaptiveBreadcrumbs experimentType={formData.experimentType} currentStep={currentStep} />
 
       <Box mb="6">
         <Heading size="8" mb="2">
-          {STEP_TITLES[MABSteps[currentStep - 1]]}
+          {STEP_TITLES[BanditSteps[currentStep - 1]]}
         </Heading>
       </Box>
 

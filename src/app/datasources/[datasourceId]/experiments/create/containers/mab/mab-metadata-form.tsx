@@ -19,18 +19,21 @@ import {
   BanditArm,
   PriorType,
   OutcomeType,
+  CMABFormData,
+  Context,
 } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { useCreateExperiment } from '@/api/admin';
 import { convertFormDataToCreateExperimentRequest } from '../../helpers';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { WebhookSummary } from '@/api/methods.schemas';
+import { ContextType, WebhookSummary } from '@/api/methods.schemas';
+import { form } from 'motion/react-client';
 
 interface MABMetadataFormProps {
   webhooks: WebhookSummary[];
-  formData: MABFormData;
-  onFormDataChange: (data: MABFormData) => void;
+  formData: MABFormData | CMABFormData;
+  onFormDataChange: (data: MABFormData | CMABFormData) => void;
   onNext: () => void;
   onBack: () => void;
 }
@@ -53,6 +56,25 @@ const OUTCOME_OPTIONS: OutcomeOption[] = [
     title: 'Real-valued',
     description:
       'Continuous numeric outcomes: revenue per user, time spent, satisfaction scores, any measurable quantity.',
+  },
+];
+
+interface ContextTypeOption {
+  type: ContextType;
+  title: string;
+  description: string;
+}
+
+const CONTEXT_TYPE_OPTIONS: ContextTypeOption[] = [
+  {
+    type: 'binary',
+    title: 'Binary',
+    description: 'Yes/No outcomes: gender, adult or child, onboarded or not, etc.',
+  },
+  {
+    type: 'real-valued',
+    title: 'Real-valued',
+    description: 'Continuous numeric outcomes: age, onboarding time, etc.',
   },
 ];
 
@@ -80,6 +102,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
     }
   };
 
+  // --- Basic info functions ---
   const updateBasicInfo = (field: keyof MABFormData, value: string) => {
     onFormDataChange({
       ...formData,
@@ -87,9 +110,11 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
     });
   };
 
+  // --- Outcome functions ---
   const handleOutcomeChange = (outcomeType: OutcomeType) => {
     // Auto-map prior type based on outcome type for MAB
-    const priorType: PriorType = outcomeType === 'binary' ? 'beta' : 'normal';
+    const priorType: PriorType =
+      formData.experimentType === 'mab_online' && outcomeType === 'binary' ? 'beta' : 'normal';
 
     // Update existing arms to have the correct prior parameters
     const updatedArms = formData.arms.map((arm) => {
@@ -127,9 +152,45 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
       priorType, // Automatically set based on outcome
       arms: updatedArms, // Update arms with correct parameters
     };
-    onFormDataChange(updatedData);
+    onFormDataChange(
+      formData.experimentType === 'mab_online' ? (updatedData as MABFormData) : (updatedData as CMABFormData),
+    ); // Ensure type consistency
   };
 
+  // --- Context functions ---
+  const updateContext = (index: number, updatedContext: Partial<Context>) => {
+    const cmabFormData = formData as CMABFormData;
+    const updatedContexts = cmabFormData.contexts.map((context, i) =>
+      i === index ? { ...context, ...updatedContext } : context,
+    );
+    onFormDataChange({
+      ...cmabFormData,
+      contexts: updatedContexts,
+    });
+  };
+
+  const addContext = (formData: CMABFormData) => {
+    const newContext: Context = {
+      name: '',
+      description: '',
+      type: 'real-valued',
+    };
+    onFormDataChange({
+      ...formData,
+      contexts: [...formData.contexts, newContext],
+    });
+  };
+
+  const deleteContext = (index: number) => {
+    const cmabFormData = formData as CMABFormData;
+    if (cmabFormData.contexts.length <= 1) return; // Minimum 1 context required
+    onFormDataChange({
+      ...cmabFormData,
+      contexts: cmabFormData.contexts.filter((_, i) => i !== index),
+    });
+  };
+
+  // Arm functions
   const updateArm = (index: number, updatedArm: Partial<BanditArm>) => {
     const updatedArms = formData.arms.map((arm, i) => (i === index ? { ...arm, ...updatedArm } : arm));
     onFormDataChange({
@@ -185,8 +246,8 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
       formData.hypothesis.trim() &&
       formData.priorType &&
       formData.outcomeType &&
-      formData.arms.length >= 2;
-
+      formData.arms.length >= 2 &&
+      (formData.experimentType === 'cmab_online' ? formData.contexts.length >= 1 : true);
     const armsValid = formData.arms.every((arm) => arm.arm_name.trim() && isPriorParamValid(arm));
 
     return basicValid && armsValid;
@@ -284,6 +345,34 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
           </Box>
         )}
       </SectionCard>
+
+      {/* Contexts */}
+      {formData.experimentType === 'cmab_online' ? (
+        <SectionCard title="Contexts">
+          <Text size="2" color="gray" mb="20px">
+            Define the context variables about the user that the algorithm will use to make personalized choices while
+            assigning arms.
+          </Text>
+          <Flex direction="column" gap="3">
+            {formData.contexts.map((context, index) => (
+              <ContextCard
+                key={index}
+                context={context}
+                contextIndex={index}
+                canDelete={formData.contexts.length > 1}
+                onUpdate={(updatedContext) => updateContext(index, updatedContext)}
+                onDelete={() => deleteContext(index)}
+              />
+            ))}
+            <Flex justify="center" mt="4">
+              <Button onClick={() => addContext(formData as CMABFormData)} variant="outline">
+                <PlusIcon />
+                Add Context
+              </Button>
+            </Flex>
+          </Flex>
+        </SectionCard>
+      ) : null}
 
       {/* Treatment Arms */}
       <SectionCard title="Arms">
@@ -383,6 +472,90 @@ function OutcomeOptionCard({ option, isSelected, onSelect }: OutcomeOptionCardPr
   );
 }
 
+interface ContextCardProps {
+  context: Context;
+  contextIndex: number;
+  canDelete: boolean;
+  onUpdate: (updatedContext: Partial<Context>) => void;
+  onDelete: () => void;
+}
+
+function ContextCard({ context, contextIndex, canDelete, onUpdate, onDelete }: ContextCardProps) {
+  return (
+    <Card>
+      {/* Header */}
+      <Flex direction="column" gap="2">
+        <Flex align="center" justify="between">
+          <Text weight="bold" size="3">
+            {`Context ${contextIndex + 1}`}
+          </Text>
+          <IconButton onClick={onDelete} disabled={!canDelete} color="red" variant="soft" size="1">
+            <TrashIcon />
+          </IconButton>
+        </Flex>
+      </Flex>
+
+      {/* Content */}
+      <Flex direction="column" gap="1">
+        <Box maxWidth={'50%'}>
+          <Text as="label" size="2" weight="bold">
+            Context Name
+          </Text>
+          <TextField.Root
+            value={context.name}
+            onChange={(e) => onUpdate({ name: e.target.value })}
+            placeholder="Context Name"
+            required
+            mb="3"
+          />
+        </Box>
+      </Flex>
+      <Flex direction="column" gap="1">
+        <Text as="label" size="2" weight="bold">
+          Context Description
+        </Text>
+        <TextArea
+          value={context.description || ''}
+          onChange={(e) => onUpdate({ description: e.target.value })}
+          placeholder="Context Description"
+          required
+          mb="3"
+        />
+      </Flex>
+      <Flex direction="column" gap="1">
+        <Text as="label" size="2" weight="bold">
+          Context Variable Type
+        </Text>
+        <Flex direction="row" gap="1">
+          {CONTEXT_TYPE_OPTIONS.map((option) => (
+            <Card
+              key={option.type}
+              onClick={() => onUpdate({ type: option.type })}
+              asChild
+              style={
+                context.type === option.type
+                  ? { border: '2px solid var(--accent-9)', backgroundColor: 'var(--accent-2)', width: '35%' }
+                  : { width: '35%' }
+              }
+            >
+              <Box as="div">
+                <Flex direction="column" gap="1">
+                  <Text size="2" weight="bold">
+                    {option.title}
+                  </Text>
+                  <Text size="1" weight="regular">
+                    {option.description}
+                  </Text>
+                </Flex>
+              </Box>
+            </Card>
+          ))}
+        </Flex>
+      </Flex>
+    </Card>
+  );
+}
+
 interface ArmCardProps {
   arm: BanditArm;
   armIndex: number;
@@ -414,8 +587,9 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
             <TextField.Root
               value={arm.arm_name}
               onChange={(e) => onUpdate({ arm_name: e.target.value })}
-              placeholder={'Arm Name'}
+              placeholder="Arm Name"
               required
+              mb="2"
             />
           </Box>
         </Flex>
@@ -426,7 +600,8 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
           <TextArea
             value={arm.arm_description || ''}
             onChange={(e) => onUpdate({ arm_description: e.target.value })}
-            placeholder="Description"
+            placeholder="Arm Description"
+            mb="2"
           />
         </Flex>
         <Flex direction="column" gap="4">
