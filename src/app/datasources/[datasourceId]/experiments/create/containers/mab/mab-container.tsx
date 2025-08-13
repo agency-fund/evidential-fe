@@ -51,7 +51,7 @@ export function MABContainer({ webhooks, initialFormData, onBack }: MABContainer
       case 'summary':
         return (
           <MABConfirmationForm
-            formData={formData as MABFormData}
+            formData={formData as MABFormData | CMABFormData}
             onFormDataChange={handleFormDataChange}
             onBack={handleBackStep}
             onNext={handleNext} // This should handle final submission

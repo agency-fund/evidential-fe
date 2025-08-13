@@ -28,7 +28,6 @@ import { useCreateExperiment } from '@/api/admin';
 import { convertFormDataToCreateExperimentRequest } from '../../helpers';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ContextType, WebhookSummary } from '@/api/methods.schemas';
-import { form } from 'motion/react-client';
 
 interface MABMetadataFormProps {
   webhooks: WebhookSummary[];
