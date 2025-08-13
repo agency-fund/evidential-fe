@@ -203,7 +203,7 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
                 <Card key={index}>
                   <Flex direction="column" gap="2">
                     <Flex justify="between" align="center">
-                      <Text size="2" weight="bold">
+                      <Text size="3" weight="bold">
                         Arm {index + 1} {0 == index && '(control)'}
                       </Text>
                       <IconButton size="1" color="red" variant="soft" onClick={() => removeArm(index)}>

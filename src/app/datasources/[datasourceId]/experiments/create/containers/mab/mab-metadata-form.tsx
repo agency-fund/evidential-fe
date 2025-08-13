@@ -245,8 +245,8 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
       {/* Outcome Type */}
       <SectionCard title="Outcome Type">
         <Text size="2" color="gray" mb="20px">
-          Define the type of outcome measured in this experiment. The prior distribution will be automatically selected
-          based on your choice.
+          Define the type of outcome measured in this experiment. The prior distribution for each arm will be
+          automatically selected based on your choice.
         </Text>
         <Text size="2" weight="medium" mb="12px" mt="12px" as="div">
           Select outcome type
@@ -265,14 +265,15 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
         {formData.priorType && formData.outcomeType && (
           <Box p="3">
             <Flex direction="column" gap="1">
-              <Text size="2" weight="medium" color="blue">
+              <Text size="2" weight="medium" color="indigo">
                 Selected Configuration: {formData.priorType === 'beta' ? 'Beta Distribution' : 'Normal Distribution'} ×{' '}
                 {formData.outcomeType === 'binary' ? 'Binary' : 'Real-valued'} Outcome
               </Text>
-              <Text size="1" color="gray" mt="4px">
+              <Text size="2" color="gray" mt="4px" weight="medium">
                 {formData.priorType === 'beta'
-                  ? 'Using Alpha (prior successes) and Beta (prior failures) parameters'
-                  : 'Using Mean and Standard Deviation parameters'}
+                  ? 'Using alpha (prior successes) and beta (prior failures) parameters. '
+                  : 'Using mean and standard deviation parameters. '}
+                You can set these parameters for each arm in the Arms section below.
               </Text>
             </Flex>
           </Box>
@@ -282,9 +283,6 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
       {/* Treatment Arms */}
       <SectionCard title="Arms">
         <Flex direction="column" gap="1">
-          <Text size="2" color="gray">
-            Configure your experiment arms with prior beliefs.
-          </Text>
           {!formData.priorType ||
             (!formData.outcomeType && (
               <Box p="3">
@@ -368,10 +366,10 @@ function OutcomeOptionCard({ option, isSelected, onSelect }: OutcomeOptionCardPr
     >
       <Box as="div">
         <Flex direction="column" gap="1">
-          <Text size="3" weight="bold">
+          <Text size="2" weight="bold">
             {option.title}
           </Text>
-          <Text size="2" color="gray">
+          <Text size="1" color="gray">
             {option.description}
           </Text>
         </Flex>
@@ -395,7 +393,9 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
       {/* Header */}
       <Flex direction="column" gap="2">
         <Flex align="center" justify="between">
-          <Text weight="bold">{armIndex === 0 ? `Arm ${armIndex + 1} (control)` : `Arm ${armIndex + 1}`}</Text>
+          <Text weight="bold" size="3">
+            {armIndex === 0 ? `Arm ${armIndex + 1} (control)` : `Arm ${armIndex + 1}`}
+          </Text>
           <IconButton onClick={onDelete} disabled={!canDelete} color="red" variant="soft" size="1">
             <TrashIcon />
           </IconButton>
