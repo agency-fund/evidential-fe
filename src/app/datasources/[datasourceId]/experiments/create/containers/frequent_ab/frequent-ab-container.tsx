@@ -1,7 +1,11 @@
 'use client';
 import React, { useState } from 'react';
 import { Box, Heading } from '@radix-ui/themes';
-import { FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
+import {
+  FrequentABFormData,
+  STEP_TITLES,
+  EXPERIMENT_STEP_FLOWS,
+} from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { AdaptiveBreadcrumbs } from '@/components/features/experiments/adaptive-bread-crumbs';
 import { InitialForm } from '@/components/features/experiments/initial-form';
 import { DesignForm } from '@/app/datasources/[datasourceId]/experiments/create/containers/frequent_ab/design-form';
@@ -14,50 +18,17 @@ interface FrequentABContainerProps {
   onBack: () => void;
 }
 
-type FrequentABStep = 'metadata' | 'design' | 'summary';
-
-const STEP_TITLES = {
-  metadata: 'Experiment Metadata',
-  design: 'Experiment Design',
-  summary: 'Experiment Summary',
-} as const;
-
 export function FrequentABContainer({ webhooks, initialFormData, onBack }: FrequentABContainerProps) {
-  const [currentStep, setCurrentStep] = useState<FrequentABStep>('metadata');
+  const [currentStep, setCurrentStep] = useState<number>(2);
   const [formData, setFormData] = useState<FrequentABFormData>(initialFormData);
-
-  // Calculate step number for breadcrumbs (1-based, includes type selection)
-  const getStepNumber = () => {
-    const stepMap = { metadata: 2, design: 3, summary: 4 };
-    return stepMap[currentStep];
-  };
+  const FreqSteps = EXPERIMENT_STEP_FLOWS['freq_online'];
 
   const handleNext = () => {
-    switch (currentStep) {
-      case 'metadata':
-        setCurrentStep('design');
-        break;
-      case 'design':
-        setCurrentStep('summary');
-        break;
-      case 'summary':
-        // Handle final submission
-        break;
-    }
+    setCurrentStep((prevStep) => prevStep + 1);
   };
 
   const handleBackStep = () => {
-    switch (currentStep) {
-      case 'design':
-        onBack(); // Go back to experiment type selection
-        break;
-      case 'metadata':
-        setCurrentStep('design');
-        break;
-      case 'summary':
-        setCurrentStep('metadata');
-        break;
-    }
+    setCurrentStep((prevStep) => prevStep - 1);
   };
 
   const handleFormDataChange = (newData: FrequentABFormData) => {
@@ -65,13 +36,14 @@ export function FrequentABContainer({ webhooks, initialFormData, onBack }: Frequ
   };
 
   const renderCurrentStep = () => {
-    switch (currentStep) {
+    switch (FreqSteps[currentStep - 1]) {
       case 'metadata':
         return (
           <InitialForm
             formData={formData}
             onFormDataChange={(data) => handleFormDataChange(data as FrequentABFormData)}
             onNext={handleNext}
+            onBack={onBack}
             webhooks={webhooks}
           />
         );
@@ -102,11 +74,11 @@ export function FrequentABContainer({ webhooks, initialFormData, onBack }: Frequ
 
   return (
     <Box>
-      <AdaptiveBreadcrumbs experimentType={formData.experimentType} currentStep={getStepNumber()} />
+      <AdaptiveBreadcrumbs experimentType={formData.experimentType} currentStep={currentStep} />
 
       <Box mb="6">
         <Heading size="8" mb="2">
-          {STEP_TITLES[currentStep]}
+          {STEP_TITLES[FreqSteps[currentStep - 1]]}
         </Heading>
       </Box>
 

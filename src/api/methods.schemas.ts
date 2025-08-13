@@ -234,6 +234,11 @@ export type AssignmentObservedAt = string | null;
 export type AssignmentOutcome = number | null;
 
 /**
+ * List of context values for this assignment. If no contexts are used, this will be None.
+ */
+export type AssignmentContextValues = number[] | null;
+
+/**
  * Base class for treatment assignment in experiments.
  */
 export interface Assignment {
@@ -257,11 +262,8 @@ export interface Assignment {
 	observed_at?: AssignmentObservedAt;
 	/** The observed outcome for this assignment. */
 	outcome?: AssignmentOutcome;
-	/**
-	 * List of context values for this assignment. If no contexts are used, this will be None.
-	 * @maxItems 10
-	 */
-	context_values?: ContextInput[];
+	/** List of context values for this assignment. If no contexts are used, this will be None. */
+	context_values?: AssignmentContextValues;
 }
 
 /**
@@ -574,7 +576,7 @@ export interface CallerIdentity {
 /**
  * Unique identifier for the context, you should NOT set this when creating a new context.
  */
-export type ContextContextId = number | null;
+export type ContextContextId = string | null;
 
 export type ContextContextDescription = string | null;
 
@@ -583,7 +585,7 @@ export type ContextContextDescription = string | null;
  */
 export interface Context {
 	/** Unique identifier for the context, you should NOT set this when creating a new context. */
-	context_id: ContextContextId;
+	context_id?: ContextContextId;
 	/** @maxLength 100 */
 	context_name: string;
 	context_description?: ContextContextDescription;
@@ -596,7 +598,7 @@ export interface Context {
  */
 export interface ContextInput {
 	/** Unique identifier for the context. */
-	context_id: number;
+	context_id: string;
 	/** Value of the context */
 	context_value: number;
 }
@@ -617,6 +619,43 @@ export interface CreateApiKeyResponse {
 	id: string;
 	datasource_id: string;
 	key: string;
+}
+
+/**
+ * 
+            List of context values for the assignment.
+            Must include exactly the same number contexts defined in the experiment.
+            The values are matched to the experiment's contexts by context_id, not by position in the list.
+            Each context_id must correspond to one of the IDs of the contexts defined in the experiment.
+            Can be None, when simply retrieving pre-existing assignments; must have valid inputs otherwise.
+            
+ */
+export type CreateCMABAssignmentRequestContextInputs = ContextInput[] | null;
+
+/**
+ * Request model for creating a new CMAB assignment.
+
+When submitting context values for a CMAB experiment, the following rules apply:
+1. Each context_input must reference a valid context_id from the experiment's defined contexts
+2. The order of context_inputs does not need to match the order of contexts in the experiment
+3. You must provide values for all contexts defined in the experiment
+4. Number of input context values must match the number of contexts defined in the experiment
+5. The context value input can be None, but only in the case of retrieving a pre-existing assignment.
+
+Example:
+    If an experiment defines contexts with IDs ["ctx_1", "ctx_2"], your request must include
+    both of these context_ids in the context_inputs list, but they can be in any order.
+ */
+export interface CreateCMABAssignmentRequest {
+	type?: "cmab_assignment";
+	/** 
+            List of context values for the assignment.
+            Must include exactly the same number contexts defined in the experiment.
+            The values are matched to the experiment's contexts by context_id, not by position in the list.
+            Each context_id must correspond to one of the IDs of the contexts defined in the experiment.
+            Can be None, when simply retrieving pre-existing assignments; must have valid inputs otherwise.
+             */
+	context_inputs: CreateCMABAssignmentRequestContextInputs;
 }
 
 export interface CreateDatasourceRequest {
@@ -717,14 +756,11 @@ export const DataType = {
 	unsupported: "unsupported",
 } as const;
 
-export type DatasourceConfigWebhookConfig = WebhookConfig | null;
-
 /**
  * RemoteDatabaseConfig defines a configuration for a remote data warehouse.
  */
 export interface DatasourceConfig {
 	participants: ParticipantsConfig[];
-	webhook_config?: DatasourceConfigWebhookConfig;
 	type: "remote";
 	dwh: DwhOutput;
 }
@@ -1370,18 +1406,6 @@ export interface HTTPExceptionError {
 export interface HTTPValidationError {
 	detail?: ValidationError[];
 }
-
-export type HttpMethodTypes =
-	(typeof HttpMethodTypes)[keyof typeof HttpMethodTypes];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const HttpMethodTypes = {
-	GET: "GET",
-	POST: "POST",
-	PUT: "PUT",
-	PATCH: "PATCH",
-	DELETE: "DELETE",
-} as const;
 
 export interface InspectDatasourceResponse {
 	tables: string[];
@@ -2193,32 +2217,6 @@ export interface ValidationError {
 	type: string;
 }
 
-export type WebhookActionsCommit = WebhookUrl | null;
-
-/**
- * The set of supported actions that trigger a user callback.
- */
-export interface WebhookActions {
-	commit?: WebhookActionsCommit;
-}
-
-export type WebhookCommonHeadersAuthorization = string | null;
-
-/**
- * Enumerates supported headers to attach to all webhook requests.
- */
-export interface WebhookCommonHeaders {
-	authorization: WebhookCommonHeadersAuthorization;
-}
-
-/**
- * Top-level configuration object for user-defined webhooks.
- */
-export interface WebhookConfig {
-	actions: WebhookActions;
-	common_headers: WebhookCommonHeaders;
-}
-
 /**
  * The value of the Webhook-Token: header that will be sent with the request to the configured URL.
  */
@@ -2238,14 +2236,6 @@ export interface WebhookSummary {
 	url: string;
 	/** The value of the Webhook-Token: header that will be sent with the request to the configured URL. */
 	auth_token: WebhookSummaryAuthToken;
-}
-
-/**
- * Represents a url and HTTP method to use with it.
- */
-export interface WebhookUrl {
-	method: HttpMethodTypes;
-	url: string;
 }
 
 export type DeleteWebhookFromOrganizationParams = {

@@ -14,6 +14,7 @@ import {
   TextArea,
   TextField,
 } from '@radix-ui/themes';
+import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 import { useListParticipantTypes } from '@/api/admin';
@@ -25,10 +26,11 @@ interface InitialFormProps {
   formData: ExperimentFormData;
   onFormDataChange: (data: ExperimentFormData) => void;
   onNext: () => void;
+  onBack: () => void;
   webhooks: WebhookSummary[];
 }
 
-export function InitialForm({ formData, onFormDataChange, onNext, webhooks }: InitialFormProps) {
+export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhooks }: InitialFormProps) {
   const { data: participantTypesData, isLoading: loadingParticipantTypes } = useListParticipantTypes(
     formData.datasourceId || '',
     {
@@ -201,7 +203,7 @@ export function InitialForm({ formData, onFormDataChange, onNext, webhooks }: In
                 <Card key={index}>
                   <Flex direction="column" gap="2">
                     <Flex justify="between" align="center">
-                      <Text size="2" weight="bold">
+                      <Text size="3" weight="bold">
                         Arm {index + 1} {0 == index && '(control)'}
                       </Text>
                       <IconButton size="1" color="red" variant="soft" onClick={() => removeArm(index)}>
@@ -211,6 +213,9 @@ export function InitialForm({ formData, onFormDataChange, onNext, webhooks }: In
 
                     <Flex direction="column" gap="2">
                       <Box maxWidth={'50%'}>
+                        <Text as="label" size="2" weight="bold">
+                          Arm Name
+                        </Text>
                         <TextField.Root
                           value={arm.arm_name}
                           placeholder={'Arm Name'}
@@ -221,6 +226,9 @@ export function InitialForm({ formData, onFormDataChange, onNext, webhooks }: In
                     </Flex>
 
                     <Flex direction="column" gap="2">
+                      <Text as="label" size="2" weight="bold">
+                        Arm Description
+                      </Text>
                       <TextArea
                         placeholder="Description"
                         value={arm.arm_description || ''}
@@ -265,9 +273,7 @@ export function InitialForm({ formData, onFormDataChange, onNext, webhooks }: In
           </Card>
         )}
 
-        <Flex justify="end" mt="4">
-          <Button type="submit">Next</Button>
-        </Flex>
+        <NavigationButtons onBack={onBack} onNext={onNext} nextLabel="Next" />
       </Flex>
     </form>
   );

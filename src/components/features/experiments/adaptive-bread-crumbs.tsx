@@ -1,7 +1,11 @@
 'use client';
 import React from 'react';
 import { Flex, Text, Box } from '@radix-ui/themes';
-import { ExperimentType, EXPERIMENT_STEP_FLOWS } from '@/app/datasources/[datasourceId]/experiments/create/types';
+import {
+  ExperimentType,
+  EXPERIMENT_STEP_FLOWS,
+  STEP_TITLES,
+} from '@/app/datasources/[datasourceId]/experiments/create/types';
 
 interface BreadcrumbStep {
   id: string;
@@ -17,14 +21,6 @@ interface AdaptiveBreadcrumbsProps {
   onStepClick?: (stepIndex: number) => void;
 }
 
-const STEP_LABELS = {
-  type: 'Experiment Type',
-  design: 'Experiment Design',
-  context: 'Context Variables',
-  metadata: 'Experiment Metadata',
-  summary: 'Experiment Summary',
-} as const;
-
 export function AdaptiveBreadcrumbs({ experimentType, currentStep, onStepClick }: AdaptiveBreadcrumbsProps) {
   if (!experimentType) {
     return null;
@@ -33,7 +29,7 @@ export function AdaptiveBreadcrumbs({ experimentType, currentStep, onStepClick }
   const stepFlow = EXPERIMENT_STEP_FLOWS[experimentType];
   const steps: BreadcrumbStep[] = stepFlow.map((stepId, index) => ({
     id: stepId,
-    label: STEP_LABELS[stepId],
+    label: STEP_TITLES[stepId],
     isCompleted: index < currentStep - 1,
     isCurrent: index === currentStep - 1,
     isAccessible: index <= currentStep - 1,
