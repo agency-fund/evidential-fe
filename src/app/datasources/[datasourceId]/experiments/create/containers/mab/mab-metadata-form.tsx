@@ -14,7 +14,12 @@ import {
   Heading,
 } from '@radix-ui/themes';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
-import { MABFormData, MABArm, PriorType, OutcomeType } from '@/app/datasources/[datasourceId]/experiments/create/types';
+import {
+  MABFormData,
+  BanditArm,
+  PriorType,
+  OutcomeType,
+} from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { useCreateExperiment } from '@/api/admin';
@@ -125,7 +130,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
     onFormDataChange(updatedData);
   };
 
-  const updateArm = (index: number, updatedArm: Partial<MABArm>) => {
+  const updateArm = (index: number, updatedArm: Partial<BanditArm>) => {
     const updatedArms = formData.arms.map((arm, i) => (i === index ? { ...arm, ...updatedArm } : arm));
     onFormDataChange({
       ...formData,
@@ -134,7 +139,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
   };
 
   const addArm = () => {
-    const newArm: MABArm = {
+    const newArm: BanditArm = {
       arm_name: '',
       arm_description: '',
     };
@@ -163,7 +168,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
     });
   };
 
-  const isPriorParamValid = (arm: MABArm) => {
+  const isPriorParamValid = (arm: BanditArm) => {
     if (!formData.priorType) return false; // Prior type must be set
 
     if (formData.priorType === 'beta') {
@@ -379,11 +384,11 @@ function OutcomeOptionCard({ option, isSelected, onSelect }: OutcomeOptionCardPr
 }
 
 interface ArmCardProps {
-  arm: MABArm;
+  arm: BanditArm;
   armIndex: number;
   priorType: 'beta' | 'normal';
   canDelete: boolean;
-  onUpdate: (updatedArm: Partial<MABArm>) => void;
+  onUpdate: (updatedArm: Partial<BanditArm>) => void;
   onDelete: () => void;
 }
 
