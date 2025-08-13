@@ -128,7 +128,12 @@ export function MABConfirmationForm({ formData, onBack, onFormDataChange }: MABC
               {(formData.createExperimentResponse?.design_spec as CMABExperimentSpecOutput).contexts?.map(
                 (context, index) => (
                   <Table.Row key={index}>
-                    <Table.Cell>{context.context_id}</Table.Cell>
+                    <Table.Cell>
+                      <Flex gap="2" align="center">
+                        <Text>{context.context_id}</Text>
+                        <CopyToClipBoard content={context.context_id!} />
+                      </Flex>
+                    </Table.Cell>
                     <Table.Cell>{context.context_name}</Table.Cell>
                     <Table.Cell>{context.context_description}</Table.Cell>
                     <Table.Cell>{context.value_type}</Table.Cell>
