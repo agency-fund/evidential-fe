@@ -3,7 +3,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { Flex, Table, Text, Callout } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
-import { MABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
+import { CMABFormData, MABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { ReadMoreText } from '@/components/ui/read-more-text';
@@ -12,13 +12,13 @@ import { ApiError } from '@/services/orval-fetch';
 import { useAbandonExperiment, useCommitExperiment } from '@/api/admin';
 import { ListSelectedWebhooksCard } from '@/components/features/experiments/list-selected-webhooks-card';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
-import { ArmBandit } from '@/api/methods.schemas';
+import { ArmBandit, CMABExperimentSpecOutput } from '@/api/methods.schemas';
 
 interface MABConfirmationFormProps {
-  formData: MABFormData;
+  formData: MABFormData | CMABFormData;
   onBack: () => void;
   onNext: () => void;
-  onFormDataChange: (data: MABFormData) => void;
+  onFormDataChange: (data: MABFormData | CMABFormData) => void;
 }
 
 function MABExperimentErrorCallout({ error, type }: { error?: Error; type: 'commit' | 'abandon' }) {
@@ -96,8 +96,8 @@ export function MABConfirmationForm({ formData, onBack, onFormDataChange }: MABC
         </Table.Root>
       </SectionCard>
 
-      {/* Configuration */}
-      <SectionCard title="Configuration">
+      {/* Prior-Outcome Configuration */}
+      <SectionCard title="Prior-Outcome Configuration">
         <Table.Root>
           <Table.Body>
             <Table.Row>
@@ -111,6 +111,39 @@ export function MABConfirmationForm({ formData, onBack, onFormDataChange }: MABC
           </Table.Body>
         </Table.Root>
       </SectionCard>
+
+      {/* Contexts */}
+      {formData.experimentType === 'cmab_online' && (
+        <SectionCard title="Contexts">
+          <Table.Root>
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeaderCell>ID</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Value Type</Table.ColumnHeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {(formData.createExperimentResponse?.design_spec as CMABExperimentSpecOutput).contexts?.map(
+                (context, index) => (
+                  <Table.Row key={index}>
+                    <Table.Cell>
+                      <Flex gap="2" align="center">
+                        <Text>{context.context_id}</Text>
+                        <CopyToClipBoard content={context.context_id!} />
+                      </Flex>
+                    </Table.Cell>
+                    <Table.Cell>{context.context_name}</Table.Cell>
+                    <Table.Cell>{context.context_description}</Table.Cell>
+                    <Table.Cell>{context.value_type}</Table.Cell>
+                  </Table.Row>
+                ),
+              )}
+            </Table.Body>
+          </Table.Root>
+        </SectionCard>
+      )}
 
       {/* Treatment Arms */}
       <SectionCard title="Treatment Arms">

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { CreateExperimentRequest, DesignSpecMetricRequest } from '@/api/methods.schemas';
 import { createExperimentBody } from '@/api/admin.zod';
 
-import { ExperimentFormData, FrequentABFormData, MABFormData } from './types';
+import { CMABFormData, ExperimentFormData, FrequentABFormData, MABFormData } from './types';
 
 // Zod helper for validating string inputs as if they are numeric values.
 export const zodNumberFromForm = (configure?: (num: z.ZodNumber) => z.ZodNumber) =>
@@ -29,6 +29,7 @@ export const convertFormDataToCreateExperimentRequest = (formData: ExperimentFor
       return convertFrequentABFormData(formData);
 
     case 'mab_online':
+    case 'cmab_online':
       return convertMABFormData(formData);
 
     default:
@@ -76,7 +77,7 @@ function convertFrequentABFormData(formData: FrequentABFormData): CreateExperime
   });
 }
 
-function convertMABFormData(formData: MABFormData): CreateExperimentRequest {
+function convertMABFormData(formData: MABFormData | CMABFormData): CreateExperimentRequest {
   // Map MAB arms to standard arms format
 
   const standardArms = formData.arms.map((arm) => ({
@@ -89,17 +90,28 @@ function convertMABFormData(formData: MABFormData): CreateExperimentRequest {
     sigma_init: arm.stddev_prior?.toString() ? arm.stddev_prior : null,
   }));
 
+  let standardContexts;
+  if (formData.experimentType === 'cmab_online') {
+    standardContexts = formData.contexts.map((context) => ({
+      context_id: null,
+      context_name: context.name,
+      context_description: context.description || '',
+      value_type: context.type,
+    }));
+  }
+
   return createExperimentBody.parse({
     design_spec: {
       experiment_name: formData.name,
       participant_type: 'user',
-      experiment_type: 'mab_online', // MAB experiments use online assignment
+      experiment_type: formData.experimentType,
       arms: standardArms,
       end_date: new Date(Date.parse(formData.endDate)).toISOString(),
       start_date: new Date(Date.parse(formData.startDate)).toISOString(),
       description: formData.hypothesis,
       prior_type: formData.priorType,
       reward_type: formData.outcomeType,
+      contexts: standardContexts ? standardContexts : null,
     },
     webhooks: formData.selectedWebhookIds.length > 0 ? formData.selectedWebhookIds : [],
   });
@@ -127,11 +139,14 @@ export const validateFormData = (formData: ExperimentFormData): string[] => {
   if (formData.experimentType === 'mab_online') {
     return [...errors, ...validateMABFormData(formData)];
   }
+  if (formData.experimentType === 'cmab_online') {
+    return [...errors, ...validateMABFormData(formData), ...validateCMABFormData(formData)];
+  }
 
   return errors;
 };
 
-function validateMABFormData(formData: MABFormData): string[] {
+function validateMABFormData(formData: MABFormData | CMABFormData): string[] {
   const errors: string[] = [];
 
   if (!formData.priorType) {
@@ -168,6 +183,29 @@ function validateMABFormData(formData: MABFormData): string[] {
       if (!arm.stddev_prior || arm.stddev_prior <= 0) {
         errors.push(`Arm ${index + 1} Standard deviation prior must be greater than 0`);
       }
+    }
+  });
+
+  return errors;
+}
+
+function validateCMABFormData(formData: CMABFormData): string[] {
+  const errors: string[] = [];
+
+  // Validate prior parameters
+  if (formData.priorType !== 'normal') {
+    errors.push('CMAB experiments must use Normal prior distribution');
+  }
+  formData.contexts.forEach((context, index) => {
+    if (!context.name?.trim()) {
+      errors.push(`Context ${index + 1} name is required`);
+    }
+
+    if (!context.description?.trim()) {
+      errors.push(`Context ${index + 1} description is required`);
+    }
+    if (!context.type) {
+      errors.push(`Context ${index + 1} type is required`);
     }
   });
 
