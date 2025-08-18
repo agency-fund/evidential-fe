@@ -70,6 +70,7 @@ export type ExperimentFormData = {
   primaryMetric?: MetricWithMDE;
   secondaryMetrics: MetricWithMDE[];
   filters: FilterInput[];
+  strata?: string[]; // Add this line
   // These next 2 Experiment Parameters are strings to allow for empty values,
   // which should be converted to numbers when making power or experiment creation requests.
   confidence: string;
