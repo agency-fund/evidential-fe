@@ -2245,6 +2245,13 @@ export type DeleteWebhookFromOrganizationParams = {
 	allow_missing?: boolean;
 };
 
+export type RemoveMemberFromOrganizationParams = {
+	/**
+	 * If true, return a 204 even if the resource does not exist.
+	 */
+	allow_missing?: boolean;
+};
+
 export type InspectDatasourceParams = {
 	/**
 	 * Refresh the cache.

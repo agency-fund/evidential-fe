@@ -10,7 +10,7 @@ interface DeleteUserDialogProps {
 }
 
 export function DeleteUserDialog({ organizationId, userId }: DeleteUserDialogProps) {
-  const { trigger } = useRemoveMemberFromOrganization(organizationId, userId, {
+  const { trigger } = useRemoveMemberFromOrganization(organizationId, userId, undefined, {
     swr: { onSuccess: () => mutate(getGetOrganizationKey(organizationId)) },
   });
 

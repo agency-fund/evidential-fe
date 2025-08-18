@@ -241,6 +241,15 @@ export const removeMemberFromOrganizationParams = zod.object({
 	user_id: zod.string(),
 });
 
+export const removeMemberFromOrganizationQueryAllowMissingDefault = false;
+
+export const removeMemberFromOrganizationQueryParams = zod.object({
+	allow_missing: zod
+		.boolean()
+		.optional()
+		.describe("If true, return a 204 even if the resource does not exist."),
+});
+
 /**
  * Updates an organization's properties.
 
