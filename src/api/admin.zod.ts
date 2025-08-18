@@ -2273,8 +2273,9 @@ export const createExperimentBody = zod.object({
 							zod
 								.object({
 									context_id: zod
-										.number()
+										.string()
 										.or(zod.null())
+										.optional()
 										.describe(
 											"Unique identifier for the context, you should NOT set this when creating a new context.",
 										),
@@ -2413,8 +2414,9 @@ export const createExperimentBody = zod.object({
 							zod
 								.object({
 									context_id: zod
-										.number()
+										.string()
 										.or(zod.null())
+										.optional()
 										.describe(
 											"Unique identifier for the context, you should NOT set this when creating a new context.",
 										),
@@ -2553,8 +2555,9 @@ export const createExperimentBody = zod.object({
 							zod
 								.object({
 									context_id: zod
-										.number()
+										.string()
 										.or(zod.null())
+										.optional()
 										.describe(
 											"Unique identifier for the context, you should NOT set this when creating a new context.",
 										),
@@ -3259,8 +3262,9 @@ export const createExperimentResponse = zod
 								zod
 									.object({
 										context_id: zod
-											.number()
+											.string()
 											.or(zod.null())
+											.optional()
 											.describe(
 												"Unique identifier for the context, you should NOT set this when creating a new context.",
 											),
@@ -3401,8 +3405,9 @@ export const createExperimentResponse = zod
 								zod
 									.object({
 										context_id: zod
-											.number()
+											.string()
 											.or(zod.null())
+											.optional()
 											.describe(
 												"Unique identifier for the context, you should NOT set this when creating a new context.",
 											),
@@ -3543,8 +3548,9 @@ export const createExperimentResponse = zod
 								zod
 									.object({
 										context_id: zod
-											.number()
+											.string()
 											.or(zod.null())
+											.optional()
 											.describe(
 												"Unique identifier for the context, you should NOT set this when creating a new context.",
 											),
@@ -4614,8 +4620,9 @@ export const listOrganizationExperimentsResponse = zod.object({
 										zod
 											.object({
 												context_id: zod
-													.number()
+													.string()
 													.or(zod.null())
+													.optional()
 													.describe(
 														"Unique identifier for the context, you should NOT set this when creating a new context.",
 													),
@@ -4774,8 +4781,9 @@ export const listOrganizationExperimentsResponse = zod.object({
 										zod
 											.object({
 												context_id: zod
-													.number()
+													.string()
 													.or(zod.null())
+													.optional()
 													.describe(
 														"Unique identifier for the context, you should NOT set this when creating a new context.",
 													),
@@ -4934,8 +4942,9 @@ export const listOrganizationExperimentsResponse = zod.object({
 										zod
 											.object({
 												context_id: zod
-													.number()
+													.string()
 													.or(zod.null())
+													.optional()
 													.describe(
 														"Unique identifier for the context, you should NOT set this when creating a new context.",
 													),
@@ -5748,8 +5757,9 @@ export const getExperimentResponse = zod
 								zod
 									.object({
 										context_id: zod
-											.number()
+											.string()
 											.or(zod.null())
+											.optional()
 											.describe(
 												"Unique identifier for the context, you should NOT set this when creating a new context.",
 											),
@@ -5890,8 +5900,9 @@ export const getExperimentResponse = zod
 								zod
 									.object({
 										context_id: zod
-											.number()
+											.string()
 											.or(zod.null())
+											.optional()
 											.describe(
 												"Unique identifier for the context, you should NOT set this when creating a new context.",
 											),
@@ -6032,8 +6043,9 @@ export const getExperimentResponse = zod
 								zod
 									.object({
 										context_id: zod
-											.number()
+											.string()
 											.or(zod.null())
+											.optional()
 											.describe(
 												"Unique identifier for the context, you should NOT set this when creating a new context.",
 											),
@@ -6327,9 +6339,7 @@ export const getExperimentAssignmentsResponseAssignmentsItemArmNameMax = 100;
 export const getExperimentAssignmentsResponseAssignmentsItemStrataItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentAssignmentsResponseAssignmentsItemStrataMaxOne = 150;
-export const getExperimentAssignmentsResponseAssignmentsItemContextValuesDefault =
-	[];
-export const getExperimentAssignmentsResponseAssignmentsItemContextValuesMax = 10;
+export const getExperimentAssignmentsResponseAssignmentsItemContextValuesMaxOne = 10;
 
 export const getExperimentAssignmentsResponse = zod
 	.object({
@@ -6430,22 +6440,12 @@ export const getExperimentAssignmentsResponse = zod
 						.optional()
 						.describe("The observed outcome for this assignment."),
 					context_values: zod
-						.array(
-							zod
-								.object({
-									context_id: zod
-										.number()
-										.describe("Unique identifier for the context."),
-									context_value: zod.number().describe("Value of the context"),
-								})
-								.describe("Pydantic model for a context input"),
-						)
+						.array(zod.number())
 						.max(
-							getExperimentAssignmentsResponseAssignmentsItemContextValuesMax,
+							getExperimentAssignmentsResponseAssignmentsItemContextValuesMaxOne,
 						)
-						.default(
-							getExperimentAssignmentsResponseAssignmentsItemContextValuesDefault,
-						)
+						.or(zod.null())
+						.optional()
 						.describe(
 							"List of context values for this assignment. If no contexts are used, this will be None.",
 						),
@@ -6495,9 +6495,7 @@ export const getExperimentAssignmentForParticipantResponseAssignmentArmNameMax =
 export const getExperimentAssignmentForParticipantResponseAssignmentStrataItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentAssignmentForParticipantResponseAssignmentStrataMaxOne = 150;
-export const getExperimentAssignmentForParticipantResponseAssignmentContextValuesDefault =
-	[];
-export const getExperimentAssignmentForParticipantResponseAssignmentContextValuesMax = 10;
+export const getExperimentAssignmentForParticipantResponseAssignmentContextValuesMaxOne = 10;
 
 export const getExperimentAssignmentForParticipantResponse = zod
 	.object({
@@ -6567,22 +6565,12 @@ export const getExperimentAssignmentForParticipantResponse = zod
 					.optional()
 					.describe("The observed outcome for this assignment."),
 				context_values: zod
-					.array(
-						zod
-							.object({
-								context_id: zod
-									.number()
-									.describe("Unique identifier for the context."),
-								context_value: zod.number().describe("Value of the context"),
-							})
-							.describe("Pydantic model for a context input"),
-					)
+					.array(zod.number())
 					.max(
-						getExperimentAssignmentForParticipantResponseAssignmentContextValuesMax,
+						getExperimentAssignmentForParticipantResponseAssignmentContextValuesMaxOne,
 					)
-					.default(
-						getExperimentAssignmentForParticipantResponseAssignmentContextValuesDefault,
-					)
+					.or(zod.null())
+					.optional()
 					.describe(
 						"List of context values for this assignment. If no contexts are used, this will be None.",
 					),
@@ -7087,8 +7075,9 @@ export const powerCheckBody = zod.object({
 							zod
 								.object({
 									context_id: zod
-										.number()
+										.string()
 										.or(zod.null())
+										.optional()
 										.describe(
 											"Unique identifier for the context, you should NOT set this when creating a new context.",
 										),
@@ -7225,8 +7214,9 @@ export const powerCheckBody = zod.object({
 							zod
 								.object({
 									context_id: zod
-										.number()
+										.string()
 										.or(zod.null())
+										.optional()
 										.describe(
 											"Unique identifier for the context, you should NOT set this when creating a new context.",
 										),
@@ -7363,8 +7353,9 @@ export const powerCheckBody = zod.object({
 							zod
 								.object({
 									context_id: zod
-										.number()
+										.string()
 										.or(zod.null())
+										.optional()
 										.describe(
 											"Unique identifier for the context, you should NOT set this when creating a new context.",
 										),
