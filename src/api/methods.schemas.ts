@@ -62,6 +62,9 @@ export const ApiOnlyDsnType = {
 	api_only: "api_only",
 } as const;
 
+/**
+ * ApiOnlyDsn describes a datasource where data is included in Evidential API requests.
+ */
 export interface ApiOnlyDsn {
 	type: ApiOnlyDsnType;
 }
@@ -406,17 +409,24 @@ export interface BayesABExperimentSpecOutput {
 	reward_type?: LikelihoodTypes;
 }
 
-export type BqDsnType = (typeof BqDsnType)[keyof typeof BqDsnType];
+export type BqDsnInputType =
+	(typeof BqDsnInputType)[keyof typeof BqDsnInputType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const BqDsnType = {
+export const BqDsnInputType = {
 	bigquery: "bigquery",
 } as const;
 
-export type BqDsnCredentials = GcpServiceAccount | Hidden;
+/**
+ * This value must be a GcpServiceAccount when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained.
+ */
+export type BqDsnInputCredentials = GcpServiceAccount | Hidden;
 
-export interface BqDsn {
-	type: BqDsnType;
+/**
+ * BqDsn describes a connection to a BigQuery database.
+ */
+export interface BqDsnInput {
+	type: BqDsnInputType;
 	/**
 	 * The Google Cloud Project ID containing the dataset.
 	 * @minLength 6
@@ -431,7 +441,44 @@ export interface BqDsn {
 	 * @pattern ^[a-zA-Z0-9_]+$
 	 */
 	dataset_id: string;
-	credentials: BqDsnCredentials;
+	/** This value must be a GcpServiceAccount when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained. */
+	credentials: BqDsnInputCredentials;
+}
+
+export type BqDsnOutputType =
+	(typeof BqDsnOutputType)[keyof typeof BqDsnOutputType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const BqDsnOutputType = {
+	bigquery: "bigquery",
+} as const;
+
+/**
+ * This value must be a GcpServiceAccount when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained.
+ */
+export type BqDsnOutputCredentials = GcpServiceAccount | Hidden;
+
+/**
+ * BqDsn describes a connection to a BigQuery database.
+ */
+export interface BqDsnOutput {
+	type: BqDsnOutputType;
+	/**
+	 * The Google Cloud Project ID containing the dataset.
+	 * @minLength 6
+	 * @maxLength 30
+	 * @pattern ^[a-z0-9-]+$
+	 */
+	project_id: string;
+	/**
+	 * The dataset name.
+	 * @minLength 1
+	 * @maxLength 1024
+	 * @pattern ^[a-zA-Z0-9_]+$
+	 */
+	dataset_id: string;
+	/** This value must be a GcpServiceAccount when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained. */
+	credentials: BqDsnOutputCredentials;
 }
 
 /**
@@ -809,9 +856,9 @@ export interface DesignSpecMetricRequest {
 	metric_target?: DesignSpecMetricRequestMetricTarget;
 }
 
-export type DsnInput = ApiOnlyDsn | PostgresDsn | BqDsn | RedshiftDsn;
+export type DsnInput = ApiOnlyDsn | PostgresDsn | BqDsnInput | RedshiftDsn;
 
-export type DsnOutput = ApiOnlyDsn | PostgresDsn | BqDsn | RedshiftDsn;
+export type DsnOutput = ApiOnlyDsn | PostgresDsn | BqDsnOutput | RedshiftDsn;
 
 /**
  * A navigable link to related information.
@@ -1064,15 +1111,20 @@ export interface FreqExperimentAnalysisResponse {
 	created_at: string;
 }
 
+/**
+ * Describes a Google Cloud Platform service account.
+ */
 export interface GcpServiceAccount {
 	type?: "serviceaccountinfo";
-	/**
-	 * The service account info in the canonical JSON form. Required fields: type, project_id, private_key_id, private_key, client_email.
-	 * @minLength 4
-	 * @maxLength 8000
-	 */
-	content: string;
+	content: GcpServiceAccountBlob;
 }
+
+/**
+ * The service account info in the canonical JSON form. Required fields: type, project_id, private_key_id, private_key, client_email.
+ * @minLength 4
+ * @maxLength 8000
+ */
+export type GcpServiceAccountBlob = string;
 
 export interface GetDatasourceResponse {
 	/** @maxLength 64 */
@@ -1268,6 +1320,9 @@ export interface HTTPValidationError {
 	detail?: ValidationError[];
 }
 
+/**
+ * Hidden represents a credential that is intentionally omitted.
+ */
 export const HiddenValue = {
 	type: "hidden",
 } as const;
@@ -1773,6 +1828,9 @@ export const PostgresDsnType = {
 	postgres: "postgres",
 } as const;
 
+/**
+ * This value must be a RevealedStr when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained.
+ */
 export type PostgresDsnPassword = RevealedStr | Hidden;
 
 export type PostgresDsnSslmode =
@@ -1788,6 +1846,9 @@ export const PostgresDsnSslmode = {
 
 export type PostgresDsnSearchPath = string | null;
 
+/**
+ * PostgresDsn describes a connection to a Postgres-compatible database.
+ */
 export interface PostgresDsn {
 	type: PostgresDsnType;
 	host: string;
@@ -1797,6 +1858,7 @@ export interface PostgresDsn {
 	 */
 	port: number;
 	user: string;
+	/** This value must be a RevealedStr when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained. */
 	password: PostgresDsnPassword;
 	dbname: string;
 	sslmode: PostgresDsnSslmode;
@@ -1978,10 +2040,16 @@ export const RedshiftDsnType = {
 	redshift: "redshift",
 } as const;
 
+/**
+ * This value must be a RevealedStr when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained.
+ */
 export type RedshiftDsnPassword = RevealedStr | Hidden;
 
 export type RedshiftDsnSearchPath = string | null;
 
+/**
+ * RedshiftDsn describes a connection to a Redshift database.
+ */
 export interface RedshiftDsn {
 	type: RedshiftDsnType;
 	host: string;
@@ -1991,6 +2059,7 @@ export interface RedshiftDsn {
 	 */
 	port: number;
 	user: string;
+	/** This value must be a RevealedStr when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained. */
 	password: RedshiftDsnPassword;
 	dbname: string;
 	search_path: RedshiftDsnSearchPath;
@@ -2019,6 +2088,9 @@ export const Relation = {
 	between: "between",
 } as const;
 
+/**
+ * RevealedStr contains a credential.
+ */
 export interface RevealedStr {
 	type?: "revealed";
 	value: string;
@@ -2160,6 +2232,13 @@ export interface WebhookSummary {
 }
 
 export type DeleteWebhookFromOrganizationParams = {
+	/**
+	 * If true, return a 204 even if the resource does not exist.
+	 */
+	allow_missing?: boolean;
+};
+
+export type RemoveMemberFromOrganizationParams = {
 	/**
 	 * If true, return a 204 even if the resource does not exist.
 	 */

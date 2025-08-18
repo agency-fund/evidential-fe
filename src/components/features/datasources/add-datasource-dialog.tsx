@@ -5,7 +5,7 @@ import { Button, Dialog, Flex, RadioGroup, Text, TextField } from '@radix-ui/the
 import { ServiceAccountJsonField } from '@/components/features/datasources/service-account-json-field';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { EyeClosedIcon, EyeOpenIcon, InfoCircledIcon, PlusIcon } from '@radix-ui/react-icons';
-import { BqDsn, PostgresDsn, RedshiftDsn } from '@/api/methods.schemas';
+import { BqDsnInput, PostgresDsn, RedshiftDsn } from '@/api/methods.schemas';
 import { mutate } from 'swr';
 import { PostgresSslModes } from '@/services/typehelper';
 
@@ -48,7 +48,7 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
               const fd = new FormData(event.currentTarget);
               const name = fd.get('name') as string;
 
-              let dsn: PostgresDsn | RedshiftDsn | BqDsn;
+              let dsn: PostgresDsn | RedshiftDsn | BqDsnInput;
               if (dwhType === 'postgres') {
                 dsn = {
                   type: 'postgres',

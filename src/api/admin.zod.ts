@@ -241,6 +241,15 @@ export const removeMemberFromOrganizationParams = zod.object({
 	user_id: zod.string(),
 });
 
+export const removeMemberFromOrganizationQueryAllowMissingDefault = false;
+
+export const removeMemberFromOrganizationQueryParams = zod.object({
+	allow_missing: zod
+		.boolean()
+		.optional()
+		.describe("If true, return a 204 even if the resource does not exist."),
+});
+
 /**
  * Updates an organization's properties.
 
@@ -381,97 +390,132 @@ export const createDatasourceBody = zod.object({
 		.object({
 			type: zod.enum(["api_only"]),
 		})
-		.or(
-			zod.object({
-				type: zod.enum(["postgres"]),
-				host: zod.string(),
-				port: zod
-					.number()
-					.min(createDatasourceBodyDsnPortMin)
-					.max(createDatasourceBodyDsnPortMax),
-				user: zod.string(),
-				password: zod
-					.object({
-						type: zod
-							.string()
-							.default(createDatasourceBodyDsnPasswordTypeDefault),
-						value: zod.string(),
-					})
-					.or(
-						zod.object({
-							type: zod
-								.string()
-								.default(createDatasourceBodyDsnPasswordTypeDefaultOne),
-						}),
-					),
-				dbname: zod.string(),
-				sslmode: zod.enum(["disable", "require", "verify-ca", "verify-full"]),
-				search_path: zod.string().or(zod.null()),
-			}),
+		.describe(
+			"ApiOnlyDsn describes a datasource where data is included in Evidential API requests.",
 		)
 		.or(
-			zod.object({
-				type: zod.enum(["bigquery"]),
-				project_id: zod
-					.string()
-					.min(createDatasourceBodyDsnProjectIdMin)
-					.max(createDatasourceBodyDsnProjectIdMax)
-					.regex(createDatasourceBodyDsnProjectIdRegExp)
-					.describe("The Google Cloud Project ID containing the dataset."),
-				dataset_id: zod
-					.string()
-					.min(1)
-					.max(createDatasourceBodyDsnDatasetIdMax)
-					.regex(createDatasourceBodyDsnDatasetIdRegExp)
-					.describe("The dataset name."),
-				credentials: zod
-					.object({
-						type: zod
-							.string()
-							.default(createDatasourceBodyDsnCredentialsTypeDefault),
-						content: zod
-							.string()
-							.min(createDatasourceBodyDsnCredentialsContentMin)
-							.max(createDatasourceBodyDsnCredentialsContentMax)
-							.describe(
-								"The service account info in the canonical JSON form. Required fields: type, project_id, private_key_id, private_key, client_email.",
-							),
-					})
-					.or(
-						zod.object({
+			zod
+				.object({
+					type: zod.enum(["postgres"]),
+					host: zod.string(),
+					port: zod
+						.number()
+						.min(createDatasourceBodyDsnPortMin)
+						.max(createDatasourceBodyDsnPortMax),
+					user: zod.string(),
+					password: zod
+						.object({
 							type: zod
 								.string()
-								.default(createDatasourceBodyDsnCredentialsTypeDefaultOne),
-						}),
-					),
-			}),
+								.default(createDatasourceBodyDsnPasswordTypeDefault),
+							value: zod.string(),
+						})
+						.describe("RevealedStr contains a credential.")
+						.or(
+							zod
+								.object({
+									type: zod
+										.string()
+										.default(createDatasourceBodyDsnPasswordTypeDefaultOne),
+								})
+								.describe(
+									"Hidden represents a credential that is intentionally omitted.",
+								),
+						)
+						.describe(
+							"This value must be a RevealedStr when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained.",
+						),
+					dbname: zod.string(),
+					sslmode: zod.enum(["disable", "require", "verify-ca", "verify-full"]),
+					search_path: zod.string().or(zod.null()),
+				})
+				.describe(
+					"PostgresDsn describes a connection to a Postgres-compatible database.",
+				),
 		)
 		.or(
-			zod.object({
-				type: zod.enum(["redshift"]),
-				host: zod.string(),
-				port: zod
-					.number()
-					.min(createDatasourceBodyDsnPortMinOne)
-					.max(createDatasourceBodyDsnPortMaxOne),
-				user: zod.string(),
-				password: zod
-					.object({
-						type: zod
-							.string()
-							.default(createDatasourceBodyDsnPasswordTypeDefaultTwo),
-						value: zod.string(),
-					})
-					.or(
-						zod.object({
+			zod
+				.object({
+					type: zod.enum(["bigquery"]),
+					project_id: zod
+						.string()
+						.min(createDatasourceBodyDsnProjectIdMin)
+						.max(createDatasourceBodyDsnProjectIdMax)
+						.regex(createDatasourceBodyDsnProjectIdRegExp)
+						.describe("The Google Cloud Project ID containing the dataset."),
+					dataset_id: zod
+						.string()
+						.min(1)
+						.max(createDatasourceBodyDsnDatasetIdMax)
+						.regex(createDatasourceBodyDsnDatasetIdRegExp)
+						.describe("The dataset name."),
+					credentials: zod
+						.object({
 							type: zod
 								.string()
-								.default(createDatasourceBodyDsnPasswordTypeDefaultThree),
-						}),
-					),
-				dbname: zod.string(),
-				search_path: zod.string().or(zod.null()),
-			}),
+								.default(createDatasourceBodyDsnCredentialsTypeDefault),
+							content: zod
+								.string()
+								.min(createDatasourceBodyDsnCredentialsContentMin)
+								.max(createDatasourceBodyDsnCredentialsContentMax)
+								.describe(
+									"The service account info in the canonical JSON form. Required fields: type, project_id, private_key_id, private_key, client_email.",
+								),
+						})
+						.describe("Describes a Google Cloud Platform service account.")
+						.or(
+							zod
+								.object({
+									type: zod
+										.string()
+										.default(createDatasourceBodyDsnCredentialsTypeDefaultOne),
+								})
+								.describe(
+									"Hidden represents a credential that is intentionally omitted.",
+								),
+						)
+						.describe(
+							"This value must be a GcpServiceAccount when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained.",
+						),
+				})
+				.describe("BqDsn describes a connection to a BigQuery database."),
+		)
+		.or(
+			zod
+				.object({
+					type: zod.enum(["redshift"]),
+					host: zod.string(),
+					port: zod
+						.number()
+						.min(createDatasourceBodyDsnPortMinOne)
+						.max(createDatasourceBodyDsnPortMaxOne),
+					user: zod.string(),
+					password: zod
+						.object({
+							type: zod
+								.string()
+								.default(createDatasourceBodyDsnPasswordTypeDefaultTwo),
+							value: zod.string(),
+						})
+						.describe("RevealedStr contains a credential.")
+						.or(
+							zod
+								.object({
+									type: zod
+										.string()
+										.default(createDatasourceBodyDsnPasswordTypeDefaultThree),
+								})
+								.describe(
+									"Hidden represents a credential that is intentionally omitted.",
+								),
+						)
+						.describe(
+							"This value must be a RevealedStr when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained.",
+						),
+					dbname: zod.string(),
+					search_path: zod.string().or(zod.null()),
+				})
+				.describe("RedshiftDsn describes a connection to a Redshift database."),
 		),
 });
 
@@ -528,97 +572,132 @@ export const updateDatasourceBody = zod.object({
 		.object({
 			type: zod.enum(["api_only"]),
 		})
-		.or(
-			zod.object({
-				type: zod.enum(["postgres"]),
-				host: zod.string(),
-				port: zod
-					.number()
-					.min(updateDatasourceBodyDsnPortMin)
-					.max(updateDatasourceBodyDsnPortMax),
-				user: zod.string(),
-				password: zod
-					.object({
-						type: zod
-							.string()
-							.default(updateDatasourceBodyDsnPasswordTypeDefault),
-						value: zod.string(),
-					})
-					.or(
-						zod.object({
-							type: zod
-								.string()
-								.default(updateDatasourceBodyDsnPasswordTypeDefaultOne),
-						}),
-					),
-				dbname: zod.string(),
-				sslmode: zod.enum(["disable", "require", "verify-ca", "verify-full"]),
-				search_path: zod.string().or(zod.null()),
-			}),
+		.describe(
+			"ApiOnlyDsn describes a datasource where data is included in Evidential API requests.",
 		)
 		.or(
-			zod.object({
-				type: zod.enum(["bigquery"]),
-				project_id: zod
-					.string()
-					.min(updateDatasourceBodyDsnProjectIdMin)
-					.max(updateDatasourceBodyDsnProjectIdMax)
-					.regex(updateDatasourceBodyDsnProjectIdRegExp)
-					.describe("The Google Cloud Project ID containing the dataset."),
-				dataset_id: zod
-					.string()
-					.min(1)
-					.max(updateDatasourceBodyDsnDatasetIdMax)
-					.regex(updateDatasourceBodyDsnDatasetIdRegExp)
-					.describe("The dataset name."),
-				credentials: zod
-					.object({
-						type: zod
-							.string()
-							.default(updateDatasourceBodyDsnCredentialsTypeDefault),
-						content: zod
-							.string()
-							.min(updateDatasourceBodyDsnCredentialsContentMin)
-							.max(updateDatasourceBodyDsnCredentialsContentMax)
-							.describe(
-								"The service account info in the canonical JSON form. Required fields: type, project_id, private_key_id, private_key, client_email.",
-							),
-					})
-					.or(
-						zod.object({
+			zod
+				.object({
+					type: zod.enum(["postgres"]),
+					host: zod.string(),
+					port: zod
+						.number()
+						.min(updateDatasourceBodyDsnPortMin)
+						.max(updateDatasourceBodyDsnPortMax),
+					user: zod.string(),
+					password: zod
+						.object({
 							type: zod
 								.string()
-								.default(updateDatasourceBodyDsnCredentialsTypeDefaultOne),
-						}),
-					),
-			}),
+								.default(updateDatasourceBodyDsnPasswordTypeDefault),
+							value: zod.string(),
+						})
+						.describe("RevealedStr contains a credential.")
+						.or(
+							zod
+								.object({
+									type: zod
+										.string()
+										.default(updateDatasourceBodyDsnPasswordTypeDefaultOne),
+								})
+								.describe(
+									"Hidden represents a credential that is intentionally omitted.",
+								),
+						)
+						.describe(
+							"This value must be a RevealedStr when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained.",
+						),
+					dbname: zod.string(),
+					sslmode: zod.enum(["disable", "require", "verify-ca", "verify-full"]),
+					search_path: zod.string().or(zod.null()),
+				})
+				.describe(
+					"PostgresDsn describes a connection to a Postgres-compatible database.",
+				),
 		)
 		.or(
-			zod.object({
-				type: zod.enum(["redshift"]),
-				host: zod.string(),
-				port: zod
-					.number()
-					.min(updateDatasourceBodyDsnPortMinOne)
-					.max(updateDatasourceBodyDsnPortMaxOne),
-				user: zod.string(),
-				password: zod
-					.object({
-						type: zod
-							.string()
-							.default(updateDatasourceBodyDsnPasswordTypeDefaultTwo),
-						value: zod.string(),
-					})
-					.or(
-						zod.object({
+			zod
+				.object({
+					type: zod.enum(["bigquery"]),
+					project_id: zod
+						.string()
+						.min(updateDatasourceBodyDsnProjectIdMin)
+						.max(updateDatasourceBodyDsnProjectIdMax)
+						.regex(updateDatasourceBodyDsnProjectIdRegExp)
+						.describe("The Google Cloud Project ID containing the dataset."),
+					dataset_id: zod
+						.string()
+						.min(1)
+						.max(updateDatasourceBodyDsnDatasetIdMax)
+						.regex(updateDatasourceBodyDsnDatasetIdRegExp)
+						.describe("The dataset name."),
+					credentials: zod
+						.object({
 							type: zod
 								.string()
-								.default(updateDatasourceBodyDsnPasswordTypeDefaultThree),
-						}),
-					),
-				dbname: zod.string(),
-				search_path: zod.string().or(zod.null()),
-			}),
+								.default(updateDatasourceBodyDsnCredentialsTypeDefault),
+							content: zod
+								.string()
+								.min(updateDatasourceBodyDsnCredentialsContentMin)
+								.max(updateDatasourceBodyDsnCredentialsContentMax)
+								.describe(
+									"The service account info in the canonical JSON form. Required fields: type, project_id, private_key_id, private_key, client_email.",
+								),
+						})
+						.describe("Describes a Google Cloud Platform service account.")
+						.or(
+							zod
+								.object({
+									type: zod
+										.string()
+										.default(updateDatasourceBodyDsnCredentialsTypeDefaultOne),
+								})
+								.describe(
+									"Hidden represents a credential that is intentionally omitted.",
+								),
+						)
+						.describe(
+							"This value must be a GcpServiceAccount when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained.",
+						),
+				})
+				.describe("BqDsn describes a connection to a BigQuery database."),
+		)
+		.or(
+			zod
+				.object({
+					type: zod.enum(["redshift"]),
+					host: zod.string(),
+					port: zod
+						.number()
+						.min(updateDatasourceBodyDsnPortMinOne)
+						.max(updateDatasourceBodyDsnPortMaxOne),
+					user: zod.string(),
+					password: zod
+						.object({
+							type: zod
+								.string()
+								.default(updateDatasourceBodyDsnPasswordTypeDefaultTwo),
+							value: zod.string(),
+						})
+						.describe("RevealedStr contains a credential.")
+						.or(
+							zod
+								.object({
+									type: zod
+										.string()
+										.default(updateDatasourceBodyDsnPasswordTypeDefaultThree),
+								})
+								.describe(
+									"Hidden represents a credential that is intentionally omitted.",
+								),
+						)
+						.describe(
+							"This value must be a RevealedStr when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained.",
+						),
+					dbname: zod.string(),
+					search_path: zod.string().or(zod.null()),
+				})
+				.describe("RedshiftDsn describes a connection to a Redshift database."),
 		)
 		.or(zod.null())
 		.optional(),
@@ -674,97 +753,132 @@ export const getDatasourceResponse = zod.object({
 		.object({
 			type: zod.enum(["api_only"]),
 		})
-		.or(
-			zod.object({
-				type: zod.enum(["postgres"]),
-				host: zod.string(),
-				port: zod
-					.number()
-					.min(getDatasourceResponseDsnPortMin)
-					.max(getDatasourceResponseDsnPortMax),
-				user: zod.string(),
-				password: zod
-					.object({
-						type: zod
-							.string()
-							.default(getDatasourceResponseDsnPasswordTypeDefault),
-						value: zod.string(),
-					})
-					.or(
-						zod.object({
-							type: zod
-								.string()
-								.default(getDatasourceResponseDsnPasswordTypeDefaultOne),
-						}),
-					),
-				dbname: zod.string(),
-				sslmode: zod.enum(["disable", "require", "verify-ca", "verify-full"]),
-				search_path: zod.string().or(zod.null()),
-			}),
+		.describe(
+			"ApiOnlyDsn describes a datasource where data is included in Evidential API requests.",
 		)
 		.or(
-			zod.object({
-				type: zod.enum(["bigquery"]),
-				project_id: zod
-					.string()
-					.min(getDatasourceResponseDsnProjectIdMin)
-					.max(getDatasourceResponseDsnProjectIdMax)
-					.regex(getDatasourceResponseDsnProjectIdRegExp)
-					.describe("The Google Cloud Project ID containing the dataset."),
-				dataset_id: zod
-					.string()
-					.min(1)
-					.max(getDatasourceResponseDsnDatasetIdMax)
-					.regex(getDatasourceResponseDsnDatasetIdRegExp)
-					.describe("The dataset name."),
-				credentials: zod
-					.object({
-						type: zod
-							.string()
-							.default(getDatasourceResponseDsnCredentialsTypeDefault),
-						content: zod
-							.string()
-							.min(getDatasourceResponseDsnCredentialsContentMin)
-							.max(getDatasourceResponseDsnCredentialsContentMax)
-							.describe(
-								"The service account info in the canonical JSON form. Required fields: type, project_id, private_key_id, private_key, client_email.",
-							),
-					})
-					.or(
-						zod.object({
+			zod
+				.object({
+					type: zod.enum(["postgres"]),
+					host: zod.string(),
+					port: zod
+						.number()
+						.min(getDatasourceResponseDsnPortMin)
+						.max(getDatasourceResponseDsnPortMax),
+					user: zod.string(),
+					password: zod
+						.object({
 							type: zod
 								.string()
-								.default(getDatasourceResponseDsnCredentialsTypeDefaultOne),
-						}),
-					),
-			}),
+								.default(getDatasourceResponseDsnPasswordTypeDefault),
+							value: zod.string(),
+						})
+						.describe("RevealedStr contains a credential.")
+						.or(
+							zod
+								.object({
+									type: zod
+										.string()
+										.default(getDatasourceResponseDsnPasswordTypeDefaultOne),
+								})
+								.describe(
+									"Hidden represents a credential that is intentionally omitted.",
+								),
+						)
+						.describe(
+							"This value must be a RevealedStr when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained.",
+						),
+					dbname: zod.string(),
+					sslmode: zod.enum(["disable", "require", "verify-ca", "verify-full"]),
+					search_path: zod.string().or(zod.null()),
+				})
+				.describe(
+					"PostgresDsn describes a connection to a Postgres-compatible database.",
+				),
 		)
 		.or(
-			zod.object({
-				type: zod.enum(["redshift"]),
-				host: zod.string(),
-				port: zod
-					.number()
-					.min(getDatasourceResponseDsnPortMinOne)
-					.max(getDatasourceResponseDsnPortMaxOne),
-				user: zod.string(),
-				password: zod
-					.object({
-						type: zod
-							.string()
-							.default(getDatasourceResponseDsnPasswordTypeDefaultTwo),
-						value: zod.string(),
-					})
-					.or(
-						zod.object({
+			zod
+				.object({
+					type: zod.enum(["bigquery"]),
+					project_id: zod
+						.string()
+						.min(getDatasourceResponseDsnProjectIdMin)
+						.max(getDatasourceResponseDsnProjectIdMax)
+						.regex(getDatasourceResponseDsnProjectIdRegExp)
+						.describe("The Google Cloud Project ID containing the dataset."),
+					dataset_id: zod
+						.string()
+						.min(1)
+						.max(getDatasourceResponseDsnDatasetIdMax)
+						.regex(getDatasourceResponseDsnDatasetIdRegExp)
+						.describe("The dataset name."),
+					credentials: zod
+						.object({
 							type: zod
 								.string()
-								.default(getDatasourceResponseDsnPasswordTypeDefaultThree),
-						}),
-					),
-				dbname: zod.string(),
-				search_path: zod.string().or(zod.null()),
-			}),
+								.default(getDatasourceResponseDsnCredentialsTypeDefault),
+							content: zod
+								.string()
+								.min(getDatasourceResponseDsnCredentialsContentMin)
+								.max(getDatasourceResponseDsnCredentialsContentMax)
+								.describe(
+									"The service account info in the canonical JSON form. Required fields: type, project_id, private_key_id, private_key, client_email.",
+								),
+						})
+						.describe("Describes a Google Cloud Platform service account.")
+						.or(
+							zod
+								.object({
+									type: zod
+										.string()
+										.default(getDatasourceResponseDsnCredentialsTypeDefaultOne),
+								})
+								.describe(
+									"Hidden represents a credential that is intentionally omitted.",
+								),
+						)
+						.describe(
+							"This value must be a GcpServiceAccount when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained.",
+						),
+				})
+				.describe("BqDsn describes a connection to a BigQuery database."),
+		)
+		.or(
+			zod
+				.object({
+					type: zod.enum(["redshift"]),
+					host: zod.string(),
+					port: zod
+						.number()
+						.min(getDatasourceResponseDsnPortMinOne)
+						.max(getDatasourceResponseDsnPortMaxOne),
+					user: zod.string(),
+					password: zod
+						.object({
+							type: zod
+								.string()
+								.default(getDatasourceResponseDsnPasswordTypeDefaultTwo),
+							value: zod.string(),
+						})
+						.describe("RevealedStr contains a credential.")
+						.or(
+							zod
+								.object({
+									type: zod
+										.string()
+										.default(getDatasourceResponseDsnPasswordTypeDefaultThree),
+								})
+								.describe(
+									"Hidden represents a credential that is intentionally omitted.",
+								),
+						)
+						.describe(
+							"This value must be a RevealedStr when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained.",
+						),
+					dbname: zod.string(),
+					search_path: zod.string().or(zod.null()),
+				})
+				.describe("RedshiftDsn describes a connection to a Redshift database."),
 		),
 	organization_id: zod.string().max(getDatasourceResponseOrganizationIdMax),
 	organization_name: zod.string().max(getDatasourceResponseOrganizationNameMax),

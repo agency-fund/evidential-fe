@@ -10,9 +10,14 @@ interface DeleteUserDialogProps {
 }
 
 export function DeleteUserDialog({ organizationId, userId }: DeleteUserDialogProps) {
-  const { trigger } = useRemoveMemberFromOrganization(organizationId, userId, {
-    swr: { onSuccess: () => mutate(getGetOrganizationKey(organizationId)) },
-  });
+  const { trigger } = useRemoveMemberFromOrganization(
+    organizationId,
+    userId,
+    { allow_missing: true },
+    {
+      swr: { onSuccess: () => mutate(getGetOrganizationKey(organizationId)) },
+    },
+  );
 
   return (
     <AlertDialog.Root>
