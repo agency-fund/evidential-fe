@@ -101,7 +101,6 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
     }
   };
 
-  // --- Basic info functions ---
   const updateBasicInfo = (field: keyof MABFormData, value: string) => {
     onFormDataChange({
       ...formData,
@@ -109,7 +108,6 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
     });
   };
 
-  // --- Outcome functions ---
   const handleOutcomeChange = (outcomeType: OutcomeType) => {
     // Auto-map prior type based on outcome type for MAB
     const priorType: PriorType =
@@ -156,7 +154,6 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
     ); // Ensure type consistency
   };
 
-  // --- Context functions ---
   const updateContext = (index: number, updatedContext: Partial<Context>) => {
     const cmabFormData = formData as CMABFormData;
     const updatedContexts = cmabFormData.contexts.map((context, i) =>
@@ -283,7 +280,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
           </Box>
 
           <Flex gap="4">
-            <Box style={{ flex: 1 }}>
+            <Box>
               <Text as="label" size="2" weight="bold" mb="6px">
                 Start Date
               </Text>
@@ -293,7 +290,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
                 onChange={(e) => updateBasicInfo('startDate', e.target.value)}
               />
             </Box>
-            <Box style={{ flex: 1 }}>
+            <Box>
               <Text as="label" size="2" weight="bold" mb="6px">
                 End Date
               </Text>

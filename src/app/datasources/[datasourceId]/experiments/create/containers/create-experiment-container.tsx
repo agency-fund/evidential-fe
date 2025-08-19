@@ -4,7 +4,7 @@ import { Container, Flex, Heading, Box, Text } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
 import {
   ExperimentType,
-  FreqExperimentsList,
+  isFreqExperimentType,
   ExperimentFormData,
   FrequentABFormData,
   MABFormData,
@@ -25,7 +25,7 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
   const params = useParams();
   const datasourceId = params.datasourceId as string;
   const { data } = useGetDatasource(datasourceId);
-  const ds_driver = data?.config.dwh.driver;
+  const dsDriver = data?.dsn.type;
 
   const [selectedExperimentType, setSelectedExperimentType] = useState<ExperimentType>();
   const [showTypeSelection, setShowTypeSelection] = useState(true);
@@ -80,34 +80,6 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
           ],
         } as MABFormData;
 
-      case 'cmab_online':
-        return {
-          ...baseData,
-          experimentType: 'cmab_online',
-          priorType: 'normal',
-          arms: [
-            {
-              arm_name: 'Control',
-              arm_description: 'Control',
-              mean_prior: 0,
-              stddev_prior: 1,
-            },
-            {
-              arm_name: 'Treatment',
-              arm_description: 'Treatment',
-              mean_prior: 1,
-              stddev_prior: 1,
-            },
-          ],
-          contexts: [
-            {
-              name: 'Context Name',
-              description: 'Context Description',
-              type: 'real-valued',
-            },
-          ],
-        } as CMABFormData;
-
       default:
         throw new Error(`Unsupported experiment type: ${experimentType}`);
     }
@@ -119,7 +91,7 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
   };
 
   const handleContinue = () => {
-    if (selectedExperimentType && !FreqExperimentsList.includes(selectedExperimentType)) {
+    if (selectedExperimentType && !isFreqExperimentType(selectedExperimentType)) {
       setShowTypeSelection(false);
     }
   };
@@ -173,19 +145,17 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
           </Box>
 
           <ExperimentTypeSelector
-            ds_driver={ds_driver || 'none'}
+            dsDriver={dsDriver || 'none'}
             selectedType={selectedExperimentType}
             onTypeSelect={handleExperimentTypeSelect}
           />
 
           <NavigationButtons
             onNext={
-              selectedExperimentType && !FreqExperimentsList.includes(selectedExperimentType)
-                ? handleContinue
-                : undefined
+              selectedExperimentType && !isFreqExperimentType(selectedExperimentType) ? handleContinue : undefined
             }
             nextLabel="Continue"
-            nextDisabled={!selectedExperimentType || FreqExperimentsList.includes(selectedExperimentType)}
+            nextDisabled={!selectedExperimentType || isFreqExperimentType(selectedExperimentType)}
             showBack={false}
           />
         </Flex>
