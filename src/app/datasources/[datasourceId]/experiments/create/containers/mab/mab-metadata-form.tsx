@@ -12,6 +12,7 @@ import {
   CheckboxCards,
   Grid,
   Heading,
+  RadioCards,
 } from '@radix-ui/themes';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import {
@@ -313,16 +314,25 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
           Select outcome type
         </Text>
 
-        <Flex direction="column" gap="3">
-          {OUTCOME_OPTIONS.map((option) => (
-            <OutcomeOptionCard
-              key={option.type}
-              option={option}
-              isSelected={formData.outcomeType === option.type}
-              onSelect={() => handleOutcomeChange(option.type)}
-            />
-          ))}
-        </Flex>
+        <Box maxWidth={'700px'}>
+          <RadioCards.Root
+            defaultValue={formData.outcomeType}
+            onValueChange={(value) => handleOutcomeChange(value as OutcomeType)}
+          >
+            {OUTCOME_OPTIONS.map((option) => (
+              <RadioCards.Item key={option.type} value={String(option.type)}>
+                <Flex direction="column" width="100%">
+                  <Text size="2" weight="bold">
+                    {option.title}
+                  </Text>
+                  <Text size="1" color="gray">
+                    {option.description}
+                  </Text>
+                </Flex>
+              </RadioCards.Item>
+            ))}
+          </RadioCards.Root>
+        </Box>
         {formData.priorType && formData.outcomeType && (
           <Box p="3">
             <Flex direction="column" gap="1">
@@ -439,34 +449,6 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
   );
 }
 
-interface OutcomeOptionCardProps {
-  option: OutcomeOption;
-  isSelected: boolean;
-  onSelect: () => void;
-}
-
-function OutcomeOptionCard({ option, isSelected, onSelect }: OutcomeOptionCardProps) {
-  return (
-    <Card
-      size="2"
-      onClick={onSelect}
-      asChild
-      style={isSelected ? { border: '2px solid var(--accent-9)', backgroundColor: 'var(--accent-2)' } : {}}
-    >
-      <Box as="div">
-        <Flex direction="column" gap="1">
-          <Text size="2" weight="bold">
-            {option.title}
-          </Text>
-          <Text size="1" color="gray">
-            {option.description}
-          </Text>
-        </Flex>
-      </Box>
-    </Card>
-  );
-}
-
 interface ContextCardProps {
   context: Context;
   contextIndex: number;
@@ -521,20 +503,14 @@ function ContextCard({ context, contextIndex, canDelete, onUpdate, onDelete }: C
         <Text as="label" size="2" weight="bold">
           Context Variable Type
         </Text>
-        <Flex direction="row" gap="1">
-          {CONTEXT_TYPE_OPTIONS.map((option) => (
-            <Card
-              key={option.type}
-              onClick={() => onUpdate({ type: option.type })}
-              asChild
-              style={
-                context.type === option.type
-                  ? { border: '2px solid var(--accent-9)', backgroundColor: 'var(--accent-2)', width: '35%' }
-                  : { width: '35%' }
-              }
-            >
-              <Box as="div">
-                <Flex direction="column" gap="1">
+        <Box maxWidth={'600px'}>
+          <RadioCards.Root
+            defaultValue={context.type}
+            onValueChange={(value) => onUpdate({ type: value as ContextType })}
+          >
+            {CONTEXT_TYPE_OPTIONS.map((option) => (
+              <RadioCards.Item key={option.type} value={option.type}>
+                <Flex direction="column" width="100%">
                   <Text size="2" weight="bold">
                     {option.title}
                   </Text>
@@ -542,10 +518,10 @@ function ContextCard({ context, contextIndex, canDelete, onUpdate, onDelete }: C
                     {option.description}
                   </Text>
                 </Flex>
-              </Box>
-            </Card>
-          ))}
-        </Flex>
+              </RadioCards.Item>
+            ))}
+          </RadioCards.Root>
+        </Box>
       </Flex>
     </Card>
   );
