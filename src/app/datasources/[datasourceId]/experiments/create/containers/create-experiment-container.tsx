@@ -4,10 +4,10 @@ import { Container, Flex, Heading, Box, Text } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
 import {
   ExperimentType,
-  FreqExperimentsList,
   ExperimentFormData,
   FrequentABFormData,
   MABFormData,
+  isFreqExperimentType,
 } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { WebhookSummary } from '@/api/methods.schemas';
 import { ExperimentTypeSelector } from '@/components/features/experiments/experiment-type-selector';
@@ -90,7 +90,7 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
   };
 
   const handleContinue = () => {
-    if (selectedExperimentType && !FreqExperimentsList.includes(selectedExperimentType)) {
+    if (selectedExperimentType && !isFreqExperimentType(selectedExperimentType)) {
       setShowTypeSelection(false);
     }
   };
@@ -150,12 +150,10 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
 
           <NavigationButtons
             onNext={
-              selectedExperimentType && !FreqExperimentsList.includes(selectedExperimentType)
-                ? handleContinue
-                : undefined
+              selectedExperimentType && !isFreqExperimentType(selectedExperimentType) ? handleContinue : undefined
             }
             nextLabel="Continue"
-            nextDisabled={!selectedExperimentType || FreqExperimentsList.includes(selectedExperimentType)}
+            nextDisabled={!selectedExperimentType || isFreqExperimentType(selectedExperimentType)}
             showBack={false}
           />
         </Flex>

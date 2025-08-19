@@ -4,7 +4,7 @@ import { Box, Card, Flex, Text, Badge, Dialog, Button, Grid } from '@radix-ui/th
 import {
   ExperimentType,
   AssignmentType,
-  FreqExperimentsList,
+  isFreqExperimentType,
 } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { ExperimentTypeOption, ExperimentTypeCard } from '@/components/features/experiments/experiment-type-card';
 
@@ -64,7 +64,8 @@ export function ExperimentTypeSelector({ selectedType, dsDriver, onTypeSelect }:
   const [tempSelectedAssignment, setTempSelectedAssignment] = useState<AssignmentType>();
 
   const handleTypeSelect = (type: ExperimentType) => {
-    if (FreqExperimentsList.includes(type)) {
+    console.log(type, isFreqExperimentType(type));
+    if (isFreqExperimentType(type)) {
       setShowAssignmentDialog(true);
     } else {
       onTypeSelect(type);

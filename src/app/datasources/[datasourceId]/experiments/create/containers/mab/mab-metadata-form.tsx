@@ -218,7 +218,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
           </Box>
 
           <Flex gap="4">
-            <Box style={{ flex: 1 }}>
+            <Box>
               <Text as="label" size="2" weight="bold" mb="6px">
                 Start Date
               </Text>
@@ -228,7 +228,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
                 onChange={(e) => updateBasicInfo('startDate', e.target.value)}
               />
             </Box>
-            <Box style={{ flex: 1 }}>
+            <Box>
               <Text as="label" size="2" weight="bold" mb="6px">
                 End Date
               </Text>
@@ -381,7 +381,7 @@ function OutcomeOptionCard({ option, isSelected, onSelect }: OutcomeOptionCardPr
 interface ArmCardProps {
   arm: MABArm;
   armIndex: number;
-  priorType: 'beta' | 'normal';
+  priorType: PriorType;
   canDelete: boolean;
   onUpdate: (updatedArm: Partial<MABArm>) => void;
   onDelete: () => void;
