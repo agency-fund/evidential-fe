@@ -1,11 +1,32 @@
-import { Arm, FilterInput, PowerResponseOutput, CreateExperimentResponse } from '@/api/methods.schemas';
+import {
+  Arm,
+  FilterInput,
+  PowerResponseOutput,
+  CreateExperimentResponse,
+  DesignSpecInput,
+  PreassignedFrequentistExperimentSpecInputExperimentType,
+  OnlineFrequentistExperimentSpecInputExperimentType,
+  OnlineFrequentistExperimentSpecInput,
+  PreassignedFrequentistExperimentSpecInput,
+  MABExperimentSpecInput,
+  Context as ContextSpec,
+  MABExperimentSpecInputExperimentType,
+} from '@/api/methods.schemas';
 
-export type ExperimentType = 'freq_preassigned' | 'freq_online' | 'mab_online' | 'bayes_ab_online' | 'cmab_online';
-export type FreqExperimentType = 'freq_preassigned' | 'freq_online';
+export type ExperimentType = DesignSpecInput['experiment_type'];
+
+// Define the type alias using imported types
+export function isFreqExperimentType(type: string): boolean {
+  return (
+    type in PreassignedFrequentistExperimentSpecInputExperimentType ||
+    type in OnlineFrequentistExperimentSpecInputExperimentType
+  );
+}
+
 export type AssignmentType = 'preassigned' | 'online';
-export type PriorType = 'beta' | 'normal';
-export type OutcomeType = 'binary' | 'real-valued';
-export type ContextVariableType = 'binary' | 'real-valued';
+export type PriorType = MABExperimentSpecInput['prior_type'];
+export type OutcomeType = MABExperimentSpecInput['reward_type'];
+export type ContextVariableType = ContextSpec['value_type'];
 
 export type MetricWithMDE = {
   metricName: string;
@@ -13,7 +34,7 @@ export type MetricWithMDE = {
 };
 
 // Context variable configuration for CMAB
-export type ContextVariable = {
+export type Context = {
   name: string;
   description: string;
   type: ContextVariableType;
@@ -47,7 +68,9 @@ export type BaseExperimentFormData = {
 };
 
 export type FrequentABFormData = BaseExperimentFormData & {
-  experimentType: FreqExperimentType;
+  experimentType:
+    | PreassignedFrequentistExperimentSpecInputExperimentType
+    | OnlineFrequentistExperimentSpecInputExperimentType;
   arms: Omit<Arm, 'arm_id'>[];
   primaryMetric?: MetricWithMDE;
   secondaryMetrics: MetricWithMDE[];
@@ -65,7 +88,7 @@ export type FrequentABFormData = BaseExperimentFormData & {
 };
 
 export type MABFormData = BaseExperimentFormData & {
-  experimentType: 'mab_online';
+  experimentType: MABExperimentSpecInputExperimentType;
   arms: MABArm[];
   priorType: PriorType;
   outcomeType: OutcomeType;
@@ -79,7 +102,14 @@ export type ExperimentFormData = FrequentABFormData | MABFormData;
 export const EXPERIMENT_STEP_FLOWS = {
   freq_online: ['type', 'metadata', 'design', 'summary'],
   freq_preassigned: ['type', 'metadata', 'design', 'summary'],
-  mab_online: ['type', 'design', 'metadata', 'summary'],
+  mab_online: ['type', 'metadata', 'summary'],
   bayes_ab_online: ['type', 'design', 'metadata', 'summary'],
   cmab_online: ['type', 'context', 'design', 'metadata', 'summary'],
+} as const;
+
+export const STEP_TITLES: Record<string, string> = {
+  type: 'Experiment Type',
+  design: 'Experiment Design',
+  metadata: 'Experiment Metadata',
+  summary: 'Experiment Summary',
 } as const;

@@ -14,7 +14,7 @@ import {
   Heading,
 } from '@radix-ui/themes';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
-import { MABFormData, MABArm } from '@/app/datasources/[datasourceId]/experiments/create/types';
+import { MABFormData, MABArm, PriorType, OutcomeType } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { useCreateExperiment } from '@/api/admin';
@@ -29,6 +29,27 @@ interface MABMetadataFormProps {
   onNext: () => void;
   onBack: () => void;
 }
+
+interface OutcomeOption {
+  type: OutcomeType;
+  title: string;
+  description: string;
+}
+
+const OUTCOME_OPTIONS: OutcomeOption[] = [
+  {
+    type: 'binary',
+    title: 'Binary',
+    description:
+      'Yes/No outcomes: conversions, clicks, sign-ups, purchases. Results are expressed as percentages or rates.',
+  },
+  {
+    type: 'real-valued',
+    title: 'Real-valued',
+    description:
+      'Continuous numeric outcomes: revenue per user, time spent, satisfaction scores, any measurable quantity.',
+  },
+];
 
 export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, onBack }: MABMetadataFormProps) {
   const { trigger: triggerCreateExperiment, error: createExperimentError } = useCreateExperiment(
@@ -59,6 +80,49 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
       ...formData,
       [field]: value,
     });
+  };
+
+  const handleOutcomeChange = (outcomeType: OutcomeType) => {
+    // Auto-map prior type based on outcome type for MAB
+    const priorType: PriorType = outcomeType === 'binary' ? 'beta' : 'normal';
+
+    // Update existing arms to have the correct prior parameters
+    const updatedArms = formData.arms.map((arm) => {
+      const baseArm = {
+        arm_name: arm.arm_name,
+        arm_description: arm.arm_description,
+      };
+
+      if (priorType === 'beta') {
+        // Convert to beta parameters (or use defaults)
+        return {
+          ...baseArm,
+          alpha_prior: arm.alpha_prior || 1,
+          beta_prior: arm.beta_prior || 1,
+          // Remove normal parameters
+          mean_prior: undefined,
+          stddev_prior: undefined,
+        };
+      } else {
+        // Convert to normal parameters (or use defaults)
+        return {
+          ...baseArm,
+          mean_prior: arm.mean_prior ?? 0,
+          stddev_prior: arm.stddev_prior || 1,
+          // Remove beta parameters
+          alpha_prior: undefined,
+          beta_prior: undefined,
+        };
+      }
+    });
+
+    const updatedData = {
+      ...formData,
+      outcomeType,
+      priorType, // Automatically set based on outcome
+      arms: updatedArms, // Update arms with correct parameters
+    };
+    onFormDataChange(updatedData);
   };
 
   const updateArm = (index: number, updatedArm: Partial<MABArm>) => {
@@ -114,8 +178,8 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
     const basicValid =
       formData.name.trim() &&
       formData.hypothesis.trim() &&
-      formData.priorType && // Prior type must be selected in design step
-      formData.outcomeType && // Outcome type must be selected in design step
+      formData.priorType &&
+      formData.outcomeType &&
       formData.arms.length >= 2;
 
     const armsValid = formData.arms.every((arm) => arm.arm_name.trim() && isPriorParamValid(arm));
@@ -124,10 +188,10 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
   };
 
   return (
-    <Flex direction="column" gap="6">
+    <Flex direction="column" gap="4">
       {/* Basic Information */}
       <SectionCard title="Basic Information">
-        <Flex direction="column" gap="4">
+        <Flex direction="column" gap="3">
           <Flex gap="4">
             <Box width="100%">
               <Text as="label" size="2" weight="bold" mb="6px">
@@ -178,27 +242,47 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
         </Flex>
       </SectionCard>
 
+      {/* Outcome Type */}
+      <SectionCard title="Outcome Type">
+        <Text size="2" color="gray" mb="20px">
+          Define the type of outcome measured in this experiment. The prior distribution for each arm will be
+          automatically selected based on your choice.
+        </Text>
+        <Text size="2" weight="medium" mb="12px" mt="12px" as="div">
+          Select outcome type
+        </Text>
+
+        <Flex direction="column" gap="3">
+          {OUTCOME_OPTIONS.map((option) => (
+            <OutcomeOptionCard
+              key={option.type}
+              option={option}
+              isSelected={formData.outcomeType === option.type}
+              onSelect={() => handleOutcomeChange(option.type)}
+            />
+          ))}
+        </Flex>
+        {formData.priorType && formData.outcomeType && (
+          <Box p="3">
+            <Flex direction="column" gap="1">
+              <Text size="2" weight="medium" color="indigo">
+                Selected Configuration: {formData.priorType === 'beta' ? 'Beta Distribution' : 'Normal Distribution'} ×{' '}
+                {formData.outcomeType === 'binary' ? 'Binary' : 'Real-valued'} Outcome
+              </Text>
+              <Text size="2" color="gray" mt="4px" weight="medium">
+                {formData.priorType === 'beta'
+                  ? 'Using alpha (prior successes) and beta (prior failures) parameters. '
+                  : 'Using mean and standard deviation parameters. '}
+                You can set these parameters for each arm in the Arms section below.
+              </Text>
+            </Flex>
+          </Box>
+        )}
+      </SectionCard>
+
       {/* Treatment Arms */}
       <SectionCard title="Arms">
-        <Flex direction="column" gap="3" mb="20px">
-          <Text size="2" color="gray">
-            Configure your experiment arms with prior beliefs.
-          </Text>
-          {formData.priorType && formData.outcomeType && (
-            <Box p="3">
-              <Flex direction="column" gap="1">
-                <Text size="2" weight="medium" color="blue">
-                  Selected Configuration: {formData.priorType === 'beta' ? 'Beta Distribution' : 'Normal Distribution'}{' '}
-                  × {formData.outcomeType === 'binary' ? 'Binary' : 'Real-valued'} Outcome
-                </Text>
-                <Text size="1" color="gray" mt="4px">
-                  {formData.priorType === 'beta'
-                    ? 'Using Alpha (prior successes) and Beta (prior failures) parameters'
-                    : 'Using Mean and Standard Deviation parameters'}
-                </Text>
-              </Flex>
-            </Box>
-          )}
+        <Flex direction="column" gap="1">
           {!formData.priorType ||
             (!formData.outcomeType && (
               <Box p="3">
@@ -209,7 +293,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
             ))}
         </Flex>
 
-        <Flex direction="column" gap="4">
+        <Flex direction="column" gap="3">
           {formData.arms.map((arm, index) => (
             <ArmCard
               key={index}
@@ -261,20 +345,43 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
         <GenericErrorCallout title="Failed to create experiment" error={createExperimentError} />
       )}
 
-      <NavigationButtons
-        onBack={onBack}
-        onNext={handleSaveExperiment}
-        nextLabel="Continue to Summary"
-        nextDisabled={!isFormValid()}
-      />
+      <NavigationButtons onBack={onBack} onNext={handleSaveExperiment} nextLabel="Next" nextDisabled={!isFormValid()} />
     </Flex>
+  );
+}
+
+interface OutcomeOptionCardProps {
+  option: OutcomeOption;
+  isSelected: boolean;
+  onSelect: () => void;
+}
+
+function OutcomeOptionCard({ option, isSelected, onSelect }: OutcomeOptionCardProps) {
+  return (
+    <Card
+      size="2"
+      onClick={onSelect}
+      asChild
+      style={isSelected ? { border: '2px solid var(--accent-9)', backgroundColor: 'var(--accent-2)' } : {}}
+    >
+      <Box as="div">
+        <Flex direction="column" gap="1">
+          <Text size="2" weight="bold">
+            {option.title}
+          </Text>
+          <Text size="1" color="gray">
+            {option.description}
+          </Text>
+        </Flex>
+      </Box>
+    </Card>
   );
 }
 
 interface ArmCardProps {
   arm: MABArm;
   armIndex: number;
-  priorType: 'beta' | 'normal';
+  priorType: PriorType;
   canDelete: boolean;
   onUpdate: (updatedArm: Partial<MABArm>) => void;
   onDelete: () => void;
@@ -284,110 +391,105 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
   return (
     <Card>
       {/* Header */}
-      <Flex align="center" justify="between" px="5" py="3">
-        <Flex align="center" gap="2">
-          <Text weight="bold">{armIndex === 0 ? `Arm ${armIndex + 1} (control)` : `Arm ${armIndex + 1}`}</Text>
+      <Flex direction="column" gap="2">
+        <Flex align="center" justify="between">
+          <Text weight="bold" size="3">
+            {armIndex === 0 ? `Arm ${armIndex + 1} (control)` : `Arm ${armIndex + 1}`}
+          </Text>
+          <IconButton onClick={onDelete} disabled={!canDelete} color="red" variant="soft" size="1">
+            <TrashIcon />
+          </IconButton>
         </Flex>
-
-        <IconButton onClick={onDelete} disabled={!canDelete} color="red" variant="soft" size="1">
-          <TrashIcon />
-        </IconButton>
-      </Flex>
-
-      {/* Content */}
-      <Box p="5">
-        <Flex gap="6">
-          <Flex direction="column" gap="4">
-            <Box>
-              <Text as="label" size="2" weight="bold" mb="6px">
-                Arm Name
+        {/* Content */}
+        <Flex direction="column" gap="2">
+          <Box maxWidth={'50%'}>
+            <Text as="label" size="2" weight="bold">
+              Arm Name
+            </Text>
+            <TextField.Root
+              value={arm.arm_name}
+              onChange={(e) => onUpdate({ arm_name: e.target.value })}
+              placeholder={'Arm Name'}
+              required
+            />
+          </Box>
+        </Flex>
+        <Flex direction="column" gap="2">
+          <Text as="label" size="2" weight="bold">
+            Arm Description
+          </Text>
+          <TextArea
+            value={arm.arm_description || ''}
+            onChange={(e) => onUpdate({ arm_description: e.target.value })}
+            placeholder="Description"
+          />
+        </Flex>
+        <Flex direction="column" gap="4">
+          {!priorType && (
+            <Box p="3">
+              <Text size="2" color="orange">
+                Select prior distribution in Design step first
               </Text>
-              <TextField.Root
-                value={arm.arm_name}
-                onChange={(e) => onUpdate({ arm_name: e.target.value })}
-                placeholder="Enter arm name"
-              />
             </Box>
+          )}
 
-            <Box>
-              <Text as="label" size="2" weight="bold" mb="6px">
-                Description
-              </Text>
-              <TextArea
-                value={arm.arm_description || ''}
-                onChange={(e) => onUpdate({ arm_description: e.target.value })}
-                placeholder="Describe this arm..."
-              />
-            </Box>
-          </Flex>
-
-          <Flex direction="column" gap="4">
-            {!priorType && (
-              <Box p="3">
-                <Text size="2" color="orange">
-                  Select prior distribution in Design step first
+          {priorType === 'beta' && (
+            <Flex gap="3">
+              <Box>
+                <Text as="label" size="2" weight="bold" mb="6px">
+                  Alpha Prior
                 </Text>
+                <TextField.Root
+                  type="number"
+                  min="1"
+                  value={arm.alpha_prior?.toString() || '1'}
+                  onChange={(e) => onUpdate({ alpha_prior: Number(e.target.value) })}
+                  placeholder="Prior successes"
+                />
               </Box>
-            )}
+              <Box>
+                <Text as="label" size="2" weight="bold" mb="6px">
+                  Beta Prior
+                </Text>
+                <TextField.Root
+                  type="number"
+                  min="1"
+                  value={arm.beta_prior?.toString() || '1'}
+                  onChange={(e) => onUpdate({ beta_prior: Number(e.target.value) })}
+                  placeholder="Prior failures"
+                />
+              </Box>
+            </Flex>
+          )}
 
-            {priorType === 'beta' && (
-              <Flex gap="3">
-                <Box>
-                  <Text as="label" size="2" weight="bold" mb="6px">
-                    Alpha Prior
-                  </Text>
-                  <TextField.Root
-                    type="number"
-                    min="1"
-                    value={arm.alpha_prior?.toString() || '1'}
-                    onChange={(e) => onUpdate({ alpha_prior: Number(e.target.value) })}
-                    placeholder="Prior successes"
-                  />
-                </Box>
-                <Box>
-                  <Text as="label" size="2" weight="bold" mb="6px">
-                    Beta Prior
-                  </Text>
-                  <TextField.Root
-                    type="number"
-                    min="1"
-                    value={arm.beta_prior?.toString() || '1'}
-                    onChange={(e) => onUpdate({ beta_prior: Number(e.target.value) })}
-                    placeholder="Prior failures"
-                  />
-                </Box>
-              </Flex>
-            )}
-
-            {priorType === 'normal' && (
-              <Flex gap="3">
-                <Box>
-                  <Text as="label" size="2" weight="bold" mb="6px">
-                    Mean Prior
-                  </Text>
-                  <TextField.Root
-                    type="number"
-                    value={arm.mean_prior ?? ''}
-                    onChange={(e) => onUpdate({ mean_prior: e.target.value ? Number(e.target.value) : undefined })}
-                    placeholder="Prior mean"
-                  />
-                </Box>
-                <Box>
-                  <Text as="label" size="2" weight="bold" mb="6px">
-                    Std Dev Prior
-                  </Text>
-                  <TextField.Root
-                    type="number"
-                    value={arm.stddev_prior?.toString() || '1'}
-                    onChange={(e) => onUpdate({ stddev_prior: Number(e.target.value) })}
-                    placeholder="Prior std dev"
-                  />
-                </Box>
-              </Flex>
-            )}
-          </Flex>
+          {priorType === 'normal' && (
+            <Flex gap="3">
+              <Box maxWidth={'30%'}>
+                <Text as="label" size="2" weight="bold" mb="6px">
+                  Prior Mean
+                </Text>
+                <TextField.Root
+                  type="number"
+                  value={arm.mean_prior ?? ''}
+                  onChange={(e) => onUpdate({ mean_prior: e.target.value ? Number(e.target.value) : undefined })}
+                  placeholder="Prior Mean"
+                />
+              </Box>
+              <Box maxWidth={'30%'}>
+                <Text as="label" size="2" weight="bold" mb="6px">
+                  Prior Standard Deviation
+                </Text>
+                <TextField.Root
+                  type="number"
+                  value={arm.stddev_prior?.toString() || '1'}
+                  onChange={(e) => onUpdate({ stddev_prior: Number(e.target.value) })}
+                  placeholder="Prior Standard Deviation"
+                />
+              </Box>
+            </Flex>
+          )}
         </Flex>
-      </Box>
+      </Flex>
     </Card>
   );
 }
