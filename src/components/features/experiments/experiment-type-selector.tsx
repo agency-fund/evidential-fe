@@ -1,0 +1,154 @@
+'use client';
+import React, { useState } from 'react';
+import { Box, Card, Flex, Text, Badge, Dialog, Button, Grid } from '@radix-ui/themes';
+import { ExperimentType, AssignmentType } from '@/app/datasources/[datasourceId]/experiments/create/types';
+import { ExperimentTypeOption, ExperimentTypeCard } from '@/components/features/experiments/experiment-type-card';
+
+const EXPERIMENT_TYPE_OPTIONS: ExperimentTypeOption[] = [
+  {
+    type: 'freq_online',
+    title: 'Traditional A/B Testing',
+    badge: 'A/B',
+    badgeColor: 'blue',
+    description:
+      'Fixed allocation hypothesis testing with statistical significance. Best for clear hypotheses with sufficient traffic.',
+  },
+  {
+    type: 'mab_online',
+    title: 'Multi-Armed Bandit',
+    badge: 'MAB',
+    badgeColor: 'green',
+    description:
+      'Adaptive allocation that learns and optimizes automatically. Minimizes opportunity cost by converging to the best performing variant.',
+  },
+];
+
+interface AssignmentOption {
+  type: AssignmentType;
+  title: string;
+  description: string;
+  badge: string;
+  recommended?: boolean;
+}
+
+const ASSIGNMENT_OPTIONS: AssignmentOption[] = [
+  {
+    type: 'preassigned',
+    title: 'Preassigned',
+    description:
+      'Participants are assigned to experiment arms at design time. Suitable for controlled experiments with fixed sample sizes.',
+    badge: 'Recommended',
+    recommended: true,
+  },
+  {
+    type: 'online',
+    title: 'Online Assignment',
+    description:
+      'Participants are assigned to experiment arms dynamically as they arrive. Better for real-time experiments with unknown traffic.',
+    badge: 'Advanced',
+  },
+];
+
+interface ExperimentTypeSelectorProps {
+  selectedType?: ExperimentType;
+  dsDriver: string;
+  onTypeSelect: (type: ExperimentType) => void;
+}
+
+export function ExperimentTypeSelector({ selectedType, dsDriver, onTypeSelect }: ExperimentTypeSelectorProps) {
+  const [showAssignmentDialog, setShowAssignmentDialog] = useState(false);
+  const [tempSelectedAssignment, setTempSelectedAssignment] = useState<AssignmentType>();
+
+  const handleTypeSelect = (type: ExperimentType) => {
+    if (type.includes('freq')) {
+      setShowAssignmentDialog(true);
+    } else {
+      onTypeSelect(type);
+    }
+  };
+
+  const handleAssignmentConfirm = () => {
+    if (tempSelectedAssignment) {
+      if (tempSelectedAssignment === 'preassigned') {
+        onTypeSelect('freq_preassigned');
+      } else {
+        onTypeSelect('freq_online');
+      }
+      setShowAssignmentDialog(false);
+      setTempSelectedAssignment(undefined);
+    }
+  };
+
+  return (
+    <Box>
+      <Grid columns="2" gap="4">
+        {EXPERIMENT_TYPE_OPTIONS.map((option) => (
+          <ExperimentTypeCard
+            key={option.type}
+            option={option}
+            isSelected={selectedType === option.type}
+            isDisabled={(option.type.includes('freq') && dsDriver === 'api_only') || false}
+            onSelect={() => handleTypeSelect(option.type)}
+          />
+        ))}
+      </Grid>
+
+      {/* Assignment Type Dialog for Traditional A/B */}
+      <Dialog.Root open={showAssignmentDialog} onOpenChange={setShowAssignmentDialog}>
+        <Dialog.Content style={{ maxWidth: '600px' }}>
+          <Dialog.Title>Choose Assignment Method</Dialog.Title>
+          <Dialog.Description size="2" mb="4">
+            Select how participants will be assigned to experiment arms for your A/B Test.
+          </Dialog.Description>
+
+          <Flex direction="column" gap="3" mb="6">
+            {ASSIGNMENT_OPTIONS.map((option) => (
+              <Card
+                key={option.type}
+                style={
+                  tempSelectedAssignment === option.type
+                    ? { border: '2px solid var(--accent-9)', backgroundColor: 'var(--accent-2)' }
+                    : {}
+                }
+                onClick={() => setTempSelectedAssignment(option.type)}
+              >
+                <Flex direction="column" gap="2">
+                  <Flex align="center" gap="2">
+                    <Text size="3" weight="bold">
+                      {option.title}
+                    </Text>
+                    {option.recommended && (
+                      <Badge color="green" size="1">
+                        {option.badge}
+                      </Badge>
+                    )}
+                    {!option.recommended && (
+                      <Badge color="gray" size="1">
+                        {option.badge}
+                      </Badge>
+                    )}
+                  </Flex>
+
+                  <Text size="2" color="gray">
+                    {option.description}
+                  </Text>
+                </Flex>
+              </Card>
+            ))}
+          </Flex>
+
+          <Flex gap="3" justify="end">
+            <Dialog.Close>
+              <Button variant="soft" color="gray">
+                Cancel
+              </Button>
+            </Dialog.Close>
+            <Button onClick={handleAssignmentConfirm} disabled={!tempSelectedAssignment}>
+              Continue
+            </Button>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
+    </Box>
+  );
+}

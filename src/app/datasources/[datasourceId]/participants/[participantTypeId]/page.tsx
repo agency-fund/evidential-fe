@@ -40,7 +40,6 @@ export default function Page() {
   if (!data) {
     return <GenericErrorCallout title={'Failed to fetch participant type details'} message={'data is missing'} />;
   }
-
   // Sort fields only in the initial config, putting unique_id field at top
   data.fields = [...data.fields].sort((a, b) => {
     if (a.is_unique_id === b.is_unique_id) {
@@ -48,13 +47,11 @@ export default function Page() {
     }
     return a.is_unique_id ? -1 : 1;
   });
-
   return (
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
         <Flex justify="between" align="end" width="100%">
           <Heading size="8">Participant Type: {participantType}</Heading>
-          {/* Only show edit button for schema types, not sheet types */}
           <Link href={`/datasources/${datasourceId}/participants/${participantType}/edit`}>
             <Button>
               <Pencil2Icon /> Edit Participant Type
