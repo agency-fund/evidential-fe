@@ -64,7 +64,6 @@ export function ExperimentTypeSelector({ selectedType, dsDriver, onTypeSelect }:
   const [tempSelectedAssignment, setTempSelectedAssignment] = useState<AssignmentType>();
 
   const handleTypeSelect = (type: ExperimentType) => {
-    console.log(type, isFreqExperimentType(type));
     if (isFreqExperimentType(type)) {
       setShowAssignmentDialog(true);
     } else {
