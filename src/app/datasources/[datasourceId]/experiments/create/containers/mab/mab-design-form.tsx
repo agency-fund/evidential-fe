@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Box, Card, Flex, Text, Callout, Separator } from '@radix-ui/themes';
+import { Box, Card, Flex, Text, Callout } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { MABFormData, PriorType, OutcomeType } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';

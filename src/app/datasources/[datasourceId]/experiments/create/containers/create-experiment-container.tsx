@@ -23,7 +23,7 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
   const params = useParams();
   const datasourceId = params.datasourceId as string;
   const { data } = useGetDatasource(datasourceId);
-  const ds_driver = data?.config.dwh.driver;
+  const dsDriver = data?.dsn.type;
 
   const [selectedExperimentType, setSelectedExperimentType] = useState<ExperimentType>();
   const [showTypeSelection, setShowTypeSelection] = useState(true);
@@ -142,7 +142,7 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
           </Box>
 
           <ExperimentTypeSelector
-            ds_driver={ds_driver || 'none'}
+            dsDriver={dsDriver || 'none'}
             selectedType={selectedExperimentType}
             onTypeSelect={handleExperimentTypeSelect}
           />

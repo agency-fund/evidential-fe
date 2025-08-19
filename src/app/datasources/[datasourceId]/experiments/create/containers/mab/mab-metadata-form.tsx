@@ -154,7 +154,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
           </Box>
 
           <Flex gap="4">
-            <Box style={{ flex: 1 }}>
+            <Box>
               <Text as="label" size="2" weight="bold" mb="6px">
                 Start Date
               </Text>
@@ -164,7 +164,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
                 onChange={(e) => updateBasicInfo('startDate', e.target.value)}
               />
             </Box>
-            <Box style={{ flex: 1 }}>
+            <Box>
               <Text as="label" size="2" weight="bold" mb="6px">
                 End Date
               </Text>
@@ -332,7 +332,7 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
 
             {priorType === 'beta' && (
               <Flex gap="3">
-                <Box style={{ flex: 1 }}>
+                <Box>
                   <Text as="label" size="2" weight="bold" mb="6px">
                     Alpha Prior
                   </Text>
@@ -344,7 +344,7 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
                     placeholder="Prior successes"
                   />
                 </Box>
-                <Box style={{ flex: 1 }}>
+                <Box>
                   <Text as="label" size="2" weight="bold" mb="6px">
                     Beta Prior
                   </Text>
@@ -361,7 +361,7 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
 
             {priorType === 'normal' && (
               <Flex gap="3">
-                <Box style={{ flex: 1 }}>
+                <Box>
                   <Text as="label" size="2" weight="bold" mb="6px">
                     Mean Prior
                   </Text>
@@ -372,7 +372,7 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
                     placeholder="Prior mean"
                   />
                 </Box>
-                <Box style={{ flex: 1 }}>
+                <Box>
                   <Text as="label" size="2" weight="bold" mb="6px">
                     Std Dev Prior
                   </Text>

@@ -58,11 +58,11 @@ const ASSIGNMENT_OPTIONS: AssignmentOption[] = [
 
 interface ExperimentTypeSelectorProps {
   selectedType?: ExperimentType;
-  ds_driver: string;
+  dsDriver: string;
   onTypeSelect: (type: ExperimentType) => void;
 }
 
-export function ExperimentTypeSelector({ selectedType, ds_driver, onTypeSelect }: ExperimentTypeSelectorProps) {
+export function ExperimentTypeSelector({ selectedType, dsDriver, onTypeSelect }: ExperimentTypeSelectorProps) {
   const [showAssignmentDialog, setShowAssignmentDialog] = useState(false);
   const [tempSelectedAssignment, setTempSelectedAssignment] = useState<AssignmentType>();
 
@@ -94,7 +94,7 @@ export function ExperimentTypeSelector({ selectedType, ds_driver, onTypeSelect }
             key={option.type}
             option={option}
             isSelected={selectedType === option.type}
-            isDisabled={(option.type.includes('freq') && ds_driver === 'none') || false}
+            isDisabled={(option.type.includes('freq') && dsDriver === 'api_only') || false}
             onSelect={() => handleTypeSelect(option.type)}
           />
         ))}
@@ -169,7 +169,10 @@ interface ExperimentTypeCardProps {
 
 function ExperimentTypeCard({ option, isSelected, isDisabled, onSelect }: ExperimentTypeCardProps) {
   return (
-    <Card onClick={isDisabled ? undefined : onSelect}>
+    <Card
+      onClick={isDisabled ? undefined : onSelect}
+      style={{ cursor: isDisabled ? 'var(--cursor-disabled)' : 'var(--cursor-link)' }}
+    >
       <Box style={{ borderColor: isSelected ? 'var(--accent-9)' : 'var(--gray-6)' }}>
         <Flex align="center" gap="2">
           <Text size="4" weight={isDisabled ? 'regular' : 'bold'}>

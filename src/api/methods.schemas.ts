@@ -2249,32 +2249,6 @@ export interface ValidationError {
 	type: string;
 }
 
-export type WebhookActionsCommit = WebhookUrl | null;
-
-/**
- * The set of supported actions that trigger a user callback.
- */
-export interface WebhookActions {
-	commit?: WebhookActionsCommit;
-}
-
-export type WebhookCommonHeadersAuthorization = string | null;
-
-/**
- * Enumerates supported headers to attach to all webhook requests.
- */
-export interface WebhookCommonHeaders {
-	authorization: WebhookCommonHeadersAuthorization;
-}
-
-/**
- * Top-level configuration object for user-defined webhooks.
- */
-export interface WebhookConfig {
-	actions: WebhookActions;
-	common_headers: WebhookCommonHeaders;
-}
-
 /**
  * The value of the Webhook-Token: header that will be sent with the request to the configured URL.
  */
@@ -2294,14 +2268,6 @@ export interface WebhookSummary {
 	url: string;
 	/** The value of the Webhook-Token: header that will be sent with the request to the configured URL. */
 	auth_token: WebhookSummaryAuthToken;
-}
-
-/**
- * Represents a url and HTTP method to use with it.
- */
-export interface WebhookUrl {
-	method: HttpMethodTypes;
-	url: string;
 }
 
 export type DeleteWebhookFromOrganizationParams = {
