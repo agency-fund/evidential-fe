@@ -113,6 +113,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
     const priorType: PriorType =
       formData.experimentType === 'mab_online' && outcomeType === 'binary' ? 'beta' : 'normal';
 
+
     // Update existing arms to have the correct prior parameters
     const updatedArms = formData.arms.map((arm) => {
       const baseArm = {

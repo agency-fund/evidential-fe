@@ -66,13 +66,11 @@ export function MABContainer({ webhooks, initialFormData, onBack }: MABContainer
   return (
     <Box>
       <AdaptiveBreadcrumbs experimentType={formData.experimentType} currentStep={currentStep} />
-
       <Box mb="6">
         <Heading size="8" mb="2">
           {STEP_TITLES[BanditSteps[currentStep - 1]]}
         </Heading>
       </Box>
-
       {renderCurrentStep()}
     </Box>
   );
