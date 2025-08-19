@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Box, Card, Flex, Text, Badge, Dialog, Button, Grid } from '@radix-ui/themes';
+import { Box, RadioCards, Flex, Text, Badge, Dialog, Button, Grid } from '@radix-ui/themes';
 import {
   ExperimentType,
   AssignmentType,
@@ -24,6 +24,14 @@ const EXPERIMENT_TYPE_OPTIONS: ExperimentTypeOption[] = [
     badgeColor: 'green',
     description:
       'Adaptive allocation that learns and optimizes automatically. Minimizes opportunity cost by converging to the best performing variant.',
+  },
+  {
+    type: 'cmab_online',
+    title: 'Contextual Multi-Armed Bandit',
+    badge: 'CMAB',
+    badgeColor: 'purple',
+    description:
+      'Context-aware optimization for personalized experiences. Adapts recommendations based on user or environmental context.',
   },
 ];
 
@@ -84,75 +92,77 @@ export function ExperimentTypeSelector({ selectedType, dsDriver, onTypeSelect }:
   };
 
   return (
-    <Box>
+    <Flex direction="column" gap="4">
       <Grid columns="2" gap="4">
         {EXPERIMENT_TYPE_OPTIONS.map((option) => (
           <ExperimentTypeCard
             key={option.type}
             option={option}
             isSelected={selectedType === option.type}
-            isDisabled={(option.type.includes('freq') && dsDriver === 'api_only') || false}
+            isDisabled={(isFreqExperimentType(option.type) && dsDriver === 'api_only') || false}
             onSelect={() => handleTypeSelect(option.type)}
           />
         ))}
       </Grid>
 
       {/* Assignment Type Dialog for Traditional A/B */}
-      <Dialog.Root open={showAssignmentDialog} onOpenChange={setShowAssignmentDialog}>
-        <Dialog.Content style={{ maxWidth: '600px' }}>
-          <Dialog.Title>Choose Assignment Method</Dialog.Title>
-          <Dialog.Description size="2" mb="4">
-            Select how participants will be assigned to experiment arms for your A/B Test.
-          </Dialog.Description>
+      <Flex direction="column" gap="3">
+        <Dialog.Root open={showAssignmentDialog} onOpenChange={setShowAssignmentDialog}>
+          <Dialog.Content style={{ maxWidth: '600px' }}>
+            <Dialog.Title>Choose Assignment Method</Dialog.Title>
+            <Dialog.Description size="2" mb="4">
+              Select how participants will be assigned to experiment arms for your A/B Test.
+            </Dialog.Description>
 
-          <Flex direction="column" gap="3" mb="6">
-            {ASSIGNMENT_OPTIONS.map((option) => (
-              <Card
-                key={option.type}
-                style={
-                  tempSelectedAssignment === option.type
-                    ? { border: '2px solid var(--accent-9)', backgroundColor: 'var(--accent-2)' }
-                    : {}
-                }
-                onClick={() => setTempSelectedAssignment(option.type)}
-              >
-                <Flex direction="column" gap="2">
-                  <Flex align="center" gap="2">
-                    <Text size="3" weight="bold">
-                      {option.title}
-                    </Text>
-                    {option.recommended && (
-                      <Badge color="green" size="1">
-                        {option.badge}
-                      </Badge>
-                    )}
-                    {!option.recommended && (
-                      <Badge color="gray" size="1">
-                        {option.badge}
-                      </Badge>
-                    )}
-                  </Flex>
+            <Box maxWidth={'600px'}>
+              <Flex direction="column" gap="4">
+                <RadioCards.Root
+                  defaultValue={tempSelectedAssignment}
+                  onValueChange={(value) => setTempSelectedAssignment(value as AssignmentType)}
+                  style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
+                >
+                  {ASSIGNMENT_OPTIONS.map((option) => (
+                    <RadioCards.Item key={option.type} value={option.type}>
+                      <Flex direction="column" gap="2">
+                        <Flex align="center" gap="2">
+                          <Text size="3" weight="bold">
+                            {option.title}
+                          </Text>
+                          {option.recommended && (
+                            <Badge color="green" size="1">
+                              {option.badge}
+                            </Badge>
+                          )}
+                          {!option.recommended && (
+                            <Badge color="gray" size="1">
+                              {option.badge}
+                            </Badge>
+                          )}
+                        </Flex>
 
-                  <Text size="2" color="gray">
-                    {option.description}
-                  </Text>
-                </Flex>
-              </Card>
-            ))}
-          </Flex>
+                        <Text size="2" color="gray">
+                          {option.description}
+                        </Text>
+                      </Flex>
+                    </RadioCards.Item>
+                  ))}
+                </RadioCards.Root>
+              </Flex>
+            </Box>
 
-          <Flex gap="3" justify="end">
-            <Dialog.Close>
-              <Button variant="soft" color="gray">
-                Cancel
+            <Flex gap="3" justify="end" mt="4">
+              <Dialog.Close>
+                <Button variant="soft" color="gray">
+                  Cancel
+                </Button>
+              </Dialog.Close>
+              <Button onClick={handleAssignmentConfirm} disabled={!tempSelectedAssignment}>
+                Continue
               </Button>
-            </Dialog.Close>
-            <Button onClick={handleAssignmentConfirm} disabled={!tempSelectedAssignment}>
-              Continue
-            </Button>
-          </Flex>
-        </Dialog.Content>
-      </Dialog.Root>
-    </Box>
+            </Flex>
+          </Dialog.Content>
+        </Dialog.Root>
+      </Flex>
+    </Flex>
   );
 }

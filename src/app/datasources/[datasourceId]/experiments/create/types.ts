@@ -6,8 +6,6 @@ import {
   DesignSpecInput,
   PreassignedFrequentistExperimentSpecInputExperimentType,
   OnlineFrequentistExperimentSpecInputExperimentType,
-  OnlineFrequentistExperimentSpecInput,
-  PreassignedFrequentistExperimentSpecInput,
   MABExperimentSpecInput,
   Context as ContextSpec,
   MABExperimentSpecInputExperimentType,
@@ -41,19 +39,13 @@ export type Context = {
 };
 
 // MAB-specific arm configuration with prior parameters
-export type MABArm = Omit<Arm, 'arm_id'> & {
+export type BanditArm = Omit<Arm, 'arm_id'> & {
   // For Beta distribution
   alpha_prior?: number;
   beta_prior?: number;
   // For Normal distribution
   mean_prior?: number;
   stddev_prior?: number;
-};
-
-// Bayesian A/B arm configuration (only uses Normal distribution)
-export type BayesianABArm = Omit<Arm, 'arm_id'> & {
-  mean_prior: number;
-  stddev_prior: number;
 };
 
 export type BaseExperimentFormData = {
@@ -89,7 +81,7 @@ export type FrequentABFormData = BaseExperimentFormData & {
 
 export type MABFormData = BaseExperimentFormData & {
   experimentType: MABExperimentSpecInputExperimentType;
-  arms: MABArm[];
+  arms: BanditArm[];
   priorType: PriorType;
   outcomeType: OutcomeType;
   experimentId?: string;
@@ -97,14 +89,20 @@ export type MABFormData = BaseExperimentFormData & {
   chosenN?: number;
 };
 
-export type ExperimentFormData = FrequentABFormData | MABFormData;
+export type CMABFormData = Omit<MABFormData, 'experimentType' | 'priorType'> & {
+  experimentType: 'cmab_online';
+  priorType: 'normal';
+  contexts: Context[];
+};
+
+export type ExperimentFormData = FrequentABFormData | MABFormData | CMABFormData;
 
 export const EXPERIMENT_STEP_FLOWS = {
   freq_online: ['type', 'metadata', 'design', 'summary'],
   freq_preassigned: ['type', 'metadata', 'design', 'summary'],
   mab_online: ['type', 'metadata', 'summary'],
   bayes_ab_online: ['type', 'design', 'metadata', 'summary'],
-  cmab_online: ['type', 'context', 'design', 'metadata', 'summary'],
+  cmab_online: ['type', 'metadata', 'summary'],
 } as const;
 
 export const STEP_TITLES: Record<string, string> = {
