@@ -6,14 +6,7 @@ import {
   AssignmentType,
   FreqExperimentsList,
 } from '@/app/datasources/[datasourceId]/experiments/create/types';
-
-interface ExperimentTypeOption {
-  type: ExperimentType;
-  title: string;
-  badge: string;
-  badgeColor: 'blue' | 'green' | 'purple' | 'orange';
-  description: string;
-}
+import { ExperimentTypeOption, ExperimentTypeCard } from '@/components/features/experiments/experiment-type-card';
 
 const EXPERIMENT_TYPE_OPTIONS: ExperimentTypeOption[] = [
   {
@@ -62,11 +55,11 @@ const ASSIGNMENT_OPTIONS: AssignmentOption[] = [
 
 interface ExperimentTypeSelectorProps {
   selectedType?: ExperimentType;
-  ds_driver: string;
+  dsDriver: string;
   onTypeSelect: (type: ExperimentType) => void;
 }
 
-export function ExperimentTypeSelector({ selectedType, ds_driver, onTypeSelect }: ExperimentTypeSelectorProps) {
+export function ExperimentTypeSelector({ selectedType, dsDriver, onTypeSelect }: ExperimentTypeSelectorProps) {
   const [showAssignmentDialog, setShowAssignmentDialog] = useState(false);
   const [tempSelectedAssignment, setTempSelectedAssignment] = useState<AssignmentType>();
 
@@ -98,7 +91,7 @@ export function ExperimentTypeSelector({ selectedType, ds_driver, onTypeSelect }
             key={option.type}
             option={option}
             isSelected={selectedType === option.type}
-            isDisabled={(FreqExperimentsList.includes(option.type) && ds_driver === 'none') || false}
+            isDisabled={(option.type.includes('freq') && dsDriver === 'api_only') || false}
             onSelect={() => handleTypeSelect(option.type)}
           />
         ))}
@@ -161,34 +154,5 @@ export function ExperimentTypeSelector({ selectedType, ds_driver, onTypeSelect }
         </Dialog.Content>
       </Dialog.Root>
     </Box>
-  );
-}
-
-interface ExperimentTypeCardProps {
-  option: ExperimentTypeOption;
-  isSelected: boolean;
-  isDisabled: boolean;
-  onSelect: () => void;
-}
-
-function ExperimentTypeCard({ option, isSelected, isDisabled, onSelect }: ExperimentTypeCardProps) {
-  return (
-    <Card onClick={isDisabled ? undefined : onSelect}>
-      <Box style={{ borderColor: isSelected ? 'var(--accent-9)' : 'var(--gray-6)' }}>
-        <Flex align="center" gap="2">
-          <Text size="4" weight={isDisabled ? 'regular' : 'bold'}>
-            {option.title}
-          </Text>
-          <Badge color={option.badgeColor} size="1">
-            {option.badge}
-          </Badge>
-        </Flex>
-        <Flex direction="column" gap="1">
-          <Text size="2" weight={isDisabled ? 'light' : 'regular'} mt="20px">
-            {option.description}
-          </Text>
-        </Flex>
-      </Box>
-    </Card>
   );
 }

@@ -101,7 +101,7 @@ export default function Page() {
 
   // We can safely use data properties now that we've handled all error cases
   const datasourceName = datasourceMetadata.name;
-  const isNoDWH = datasourceMetadata.config.dwh.driver === 'none';
+  const isNoDWH = datasourceMetadata.dsn.type === 'api_only';
 
   return (
     <Flex direction="column" gap="6">
