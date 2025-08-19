@@ -555,7 +555,7 @@ function ContextCard({ context, contextIndex, canDelete, onUpdate, onDelete }: C
 interface ArmCardProps {
   arm: BanditArm;
   armIndex: number;
-  priorType: 'beta' | 'normal';
+  priorType: PriorType;
   canDelete: boolean;
   onUpdate: (updatedArm: Partial<BanditArm>) => void;
   onDelete: () => void;

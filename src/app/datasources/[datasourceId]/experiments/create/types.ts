@@ -6,8 +6,6 @@ import {
   DesignSpecInput,
   PreassignedFrequentistExperimentSpecInputExperimentType,
   OnlineFrequentistExperimentSpecInputExperimentType,
-  OnlineFrequentistExperimentSpecInput,
-  PreassignedFrequentistExperimentSpecInput,
   MABExperimentSpecInput,
   Context as ContextSpec,
   MABExperimentSpecInputExperimentType,

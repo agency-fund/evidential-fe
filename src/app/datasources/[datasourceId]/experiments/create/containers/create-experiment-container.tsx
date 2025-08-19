@@ -80,6 +80,34 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
           ],
         } as MABFormData;
 
+      case 'cmab_online':
+        return {
+          ...baseData,
+          experimentType: 'cmab_online',
+          priorType: 'normal',
+          arms: [
+            {
+              arm_name: 'Control',
+              arm_description: 'Control',
+              mean_prior: 0,
+              stddev_prior: 1,
+            },
+            {
+              arm_name: 'Treatment',
+              arm_description: 'Treatment',
+              mean_prior: 1,
+              stddev_prior: 1,
+            },
+          ],
+          contexts: [
+            {
+              name: 'Context Name',
+              description: 'Context Description',
+              type: 'real-valued',
+            },
+          ],
+        } as CMABFormData;
+
       default:
         throw new Error(`Unsupported experiment type: ${experimentType}`);
     }
