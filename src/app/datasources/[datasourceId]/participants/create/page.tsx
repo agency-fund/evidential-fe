@@ -8,14 +8,14 @@ import {
   useInspectTableInDatasource,
 } from '@/api/admin';
 import { FieldDescriptor, FieldMetadata } from '@/api/methods.schemas';
-import { Box, Button, Flex, Heading, Text, TextField } from '@radix-ui/themes';
+import { Box, Button, Flex, Grid, Heading, IconButton, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { useParams, useRouter } from 'next/navigation';
 import { ParticipantFieldsEditor } from '@/components/features/participants/participant-fields-editor';
+import { ChevronDownIcon, ReloadIcon } from '@radix-ui/react-icons';
 import { mutate } from 'swr';
-import { ChevronDownIcon } from '@radix-ui/react-icons';
 
 const makeFieldDescriptorComparator = (candidatesForUniqueIdField: string[]) => {
   const candidates = new Set(candidatesForUniqueIdField);
@@ -47,7 +47,23 @@ export default function CreateParticipantTypePage() {
   const router = useRouter();
   const datasourceId = params.datasourceId as string;
 
-  const { data: datasourceData, isLoading: loadingDatasource } = useInspectDatasource(datasourceId!);
+  // SWR's default behavior will sometimes validate that its cached result data matches the API responses data
+  // (such as during component load, when the user switches tabs, and during subsequent renders). By default, this
+  // is sending a ?refresh=false query string, which may lead to stale results due to the backend's cache. Most
+  // users aren't creating new tables often so this is acceptable.
+  //
+  // When the user explicitly requests reload, we change the `refresh` parameter to be true. This causes the
+  // backend to fetch data from the customer's DWH directly and update its cache. Thus clicking the "refresh"
+  // button will cause all subsequent refreshes to skip the cache, which is desirable, because clicking the
+  // refresh button once is a clear signal that the user cares about fresh data.
+  const [refresh, setRefresh] = useState(false);
+
+  const {
+    data: datasourceData,
+    isLoading: loadingDatasource,
+    isValidating: validatingDatasource,
+    mutate: mutateInspectDatasource,
+  } = useInspectDatasource(datasourceId!, { refresh });
 
   const { trigger, isMutating, error, reset } = useCreateParticipantType(datasourceId, {
     swr: {
@@ -73,7 +89,7 @@ export default function CreateParticipantTypePage() {
   const { data: tableData, isLoading: loadingTableData } = useInspectTableInDatasource(
     datasourceId,
     selectedTable,
-    undefined,
+    { refresh },
     {
       swr: {
         enabled: tableIsSelected,
@@ -186,73 +202,88 @@ export default function CreateParticipantTypePage() {
               <Text as="div" size={'2'} color="gray">
                 Please select the name of the data warehouse table.
               </Text>
-              <Box style={{ position: 'relative' }} ref={dropdownRef}>
-                <TextField.Root
-                  placeholder="Search for a table..."
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setIsDropdownOpen(true);
-                  }}
-                  onFocus={() => setIsDropdownOpen(true)}
-                >
-                  <TextField.Slot side="right">
-                    <ChevronDownIcon />
-                  </TextField.Slot>
-                </TextField.Root>
-
-                {isDropdownOpen && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '100%',
-                      left: 0,
-                      right: 0,
-                      zIndex: 50,
-                      backgroundColor: 'white',
-                      border: '1px solid var(--gray-6)',
-                      borderRadius: 'var(--radius-2)',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                      maxHeight: '200px',
-                      overflowY: 'auto',
-                      marginTop: '2px',
+              <Grid rows={'1'} columns={'2'}>
+                <Box style={{ position: 'relative' }} ref={dropdownRef}>
+                  <TextField.Root
+                    placeholder="Search for a table..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setIsDropdownOpen(true);
                     }}
+                    onFocus={() => setIsDropdownOpen(true)}
                   >
-                    {filteredTables.length > 0 ? (
-                      filteredTables.map((table: string) => (
-                        <div
-                          key={table}
-                          onClick={() => updateSelectedTable(table)}
-                          style={{
-                            padding: '0.5rem 0.75rem',
-                            cursor: 'pointer',
-                            borderBottom: '1px solid var(--gray-3)',
-                            backgroundColor: selectedTable === table ? 'var(--gray-3)' : 'transparent',
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = 'var(--gray-2)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor =
-                              selectedTable === table ? 'var(--gray-3)' : 'transparent';
-                          }}
-                        >
-                          <Text size="2">{table}</Text>
-                        </div>
-                      ))
-                    ) : (
-                      <div style={{ padding: '0.5rem 0.75rem' }}>
-                        <Text size="2" color="gray">
-                          No tables found
-                        </Text>
-                      </div>
-                    )}
-                  </div>
-                )}
+                    <TextField.Slot side="right">
+                      <ChevronDownIcon />
+                    </TextField.Slot>
+                  </TextField.Root>
 
-                {/* Hidden input for form submission */}
-                <input type="hidden" name="table_name" value={selectedTable} required />
-              </Box>
+                  {isDropdownOpen && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        right: 0,
+                        zIndex: 50,
+                        backgroundColor: 'white',
+                        border: '1px solid var(--gray-6)',
+                        borderRadius: 'var(--radius-2)',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                        maxHeight: '200px',
+                        overflowY: 'auto',
+                        marginTop: '2px',
+                      }}
+                    >
+                      {filteredTables.length > 0 ? (
+                        filteredTables.map((table: string) => (
+                          <div
+                            key={table}
+                            onClick={() => updateSelectedTable(table)}
+                            style={{
+                              padding: '0.5rem 0.75rem',
+                              cursor: 'pointer',
+                              borderBottom: '1px solid var(--gray-3)',
+                              backgroundColor: selectedTable === table ? 'var(--gray-3)' : 'transparent',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = 'var(--gray-2)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor =
+                                selectedTable === table ? 'var(--gray-3)' : 'transparent';
+                            }}
+                          >
+                            <Text size="2">{table}</Text>
+                          </div>
+                        ))
+                      ) : (
+                        <div style={{ padding: '0.5rem 0.75rem' }}>
+                          <Text size="2" color="gray">
+                            No tables found
+                          </Text>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Hidden input for form submission */}
+                  <input type="hidden" name="table_name" value={selectedTable} required />
+                </Box>
+                <IconButton
+                  variant={'soft'}
+                  onClick={async () => {
+                    if (!refresh) {
+                      setRefresh(!refresh);
+                    }
+                    setIsDropdownOpen(true);
+                    await mutateInspectDatasource();
+                  }}
+                  loading={validatingDatasource}
+                >
+                  <ReloadIcon />
+                </IconButton>
+              </Grid>
             </Flex>
 
             <Flex direction="column" gap="3">
