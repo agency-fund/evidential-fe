@@ -8,28 +8,29 @@ import {
   Grid,
   Heading,
   IconButton,
-  RadioGroup,
   Select,
   Spinner,
   Text,
   TextArea,
   TextField,
 } from '@radix-ui/themes';
-import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/page';
+import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 import { useListParticipantTypes } from '@/api/admin';
 import Link from 'next/link';
 import { WebhookSummary } from '@/api/methods.schemas';
+import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 
 interface InitialFormProps {
   formData: ExperimentFormData;
   onFormDataChange: (data: ExperimentFormData) => void;
   onNext: () => void;
+  onBack: () => void;
   webhooks: WebhookSummary[];
 }
 
-export function InitialForm({ formData, onFormDataChange, onNext, webhooks }: InitialFormProps) {
+export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhooks }: InitialFormProps) {
   const { data: participantTypesData, isLoading: loadingParticipantTypes } = useListParticipantTypes(
     formData.datasourceId || '',
     {
@@ -89,77 +90,47 @@ export function InitialForm({ formData, onFormDataChange, onNext, webhooks }: In
     <form onSubmit={handleSubmit}>
       <Flex direction="column" gap="4">
         <Card>
-          <Flex gap="4">
-            <Flex direction="column" gap="3" flexGrow="1">
-              <Text as="label" size="2" weight="bold">
-                Choose Participants
-              </Text>
+          <Flex direction="column" gap="3">
+            <Text as="label" size="2" weight="bold">
+              Choose Participants
+            </Text>
 
-              <Flex direction="row" gap="2">
-                {formData.datasourceId &&
-                  (loadingParticipantTypes ? (
-                    <Flex align="center" gap="2">
-                      <Spinner size="1" />
-                      <Text size="2">Loading participant types...</Text>
-                    </Flex>
-                  ) : !participantTypesData || participantTypesData.items.length === 0 ? (
-                    <Flex direction="column" gap="2">
-                      <Text color="gray">No participant types available</Text>
-                      <Link href={`/datasources/${formData.datasourceId}`} passHref>
-                        <Button size="2" variant="soft">
-                          Add a Participant Type
-                        </Button>
-                      </Link>
-                    </Flex>
-                  ) : (
-                    <Select.Root
-                      value={formData.participantType || ''}
-                      onValueChange={(value) =>
-                        onFormDataChange({
-                          ...formData,
-                          participantType: value,
-                        })
-                      }
-                    >
-                      <Select.Trigger placeholder="Select a participant type" />
-                      <Select.Content>
-                        {participantTypesData.items.map((pt) => (
-                          <Select.Item key={pt.participant_type} value={pt.participant_type}>
-                            {pt.participant_type}
-                          </Select.Item>
-                        ))}
-                      </Select.Content>
-                    </Select.Root>
-                  ))}
-              </Flex>
-            </Flex>
-
-            <Flex direction="column" gap="3" flexGrow="1">
-              <Text as="label" size="2" weight="bold">
-                Experiment Type
-              </Text>
-              <RadioGroup.Root
-                value={formData.experimentType || 'freq_preassigned'}
-                onValueChange={(value) =>
-                  onFormDataChange({
-                    ...formData,
-                    experimentType: value,
-                  })
-                }
-              >
-                <Flex direction="column" gap="2">
-                  <Text as="label" size="2">
-                    <Flex gap="2">
-                      <RadioGroup.Item value="freq_preassigned" /> Preassigned
-                    </Flex>
-                  </Text>
-                  <Text as="label" size="2">
-                    <Flex gap="2">
-                      <RadioGroup.Item value="freq_online" /> Online
-                    </Flex>
-                  </Text>
-                </Flex>
-              </RadioGroup.Root>
+            <Flex direction="row" gap="2">
+              {formData.datasourceId &&
+                (loadingParticipantTypes ? (
+                  <Flex align="center" gap="2">
+                    <Spinner size="1" />
+                    <Text size="2">Loading participant types...</Text>
+                  </Flex>
+                ) : !participantTypesData || participantTypesData.items.length === 0 ? (
+                  <Flex direction="column" gap="2">
+                    <Text color="gray">No participant types available</Text>
+                    <Link href={`/datasources/${formData.datasourceId}`} passHref>
+                      <Button size="2" variant="soft">
+                        Add a Participant Type
+                      </Button>
+                    </Link>
+                  </Flex>
+                ) : (
+                  <Select.Root
+                    value={formData.participantType || ''}
+                    onValueChange={(value) =>
+                      onFormDataChange({
+                        ...formData,
+                        participantType: value,
+                      })
+                    }
+                  >
+                    <Select.Trigger placeholder="Select a participant type" />
+                    <Select.Content>
+                      {participantTypesData.items.map((pt) => (
+                        <Select.Item key={pt.participant_type} value={pt.participant_type}>
+                          {pt.participant_type}
+                        </Select.Item>
+                      ))}
+                    </Select.Content>
+                  </Select.Root>
+                ))}
             </Flex>
           </Flex>
         </Card>
@@ -232,7 +203,7 @@ export function InitialForm({ formData, onFormDataChange, onNext, webhooks }: In
                 <Card key={index}>
                   <Flex direction="column" gap="2">
                     <Flex justify="between" align="center">
-                      <Text size="2" weight="bold">
+                      <Text size="3" weight="bold">
                         Arm {index + 1} {0 == index && '(control)'}
                       </Text>
                       <IconButton size="1" color="red" variant="soft" onClick={() => removeArm(index)}>
@@ -242,6 +213,9 @@ export function InitialForm({ formData, onFormDataChange, onNext, webhooks }: In
 
                     <Flex direction="column" gap="2">
                       <Box maxWidth={'50%'}>
+                        <Text as="label" size="2" weight="bold">
+                          Arm Name
+                        </Text>
                         <TextField.Root
                           value={arm.arm_name}
                           placeholder={'Arm Name'}
@@ -252,6 +226,9 @@ export function InitialForm({ formData, onFormDataChange, onNext, webhooks }: In
                     </Flex>
 
                     <Flex direction="column" gap="2">
+                      <Text as="label" size="2" weight="bold">
+                        Arm Description
+                      </Text>
                       <TextArea
                         placeholder="Description"
                         value={arm.arm_description || ''}
@@ -296,9 +273,7 @@ export function InitialForm({ formData, onFormDataChange, onNext, webhooks }: In
           </Card>
         )}
 
-        <Flex justify="end" mt="4">
-          <Button type="submit">Next</Button>
-        </Flex>
+        <NavigationButtons onBack={onBack} onNext={onNext} nextLabel="Next" />
       </Flex>
     </form>
   );

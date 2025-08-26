@@ -1,39 +1,36 @@
 /**
- * Experiment Creation Flow Architecture
- * -------------------------------------
- * This page implements a multi-stage form for creating experiments.
+ * Enhanced Experiment Creation Flow Architecture
+ * --------------------------------------------
+ * This page implements a multi-type, multi-stage form for creating experiments.
  *
- * Key ideas:
- * - The Page component blocks rendering of the form until all values needed to populate the default form state are
- *   fetched.
- * - The CreateExperimentMultiStageForm manages the default values, the user's selections, and the current page number.
- * - The form data is defined by the ExperimentFormData type.
+ * Key improvements:
+ * - Support for 4 experiment types: Traditional A/B, MAB, Bayesian A/B, Contextual Bandit
+ * - Adaptive navigation and breadcrumbs based on experiment type
+ * - Type-specific form flows and validation
+ * - Component-based architecture for maintainability
  *
- * The form has three pages:
- * 1. Initial Form (Step 1): Basic experiment metadata like name, hypothesis, dates
- * 2. Design Form (Step 2): Core experiment configuration including metrics, filters, arms, and power analysis
- * 3. Confirmation Form (Step 3): Review and commit the experiment
+ * The flow now includes:
+ * 1. Experiment Type Selection: Choose from 4 experiment types
+ * 2. Type-specific flows:
+ *    - Traditional A/B: Assignment → Metadata → Design → Summary
+ *    - MAB: Metadata → Design → Summary
+ *    - Bayesian A/B: Metadata → Design → Summary
+ *    - CMAB: Metadata → Design → Context → Summary
  */
 
 'use client';
-import React, { useState } from 'react';
-import { InitialForm } from '@/components/features/experiments/initial-form';
-import { DesignForm } from '@/components/features/experiments/design-form';
-import { ConfirmationForm } from '@/components/features/experiments/confirmation-form';
-import { Box, Container, Flex, Heading } from '@radix-ui/themes';
-import { Arm, CreateExperimentResponse, FilterInput, PowerResponseOutput, WebhookSummary } from '@/api/methods.schemas';
-import { useParams } from 'next/navigation';
+import React from 'react';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { useListOrganizationWebhooks } from '@/api/admin';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { CreateExperimentContainer } from './containers/create-experiment-container';
 
-// Wraps the multi-stage form with blocking fetchers that acquire values for populating the default values.
-export default function Page() {
+// Main page component that handles loading state and error handling
+export default function CreateExperimentPage() {
   const org = useCurrentOrganization();
 
-  // The default form data will select the webhook if the organization has only one, or select none if the organization
-  // has none or more than one.
+  // Fetch webhooks for experiment notifications
   const { data, isLoading, error } = useListOrganizationWebhooks(org!.current.id, {
     swr: {
       revalidateOnFocus: false,
@@ -50,153 +47,5 @@ export default function Page() {
     return <GenericErrorCallout title={'An error occurred while loading webhooks.'} error={error} />;
   }
 
-  return <CreateExperimentMultiStageForm webhooks={data!.items} />;
-}
-
-export type MetricWithMDE = {
-  metricName: string;
-  mde: string; // desired minimum detectable effect as a percentage of the metric's baseline value
-};
-
-export type ExperimentFormData = {
-  datasourceId?: string;
-  participantType?: string;
-  experimentType: string;
-  name: string;
-  hypothesis: string;
-  startDate: string;
-  endDate: string;
-  arms: Omit<Arm, 'arm_id'>[];
-  primaryMetric?: MetricWithMDE;
-  secondaryMetrics: MetricWithMDE[];
-  filters: FilterInput[];
-  strata?: string[]; // Add this line
-  // These next 2 Experiment Parameters are strings to allow for empty values,
-  // which should be converted to numbers when making power or experiment creation requests.
-  confidence: string;
-  power: string;
-  // Selected webhook IDs for notifications
-  selectedWebhookIds: string[];
-  // Populated when user clicks "Power Check" on DesignForm
-  chosenN?: number;
-  powerCheckResponse?: PowerResponseOutput;
-  // Populated when assignments are created by pressing "Next" on DesignForm
-  experimentId?: string;
-  createExperimentResponse?: CreateExperimentResponse;
-};
-
-const reasonableStartDate = () => {
-  const date = new Date();
-  date.setDate(0);
-  date.setMonth(date.getMonth() + 2);
-  return date.toISOString().split('T')[0];
-};
-
-const reasonableEndDate = () => {
-  const date = new Date();
-  date.setDate(0);
-  date.setMonth(date.getMonth() + 3);
-  return date.toISOString().split('T')[0];
-};
-
-export type CreateExperimentMultiStageFormProps = {
-  webhooks: WebhookSummary[];
-};
-
-function CreateExperimentMultiStageForm({ webhooks }: CreateExperimentMultiStageFormProps) {
-  const [currentStep, setCurrentStep] = useState(1);
-  const params = useParams();
-  const [formData, setFormData] = useState<ExperimentFormData>({
-    datasourceId: params.datasourceId as string,
-    experimentType: 'freq_preassigned',
-    name: 'My Experiment',
-    hypothesis: 'Hypothesis.',
-    startDate: reasonableStartDate(),
-    endDate: reasonableEndDate(),
-    arms: [
-      { arm_name: 'Control', arm_description: 'Control' },
-      { arm_name: 'Treatment', arm_description: 'Treatment' },
-    ],
-    // primaryMetric will be undefined initially
-    secondaryMetrics: [],
-    filters: [],
-    confidence: '95',
-    power: '80',
-    // useState only sets default value on the initial render. This default value is not reactive to changes in the
-    // webhooks prop.
-    selectedWebhookIds: webhooks.length == 1 ? [webhooks[0].id] : [],
-  });
-  console.log('formData', formData);
-
-  const handleNext = () => {
-    setCurrentStep(currentStep + 1);
-  };
-
-  const handleBack = () => {
-    setCurrentStep(currentStep - 1);
-  };
-
-  const handleFormDataChange = (data: ExperimentFormData) => {
-    // Determine if we need to invalidate the power check response
-    if (formData.powerCheckResponse) {
-      const filtersChanged =
-        formData.filters.length !== data.filters.length ||
-        formData.filters.some(
-          (filter, i) =>
-            data.filters[i]?.field_name !== filter.field_name ||
-            data.filters[i]?.relation !== filter.relation ||
-            JSON.stringify(filter.value) !== JSON.stringify(data.filters[i]?.value),
-        );
-
-      const primaryMetricChanged =
-        formData.primaryMetric?.metricName !== data.primaryMetric?.metricName ||
-        formData.primaryMetric?.mde !== data.primaryMetric?.mde;
-
-      const secondaryMetricsChanged =
-        formData.secondaryMetrics.length !== data.secondaryMetrics.length ||
-        formData.secondaryMetrics.some(
-          (metric, i) =>
-            data.secondaryMetrics[i]?.metricName !== metric.metricName || data.secondaryMetrics[i]?.mde !== metric.mde,
-        );
-
-      const shouldInvalidatePowerCheck =
-        filtersChanged ||
-        primaryMetricChanged ||
-        secondaryMetricsChanged ||
-        formData.confidence !== data.confidence ||
-        formData.power !== data.power;
-
-      // Only reset if we have a previous power check response and need to invalidate it
-      const newData = shouldInvalidatePowerCheck ? { ...data, powerCheckResponse: undefined } : data;
-      setFormData(newData);
-    } else {
-      setFormData(data);
-    }
-  };
-
-  return (
-    <Container>
-      <Flex direction="column" gap="4">
-        <Heading size="8">
-          {{ 1: 'Experiment Metadata', 2: 'Experiment Design', 3: 'Experiment Summary' }[currentStep]}
-        </Heading>
-        <Box>
-          {currentStep === 1 && (
-            <InitialForm formData={formData} onFormDataChange={setFormData} onNext={handleNext} webhooks={webhooks} />
-          )}
-          {currentStep === 2 && (
-            <DesignForm
-              formData={formData}
-              onFormDataChange={handleFormDataChange}
-              onNext={handleNext}
-              onBack={handleBack}
-            />
-          )}
-          {currentStep === 3 && (
-            <ConfirmationForm formData={formData} onFormDataChange={setFormData} onBack={handleBack} />
-          )}
-        </Box>
-      </Flex>
-    </Container>
-  );
+  return <CreateExperimentContainer webhooks={data!.items} />;
 }

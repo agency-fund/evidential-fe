@@ -59,12 +59,12 @@ export function HeaderBar() {
             {/* Main menu */}
             {hasMultipleOrgs && (
               <>
-              <DropdownMenu.Label>
-                    {currentOrganization && (
-                      <Text size="1" color="gray" align="center" style={{ width: '100%', display: 'block' }}>
-                        {currentOrganization.current.name}
-                      </Text>
-                    )}
+                <DropdownMenu.Label>
+                  {currentOrganization && (
+                    <Text size="1" color="gray" align="center" style={{ width: '100%', display: 'block' }}>
+                      {currentOrganization.current.name}
+                    </Text>
+                  )}
                 </DropdownMenu.Label>
 
                 <DropdownMenu.Item
@@ -73,7 +73,7 @@ export function HeaderBar() {
                     setDropdownOpen('organizations');
                   }}
                 >
-                      <BackpackIcon /> Organizations
+                  <BackpackIcon /> Organizations
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator />
               </>
