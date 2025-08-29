@@ -334,7 +334,8 @@ export const BayesABExperimentSpecInputExperimentType = {
 export type BayesABExperimentSpecInputContexts = Context[] | null;
 
 /**
- * Use this type to randomly assign participants into arms during live experiment execution with Bayesian A/B experiments.
+ * Use this type to randomly assign participants into arms during live experiment execution with
+Bayesian A/B experiments.
 
 For example, you may wish to experiment on new users. Assignments are issued via API request.
  */
@@ -382,7 +383,8 @@ export const BayesABExperimentSpecOutputExperimentType = {
 export type BayesABExperimentSpecOutputContexts = Context[] | null;
 
 /**
- * Use this type to randomly assign participants into arms during live experiment execution with Bayesian A/B experiments.
+ * Use this type to randomly assign participants into arms during live experiment execution with
+Bayesian A/B experiments.
 
 For example, you may wish to experiment on new users. Assignments are issued via API request.
  */
@@ -502,7 +504,8 @@ export const CMABExperimentSpecInputExperimentType = {
 export type CMABExperimentSpecInputContexts = Context[] | null;
 
 /**
- * Use this type to randomly assign participants into arms during live experiment execution with contextual MAB experiments.
+ * Use this type to randomly assign participants into arms during live experiment execution with
+contextual MAB experiments.
 
 For example, you may wish to experiment on new users. Assignments are issued via API request.
  */
@@ -550,7 +553,8 @@ export const CMABExperimentSpecOutputExperimentType = {
 export type CMABExperimentSpecOutputContexts = Context[] | null;
 
 /**
- * Use this type to randomly assign participants into arms during live experiment execution with contextual MAB experiments.
+ * Use this type to randomly assign participants into arms during live experiment execution with
+contextual MAB experiments.
 
 For example, you may wish to experiment on new users. Assignments are issued via API request.
  */
@@ -1684,7 +1688,8 @@ export const OnlineFrequentistExperimentSpecInputExperimentType = {
 } as const;
 
 /**
- * Use this type to randomly assign participants into arms during live experiment execution with frequentist A/B experiments.
+ * Use this type to randomly assign participants into arms during live experiment execution with
+frequentist A/B experiments.
 
 For example, you may wish to experiment on new users. Assignments are issued via API request.
  */
@@ -1755,7 +1760,8 @@ export const OnlineFrequentistExperimentSpecOutputExperimentType = {
 } as const;
 
 /**
- * Use this type to randomly assign participants into arms during live experiment execution with frequentist A/B experiments.
+ * Use this type to randomly assign participants into arms during live experiment execution with
+frequentist A/B experiments.
 
 For example, you may wish to experiment on new users. Assignments are issued via API request.
  */
@@ -1934,7 +1940,8 @@ export const PreassignedFrequentistExperimentSpecInputExperimentType = {
 } as const;
 
 /**
- * Use this type to randomly select and assign from existing participants at design time with frequentist A/B experiments.
+ * Use this type to randomly select and assign from existing participants at design time with
+frequentist A/B experiments.
  */
 export interface PreassignedFrequentistExperimentSpecInput {
 	/** @maxLength 100 */
@@ -2005,7 +2012,8 @@ export const PreassignedFrequentistExperimentSpecOutputExperimentType = {
 } as const;
 
 /**
- * Use this type to randomly select and assign from existing participants at design time with frequentist A/B experiments.
+ * Use this type to randomly select and assign from existing participants at design time with
+frequentist A/B experiments.
  */
 export interface PreassignedFrequentistExperimentSpecOutput {
 	/** @maxLength 100 */

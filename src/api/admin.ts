@@ -1789,7 +1789,8 @@ export const useCreateParticipantType = <
 	};
 };
 /**
- * Returns filter, strata, and metric field metadata for a participant type, including exemplars for filter fields.
+ * Returns filter, strata, and metric field metadata for a participant type, including exemplars for
+filter fields.
  * @summary Inspect Participant Types
  */
 export const getInspectParticipantTypesUrl = (
