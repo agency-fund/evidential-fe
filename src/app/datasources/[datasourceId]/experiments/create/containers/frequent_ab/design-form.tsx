@@ -11,7 +11,7 @@ import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { PRODUCT_NAME } from '@/services/constants';
 import { MetricBuilder } from '@/components/features/experiments/metric-builder';
 import { SectionCard } from '@/components/ui/cards/section-card';
-import { StrataBuilder } from './strata-builder';
+import { StrataBuilder } from '@/components/features/experiments/strata-builder';
 
 interface DesignFormProps {
   formData: FrequentABFormData;
@@ -103,9 +103,9 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
           <SectionCard title="Stratification">
             <StrataBuilder
               availableStrata={strataFields}
-              selectedStrata={formData.strata || []}
+              selectedStrata={formData.strata.map((stratum) => stratum.fieldName) || []}
               onStrataChange={(newStrata) => {
-                onFormDataChange({ ...formData, strata: newStrata });
+                onFormDataChange({ ...formData, strata: [...newStrata.map((fieldName) => ({ fieldName }))] });
               }}
             />
           </SectionCard>
