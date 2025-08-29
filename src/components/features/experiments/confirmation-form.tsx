@@ -1,5 +1,5 @@
 'use client';
-import { Button, Callout, Flex, Grid, Table, Text } from '@radix-ui/themes';
+import { Button, Callout, Flex, Grid, Table, Text, Badge } from '@radix-ui/themes';
 import { FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { useRouter } from 'next/navigation';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
@@ -12,6 +12,7 @@ import { ApiError } from '@/services/orval-fetch';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { ReadMoreText } from '@/components/ui/read-more-text';
 import { ListSelectedWebhooksCard } from '@/components/features/experiments/list-selected-webhooks-card';
+import { color } from 'motion';
 
 interface ConfirmationFormProps {
   formData: FrequentABFormData;
@@ -176,6 +177,19 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
           </Table.Root>
         ) : (
           <Text color="gray">No filters defined</Text>
+        )}
+      </SectionCard>
+      <SectionCard title="Strata">
+        {formData.strata.length > 0 ? (
+          <Flex gap="2" wrap="wrap">
+            {formData.strata.map((stratum, index) => (
+              <Badge key={index} variant="outline" color="gray">
+                <Text size="2">{stratum.fieldName}</Text>
+              </Badge>
+            ))}
+          </Flex>
+        ) : (
+          <Text color="gray">No strata defined</Text>
         )}
       </SectionCard>
 
