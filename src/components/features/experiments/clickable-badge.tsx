@@ -8,10 +8,11 @@ import { DataTypeBadge } from '@/components/ui/data-type-badge';
 type ClickableBadgeProps = {
   input: GetMetricsResponseElement | GetStrataResponseElement;
   color?: 'blue' | 'gray';
+  isMetric?: boolean;
   onClick: (field_name: string) => void;
 };
 
-export function ClickableBadge({ input: metric, onClick, color }: ClickableBadgeProps) {
+export function ClickableBadge({ input: metric, onClick, color, isMetric = true }: ClickableBadgeProps) {
   const badge = (
     <Badge
       key={metric.field_name}
@@ -21,7 +22,7 @@ export function ClickableBadge({ input: metric, onClick, color }: ClickableBadge
       style={{ cursor: 'pointer' }}
       onClick={() => onClick(metric.field_name)}
     >
-      <PlusIcon /> {metric.field_name}
+      {isMetric ? <PlusIcon /> : null} {metric.field_name}
     </Badge>
   );
   return (
