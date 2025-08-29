@@ -1,7 +1,8 @@
 'use client';
 
-import { Badge, Button, Flex, Text } from '@radix-ui/themes';
+import { Button, Flex, Text } from '@radix-ui/themes';
 import { GetStrataResponseElement } from '@/api/methods.schemas';
+import { ClickableBadge } from './clickable-badge';
 
 interface StrataBuilderProps {
   availableStrata: GetStrataResponseElement[];
@@ -25,50 +26,44 @@ export function StrataBuilder({ availableStrata, selectedStrata, onStrataChange 
   };
 
   return (
-    <Flex direction="column" gap="3">
+    <Flex direction="column" gap="3" overflowX={'auto'}>
       <Text size="2" color="gray">
-        Select fields to use for stratified randomization to ensure participant distributions are balanced with respect
-        to these dimensions across the arms.
+        Select strata fields for balanced randomization of participants across experiment arms.
       </Text>
-
       <Flex gap="2" wrap="wrap">
         <Button
           type="button"
           variant="soft"
-          size="1"
+          size="2"
           onClick={handleAddAll}
           disabled={selectedStrata.length === availableStrata.length}
+          {...(selectedStrata.length === availableStrata.length ? { color: 'gray' } : {})}
         >
           Add All
         </Button>
-        {selectedStrata.length > 0 && (
-          <Button type="button" variant="soft" size="1" color="gray" onClick={handleClearAll}>
-            Clear All
-          </Button>
-        )}
+        <Button
+          type="button"
+          variant="soft"
+          size="2"
+          disabled={selectedStrata.length === 0}
+          {...(selectedStrata.length === 0 ? { color: 'gray' } : {})}
+          onClick={handleClearAll}
+        >
+          Clear All
+        </Button>
       </Flex>
 
-      <Flex direction="column" gap="2">
-        {availableStrata.map((stratum) => (
-          <Button
-            key={stratum.field_name}
-            type="button"
-            variant={selectedStrata.includes(stratum.field_name) ? 'solid' : 'soft'}
-            color={selectedStrata.includes(stratum.field_name) ? 'blue' : 'gray'}
-            size="1"
-            onClick={() => handleStrataToggle(stratum.field_name, !selectedStrata.includes(stratum.field_name))}
-            style={{ justifyContent: 'flex-start' }}
-          >
-            <Flex align="center" gap="2" width="100%">
-              <Text size="1" weight="medium">
-                {stratum.field_name}
-              </Text>
-              <Badge variant="soft" size="1" color="gray">
-                {stratum.data_type}
-              </Badge>
-            </Flex>
-          </Button>
-        ))}
+      <Flex direction="row" gap="2" wrap="wrap">
+        {availableStrata
+          .toSorted((a, b) => a.field_name.localeCompare(b.field_name))
+          .map((stratum) => (
+            <ClickableBadge
+              key={stratum.field_name}
+              input={stratum}
+              {...(!selectedStrata.includes(stratum.field_name) ? { color: 'gray' } : {})}
+              onClick={() => handleStrataToggle(stratum.field_name, !selectedStrata.includes(stratum.field_name))}
+            ></ClickableBadge>
+          ))}
       </Flex>
     </Flex>
   );

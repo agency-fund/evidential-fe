@@ -163,7 +163,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
               </Flex>
               <Flex gap={'2'} wrap={'wrap'}>
                 {availablePrimaryMetricBadges.map((metric) => (
-                  <ClickableBadge key={metric.field_name} metric={metric} onClick={handlePrimaryMetricSelect} />
+                  <ClickableBadge key={metric.field_name} input={metric} onClick={handlePrimaryMetricSelect} />
                 ))}
                 {availablePrimaryMetricBadges.length === 0 && metricFields.length > 0 && (
                   <Text color="gray" size="2">
@@ -186,7 +186,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
               </Flex>
               <Flex gap="2" wrap={'wrap'}>
                 {availableSecondaryMetricBadges.map((metric) => (
-                  <ClickableBadge key={metric.field_name} metric={metric} onClick={handleSecondaryMetricAdd} />
+                  <ClickableBadge key={metric.field_name} input={metric} onClick={handleSecondaryMetricAdd} />
                 ))}
               </Flex>
             </>

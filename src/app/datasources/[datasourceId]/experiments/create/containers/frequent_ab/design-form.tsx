@@ -100,7 +100,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
 
         {/* 3. Conditionally render the StrataBuilder */}
         {strataFields.length > 0 && (
-          <SectionCard title="Stratification">
+          <SectionCard title="Strata">
             <StrataBuilder
               availableStrata={strataFields}
               selectedStrata={formData.strata.map((stratum) => stratum.fieldName) || []}

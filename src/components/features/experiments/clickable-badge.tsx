@@ -1,21 +1,23 @@
 'use client';
 
-import { GetMetricsResponseElement } from '@/api/methods.schemas';
+import { GetMetricsResponseElement, GetStrataResponseElement } from '@/api/methods.schemas';
 import { Badge, Flex, HoverCard, Text } from '@radix-ui/themes';
 import { PlusIcon } from '@radix-ui/react-icons';
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
 
 type ClickableBadgeProps = {
-  metric: GetMetricsResponseElement;
+  input: GetMetricsResponseElement | GetStrataResponseElement;
+  color?: 'blue' | 'gray';
   onClick: (field_name: string) => void;
 };
 
-export function ClickableBadge({ metric, onClick }: ClickableBadgeProps) {
+export function ClickableBadge({ input: metric, onClick, color }: ClickableBadgeProps) {
   const badge = (
     <Badge
       key={metric.field_name}
       size={'3'}
       variant={'soft'}
+      {...(color ? { color } : {})}
       style={{ cursor: 'pointer' }}
       onClick={() => onClick(metric.field_name)}
     >
