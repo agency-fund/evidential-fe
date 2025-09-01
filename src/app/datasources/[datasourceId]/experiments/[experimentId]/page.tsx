@@ -20,6 +20,7 @@ import {
   OnlineFrequentistExperimentSpecOutput,
   PreassignedFrequentistExperimentSpecOutput,
 } from '@/api/methods.schemas';
+import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 
 // Type guard to assure TypeScript that a DesignSpec is one of two types.
 function isFrequentistDesign(
@@ -72,30 +73,30 @@ export default function ExperimentViewPage() {
           <Heading size="8">{experiment_name}</Heading>
           <CopyToClipBoard content={experimentId} tooltipContent="Copy experiment ID" />
         </Flex>
-        <Flex gap="4" align="center">
-          <Flex align="center" gap="1">
-            <Text weight="bold">Type:</Text>
-            <ExperimentTypeBadge type={design_spec.experiment_type} />
+        <Flex justify="between" align="center" width="100%">
+          <Flex gap="4" align="center">
+            <Flex align="center" gap="1">
+              <Text weight="bold">Type:</Text>
+              <ExperimentTypeBadge type={design_spec.experiment_type} />
+            </Flex>
+            <Separator orientation="vertical" />
+
+            <Flex align="center" gap="1">
+              <Text weight="bold">Participants:</Text>
+              <ParticipantTypeBadge
+                datasourceId={experiment.datasource_id}
+                participantType={experiment.design_spec.participant_type}
+              />
+            </Flex>
+            <Separator orientation="vertical" />
+            <Flex align="center" gap="2">
+              <CalendarIcon />
+              <Text>{new Date(start_date).toLocaleDateString()}</Text>
+              <Text>→</Text>
+              <Text>{new Date(end_date).toLocaleDateString()}</Text>
+            </Flex>
           </Flex>
-
-          <Separator orientation="vertical" />
-
-          <Flex align="center" gap="1">
-            <Text weight="bold">Participants:</Text>
-            <ParticipantTypeBadge
-              datasourceId={experiment.datasource_id}
-              participantType={experiment.design_spec.participant_type}
-            />
-          </Flex>
-
-          <Separator orientation="vertical" />
-
-          <Flex align="center" gap="2">
-            <CalendarIcon />
-            <Text>{new Date(start_date).toLocaleDateString()}</Text>
-            <Text>→</Text>
-            <Text>{new Date(end_date).toLocaleDateString()}</Text>
-          </Flex>
+          <DownloadAssignmentsCsvButton datasourceId={experiment.datasource_id} experimentId={experimentId} />
         </Flex>
       </Flex>
       <Flex direction="column" gap="4">
