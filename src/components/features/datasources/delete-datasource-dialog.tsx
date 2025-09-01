@@ -1,5 +1,5 @@
 'use client';
-import { AlertDialog, Button, Flex, IconButton } from '@radix-ui/themes';
+import { AlertDialog, Button, Flex, IconButton, Tooltip } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
 import { getGetOrganizationKey, useDeleteDatasource } from '@/api/admin';
 import { mutate } from 'swr';
@@ -24,9 +24,11 @@ export function DeleteDatasourceDialog({ organizationId, datasourceId }: DeleteD
   return (
     <AlertDialog.Root>
       <AlertDialog.Trigger>
-        <IconButton color="red" variant="soft">
-          <TrashIcon />
-        </IconButton>
+        <Tooltip content="Delete Datasource">
+          <IconButton color="red" variant="soft">
+            <TrashIcon />
+          </IconButton>
+        </Tooltip>
       </AlertDialog.Trigger>
       <AlertDialog.Content>
         <AlertDialog.Title>Delete Datasource</AlertDialog.Title>

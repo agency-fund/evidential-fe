@@ -1,5 +1,5 @@
 'use client';
-import { Button, Dialog, Flex, IconButton, Text, TextField } from '@radix-ui/themes';
+import { Button, Dialog, Flex, IconButton, Text, TextField, Tooltip } from '@radix-ui/themes';
 import { ServiceAccountJsonField } from '@/components/features/datasources/service-account-json-field';
 import { EyeClosedIcon, EyeOpenIcon, GearIcon, InfoCircledIcon, Pencil2Icon } from '@radix-ui/react-icons';
 import {
@@ -124,9 +124,11 @@ export const EditDatasourceDialog = ({
     >
       <Dialog.Trigger>
         {variant === 'icon' ? (
-          <IconButton color="gray" variant="soft">
-            <Pencil2Icon />
-          </IconButton>
+          <Tooltip content="Edit Datasource">
+            <IconButton color="gray" variant="soft">
+              <Pencil2Icon />
+            </IconButton>
+          </Tooltip>
         ) : (
           <Button>
             <GearIcon />
