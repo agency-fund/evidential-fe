@@ -179,8 +179,8 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
           <Text color="gray">No filters defined</Text>
         )}
       </SectionCard>
-      <SectionCard title="Strata">
-        {formData.strata.length > 0 ? (
+      {formData.strata.length > 0 ? (
+        <SectionCard title="Strata">
           <Flex gap="2" wrap="wrap">
             {formData.strata.map((stratum, index) => (
               <Badge key={index} variant="outline" color="gray">
@@ -188,10 +188,8 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
               </Badge>
             ))}
           </Flex>
-        ) : (
-          <Text color="gray">No strata defined</Text>
-        )}
-      </SectionCard>
+        </SectionCard>
+      ) : null}
 
       <ListSelectedWebhooksCard webhookIds={formData.selectedWebhookIds} />
 
