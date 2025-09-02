@@ -73,32 +73,28 @@ export default function ExperimentViewPage() {
           <Heading size="8">{experiment_name}</Heading>
           <CopyToClipBoard content={experimentId} tooltipContent="Copy experiment ID" />
         </Flex>
-        <Flex justify="between" align="center" width="100%">
-          <Flex gap="4" align="center">
-            <Flex align="center" gap="1">
-              <Text weight="bold">Type:</Text>
-              <ExperimentTypeBadge type={design_spec.experiment_type} />
-            </Flex>
-            <Separator orientation="vertical" />
 
-            <Flex align="center" gap="1">
-              <Text weight="bold">Participants:</Text>
-              <ParticipantTypeBadge
-                datasourceId={experiment.datasource_id}
-                participantType={experiment.design_spec.participant_type}
-              />
-            </Flex>
-            <Separator orientation="vertical" />
-            <Flex align="center" gap="2">
-              <CalendarIcon />
-              <Text>{new Date(start_date).toLocaleDateString()}</Text>
-              <Text>→</Text>
-              <Text>{new Date(end_date).toLocaleDateString()}</Text>
-            </Flex>
+        <Flex gap="4" align="center">
+          <Flex align="center" gap="1">
+            <Text weight="bold">Type:</Text>
+            <ExperimentTypeBadge type={design_spec.experiment_type} />
           </Flex>
-          {experiment_type === 'freq_preassigned' && (
-            <DownloadAssignmentsCsvButton datasourceId={experiment.datasource_id} experimentId={experimentId} />
-          )}
+          <Separator orientation="vertical" />
+
+          <Flex align="center" gap="1">
+            <Text weight="bold">Participants:</Text>
+            <ParticipantTypeBadge
+              datasourceId={experiment.datasource_id}
+              participantType={experiment.design_spec.participant_type}
+            />
+          </Flex>
+          <Separator orientation="vertical" />
+          <Flex align="center" gap="2">
+            <CalendarIcon />
+            <Text>{new Date(start_date).toLocaleDateString()}</Text>
+            <Text>→</Text>
+            <Text>{new Date(end_date).toLocaleDateString()}</Text>
+          </Flex>
         </Flex>
       </Flex>
       <Flex direction="column" gap="4">
@@ -112,10 +108,15 @@ export default function ExperimentViewPage() {
           <SectionCard
             title="Arms & Allocations"
             headerRight={
-              <Badge>
-                <PersonIcon />
-                <Text size="2">{assign_summary.sample_size.toLocaleString()} participants</Text>
-              </Badge>
+              <Flex justify={`${experiment_type === 'freq_preassigned' ? 'between' : 'end'}`} width="100%">
+                {experiment_type === 'freq_preassigned' && (
+                  <DownloadAssignmentsCsvButton datasourceId={experiment.datasource_id} experimentId={experimentId} />
+                )}
+                <Badge>
+                  <PersonIcon />
+                  <Text size="2">{assign_summary.sample_size.toLocaleString()} participants</Text>
+                </Badge>
+              </Flex>
             }
           >
             <Table.Root>
