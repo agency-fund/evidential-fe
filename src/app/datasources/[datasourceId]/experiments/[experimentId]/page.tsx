@@ -108,10 +108,8 @@ export default function ExperimentViewPage() {
           <SectionCard
             title="Arms & Allocations"
             headerRight={
-              <Flex justify={`${experiment_type === 'freq_preassigned' ? 'between' : 'end'}`} width="100%">
-                {experiment_type === 'freq_preassigned' && (
-                  <DownloadAssignmentsCsvButton datasourceId={experiment.datasource_id} experimentId={experimentId} />
-                )}
+              <Flex justify="between" width="100%">
+                <DownloadAssignmentsCsvButton datasourceId={experiment.datasource_id} experimentId={experimentId} />
                 <Badge>
                   <PersonIcon />
                   <Text size="2">{assign_summary.sample_size.toLocaleString()} participants</Text>

@@ -156,9 +156,7 @@ export default function ExperimentCard({
               </Link>
             </IconButton>
           </Tooltip>
-          {type === 'freq_preassigned' && (
-            <DownloadAssignmentsCsvButton datasourceId={datasourceId} experimentId={experimentId} />
-          )}
+          <DownloadAssignmentsCsvButton datasourceId={datasourceId} experimentId={experimentId} />
         </Flex>
       </Flex>
     </Card>
