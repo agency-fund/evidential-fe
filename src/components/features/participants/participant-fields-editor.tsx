@@ -1,9 +1,10 @@
 'use client';
 import { FieldDescriptor } from '@/api/methods.schemas';
-import { Checkbox, Flex, IconButton, Radio, Switch, Table, Text, TextField, Tooltip } from '@radix-ui/themes';
+import { Checkbox, Flex, IconButton, Radio, Switch, Table, Text, TextField, Tooltip, Grid } from '@radix-ui/themes';
 import { useState } from 'react';
 import { isEligibleForUseAsMetric } from '@/services/genapi-helpers';
-import { TrashIcon } from '@radix-ui/react-icons';
+import { TrashIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
+import { DataTypeBadge } from '@/components/ui/data-type-badge';
 
 export interface ParticipantFieldsEditorProps {
   fields: FieldDescriptor[];
@@ -19,6 +20,7 @@ export function ParticipantFieldsEditor({
   allowFieldRemoval = false,
 }: ParticipantFieldsEditorProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const updateField = (index: number, field: FieldDescriptor) => {
     const newFields = [...fields];
@@ -39,12 +41,31 @@ export function ParticipantFieldsEditor({
     onFieldsChange(newFields);
   };
 
+  const filteredFields = fields
+    .map((field, index) => ({ field, originalIndex: index }))
+    .filter(
+      ({ field }) =>
+        field.field_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (field.description?.toLowerCase() || '').includes(searchQuery.toLowerCase()),
+    );
+
   return (
-    <Flex direction="column" gap="3">
-      <Flex align="center" gap="2">
-        <Switch checked={showAdvanced} onCheckedChange={setShowAdvanced} />
-        <Text size="2">Show Advanced Options</Text>
-      </Flex>
+    <Flex direction="column" gap="3" width="">
+      <Grid columns="2" align="center" justify="between">
+        <TextField.Root
+          placeholder="Search fields by name or description"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        >
+          <TextField.Slot>
+            <MagnifyingGlassIcon height="16" width="16" />
+          </TextField.Slot>
+        </TextField.Root>
+        <Flex gap="2" justify="end">
+          <Switch checked={showAdvanced} onCheckedChange={setShowAdvanced} />
+          <Text size="2">Show Advanced Options</Text>
+        </Flex>
+      </Grid>
       <Table.Root>
         <Table.Header>
           <Table.Row>
@@ -61,8 +82,8 @@ export function ParticipantFieldsEditor({
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {fields.map((field, index) => (
-            <Table.Row key={`${field.field_name}-${index}`}>
+          {filteredFields.map(({ field, originalIndex }) => (
+            <Table.Row key={`${field.field_name}-${originalIndex}`}>
               <Table.Cell>
                 {uniqueIdCandidates.includes(field.field_name) ? (
                   <Text weight="bold">{field.field_name}</Text>
@@ -70,12 +91,14 @@ export function ParticipantFieldsEditor({
                   <Text>{field.field_name}</Text>
                 )}
               </Table.Cell>
-              <Table.Cell>{field.data_type}</Table.Cell>
+              <Table.Cell>
+                <DataTypeBadge type={field.data_type} />
+              </Table.Cell>
               <Table.Cell>
                 <TextField.Root
                   value={field.description || ''}
                   onChange={(e) =>
-                    updateField(index, {
+                    updateField(originalIndex, {
                       ...field,
                       description: e.target.value,
                     })
@@ -86,7 +109,7 @@ export function ParticipantFieldsEditor({
                 <Radio
                   value={field.field_name}
                   checked={field.is_unique_id || false}
-                  onValueChange={() => setUniqueIdField(index)}
+                  onValueChange={() => setUniqueIdField(originalIndex)}
                   size="3"
                 />
               </Table.Cell>
@@ -95,7 +118,7 @@ export function ParticipantFieldsEditor({
                   <Checkbox
                     checked={field.is_strata || false}
                     onCheckedChange={(checked) =>
-                      updateField(index, {
+                      updateField(originalIndex, {
                         ...field,
                         is_strata: checked === true,
                       })
@@ -108,7 +131,7 @@ export function ParticipantFieldsEditor({
                 <Checkbox
                   checked={field.is_filter || false}
                   onCheckedChange={(checked) =>
-                    updateField(index, {
+                    updateField(originalIndex, {
                       ...field,
                       is_filter: checked === true,
                     })
@@ -121,7 +144,7 @@ export function ParticipantFieldsEditor({
                   <Checkbox
                     checked={field.is_metric || false}
                     onCheckedChange={(checked) =>
-                      updateField(index, {
+                      updateField(originalIndex, {
                         ...field,
                         is_metric: checked === true,
                       })
@@ -139,7 +162,7 @@ export function ParticipantFieldsEditor({
                   <IconButton
                     onClick={(e) => {
                       e.preventDefault();
-                      removeField(index);
+                      removeField(originalIndex);
                     }}
                     variant="soft"
                     color="red"

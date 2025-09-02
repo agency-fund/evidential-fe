@@ -26,6 +26,10 @@ export type PriorType = MABExperimentSpecInput['prior_type'];
 export type OutcomeType = MABExperimentSpecInput['reward_type'];
 export type ContextVariableType = ContextSpec['value_type'];
 
+export type Stratum = {
+  fieldName: string;
+};
+
 export type MetricWithMDE = {
   metricName: string;
   mde: string; // desired minimum detectable effect as a percentage of the metric's baseline value
@@ -67,6 +71,7 @@ export type FrequentABFormData = BaseExperimentFormData & {
   primaryMetric?: MetricWithMDE;
   secondaryMetrics: MetricWithMDE[];
   filters: FilterInput[];
+  strata: Stratum[];
   // These next 2 Experiment Parameters are strings to allow for empty values,
   // which should be converted to numbers when making power or experiment creation requests.
   confidence: string;

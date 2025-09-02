@@ -54,6 +54,7 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
           ],
           secondaryMetrics: [],
           filters: [],
+          strata: [],
           confidence: '95',
           power: '80',
         } as FrequentABFormData;

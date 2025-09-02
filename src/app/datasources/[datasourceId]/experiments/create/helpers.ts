@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CreateExperimentRequest, DesignSpecMetricRequest } from '@/api/methods.schemas';
+import { CreateExperimentRequest, DesignSpecMetricRequest, Stratum } from '@/api/methods.schemas';
 import { createExperimentBody } from '@/api/admin.zod';
 
 import { CMABFormData, ExperimentFormData, FrequentABFormData, MABFormData } from './types';
@@ -39,6 +39,7 @@ export const convertFormDataToCreateExperimentRequest = (formData: ExperimentFor
 
 function convertFrequentABFormData(formData: FrequentABFormData): CreateExperimentRequest {
   const metrics: DesignSpecMetricRequest[] = [];
+  const strata: Stratum[] = [];
 
   if (formData.primaryMetric && formData.primaryMetric.metricName) {
     zodMde.parse(formData.primaryMetric.mde, { path: ['primaryMetric', 'mde'] });
@@ -56,6 +57,12 @@ function convertFrequentABFormData(formData: FrequentABFormData): CreateExperime
     });
   });
 
+  if (formData.strata) {
+    formData.strata.forEach((stratum) => {
+      strata.push({ field_name: stratum.fieldName });
+    });
+  }
+
   return createExperimentBody.parse({
     design_spec: {
       participant_type: formData.participantType!,
@@ -67,7 +74,7 @@ function convertFrequentABFormData(formData: FrequentABFormData): CreateExperime
       description: formData.hypothesis,
       filters: formData.filters,
       metrics: metrics,
-      strata: [],
+      strata: strata,
       power: Number(formData.power) / 100.0,
       alpha: 1 - Number(formData.confidence) / 100.0,
       experiment_id: null,
