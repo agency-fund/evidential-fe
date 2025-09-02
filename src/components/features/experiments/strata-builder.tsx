@@ -3,6 +3,7 @@
 import { Button, Flex, Text } from '@radix-ui/themes';
 import { GetStrataResponseElement } from '@/api/methods.schemas';
 import { ClickableBadge } from './clickable-badge';
+import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 
 interface StrataBuilderProps {
   availableStrata: GetStrataResponseElement[];
@@ -37,19 +38,19 @@ export function StrataBuilder({ availableStrata, selectedStrata, onStrataChange 
           size="2"
           onClick={handleAddAll}
           disabled={selectedStrata.length === availableStrata.length}
-          {...(selectedStrata.length === availableStrata.length ? { color: 'gray' } : {})}
+          {...(selectedStrata.length === availableStrata.length ? { color: 'gray' } : { color: 'green' })}
         >
-          Add All
+          <PlusIcon /> Add All
         </Button>
         <Button
           type="button"
           variant="soft"
           size="2"
           disabled={selectedStrata.length === 0}
-          {...(selectedStrata.length === 0 ? { color: 'gray' } : {})}
+          {...(selectedStrata.length === 0 ? { color: 'gray' } : { color: 'red' })}
           onClick={handleClearAll}
         >
-          Clear All
+          <TrashIcon /> Clear All
         </Button>
       </Flex>
 
