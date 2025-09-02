@@ -92,7 +92,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
       const response = await triggerCreateExperiment(request);
       onFormDataChange({
         ...formData,
-        experimentId: response.design_spec.experiment_id!,
+        experimentId: response.experiment_id,
         createExperimentResponse: response,
       });
       onNext();

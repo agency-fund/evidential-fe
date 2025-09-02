@@ -57,7 +57,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
       const response = await triggerCreateExperiment(request);
       onFormDataChange({
         ...formData,
-        experimentId: response.design_spec.experiment_id!,
+        experimentId: response.experiment_id,
         createExperimentResponse: response,
       });
       onNext();

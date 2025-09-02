@@ -158,7 +158,7 @@ export default function Page() {
             <Grid columns={{ initial: '1', md: '2', lg: '3' }} gap="3">
               {filteredExperiments.map((experiment) => (
                 <ExperimentCard
-                  key={experiment.design_spec.experiment_id}
+                  key={experiment.experiment_id}
                   title={experiment.design_spec.experiment_name}
                   hypothesis={experiment.design_spec.description}
                   type={experiment.design_spec.experiment_type}
@@ -167,7 +167,7 @@ export default function Page() {
                   datasource={datasourcesToName.get(experiment.datasource_id) || ''}
                   datasourceId={experiment.datasource_id}
                   participantType={experiment.design_spec.participant_type}
-                  experimentId={experiment.design_spec.experiment_id!}
+                  experimentId={experiment.experiment_id}
                   organizationId={currentOrgId}
                 />
               ))}
