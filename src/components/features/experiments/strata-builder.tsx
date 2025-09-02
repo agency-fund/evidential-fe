@@ -62,7 +62,7 @@ export function StrataBuilder({ availableStrata, selectedStrata, onStrataChange 
               input={stratum}
               {...(!selectedStrata.includes(stratum.field_name) ? { color: 'gray' } : {})}
               onClick={() => handleStrataToggle(stratum.field_name, !selectedStrata.includes(stratum.field_name))}
-              isMetric={false}
+              showPlus={false}
             ></ClickableBadge>
           ))}
       </Flex>
