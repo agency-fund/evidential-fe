@@ -64,7 +64,7 @@ export default function ExperimentViewPage() {
   }
 
   const { design_spec, assign_summary } = experiment;
-  const { experiment_name, description, start_date, end_date, arms, experiment_type } = design_spec;
+  const { experiment_name, description, start_date, end_date, arms } = design_spec;
 
   return (
     <Flex direction="column" gap="6">
