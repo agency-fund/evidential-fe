@@ -64,7 +64,7 @@ export default function ExperimentViewPage() {
   }
 
   const { design_spec, assign_summary } = experiment;
-  const { experiment_name, description, start_date, end_date, arms } = design_spec;
+  const { experiment_name, description, start_date, end_date, arms, experiment_type } = design_spec;
 
   return (
     <Flex direction="column" gap="6">
@@ -96,7 +96,9 @@ export default function ExperimentViewPage() {
               <Text>{new Date(end_date).toLocaleDateString()}</Text>
             </Flex>
           </Flex>
-          <DownloadAssignmentsCsvButton datasourceId={experiment.datasource_id} experimentId={experimentId} />
+          {experiment_type === 'freq_preassigned' && (
+            <DownloadAssignmentsCsvButton datasourceId={experiment.datasource_id} experimentId={experimentId} />
+          )}
         </Flex>
       </Flex>
       <Flex direction="column" gap="4">
