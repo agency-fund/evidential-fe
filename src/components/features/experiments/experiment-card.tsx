@@ -156,7 +156,6 @@ export default function ExperimentCard({
               </Link>
             </IconButton>
           </Tooltip>
-
           <DownloadAssignmentsCsvButton datasourceId={datasourceId} experimentId={experimentId} />
         </Flex>
       </Flex>

@@ -20,6 +20,7 @@ import {
   OnlineFrequentistExperimentSpecOutput,
   PreassignedFrequentistExperimentSpecOutput,
 } from '@/api/methods.schemas';
+import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 
 // Type guard to assure TypeScript that a DesignSpec is one of two types.
 function isFrequentistDesign(
@@ -72,12 +73,12 @@ export default function ExperimentViewPage() {
           <Heading size="8">{experiment_name}</Heading>
           <CopyToClipBoard content={experimentId} tooltipContent="Copy experiment ID" />
         </Flex>
+
         <Flex gap="4" align="center">
           <Flex align="center" gap="1">
             <Text weight="bold">Type:</Text>
             <ExperimentTypeBadge type={design_spec.experiment_type} />
           </Flex>
-
           <Separator orientation="vertical" />
 
           <Flex align="center" gap="1">
@@ -87,9 +88,7 @@ export default function ExperimentViewPage() {
               participantType={experiment.design_spec.participant_type}
             />
           </Flex>
-
           <Separator orientation="vertical" />
-
           <Flex align="center" gap="2">
             <CalendarIcon />
             <Text>{new Date(start_date).toLocaleDateString()}</Text>
@@ -109,10 +108,13 @@ export default function ExperimentViewPage() {
           <SectionCard
             title="Arms & Allocations"
             headerRight={
-              <Badge>
-                <PersonIcon />
-                <Text size="2">{assign_summary.sample_size.toLocaleString()} participants</Text>
-              </Badge>
+              <Flex justify="between" width="100%">
+                <DownloadAssignmentsCsvButton datasourceId={experiment.datasource_id} experimentId={experimentId} />
+                <Badge>
+                  <PersonIcon />
+                  <Text size="2">{assign_summary.sample_size.toLocaleString()} participants</Text>
+                </Badge>
+              </Flex>
             }
           >
             <Table.Root>
