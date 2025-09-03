@@ -7,7 +7,7 @@ import { OrganizationProvider } from '@/providers/organization-provider';
 import GoogleAuthProvider from '@/providers/auth-provider';
 import OurSwrConfig from '@/providers/our-swr-config';
 import { Suspense } from 'react';
-import { NavigationBar } from '@/components/layout/nav/navigation-curtain';
+import { NavigationBarNoCompact } from '@/components/layout/nav/navigation-curtain-no-compact';
 import { HeaderBar } from '@/components/layout/header/header-bar';
 import * as Toast from '@radix-ui/react-toast';
 import RequireLogin from '@/components/require-login';
@@ -40,7 +40,8 @@ export default function RootLayout({
                       <Flex direction="column" height="100vh">
                         <HeaderBar />
                         <Flex flexGrow="1" overflow="hidden">
-                          <NavigationBar />
+                          {/*Temporary always open navigation curtain to experiments and settings nav links are always visible, please do not remove*/}
+                          <NavigationBarNoCompact />
                           <Flex direction="column" flexGrow="1" overflowY="auto" position="relative">
                             <Container
                               py="8"
