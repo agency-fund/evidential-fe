@@ -5,8 +5,9 @@ import {
   OnlineFrequentistExperimentSpecOutput,
   PreassignedFrequentistExperimentSpecOutput,
 } from '@/api/methods.schemas';
-import { ExclamationTriangleIcon, InfoCircledIcon } from '@radix-ui/react-icons';
-import { Badge, Box, Callout, Card, Flex, Heading, Text, Tooltip as RadixTooltip } from '@radix-ui/themes';
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
+import { Box, Callout, Card, Flex, Text } from '@radix-ui/themes';
+import { MdeBadge } from '@/components/features/experiments/mde-badge';
 import {
   CartesianGrid,
   ResponsiveContainer,
@@ -184,27 +185,17 @@ export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotPr
     return (x / (maxX - minX)) * width;
   };
 
-  let mdePct: string;
+  let mdePct: string | null;
   if (analysis.metric?.metric_pct_change) {
     mdePct = (analysis.metric?.metric_pct_change * 100).toFixed(1);
   } else {
-    mdePct = 'unknown';
+    mdePct = null;
   }
   return (
     <Flex direction="column" gap="3">
       <Flex direction="row" align="baseline" wrap="wrap">
         <Text weight="bold">Effect of {analysis.metric_name || 'Unknown Metric'}&nbsp;</Text>
-        <Badge size="2">
-          <Flex gap="4" align="center">
-            <Heading size="2">MDE:</Heading>
-            <Flex gap="2" align="center">
-              <Text>{mdePct}%</Text>
-              <RadixTooltip content="This metric's minimum detectable effect as defined in the experiment's design that meets the confidence and power requirements.">
-                <InfoCircledIcon />
-              </RadixTooltip>
-            </Flex>
-          </Flex>
-        </Badge>
+        <MdeBadge value={mdePct} />
       </Flex>
 
       {effectSizes.some((e) => e.invalidStatTest) && (

@@ -12,7 +12,7 @@ import { ApiError } from '@/services/orval-fetch';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { ReadMoreText } from '@/components/ui/read-more-text';
 import { ListSelectedWebhooksCard } from '@/components/features/experiments/list-selected-webhooks-card';
-import { color } from 'motion';
+import { MdeBadge } from '@/components/features/experiments/mde-badge';
 
 interface ConfirmationFormProps {
   formData: FrequentABFormData;
@@ -127,9 +127,10 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
             <Flex direction="column" gap="1">
               <Text weight="bold">Primary Metric</Text>
               {formData.primaryMetric ? (
-                <Text>
-                  {formData.primaryMetric?.metricName} (min effect: {formData.primaryMetric?.mde}%)
-                </Text>
+                <Flex align="center" gap="2" wrap="wrap">
+                  <Text>{formData.primaryMetric.metricName}</Text>
+                  <MdeBadge value={formData.primaryMetric.mde} size="1" />
+                </Flex>
               ) : (
                 <Text>-</Text>
               )}
@@ -138,9 +139,10 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
               <Text weight="bold">Secondary Metrics</Text>
               {formData.secondaryMetrics.length > 0 ? (
                 formData.secondaryMetrics.map((metric) => (
-                  <Text key={metric.metricName}>
-                    {metric.metricName} (min effect: {metric.mde}%)
-                  </Text>
+                  <Flex key={metric.metricName} align="center" gap="2" wrap="wrap">
+                    <Text>{metric.metricName}</Text>
+                    <MdeBadge value={metric.mde} size="1" />
+                  </Flex>
                 ))
               ) : (
                 <Text>None</Text>
