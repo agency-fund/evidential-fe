@@ -95,7 +95,7 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                   },
                 };
               }
-
+          
               await trigger({
                 organization_id: organizationId,
                 name: formData.name,
