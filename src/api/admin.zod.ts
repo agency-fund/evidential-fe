@@ -33,6 +33,11 @@ export const getSnapshotParams = zod.object({
 	snapshot_id: zod.string(),
 });
 
+export const getSnapshotResponseSnapshotDataMetricAnalysesItemMetricFieldNameRegExp =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const getSnapshotResponseSnapshotDataMetricAnalysesItemArmAnalysesItemArmNameMax = 100;
+export const getSnapshotResponseSnapshotDataMetricAnalysesItemArmAnalysesItemArmDescriptionMaxOne = 2000;
+
 export const getSnapshotResponse = zod
 	.object({
 		snapshot: zod
@@ -56,7 +61,165 @@ export const getSnapshotResponse = zod
 					.string()
 					.datetime({})
 					.describe("The time the snapshot was acquired."),
-				data: zod.record(zod.string(), zod.any()).or(zod.null()),
+				data: zod
+					.object({
+						type: zod.enum(["freq"]),
+						experiment_id: zod.string().describe("ID of the experiment."),
+						metric_analyses: zod
+							.array(
+								zod
+									.object({
+										metric_name: zod.string().or(zod.null()).optional(),
+										metric: zod
+											.object({
+												field_name: zod
+													.string()
+													.regex(
+														getSnapshotResponseSnapshotDataMetricAnalysesItemMetricFieldNameRegExp,
+													),
+												metric_pct_change: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+													),
+												metric_target: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+													),
+											})
+											.describe(
+												"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+											)
+											.or(zod.null())
+											.optional(),
+										arm_analyses: zod
+											.array(
+												zod.object({
+													arm_id: zod
+														.string()
+														.or(zod.null())
+														.optional()
+														.describe(
+															"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+														),
+													arm_name: zod
+														.string()
+														.max(
+															getSnapshotResponseSnapshotDataMetricAnalysesItemArmAnalysesItemArmNameMax,
+														),
+													arm_description: zod
+														.string()
+														.max(
+															getSnapshotResponseSnapshotDataMetricAnalysesItemArmAnalysesItemArmDescriptionMaxOne,
+														)
+														.or(zod.null())
+														.optional(),
+													estimate: zod
+														.number()
+														.describe(
+															"The estimated treatment effect relative to the baseline arm.",
+														),
+													p_value: zod
+														.number()
+														.or(zod.null())
+														.describe(
+															"The p-value indicating statistical significance of the treatment effect. Value may be None if the t-stat is not available, e.g. due to inability to calculate the standard error.",
+														),
+													t_stat: zod
+														.number()
+														.or(zod.null())
+														.describe(
+															"The t-statistic from the statistical test. If the value is actually NaN, e.g. due to inability to calculate the standard error, we return None.",
+														),
+													std_error: zod
+														.number()
+														.describe(
+															"The standard error of the treatment effect estimate.",
+														),
+													num_missing_values: zod
+														.number()
+														.describe(
+															"The number of participants assigned to this arm with missing values (NaNs) for this metric. These rows are excluded from the analysis.",
+														),
+													is_baseline: zod
+														.boolean()
+														.describe(
+															"Whether this arm is the baseline/control arm for comparison.",
+														),
+												}),
+											)
+											.describe(
+												"The results of the analysis for each arm (coefficient) for this specific metric.",
+											),
+									})
+									.describe(
+										"Describes the change in a single metric for each arm of an experiment.",
+									),
+							)
+							.describe(
+								"Contains one analysis per metric targeted by the experiment.",
+							),
+						num_participants: zod
+							.number()
+							.describe(
+								"The number of participants assigned to the experiment pulled from the dwh across all arms. Metric outcomes are not guaranteed to be present for all participants.",
+							),
+						num_missing_participants: zod
+							.number()
+							.or(zod.null())
+							.optional()
+							.describe(
+								"The number of participants assigned to the experiment across all arms that are not found in the data warehouse when pulling metrics.",
+							),
+						created_at: zod
+							.string()
+							.datetime({})
+							.describe(
+								"The date and time the experiment analysis was created.",
+							),
+					})
+					.describe(
+						"Describes the change if any in metrics targeted by an experiment.",
+					)
+					.or(
+						zod
+							.object({
+								type: zod.enum(["bandit"]),
+								experiment_id: zod.string().describe("ID of the experiment."),
+								n_trials: zod
+									.number()
+									.describe(
+										"The number of trials conducted for this experiment.",
+									),
+								n_outcomes: zod
+									.number()
+									.describe(
+										"The number of outcomes observed for this experiment.",
+									),
+								posterior_means: zod
+									.array(zod.number())
+									.describe("Posterior means for each arm in the experiment."),
+								posterior_stds: zod
+									.array(zod.number())
+									.describe(
+										"Posterior standard deviations for each arm in the experiment.",
+									),
+								volumes: zod
+									.array(zod.number())
+									.describe(
+										"Volume of participants for each arm in the experiment.",
+									),
+							})
+							.describe("Describes changes in arms for a bandit experiment"),
+					)
+					.describe("The type of experiment analysis response.")
+					.or(zod.null())
+					.describe("Analysis results as of the updated_at time."),
 			})
 			.or(zod.null())
 			.describe("The completed snapshot."),
@@ -109,6 +272,11 @@ export const listSnapshotsQueryParams = zod.object({
 		),
 });
 
+export const listSnapshotsResponseItemsItemDataMetricAnalysesItemMetricFieldNameRegExp =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const listSnapshotsResponseItemsItemDataMetricAnalysesItemArmAnalysesItemArmNameMax = 100;
+export const listSnapshotsResponseItemsItemDataMetricAnalysesItemArmAnalysesItemArmDescriptionMaxOne = 2000;
+
 export const listSnapshotsResponse = zod.object({
 	items: zod.array(
 		zod.object({
@@ -131,7 +299,163 @@ export const listSnapshotsResponse = zod.object({
 				.string()
 				.datetime({})
 				.describe("The time the snapshot was acquired."),
-			data: zod.record(zod.string(), zod.any()).or(zod.null()),
+			data: zod
+				.object({
+					type: zod.enum(["freq"]),
+					experiment_id: zod.string().describe("ID of the experiment."),
+					metric_analyses: zod
+						.array(
+							zod
+								.object({
+									metric_name: zod.string().or(zod.null()).optional(),
+									metric: zod
+										.object({
+											field_name: zod
+												.string()
+												.regex(
+													listSnapshotsResponseItemsItemDataMetricAnalysesItemMetricFieldNameRegExp,
+												),
+											metric_pct_change: zod
+												.number()
+												.or(zod.null())
+												.optional()
+												.describe(
+													"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+												),
+											metric_target: zod
+												.number()
+												.or(zod.null())
+												.optional()
+												.describe(
+													"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+												),
+										})
+										.describe(
+											"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+										)
+										.or(zod.null())
+										.optional(),
+									arm_analyses: zod
+										.array(
+											zod.object({
+												arm_id: zod
+													.string()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+													),
+												arm_name: zod
+													.string()
+													.max(
+														listSnapshotsResponseItemsItemDataMetricAnalysesItemArmAnalysesItemArmNameMax,
+													),
+												arm_description: zod
+													.string()
+													.max(
+														listSnapshotsResponseItemsItemDataMetricAnalysesItemArmAnalysesItemArmDescriptionMaxOne,
+													)
+													.or(zod.null())
+													.optional(),
+												estimate: zod
+													.number()
+													.describe(
+														"The estimated treatment effect relative to the baseline arm.",
+													),
+												p_value: zod
+													.number()
+													.or(zod.null())
+													.describe(
+														"The p-value indicating statistical significance of the treatment effect. Value may be None if the t-stat is not available, e.g. due to inability to calculate the standard error.",
+													),
+												t_stat: zod
+													.number()
+													.or(zod.null())
+													.describe(
+														"The t-statistic from the statistical test. If the value is actually NaN, e.g. due to inability to calculate the standard error, we return None.",
+													),
+												std_error: zod
+													.number()
+													.describe(
+														"The standard error of the treatment effect estimate.",
+													),
+												num_missing_values: zod
+													.number()
+													.describe(
+														"The number of participants assigned to this arm with missing values (NaNs) for this metric. These rows are excluded from the analysis.",
+													),
+												is_baseline: zod
+													.boolean()
+													.describe(
+														"Whether this arm is the baseline/control arm for comparison.",
+													),
+											}),
+										)
+										.describe(
+											"The results of the analysis for each arm (coefficient) for this specific metric.",
+										),
+								})
+								.describe(
+									"Describes the change in a single metric for each arm of an experiment.",
+								),
+						)
+						.describe(
+							"Contains one analysis per metric targeted by the experiment.",
+						),
+					num_participants: zod
+						.number()
+						.describe(
+							"The number of participants assigned to the experiment pulled from the dwh across all arms. Metric outcomes are not guaranteed to be present for all participants.",
+						),
+					num_missing_participants: zod
+						.number()
+						.or(zod.null())
+						.optional()
+						.describe(
+							"The number of participants assigned to the experiment across all arms that are not found in the data warehouse when pulling metrics.",
+						),
+					created_at: zod
+						.string()
+						.datetime({})
+						.describe("The date and time the experiment analysis was created."),
+				})
+				.describe(
+					"Describes the change if any in metrics targeted by an experiment.",
+				)
+				.or(
+					zod
+						.object({
+							type: zod.enum(["bandit"]),
+							experiment_id: zod.string().describe("ID of the experiment."),
+							n_trials: zod
+								.number()
+								.describe(
+									"The number of trials conducted for this experiment.",
+								),
+							n_outcomes: zod
+								.number()
+								.describe(
+									"The number of outcomes observed for this experiment.",
+								),
+							posterior_means: zod
+								.array(zod.number())
+								.describe("Posterior means for each arm in the experiment."),
+							posterior_stds: zod
+								.array(zod.number())
+								.describe(
+									"Posterior standard deviations for each arm in the experiment.",
+								),
+							volumes: zod
+								.array(zod.number())
+								.describe(
+									"Volume of participants for each arm in the experiment.",
+								),
+						})
+						.describe("Describes changes in arms for a bandit experiment"),
+				)
+				.describe("The type of experiment analysis response.")
+				.or(zod.null())
+				.describe("Analysis results as of the updated_at time."),
 		}),
 	),
 });
@@ -3972,6 +4296,7 @@ export const analyzeExperimentResponseMetricAnalysesItemArmAnalysesItemArmDescri
 
 export const analyzeExperimentResponse = zod
 	.object({
+		type: zod.enum(["freq"]),
 		experiment_id: zod.string().describe("ID of the experiment."),
 		metric_analyses: zod
 			.array(
@@ -4091,6 +4416,7 @@ export const analyzeExperimentResponse = zod
 	.or(
 		zod
 			.object({
+				type: zod.enum(["bandit"]),
 				experiment_id: zod.string().describe("ID of the experiment."),
 				n_trials: zod
 					.number()
@@ -4111,7 +4437,8 @@ export const analyzeExperimentResponse = zod
 					.describe("Volume of participants for each arm in the experiment."),
 			})
 			.describe("Describes changes in arms for a bandit experiment"),
-	);
+	)
+	.describe("The type of experiment analysis response.");
 
 /**
  * @summary Commit Experiment
