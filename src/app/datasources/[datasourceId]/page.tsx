@@ -6,7 +6,6 @@ import { ApiKeysSection } from '@/components/features/datasources/api-keys-secti
 import { useGetDatasource, useInspectDatasource } from '@/api/admin';
 import { useParams, useRouter } from 'next/navigation';
 import { EditDatasourceDialog } from '@/components/features/datasources/edit-datasource-dialog';
-import { ParticipantTypesSection } from '@/components/features/participants/participant-types-section';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { useEffect, useState } from 'react';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -134,11 +133,8 @@ export default function Page() {
               <Callout.Text>Note: Expecting some tables? Check your connection settings.</Callout.Text>
             </Callout.Root>
           )}
-
-          <ParticipantTypesSection datasourceId={datasourceId} />
         </>
       )}
-
       <ApiKeysSection datasourceId={datasourceId} />
     </Flex>
   );
