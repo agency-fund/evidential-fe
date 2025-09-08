@@ -297,10 +297,19 @@ export interface BalanceCheck {
 	balance_ok: boolean;
 }
 
+export type BanditExperimentAnalysisResponseType =
+	(typeof BanditExperimentAnalysisResponseType)[keyof typeof BanditExperimentAnalysisResponseType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const BanditExperimentAnalysisResponseType = {
+	bandit: "bandit",
+} as const;
+
 /**
  * Describes changes in arms for a bandit experiment
  */
 export interface BanditExperimentAnalysisResponse {
+	type: BanditExperimentAnalysisResponseType;
 	/** ID of the experiment. */
 	experiment_id: string;
 	/** The number of trials conducted for this experiment. */
@@ -791,6 +800,10 @@ export interface CreateParticipantsTypeResponse {
 	schema_def: ParticipantsSchemaOutput;
 }
 
+export interface CreateSnapshotResponse {
+	id: string;
+}
+
 /**
  * Defines the supported data types for fields in the data source.
  */
@@ -958,6 +971,13 @@ export interface EventSummary {
 	/** Details */
 	details: EventSummaryDetails;
 }
+
+/**
+ * The type of experiment analysis response.
+ */
+export type ExperimentAnalysisResponse =
+	| FreqExperimentAnalysisResponse
+	| BanditExperimentAnalysisResponse;
 
 /**
  * The date and time assignments were stopped. Null if assignments are still allowed to be made.
@@ -1159,6 +1179,14 @@ export type FilterValueTypes =
 	| FilterValueTypesAnyOfItem[]
 	| FilterValueTypesAnyOfTwoItem[];
 
+export type FreqExperimentAnalysisResponseType =
+	(typeof FreqExperimentAnalysisResponseType)[keyof typeof FreqExperimentAnalysisResponseType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const FreqExperimentAnalysisResponseType = {
+	freq: "freq",
+} as const;
+
 /**
  * The number of participants assigned to the experiment across all arms that are not found in the data warehouse when pulling metrics.
  */
@@ -1170,6 +1198,7 @@ export type FreqExperimentAnalysisResponseNumMissingParticipants =
  * Describes the change if any in metrics targeted by an experiment.
  */
 export interface FreqExperimentAnalysisResponse {
+	type: FreqExperimentAnalysisResponseType;
 	/** ID of the experiment. */
 	experiment_id: string;
 	/** Contains one analysis per metric targeted by the experiment. */
@@ -1368,6 +1397,19 @@ export interface GetParticipantAssignmentResponse {
 	assignment: GetParticipantAssignmentResponseAssignment;
 }
 
+/**
+ * The completed snapshot.
+ */
+export type GetSnapshotResponseSnapshot = Snapshot | null;
+
+/**
+ * Describes the status and content of a snapshot.
+ */
+export interface GetSnapshotResponse {
+	/** The completed snapshot. */
+	snapshot: GetSnapshotResponseSnapshot;
+}
+
 export type GetStrataResponseElementExtraAnyOf = { [key: string]: string };
 
 export type GetStrataResponseElementExtra =
@@ -1458,6 +1500,10 @@ export interface ListOrganizationsResponse {
 
 export interface ListParticipantsTypeResponse {
 	items: ParticipantsConfig[];
+}
+
+export interface ListSnapshotsResponse {
+	items: Snapshot[];
 }
 
 export interface ListWebhooksResponse {
@@ -2209,6 +2255,48 @@ export interface RevealedStr {
 	value: string;
 }
 
+export type SnapshotDetailsAnyOf = { [key: string]: unknown };
+
+/**
+ * Additional data about this snapshot.
+ */
+export type SnapshotDetails = SnapshotDetailsAnyOf | null;
+
+/**
+ * Analysis results as of the updated_at time.
+ */
+export type SnapshotData = ExperimentAnalysisResponse | null;
+
+export interface Snapshot {
+	/** The experiment that this snapshot was captured for. */
+	experiment_id: string;
+	/** The unique ID of the snapshot. */
+	id: string;
+	/** The status of the snapshot. When not `success`, data will be null. */
+	status: SnapshotStatus;
+	/** Additional data about this snapshot. */
+	details: SnapshotDetails;
+	/** The time the snapshot was requested. */
+	created_at: string;
+	/** The time the snapshot was acquired. */
+	updated_at: string;
+	/** Analysis results as of the updated_at time. */
+	data: SnapshotData;
+}
+
+/**
+ * Describes the status of a snapshot.
+ */
+export type SnapshotStatus =
+	(typeof SnapshotStatus)[keyof typeof SnapshotStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const SnapshotStatus = {
+	success: "success",
+	running: "running",
+	failed: "failed",
+} as const;
+
 /**
  * The reason assignments were stopped.
  */
@@ -2344,6 +2432,20 @@ export interface WebhookSummary {
 	auth_token: WebhookSummaryAuthToken;
 }
 
+export type DeleteSnapshotParams = {
+	/**
+	 * If true, return a 204 even if the resource does not exist.
+	 */
+	allow_missing?: boolean;
+};
+
+export type ListSnapshotsParams = {
+	/**
+	 * Filter the returned snapshots to only those of this status. May be specified multiple times.
+	 */
+	status?: SnapshotStatus[] | null;
+};
+
 export type DeleteWebhookFromOrganizationParams = {
 	/**
 	 * If true, return a 204 even if the resource does not exist.
@@ -2417,10 +2519,6 @@ export type AnalyzeExperimentParams = {
 	 */
 	baseline_arm_id?: string | null;
 };
-
-export type AnalyzeExperiment200 =
-	| FreqExperimentAnalysisResponse
-	| BanditExperimentAnalysisResponse;
 
 export type DeleteExperimentParams = {
 	/**
