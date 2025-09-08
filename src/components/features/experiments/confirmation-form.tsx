@@ -12,7 +12,6 @@ import { ApiError } from '@/services/orval-fetch';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { ReadMoreText } from '@/components/ui/read-more-text';
 import { ListSelectedWebhooksCard } from '@/components/features/experiments/list-selected-webhooks-card';
-import { color } from 'motion';
 
 interface ConfirmationFormProps {
   formData: FrequentABFormData;
