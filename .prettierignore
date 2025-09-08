@@ -1,2 +1,4 @@
 # Ignore the Orval-generated files (they are formatted with Biome).
 src/api/
+**/*.yaml
+**/*.yml
