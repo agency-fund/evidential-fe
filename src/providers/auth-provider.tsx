@@ -13,7 +13,7 @@ const CODE_VERIFIER_KEY = 'code_verifier';
 
 interface AuthenticatedState {
   isAuthenticated: true;
-  idToken: string;
+  sessionToken: string;
   userEmail: string;
   isPrivileged: boolean;
   logout: () => void;
@@ -37,11 +37,11 @@ export const useAuth = () => {
   return context;
 };
 
-const checkCallerIdentity = async (idToken: string) => {
+const checkCallerIdentity = async (sessionToken: string) => {
   const url = new URL('/v1/m/caller-identity', API_BASE_URL);
   return await fetch(url, {
     headers: {
-      Authorization: `Bearer ${idToken}`,
+      Authorization: `Bearer ${sessionToken}`,
     },
   });
 };
@@ -78,7 +78,7 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
         const codeVerifier = localStorage.getItem(CODE_VERIFIER_KEY);
         const tokens = await exchangeCodeForTokens(searchParams.get('code') as string, codeVerifier!);
         localStorage.removeItem(CODE_VERIFIER_KEY);
-        const newToken = tokens.id_token ?? null;
+        const newToken = tokens.session_token ?? null;
         if (newToken === null) {
           console.log('backend failed to return a usable token');
           logout();
@@ -87,7 +87,11 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
         const response = await checkCallerIdentity(newToken);
         if (response.status === 200) {
           const callerIdentity = await response.json();
-          setUser({ idToken: newToken, email: callerIdentity['email'], isPrivileged: callerIdentity['is_privileged'] });
+          setUser({
+            sessionToken: newToken,
+            email: callerIdentity['email'],
+            isPrivileged: callerIdentity['is_privileged'],
+          });
           router.push('/');
         } else {
           console.log('checkCallerIdentity failed');
@@ -104,13 +108,13 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
     if (!user) {
       return;
     }
-    const idToken = user.idToken;
+    const sessionToken = user.sessionToken;
     const validateToken = async () => {
       console.log('Validating token');
       try {
-        const response = await checkCallerIdentity(idToken);
+        const response = await checkCallerIdentity(sessionToken);
         if (response.status === 401) {
-          console.log('idToken has expired.');
+          console.log('session token has expired.');
           logout();
         }
       } catch (error) {
@@ -127,14 +131,14 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
     contextValue = {
       isAuthenticated: true,
       isPrivileged: true,
-      idToken: 'airplane-mode-token',
+      sessionToken: 'airplane-mode-token',
       userEmail: 'testing@example.com',
       logout: () => console.log('Login and logout functionality is not available when AIRPLANE_MODE is set.'),
     };
   } else if (user) {
     contextValue = {
       isAuthenticated: true,
-      idToken: user.idToken,
+      sessionToken: user.sessionToken,
       userEmail: user.email,
       isPrivileged: !!user.isPrivileged,
       logout: logout,
