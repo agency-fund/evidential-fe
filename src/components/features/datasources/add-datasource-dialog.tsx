@@ -20,7 +20,7 @@ const defaultFormData = {
   search_path: '',
   project_id: '',
   dataset: '',
-  credentials_json: ''
+  credentials_json: '',
 };
 
 export function AddDatasourceDialog({ organizationId }: { organizationId: string }) {
@@ -95,7 +95,7 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                   },
                 };
               }
-          
+
               await trigger({
                 organization_id: organizationId,
                 name: formData.name,
@@ -116,12 +116,12 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                 <Text as="div" size="2" mb="1" weight="bold">
                   Name
                 </Text>
-                <TextField.Root 
-                  name="name" 
-                  placeholder="Enter datasource name" 
+                <TextField.Root
+                  name="name"
+                  placeholder="Enter datasource name"
                   required
                   value={formData.name}
-                  onChange={(e) => setFormData(prev => ({...prev, name: e.target.value}))}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                 />
               </label>
 
@@ -161,11 +161,11 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                     <Text as="div" size="2" mb="1" weight="bold">
                       Host
                     </Text>
-                    <TextField.Root 
-                      name="host" 
+                    <TextField.Root
+                      name="host"
                       required
                       value={formData.host}
-                      onChange={(e) => setFormData(prev => ({...prev, host: e.target.value}))}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, host: e.target.value }))}
                     />
                   </label>
                   <label>
@@ -177,34 +177,34 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                         Tip: Redshift default port is 5439.
                       </Text>
                     )}
-                    <TextField.Root 
-                      name="port" 
-                      type="number" 
+                    <TextField.Root
+                      name="port"
+                      type="number"
                       required
                       value={formData.port}
-                      onChange={(e) => setFormData(prev => ({...prev, port: e.target.value}))}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, port: e.target.value }))}
                     />
                   </label>
                   <label>
                     <Text as="div" size="2" mb="1" weight="bold">
                       Database
                     </Text>
-                    <TextField.Root 
-                      name="database" 
+                    <TextField.Root
+                      name="database"
                       required
                       value={formData.database}
-                      onChange={(e) => setFormData(prev => ({...prev, database: e.target.value}))}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, database: e.target.value }))}
                     />
                   </label>
                   <label>
                     <Text as="div" size="2" mb="1" weight="bold">
                       User
                     </Text>
-                    <TextField.Root 
-                      name="user" 
+                    <TextField.Root
+                      name="user"
                       required
                       value={formData.user}
-                      onChange={(e) => setFormData(prev => ({...prev, user: e.target.value}))}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, user: e.target.value }))}
                     />
                   </label>
                   <label>
@@ -212,12 +212,12 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                       Password
                     </Text>
                     <Flex gap="2">
-                      <TextField.Root 
-                        name="password" 
-                        type={showPassword ? 'text' : 'password'} 
+                      <TextField.Root
+                        name="password"
+                        type={showPassword ? 'text' : 'password'}
                         required
                         value={formData.password}
-                        onChange={(e) => setFormData(prev => ({...prev, password: e.target.value}))}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
                       />
                       <Button type="button" variant="soft" onClick={() => setShowPassword(!showPassword)}>
                         {showPassword ? <EyeOpenIcon /> : <EyeClosedIcon />}
@@ -229,10 +229,10 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                       <Text as="div" size="2" mb="1" weight="bold">
                         SSL Mode
                       </Text>
-                      <select 
-                        name="sslmode" 
+                      <select
+                        name="sslmode"
                         value={formData.sslmode}
-                        onChange={(e) => setFormData(prev => ({...prev, sslmode: e.target.value}))}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, sslmode: e.target.value }))}
                       >
                         <option value="disable">disable</option>
                         <option value="require">require</option>
@@ -253,10 +253,10 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                         <InfoCircledIcon style={{ verticalAlign: 'middle' }} />
                       </a>
                     </Text>
-                    <TextField.Root 
+                    <TextField.Root
                       name="search_path"
                       value={formData.search_path}
-                      onChange={(e) => setFormData(prev => ({...prev, search_path: e.target.value}))}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, search_path: e.target.value }))}
                     />
                   </label>
                 </>
@@ -271,26 +271,26 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                       name="project_id"
                       required
                       value={formData.project_id}
-                      onChange={(e) => setFormData(prev => ({...prev, project_id: e.target.value}))}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, project_id: e.target.value }))}
                     />
                   </label>
                   <label>
                     <Text as="div" size="2" mb="1" weight="bold">
                       Dataset
                     </Text>
-                    <TextField.Root 
-                      name="dataset" 
-                      required 
+                    <TextField.Root
+                      name="dataset"
+                      required
                       key={'dataset'}
                       value={formData.dataset}
-                      onChange={(e) => setFormData(prev => ({...prev, dataset: e.target.value}))}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, dataset: e.target.value }))}
                     />
                   </label>
                   <ServiceAccountJsonField
                     required
                     value={formData.credentials_json}
-                    onChange={(value) => setFormData(prev => ({...prev, credentials_json: value}))}
-                    onProjectIdFound={(projectId) => setFormData(prev => ({...prev, project_id: projectId}))}
+                    onChange={(value) => setFormData((prev) => ({ ...prev, credentials_json: value }))}
+                    onProjectIdFound={(projectId) => setFormData((prev) => ({ ...prev, project_id: projectId }))}
                   />
                 </>
               )}
