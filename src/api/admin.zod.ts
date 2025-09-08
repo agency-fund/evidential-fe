@@ -23,6 +23,136 @@ export const callerIdentityResponse = zod
 	);
 
 /**
+ * Fetches a snapshot by ID.
+ * @summary Get Snapshot
+ */
+export const getSnapshotParams = zod.object({
+	organization_id: zod.string(),
+	datasource_id: zod.string(),
+	experiment_id: zod.string(),
+	snapshot_id: zod.string(),
+});
+
+export const getSnapshotResponse = zod
+	.object({
+		snapshot: zod
+			.object({
+				experiment_id: zod
+					.string()
+					.describe("The experiment that this snapshot was captured for."),
+				id: zod.string().describe("The unique ID of the snapshot."),
+				status: zod
+					.enum(["success", "running", "failed"])
+					.describe("Describes the status of a snapshot."),
+				details: zod
+					.record(zod.string(), zod.any())
+					.or(zod.null())
+					.describe("Additional data about this snapshot."),
+				created_at: zod
+					.string()
+					.datetime({})
+					.describe("The time the snapshot was requested."),
+				updated_at: zod
+					.string()
+					.datetime({})
+					.describe("The time the snapshot was acquired."),
+				data: zod.record(zod.string(), zod.any()).or(zod.null()),
+			})
+			.or(zod.null())
+			.describe("The completed snapshot."),
+	})
+	.describe("Describes the status and content of a snapshot.");
+
+/**
+ * Deletes a snapshot.
+ * @summary Delete Snapshot
+ */
+export const deleteSnapshotParams = zod.object({
+	organization_id: zod.string(),
+	datasource_id: zod.string(),
+	experiment_id: zod.string(),
+	snapshot_id: zod.string(),
+});
+
+export const deleteSnapshotQueryAllowMissingDefault = false;
+
+export const deleteSnapshotQueryParams = zod.object({
+	allow_missing: zod
+		.boolean()
+		.optional()
+		.describe("If true, return a 204 even if the resource does not exist."),
+});
+
+export const deleteSnapshotResponse = zod.any();
+
+/**
+ * Lists snapshots for an experiment, ordered by timestamp.
+ * @summary List Snapshots
+ */
+export const listSnapshotsParams = zod.object({
+	organization_id: zod.string(),
+	datasource_id: zod.string(),
+	experiment_id: zod.string(),
+});
+
+export const listSnapshotsQueryParams = zod.object({
+	status: zod
+		.array(
+			zod
+				.enum(["success", "running", "failed"])
+				.describe("Describes the status of a snapshot."),
+		)
+		.or(zod.null())
+		.optional()
+		.describe(
+			"Filter the returned snapshots to only those of this status. May be specified multiple times.",
+		),
+});
+
+export const listSnapshotsResponse = zod.object({
+	items: zod.array(
+		zod.object({
+			experiment_id: zod
+				.string()
+				.describe("The experiment that this snapshot was captured for."),
+			id: zod.string().describe("The unique ID of the snapshot."),
+			status: zod
+				.enum(["success", "running", "failed"])
+				.describe("Describes the status of a snapshot."),
+			details: zod
+				.record(zod.string(), zod.any())
+				.or(zod.null())
+				.describe("Additional data about this snapshot."),
+			created_at: zod
+				.string()
+				.datetime({})
+				.describe("The time the snapshot was requested."),
+			updated_at: zod
+				.string()
+				.datetime({})
+				.describe("The time the snapshot was acquired."),
+			data: zod.record(zod.string(), zod.any()).or(zod.null()),
+		}),
+	),
+});
+
+/**
+ * Request the asynchronous creation of a snapshot for an experiment.
+
+Returns the ID of the snapshot. Poll get_snapshot until the job is completed.
+ * @summary Create Snapshot
+ */
+export const createSnapshotParams = zod.object({
+	organization_id: zod.string(),
+	datasource_id: zod.string(),
+	experiment_id: zod.string(),
+});
+
+export const createSnapshotResponse = zod.object({
+	id: zod.string(),
+});
+
+/**
  * Returns a list of organizations that the authenticated user is a member of.
  * @summary List Organizations
  */
