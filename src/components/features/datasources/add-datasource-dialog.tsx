@@ -117,7 +117,6 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                   Name
                 </Text>
                 <TextField.Root
-                  name="name"
                   placeholder="Enter datasource name"
                   required
                   value={formData.name}
@@ -162,7 +161,6 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                       Host
                     </Text>
                     <TextField.Root
-                      name="host"
                       required
                       value={formData.host}
                       onChange={(e) => setFormData((prev) => ({ ...prev, host: e.target.value }))}
@@ -178,7 +176,6 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                       </Text>
                     )}
                     <TextField.Root
-                      name="port"
                       type="number"
                       required
                       value={formData.port}
@@ -190,7 +187,6 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                       Database
                     </Text>
                     <TextField.Root
-                      name="database"
                       required
                       value={formData.database}
                       onChange={(e) => setFormData((prev) => ({ ...prev, database: e.target.value }))}
@@ -201,7 +197,6 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                       User
                     </Text>
                     <TextField.Root
-                      name="user"
                       required
                       value={formData.user}
                       onChange={(e) => setFormData((prev) => ({ ...prev, user: e.target.value }))}
@@ -213,7 +208,6 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                     </Text>
                     <Flex gap="2">
                       <TextField.Root
-                        name="password"
                         type={showPassword ? 'text' : 'password'}
                         required
                         value={formData.password}
@@ -230,7 +224,6 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                         SSL Mode
                       </Text>
                       <select
-                        name="sslmode"
                         value={formData.sslmode}
                         onChange={(e) => setFormData((prev) => ({ ...prev, sslmode: e.target.value }))}
                       >
@@ -254,7 +247,6 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                       </a>
                     </Text>
                     <TextField.Root
-                      name="search_path"
                       value={formData.search_path}
                       onChange={(e) => setFormData((prev) => ({ ...prev, search_path: e.target.value }))}
                     />
@@ -268,7 +260,6 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                     </Text>
                     <TextField.Root
                       key={'project_id'}
-                      name="project_id"
                       required
                       value={formData.project_id}
                       onChange={(e) => setFormData((prev) => ({ ...prev, project_id: e.target.value }))}
@@ -279,7 +270,6 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                       Dataset
                     </Text>
                     <TextField.Root
-                      name="dataset"
                       required
                       key={'dataset'}
                       value={formData.dataset}
