@@ -2,12 +2,12 @@
 import { Badge, Box, Flex, Heading, Separator, Table, Tabs, Text, Tooltip } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
 import { CalendarIcon, CodeIcon, InfoCircledIcon, PersonIcon } from '@radix-ui/react-icons';
-import { useAnalyzeExperiment, useGetExperiment } from '@/api/admin';
+import { useAnalyzeExperiment, useGetExperiment, useListSnapshots } from '@/api/admin';
 import { ForestPlot } from '@/components/features/experiments/forest-plot';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import * as Toast from '@radix-ui/react-toast';
 import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
@@ -17,10 +17,13 @@ import { SectionCard } from '@/components/ui/cards/section-card';
 import {
   DesignSpecOutput,
   FreqExperimentAnalysisResponse,
+  ExperimentAnalysisResponse,
+  Snapshot,
   OnlineFrequentistExperimentSpecOutput,
   PreassignedFrequentistExperimentSpecOutput,
 } from '@/api/methods.schemas';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
+import { useCurrentOrganization } from '@/providers/organization-provider';
 
 // Type guard to assure TypeScript that a DesignSpec is one of two types.
 function isFrequentistDesign(
@@ -34,6 +37,19 @@ export default function ExperimentViewPage() {
   const params = useParams();
   const experimentId = params.experimentId as string;
   const datasourceId = params.datasourceId as string;
+  const orgCtx = useCurrentOrganization();
+  const organizationId = orgCtx?.current.id || '';
+
+  const formatDateLocal = (d: Date) => {
+    const y = d.getFullYear();
+    const m = `${d.getMonth() + 1}`.padStart(2, '0');
+    const day = `${d.getDate()}`.padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+  const todayLocal = formatDateLocal(new Date());
+  const [selectedDate, setSelectedDate] = useState<string>(todayLocal);
+  const [cachedSnapshots, setCachedSnapshots] = useState<Snapshot[]>([]);
+  const [selectedAnalysisData, setSelectedAnalysisData] = useState<ExperimentAnalysisResponse | undefined>(undefined);
 
   const {
     data: experiment,
@@ -44,12 +60,49 @@ export default function ExperimentViewPage() {
   });
 
   const {
-    data: analysisData,
+    data: liveAnalysisData,
     isLoading: isLoadingAnalysis,
     error: analysisError,
   } = useAnalyzeExperiment(datasourceId || '', experimentId, undefined, {
     swr: { enabled: !!datasourceId && !!experiment, shouldRetryOnError: false },
   });
+
+  // Fetch successful snapshots and cache items
+  const { data: snapshotsResp } = useListSnapshots(
+    organizationId || '',
+    datasourceId || '',
+    experimentId || '',
+    { status: ['success'] },
+    { swr: { enabled: !!organizationId && !!datasourceId && !!experimentId } },
+  );
+
+  useEffect(() => {
+    if (snapshotsResp?.items) {
+      setCachedSnapshots(snapshotsResp.items);
+    }
+  }, [snapshotsResp]);
+
+  // Choose most recent snapshot for the selected date (walk list backwards)
+  const mostRecentSnapshotForDate: Snapshot | undefined = useMemo(() => {
+    console.log('selectedDate', selectedDate);
+    if (!cachedSnapshots.length) return undefined;
+    for (let i = cachedSnapshots.length - 1; i >= 0; i--) {
+      const s = cachedSnapshots[i];
+      const localDate = formatDateLocal(new Date(s.updated_at));
+      if (localDate === selectedDate) return s;
+    }
+    return undefined;
+  }, [cachedSnapshots, selectedDate]);
+
+  useEffect(() => {
+    if (mostRecentSnapshotForDate && mostRecentSnapshotForDate.data) {
+      setSelectedAnalysisData(mostRecentSnapshotForDate.data);
+    } else if (liveAnalysisData) {
+      setSelectedAnalysisData(liveAnalysisData);
+    } else {
+      setSelectedAnalysisData(undefined);
+    }
+  }, [mostRecentSnapshotForDate, liveAnalysisData]);
 
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
@@ -160,9 +213,20 @@ export default function ExperimentViewPage() {
         <SectionCard
           title="Analysis"
           headerRight={
-            analysisData &&
+            selectedAnalysisData &&
             (design_spec?.experiment_type === 'freq_online' || design_spec?.experiment_type === 'freq_preassigned') && (
-              <Flex gap="3" align="center" justify="between">
+              <Flex gap="3" wrap="wrap" align="center" justify="between">
+                <Badge size="2">
+                  <Flex gap="2" align="center">
+                    <Heading size="2">Date:</Heading>
+                    <input
+                      type="date"
+                      value={selectedDate}
+                      onChange={(e) => setSelectedDate(e.target.value)}
+                      style={{ padding: '0px 8px', border: '1px solid var(--gray-6)' }}
+                    />
+                  </Flex>
+                </Badge>
                 <Badge size="2">
                   <Flex gap="4" align="center">
                     <Heading size="2">Confidence:</Heading>
@@ -198,7 +262,7 @@ export default function ExperimentViewPage() {
             />
           )}
 
-          {!isLoadingAnalysis && !analysisError && analysisData && (
+          {!isLoadingAnalysis && !analysisError && selectedAnalysisData && (
             <Flex direction="column" gap="3">
               <Tabs.Root defaultValue="visualization">
                 <Tabs.List>
@@ -214,7 +278,7 @@ export default function ExperimentViewPage() {
                     <Flex direction="column" gap="3" py="3">
                       {isFrequentistDesign(design_spec) &&
                         assign_summary &&
-                        (analysisData as FreqExperimentAnalysisResponse).metric_analyses.map(
+                        (selectedAnalysisData as FreqExperimentAnalysisResponse).metric_analyses.map(
                           (metric_analysis, index) => (
                             <ForestPlot
                               key={index}
@@ -231,7 +295,7 @@ export default function ExperimentViewPage() {
                     <Flex direction="column" gap="3" py="3">
                       <CodeSnippetCard
                         title="Raw Data"
-                        content={JSON.stringify(analysisData, null, 2)}
+                        content={JSON.stringify(selectedAnalysisData, null, 2)}
                         height="200px"
                         tooltipContent="Copy raw data"
                         variant="ghost"
