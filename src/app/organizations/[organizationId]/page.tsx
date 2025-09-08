@@ -13,6 +13,7 @@ import { EventsTable } from '@/components/features/organizations/events-table';
 import { WebhooksTable } from '@/components/features/organizations/webhooks-table';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
+import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
 
 const WEBHOOK_LIMIT = 10;
 
@@ -65,7 +66,10 @@ export default function Page() {
   return (
     <Flex direction="column" gap="6">
       <Flex justify="between" align="end" width="100%">
-        <Heading size="8">{organization.name}</Heading>
+        <Flex direction="row" align="center" gap="2">
+          <Heading size="8">{organization.name}</Heading>
+          <CopyToClipBoard content={organizationId} />
+        </Flex>
         <RenameOrganizationDialog organizationId={organizationId} currentName={organization.name} />
       </Flex>
 

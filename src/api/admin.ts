@@ -27,10 +27,12 @@ import type {
 	CreateOrganizationResponse,
 	CreateParticipantsTypeRequest,
 	CreateParticipantsTypeResponse,
+	CreateSnapshotResponse,
 	DeleteApiKeyParams,
 	DeleteDatasourceParams,
 	DeleteExperimentParams,
 	DeleteParticipantParams,
+	DeleteSnapshotParams,
 	DeleteWebhookFromOrganizationParams,
 	GetDatasourceResponse,
 	GetExperimentAssignmentForParticipantParams,
@@ -38,6 +40,7 @@ import type {
 	GetExperimentResponse,
 	GetOrganizationResponse,
 	GetParticipantAssignmentResponse,
+	GetSnapshotResponse,
 	HTTPExceptionError,
 	HTTPValidationError,
 	InspectDatasourceParams,
@@ -52,6 +55,8 @@ import type {
 	ListOrganizationEventsResponse,
 	ListOrganizationsResponse,
 	ListParticipantsTypeResponse,
+	ListSnapshotsParams,
+	ListSnapshotsResponse,
 	ListWebhooksResponse,
 	ParticipantsConfig,
 	PowerRequest,
@@ -117,6 +122,449 @@ export const useCallerIdentity = <
 		swrFn,
 		swrOptions,
 	);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * Fetches a snapshot by ID.
+ * @summary Get Snapshot
+ */
+export const getGetSnapshotUrl = (
+	organizationId: string,
+	datasourceId: string,
+	experimentId: string,
+	snapshotId: string,
+) => {
+	return `/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots/${snapshotId}`;
+};
+
+export const getSnapshot = async (
+	organizationId: string,
+	datasourceId: string,
+	experimentId: string,
+	snapshotId: string,
+	options?: RequestInit,
+): Promise<GetSnapshotResponse> => {
+	return orvalFetch<GetSnapshotResponse>(
+		getGetSnapshotUrl(organizationId, datasourceId, experimentId, snapshotId),
+		{
+			...options,
+			method: "GET",
+		},
+	);
+};
+
+export const getGetSnapshotKey = (
+	organizationId: string,
+	datasourceId: string,
+	experimentId: string,
+	snapshotId: string,
+) =>
+	[
+		`/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots/${snapshotId}`,
+	] as const;
+
+export type GetSnapshotQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getSnapshot>>
+>;
+export type GetSnapshotQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+/**
+ * @summary Get Snapshot
+ */
+export const useGetSnapshot = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	organizationId: string,
+	datasourceId: string,
+	experimentId: string,
+	snapshotId: string,
+	options?: {
+		swr?: SWRConfiguration<Awaited<ReturnType<typeof getSnapshot>>, TError> & {
+			swrKey?: Key;
+			enabled?: boolean;
+		};
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const isEnabled =
+		swrOptions?.enabled !== false &&
+		!!(organizationId && datasourceId && experimentId && snapshotId);
+	const swrKey =
+		swrOptions?.swrKey ??
+		(() =>
+			isEnabled
+				? getGetSnapshotKey(
+						organizationId,
+						datasourceId,
+						experimentId,
+						snapshotId,
+					)
+				: null);
+	const swrFn = () =>
+		getSnapshot(
+			organizationId,
+			datasourceId,
+			experimentId,
+			snapshotId,
+			requestOptions,
+		);
+
+	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
+		swrKey,
+		swrFn,
+		swrOptions,
+	);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * Deletes a snapshot.
+ * @summary Delete Snapshot
+ */
+export const getDeleteSnapshotUrl = (
+	organizationId: string,
+	datasourceId: string,
+	experimentId: string,
+	snapshotId: string,
+	params?: DeleteSnapshotParams,
+) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots/${snapshotId}?${stringifiedParams}`
+		: `/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots/${snapshotId}`;
+};
+
+export const deleteSnapshot = async (
+	organizationId: string,
+	datasourceId: string,
+	experimentId: string,
+	snapshotId: string,
+	params?: DeleteSnapshotParams,
+	options?: RequestInit,
+): Promise<unknown> => {
+	return orvalFetch<unknown>(
+		getDeleteSnapshotUrl(
+			organizationId,
+			datasourceId,
+			experimentId,
+			snapshotId,
+			params,
+		),
+		{
+			...options,
+			method: "DELETE",
+		},
+	);
+};
+
+export const getDeleteSnapshotMutationFetcher = (
+	organizationId: string,
+	datasourceId: string,
+	experimentId: string,
+	snapshotId: string,
+	params?: DeleteSnapshotParams,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, __: { arg: Arguments }): Promise<unknown> => {
+		return deleteSnapshot(
+			organizationId,
+			datasourceId,
+			experimentId,
+			snapshotId,
+			params,
+			options,
+		);
+	};
+};
+export const getDeleteSnapshotMutationKey = (
+	organizationId: string,
+	datasourceId: string,
+	experimentId: string,
+	snapshotId: string,
+	params?: DeleteSnapshotParams,
+) =>
+	[
+		`/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots/${snapshotId}`,
+		...(params ? [params] : []),
+	] as const;
+
+export type DeleteSnapshotMutationResult = NonNullable<
+	Awaited<ReturnType<typeof deleteSnapshot>>
+>;
+export type DeleteSnapshotMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+/**
+ * @summary Delete Snapshot
+ */
+export const useDeleteSnapshot = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	organizationId: string,
+	datasourceId: string,
+	experimentId: string,
+	snapshotId: string,
+	params?: DeleteSnapshotParams,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof deleteSnapshot>>,
+			TError,
+			Key,
+			Arguments,
+			Awaited<ReturnType<typeof deleteSnapshot>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey =
+		swrOptions?.swrKey ??
+		getDeleteSnapshotMutationKey(
+			organizationId,
+			datasourceId,
+			experimentId,
+			snapshotId,
+			params,
+		);
+	const swrFn = getDeleteSnapshotMutationFetcher(
+		organizationId,
+		datasourceId,
+		experimentId,
+		snapshotId,
+		params,
+		requestOptions,
+	);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * Lists snapshots for an experiment, ordered by timestamp.
+ * @summary List Snapshots
+ */
+export const getListSnapshotsUrl = (
+	organizationId: string,
+	datasourceId: string,
+	experimentId: string,
+	params?: ListSnapshotsParams,
+) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots?${stringifiedParams}`
+		: `/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots`;
+};
+
+export const listSnapshots = async (
+	organizationId: string,
+	datasourceId: string,
+	experimentId: string,
+	params?: ListSnapshotsParams,
+	options?: RequestInit,
+): Promise<ListSnapshotsResponse> => {
+	return orvalFetch<ListSnapshotsResponse>(
+		getListSnapshotsUrl(organizationId, datasourceId, experimentId, params),
+		{
+			...options,
+			method: "GET",
+		},
+	);
+};
+
+export const getListSnapshotsKey = (
+	organizationId: string,
+	datasourceId: string,
+	experimentId: string,
+	params?: ListSnapshotsParams,
+) =>
+	[
+		`/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots`,
+		...(params ? [params] : []),
+	] as const;
+
+export type ListSnapshotsQueryResult = NonNullable<
+	Awaited<ReturnType<typeof listSnapshots>>
+>;
+export type ListSnapshotsQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+/**
+ * @summary List Snapshots
+ */
+export const useListSnapshots = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	organizationId: string,
+	datasourceId: string,
+	experimentId: string,
+	params?: ListSnapshotsParams,
+	options?: {
+		swr?: SWRConfiguration<
+			Awaited<ReturnType<typeof listSnapshots>>,
+			TError
+		> & { swrKey?: Key; enabled?: boolean };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const isEnabled =
+		swrOptions?.enabled !== false &&
+		!!(organizationId && datasourceId && experimentId);
+	const swrKey =
+		swrOptions?.swrKey ??
+		(() =>
+			isEnabled
+				? getListSnapshotsKey(
+						organizationId,
+						datasourceId,
+						experimentId,
+						params,
+					)
+				: null);
+	const swrFn = () =>
+		listSnapshots(
+			organizationId,
+			datasourceId,
+			experimentId,
+			params,
+			requestOptions,
+		);
+
+	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
+		swrKey,
+		swrFn,
+		swrOptions,
+	);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * Request the asynchronous creation of a snapshot for an experiment.
+
+Returns the ID of the snapshot. Poll get_snapshot until the job is completed.
+ * @summary Create Snapshot
+ */
+export const getCreateSnapshotUrl = (
+	organizationId: string,
+	datasourceId: string,
+	experimentId: string,
+) => {
+	return `/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots`;
+};
+
+export const createSnapshot = async (
+	organizationId: string,
+	datasourceId: string,
+	experimentId: string,
+	options?: RequestInit,
+): Promise<CreateSnapshotResponse> => {
+	return orvalFetch<CreateSnapshotResponse>(
+		getCreateSnapshotUrl(organizationId, datasourceId, experimentId),
+		{
+			...options,
+			method: "POST",
+		},
+	);
+};
+
+export const getCreateSnapshotMutationFetcher = (
+	organizationId: string,
+	datasourceId: string,
+	experimentId: string,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, __: { arg: Arguments }): Promise<CreateSnapshotResponse> => {
+		return createSnapshot(organizationId, datasourceId, experimentId, options);
+	};
+};
+export const getCreateSnapshotMutationKey = (
+	organizationId: string,
+	datasourceId: string,
+	experimentId: string,
+) =>
+	[
+		`/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots`,
+	] as const;
+
+export type CreateSnapshotMutationResult = NonNullable<
+	Awaited<ReturnType<typeof createSnapshot>>
+>;
+export type CreateSnapshotMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+/**
+ * @summary Create Snapshot
+ */
+export const useCreateSnapshot = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	organizationId: string,
+	datasourceId: string,
+	experimentId: string,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof createSnapshot>>,
+			TError,
+			Key,
+			Arguments,
+			Awaited<ReturnType<typeof createSnapshot>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey =
+		swrOptions?.swrKey ??
+		getCreateSnapshotMutationKey(organizationId, datasourceId, experimentId);
+	const swrFn = getCreateSnapshotMutationFetcher(
+		organizationId,
+		datasourceId,
+		experimentId,
+		requestOptions,
+	);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
 	return {
 		swrKey,

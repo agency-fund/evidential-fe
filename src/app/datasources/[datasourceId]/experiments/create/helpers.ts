@@ -41,18 +41,18 @@ function convertFrequentABFormData(formData: FrequentABFormData): CreateExperime
   const metrics: DesignSpecMetricRequest[] = [];
   const strata: Stratum[] = [];
 
-  if (formData.primaryMetric && formData.primaryMetric.metricName) {
+  if (formData.primaryMetric && formData.primaryMetric.metric.field_name) {
     zodMde.parse(formData.primaryMetric.mde, { path: ['primaryMetric', 'mde'] });
     metrics.push({
-      field_name: formData.primaryMetric.metricName,
+      field_name: formData.primaryMetric.metric.field_name,
       metric_pct_change: Number(formData.primaryMetric.mde) / 100.0,
     });
   }
 
   formData.secondaryMetrics.forEach((metric) => {
-    zodMde.parse(metric.mde, { path: ['secondaryMetrics', metric.metricName, 'mde'] });
+    zodMde.parse(metric.mde, { path: ['secondaryMetrics', metric.metric.field_name, 'mde'] });
     metrics.push({
-      field_name: metric.metricName,
+      field_name: metric.metric.field_name,
       metric_pct_change: Number(metric.mde) / 100.0,
     });
   });
@@ -77,7 +77,6 @@ function convertFrequentABFormData(formData: FrequentABFormData): CreateExperime
       strata: strata,
       power: Number(formData.power) / 100.0,
       alpha: 1 - Number(formData.confidence) / 100.0,
-      experiment_id: null,
     },
     power_analyses: formData.powerCheckResponse,
     webhooks: formData.selectedWebhookIds.length > 0 ? formData.selectedWebhookIds : [],

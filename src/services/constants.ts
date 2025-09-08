@@ -6,3 +6,5 @@ export const OIDC_REDIRECT_URI = process.env.NEXT_PUBLIC_XNGIN_OIDC_REDIRECT_URI
 export const PRODUCT_NAME = 'Evidential';
 export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_XNGIN_SUPPORT_EMAIL ?? 'support@example.com';
 export const XNGIN_API_DOCS_LINK = process.env.NEXT_PUBLIC_XNGIN_API_DOCS ?? API_BASE_URL + '/docs';
+// Special driver name for Api Only datasource
+export const NO_DWH_DRIVER = 'none';

@@ -202,7 +202,7 @@ export default function CreateParticipantTypePage() {
               <Text as="div" size={'2'} color="gray">
                 Please select the name of the data warehouse table.
               </Text>
-              <Grid rows={'1'} columns={'2'}>
+              <Grid rows={'1'} columns={'2'} gap="1">
                 <Box style={{ position: 'relative' }} ref={dropdownRef}>
                   <TextField.Root
                     placeholder="Search for a table..."
