@@ -41,7 +41,7 @@ export function DownloadAssignmentsCsvButton({ datasourceId, experimentId }: Dow
 
   return (
     <>
-      <Tooltip content="Download CSV">
+      <Tooltip content="Download CSV of participant arm assignments">
         <IconButton variant="soft" color="gray" size="2" onClick={handleDownload} loading={isDownloading}>
           <DownloadIcon width="16" height="16" />
         </IconButton>

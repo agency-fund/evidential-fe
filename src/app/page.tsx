@@ -7,7 +7,7 @@ import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
 import { useRouter } from 'next/navigation';
-import { PRODUCT_NAME } from '@/services/constants';
+import { NO_DWH_DRIVER, PRODUCT_NAME } from '@/services/constants';
 import { CreateExperimentButton } from '@/components/features/experiments/create-experiment-button';
 import ExperimentCard from '@/components/features/experiments/experiment-card';
 import { useState } from 'react';
@@ -104,7 +104,13 @@ export default function Page() {
         </Flex>
       )}
 
-      {datasourcesData && datasourcesData.items.length === 0 ? (
+      {datasourcesData &&
+      (datasourcesData.items.length === 0 ||
+        (datasourcesData?.items.length === 1 &&
+          datasourcesData.items[0].driver === NO_DWH_DRIVER &&
+          committedExperiments.length === 0)) ? (
+        // If there are no non-api-only datasources and no experiments, show the ds setup message.
+        // One can still create api-only experiments from the create experiment button.
         <EmptyStateCard
           title={`Welcome to ${PRODUCT_NAME}`}
           description="To get started with experiments you'll need to first add a datasource in settings."
@@ -112,7 +118,7 @@ export default function Page() {
           buttonIcon={<GearIcon />}
           onClick={() => router.push(`/organizations/${currentOrgId}`)}
         />
-      ) : experimentsData && committedExperiments.length === 0 ? (
+      ) : committedExperiments.length === 0 ? (
         <EmptyStateCard
           title="Create your first experiment"
           description="Get started by creating your first experiment."
