@@ -13,6 +13,7 @@ import { SectionCard } from '@/components/ui/cards/section-card';
 import { ReadMoreText } from '@/components/ui/read-more-text';
 import { ListSelectedWebhooksCard } from '@/components/features/experiments/list-selected-webhooks-card';
 import { MdeBadge } from '@/components/features/experiments/mde-badge';
+import { DataTypeBadge } from '@/components/ui/data-type-badge';
 
 interface ConfirmationFormProps {
   formData: FrequentABFormData;
@@ -127,9 +128,12 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
             <Flex direction="column" gap="1">
               <Text weight="bold">Primary Metric</Text>
               {formData.primaryMetric ? (
-                <Flex align="center" gap="2" wrap="wrap">
-                  <Text>{formData.primaryMetric.metricName}</Text>
-                  <MdeBadge value={formData.primaryMetric.mde} size="1" />
+                <Flex direction="row" gap="2" wrap="wrap" align="center" justify="between">
+                  <Text>{formData.primaryMetric.metric.field_name}</Text>
+                  <Flex direction="row" wrap="wrap" gap="2" align="center" justify="between">
+                    <DataTypeBadge type={formData.primaryMetric.metric.data_type} />
+                    <MdeBadge value={formData.primaryMetric.mde} size="1" />
+                  </Flex>
                 </Flex>
               ) : (
                 <Text>-</Text>
@@ -139,9 +143,12 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
               <Text weight="bold">Secondary Metrics</Text>
               {formData.secondaryMetrics.length > 0 ? (
                 formData.secondaryMetrics.map((metric) => (
-                  <Flex key={metric.metricName} align="center" gap="2" wrap="wrap">
-                    <Text>{metric.metricName}</Text>
-                    <MdeBadge value={metric.mde} size="1" />
+                  <Flex key={metric.metric.field_name} gap="2" wrap="wrap" align="center" justify="between">
+                    <Text>{metric.metric.field_name}</Text>
+                    <Flex direction="row" wrap="wrap" gap="2" align="center" justify="between">
+                      <DataTypeBadge type={metric.metric.data_type} />
+                      <MdeBadge value={metric.mde} size="1" />
+                    </Flex>
                   </Flex>
                 ))
               ) : (
@@ -163,18 +170,23 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
             <Table.Header>
               <Table.Row>
                 <Table.ColumnHeaderCell>Field</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Data Type</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Operator</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Values</Table.ColumnHeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {formData.filters.map((filter, index) => (
-                <Table.Row key={index}>
-                  <Table.Cell>{filter.field_name}</Table.Cell>
-                  <Table.Cell>{filter.relation}</Table.Cell>
-                  <Table.Cell>{filter.value.map((v) => (v === null ? '(null)' : v)).join(', ')}</Table.Cell>
-                </Table.Row>
-              ))}
+              {formData.filters.map((filter, index) => {
+                const dt = formData.availableFilterFields?.find((f) => f.field_name === filter.field_name)?.data_type;
+                return (
+                  <Table.Row key={index}>
+                    <Table.Cell>{filter.field_name}</Table.Cell>
+                    <Table.Cell>{dt ? <DataTypeBadge type={dt} /> : <Text>-</Text>}</Table.Cell>
+                    <Table.Cell>{filter.relation}</Table.Cell>
+                    <Table.Cell>{filter.value.map((v) => (v === null ? '(null)' : v)).join(', ')}</Table.Cell>
+                  </Table.Row>
+                );
+              })}
             </Table.Body>
           </Table.Root>
         ) : (

@@ -15,10 +15,10 @@ type MetricBuilderProps = {
 };
 
 export function MetricBuilder({ formData, onFormDataChange, metricFields }: MetricBuilderProps) {
-  const handlePrimaryMetricSelect = (metricName: string) => {
+  const handlePrimaryMetricSelect = (metric: GetMetricsResponseElement) => {
     onFormDataChange({
       ...formData,
-      primaryMetric: { metricName, mde: DEFAULT_MDE },
+      primaryMetric: { metric, mde: DEFAULT_MDE },
     });
   };
 
@@ -29,13 +29,13 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
     });
   };
 
-  const handleSecondaryMetricAdd = (metricName: string) => {
-    const newSecondaryMetrics = [...formData.secondaryMetrics, { metricName, mde: DEFAULT_MDE }];
+  const handleSecondaryMetricAdd = (metric: GetMetricsResponseElement) => {
+    const newSecondaryMetrics = [...formData.secondaryMetrics, { metric, mde: DEFAULT_MDE }];
     onFormDataChange({ ...formData, secondaryMetrics: newSecondaryMetrics });
   };
 
   const handleSecondaryMetricRemove = (metricName: string) => {
-    const newSecondaryMetrics = formData.secondaryMetrics.filter((m) => m.metricName !== metricName);
+    const newSecondaryMetrics = formData.secondaryMetrics.filter((m) => m.metric.field_name !== metricName);
     onFormDataChange({ ...formData, secondaryMetrics: newSecondaryMetrics });
   };
 
@@ -44,13 +44,13 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
       onFormDataChange({
         ...formData,
         primaryMetric: {
-          metricName: formData.primaryMetric?.metricName || '',
+          metric: formData.primaryMetric.metric,
           mde: mde || '',
         },
       });
     } else if (type === 'secondary') {
       const newSecondaryMetrics = formData.secondaryMetrics.map((m) =>
-        m.metricName === metricName ? { ...m, mde } : m,
+        m.metric.field_name === metricName ? { ...m, mde } : m,
       );
       onFormDataChange({ ...formData, secondaryMetrics: newSecondaryMetrics });
     }
@@ -58,15 +58,15 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
 
   // Determine metrics available for primary selection (all metrics not in secondaryMetrics)
   const availablePrimaryMetricBadges = metricFields
-    .filter((m) => !formData.secondaryMetrics.some((sm) => sm.metricName === m.field_name))
+    .filter((m) => !formData.secondaryMetrics.some((sm) => sm.metric.field_name === m.field_name))
     .toSorted((a, b) => a.field_name.localeCompare(b.field_name));
 
   // Determine metrics available for secondary selection
   const availableSecondaryMetricBadges = metricFields
     .filter(
       (m) =>
-        m.field_name !== formData.primaryMetric?.metricName &&
-        !formData.secondaryMetrics.some((sm) => sm.metricName === m.field_name),
+        m.field_name !== formData.primaryMetric?.metric.field_name &&
+        !formData.secondaryMetrics.some((sm) => sm.metric.field_name === m.field_name),
     )
     .toSorted((a, b) => a.field_name.localeCompare(b.field_name));
 
@@ -76,12 +76,8 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeaderCell>Metric</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>
-              Minimum Effect
-              <br />
-              (% change)
-            </Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell> </Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell width="140px">Minimum Effect (% change)</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell width="64px"> </Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -96,13 +92,15 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
             {formData.primaryMetric && (
               <Table.Row>
                 <Table.Cell>
-                  {formData.primaryMetric?.metricName} <Badge color={'green'}>Primary</Badge>
+                  {formData.primaryMetric.metric.field_name} <Badge color={'green'}>Primary</Badge>
                 </Table.Cell>
                 <Table.Cell>
                   <TextField.Root
                     type={'number'}
                     value={formData.primaryMetric?.mde}
-                    onChange={(e) => handleMdeChange('primary', formData.primaryMetric!.metricName, e.target.value)}
+                    onChange={(e) =>
+                      handleMdeChange('primary', formData.primaryMetric!.metric.field_name, e.target.value)
+                    }
                     placeholder="MDE %"
                   />
                 </Table.Cell>
@@ -121,17 +119,17 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
               </Table.Row>
             )}
             {formData.secondaryMetrics
-              .toSorted((a, b) => a.metricName.localeCompare(b.metricName))
+              .toSorted((a, b) => a.metric.field_name.localeCompare(b.metric.field_name))
               .map((selectedMetric) => (
-                <Table.Row key={selectedMetric.metricName}>
+                <Table.Row key={selectedMetric.metric.field_name}>
                   <Table.Cell>
-                    <Text size="3">{selectedMetric.metricName}</Text>
+                    <Text size="3">{selectedMetric.metric.field_name}</Text>
                   </Table.Cell>
                   <Table.Cell>
                     <TextField.Root
                       type="number"
                       value={selectedMetric.mde}
-                      onChange={(e) => handleMdeChange('secondary', selectedMetric.metricName, e.target.value)}
+                      onChange={(e) => handleMdeChange('secondary', selectedMetric.metric.field_name, e.target.value)}
                       placeholder="MDE %"
                     />
                   </Table.Cell>
@@ -141,7 +139,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
                       color="red"
                       onClick={(event) => {
                         event.preventDefault();
-                        handleSecondaryMetricRemove(selectedMetric.metricName);
+                        handleSecondaryMetricRemove(selectedMetric.metric.field_name);
                       }}
                     >
                       <TrashIcon />
