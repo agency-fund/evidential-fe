@@ -93,7 +93,9 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
             <FilterBuilder
               availableFields={filterFields}
               filters={formData.filters}
-              onChange={(filters: FilterInput[]) => onFormDataChange({ ...formData, filters })}
+              onChange={(filters: FilterInput[]) =>
+                onFormDataChange({ ...formData, filters, availableFilterFields: filterFields })
+              }
             />
           </Flex>
         </SectionCard>
