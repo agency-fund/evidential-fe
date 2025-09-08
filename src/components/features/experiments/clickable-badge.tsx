@@ -1,18 +1,30 @@
 'use client';
 
-import { GetMetricsResponseElement, GetStrataResponseElement } from '@/api/methods.schemas';
+import { GetMetricsResponseElement, GetStrataResponseElement, DataType } from '@/api/methods.schemas';
 import { Badge, Flex, HoverCard, Text } from '@radix-ui/themes';
 import { PlusIcon } from '@radix-ui/react-icons';
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
 
-type ClickableBadgeProps = {
-  input: GetMetricsResponseElement | GetStrataResponseElement;
+type MinimalClickableBadgeInput = {
+  field_name: string;
+  data_type: DataType;
+  description: string;
+};
+type ClickableBadgeInput = MinimalClickableBadgeInput | GetMetricsResponseElement | GetStrataResponseElement;
+
+type ClickableBadgeProps<TInput extends ClickableBadgeInput> = {
+  input: TInput;
   color?: 'blue' | 'gray';
   showPlus?: boolean;
-  onClick: (field_name: string) => void;
+  onClick: (input: TInput) => void;
 };
 
-export function ClickableBadge({ input, onClick, color, showPlus: showPlus = true }: ClickableBadgeProps) {
+export function ClickableBadge<TInput extends ClickableBadgeInput>({
+  input,
+  onClick,
+  color,
+  showPlus: showPlus = true,
+}: ClickableBadgeProps<TInput>) {
   const badge = (
     <Badge
       key={input.field_name}
@@ -20,7 +32,7 @@ export function ClickableBadge({ input, onClick, color, showPlus: showPlus = tru
       variant={'soft'}
       {...(color ? { color } : {})}
       style={{ cursor: 'pointer' }}
-      onClick={() => onClick(input.field_name)}
+      onClick={() => onClick(input)}
     >
       {showPlus ? <PlusIcon /> : null} {input.field_name}
     </Badge>

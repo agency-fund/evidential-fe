@@ -9,6 +9,7 @@ import {
   MABExperimentSpecInput,
   Context as ContextSpec,
   MABExperimentSpecInputExperimentType,
+  GetMetricsResponseElement,
 } from '@/api/methods.schemas';
 
 export type ExperimentType = DesignSpecInput['experiment_type'];
@@ -31,7 +32,7 @@ export type Stratum = {
 };
 
 export type MetricWithMDE = {
-  metricName: string;
+  metric: GetMetricsResponseElement;
   mde: string; // desired minimum detectable effect as a percentage of the metric's baseline value
 };
 
