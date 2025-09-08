@@ -1,5 +1,5 @@
 'use client';
-import { Badge, Box, Flex, Heading, Separator, Table, Tabs, Text, Tooltip } from '@radix-ui/themes';
+import { Badge, Box, Button, Flex, Heading, Separator, Table, Tabs, Text, Tooltip } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
 import { CalendarIcon, CodeIcon, InfoCircledIcon, PersonIcon } from '@radix-ui/react-icons';
 import { useAnalyzeExperiment, useGetExperiment, useListSnapshots } from '@/api/admin';
@@ -50,6 +50,7 @@ export default function ExperimentViewPage() {
   const [selectedDate, setSelectedDate] = useState<string>(todayLocal);
   const [cachedSnapshots, setCachedSnapshots] = useState<Snapshot[]>([]);
   const [selectedAnalysisData, setSelectedAnalysisData] = useState<ExperimentAnalysisResponse | undefined>(undefined);
+  const [showLive, setShowLive] = useState<boolean>(true);
 
   const {
     data: experiment,
@@ -95,14 +96,16 @@ export default function ExperimentViewPage() {
   }, [cachedSnapshots, selectedDate]);
 
   useEffect(() => {
-    if (mostRecentSnapshotForDate && mostRecentSnapshotForDate.data) {
-      setSelectedAnalysisData(mostRecentSnapshotForDate.data);
-    } else if (liveAnalysisData) {
+    if (showLive && liveAnalysisData) {
       setSelectedAnalysisData(liveAnalysisData);
-    } else {
-      setSelectedAnalysisData(undefined);
+      return;
     }
-  }, [mostRecentSnapshotForDate, liveAnalysisData]);
+    if (!showLive && mostRecentSnapshotForDate && mostRecentSnapshotForDate.data) {
+      setSelectedAnalysisData(mostRecentSnapshotForDate.data);
+      return;
+    }
+    setSelectedAnalysisData(undefined);
+  }, [showLive, mostRecentSnapshotForDate, liveAnalysisData]);
 
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
@@ -213,42 +216,60 @@ export default function ExperimentViewPage() {
         <SectionCard
           title="Analysis"
           headerRight={
-            selectedAnalysisData &&
             (design_spec?.experiment_type === 'freq_online' || design_spec?.experiment_type === 'freq_preassigned') && (
-              <Flex gap="3" wrap="wrap" align="center" justify="between">
-                <Badge size="2">
-                  <Flex gap="2" align="center">
-                    <Heading size="2">Date:</Heading>
-                    <input
-                      type="date"
-                      value={selectedDate}
-                      onChange={(e) => setSelectedDate(e.target.value)}
-                      style={{ padding: '0px 8px', border: '1px solid var(--gray-6)' }}
-                    />
-                  </Flex>
-                </Badge>
-                <Badge size="2">
-                  <Flex gap="4" align="center">
-                    <Heading size="2">Confidence:</Heading>
+              <Flex gap="3" wrap="wrap">
+                <Flex gap="3" wrap="wrap" align="center" justify="between">
+                  {!showLive && !!liveAnalysisData && (
+                    <Button
+                      onClick={() => {
+                        setShowLive(true);
+                        setSelectedDate(todayLocal);
+                        setSelectedAnalysisData(undefined);
+                      }}
+                      size="1"
+                    >
+                      show live
+                    </Button>
+                  )}
+                  <Badge size="2">
                     <Flex gap="2" align="center">
-                      <Text>{(1 - (design_spec.alpha || 0.05)) * 100}%</Text>
-                      <Tooltip content="Chance that our test correctly shows no significant difference, if there truly is none. (The probability of avoiding a false positive.)">
-                        <InfoCircledIcon />
-                      </Tooltip>
+                      <Heading size="2">Date:</Heading>
+                      <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => {
+                          setSelectedDate(e.target.value);
+                          setShowLive(false);
+                        }}
+                        style={{ border: '1px solid var(--gray-6)' }}
+                      />
                     </Flex>
-                  </Flex>
-                </Badge>
-                <Badge size="2">
-                  <Flex gap="4" align="center">
-                    <Heading size="2">Power:</Heading>
-                    <Flex gap="2" align="center">
-                      <Text>{design_spec.power ? `${design_spec.power * 100}%` : '?'}</Text>
-                      <Tooltip content="Chance of detecting a difference at least as large as the pre-specified minimum effect for the metric, if that difference truly exists. (The probability of avoiding a false negative.)">
-                        <InfoCircledIcon />
-                      </Tooltip>
+                  </Badge>
+                </Flex>
+                <Flex gap="3" wrap="wrap">
+                  <Badge size="2">
+                    <Flex gap="4" align="center">
+                      <Heading size="2">Confidence:</Heading>
+                      <Flex gap="2" align="center">
+                        <Text>{(1 - (design_spec.alpha || 0.05)) * 100}%</Text>
+                        <Tooltip content="Chance that our test correctly shows no significant difference, if there truly is none. (The probability of avoiding a false positive.)">
+                          <InfoCircledIcon />
+                        </Tooltip>
+                      </Flex>
                     </Flex>
-                  </Flex>
-                </Badge>
+                  </Badge>
+                  <Badge size="2">
+                    <Flex gap="4" align="center">
+                      <Heading size="2">Power:</Heading>
+                      <Flex gap="2" align="center">
+                        <Text>{design_spec.power ? `${design_spec.power * 100}%` : '?'}</Text>
+                        <Tooltip content="Chance of detecting a difference at least as large as the pre-specified minimum effect for the metric, if that difference truly exists. (The probability of avoiding a false negative.)">
+                          <InfoCircledIcon />
+                        </Tooltip>
+                      </Flex>
+                    </Flex>
+                  </Badge>
+                </Flex>
               </Flex>
             )
           }
@@ -259,6 +280,13 @@ export default function ExperimentViewPage() {
             <GenericErrorCallout
               title="Error loading analysis"
               message="Analysis may not be available yet or the experiment hasn't collected enough data."
+            />
+          )}
+
+          {!showLive && !selectedAnalysisData && (
+            <GenericErrorCallout
+              title={`No analysis available for selected date: ${selectedDate}`}
+              message={"We don't have an analysis saved for this date."}
             />
           )}
 
