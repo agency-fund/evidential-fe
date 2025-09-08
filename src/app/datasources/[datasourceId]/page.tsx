@@ -10,6 +10,7 @@ import { ParticipantTypesSection } from '@/components/features/participants/part
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { useEffect, useState } from 'react';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
 
 export default function Page() {
   const params = useParams();
@@ -107,7 +108,10 @@ export default function Page() {
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
         <Flex justify="between" align="end" width="100%">
-          <Heading size="8">Datasource: {datasourceName}</Heading>
+          <Flex direction="row" align="center" gap="2">
+            <Heading size="8">Datasource: {datasourceName}</Heading>
+            <CopyToClipBoard content={datasourceId} />
+          </Flex>
           {editDatasourceDialogComponent}
         </Flex>
       </Flex>
