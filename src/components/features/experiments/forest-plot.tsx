@@ -76,6 +76,12 @@ const createDiamondShape = (cx: number = 0, cy: number = 0, size: number = 6) =>
   return `${cx},${cy - size} ${cx + size},${cy} ${cx},${cy + size} ${cx - size},${cy}`;
 };
 
+// Simple truncation of long labels with an ellipsis for readability. ~48 roughly keeps the labels to 2 lines.
+const truncateLabel = (label: string, maxChars: number = 48): string => {
+  if (!label) return '';
+  return label.length > maxChars ? label.slice(0, maxChars) + '…' : label;
+};
+
 function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   if (!active || !payload || !payload.length) return null;
   const data = payload[0].payload;
@@ -153,11 +159,15 @@ export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotPr
     let minX = Math.min(...effectSizes.map((d) => d.absCI95Lower));
     let maxX = Math.max(...effectSizes.map((d) => d.absCI95Upper));
     const viewportWidth = maxX - minX;
-    minX = minX - viewportWidth * 0.05;
-    maxX = maxX + viewportWidth * 0.05;
+    minX = minX - viewportWidth * 0.1;
+    maxX = maxX + viewportWidth * 0.1;
     if (Math.abs(minX) > 1 && Math.abs(maxX) > 1) {
       minX = Math.floor(minX);
       maxX = Math.ceil(maxX);
+    }
+    if (Math.abs(minX - maxX) < 0.0000001) {
+      minX = minX - 1;
+      maxX = maxX + 1;
     }
     return [minX, maxX];
   }
@@ -191,6 +201,13 @@ export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotPr
   } else {
     mdePct = null;
   }
+
+  // Adjust plot height based on the number of arms.
+  const plotHeightPx = Math.max(160, 64 * effectSizes.length);
+  // Coarse adjustment of the width of the left Y-axis based on the length of the arm names.
+  const maxArmNameLength = effectSizes.reduce((max, e) => Math.max(max, e.armName.length), 0);
+  const yAxisWidthPx = maxArmNameLength > 20 ? 180 : 60;
+
   return (
     <Flex direction="column" gap="3">
       <Flex direction="row" align="baseline" wrap="wrap">
@@ -210,7 +227,7 @@ export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotPr
         </Callout.Root>
       )}
 
-      <Box height={'200px'}>
+      <Box height={`${plotHeightPx}px`}>
         <ResponsiveContainer width="100%" height="100%">
           <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 60 }}>
             {/* Supply our own coordinates generator since default rendering is off for ratio metrics */}
@@ -222,14 +239,18 @@ export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotPr
               scale="linear"
               domain={[minX, maxX]}
               ticks={xGridPoints} // use our own ticks due to auto rendering issues
-              tickFormatter={(value) => (value >= 1 ? value.toFixed() : value.toFixed(2))}
+              tickFormatter={(value) =>
+                value >= 10 ? value.toFixed() : value >= 1 ? value.toFixed(1) : value.toFixed(2)
+              }
             />
             <YAxis
               type="category"
               domain={effectSizes.map((e, i) => i)}
               // hide={true} - use ticks for arm names
+              width={yAxisWidthPx}
               tickFormatter={(index) => {
-                return index >= 0 && index < effectSizes.length ? effectSizes[index].armName : '';
+                const name = index >= 0 && index < effectSizes.length ? effectSizes[index].armName : '';
+                return truncateLabel(name);
               }}
               allowDataOverflow={true} // bit of a hack since the ErrorBar is internally messing with the y-axis domain
             />
@@ -328,7 +349,7 @@ export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotPr
                     x2={(centerX || 0) + scaleHalfIntervalToViewport(ci95, xAxisWidth)}
                     y2={centerY}
                     stroke={strokeColor}
-                    strokeWidth={4}
+                    strokeWidth={5}
                     strokeLinecap="round"
                   />
                 );
