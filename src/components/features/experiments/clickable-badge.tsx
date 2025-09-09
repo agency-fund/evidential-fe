@@ -1,9 +1,9 @@
 'use client';
 
 import { GetMetricsResponseElement, GetStrataResponseElement, DataType } from '@/api/methods.schemas';
-import { Badge, HoverCard, Text, DataList } from '@radix-ui/themes';
+import { Badge, HoverCard, Text } from '@radix-ui/themes';
 import { PlusIcon } from '@radix-ui/react-icons';
-import  FieldDatalist  from '@/components/ui/field-datalist';
+import FieldDatalist from '@/components/ui/field-datalist';
 
 type MinimalClickableBadgeInput = {
   field_name: string;

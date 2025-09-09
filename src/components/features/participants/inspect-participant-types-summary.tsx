@@ -4,8 +4,7 @@ import { Button, DataList, Flex, Grid, Heading, Text } from '@radix-ui/themes';
 import { InspectParticipantTypesResponse } from '@/api/methods.schemas';
 import { useState } from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@radix-ui/react-icons';
-import FieldDataList  from '@/components/ui/field-datalist';
-
+import FieldDataList from '@/components/ui/field-datalist';
 
 export function InspectParticipantTypesSummary({ data }: { data: InspectParticipantTypesResponse | undefined }) {
   const [showStrata, setShowStrata] = useState(true);
@@ -28,7 +27,7 @@ export function InspectParticipantTypesSummary({ data }: { data: InspectParticip
         ) : (
           <Grid columns="3" gap="4">
             {data.strata.map((field) => (
-            <FieldDataList field={field} key={field.field_name}/>
+              <FieldDataList field={field} key={field.field_name} />
             ))}
           </Grid>
         ))}
@@ -44,7 +43,7 @@ export function InspectParticipantTypesSummary({ data }: { data: InspectParticip
         ) : (
           <Grid columns="3" gap="4" width={'auto'}>
             {data.metrics.map((field) => (
-              <FieldDataList field={field} key={field.field_name}/>
+              <FieldDataList field={field} key={field.field_name} />
             ))}
           </Grid>
         ))}
@@ -61,30 +60,30 @@ export function InspectParticipantTypesSummary({ data }: { data: InspectParticip
         ) : (
           <Grid columns="3" gap="4">
             {data.filters.map((field) => (
-               <FieldDataList field={field} key={field.field_name}>
-                  {'min' in field && (
-                    <>
-                      <DataList.Item>
-                        <DataList.Label>Lower Bound</DataList.Label>
-                        <DataList.Value>{field.min}</DataList.Value>
-                      </DataList.Item>
-                      <DataList.Item>
-                        <DataList.Label minWidth="120px">Upper Bound</DataList.Label>
-                        <DataList.Value>{field.max}</DataList.Value>
-                      </DataList.Item>
-                    </>
-                  )}
-                  {'distinct_values' in field && field.distinct_values && (
+              <FieldDataList field={field} key={field.field_name}>
+                {'min' in field && (
+                  <>
                     <DataList.Item>
-                      <DataList.Label minWidth="120px">Valid Values</DataList.Label>
-                      <DataList.Value>
-                        {field.distinct_values.length > 15
-                          ? field.distinct_values.slice(0, 14).join(', ') + ', ...'
-                          : field.distinct_values.join(', ')}
-                      </DataList.Value>
+                      <DataList.Label>Lower Bound</DataList.Label>
+                      <DataList.Value>{field.min}</DataList.Value>
                     </DataList.Item>
-                  )}
-             </FieldDataList>
+                    <DataList.Item>
+                      <DataList.Label minWidth="120px">Upper Bound</DataList.Label>
+                      <DataList.Value>{field.max}</DataList.Value>
+                    </DataList.Item>
+                  </>
+                )}
+                {'distinct_values' in field && field.distinct_values && (
+                  <DataList.Item>
+                    <DataList.Label minWidth="120px">Valid Values</DataList.Label>
+                    <DataList.Value>
+                      {field.distinct_values.length > 15
+                        ? field.distinct_values.slice(0, 14).join(', ') + ', ...'
+                        : field.distinct_values.join(', ')}
+                    </DataList.Value>
+                  </DataList.Item>
+                )}
+              </FieldDataList>
             ))}
           </Grid>
         ))}

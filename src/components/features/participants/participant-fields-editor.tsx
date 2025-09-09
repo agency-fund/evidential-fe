@@ -113,7 +113,7 @@ export function ParticipantFieldsEditor({
                   size="3"
                 />
               </Table.Cell>
-              
+
               <Table.Cell justify={'center'}>
                 <Checkbox
                   checked={field.is_filter || false}
