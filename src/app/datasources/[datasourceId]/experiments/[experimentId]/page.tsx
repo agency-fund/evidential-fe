@@ -24,6 +24,7 @@ import {
 } from '@/api/methods.schemas';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { useCurrentOrganization } from '@/providers/organization-provider';
+import { formatUtcDownToMinuteLabel } from '@/services/date-utils';
 
 // Type guard to assure TypeScript that a DesignSpec is one of two types.
 function isFrequentistDesign(
@@ -40,14 +41,8 @@ export default function ExperimentViewPage() {
   const orgCtx = useCurrentOrganization();
   const organizationId = orgCtx?.current.id || '';
 
-  const formatDateLocal = (d: Date) => {
-    const y = d.getFullYear();
-    const m = `${d.getMonth() + 1}`.padStart(2, '0');
-    const day = `${d.getDate()}`.padStart(2, '0');
-    return `${y}-${m}-${day}`;
-  };
-  const todayLocal = formatDateLocal(new Date());
-  const [selectedDate, setSelectedDate] = useState<string>(todayLocal);
+  // Selected snapshot key at UTC minute resolution: "YYYY-MM-DD HH:MM"
+  const [selectedDateMs, setSelectedDateMs] = useState<number>(0);
   const [cachedSnapshots, setCachedSnapshots] = useState<Snapshot[]>([]);
   const [selectedAnalysisData, setSelectedAnalysisData] = useState<ExperimentAnalysisResponse | undefined>(undefined);
   const [showLive, setShowLive] = useState<boolean>(true);
@@ -83,29 +78,42 @@ export default function ExperimentViewPage() {
     }
   }, [snapshotsResp]);
 
-  // Choose most recent snapshot for the selected date (walk list backwards)
-  const mostRecentSnapshotForDate: Snapshot | undefined = useMemo(() => {
-    console.log('selectedDate', selectedDate);
-    if (!cachedSnapshots.length) return undefined;
+  // Choose snapshot matching selected UTC timestamp in ms
+  const selectedSnapshot: Snapshot | undefined = useMemo(() => {
+    if (cachedSnapshots.length == 0 || !selectedDateMs) return undefined;
+    // Assumes BE sends by updated_at descending.
     for (let i = cachedSnapshots.length - 1; i >= 0; i--) {
       const s = cachedSnapshots[i];
-      const localDate = formatDateLocal(new Date(s.updated_at));
-      if (localDate === selectedDate) return s;
+      const updatedAt = new Date(s.updated_at);
+      console.log('searching for ', selectedDateMs, ' == updatedAt', updatedAt.getTime());
+      if (updatedAt.getTime() === selectedDateMs) return s;
     }
     return undefined;
-  }, [cachedSnapshots, selectedDate]);
+  }, [cachedSnapshots, selectedDateMs]);
+
+  // Make human-readable labels for the dropdown, showing UTC down to the minute
+  const snapshotDropdownOptions = useMemo(() => {
+    const opts: { key: number; label: string }[] = [];
+    if (!cachedSnapshots.length) return opts;
+    for (const s of cachedSnapshots) {
+      const updatedAt = new Date(s.updated_at);
+      opts.push({ key: updatedAt.getTime(), label: formatUtcDownToMinuteLabel(updatedAt) });
+    }
+    opts.sort((a, b) => b.key - a.key);
+    return opts;
+  }, [cachedSnapshots]);
 
   useEffect(() => {
     if (showLive && liveAnalysisData) {
       setSelectedAnalysisData(liveAnalysisData);
       return;
     }
-    if (!showLive && mostRecentSnapshotForDate && mostRecentSnapshotForDate.data) {
-      setSelectedAnalysisData(mostRecentSnapshotForDate.data);
+    if (!showLive && selectedSnapshot && selectedSnapshot.data) {
+      setSelectedAnalysisData(selectedSnapshot.data);
       return;
     }
     setSelectedAnalysisData(undefined);
-  }, [showLive, mostRecentSnapshotForDate, liveAnalysisData]);
+  }, [showLive, selectedSnapshot, liveAnalysisData]);
 
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
@@ -223,28 +231,37 @@ export default function ExperimentViewPage() {
                     <Button
                       onClick={() => {
                         setShowLive(true);
-                        setSelectedDate(todayLocal);
-                        setSelectedAnalysisData(undefined);
+                        setSelectedDateMs(0);
                       }}
                       size="1"
                     >
                       show live
                     </Button>
                   )}
-                  <Badge size="2">
-                    <Flex gap="2" align="center">
-                      <Heading size="2">Date:</Heading>
-                      <input
-                        type="date"
-                        value={selectedDate}
-                        onChange={(e) => {
-                          setSelectedDate(e.target.value);
-                          setShowLive(false);
-                        }}
-                        style={{ border: '1px solid var(--gray-6)' }}
-                      />
-                    </Flex>
-                  </Badge>
+                  {cachedSnapshots.length > 0 && (
+                    <Badge size="2">
+                      <Flex gap="2" align="center">
+                        <Heading size="2">History:</Heading>
+                        <select
+                          value={selectedDateMs ? selectedDateMs : ''}
+                          onChange={(e) => {
+                            setSelectedDateMs(Number(e.target.value));
+                            setShowLive(false);
+                          }}
+                          style={{ border: '1px solid var(--gray-6)' }}
+                        >
+                          <option value="" disabled>
+                            Select a snapshot
+                          </option>
+                          {snapshotDropdownOptions.map((opt) => (
+                            <option key={opt.key} value={opt.key}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </Flex>
+                    </Badge>
+                  )}
                 </Flex>
                 <Flex gap="3" wrap="wrap">
                   <Badge size="2">
@@ -280,13 +297,6 @@ export default function ExperimentViewPage() {
             <GenericErrorCallout
               title="Error loading analysis"
               message="Analysis may not be available yet or the experiment hasn't collected enough data."
-            />
-          )}
-
-          {!showLive && !selectedAnalysisData && (
-            <GenericErrorCallout
-              title={`No analysis available for selected date: ${selectedDate}`}
-              message={"We don't have an analysis saved for this date."}
             />
           )}
 
