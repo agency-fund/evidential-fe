@@ -1,10 +1,11 @@
 'use client';
 
-import { Button, Card, DataList, Flex, Grid, Heading, Text } from '@radix-ui/themes';
+import { Button, DataList, Flex, Grid, Heading, Text } from '@radix-ui/themes';
 import { InspectParticipantTypesResponse } from '@/api/methods.schemas';
 import { useState } from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@radix-ui/react-icons';
-import { DataTypeBadge } from '@/components/ui/data-type-badge';
+import FieldDataList  from '@/components/ui/field-datalist';
+
 
 export function InspectParticipantTypesSummary({ data }: { data: InspectParticipantTypesResponse | undefined }) {
   const [showStrata, setShowStrata] = useState(true);
@@ -27,24 +28,7 @@ export function InspectParticipantTypesSummary({ data }: { data: InspectParticip
         ) : (
           <Grid columns="3" gap="4">
             {data.strata.map((field) => (
-              <Card key={field.field_name}>
-                <DataList.Root key={field.field_name}>
-                  <DataList.Item>
-                    <DataList.Label minWidth="120px">Field Name</DataList.Label>
-                    <DataList.Value>{field.field_name}</DataList.Value>
-                  </DataList.Item>
-                  <DataList.Item>
-                    <DataList.Label minWidth="120px">Description</DataList.Label>
-                    <DataList.Value>{field.description}</DataList.Value>
-                  </DataList.Item>
-                  <DataList.Item>
-                    <DataList.Label minWidth="120px">Data Type</DataList.Label>
-                    <DataList.Value>
-                      <DataTypeBadge type={field.data_type} />
-                    </DataList.Value>
-                  </DataList.Item>
-                </DataList.Root>
-              </Card>
+            <FieldDataList field={field} key={field.field_name}/>
             ))}
           </Grid>
         ))}
@@ -60,24 +44,7 @@ export function InspectParticipantTypesSummary({ data }: { data: InspectParticip
         ) : (
           <Grid columns="3" gap="4" width={'auto'}>
             {data.metrics.map((field) => (
-              <Card key={field.field_name}>
-                <DataList.Root>
-                  <DataList.Item>
-                    <DataList.Label minWidth="120px">Field Name</DataList.Label>
-                    <DataList.Value>{field.field_name}</DataList.Value>
-                  </DataList.Item>
-                  <DataList.Item>
-                    <DataList.Label minWidth="120px">Description</DataList.Label>
-                    <DataList.Value>{field.description}</DataList.Value>
-                  </DataList.Item>
-                  <DataList.Item>
-                    <DataList.Label minWidth="120px">Data Type</DataList.Label>
-                    <DataList.Value>
-                      <DataTypeBadge type={field.data_type} />
-                    </DataList.Value>
-                  </DataList.Item>
-                </DataList.Root>
-              </Card>
+              <FieldDataList field={field} key={field.field_name}/>
             ))}
           </Grid>
         ))}
@@ -94,22 +61,7 @@ export function InspectParticipantTypesSummary({ data }: { data: InspectParticip
         ) : (
           <Grid columns="3" gap="4">
             {data.filters.map((field) => (
-              <Card key={field.field_name}>
-                <DataList.Root key={field.field_name}>
-                  <DataList.Item>
-                    <DataList.Label minWidth="120px">Field Name</DataList.Label>
-                    <DataList.Value>{field.field_name}</DataList.Value>
-                  </DataList.Item>
-                  <DataList.Item>
-                    <DataList.Label minWidth="120px">Description</DataList.Label>
-                    <DataList.Value>{field.description}</DataList.Value>
-                  </DataList.Item>
-                  <DataList.Item>
-                    <DataList.Label minWidth="120px">Data Type</DataList.Label>
-                    <DataList.Value>
-                      <DataTypeBadge type={field.data_type} />
-                    </DataList.Value>
-                  </DataList.Item>
+               <FieldDataList field={field} key={field.field_name}>
                   {'min' in field && (
                     <>
                       <DataList.Item>
@@ -132,8 +84,7 @@ export function InspectParticipantTypesSummary({ data }: { data: InspectParticip
                       </DataList.Value>
                     </DataList.Item>
                   )}
-                </DataList.Root>
-              </Card>
+             </FieldDataList>
             ))}
           </Grid>
         ))}

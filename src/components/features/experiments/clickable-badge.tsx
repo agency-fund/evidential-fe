@@ -1,9 +1,9 @@
 'use client';
 
 import { GetMetricsResponseElement, GetStrataResponseElement, DataType } from '@/api/methods.schemas';
-import { Badge, Flex, HoverCard, Text } from '@radix-ui/themes';
+import { Badge, HoverCard, Text, DataList } from '@radix-ui/themes';
 import { PlusIcon } from '@radix-ui/react-icons';
-import { DataTypeBadge } from '@/components/ui/data-type-badge';
+import  FieldDatalist  from '@/components/ui/field-datalist';
 
 type MinimalClickableBadgeInput = {
   field_name: string;
@@ -42,10 +42,8 @@ export function ClickableBadge<TInput extends ClickableBadgeInput>({
       <HoverCard.Trigger>
         <Text>{badge}</Text>
       </HoverCard.Trigger>
-      <HoverCard.Content maxWidth="300px">
-        <Flex gap="4">
-          <DataTypeBadge type={input.data_type} /> {input.description}
-        </Flex>
+      <HoverCard.Content>
+        <FieldDatalist field={input} variant="content" />
       </HoverCard.Content>
     </HoverCard.Root>
   );

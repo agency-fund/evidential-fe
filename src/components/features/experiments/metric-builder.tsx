@@ -1,10 +1,11 @@
 'use client';
 
-import { Badge, Button, Flex, Grid, Table, Text, TextField } from '@radix-ui/themes';
+import { Badge, Button, Flex, HoverCard, Table, Text, TextField } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
 import { FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { GetMetricsResponseElement } from '@/api/methods.schemas';
 import { ClickableBadge } from '@/components/features/experiments/clickable-badge';
+import FieldDatalist from '@/components/ui/field-datalist';
 
 const DEFAULT_MDE = '10';
 
@@ -71,7 +72,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
     .toSorted((a, b) => a.field_name.localeCompare(b.field_name));
 
   return (
-    <Grid columns={'2'} gap={'4'}>
+    <Flex direction="column" gap="4">
       <Table.Root layout={'fixed'}>
         <Table.Header>
           <Table.Row>
@@ -92,7 +93,17 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
             {formData.primaryMetric && (
               <Table.Row>
                 <Table.Cell>
-                  {formData.primaryMetric.metric.field_name} <Badge color={'green'}>Primary</Badge>
+                  <HoverCard.Root key={formData.primaryMetric.metric.field_name}>
+                    <HoverCard.Trigger>
+                      <Flex gap="2">
+                        <Text style={{ cursor: 'pointer' }}>{formData.primaryMetric.metric.field_name}</Text>
+                        <Badge color={'green'}>Primary</Badge>
+                      </Flex>
+                    </HoverCard.Trigger>
+                    <HoverCard.Content>
+                      <FieldDatalist field={formData.primaryMetric.metric} variant="content" />
+                    </HoverCard.Content>
+                  </HoverCard.Root>
                 </Table.Cell>
                 <Table.Cell>
                   <TextField.Root
@@ -123,7 +134,14 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
               .map((selectedMetric) => (
                 <Table.Row key={selectedMetric.metric.field_name}>
                   <Table.Cell>
-                    <Text size="3">{selectedMetric.metric.field_name}</Text>
+                    <HoverCard.Root key={selectedMetric.metric.field_name}>
+                      <HoverCard.Trigger>
+                        <Text style={{ cursor: 'pointer' }}>{selectedMetric.metric.field_name}</Text>
+                      </HoverCard.Trigger>
+                      <HoverCard.Content>
+                        <FieldDatalist field={selectedMetric.metric} variant="content" />
+                      </HoverCard.Content>
+                    </HoverCard.Root>
                   </Table.Cell>
                   <Table.Cell>
                     <TextField.Root
@@ -193,6 +211,6 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
           )}
         </Flex>
       </Flex>
-    </Grid>
+    </Flex>
   );
 }
