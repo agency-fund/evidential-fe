@@ -42,7 +42,7 @@ export default function ExperimentViewPage() {
   const organizationId = orgCtx?.current.id || '';
 
   const [liveReceivedAt, setLiveReceivedAt] = useState<Date | null>(null);
-  const [selectedSnapshotIndex, setSelectedSnapshotIndex] = useState<number>(-1);
+  const [selectedSnapshot, setSelectedSnapshot] = useState<Snapshot | null>(null);
   const [cachedSnapshots, setCachedSnapshots] = useState<Snapshot[]>([]);
   const [selectedAnalysisData, setSelectedAnalysisData] = useState<ExperimentAnalysisResponse | undefined>(undefined);
 
@@ -84,30 +84,23 @@ export default function ExperimentViewPage() {
     }
   }, [liveAnalysisData]);
 
-  // Make human-readable labels for the dropdown, showing UTC down to the minute
+  // Make human-readable labels for the dropdown, showing UTC down to the minute.
+  // Use the snapshot ID as the key and value for the dropdown options, looking up the snapshot by ID upon selection.
   const snapshotDropdownOptions = useMemo(() => {
-    const opts: { key: number; index: number; label: string }[] = [];
+    const opts: { key: string; snapshot: Snapshot; label: string }[] = [];
     if (!cachedSnapshots.length) return opts;
-    for (let i = 0; i < cachedSnapshots.length; i++) {
-      const s = cachedSnapshots[i];
+    for (const s of cachedSnapshots) {
       const d = new Date(s.updated_at);
-      opts.push({ key: d.getTime(), index: i, label: formatUtcDownToMinuteLabel(d) });
+      opts.push({ key: s.id, snapshot: s, label: formatUtcDownToMinuteLabel(d) });
     }
     return opts;
   }, [cachedSnapshots]);
 
-  const selectedSnapshotData: ExperimentAnalysisResponse | undefined = useMemo(() => {
-    if (cachedSnapshots.length <= 0 || selectedSnapshotIndex < 0 || selectedSnapshotIndex >= cachedSnapshots.length) {
-      return undefined;
-    }
-    return cachedSnapshots[selectedSnapshotIndex].data as ExperimentAnalysisResponse;
-  }, [cachedSnapshots, selectedSnapshotIndex]);
-
   useEffect(() => {
-    if (selectedSnapshotIndex == -1 && liveAnalysisData) return setSelectedAnalysisData(liveAnalysisData);
-    if (selectedSnapshotIndex >= 0 && selectedSnapshotData) return setSelectedAnalysisData(selectedSnapshotData);
+    if (!selectedSnapshot && liveAnalysisData) return setSelectedAnalysisData(liveAnalysisData);
+    if (selectedSnapshot && selectedSnapshot.data) return setSelectedAnalysisData(selectedSnapshot.data);
     setSelectedAnalysisData(undefined);
-  }, [selectedSnapshotIndex, selectedSnapshotData, liveAnalysisData]);
+  }, [selectedSnapshot, liveAnalysisData]);
 
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
@@ -230,15 +223,23 @@ export default function ExperimentViewPage() {
                         </Text>
                       ) : (
                         <select
-                          value={selectedSnapshotIndex}
-                          onChange={(e) => setSelectedSnapshotIndex(Number(e.target.value))}
                           style={{ border: '1px solid var(--gray-6)' }}
+                          value={selectedSnapshot?.id || 'live'}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === 'live') {
+                              setSelectedSnapshot(null);
+                            } else {
+                              const snapshot = snapshotDropdownOptions.find((opt) => opt.key === value)?.snapshot;
+                              setSelectedSnapshot(snapshot || null);
+                            }
+                          }}
                         >
-                          <option key="live" value="-1">
+                          <option key="live" value="live">
                             {liveReceivedAt ? `LIVE (as of ${extractUtcHHMMLabel(liveReceivedAt)})` : 'No data yet'}
                           </option>
                           {snapshotDropdownOptions.map((opt) => (
-                            <option key={opt.key} value={opt.index}>
+                            <option key={opt.key} value={opt.key}>
                               {' '}
                               {opt.label}{' '}
                             </option>
