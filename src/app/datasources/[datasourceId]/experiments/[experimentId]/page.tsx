@@ -24,7 +24,7 @@ import {
 } from '@/api/methods.schemas';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { useCurrentOrganization } from '@/providers/organization-provider';
-import { formatUtcDownToMinuteLabel } from '@/services/date-utils';
+import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date-utils';
 
 // Type guard to assure TypeScript that a DesignSpec is one of two types.
 function isFrequentistDesign(
@@ -41,11 +41,10 @@ export default function ExperimentViewPage() {
   const orgCtx = useCurrentOrganization();
   const organizationId = orgCtx?.current.id || '';
 
-  // Selected snapshot key at UTC minute resolution: "YYYY-MM-DD HH:MM"
-  const [selectedDateMs, setSelectedDateMs] = useState<number>(0);
+  const [liveReceivedAt, setLiveReceivedAt] = useState<Date | null>(null);
+  const [selectedSnapshotIndex, setSelectedSnapshotIndex] = useState<number>(-1);
   const [cachedSnapshots, setCachedSnapshots] = useState<Snapshot[]>([]);
   const [selectedAnalysisData, setSelectedAnalysisData] = useState<ExperimentAnalysisResponse | undefined>(undefined);
-  const [showLive, setShowLive] = useState<boolean>(true);
 
   const {
     data: experiment,
@@ -78,42 +77,37 @@ export default function ExperimentViewPage() {
     }
   }, [snapshotsResp]);
 
-  // Choose snapshot matching selected UTC timestamp in ms
-  const selectedSnapshot: Snapshot | undefined = useMemo(() => {
-    if (cachedSnapshots.length == 0 || !selectedDateMs) return undefined;
-    // Assumes BE sends by updated_at descending.
-    for (let i = cachedSnapshots.length - 1; i >= 0; i--) {
-      const s = cachedSnapshots[i];
-      const updatedAt = new Date(s.updated_at);
-      console.log('searching for ', selectedDateMs, ' == updatedAt', updatedAt.getTime());
-      if (updatedAt.getTime() === selectedDateMs) return s;
+  // Track when we receive fresh live analysis data
+  useEffect(() => {
+    if (liveAnalysisData) {
+      setLiveReceivedAt(new Date());
     }
-    return undefined;
-  }, [cachedSnapshots, selectedDateMs]);
+  }, [liveAnalysisData]);
 
   // Make human-readable labels for the dropdown, showing UTC down to the minute
   const snapshotDropdownOptions = useMemo(() => {
-    const opts: { key: number; label: string }[] = [];
+    const opts: { key: number; index: number; label: string }[] = [];
     if (!cachedSnapshots.length) return opts;
-    for (const s of cachedSnapshots) {
-      const updatedAt = new Date(s.updated_at);
-      opts.push({ key: updatedAt.getTime(), label: formatUtcDownToMinuteLabel(updatedAt) });
+    for (let i = 0; i < cachedSnapshots.length; i++) {
+      const s = cachedSnapshots[i];
+      const d = new Date(s.updated_at);
+      opts.push({ key: d.getTime(), index: i, label: formatUtcDownToMinuteLabel(d) });
     }
-    opts.sort((a, b) => b.key - a.key);
     return opts;
   }, [cachedSnapshots]);
 
+  const selectedSnapshotData: ExperimentAnalysisResponse | undefined = useMemo(() => {
+    if (cachedSnapshots.length <= 0 || selectedSnapshotIndex < 0 || selectedSnapshotIndex >= cachedSnapshots.length) {
+      return undefined;
+    }
+    return cachedSnapshots[selectedSnapshotIndex].data as ExperimentAnalysisResponse;
+  }, [cachedSnapshots, selectedSnapshotIndex]);
+
   useEffect(() => {
-    if (showLive && liveAnalysisData) {
-      setSelectedAnalysisData(liveAnalysisData);
-      return;
-    }
-    if (!showLive && selectedSnapshot && selectedSnapshot.data) {
-      setSelectedAnalysisData(selectedSnapshot.data);
-      return;
-    }
+    if (selectedSnapshotIndex == -1 && liveAnalysisData) return setSelectedAnalysisData(liveAnalysisData);
+    if (selectedSnapshotIndex >= 0 && selectedSnapshotData) return setSelectedAnalysisData(selectedSnapshotData);
     setSelectedAnalysisData(undefined);
-  }, [showLive, selectedSnapshot, liveAnalysisData]);
+  }, [selectedSnapshotIndex, selectedSnapshotData, liveAnalysisData]);
 
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
@@ -227,41 +221,32 @@ export default function ExperimentViewPage() {
             (design_spec?.experiment_type === 'freq_online' || design_spec?.experiment_type === 'freq_preassigned') && (
               <Flex gap="3" wrap="wrap">
                 <Flex gap="3" wrap="wrap" align="center" justify="between">
-                  {!showLive && !!liveAnalysisData && (
-                    <Button
-                      onClick={() => {
-                        setShowLive(true);
-                        setSelectedDateMs(0);
-                      }}
-                      size="1"
-                    >
-                      show live
-                    </Button>
-                  )}
-                  {cachedSnapshots.length > 0 && (
-                    <Badge size="2">
-                      <Flex gap="2" align="center">
-                        <Heading size="2">History:</Heading>
+                  <Badge size="2">
+                    <Flex gap="2" align="center">
+                      <Heading size="2">Viewing:</Heading>
+                      {snapshotDropdownOptions.length == 0 ? (
+                        <Text>
+                          {liveReceivedAt ? `LIVE (as of ${extractUtcHHMMLabel(liveReceivedAt)})` : 'No data yet'}
+                        </Text>
+                      ) : (
                         <select
-                          value={selectedDateMs ? selectedDateMs : ''}
-                          onChange={(e) => {
-                            setSelectedDateMs(Number(e.target.value));
-                            setShowLive(false);
-                          }}
+                          value={selectedSnapshotIndex}
+                          onChange={(e) => setSelectedSnapshotIndex(Number(e.target.value))}
                           style={{ border: '1px solid var(--gray-6)' }}
                         >
-                          <option value="" disabled>
-                            Select a snapshot
+                          <option key="live" value="-1">
+                            {liveReceivedAt ? `LIVE (as of ${extractUtcHHMMLabel(liveReceivedAt)})` : 'No data yet'}
                           </option>
                           {snapshotDropdownOptions.map((opt) => (
-                            <option key={opt.key} value={opt.key}>
-                              {opt.label}
+                            <option key={opt.key} value={opt.index}>
+                              {' '}
+                              {opt.label}{' '}
                             </option>
                           ))}
                         </select>
-                      </Flex>
-                    </Badge>
-                  )}
+                      )}
+                    </Flex>
+                  </Badge>
                 </Flex>
                 <Flex gap="3" wrap="wrap">
                   <Badge size="2">
