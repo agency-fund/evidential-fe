@@ -5,6 +5,7 @@ import { TrashIcon } from '@radix-ui/react-icons';
 import { DataType, FilterInput } from '@/api/methods.schemas';
 import { TypeSpecificFilterInput } from '@/components/features/experiments/querybuilder/type-specific-filter-input';
 import { getDefaultFilterForType } from '@/components/features/experiments/querybuilder/utils';
+import { DataTypeBadge } from '@/components/ui/data-type-badge';
 
 export interface FilterRowProps {
   filter: FilterInput;
@@ -68,7 +69,7 @@ export function FilterRow({ filter, availableFields, onChange, onRemove }: Filte
               <Select.Item key={field.field_name} value={field.field_name}>
                 <Flex gap={'2'}>
                   <Text>{field.field_name}</Text>
-                  <Badge size={'1'}>{field.data_type}</Badge>
+                  <DataTypeBadge type={field.data_type} />
                 </Flex>
               </Select.Item>
             ))}

@@ -9,6 +9,8 @@ import {
   MABExperimentSpecInput,
   Context as ContextSpec,
   MABExperimentSpecInputExperimentType,
+  GetMetricsResponseElement,
+  GetFiltersResponseElement,
 } from '@/api/methods.schemas';
 
 export type ExperimentType = DesignSpecInput['experiment_type'];
@@ -31,7 +33,7 @@ export type Stratum = {
 };
 
 export type MetricWithMDE = {
-  metricName: string;
+  metric: GetMetricsResponseElement;
   mde: string; // desired minimum detectable effect as a percentage of the metric's baseline value
 };
 
@@ -71,6 +73,8 @@ export type FrequentABFormData = BaseExperimentFormData & {
   primaryMetric?: MetricWithMDE;
   secondaryMetrics: MetricWithMDE[];
   filters: FilterInput[];
+  // Cache of available filter fields (and their data types) for lookup/display/search
+  availableFilterFields?: GetFiltersResponseElement[];
   strata: Stratum[];
   // These next 2 Experiment Parameters are strings to allow for empty values,
   // which should be converted to numbers when making power or experiment creation requests.
