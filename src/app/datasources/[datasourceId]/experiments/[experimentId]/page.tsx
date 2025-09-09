@@ -1,5 +1,5 @@
 'use client';
-import { Badge, Box, Button, Flex, Heading, Separator, Table, Tabs, Text, Tooltip } from '@radix-ui/themes';
+import { Badge, Box, Flex, Heading, Separator, Table, Tabs, Text, Tooltip } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
 import { CalendarIcon, CodeIcon, InfoCircledIcon, PersonIcon } from '@radix-ui/react-icons';
 import { useAnalyzeExperiment, useGetExperiment, useListSnapshots } from '@/api/admin';
@@ -8,7 +8,6 @@ import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
 import { useEffect, useMemo, useState } from 'react';
-import * as Toast from '@radix-ui/react-toast';
 import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
@@ -34,7 +33,6 @@ function isFrequentistDesign(
 }
 
 export default function ExperimentViewPage() {
-  const [openToast, setOpenToast] = useState(false);
   const params = useParams();
   const experimentId = params.experimentId as string;
   const datasourceId = params.datasourceId as string;
@@ -113,6 +111,8 @@ export default function ExperimentViewPage() {
   if (!experiment) {
     return <Text>No experiment data found</Text>;
   }
+
+  const liveStatusLabel = liveReceivedAt ? `LIVE (as of ${extractUtcHHMMLabel(liveReceivedAt)})` : 'No data yet';
 
   const { design_spec, assign_summary } = experiment;
   const { experiment_name, description, start_date, end_date, arms } = design_spec;
@@ -218,9 +218,7 @@ export default function ExperimentViewPage() {
                     <Flex gap="2" align="center">
                       <Heading size="2">Viewing:</Heading>
                       {snapshotDropdownOptions.length == 0 ? (
-                        <Text>
-                          {liveReceivedAt ? `LIVE (as of ${extractUtcHHMMLabel(liveReceivedAt)})` : 'No data yet'}
-                        </Text>
+                        <Text>{liveStatusLabel}</Text>
                       ) : (
                         <select
                           style={{ border: '1px solid var(--gray-6)' }}
@@ -236,7 +234,7 @@ export default function ExperimentViewPage() {
                           }}
                         >
                           <option key="live" value="live">
-                            {liveReceivedAt ? `LIVE (as of ${extractUtcHHMMLabel(liveReceivedAt)})` : 'No data yet'}
+                            {liveStatusLabel}
                           </option>
                           {snapshotDropdownOptions.map((opt) => (
                             <option key={opt.key} value={opt.key}>
@@ -331,20 +329,6 @@ export default function ExperimentViewPage() {
             </Flex>
           )}
         </SectionCard>
-
-        <Toast.Root
-          open={openToast}
-          onOpenChange={setOpenToast}
-          duration={2000}
-          style={{
-            background: 'white',
-            padding: '12px 16px',
-            borderRadius: '4px',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-          }}
-        >
-          <Toast.Title style={{ margin: 0 }}>🚧 Nothing to do here yet... 🚧</Toast.Title>
-        </Toast.Root>
       </Flex>
     </Flex>
   );
