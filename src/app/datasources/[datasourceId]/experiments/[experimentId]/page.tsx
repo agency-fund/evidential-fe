@@ -7,7 +7,7 @@ import { ForestPlot } from '@/components/features/experiments/forest-plot';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
@@ -39,9 +39,12 @@ export default function ExperimentViewPage() {
   const orgCtx = useCurrentOrganization();
   const organizationId = orgCtx?.current.id || '';
 
-  const [liveReceivedAt, setLiveReceivedAt] = useState<Date | null>(null);
+  const [snapshotDropdownOptions, setSnapshotDropdownOptions] = useState<
+    { key: string; snapshot: Snapshot; label: string }[]
+  >([]);
   const [selectedSnapshot, setSelectedSnapshot] = useState<Snapshot | null>(null);
-  const [cachedSnapshots, setCachedSnapshots] = useState<Snapshot[]>([]);
+  const [liveReceivedAt, setLiveReceivedAt] = useState<Date | null>(null); // for rendering the live HH:MM label
+  // which of the two above we're actually displaying
   const [selectedAnalysisData, setSelectedAnalysisData] = useState<ExperimentAnalysisResponse | undefined>(undefined);
 
   const {
@@ -57,48 +60,41 @@ export default function ExperimentViewPage() {
     isLoading: isLoadingAnalysis,
     error: analysisError,
   } = useAnalyzeExperiment(datasourceId || '', experimentId, undefined, {
-    swr: { enabled: !!datasourceId && !!experiment, shouldRetryOnError: false },
+    swr: {
+      enabled: !!datasourceId && !!experiment,
+      shouldRetryOnError: false,
+      onSuccess: (data) => {
+        setLiveReceivedAt(new Date());
+        if (!selectedSnapshot) {
+          setSelectedAnalysisData(data);
+        }
+      },
+    },
   });
 
-  // Fetch successful snapshots and cache items
-  const { data: snapshotsResp } = useListSnapshots(
+  useListSnapshots(
     organizationId || '',
     datasourceId || '',
     experimentId || '',
     { status: ['success'] },
-    { swr: { enabled: !!organizationId && !!datasourceId && !!experimentId } },
+    {
+      swr: {
+        enabled: !!organizationId && !!datasourceId && !!experimentId,
+        onSuccess: (data) => {
+          // Make human-readable labels for the dropdown, showing UTC down to the minute.
+          // Use the snapshot ID as the key and value for the dropdown options, looking up the snapshot by ID upon selection.
+          if (data?.items) {
+            const opts: { key: string; snapshot: Snapshot; label: string }[] = [];
+            for (const s of data.items) {
+              const d = new Date(s.updated_at);
+              opts.push({ key: s.id, snapshot: s, label: formatUtcDownToMinuteLabel(d) });
+            }
+            setSnapshotDropdownOptions(opts);
+          }
+        },
+      },
+    },
   );
-
-  useEffect(() => {
-    if (snapshotsResp?.items) {
-      setCachedSnapshots(snapshotsResp.items);
-    }
-  }, [snapshotsResp]);
-
-  // Track when we receive fresh live analysis data
-  useEffect(() => {
-    if (liveAnalysisData) {
-      setLiveReceivedAt(new Date());
-    }
-  }, [liveAnalysisData]);
-
-  // Make human-readable labels for the dropdown, showing UTC down to the minute.
-  // Use the snapshot ID as the key and value for the dropdown options, looking up the snapshot by ID upon selection.
-  const snapshotDropdownOptions = useMemo(() => {
-    const opts: { key: string; snapshot: Snapshot; label: string }[] = [];
-    if (!cachedSnapshots.length) return opts;
-    for (const s of cachedSnapshots) {
-      const d = new Date(s.updated_at);
-      opts.push({ key: s.id, snapshot: s, label: formatUtcDownToMinuteLabel(d) });
-    }
-    return opts;
-  }, [cachedSnapshots]);
-
-  useEffect(() => {
-    if (!selectedSnapshot && liveAnalysisData) return setSelectedAnalysisData(liveAnalysisData);
-    if (selectedSnapshot && selectedSnapshot.data) return setSelectedAnalysisData(selectedSnapshot.data);
-    setSelectedAnalysisData(undefined);
-  }, [selectedSnapshot, liveAnalysisData]);
 
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
@@ -227,9 +223,11 @@ export default function ExperimentViewPage() {
                             const value = e.target.value;
                             if (value === 'live') {
                               setSelectedSnapshot(null);
+                              setSelectedAnalysisData(liveAnalysisData);
                             } else {
                               const snapshot = snapshotDropdownOptions.find((opt) => opt.key === value)?.snapshot;
                               setSelectedSnapshot(snapshot || null);
+                              setSelectedAnalysisData(snapshot?.data as ExperimentAnalysisResponse);
                             }
                           }}
                         >
