@@ -241,7 +241,9 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                       </Text>
                       <select
                         value={formData.sslmode}
-                        onChange={(e) => setFormData((prev) => ({ ...prev, sslmode: e.target.value as PostgresDsnSslmode }))}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, sslmode: e.target.value as PostgresDsnSslmode }))
+                        }
                       >
                         <option value="disable">disable</option>
                         <option value="require">require</option>
