@@ -5,11 +5,27 @@ import { Button, Dialog, Flex, RadioGroup, Text, TextField } from '@radix-ui/the
 import { ServiceAccountJsonField } from '@/components/features/datasources/service-account-json-field';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { EyeClosedIcon, EyeOpenIcon, InfoCircledIcon, PlusIcon } from '@radix-ui/react-icons';
-import { BqDsnInput, PostgresDsn, RedshiftDsn } from '@/api/methods.schemas';
+import { ApiOnlyDsn, BqDsnInput, DsnInput, PostgresDsn, PostgresDsnSslmode, RedshiftDsn } from '@/api/methods.schemas';
 import { mutate } from 'swr';
 import { PostgresSslModes } from '@/services/typehelper';
 
-const defaultFormData = {
+type AllowedDwhTypes = Exclude<DsnInput['type'], ApiOnlyDsn['type']>;
+
+interface FormFields {
+  name: string;
+  host: string;
+  port: string;
+  database: string;
+  user: string;
+  password: string;
+  sslmode: PostgresDsnSslmode;
+  search_path: string;
+  project_id: string;
+  dataset: string;
+  credentials_json: string;
+}
+
+const defaultFormData: FormFields = {
   name: '',
   host: '',
   port: '5432',
@@ -34,7 +50,7 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
     },
   });
   const [open, setOpen] = useState(false);
-  const [dwhType, setDwhType] = useState<'postgres' | 'redshift' | 'bigquery'>('postgres');
+  const [dwhType, setDwhType] = useState<AllowedDwhTypes>('postgres');
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState(defaultFormData);
 
@@ -225,7 +241,7 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                       </Text>
                       <select
                         value={formData.sslmode}
-                        onChange={(e) => setFormData((prev) => ({ ...prev, sslmode: e.target.value }))}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, sslmode: e.target.value as PostgresDsnSslmode }))}
                       >
                         <option value="disable">disable</option>
                         <option value="require">require</option>
