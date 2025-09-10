@@ -159,11 +159,15 @@ export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotPr
     let minX = Math.min(...effectSizes.map((d) => d.absCI95Lower));
     let maxX = Math.max(...effectSizes.map((d) => d.absCI95Upper));
     const viewportWidth = maxX - minX;
-    minX = minX - viewportWidth * 0.05;
-    maxX = maxX + viewportWidth * 0.05;
+    minX = minX - viewportWidth * 0.1;
+    maxX = maxX + viewportWidth * 0.1;
     if (Math.abs(minX) > 1 && Math.abs(maxX) > 1) {
       minX = Math.floor(minX);
       maxX = Math.ceil(maxX);
+    }
+    if (Math.abs(minX - maxX) < 0.0000001) {
+      minX = minX - 1;
+      maxX = maxX + 1;
     }
     return [minX, maxX];
   }
@@ -235,7 +239,9 @@ export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotPr
               scale="linear"
               domain={[minX, maxX]}
               ticks={xGridPoints} // use our own ticks due to auto rendering issues
-              tickFormatter={(value) => (value >= 1 ? value.toFixed() : value.toFixed(2))}
+              tickFormatter={(value) =>
+                value >= 10 ? value.toFixed() : value >= 1 ? value.toFixed(1) : value.toFixed(2)
+              }
             />
             <YAxis
               type="category"
@@ -343,7 +349,7 @@ export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotPr
                     x2={(centerX || 0) + scaleHalfIntervalToViewport(ci95, xAxisWidth)}
                     y2={centerY}
                     stroke={strokeColor}
-                    strokeWidth={4}
+                    strokeWidth={5}
                     strokeLinecap="round"
                   />
                 );
