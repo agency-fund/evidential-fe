@@ -17,7 +17,6 @@ import {
   DesignSpecOutput,
   FreqExperimentAnalysisResponse,
   ExperimentAnalysisResponse,
-  Snapshot,
   OnlineFrequentistExperimentSpecOutput,
   PreassignedFrequentistExperimentSpecOutput,
 } from '@/api/methods.schemas';
@@ -34,60 +33,77 @@ function isFrequentistDesign(
 
 export default function ExperimentViewPage() {
   const params = useParams();
-  const experimentId = params.experimentId as string;
-  const datasourceId = params.datasourceId as string;
   const orgCtx = useCurrentOrganization();
   const organizationId = orgCtx?.current.id || '';
+  const datasourceId = (params.datasourceId as string) || '';
+  const experimentId = (params.experimentId as string) || '';
 
-  const [snapshotDropdownOptions, setSnapshotDropdownOptions] = useState<
-    { key: string; snapshot: Snapshot; label: string }[]
-  >([]);
-  const [selectedSnapshot, setSelectedSnapshot] = useState<Snapshot | null>(null);
-  const [liveReceivedAt, setLiveReceivedAt] = useState<Date | null>(null); // for rendering the live HH:MM label
-  // which of the two above we're actually displaying
-  const [selectedAnalysisData, setSelectedAnalysisData] = useState<ExperimentAnalysisResponse | undefined>(undefined);
+  type AnalysisState = {
+    key: string;
+    updated_at: Date;
+    data: ExperimentAnalysisResponse;
+    label: string;
+  };
+  const [snapshotDropdownOptions, setSnapshotDropdownOptions] = useState<AnalysisState[]>([]);
+  const [liveAnalysis, setLiveAnalysis] = useState<AnalysisState | undefined>(undefined);
+  // which analysis we're actually displaying (live or a snapshot)
+  const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisState | undefined>(undefined);
 
   const {
     data: experiment,
     isLoading: isLoadingExperiment,
     error: experimentError,
-  } = useGetExperiment(datasourceId || '', experimentId, {
+  } = useGetExperiment(datasourceId, experimentId, {
     swr: { enabled: !!datasourceId },
   });
 
-  const {
-    data: liveAnalysisData,
-    isLoading: isLoadingAnalysis,
-    error: analysisError,
-  } = useAnalyzeExperiment(datasourceId || '', experimentId, undefined, {
-    swr: {
-      enabled: !!datasourceId && !!experiment,
-      shouldRetryOnError: false,
-      onSuccess: (data) => {
-        setLiveReceivedAt(new Date());
-        if (!selectedSnapshot) {
-          setSelectedAnalysisData(data);
-        }
+  const { isLoading: isLoadingAnalysis, error: analysisError } = useAnalyzeExperiment(
+    datasourceId,
+    experimentId,
+    undefined,
+    {
+      swr: {
+        enabled: !!datasourceId && !!experiment,
+        shouldRetryOnError: false,
+        onSuccess: (data) => {
+          const d = new Date();
+          const analysis = {
+            key: 'live',
+            updated_at: d,
+            data: data as ExperimentAnalysisResponse,
+            label: `LIVE as of ${extractUtcHHMMLabel(d)}`,
+          };
+          setLiveAnalysis(analysis);
+          // Only update the display if we were previously viewing live data.
+          if (!selectedAnalysis || (selectedAnalysis && selectedAnalysis.key === 'live')) {
+            setSelectedAnalysis(analysis);
+          }
+        },
       },
     },
-  });
+  );
 
-  useListSnapshots(
-    organizationId || '',
-    datasourceId || '',
-    experimentId || '',
+  const { error: snapshotsError } = useListSnapshots(
+    organizationId,
+    datasourceId,
+    experimentId,
     { status: ['success'] },
     {
       swr: {
         enabled: !!organizationId && !!datasourceId && !!experimentId,
         onSuccess: (data) => {
           // Make human-readable labels for the dropdown, showing UTC down to the minute.
-          // Use the snapshot ID as the key and value for the dropdown options, looking up the snapshot by ID upon selection.
+          // Use the snapshot ID as the key, looking up the analysisState by ID upon selection.
+          const opts: AnalysisState[] = [];
           if (data?.items) {
-            const opts: { key: string; snapshot: Snapshot; label: string }[] = [];
             for (const s of data.items) {
               const d = new Date(s.updated_at);
-              opts.push({ key: s.id, snapshot: s, label: formatUtcDownToMinuteLabel(d) });
+              opts.push({
+                key: s.id,
+                updated_at: d,
+                data: s.data as ExperimentAnalysisResponse,
+                label: formatUtcDownToMinuteLabel(d),
+              });
             }
             setSnapshotDropdownOptions(opts);
           }
@@ -107,8 +123,6 @@ export default function ExperimentViewPage() {
   if (!experiment) {
     return <Text>No experiment data found</Text>;
   }
-
-  const liveStatusLabel = liveReceivedAt ? `LIVE (as of ${extractUtcHHMMLabel(liveReceivedAt)})` : 'No data yet';
 
   const { design_spec, assign_summary } = experiment;
   const { experiment_name, description, start_date, end_date, arms } = design_spec;
@@ -214,27 +228,22 @@ export default function ExperimentViewPage() {
                     <Flex gap="2" align="center">
                       <Heading size="2">Viewing:</Heading>
                       {snapshotDropdownOptions.length == 0 ? (
-                        <Text>{liveStatusLabel}</Text>
+                        <Text>{liveAnalysis?.label || 'No live data yet'}</Text>
                       ) : (
                         <Select.Root
                           size="1"
-                          value={selectedSnapshot?.id || 'live'}
-                          onValueChange={(value) => {
-                            if (value === 'live') {
-                              setSelectedSnapshot(null);
-                              setSelectedAnalysisData(liveAnalysisData);
-                            } else {
-                              const snapshot = snapshotDropdownOptions.find((opt) => opt.key === value)?.snapshot;
-                              setSelectedSnapshot(snapshot || null);
-                              setSelectedAnalysisData(snapshot?.data as ExperimentAnalysisResponse);
-                            }
+                          value={selectedAnalysis?.key || 'live'}
+                          onValueChange={(key) => {
+                            const analysis =
+                              key === 'live' ? liveAnalysis : snapshotDropdownOptions.find((opt) => opt.key === key);
+                            setSelectedAnalysis(analysis);
                           }}
                         >
                           <Select.Trigger style={{ height: 18 }} />
                           <Select.Content>
                             <Select.Group>
                               <Select.Item key="live" value="live">
-                                {liveStatusLabel}
+                                {liveAnalysis?.label || 'No live data yet'}
                               </Select.Item>
                             </Select.Group>
                             <Select.Separator />
@@ -288,7 +297,14 @@ export default function ExperimentViewPage() {
             />
           )}
 
-          {!isLoadingAnalysis && !analysisError && selectedAnalysisData && (
+          {snapshotsError && (
+            <GenericErrorCallout
+              title="Error loading historical analyses"
+              message="Historical analyses may not be available yet."
+            />
+          )}
+
+          {selectedAnalysis && (
             <Flex direction="column" gap="3">
               <Tabs.Root defaultValue="visualization">
                 <Tabs.List>
@@ -304,7 +320,7 @@ export default function ExperimentViewPage() {
                     <Flex direction="column" gap="3" py="3">
                       {isFrequentistDesign(design_spec) &&
                         assign_summary &&
-                        (selectedAnalysisData as FreqExperimentAnalysisResponse).metric_analyses.map(
+                        (selectedAnalysis.data as FreqExperimentAnalysisResponse).metric_analyses.map(
                           (metric_analysis, index) => (
                             <ForestPlot
                               key={index}
@@ -321,7 +337,7 @@ export default function ExperimentViewPage() {
                     <Flex direction="column" gap="3" py="3">
                       <CodeSnippetCard
                         title="Raw Data"
-                        content={JSON.stringify(selectedAnalysisData, null, 2)}
+                        content={JSON.stringify(selectedAnalysis.data, null, 2)}
                         height="200px"
                         tooltipContent="Copy raw data"
                         variant="ghost"
