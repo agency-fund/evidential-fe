@@ -1,5 +1,5 @@
 'use client';
-import { Badge, Box, Flex, Heading, Separator, Table, Tabs, Text, Tooltip } from '@radix-ui/themes';
+import { Badge, Box, Flex, Heading, Separator, Table, Tabs, Text, Tooltip, Select } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
 import { CalendarIcon, CodeIcon, InfoCircledIcon, PersonIcon } from '@radix-ui/react-icons';
 import { useAnalyzeExperiment, useGetExperiment, useListSnapshots } from '@/api/admin';
@@ -216,11 +216,10 @@ export default function ExperimentViewPage() {
                       {snapshotDropdownOptions.length == 0 ? (
                         <Text>{liveStatusLabel}</Text>
                       ) : (
-                        <select
-                          style={{ border: '1px solid var(--gray-6)' }}
+                        <Select.Root
+                          size="1"
                           value={selectedSnapshot?.id || 'live'}
-                          onChange={(e) => {
-                            const value = e.target.value;
+                          onValueChange={(value) => {
                             if (value === 'live') {
                               setSelectedSnapshot(null);
                               setSelectedAnalysisData(liveAnalysisData);
@@ -231,16 +230,23 @@ export default function ExperimentViewPage() {
                             }
                           }}
                         >
-                          <option key="live" value="live">
-                            {liveStatusLabel}
-                          </option>
-                          {snapshotDropdownOptions.map((opt) => (
-                            <option key={opt.key} value={opt.key}>
-                              {' '}
-                              {opt.label}{' '}
-                            </option>
-                          ))}
-                        </select>
+                          <Select.Trigger style={{ height: 18 }} />
+                          <Select.Content>
+                            <Select.Group>
+                              <Select.Item key="live" value="live">
+                                {liveStatusLabel}
+                              </Select.Item>
+                            </Select.Group>
+                            <Select.Separator />
+                            <Select.Group>
+                              {snapshotDropdownOptions.map((opt) => (
+                                <Select.Item key={opt.key} value={opt.key}>
+                                  {opt.label}
+                                </Select.Item>
+                              ))}
+                            </Select.Group>
+                          </Select.Content>
+                        </Select.Root>
                       )}
                     </Flex>
                   </Badge>
