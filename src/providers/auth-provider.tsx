@@ -11,6 +11,7 @@ import { useCustomEventListener } from '@/providers/use-custom-event-handler';
 export const API_401_EVENT = 'api_returned_401';
 const CODE_VERIFIER_KEY = 'code_verifier';
 
+// User satisfied IDP and has been invited to the application.
 interface AuthenticatedState {
   isAuthenticated: true;
   sessionToken: string;
@@ -19,8 +20,10 @@ interface AuthenticatedState {
   logout: () => void;
 }
 
+// User may or may not have satisfied IDP and does not have access to the application.
 interface UnauthenticatedState {
   isAuthenticated: false;
+  userIsMissingInvite: boolean;
   startLogin: () => void;
   reset: () => void;
 }
@@ -52,6 +55,7 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useAuthStorage();
   const [fetching, setFetching] = useState<boolean>(false);
   const isGoogleLoginRedirect = user === null && searchParams.has('code') && searchParams.has('scope');
+  const [userIsMissingInvite, setUserIsMissingInvite] = useState(false);
 
   const logout = useCallback(() => {
     console.log('logout');
@@ -80,7 +84,7 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
         localStorage.removeItem(CODE_VERIFIER_KEY);
         const newToken = tokens.session_token ?? null;
         if (newToken === null) {
-          console.log('backend failed to return a usable token');
+          console.log('exchangeCodeForTokens failed to return a usable token');
           logout();
           return;
         }
@@ -93,10 +97,13 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
             isPrivileged: callerIdentity['is_privileged'],
           });
           router.push('/');
+        } else if (response.status === 401) {
+          console.log('exchangeCodeForTokens succeeded but checkCallerIdentity failed');
+          setUserIsMissingInvite(true);
+          logout();
         } else {
           console.log('checkCallerIdentity failed');
           logout();
-          return;
         }
       } finally {
         setFetching(false);
@@ -146,6 +153,7 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
   } else {
     contextValue = {
       isAuthenticated: false,
+      userIsMissingInvite,
       startLogin,
       reset: logout,
     };
