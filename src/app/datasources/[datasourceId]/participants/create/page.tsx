@@ -70,7 +70,7 @@ export default function CreateParticipantTypePage() {
 
   const { trigger, isMutating, error, reset } = useCreateParticipantType(datasourceId, {
     swr: {
-      onSuccess: async (data) => {
+      onSuccess: async () => {
         await Promise.all([
           mutate(getGetDatasourceKey(datasourceId)),
           mutate(getListParticipantTypesKey(datasourceId)),
