@@ -91,6 +91,7 @@ export default function ExperimentViewPage() {
     {
       swr: {
         enabled: !!organizationId && !!datasourceId && !!experimentId,
+        shouldRetryOnError: false,
         onSuccess: (data) => {
           // Make human-readable labels for the dropdown, showing UTC down to the minute.
           // Use the snapshot ID as the key, looking up the analysisState by ID upon selection.

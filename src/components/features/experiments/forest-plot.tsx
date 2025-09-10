@@ -76,8 +76,8 @@ const createDiamondShape = (cx: number = 0, cy: number = 0, size: number = 6) =>
   return `${cx},${cy - size} ${cx + size},${cy} ${cx},${cy + size} ${cx - size},${cy}`;
 };
 
-// Simple truncation of long labels with an ellipsis for readability. ~48 roughly keeps the labels to 2 lines.
-const truncateLabel = (label: string, maxChars: number = 48): string => {
+// Simple truncation of long labels with an ellipsis for readability. ~42 roughly keeps the labels to 2 lines.
+const truncateLabel = (label: string, maxChars: number = 42): string => {
   if (!label) return '';
   return label.length > maxChars ? label.slice(0, maxChars) + '…' : label;
 };
@@ -165,6 +165,7 @@ export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotPr
       minX = Math.floor(minX);
       maxX = Math.ceil(maxX);
     }
+    // If the domain appears to be essentially a singular value, make it larger to avoid a 0-width.
     if (Math.abs(minX - maxX) < 0.0000001) {
       minX = minX - 1;
       maxX = maxX + 1;
@@ -202,11 +203,17 @@ export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotPr
     mdePct = null;
   }
 
+  const commonAxisStyle = {
+    fontSize: '16px',
+    fontFamily: 'Arial, sans-serif',
+  };
+
   // Adjust plot height based on the number of arms.
   const plotHeightPx = Math.max(160, 64 * effectSizes.length);
   // Coarse adjustment of the width of the left Y-axis based on the length of the arm names.
   const maxArmNameLength = effectSizes.reduce((max, e) => Math.max(max, e.armName.length), 0);
-  const yAxisWidthPx = maxArmNameLength > 20 ? 180 : 60;
+  const yRightAxisWidthPx = 80;
+  const yLeftAxisWidthPx = maxArmNameLength > 20 ? 180 : 80;
 
   return (
     <Flex direction="column" gap="3">
@@ -229,25 +236,32 @@ export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotPr
 
       <Box height={`${plotHeightPx}px`}>
         <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 60 }}>
+          <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
             {/* Supply our own coordinates generator since default rendering is off for ratio metrics */}
             <CartesianGrid strokeDasharray="3 3" verticalCoordinatesGenerator={scaleXGridPoints} />
             <XAxis
               type="number"
               dataKey="absEffect"
-              interval={0} // show all ticks
+              interval="preserveStartEnd"
               scale="linear"
               domain={[minX, maxX]}
+              style={commonAxisStyle}
               ticks={xGridPoints} // use our own ticks due to auto rendering issues
               tickFormatter={(value) =>
-                value >= 10 ? value.toFixed() : value >= 1 ? value.toFixed(1) : value.toFixed(2)
+                // Show <= 2 decimal places only for values < 10
+                Math.abs(value) >= 10 || value === 0
+                  ? value.toFixed()
+                  : Math.abs(value) >= 1
+                    ? value.toFixed(1)
+                    : value.toFixed(2)
               }
             />
             <YAxis
               type="category"
               domain={effectSizes.map((e, i) => i)}
               // hide={true} - use ticks for arm names
-              width={yAxisWidthPx}
+              width={yLeftAxisWidthPx}
+              style={commonAxisStyle}
               tickFormatter={(index) => {
                 const name = index >= 0 && index < effectSizes.length ? effectSizes[index].armName : '';
                 return truncateLabel(name);
@@ -260,7 +274,7 @@ export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotPr
               orientation="right"
               // work with an index into our different effect sizes
               domain={effectSizes.map((e, i) => i)}
-              width={80}
+              width={yRightAxisWidthPx}
               tick={(e) => {
                 const {
                   payload: { value },
@@ -273,7 +287,7 @@ export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotPr
                     ((armData.absEffect - armData.baselineEffect) / armData.baselineEffect) * 100;
                   // Handle cases where baselineEffect is 0 or very small to avoid Infinity or NaN
                   if (isFinite(rawPercentChange)) {
-                    percentChangeText = `Δ= ${rawPercentChange.toFixed(1)}%`;
+                    percentChangeText = `Δ = ${rawPercentChange.toFixed(1)}%`;
                   } else {
                     percentChangeText = 'change: N/A';
                   }
@@ -281,35 +295,33 @@ export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotPr
 
                 const pValueText = `p = ${armData.pValue !== null ? armData.pValue.toFixed(3) : 'N/A'}`;
 
-                // Common text properties
-                const commonTextProps = {
+                const commonRightAxisTextProps = {
                   x: e.x,
                   textAnchor: e.textAnchor,
                   // Only bold/black if significant AND not baseline arm
                   fill: armData.significant && !armData.isBaseline ? 'black' : undefined,
                   fontWeight: armData.significant && !armData.isBaseline ? 'bold' : undefined,
-                  // fontSize will be set individually
                 };
 
                 return (
                   <g>
                     <text
-                      {...commonTextProps}
+                      {...commonRightAxisTextProps}
+                      style={commonAxisStyle}
                       y={e.y}
                       // dy shift here and below to align the two lines of text around the tick mark better
                       dy={!armData.isBaseline ? '-8px' : '0'}
                       dominantBaseline="middle"
-                      // Purposely larger font size for the percent change
-                      fontSize="16px"
                     >
                       {percentChangeText}
                     </text>
                     <text
-                      {...commonTextProps}
+                      {...commonRightAxisTextProps}
+                      // Purposely smaller font size for the p-value
+                      style={{ ...commonAxisStyle, fontSize: '12px' }}
                       y={e.y}
                       dy={!armData.isBaseline ? '8px' : '0'}
                       dominantBaseline="middle"
-                      fontSize="12px"
                     >
                       {pValueText}
                     </text>
