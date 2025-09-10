@@ -5,9 +5,39 @@ import { Button, Dialog, Flex, RadioGroup, Text, TextField } from '@radix-ui/the
 import { ServiceAccountJsonField } from '@/components/features/datasources/service-account-json-field';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { EyeClosedIcon, EyeOpenIcon, InfoCircledIcon, PlusIcon } from '@radix-ui/react-icons';
-import { BqDsnInput, PostgresDsn, RedshiftDsn } from '@/api/methods.schemas';
+import { ApiOnlyDsn, BqDsnInput, DsnInput, PostgresDsn, PostgresDsnSslmode, RedshiftDsn } from '@/api/methods.schemas';
 import { mutate } from 'swr';
 import { PostgresSslModes } from '@/services/typehelper';
+
+type AllowedDwhTypes = Exclude<DsnInput['type'], ApiOnlyDsn['type']>;
+
+interface FormFields {
+  name: string;
+  host: string;
+  port: string;
+  database: string;
+  user: string;
+  password: string;
+  sslmode: PostgresDsnSslmode;
+  search_path: string;
+  project_id: string;
+  dataset: string;
+  credentials_json: string;
+}
+
+const defaultFormData: FormFields = {
+  name: '',
+  host: '',
+  port: '5432',
+  database: '',
+  user: '',
+  password: '',
+  sslmode: 'verify-ca',
+  search_path: '',
+  project_id: '',
+  dataset: '',
+  credentials_json: '',
+};
 
 export function AddDatasourceDialog({ organizationId }: { organizationId: string }) {
   const { trigger, isMutating } = useCreateDatasource({
@@ -20,13 +50,15 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
     },
   });
   const [open, setOpen] = useState(false);
-  const [dwhType, setDwhType] = useState<'postgres' | 'redshift' | 'bigquery'>('postgres');
-  const [projectId, setProjectId] = useState('');
+  const [dwhType, setDwhType] = useState<AllowedDwhTypes>('postgres');
   const [showPassword, setShowPassword] = useState(false);
-  const [credentialsJson, setCredentialsJson] = useState('');
+  const [formData, setFormData] = useState(defaultFormData);
 
   const visibilityToggle = (open: boolean) => {
-    setDwhType('postgres');
+    if (!open) {
+      setDwhType('postgres');
+      setFormData(defaultFormData);
+    }
     setOpen(open);
   };
 
@@ -45,49 +77,48 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
           <form
             onSubmit={async (event) => {
               event.preventDefault();
-              const fd = new FormData(event.currentTarget);
-              const name = fd.get('name') as string;
 
               let dsn: PostgresDsn | RedshiftDsn | BqDsnInput;
               if (dwhType === 'postgres') {
                 dsn = {
                   type: 'postgres',
-                  host: fd.get('host') as string,
-                  port: parseInt(fd.get('port') as string),
-                  dbname: fd.get('database') as string,
-                  user: fd.get('user') as string,
-                  password: { type: 'revealed', value: fd.get('password') as string },
-                  sslmode: fd.get('sslmode') as PostgresSslModes,
-                  search_path: (fd.get('search_path') as string) || null,
+                  host: formData.host,
+                  port: parseInt(formData.port),
+                  dbname: formData.database,
+                  user: formData.user,
+                  password: { type: 'revealed', value: formData.password },
+                  sslmode: formData.sslmode as PostgresSslModes,
+                  search_path: formData.search_path || null,
                 };
               } else if (dwhType === 'redshift') {
                 dsn = {
                   type: 'redshift',
-                  host: fd.get('host') as string,
-                  port: parseInt(fd.get('port') as string),
-                  dbname: fd.get('database') as string,
-                  user: fd.get('user') as string,
-                  password: { type: 'revealed', value: fd.get('password') as string },
-                  search_path: (fd.get('search_path') as string) || null,
+                  host: formData.host,
+                  port: parseInt(formData.port),
+                  dbname: formData.database,
+                  user: formData.user,
+                  password: { type: 'revealed', value: formData.password },
+                  search_path: formData.search_path || null,
                 };
               } else {
                 dsn = {
                   type: 'bigquery',
-                  project_id: fd.get('project_id') as string,
-                  dataset_id: fd.get('dataset') as string,
+                  project_id: formData.project_id,
+                  dataset_id: formData.dataset,
                   credentials: {
                     type: 'serviceaccountinfo',
-                    content: fd.get('credentials_json') as string,
+                    content: formData.credentials_json,
                   },
                 };
               }
 
               await trigger({
                 organization_id: organizationId,
-                name,
+                name: formData.name,
                 dsn,
               });
               setDwhType('postgres');
+              setFormData(defaultFormData);
               setOpen(false);
             }}
           >
@@ -101,7 +132,12 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                 <Text as="div" size="2" mb="1" weight="bold">
                   Name
                 </Text>
-                <TextField.Root name="name" placeholder="Enter datasource name" required></TextField.Root>
+                <TextField.Root
+                  placeholder="Enter datasource name"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                />
               </label>
 
               <label>
@@ -111,8 +147,7 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                 <RadioGroup.Root
                   defaultValue="postgres"
                   onValueChange={(value) => {
-                    setDwhType(value as 'postgres' | 'bigquery');
-                    setProjectId(''); // Reset projectId when switching form types
+                    setDwhType(value as 'postgres' | 'redshift' | 'bigquery');
                   }}
                 >
                   <Flex gap="2" direction="column">
@@ -141,7 +176,11 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                     <Text as="div" size="2" mb="1" weight="bold">
                       Host
                     </Text>
-                    <TextField.Root name="host" required />
+                    <TextField.Root
+                      required
+                      value={formData.host}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, host: e.target.value }))}
+                    />
                   </label>
                   <label>
                     <Text as="div" size="2" mb="1" weight="bold">
@@ -152,26 +191,44 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                         Tip: Redshift default port is 5439.
                       </Text>
                     )}
-                    <TextField.Root name="port" type="number" defaultValue="5432" required />
+                    <TextField.Root
+                      type="number"
+                      required
+                      value={formData.port}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, port: e.target.value }))}
+                    />
                   </label>
                   <label>
                     <Text as="div" size="2" mb="1" weight="bold">
                       Database
                     </Text>
-                    <TextField.Root name="database" required />
+                    <TextField.Root
+                      required
+                      value={formData.database}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, database: e.target.value }))}
+                    />
                   </label>
                   <label>
                     <Text as="div" size="2" mb="1" weight="bold">
                       User
                     </Text>
-                    <TextField.Root name="user" required />
+                    <TextField.Root
+                      required
+                      value={formData.user}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, user: e.target.value }))}
+                    />
                   </label>
                   <label>
                     <Text as="div" size="2" mb="1" weight="bold">
                       Password
                     </Text>
                     <Flex gap="2">
-                      <TextField.Root name="password" type={showPassword ? 'text' : 'password'} required />
+                      <TextField.Root
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={formData.password}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+                      />
                       <Button type="button" variant="soft" onClick={() => setShowPassword(!showPassword)}>
                         {showPassword ? <EyeOpenIcon /> : <EyeClosedIcon />}
                       </Button>
@@ -182,7 +239,12 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                       <Text as="div" size="2" mb="1" weight="bold">
                         SSL Mode
                       </Text>
-                      <select name="sslmode" defaultValue="verify-ca">
+                      <select
+                        value={formData.sslmode}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, sslmode: e.target.value as PostgresDsnSslmode }))
+                        }
+                      >
                         <option value="disable">disable</option>
                         <option value="require">require</option>
                         <option value="verify-ca">verify-ca</option>
@@ -202,7 +264,10 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                         <InfoCircledIcon style={{ verticalAlign: 'middle' }} />
                       </a>
                     </Text>
-                    <TextField.Root name="search_path" />
+                    <TextField.Root
+                      value={formData.search_path}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, search_path: e.target.value }))}
+                    />
                   </label>
                 </>
               ) : (
@@ -213,23 +278,27 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                     </Text>
                     <TextField.Root
                       key={'project_id'}
-                      name="project_id"
                       required
-                      value={projectId}
-                      onChange={(e) => setProjectId(e.target.value)}
+                      value={formData.project_id}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, project_id: e.target.value }))}
                     />
                   </label>
                   <label>
                     <Text as="div" size="2" mb="1" weight="bold">
                       Dataset
                     </Text>
-                    <TextField.Root name="dataset" required key={'dataset'} />
+                    <TextField.Root
+                      required
+                      key={'dataset'}
+                      value={formData.dataset}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, dataset: e.target.value }))}
+                    />
                   </label>
                   <ServiceAccountJsonField
                     required
-                    value={credentialsJson}
-                    onChange={setCredentialsJson}
-                    onProjectIdFound={setProjectId}
+                    value={formData.credentials_json}
+                    onChange={(value) => setFormData((prev) => ({ ...prev, credentials_json: value }))}
+                    onProjectIdFound={(projectId) => setFormData((prev) => ({ ...prev, project_id: projectId }))}
                   />
                 </>
               )}
