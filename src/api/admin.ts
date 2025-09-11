@@ -14,7 +14,6 @@ import type {
 	AddMemberToOrganizationRequest,
 	AddWebhookToOrganizationRequest,
 	AddWebhookToOrganizationResponse,
-	AnalyzeExperiment200,
 	AnalyzeExperimentParams,
 	CallerIdentity,
 	CreateApiKeyResponse,
@@ -34,6 +33,7 @@ import type {
 	DeleteParticipantParams,
 	DeleteSnapshotParams,
 	DeleteWebhookFromOrganizationParams,
+	ExperimentAnalysisResponse,
 	GetDatasourceResponse,
 	GetExperimentAssignmentForParticipantParams,
 	GetExperimentAssignmentsResponse,
@@ -2973,8 +2973,8 @@ export const analyzeExperiment = async (
 	experimentId: string,
 	params?: AnalyzeExperimentParams,
 	options?: RequestInit,
-): Promise<AnalyzeExperiment200> => {
-	return orvalFetch<AnalyzeExperiment200>(
+): Promise<ExperimentAnalysisResponse> => {
+	return orvalFetch<ExperimentAnalysisResponse>(
 		getAnalyzeExperimentUrl(datasourceId, experimentId, params),
 		{
 			...options,

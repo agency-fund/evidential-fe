@@ -1,14 +1,13 @@
 'use client';
-import { Badge, Box, Flex, Heading, Separator, Table, Tabs, Text, Tooltip } from '@radix-ui/themes';
+import { Badge, Box, Flex, Heading, Separator, Table, Tabs, Text, Tooltip, Select } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
 import { CalendarIcon, CodeIcon, InfoCircledIcon, PersonIcon } from '@radix-ui/react-icons';
-import { useAnalyzeExperiment, useGetExperiment } from '@/api/admin';
+import { useAnalyzeExperiment, useGetExperiment, useListSnapshots } from '@/api/admin';
 import { ForestPlot } from '@/components/features/experiments/forest-plot';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
 import { useState } from 'react';
-import * as Toast from '@radix-ui/react-toast';
 import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
@@ -17,10 +16,13 @@ import { SectionCard } from '@/components/ui/cards/section-card';
 import {
   DesignSpecOutput,
   FreqExperimentAnalysisResponse,
+  ExperimentAnalysisResponse,
   OnlineFrequentistExperimentSpecOutput,
   PreassignedFrequentistExperimentSpecOutput,
 } from '@/api/methods.schemas';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
+import { useCurrentOrganization } from '@/providers/organization-provider';
+import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date-utils';
 
 // Type guard to assure TypeScript that a DesignSpec is one of two types.
 function isFrequentistDesign(
@@ -30,26 +32,86 @@ function isFrequentistDesign(
 }
 
 export default function ExperimentViewPage() {
-  const [openToast, setOpenToast] = useState(false);
   const params = useParams();
-  const experimentId = params.experimentId as string;
-  const datasourceId = params.datasourceId as string;
+  const orgCtx = useCurrentOrganization();
+  const organizationId = orgCtx?.current.id || '';
+  const datasourceId = (params.datasourceId as string) || '';
+  const experimentId = (params.experimentId as string) || '';
+
+  type AnalysisState = {
+    key: string;
+    data: ExperimentAnalysisResponse | undefined;
+    label: string;
+  };
+  const [snapshotDropdownOptions, setSnapshotDropdownOptions] = useState<AnalysisState[]>([]);
+  const [liveAnalysis, setLiveAnalysis] = useState<AnalysisState>({
+    key: 'live',
+    data: undefined,
+    label: 'No live data yet',
+  });
+  // which analysis we're actually displaying (live or a snapshot)
+  const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisState>(liveAnalysis);
 
   const {
     data: experiment,
     isLoading: isLoadingExperiment,
     error: experimentError,
-  } = useGetExperiment(datasourceId || '', experimentId, {
+  } = useGetExperiment(datasourceId, experimentId, {
     swr: { enabled: !!datasourceId },
   });
 
-  const {
-    data: analysisData,
-    isLoading: isLoadingAnalysis,
-    error: analysisError,
-  } = useAnalyzeExperiment(datasourceId || '', experimentId, undefined, {
-    swr: { enabled: !!datasourceId && !!experiment, shouldRetryOnError: false },
-  });
+  const { isLoading: isLoadingAnalysis, error: analysisError } = useAnalyzeExperiment(
+    datasourceId,
+    experimentId,
+    undefined,
+    {
+      swr: {
+        enabled: !!datasourceId && !!experiment,
+        shouldRetryOnError: false,
+        onSuccess: (data) => {
+          const d = new Date();
+          const analysis = {
+            key: 'live',
+            data: data as ExperimentAnalysisResponse,
+            label: `LIVE as of ${extractUtcHHMMLabel(d)}`,
+          };
+          setLiveAnalysis(analysis);
+          // Only update the display if we were previously viewing live data.
+          if (selectedAnalysis.key === 'live') {
+            setSelectedAnalysis(analysis);
+          }
+        },
+      },
+    },
+  );
+
+  const { error: snapshotsError } = useListSnapshots(
+    organizationId,
+    datasourceId,
+    experimentId,
+    { status: ['success'] },
+    {
+      swr: {
+        enabled: !!organizationId && !!datasourceId && !!experimentId,
+        shouldRetryOnError: false,
+        onSuccess: (data) => {
+          // Make human-readable labels for the dropdown, showing UTC down to the minute.
+          // Use the snapshot ID as the key, looking up the analysisState by ID upon selection.
+          const opts: AnalysisState[] = [];
+          if (data?.items) {
+            for (const s of data.items) {
+              opts.push({
+                key: s.id,
+                data: s.data as ExperimentAnalysisResponse,
+                label: formatUtcDownToMinuteLabel(new Date(s.updated_at)),
+              });
+            }
+            setSnapshotDropdownOptions(opts);
+          }
+        },
+      },
+    },
+  );
 
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
@@ -160,31 +222,69 @@ export default function ExperimentViewPage() {
         <SectionCard
           title="Analysis"
           headerRight={
-            analysisData &&
             (design_spec?.experiment_type === 'freq_online' || design_spec?.experiment_type === 'freq_preassigned') && (
-              <Flex gap="3" align="center" justify="between">
-                <Badge size="2">
-                  <Flex gap="4" align="center">
-                    <Heading size="2">Confidence:</Heading>
+              <Flex gap="3" wrap="wrap">
+                <Flex gap="3" wrap="wrap" align="center" justify="between">
+                  <Badge size="2">
                     <Flex gap="2" align="center">
-                      <Text>{(1 - (design_spec.alpha || 0.05)) * 100}%</Text>
-                      <Tooltip content="Chance that our test correctly shows no significant difference, if there truly is none. (The probability of avoiding a false positive.)">
-                        <InfoCircledIcon />
-                      </Tooltip>
+                      <Heading size="2">Viewing:</Heading>
+                      {snapshotDropdownOptions.length == 0 ? (
+                        <Text>{liveAnalysis.label}</Text>
+                      ) : (
+                        <Select.Root
+                          size="1"
+                          value={selectedAnalysis.key}
+                          onValueChange={(key) => {
+                            const analysis =
+                              key === 'live' ? liveAnalysis : snapshotDropdownOptions.find((opt) => opt.key === key);
+                            setSelectedAnalysis(analysis || liveAnalysis); // shouldn't ever need to fall back though
+                          }}
+                        >
+                          <Select.Trigger style={{ height: 18 }} />
+                          <Select.Content>
+                            <Select.Group>
+                              <Select.Item key="live" value="live">
+                                {liveAnalysis.label}
+                              </Select.Item>
+                            </Select.Group>
+                            <Select.Separator />
+                            <Select.Group>
+                              {snapshotDropdownOptions.map((opt) => (
+                                <Select.Item key={opt.key} value={opt.key}>
+                                  {opt.label}
+                                </Select.Item>
+                              ))}
+                            </Select.Group>
+                          </Select.Content>
+                        </Select.Root>
+                      )}
                     </Flex>
-                  </Flex>
-                </Badge>
-                <Badge size="2">
-                  <Flex gap="4" align="center">
-                    <Heading size="2">Power:</Heading>
-                    <Flex gap="2" align="center">
-                      <Text>{design_spec.power ? `${design_spec.power * 100}%` : '?'}</Text>
-                      <Tooltip content="Chance of detecting a difference at least as large as the pre-specified minimum effect for the metric, if that difference truly exists. (The probability of avoiding a false negative.)">
-                        <InfoCircledIcon />
-                      </Tooltip>
+                  </Badge>
+                </Flex>
+                <Flex gap="3" wrap="wrap">
+                  <Badge size="2">
+                    <Flex gap="4" align="center">
+                      <Heading size="2">Confidence:</Heading>
+                      <Flex gap="2" align="center">
+                        <Text>{(1 - (design_spec.alpha || 0.05)) * 100}%</Text>
+                        <Tooltip content="Chance that our test correctly shows no significant difference, if there truly is none. (The probability of avoiding a false positive.)">
+                          <InfoCircledIcon />
+                        </Tooltip>
+                      </Flex>
                     </Flex>
-                  </Flex>
-                </Badge>
+                  </Badge>
+                  <Badge size="2">
+                    <Flex gap="4" align="center">
+                      <Heading size="2">Power:</Heading>
+                      <Flex gap="2" align="center">
+                        <Text>{design_spec.power ? `${design_spec.power * 100}%` : '?'}</Text>
+                        <Tooltip content="Chance of detecting a difference at least as large as the pre-specified minimum effect for the metric, if that difference truly exists. (The probability of avoiding a false negative.)">
+                          <InfoCircledIcon />
+                        </Tooltip>
+                      </Flex>
+                    </Flex>
+                  </Badge>
+                </Flex>
               </Flex>
             )
           }
@@ -198,7 +298,14 @@ export default function ExperimentViewPage() {
             />
           )}
 
-          {!isLoadingAnalysis && !analysisError && analysisData && (
+          {snapshotsError && (
+            <GenericErrorCallout
+              title="Error loading historical analyses"
+              message="Historical analyses may not be available yet."
+            />
+          )}
+
+          {selectedAnalysis.data && (
             <Flex direction="column" gap="3">
               <Tabs.Root defaultValue="visualization">
                 <Tabs.List>
@@ -214,7 +321,7 @@ export default function ExperimentViewPage() {
                     <Flex direction="column" gap="3" py="3">
                       {isFrequentistDesign(design_spec) &&
                         assign_summary &&
-                        (analysisData as FreqExperimentAnalysisResponse).metric_analyses.map(
+                        (selectedAnalysis.data as FreqExperimentAnalysisResponse).metric_analyses.map(
                           (metric_analysis, index) => (
                             <ForestPlot
                               key={index}
@@ -231,7 +338,7 @@ export default function ExperimentViewPage() {
                     <Flex direction="column" gap="3" py="3">
                       <CodeSnippetCard
                         title="Raw Data"
-                        content={JSON.stringify(analysisData, null, 2)}
+                        content={JSON.stringify(selectedAnalysis.data, null, 2)}
                         height="200px"
                         tooltipContent="Copy raw data"
                         variant="ghost"
@@ -243,20 +350,6 @@ export default function ExperimentViewPage() {
             </Flex>
           )}
         </SectionCard>
-
-        <Toast.Root
-          open={openToast}
-          onOpenChange={setOpenToast}
-          duration={2000}
-          style={{
-            background: 'white',
-            padding: '12px 16px',
-            borderRadius: '4px',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-          }}
-        >
-          <Toast.Title style={{ margin: 0 }}>🚧 Nothing to do here yet... 🚧</Toast.Title>
-        </Toast.Root>
       </Flex>
     </Flex>
   );
