@@ -16,6 +16,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { ParticipantFieldsEditor } from '@/components/features/participants/participant-fields-editor';
 import { ChevronDownIcon, ReloadIcon } from '@radix-ui/react-icons';
 import { mutate } from 'swr';
+import { useCurrentOrganization } from '@/providers/organization-provider';
 
 const makeFieldDescriptorComparator = (candidatesForUniqueIdField: string[]) => {
   const candidates = new Set(candidatesForUniqueIdField);
@@ -46,6 +47,8 @@ export default function CreateParticipantTypePage() {
   const params = useParams();
   const router = useRouter();
   const datasourceId = params.datasourceId as string;
+  const org = useCurrentOrganization();
+  const organizationId = org!.current.id;
 
   // SWR's default behavior will sometimes validate that its cached result data matches the API responses data
   // (such as during component load, when the user switches tabs, and during subsequent renders). By default, this
@@ -67,12 +70,12 @@ export default function CreateParticipantTypePage() {
 
   const { trigger, isMutating, error, reset } = useCreateParticipantType(datasourceId, {
     swr: {
-      onSuccess: async (data) => {
+      onSuccess: async () => {
         await Promise.all([
           mutate(getGetDatasourceKey(datasourceId)),
           mutate(getListParticipantTypesKey(datasourceId)),
         ]);
-        router.push(`/datasources/${datasourceId}/participants/${data.participant_type}`);
+        router.push(`/organizations/${organizationId}`);
       },
     },
   });
