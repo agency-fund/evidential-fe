@@ -40,14 +40,17 @@ export default function ExperimentViewPage() {
 
   type AnalysisState = {
     key: string;
-    updated_at: Date;
-    data: ExperimentAnalysisResponse;
+    data: ExperimentAnalysisResponse | undefined;
     label: string;
   };
   const [snapshotDropdownOptions, setSnapshotDropdownOptions] = useState<AnalysisState[]>([]);
-  const [liveAnalysis, setLiveAnalysis] = useState<AnalysisState | undefined>(undefined);
+  const [liveAnalysis, setLiveAnalysis] = useState<AnalysisState>({
+    key: 'live',
+    data: undefined,
+    label: 'No live data yet',
+  });
   // which analysis we're actually displaying (live or a snapshot)
-  const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisState | undefined>(undefined);
+  const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisState>(liveAnalysis);
 
   const {
     data: experiment,
@@ -69,13 +72,12 @@ export default function ExperimentViewPage() {
           const d = new Date();
           const analysis = {
             key: 'live',
-            updated_at: d,
             data: data as ExperimentAnalysisResponse,
             label: `LIVE as of ${extractUtcHHMMLabel(d)}`,
           };
           setLiveAnalysis(analysis);
           // Only update the display if we were previously viewing live data.
-          if (!selectedAnalysis || (selectedAnalysis && selectedAnalysis.key === 'live')) {
+          if (selectedAnalysis.key === 'live') {
             setSelectedAnalysis(analysis);
           }
         },
@@ -98,12 +100,10 @@ export default function ExperimentViewPage() {
           const opts: AnalysisState[] = [];
           if (data?.items) {
             for (const s of data.items) {
-              const d = new Date(s.updated_at);
               opts.push({
                 key: s.id,
-                updated_at: d,
                 data: s.data as ExperimentAnalysisResponse,
-                label: formatUtcDownToMinuteLabel(d),
+                label: formatUtcDownToMinuteLabel(new Date(s.updated_at)),
               });
             }
             setSnapshotDropdownOptions(opts);
@@ -229,22 +229,22 @@ export default function ExperimentViewPage() {
                     <Flex gap="2" align="center">
                       <Heading size="2">Viewing:</Heading>
                       {snapshotDropdownOptions.length == 0 ? (
-                        <Text>{liveAnalysis?.label || 'No live data yet'}</Text>
+                        <Text>{liveAnalysis.label}</Text>
                       ) : (
                         <Select.Root
                           size="1"
-                          value={selectedAnalysis?.key || 'live'}
+                          value={selectedAnalysis.key}
                           onValueChange={(key) => {
                             const analysis =
                               key === 'live' ? liveAnalysis : snapshotDropdownOptions.find((opt) => opt.key === key);
-                            setSelectedAnalysis(analysis);
+                            setSelectedAnalysis(analysis || liveAnalysis); // shouldn't ever need to fall back though
                           }}
                         >
                           <Select.Trigger style={{ height: 18 }} />
                           <Select.Content>
                             <Select.Group>
                               <Select.Item key="live" value="live">
-                                {liveAnalysis?.label || 'No live data yet'}
+                                {liveAnalysis.label}
                               </Select.Item>
                             </Select.Group>
                             <Select.Separator />
@@ -305,7 +305,7 @@ export default function ExperimentViewPage() {
             />
           )}
 
-          {selectedAnalysis && (
+          {selectedAnalysis.data && (
             <Flex direction="column" gap="3">
               <Tabs.Root defaultValue="visualization">
                 <Tabs.List>
