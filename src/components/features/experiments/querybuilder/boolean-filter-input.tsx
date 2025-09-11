@@ -31,9 +31,9 @@ export function BooleanFilterInput({ filter, onChange }: BooleanFilterInputProps
   };
 
   return (
-    <Flex gap="2" align="center">
+    <Flex gap="2" align="start" wrap="wrap">
       <Select.Root value={hasTrue ? 'true' : 'false'} onValueChange={(v) => handleValueChange(v === 'true')}>
-        <Select.Trigger />
+        <Select.Trigger style={{ width: 128 }} />
         <Select.Content>
           <Select.Item value="true">Is True</Select.Item>
           <Select.Item value="false">Is False</Select.Item>

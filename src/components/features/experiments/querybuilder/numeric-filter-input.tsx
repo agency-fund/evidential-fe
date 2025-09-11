@@ -207,6 +207,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
             inputMode="decimal"
             step={getStepAttribute()}
             value={equalsValue}
+            style={{ width: '20ch' }} // accomodates bigints
             onChange={(e) => {
               const inputValue = e.target.value;
               setEqualsValue(inputValue);
@@ -234,6 +235,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
             inputMode="decimal"
             step={getStepAttribute()}
             value={greaterThanValue}
+            style={{ width: '20ch' }}
             onChange={(e) => {
               const inputValue = e.target.value;
               setGreaterThanValue(inputValue);
@@ -261,6 +263,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
             inputMode="decimal"
             step={getStepAttribute()}
             value={lessThanValue}
+            style={{ width: '20ch' }}
             onChange={(e) => {
               const inputValue = e.target.value;
               setLessThanValue(inputValue);
@@ -289,6 +292,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
               inputMode="decimal"
               step={getStepAttribute()}
               value={betweenMinValue}
+              style={{ width: '20ch' }}
               onChange={(e) => {
                 const inputValue = e.target.value;
                 setBetweenMinValue(inputValue);
@@ -341,12 +345,13 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
         return (
           <Flex direction="column" gap="1">
             {listValues.map((val, idx) => (
-              <Flex key={idx} gap="1" align="center">
+              <Flex key={idx} gap="1" align="start">
                 <TextField.Root
                   type="text"
                   inputMode="decimal"
                   step={getStepAttribute()}
                   value={val}
+                  style={{ width: '20ch' }}
                   onChange={(e) => handleListValueChange(idx, e.target.value)}
                   onBlur={() => {
                     // On blur, if the field is empty, set a default value
@@ -394,9 +399,9 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
   };
 
   return (
-    <Flex gap="2" align="center">
+    <Flex gap="2" align="start" wrap="wrap">
       <Select.Root value={operator} onValueChange={handleOperatorChange}>
-        <Select.Trigger />
+        <Select.Trigger style={{ width: 128 }} />
         <Select.Content>
           <Select.Item value="equals">Equals</Select.Item>
           <Select.Item value="not-equals">Not equals</Select.Item>
@@ -410,7 +415,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
 
       {renderValueInputs()}
 
-      {(operator === 'equals' || operator === 'in-list' || operator === 'not-in-list') && (
+      {(operator === 'equals' || operator === 'not-equals' || operator === 'in-list' || operator === 'not-in-list') && (
         <Flex gap="1" align="center">
           <Checkbox checked={includesNull} onCheckedChange={(checked) => handleNullChange(!!checked)} />
           <Text size="2">Include NULL</Text>

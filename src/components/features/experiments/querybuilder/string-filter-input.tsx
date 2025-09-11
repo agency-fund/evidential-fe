@@ -90,7 +90,11 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
       <Flex direction="column" gap="1">
         {nonNullValues.map((val, idx) => (
           <Flex key={idx} gap="1" align="center">
-            <TextField.Root value={val as string} onChange={(e) => handleValueChange(idx, e.target.value)} />
+            <TextField.Root
+              value={val as string}
+              style={{ width: '20ch' }}
+              onChange={(e) => handleValueChange(idx, e.target.value)}
+            />
             {/* Only show the remove button if there are multiple non-null values or if null
                 is included, since we allow a single null value. */}
             {(nonNullValues.length > 1 || includesNull) && (
@@ -121,9 +125,9 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
   const isUuid = dataType === 'uuid';
 
   return (
-    <Flex gap="2" align="center">
+    <Flex gap="2" align="start" wrap="wrap">
       <Select.Root value={operator} onValueChange={handleOperatorChange}>
-        <Select.Trigger />
+        <Select.Trigger style={{ width: 128 }} />
         <Select.Content>
           <Select.Item value="equals">Equals</Select.Item>
           <Select.Item value="not-equals">Not equals</Select.Item>

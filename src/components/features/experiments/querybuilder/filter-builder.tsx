@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Flex } from '@radix-ui/themes';
+import { Box, Button, Flex, Separator } from '@radix-ui/themes';
 import { PlusIcon } from '@radix-ui/react-icons';
 import { DataType, FilterInput } from '@/api/methods.schemas';
 import { FilterRow } from '@/components/features/experiments/querybuilder/filter-row';
@@ -118,15 +118,23 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
   };
 
   return (
-    <Flex direction="column" gap="2">
+    <Flex direction="column" gap="2" overflow="auto">
       {filters.map((filter, index) => (
-        <FilterRow
-          key={index}
-          filter={filter}
-          availableFields={availableFields}
-          onChange={(updatedFilter) => updateFilter(index, updatedFilter)}
-          onRemove={() => removeFilter(index)}
-        />
+        <>
+          <FilterRow
+            key={index}
+            filter={filter}
+            availableFields={availableFields}
+            onChange={(updatedFilter) => updateFilter(index, updatedFilter)}
+            onRemove={() => removeFilter(index)}
+          />
+          <Separator orientation="horizontal" key={index + 'hr'} size="4" />
+          {/* <Flex key={index + 'hr'}>
+          <Box width="100%">
+            <hr style={{ border: 0, borderTop: '1px solid var(--gray-4)', margin: '0' }} />
+          </Box>
+        </Flex> */}
+        </>
       ))}
       <Flex>
         <Button onClick={addFilter} variant="soft" size="2">
