@@ -73,9 +73,9 @@ export function ParticipantFieldsEditor({
             <Table.ColumnHeaderCell>Data Type</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell justify="center">Unique ID</Table.ColumnHeaderCell>
-            {showAdvanced && <Table.ColumnHeaderCell justify="center">Strata</Table.ColumnHeaderCell>}
             <Table.ColumnHeaderCell justify="center">Filter</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell justify="center">Metric</Table.ColumnHeaderCell>
+            {showAdvanced && <Table.ColumnHeaderCell justify="center">Strata</Table.ColumnHeaderCell>}
             {showAdvanced && allowFieldRemoval && (
               <Table.ColumnHeaderCell justify="center">Actions</Table.ColumnHeaderCell>
             )}
@@ -113,20 +113,7 @@ export function ParticipantFieldsEditor({
                   size="3"
                 />
               </Table.Cell>
-              {showAdvanced && (
-                <Table.Cell justify={'center'}>
-                  <Checkbox
-                    checked={field.is_strata || false}
-                    onCheckedChange={(checked) =>
-                      updateField(originalIndex, {
-                        ...field,
-                        is_strata: checked === true,
-                      })
-                    }
-                    size="3"
-                  />
-                </Table.Cell>
-              )}
+
               <Table.Cell justify={'center'}>
                 <Checkbox
                   checked={field.is_filter || false}
@@ -157,6 +144,20 @@ export function ParticipantFieldsEditor({
                   </Tooltip>
                 )}
               </Table.Cell>
+              {showAdvanced && (
+                <Table.Cell justify={'center'}>
+                  <Checkbox
+                    checked={field.is_strata || false}
+                    onCheckedChange={(checked) =>
+                      updateField(originalIndex, {
+                        ...field,
+                        is_strata: checked === true,
+                      })
+                    }
+                    size="3"
+                  />
+                </Table.Cell>
+              )}
               {showAdvanced && allowFieldRemoval && (
                 <Table.Cell justify={'center'}>
                   <IconButton

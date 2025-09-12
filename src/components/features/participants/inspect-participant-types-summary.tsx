@@ -1,10 +1,10 @@
 'use client';
 
-import { Button, Card, DataList, Flex, Grid, Heading, Text } from '@radix-ui/themes';
+import { Button, DataList, Flex, Grid, Heading, Text } from '@radix-ui/themes';
 import { InspectParticipantTypesResponse } from '@/api/methods.schemas';
 import { useState } from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@radix-ui/react-icons';
-import { DataTypeBadge } from '@/components/ui/data-type-badge';
+import FieldDataCard from '@/components/ui/cards/field-data-card';
 
 export function InspectParticipantTypesSummary({ data }: { data: InspectParticipantTypesResponse | undefined }) {
   const [showStrata, setShowStrata] = useState(true);
@@ -25,26 +25,9 @@ export function InspectParticipantTypesSummary({ data }: { data: InspectParticip
         (data.strata.length === 0 ? (
           <Text>There are no strata fields defined.</Text>
         ) : (
-          <Grid columns="3" gap="4">
+          <Grid columns={{ initial: '1', sm: '2', lg: '3' }} gap="4">
             {data.strata.map((field) => (
-              <Card key={field.field_name}>
-                <DataList.Root key={field.field_name}>
-                  <DataList.Item>
-                    <DataList.Label minWidth="120px">Field Name</DataList.Label>
-                    <DataList.Value>{field.field_name}</DataList.Value>
-                  </DataList.Item>
-                  <DataList.Item>
-                    <DataList.Label minWidth="120px">Description</DataList.Label>
-                    <DataList.Value>{field.description}</DataList.Value>
-                  </DataList.Item>
-                  <DataList.Item>
-                    <DataList.Label minWidth="120px">Data Type</DataList.Label>
-                    <DataList.Value>
-                      <DataTypeBadge type={field.data_type} />
-                    </DataList.Value>
-                  </DataList.Item>
-                </DataList.Root>
-              </Card>
+              <FieldDataCard field={field} key={field.field_name} />
             ))}
           </Grid>
         ))}
@@ -58,26 +41,9 @@ export function InspectParticipantTypesSummary({ data }: { data: InspectParticip
         (data.metrics.length === 0 ? (
           <Text>There are no metrics defined.</Text>
         ) : (
-          <Grid columns="3" gap="4" width={'auto'}>
+          <Grid columns={{ initial: '1', sm: '2', lg: '3' }} gap="4" width={'auto'}>
             {data.metrics.map((field) => (
-              <Card key={field.field_name}>
-                <DataList.Root>
-                  <DataList.Item>
-                    <DataList.Label minWidth="120px">Field Name</DataList.Label>
-                    <DataList.Value>{field.field_name}</DataList.Value>
-                  </DataList.Item>
-                  <DataList.Item>
-                    <DataList.Label minWidth="120px">Description</DataList.Label>
-                    <DataList.Value>{field.description}</DataList.Value>
-                  </DataList.Item>
-                  <DataList.Item>
-                    <DataList.Label minWidth="120px">Data Type</DataList.Label>
-                    <DataList.Value>
-                      <DataTypeBadge type={field.data_type} />
-                    </DataList.Value>
-                  </DataList.Item>
-                </DataList.Root>
-              </Card>
+              <FieldDataCard field={field} key={field.field_name} />
             ))}
           </Grid>
         ))}
@@ -92,48 +58,32 @@ export function InspectParticipantTypesSummary({ data }: { data: InspectParticip
         (data.filters.length === 0 ? (
           <Text>There are no filters defined.</Text>
         ) : (
-          <Grid columns="3" gap="4">
+          <Grid columns={{ initial: '1', sm: '2', lg: '3' }} gap="4">
             {data.filters.map((field) => (
-              <Card key={field.field_name}>
-                <DataList.Root key={field.field_name}>
+              <FieldDataCard field={field} key={field.field_name}>
+                {'min' in field && (
+                  <>
+                    <DataList.Item>
+                      <DataList.Label>Lower Bound</DataList.Label>
+                      <DataList.Value>{field.min}</DataList.Value>
+                    </DataList.Item>
+                    <DataList.Item>
+                      <DataList.Label minWidth="120px">Upper Bound</DataList.Label>
+                      <DataList.Value>{field.max}</DataList.Value>
+                    </DataList.Item>
+                  </>
+                )}
+                {'distinct_values' in field && field.distinct_values && (
                   <DataList.Item>
-                    <DataList.Label minWidth="120px">Field Name</DataList.Label>
-                    <DataList.Value>{field.field_name}</DataList.Value>
-                  </DataList.Item>
-                  <DataList.Item>
-                    <DataList.Label minWidth="120px">Description</DataList.Label>
-                    <DataList.Value>{field.description}</DataList.Value>
-                  </DataList.Item>
-                  <DataList.Item>
-                    <DataList.Label minWidth="120px">Data Type</DataList.Label>
+                    <DataList.Label minWidth="120px">Valid Values</DataList.Label>
                     <DataList.Value>
-                      <DataTypeBadge type={field.data_type} />
+                      {field.distinct_values.length > 15
+                        ? field.distinct_values.slice(0, 14).join(', ') + ', ...'
+                        : field.distinct_values.join(', ')}
                     </DataList.Value>
                   </DataList.Item>
-                  {'min' in field && (
-                    <>
-                      <DataList.Item>
-                        <DataList.Label>Lower Bound</DataList.Label>
-                        <DataList.Value>{field.min}</DataList.Value>
-                      </DataList.Item>
-                      <DataList.Item>
-                        <DataList.Label minWidth="120px">Upper Bound</DataList.Label>
-                        <DataList.Value>{field.max}</DataList.Value>
-                      </DataList.Item>
-                    </>
-                  )}
-                  {'distinct_values' in field && field.distinct_values && (
-                    <DataList.Item>
-                      <DataList.Label minWidth="120px">Valid Values</DataList.Label>
-                      <DataList.Value>
-                        {field.distinct_values.length > 15
-                          ? field.distinct_values.slice(0, 14).join(', ') + ', ...'
-                          : field.distinct_values.join(', ')}
-                      </DataList.Value>
-                    </DataList.Item>
-                  )}
-                </DataList.Root>
-              </Card>
+                )}
+              </FieldDataCard>
             ))}
           </Grid>
         ))}
