@@ -1,9 +1,9 @@
 'use client';
 
 import { GetMetricsResponseElement, GetStrataResponseElement, DataType } from '@/api/methods.schemas';
-import { Badge, HoverCard, Text } from '@radix-ui/themes';
+import { Badge, Text } from '@radix-ui/themes';
 import { PlusIcon } from '@radix-ui/react-icons';
-import FieldDatalist from '@/components/ui/field-datalist';
+import FieldDataCard from '@/components/ui/cards/field-data-card';
 
 type MinimalClickableBadgeInput = {
   field_name: string;
@@ -37,14 +37,6 @@ export function ClickableBadge<TInput extends ClickableBadgeInput>({
       {showPlus ? <PlusIcon /> : null} {input.field_name}
     </Badge>
   );
-  return (
-    <HoverCard.Root key={input.field_name}>
-      <HoverCard.Trigger>
-        <Text>{badge}</Text>
-      </HoverCard.Trigger>
-      <HoverCard.Content>
-        <FieldDatalist field={input} variant="content" />
-      </HoverCard.Content>
-    </HoverCard.Root>
-  );
+
+  return <FieldDataCard field={input} trigger={<Text>{badge}</Text>} />;
 }

@@ -4,7 +4,7 @@ import { Button, DataList, Flex, Grid, Heading, Text } from '@radix-ui/themes';
 import { InspectParticipantTypesResponse } from '@/api/methods.schemas';
 import { useState } from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@radix-ui/react-icons';
-import FieldDataList from '@/components/ui/field-datalist';
+import FieldDataCard from '@/components/ui/cards/field-data-card';
 
 export function InspectParticipantTypesSummary({ data }: { data: InspectParticipantTypesResponse | undefined }) {
   const [showStrata, setShowStrata] = useState(true);
@@ -27,7 +27,7 @@ export function InspectParticipantTypesSummary({ data }: { data: InspectParticip
         ) : (
           <Grid columns="3" gap="4">
             {data.strata.map((field) => (
-              <FieldDataList field={field} key={field.field_name} />
+              <FieldDataCard field={field} key={field.field_name} />
             ))}
           </Grid>
         ))}
@@ -43,7 +43,7 @@ export function InspectParticipantTypesSummary({ data }: { data: InspectParticip
         ) : (
           <Grid columns="3" gap="4" width={'auto'}>
             {data.metrics.map((field) => (
-              <FieldDataList field={field} key={field.field_name} />
+              <FieldDataCard field={field} key={field.field_name} />
             ))}
           </Grid>
         ))}
@@ -60,7 +60,7 @@ export function InspectParticipantTypesSummary({ data }: { data: InspectParticip
         ) : (
           <Grid columns="3" gap="4">
             {data.filters.map((field) => (
-              <FieldDataList field={field} key={field.field_name}>
+              <FieldDataCard field={field} key={field.field_name}>
                 {'min' in field && (
                   <>
                     <DataList.Item>
@@ -83,7 +83,7 @@ export function InspectParticipantTypesSummary({ data }: { data: InspectParticip
                     </DataList.Value>
                   </DataList.Item>
                 )}
-              </FieldDataList>
+              </FieldDataCard>
             ))}
           </Grid>
         ))}

@@ -1,21 +1,21 @@
 'use client';
 
-import { Card, DataList } from '@radix-ui/themes';
+import { Card, DataList, HoverCard } from '@radix-ui/themes';
 import { DataType } from '@/api/methods.schemas';
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
 import { ReactNode } from 'react';
 
-interface FieldDatalistProps {
+interface FieldDataCardProps {
   field: {
     field_name: string;
     description: string;
     data_type: DataType;
   };
   children?: ReactNode;
-  variant?: 'card' | 'content';
+  trigger?: ReactNode;
 }
 
-export default function FieldDatalist({ field, children, variant = 'card' }: FieldDatalistProps) {
+export default function FieldDataCard({ field, children, trigger }: FieldDataCardProps) {
   const content = (
     <DataList.Root size="2">
       <DataList.Item>
@@ -36,8 +36,13 @@ export default function FieldDatalist({ field, children, variant = 'card' }: Fie
     </DataList.Root>
   );
 
-  if (variant === 'content') {
-    return content;
+  if (trigger) {
+    return (
+      <HoverCard.Root key={field.field_name}>
+        <HoverCard.Trigger>{trigger}</HoverCard.Trigger>
+        <HoverCard.Content>{content}</HoverCard.Content>
+      </HoverCard.Root>
+    );
   }
 
   return <Card key={field.field_name}>{content}</Card>;
