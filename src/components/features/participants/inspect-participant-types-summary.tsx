@@ -25,7 +25,7 @@ export function InspectParticipantTypesSummary({ data }: { data: InspectParticip
         (data.strata.length === 0 ? (
           <Text>There are no strata fields defined.</Text>
         ) : (
-          <Grid columns={{initial: "1", sm:"2", lg: "3"}} gap="4">
+          <Grid columns={{ initial: '1', sm: '2', lg: '3' }} gap="4">
             {data.strata.map((field) => (
               <FieldDataCard field={field} key={field.field_name} />
             ))}
@@ -41,7 +41,7 @@ export function InspectParticipantTypesSummary({ data }: { data: InspectParticip
         (data.metrics.length === 0 ? (
           <Text>There are no metrics defined.</Text>
         ) : (
-          <Grid columns={{initial: "1", sm:"2", lg: "3"}} gap="4" width={'auto'}>
+          <Grid columns={{ initial: '1', sm: '2', lg: '3' }} gap="4" width={'auto'}>
             {data.metrics.map((field) => (
               <FieldDataCard field={field} key={field.field_name} />
             ))}
@@ -58,7 +58,7 @@ export function InspectParticipantTypesSummary({ data }: { data: InspectParticip
         (data.filters.length === 0 ? (
           <Text>There are no filters defined.</Text>
         ) : (
-          <Grid columns={{initial: "1", sm:"2", lg: "3"}} gap="4">
+          <Grid columns={{ initial: '1', sm: '2', lg: '3' }} gap="4">
             {data.filters.map((field) => (
               <FieldDataCard field={field} key={field.field_name}>
                 {'min' in field && (
