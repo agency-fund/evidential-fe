@@ -1,4 +1,4 @@
-import { currentIdToken } from '@/providers/use-auth-storage';
+import { currentSessionToken } from '@/providers/use-auth-storage';
 import { AIRPLANE_MODE, API_BASE_URL } from '@/services/constants';
 import { API_401_EVENT } from '@/providers/auth-provider';
 import { HTTPValidationError } from '@/api/methods.schemas';
@@ -46,14 +46,14 @@ const getBody = (c: Response) => {
   throw Error('Backend returned unsupported content-type.');
 };
 
-// Returns headers to send with API requests. If we currently have an idToken in localStorage, we also send that. Note
-// that this means we may generate requests that do not contain the idToken.
+// Returns headers to send with API requests. If we currently have a session token in localStorage, we also send that. Note
+// that this means we may generate requests that do not contain the session token.
 const getHeaders = (options: RequestInit) => {
-  const idToken = AIRPLANE_MODE ? 'airplane-mode-token' : currentIdToken();
+  const sessionToken = AIRPLANE_MODE ? 'airplane-mode-token' : currentSessionToken();
   return {
     ...options.headers,
     'Content-Type': 'application/json',
-    ...(idToken && { Authorization: 'Bearer ' + idToken }),
+    ...(sessionToken && { Authorization: 'Bearer ' + sessionToken }),
   };
 };
 

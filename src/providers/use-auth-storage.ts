@@ -2,43 +2,43 @@
 
 import { useSyncExternalStore } from 'react';
 
-const ID_TOKEN_KEY = 'xu';
-const ID_TOKEN_EVENT = 'id_token_event';
+const SESSION_TOKEN_KEY = 'xu';
+const SESSION_TOKEN_EVENT = 'session_token_event';
 
 const subscribe = (callback: () => void) => {
-  window.addEventListener(ID_TOKEN_EVENT, callback);
+  window.addEventListener(SESSION_TOKEN_EVENT, callback);
   return () => {
-    window.removeEventListener(ID_TOKEN_EVENT, callback);
+    window.removeEventListener(SESSION_TOKEN_EVENT, callback);
   };
 };
 
-const getSnapshot = () => localStorage.getItem(ID_TOKEN_KEY);
+const getSnapshot = () => localStorage.getItem(SESSION_TOKEN_KEY);
 
 // Exposes the current authentication token to code outside of the React context.
-export const currentIdToken = () => {
+export const currentSessionToken = () => {
   const item = getSnapshot();
   if (typeof item === 'string') {
     // Ignore invalid values that may have been set by previous implementations.
     if (item === 'null' || !item.startsWith('{')) {
       return null;
     }
-    return (JSON.parse(item) as IdTokenStored).idToken;
+    return (JSON.parse(item) as SessionTokenStored).sessionToken;
   } else {
     return null;
   }
 };
 
-const setIdToken = (newValue: IdTokenStored | null) => {
+const setSessionToken = (newValue: SessionTokenStored | null) => {
   if (newValue === null) {
-    localStorage.removeItem(ID_TOKEN_KEY);
+    localStorage.removeItem(SESSION_TOKEN_KEY);
   } else {
-    localStorage.setItem(ID_TOKEN_KEY, JSON.stringify(newValue));
+    localStorage.setItem(SESSION_TOKEN_KEY, JSON.stringify(newValue));
   }
-  window.dispatchEvent(new StorageEvent(ID_TOKEN_EVENT));
+  window.dispatchEvent(new StorageEvent(SESSION_TOKEN_EVENT));
 };
 
-interface IdTokenStored {
-  idToken: string;
+interface SessionTokenStored {
+  sessionToken: string;
   email: string;
   isPrivileged?: boolean;
 }
@@ -50,5 +50,5 @@ export const useAuthStorage = () => {
     throw new Error('localStorage corrupted');
   }
 
-  return [value as IdTokenStored | null, setIdToken] as const;
+  return [value as SessionTokenStored | null, setSessionToken] as const;
 };
