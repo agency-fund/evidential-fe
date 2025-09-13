@@ -7,6 +7,7 @@ import { XSpinner } from '@/components/ui/x-spinner';
 import { useAuthStorage } from '@/providers/use-auth-storage';
 import { AIRPLANE_MODE, API_BASE_URL } from '@/services/constants';
 import { useCustomEventListener } from '@/providers/use-custom-event-handler';
+import { getLogoutUrl } from '@/api/admin';
 
 export const API_401_EVENT = 'api_returned_401';
 const CODE_VERIFIER_KEY = 'code_verifier';
@@ -57,12 +58,21 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
   const isGoogleLoginRedirect = user === null && searchParams.has('code') && searchParams.has('scope');
   const [userIsMissingInvite, setUserIsMissingInvite] = useState(false);
 
-  const logout = useCallback(() => {
-    console.log('logout');
+  const logout = useCallback(async () => {
     localStorage.removeItem(CODE_VERIFIER_KEY);
+    if (user?.sessionToken) {
+      try {
+        await fetch(new URL(getLogoutUrl(), API_BASE_URL), {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${user.sessionToken}` },
+        });
+      } catch (_) {
+        // ignore
+      }
+    }
     setUser(null);
     router.push('/');
-  }, [setUser, router]);
+  }, [user, setUser, router]);
 
   useCustomEventListener(API_401_EVENT, logout);
 
