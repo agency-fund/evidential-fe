@@ -129,6 +129,60 @@ export const useCallerIdentity = <
 	};
 };
 /**
+ * Invalidates all previously created session tokens.
+ * @summary Logout
+ */
+export const getLogoutUrl = () => {
+	return `/v1/m/logout`;
+};
+
+export const logout = async (options?: RequestInit): Promise<void> => {
+	return orvalFetch<void>(getLogoutUrl(), {
+		...options,
+		method: "POST",
+	});
+};
+
+export const getLogoutMutationFetcher = (
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, __: { arg: Arguments }): Promise<void> => {
+		return logout(options);
+	};
+};
+export const getLogoutMutationKey = () => [`/v1/m/logout`] as const;
+
+export type LogoutMutationResult = NonNullable<
+	Awaited<ReturnType<typeof logout>>
+>;
+export type LogoutMutationError = ErrorType<HTTPExceptionError>;
+
+/**
+ * @summary Logout
+ */
+export const useLogout = <TError = ErrorType<HTTPExceptionError>>(options?: {
+	swr?: SWRMutationConfiguration<
+		Awaited<ReturnType<typeof logout>>,
+		TError,
+		Key,
+		Arguments,
+		Awaited<ReturnType<typeof logout>>
+	> & { swrKey?: string };
+	request?: SecondParameter<typeof orvalFetch>;
+}) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey = swrOptions?.swrKey ?? getLogoutMutationKey();
+	const swrFn = getLogoutMutationFetcher(requestOptions);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
  * Fetches a snapshot by ID.
  * @summary Get Snapshot
  */
