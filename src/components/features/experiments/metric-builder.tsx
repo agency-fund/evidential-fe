@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge, Button, Flex, Table, Text, TextField } from '@radix-ui/themes';
+import { Badge, Button, Flex, Grid, Table, Text, TextField } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
 import { FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { GetMetricsResponseElement } from '@/api/methods.schemas';
@@ -72,7 +72,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
     .toSorted((a, b) => a.field_name.localeCompare(b.field_name));
 
   return (
-    <Flex direction="column" gap="4">
+    <Grid columns={'2'} gap={'4'}>
       <Table.Root layout={'fixed'}>
         <Table.Header>
           <Table.Row>
@@ -205,6 +205,6 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
           )}
         </Flex>
       </Flex>
-    </Flex>
+    </Grid>
   );
 }
