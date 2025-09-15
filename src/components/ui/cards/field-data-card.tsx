@@ -8,7 +8,7 @@ import { ReactNode } from 'react';
 interface FieldDataCardProps {
   field: {
     field_name: string;
-    description: string;
+    description?: string;
     data_type: DataType;
   };
   children?: ReactNode;
@@ -22,10 +22,12 @@ export default function FieldDataCard({ field, children, trigger }: FieldDataCar
         <DataList.Label width="fit-content">Field Name</DataList.Label>
         <DataList.Value>{field.field_name}</DataList.Value>
       </DataList.Item>
-      <DataList.Item>
-        <DataList.Label minWidth="120px">Description</DataList.Label>
-        <DataList.Value>{field.description || 'N/A'}</DataList.Value>
-      </DataList.Item>
+      {field.description && (
+        <DataList.Item>
+          <DataList.Label minWidth="120px">Description</DataList.Label>
+          <DataList.Value>{field.description}</DataList.Value>
+        </DataList.Item>
+      )}
       <DataList.Item>
         <DataList.Label minWidth="120px">Data Type</DataList.Label>
         <DataList.Value>
