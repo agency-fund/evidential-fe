@@ -297,6 +297,88 @@ export interface BalanceCheck {
 	balance_ok: boolean;
 }
 
+/**
+ * ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
+ */
+export type BanditArmAnalysisArmId = string | null;
+
+export type BanditArmAnalysisArmDescription = string | null;
+
+/**
+ * Initial alpha parameter for Beta prior
+ */
+export type BanditArmAnalysisAlphaInit = number | null;
+
+/**
+ * Initial beta parameter for Beta prior
+ */
+export type BanditArmAnalysisBetaInit = number | null;
+
+/**
+ * Initial mean parameter for Normal prior
+ */
+export type BanditArmAnalysisMuInit = number | null;
+
+/**
+ * Initial standard deviation parameter for Normal prior
+ */
+export type BanditArmAnalysisSigmaInit = number | null;
+
+/**
+ * Updated alpha parameter for Beta prior
+ */
+export type BanditArmAnalysisAlpha = number | null;
+
+/**
+ * Updated beta parameter for Beta prior
+ */
+export type BanditArmAnalysisBeta = number | null;
+
+/**
+ * Updated mean vector for Normal prior
+ */
+export type BanditArmAnalysisMu = number[] | null;
+
+/**
+ * Updated covariance matrix for Normal prior
+ */
+export type BanditArmAnalysisCovariance = number[][] | null;
+
+/**
+ * Describes an experiment arm analysis for bandit experiments.
+ */
+export interface BanditArmAnalysis {
+	/** ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
+	arm_id?: BanditArmAnalysisArmId;
+	/** @maxLength 100 */
+	arm_name: string;
+	arm_description?: BanditArmAnalysisArmDescription;
+	/** Initial alpha parameter for Beta prior */
+	alpha_init?: BanditArmAnalysisAlphaInit;
+	/** Initial beta parameter for Beta prior */
+	beta_init?: BanditArmAnalysisBetaInit;
+	/** Initial mean parameter for Normal prior */
+	mu_init?: BanditArmAnalysisMuInit;
+	/** Initial standard deviation parameter for Normal prior */
+	sigma_init?: BanditArmAnalysisSigmaInit;
+	/** Updated alpha parameter for Beta prior */
+	alpha?: BanditArmAnalysisAlpha;
+	/** Updated beta parameter for Beta prior */
+	beta?: BanditArmAnalysisBeta;
+	/** Updated mean vector for Normal prior */
+	mu?: BanditArmAnalysisMu;
+	/** Updated covariance matrix for Normal prior */
+	covariance?: BanditArmAnalysisCovariance;
+	/** Posterior predictive mean for this arm. */
+	prior_pred_mean: number;
+	/** Posterior predictive standard deviation for this arm. */
+	prior_pred_stdev: number;
+	/** Posterior predictive mean for this arm. */
+	post_pred_mean: number;
+	/** Posterior predictive standard deviation for this arm. */
+	post_pred_stdev: number;
+}
+
 export type BanditExperimentAnalysisResponseType =
 	(typeof BanditExperimentAnalysisResponseType)[keyof typeof BanditExperimentAnalysisResponseType];
 
@@ -306,22 +388,25 @@ export const BanditExperimentAnalysisResponseType = {
 } as const;
 
 /**
+ * The context values used for the analysis, if applicable.
+ */
+export type BanditExperimentAnalysisResponseContexts = number[] | null;
+
+/**
  * Describes changes in arms for a bandit experiment
  */
 export interface BanditExperimentAnalysisResponse {
 	type: BanditExperimentAnalysisResponseType;
 	/** ID of the experiment. */
 	experiment_id: string;
-	/** The number of trials conducted for this experiment. */
-	n_trials: number;
+	/** Contains one analysis per metric targeted by the experiment. */
+	arm_analyses: BanditArmAnalysis[];
 	/** The number of outcomes observed for this experiment. */
 	n_outcomes: number;
-	/** Posterior means for each arm in the experiment. */
-	posterior_means: number[];
-	/** Posterior standard deviations for each arm in the experiment. */
-	posterior_stds: number[];
-	/** Volume of participants for each arm in the experiment. */
-	volumes: number[];
+	/** The date and time the experiment analysis was created. */
+	created_at: string;
+	/** The context values used for the analysis, if applicable. */
+	contexts?: BanditExperimentAnalysisResponseContexts;
 }
 
 /**
@@ -338,6 +423,11 @@ export type BayesABExperimentSpecInputExperimentType =
 export const BayesABExperimentSpecInputExperimentType = {
 	bayes_ab_online: "bayes_ab_online",
 } as const;
+
+/**
+ * Optional URL to a more detailed experiment design doc.
+ */
+export type BayesABExperimentSpecInputDesignUrl = string | null;
 
 /**
  * Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.
@@ -364,6 +454,8 @@ DEPRECATED: This field is no longer used and will be removed in a future release
 	experiment_name: string;
 	/** @maxLength 2000 */
 	description: string;
+	/** Optional URL to a more detailed experiment design doc. */
+	design_url?: BayesABExperimentSpecInputDesignUrl;
 	start_date: string;
 	end_date: string;
 	/**
@@ -395,6 +487,11 @@ export const BayesABExperimentSpecOutputExperimentType = {
 } as const;
 
 /**
+ * Optional URL to a more detailed experiment design doc.
+ */
+export type BayesABExperimentSpecOutputDesignUrl = string | null;
+
+/**
  * Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.
  */
 export type BayesABExperimentSpecOutputContexts = Context[] | null;
@@ -419,6 +516,8 @@ DEPRECATED: This field is no longer used and will be removed in a future release
 	experiment_name: string;
 	/** @maxLength 2000 */
 	description: string;
+	/** Optional URL to a more detailed experiment design doc. */
+	design_url?: BayesABExperimentSpecOutputDesignUrl;
 	start_date: string;
 	end_date: string;
 	/**
@@ -507,6 +606,32 @@ export interface BqDsnOutput {
 }
 
 /**
+ * Request model for creating a new CMAB assignment or a CMAB experiment analysis.
+
+When submitting context values for a CMAB experiment, the following rules apply:
+1. Each context_input must reference a valid context_id from the experiment's defined contexts
+2. The order of context_inputs does not need to match the order of contexts in the experiment
+3. You must provide values for all contexts defined in the experiment
+4. Number of input context values must match the number of contexts defined in the experiment
+5. The context value input can be None, but only in the case of retrieving a pre-existing assignment.
+
+Example:
+    If an experiment defines contexts with IDs ["ctx_1", "ctx_2"], your request must include
+    both of these context_ids in the context_inputs list, but they can be in any order.
+ */
+export interface CMABContextInputRequest {
+	type?: "cmab_assignment";
+	/** 
+            List of context values for the assignment.
+            Must include exactly the same number contexts defined in the experiment.
+            The values are matched to the experiment's contexts by context_id, not by position in the list.
+            Each context_id must correspond to one of the IDs of the contexts defined in the experiment.
+            Can be None, when simply retrieving pre-existing assignments; must have valid inputs otherwise.
+             */
+	context_inputs: ContextInput[];
+}
+
+/**
  * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
 DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
  * @deprecated
@@ -520,6 +645,11 @@ export type CMABExperimentSpecInputExperimentType =
 export const CMABExperimentSpecInputExperimentType = {
 	cmab_online: "cmab_online",
 } as const;
+
+/**
+ * Optional URL to a more detailed experiment design doc.
+ */
+export type CMABExperimentSpecInputDesignUrl = string | null;
 
 /**
  * Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.
@@ -546,6 +676,8 @@ DEPRECATED: This field is no longer used and will be removed in a future release
 	experiment_name: string;
 	/** @maxLength 2000 */
 	description: string;
+	/** Optional URL to a more detailed experiment design doc. */
+	design_url?: CMABExperimentSpecInputDesignUrl;
 	start_date: string;
 	end_date: string;
 	/**
@@ -577,6 +709,11 @@ export const CMABExperimentSpecOutputExperimentType = {
 } as const;
 
 /**
+ * Optional URL to a more detailed experiment design doc.
+ */
+export type CMABExperimentSpecOutputDesignUrl = string | null;
+
+/**
  * Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.
  */
 export type CMABExperimentSpecOutputContexts = Context[] | null;
@@ -601,6 +738,8 @@ DEPRECATED: This field is no longer used and will be removed in a future release
 	experiment_name: string;
 	/** @maxLength 2000 */
 	description: string;
+	/** Optional URL to a more detailed experiment design doc. */
+	design_url?: CMABExperimentSpecOutputDesignUrl;
 	start_date: string;
 	end_date: string;
 	/**
@@ -683,43 +822,6 @@ export interface CreateApiKeyResponse {
 	id: string;
 	datasource_id: string;
 	key: string;
-}
-
-/**
- * 
-            List of context values for the assignment.
-            Must include exactly the same number contexts defined in the experiment.
-            The values are matched to the experiment's contexts by context_id, not by position in the list.
-            Each context_id must correspond to one of the IDs of the contexts defined in the experiment.
-            Can be None, when simply retrieving pre-existing assignments; must have valid inputs otherwise.
-            
- */
-export type CreateCMABAssignmentRequestContextInputs = ContextInput[] | null;
-
-/**
- * Request model for creating a new CMAB assignment.
-
-When submitting context values for a CMAB experiment, the following rules apply:
-1. Each context_input must reference a valid context_id from the experiment's defined contexts
-2. The order of context_inputs does not need to match the order of contexts in the experiment
-3. You must provide values for all contexts defined in the experiment
-4. Number of input context values must match the number of contexts defined in the experiment
-5. The context value input can be None, but only in the case of retrieving a pre-existing assignment.
-
-Example:
-    If an experiment defines contexts with IDs ["ctx_1", "ctx_2"], your request must include
-    both of these context_ids in the context_inputs list, but they can be in any order.
- */
-export interface CreateCMABAssignmentRequest {
-	type?: "cmab_assignment";
-	/** 
-            List of context values for the assignment.
-            Must include exactly the same number contexts defined in the experiment.
-            The values are matched to the experiment's contexts by context_id, not by position in the list.
-            Each context_id must correspond to one of the IDs of the contexts defined in the experiment.
-            Can be None, when simply retrieving pre-existing assignments; must have valid inputs otherwise.
-             */
-	context_inputs: CreateCMABAssignmentRequestContextInputs;
 }
 
 export interface CreateDatasourceRequest {
@@ -1526,6 +1628,11 @@ export const MABExperimentSpecInputExperimentType = {
 } as const;
 
 /**
+ * Optional URL to a more detailed experiment design doc.
+ */
+export type MABExperimentSpecInputDesignUrl = string | null;
+
+/**
  * Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.
  */
 export type MABExperimentSpecInputContexts = Context[] | null;
@@ -1549,6 +1656,8 @@ DEPRECATED: This field is no longer used and will be removed in a future release
 	experiment_name: string;
 	/** @maxLength 2000 */
 	description: string;
+	/** Optional URL to a more detailed experiment design doc. */
+	design_url?: MABExperimentSpecInputDesignUrl;
 	start_date: string;
 	end_date: string;
 	/**
@@ -1580,6 +1689,11 @@ export const MABExperimentSpecOutputExperimentType = {
 } as const;
 
 /**
+ * Optional URL to a more detailed experiment design doc.
+ */
+export type MABExperimentSpecOutputDesignUrl = string | null;
+
+/**
  * Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.
  */
 export type MABExperimentSpecOutputContexts = Context[] | null;
@@ -1603,6 +1717,8 @@ DEPRECATED: This field is no longer used and will be removed in a future release
 	experiment_name: string;
 	/** @maxLength 2000 */
 	description: string;
+	/** Optional URL to a more detailed experiment design doc. */
+	design_url?: MABExperimentSpecOutputDesignUrl;
 	start_date: string;
 	end_date: string;
 	/**
@@ -1778,6 +1894,11 @@ export const OnlineFrequentistExperimentSpecInputExperimentType = {
 } as const;
 
 /**
+ * Optional URL to a more detailed experiment design doc.
+ */
+export type OnlineFrequentistExperimentSpecInputDesignUrl = string | null;
+
+/**
  * Use this type to randomly assign participants into arms during live experiment execution with
 frequentist A/B experiments.
 
@@ -1797,6 +1918,8 @@ DEPRECATED: This field is no longer used and will be removed in a future release
 	experiment_name: string;
 	/** @maxLength 2000 */
 	description: string;
+	/** Optional URL to a more detailed experiment design doc. */
+	design_url?: OnlineFrequentistExperimentSpecInputDesignUrl;
 	start_date: string;
 	end_date: string;
 	/**
@@ -1856,6 +1979,11 @@ export const OnlineFrequentistExperimentSpecOutputExperimentType = {
 } as const;
 
 /**
+ * Optional URL to a more detailed experiment design doc.
+ */
+export type OnlineFrequentistExperimentSpecOutputDesignUrl = string | null;
+
+/**
  * Use this type to randomly assign participants into arms during live experiment execution with
 frequentist A/B experiments.
 
@@ -1875,6 +2003,8 @@ DEPRECATED: This field is no longer used and will be removed in a future release
 	experiment_name: string;
 	/** @maxLength 2000 */
 	description: string;
+	/** Optional URL to a more detailed experiment design doc. */
+	design_url?: OnlineFrequentistExperimentSpecOutputDesignUrl;
 	start_date: string;
 	end_date: string;
 	/**
@@ -2042,6 +2172,11 @@ export const PreassignedFrequentistExperimentSpecInputExperimentType = {
 } as const;
 
 /**
+ * Optional URL to a more detailed experiment design doc.
+ */
+export type PreassignedFrequentistExperimentSpecInputDesignUrl = string | null;
+
+/**
  * Use this type to randomly select and assign from existing participants at design time with
 frequentist A/B experiments.
  */
@@ -2059,6 +2194,8 @@ DEPRECATED: This field is no longer used and will be removed in a future release
 	experiment_name: string;
 	/** @maxLength 2000 */
 	description: string;
+	/** Optional URL to a more detailed experiment design doc. */
+	design_url?: PreassignedFrequentistExperimentSpecInputDesignUrl;
 	start_date: string;
 	end_date: string;
 	/**
@@ -2120,6 +2257,11 @@ export const PreassignedFrequentistExperimentSpecOutputExperimentType = {
 } as const;
 
 /**
+ * Optional URL to a more detailed experiment design doc.
+ */
+export type PreassignedFrequentistExperimentSpecOutputDesignUrl = string | null;
+
+/**
  * Use this type to randomly select and assign from existing participants at design time with
 frequentist A/B experiments.
  */
@@ -2137,6 +2279,8 @@ DEPRECATED: This field is no longer used and will be removed in a future release
 	experiment_name: string;
 	/** @maxLength 2000 */
 	description: string;
+	/** Optional URL to a more detailed experiment design doc. */
+	design_url?: PreassignedFrequentistExperimentSpecOutputDesignUrl;
 	start_date: string;
 	end_date: string;
 	/**
@@ -2338,7 +2482,6 @@ export type StrictInt = number | null;
  * Describes the outcome of a bandit experiment.
  */
 export interface UpdateBanditArmOutcomeRequest {
-	participant_id: string;
 	outcome: number;
 }
 
@@ -2349,6 +2492,27 @@ export type UpdateDatasourceRequestDsn = DsnInput | null;
 export interface UpdateDatasourceRequest {
 	name?: UpdateDatasourceRequestName;
 	dsn?: UpdateDatasourceRequestDsn;
+}
+
+export type UpdateExperimentRequestName = string | null;
+
+export type UpdateExperimentRequestDescription = string | null;
+
+export type UpdateExperimentRequestDesignUrl = string | null;
+
+export type UpdateExperimentRequestStartDate = string | null;
+
+export type UpdateExperimentRequestEndDate = string | null;
+
+/**
+ * Defines the subset of fields that can be updated for an experiment after creation.
+ */
+export interface UpdateExperimentRequest {
+	name?: UpdateExperimentRequestName;
+	description?: UpdateExperimentRequestDescription;
+	design_url?: UpdateExperimentRequestDesignUrl;
+	start_date?: UpdateExperimentRequestStartDate;
+	end_date?: UpdateExperimentRequestEndDate;
 }
 
 export type UpdateOrganizationRequestName = string | null;
