@@ -15,6 +15,7 @@ import type {
 	AddWebhookToOrganizationRequest,
 	AddWebhookToOrganizationResponse,
 	AnalyzeExperimentParams,
+	CMABContextInputRequest,
 	CallerIdentity,
 	CreateApiKeyResponse,
 	CreateDatasourceRequest,
@@ -63,6 +64,7 @@ import type {
 	PowerResponseOutput,
 	RemoveMemberFromOrganizationParams,
 	UpdateDatasourceRequest,
+	UpdateExperimentRequest,
 	UpdateOrganizationRequest,
 	UpdateOrganizationWebhookRequest,
 	UpdateParticipantsTypeRequest,
@@ -122,6 +124,60 @@ export const useCallerIdentity = <
 		swrFn,
 		swrOptions,
 	);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * Invalidates all previously created session tokens.
+ * @summary Logout
+ */
+export const getLogoutUrl = () => {
+	return `/v1/m/logout`;
+};
+
+export const logout = async (options?: RequestInit): Promise<void> => {
+	return orvalFetch<void>(getLogoutUrl(), {
+		...options,
+		method: "POST",
+	});
+};
+
+export const getLogoutMutationFetcher = (
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, __: { arg: Arguments }): Promise<void> => {
+		return logout(options);
+	};
+};
+export const getLogoutMutationKey = () => [`/v1/m/logout`] as const;
+
+export type LogoutMutationResult = NonNullable<
+	Awaited<ReturnType<typeof logout>>
+>;
+export type LogoutMutationError = ErrorType<HTTPExceptionError>;
+
+/**
+ * @summary Logout
+ */
+export const useLogout = <TError = ErrorType<HTTPExceptionError>>(options?: {
+	swr?: SWRMutationConfiguration<
+		Awaited<ReturnType<typeof logout>>,
+		TError,
+		Key,
+		Arguments,
+		Awaited<ReturnType<typeof logout>>
+	> & { swrKey?: string };
+	request?: SecondParameter<typeof orvalFetch>;
+}) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey = swrOptions?.swrKey ?? getLogoutMutationKey();
+	const swrFn = getLogoutMutationFetcher(requestOptions);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
 	return {
 		swrKey,
@@ -2946,6 +3002,8 @@ export const useCreateExperiment = <
 	};
 };
 /**
+ * For preassigned experiments, and online experiments (except contextual bandits),
+    returns an analysis of the experiment's performance, given datasource and experiment ID.
  * @summary Analyze Experiment
  */
 export const getAnalyzeExperimentUrl = (
@@ -3035,6 +3093,99 @@ export const useAnalyzeExperiment = <
 		swrFn,
 		swrOptions,
 	);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * For contextual bandit experiments, returns an analysis of the experiment's performance,
+    given datasource and experiment ID and context values as input.
+ * @summary Analyze Cmab Experiment
+ */
+export const getAnalyzeCmabExperimentUrl = (
+	datasourceId: string,
+	experimentId: string,
+) => {
+	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/analyze_cmab`;
+};
+
+export const analyzeCmabExperiment = async (
+	datasourceId: string,
+	experimentId: string,
+	cMABContextInputRequest: CMABContextInputRequest,
+	options?: RequestInit,
+): Promise<ExperimentAnalysisResponse> => {
+	return orvalFetch<ExperimentAnalysisResponse>(
+		getAnalyzeCmabExperimentUrl(datasourceId, experimentId),
+		{
+			...options,
+			method: "POST",
+			headers: { "Content-Type": "application/json", ...options?.headers },
+			body: JSON.stringify(cMABContextInputRequest),
+		},
+	);
+};
+
+export const getAnalyzeCmabExperimentMutationFetcher = (
+	datasourceId: string,
+	experimentId: string,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (
+		_: Key,
+		{ arg }: { arg: CMABContextInputRequest },
+	): Promise<ExperimentAnalysisResponse> => {
+		return analyzeCmabExperiment(datasourceId, experimentId, arg, options);
+	};
+};
+export const getAnalyzeCmabExperimentMutationKey = (
+	datasourceId: string,
+	experimentId: string,
+) =>
+	[
+		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/analyze_cmab`,
+	] as const;
+
+export type AnalyzeCmabExperimentMutationResult = NonNullable<
+	Awaited<ReturnType<typeof analyzeCmabExperiment>>
+>;
+export type AnalyzeCmabExperimentMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+/**
+ * @summary Analyze Cmab Experiment
+ */
+export const useAnalyzeCmabExperiment = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	datasourceId: string,
+	experimentId: string,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof analyzeCmabExperiment>>,
+			TError,
+			Key,
+			CMABContextInputRequest,
+			Awaited<ReturnType<typeof analyzeCmabExperiment>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey =
+		swrOptions?.swrKey ??
+		getAnalyzeCmabExperimentMutationKey(datasourceId, experimentId);
+	const swrFn = getAnalyzeCmabExperimentMutationFetcher(
+		datasourceId,
+		experimentId,
+		requestOptions,
+	);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
 	return {
 		swrKey,
@@ -3346,6 +3497,88 @@ export const useGetExperiment = <
 		swrFn,
 		swrOptions,
 	);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * @summary Update Experiment
+ */
+export const getUpdateExperimentUrl = (
+	datasourceId: string,
+	experimentId: string,
+) => {
+	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}`;
+};
+
+export const updateExperiment = async (
+	datasourceId: string,
+	experimentId: string,
+	updateExperimentRequest: UpdateExperimentRequest,
+	options?: RequestInit,
+): Promise<void> => {
+	return orvalFetch<void>(getUpdateExperimentUrl(datasourceId, experimentId), {
+		...options,
+		method: "PATCH",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(updateExperimentRequest),
+	});
+};
+
+export const getUpdateExperimentMutationFetcher = (
+	datasourceId: string,
+	experimentId: string,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, { arg }: { arg: UpdateExperimentRequest }): Promise<void> => {
+		return updateExperiment(datasourceId, experimentId, arg, options);
+	};
+};
+export const getUpdateExperimentMutationKey = (
+	datasourceId: string,
+	experimentId: string,
+) => [`/v1/m/datasources/${datasourceId}/experiments/${experimentId}`] as const;
+
+export type UpdateExperimentMutationResult = NonNullable<
+	Awaited<ReturnType<typeof updateExperiment>>
+>;
+export type UpdateExperimentMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+/**
+ * @summary Update Experiment
+ */
+export const useUpdateExperiment = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	datasourceId: string,
+	experimentId: string,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof updateExperiment>>,
+			TError,
+			Key,
+			UpdateExperimentRequest,
+			Awaited<ReturnType<typeof updateExperiment>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey =
+		swrOptions?.swrKey ??
+		getUpdateExperimentMutationKey(datasourceId, experimentId);
+	const swrFn = getUpdateExperimentMutationFetcher(
+		datasourceId,
+		experimentId,
+		requestOptions,
+	);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
 	return {
 		swrKey,
