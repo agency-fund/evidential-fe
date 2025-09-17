@@ -57,7 +57,7 @@ export function OrganizationProvider({ children }: PropsWithChildren) {
   }
 
   if (error) {
-    if (error instanceof ApiError && error.response.status == 403) {
+    if (error instanceof ApiError && error.response.status == 401) {
       return (
         <Flex direction="column" gap="3" p="4" align="center">
           <Callout.Root color={'red'}>
