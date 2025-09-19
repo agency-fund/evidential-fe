@@ -1,6 +1,6 @@
 'use client';
 import { Badge, Card, Flex, Heading, IconButton, Separator, Text, Tooltip } from '@radix-ui/themes';
-import { CalendarIcon, EyeOpenIcon, LightningBoltIcon, TableIcon } from '@radix-ui/react-icons';
+import { CalendarIcon, EyeOpenIcon, LightningBoltIcon, TableIcon, FileTextIcon } from '@radix-ui/react-icons';
 import { ReadMoreText } from '@/components/ui/read-more-text';
 import { ExperimentActionsMenu } from '@/components/features/experiments/experiment-actions-menu';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
@@ -16,6 +16,7 @@ interface ExperimentCardProps {
   endDate: string;
   datasource: string;
   datasourceId: string;
+  designUrl?: string;
   participantType: string;
   experimentId: string;
   organizationId: string;
@@ -58,6 +59,7 @@ export default function ExperimentCard({
   endDate,
   datasource,
   datasourceId,
+  designUrl,
   participantType,
   experimentId,
   organizationId,
@@ -149,6 +151,16 @@ export default function ExperimentCard({
 
         {/* Bottom action buttons - always at bottom right */}
         <Flex justify="end" gap="2" pt="4">
+          {designUrl && (
+            <Tooltip content="View design document">
+              <IconButton variant="soft" color="blue" size="2" asChild>
+                <Link href={designUrl} target="_blank" rel="noopener noreferrer">
+                  <FileTextIcon width="16" height="16" />
+                </Link>
+              </IconButton>
+            </Tooltip>
+          )}
+
           <Tooltip content="View experiment">
             <IconButton variant="soft" color="blue" size="2" asChild>
               <Link href={`/datasources/${datasourceId}/experiments/${experimentId}`}>

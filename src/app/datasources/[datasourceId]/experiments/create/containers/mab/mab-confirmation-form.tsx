@@ -80,6 +80,16 @@ export function MABConfirmationForm({ formData, onBack, onFormDataChange }: MABC
                 <ReadMoreText text={formData.hypothesis} />
               </Table.Cell>
             </Table.Row>
+            {formData.designUrl && (
+              <Table.Row>
+                <Table.RowHeaderCell>Design Document URL</Table.RowHeaderCell>
+                <Table.Cell>
+                  <a href={formData.designUrl} target="_blank" rel="noopener noreferrer">
+                    {formData.designUrl}
+                  </a>
+                </Table.Cell>
+              </Table.Row>
+            )}
             <Table.Row>
               <Table.RowHeaderCell>Participant Type</Table.RowHeaderCell>
               <Table.Cell>{formData.participantType || '-'}</Table.Cell>

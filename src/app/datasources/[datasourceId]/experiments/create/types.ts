@@ -59,6 +59,7 @@ export type BaseExperimentFormData = {
   participantType?: string;
   name: string;
   hypothesis: string;
+  designUrl?: string;
   startDate: string;
   endDate: string;
   // Selected webhook IDs for notifications

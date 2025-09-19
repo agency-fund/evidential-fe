@@ -136,26 +136,38 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
         </Card>
 
         <Card>
-          <Flex direction="column" gap="2">
-            <Text as="label" size="2" weight="bold">
-              Experiment Name
-            </Text>
-            <TextField.Root
-              value={formData.name}
-              onChange={(e) => onFormDataChange({ ...formData, name: e.target.value })}
-              required
-            />
-          </Flex>
+          <Flex direction="column" gap="3">
+            <Flex direction="column" gap="2">
+              <Text as="label" size="2" weight="bold">
+                Experiment Name
+              </Text>
+              <TextField.Root
+                value={formData.name}
+                onChange={(e) => onFormDataChange({ ...formData, name: e.target.value })}
+                required
+              />
+            </Flex>
 
-          <Flex direction="column" gap="2">
-            <Text as="label" size="2" weight="bold">
-              Hypothesis
-            </Text>
-            <TextArea
-              value={formData.hypothesis}
-              onChange={(e) => onFormDataChange({ ...formData, hypothesis: e.target.value })}
-              required
-            />
+            <Flex direction="column" gap="2">
+              <Text as="label" size="2" weight="bold">
+                Hypothesis
+              </Text>
+              <TextArea
+                value={formData.hypothesis}
+                onChange={(e) => onFormDataChange({ ...formData, hypothesis: e.target.value })}
+                required
+              />
+            </Flex>
+            <Flex direction="column" gap="2">
+              <Text as="label" size="2" weight="bold">
+                Design Document URL (optional)
+              </Text>
+              <TextField.Root
+                value={formData.designUrl || ''}
+                onChange={(e) => onFormDataChange({ ...formData, designUrl: e.target.value.trim() || undefined })}
+                placeholder="https://drive.google.com/design-doc"
+              />
+            </Flex>
           </Flex>
         </Card>
 

@@ -301,6 +301,16 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
               />
             </Box>
           </Flex>
+          <Box>
+            <Text as="label" size="2" weight="bold" mb="6px">
+              Design Document URL (optional)
+            </Text>
+            <TextField.Root
+              value={formData.designUrl || ''}
+              onChange={(e) => onFormDataChange({ ...formData, designUrl: e.target.value.trim() || undefined })}
+              placeholder="https://drive.google.com/design-doc"
+            />
+          </Box>
         </Flex>
       </SectionCard>
 

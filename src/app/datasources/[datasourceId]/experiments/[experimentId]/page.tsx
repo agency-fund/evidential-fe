@@ -1,7 +1,20 @@
 'use client';
-import { Badge, Box, Flex, Heading, Separator, Table, Tabs, Text, Tooltip, Select } from '@radix-ui/themes';
+import {
+  Badge,
+  Box,
+  Flex,
+  Heading,
+  Separator,
+  Table,
+  Tabs,
+  Text,
+  Tooltip,
+  Select,
+  IconButton,
+  Link,
+} from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
-import { CalendarIcon, CodeIcon, InfoCircledIcon, PersonIcon } from '@radix-ui/react-icons';
+import { CalendarIcon, CodeIcon, InfoCircledIcon, PersonIcon, FileTextIcon } from '@radix-ui/react-icons';
 import { useAnalyzeExperiment, useGetExperiment, useListSnapshots } from '@/api/admin';
 import { ForestPlot } from '@/components/features/experiments/forest-plot';
 import { XSpinner } from '@/components/ui/x-spinner';
@@ -126,7 +139,7 @@ export default function ExperimentViewPage() {
   }
 
   const { design_spec, assign_summary } = experiment;
-  const { experiment_name, description, start_date, end_date, arms } = design_spec;
+  const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
 
   return (
     <Flex direction="column" gap="6">
@@ -157,6 +170,18 @@ export default function ExperimentViewPage() {
             <Text>→</Text>
             <Text>{new Date(end_date).toLocaleDateString()}</Text>
           </Flex>
+          {design_url && (
+            <>
+              <Separator orientation="vertical" />
+              <Tooltip content="View design document">
+                <IconButton variant="soft" color="blue" size="2" asChild>
+                  <Link href={design_url} target="_blank" rel="noopener noreferrer">
+                    <FileTextIcon width="16" height="16" />
+                  </Link>
+                </IconButton>
+              </Tooltip>
+            </>
+          )}
         </Flex>
       </Flex>
       <Flex direction="column" gap="4">
