@@ -163,7 +163,6 @@ export default function Page() {
           ) : (
             <Grid columns={{ initial: '1', md: '2', lg: '3' }} gap="3">
               {filteredExperiments.map((experiment) => {
-                console.log(experiment);
                 return (
                   <ExperimentCard
                     key={experiment.experiment_id}
