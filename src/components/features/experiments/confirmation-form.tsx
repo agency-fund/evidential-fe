@@ -71,6 +71,10 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
               <Table.Cell>{formData.experimentType}</Table.Cell>
             </Table.Row>
             <Table.Row>
+              <Table.RowHeaderCell>Participant Type</Table.RowHeaderCell>
+              <Table.Cell>{formData.participantType || '-'}</Table.Cell>
+            </Table.Row>
+            <Table.Row>
               <Table.RowHeaderCell>Name</Table.RowHeaderCell>
               <Table.Cell>{formData.name}</Table.Cell>
             </Table.Row>
@@ -90,10 +94,6 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
                 </Table.Cell>
               </Table.Row>
             )}
-            <Table.Row>
-              <Table.RowHeaderCell>Participant Type</Table.RowHeaderCell>
-              <Table.Cell>{formData.participantType || '-'}</Table.Cell>
-            </Table.Row>
             <Table.Row>
               <Table.RowHeaderCell>Start Date</Table.RowHeaderCell>
               <Table.Cell>{new Date(formData.startDate).toLocaleDateString()}</Table.Cell>
