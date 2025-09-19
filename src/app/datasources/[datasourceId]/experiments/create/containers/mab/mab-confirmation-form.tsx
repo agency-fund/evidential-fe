@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Flex, Table, Text, Callout } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { CMABFormData, MABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
@@ -71,6 +72,10 @@ export function MABConfirmationForm({ formData, onBack, onFormDataChange }: MABC
               <Table.Cell>{formData.experimentType}</Table.Cell>
             </Table.Row>
             <Table.Row>
+              <Table.RowHeaderCell>Participant Type</Table.RowHeaderCell>
+              <Table.Cell>{formData.participantType || '-'}</Table.Cell>
+            </Table.Row>
+            <Table.Row>
               <Table.RowHeaderCell>Name</Table.RowHeaderCell>
               <Table.Cell>{formData.name}</Table.Cell>
             </Table.Row>
@@ -80,10 +85,16 @@ export function MABConfirmationForm({ formData, onBack, onFormDataChange }: MABC
                 <ReadMoreText text={formData.hypothesis} />
               </Table.Cell>
             </Table.Row>
-            <Table.Row>
-              <Table.RowHeaderCell>Participant Type</Table.RowHeaderCell>
-              <Table.Cell>{formData.participantType || '-'}</Table.Cell>
-            </Table.Row>
+            {formData.designUrl && (
+              <Table.Row>
+                <Table.RowHeaderCell>Design Document URL</Table.RowHeaderCell>
+                <Table.Cell>
+                  <Link href={formData.designUrl} target="_blank" rel="noopener noreferrer">
+                    {formData.designUrl}
+                  </Link>
+                </Table.Cell>
+              </Table.Row>
+            )}
             <Table.Row>
               <Table.RowHeaderCell>Start Date</Table.RowHeaderCell>
               <Table.Cell>{new Date(formData.startDate).toLocaleDateString()}</Table.Cell>
