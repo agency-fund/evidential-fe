@@ -2,6 +2,7 @@
 import { Button, Callout, Flex, Grid, Table, Text, Badge } from '@radix-ui/themes';
 import { FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useAbandonExperiment, useCommitExperiment } from '@/api/admin';
 import { ParametersSummaryTable } from '@/components/features/experiments/parameters-summary-table';
@@ -88,9 +89,9 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
               <Table.Row>
                 <Table.RowHeaderCell>Design Document URL</Table.RowHeaderCell>
                 <Table.Cell>
-                  <a href={formData.designUrl} target="_blank" rel="noopener noreferrer">
+                  <Link href={formData.designUrl} target="_blank" rel="noopener noreferrer">
                     {formData.designUrl}
-                  </a>
+                  </Link>
                 </Table.Cell>
               </Table.Row>
             )}

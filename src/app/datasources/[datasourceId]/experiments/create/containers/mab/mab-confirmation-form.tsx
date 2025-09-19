@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Flex, Table, Text, Callout } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { CMABFormData, MABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
@@ -88,9 +89,9 @@ export function MABConfirmationForm({ formData, onBack, onFormDataChange }: MABC
               <Table.Row>
                 <Table.RowHeaderCell>Design Document URL</Table.RowHeaderCell>
                 <Table.Cell>
-                  <a href={formData.designUrl} target="_blank" rel="noopener noreferrer">
+                  <Link href={formData.designUrl} target="_blank" rel="noopener noreferrer">
                     {formData.designUrl}
-                  </a>
+                  </Link>
                 </Table.Cell>
               </Table.Row>
             )}
