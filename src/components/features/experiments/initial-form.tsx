@@ -165,7 +165,7 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
               <TextField.Root
                 value={formData.designUrl || ''}
                 onChange={(e) => onFormDataChange({ ...formData, designUrl: e.target.value.trim() || undefined })}
-                placeholder="https://drive.google.com/design-doc"
+                placeholder="https://docs.google.com/document/..."
               />
             </Flex>
           </Flex>
