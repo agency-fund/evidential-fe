@@ -1,7 +1,7 @@
 'use client';
 import { Button, Dialog, Flex, IconButton, Tooltip } from '@radix-ui/themes';
 import { useState } from 'react';
-import { getExperimentAssignmentsAsCsv } from '@/api/admin';
+import { getExperimentAssignmentsAsCsvForUi } from '@/api/admin';
 import { DownloadIcon } from '@radix-ui/react-icons';
 
 interface DownloadAssignmentsCsvButtonProps {
@@ -16,7 +16,7 @@ export function DownloadAssignmentsCsvButton({ datasourceId, experimentId }: Dow
   const handleDownload = async () => {
     setIsDownloading(true);
     try {
-      const response = await getExperimentAssignmentsAsCsv(datasourceId, experimentId);
+      const response = await getExperimentAssignmentsAsCsvForUi(datasourceId, experimentId);
 
       if (response) {
         const blob = new Blob([response as BlobPart], { type: 'text/csv;charset=utf-8;' });
