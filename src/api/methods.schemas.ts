@@ -2478,6 +2478,18 @@ export type StrictFloat = number | null;
 
 export type StrictInt = number | null;
 
+export type UpdateArmRequestName = string | null;
+
+export type UpdateArmRequestDescription = string | null;
+
+/**
+ * Defines the subset of fields that can be updated for an Arm after creation.
+ */
+export interface UpdateArmRequest {
+	name?: UpdateArmRequestName;
+	description?: UpdateArmRequestDescription;
+}
+
 /**
  * Describes the outcome of a bandit experiment.
  */

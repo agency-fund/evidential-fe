@@ -63,6 +63,7 @@ import type {
 	PowerRequest,
 	PowerResponseOutput,
 	RemoveMemberFromOrganizationParams,
+	UpdateArmRequest,
 	UpdateDatasourceRequest,
 	UpdateExperimentRequest,
 	UpdateOrganizationRequest,
@@ -3431,22 +3432,22 @@ export const useListOrganizationExperiments = <
 };
 /**
  * Returns the experiment with the specified ID.
- * @summary Get Experiment
+ * @summary Get Experiment For Ui
  */
-export const getGetExperimentUrl = (
+export const getGetExperimentForUiUrl = (
 	datasourceId: string,
 	experimentId: string,
 ) => {
 	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}`;
 };
 
-export const getExperiment = async (
+export const getExperimentForUi = async (
 	datasourceId: string,
 	experimentId: string,
 	options?: RequestInit,
 ): Promise<GetExperimentResponse> => {
 	return orvalFetch<GetExperimentResponse>(
-		getGetExperimentUrl(datasourceId, experimentId),
+		getGetExperimentForUiUrl(datasourceId, experimentId),
 		{
 			...options,
 			method: "GET",
@@ -3454,29 +3455,29 @@ export const getExperiment = async (
 	);
 };
 
-export const getGetExperimentKey = (
+export const getGetExperimentForUiKey = (
 	datasourceId: string,
 	experimentId: string,
 ) => [`/v1/m/datasources/${datasourceId}/experiments/${experimentId}`] as const;
 
-export type GetExperimentQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getExperiment>>
+export type GetExperimentForUiQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getExperimentForUi>>
 >;
-export type GetExperimentQueryError = ErrorType<
+export type GetExperimentForUiQueryError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
 /**
- * @summary Get Experiment
+ * @summary Get Experiment For Ui
  */
-export const useGetExperiment = <
+export const useGetExperimentForUi = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
 	datasourceId: string,
 	experimentId: string,
 	options?: {
 		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof getExperiment>>,
+			Awaited<ReturnType<typeof getExperimentForUi>>,
 			TError
 		> & { swrKey?: Key; enabled?: boolean };
 		request?: SecondParameter<typeof orvalFetch>;
@@ -3489,8 +3490,9 @@ export const useGetExperiment = <
 	const swrKey =
 		swrOptions?.swrKey ??
 		(() =>
-			isEnabled ? getGetExperimentKey(datasourceId, experimentId) : null);
-	const swrFn = () => getExperiment(datasourceId, experimentId, requestOptions);
+			isEnabled ? getGetExperimentForUiKey(datasourceId, experimentId) : null);
+	const swrFn = () =>
+		getExperimentForUi(datasourceId, experimentId, requestOptions);
 
 	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
 		swrKey,
@@ -3691,22 +3693,22 @@ export const useDeleteExperiment = <
 	};
 };
 /**
- * @summary Get Experiment Assignments
+ * @summary Get Experiment Assignments For Ui
  */
-export const getGetExperimentAssignmentsUrl = (
+export const getGetExperimentAssignmentsForUiUrl = (
 	datasourceId: string,
 	experimentId: string,
 ) => {
 	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments`;
 };
 
-export const getExperimentAssignments = async (
+export const getExperimentAssignmentsForUi = async (
 	datasourceId: string,
 	experimentId: string,
 	options?: RequestInit,
 ): Promise<GetExperimentAssignmentsResponse> => {
 	return orvalFetch<GetExperimentAssignmentsResponse>(
-		getGetExperimentAssignmentsUrl(datasourceId, experimentId),
+		getGetExperimentAssignmentsForUiUrl(datasourceId, experimentId),
 		{
 			...options,
 			method: "GET",
@@ -3714,7 +3716,7 @@ export const getExperimentAssignments = async (
 	);
 };
 
-export const getGetExperimentAssignmentsKey = (
+export const getGetExperimentAssignmentsForUiKey = (
 	datasourceId: string,
 	experimentId: string,
 ) =>
@@ -3722,24 +3724,24 @@ export const getGetExperimentAssignmentsKey = (
 		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments`,
 	] as const;
 
-export type GetExperimentAssignmentsQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getExperimentAssignments>>
+export type GetExperimentAssignmentsForUiQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getExperimentAssignmentsForUi>>
 >;
-export type GetExperimentAssignmentsQueryError = ErrorType<
+export type GetExperimentAssignmentsForUiQueryError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
 /**
- * @summary Get Experiment Assignments
+ * @summary Get Experiment Assignments For Ui
  */
-export const useGetExperimentAssignments = <
+export const useGetExperimentAssignmentsForUi = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
 	datasourceId: string,
 	experimentId: string,
 	options?: {
 		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof getExperimentAssignments>>,
+			Awaited<ReturnType<typeof getExperimentAssignmentsForUi>>,
 			TError
 		> & { swrKey?: Key; enabled?: boolean };
 		request?: SecondParameter<typeof orvalFetch>;
@@ -3753,10 +3755,10 @@ export const useGetExperimentAssignments = <
 		swrOptions?.swrKey ??
 		(() =>
 			isEnabled
-				? getGetExperimentAssignmentsKey(datasourceId, experimentId)
+				? getGetExperimentAssignmentsForUiKey(datasourceId, experimentId)
 				: null);
 	const swrFn = () =>
-		getExperimentAssignments(datasourceId, experimentId, requestOptions);
+		getExperimentAssignmentsForUi(datasourceId, experimentId, requestOptions);
 
 	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
 		swrKey,
@@ -3772,20 +3774,20 @@ export const useGetExperimentAssignments = <
 /**
  * @summary Export experiment assignments as CSV file; BalanceCheck not included. csv header form: participant_id,arm_id,arm_name,strata_name1,strata_name2,...
  */
-export const getGetExperimentAssignmentsAsCsvUrl = (
+export const getGetExperimentAssignmentsAsCsvForUiUrl = (
 	datasourceId: string,
 	experimentId: string,
 ) => {
 	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments/csv`;
 };
 
-export const getExperimentAssignmentsAsCsv = async (
+export const getExperimentAssignmentsAsCsvForUi = async (
 	datasourceId: string,
 	experimentId: string,
 	options?: RequestInit,
 ): Promise<unknown> => {
 	return orvalFetch<unknown>(
-		getGetExperimentAssignmentsAsCsvUrl(datasourceId, experimentId),
+		getGetExperimentAssignmentsAsCsvForUiUrl(datasourceId, experimentId),
 		{
 			...options,
 			method: "GET",
@@ -3793,7 +3795,7 @@ export const getExperimentAssignmentsAsCsv = async (
 	);
 };
 
-export const getGetExperimentAssignmentsAsCsvKey = (
+export const getGetExperimentAssignmentsAsCsvForUiKey = (
 	datasourceId: string,
 	experimentId: string,
 ) =>
@@ -3801,24 +3803,24 @@ export const getGetExperimentAssignmentsAsCsvKey = (
 		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments/csv`,
 	] as const;
 
-export type GetExperimentAssignmentsAsCsvQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getExperimentAssignmentsAsCsv>>
+export type GetExperimentAssignmentsAsCsvForUiQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getExperimentAssignmentsAsCsvForUi>>
 >;
-export type GetExperimentAssignmentsAsCsvQueryError = ErrorType<
+export type GetExperimentAssignmentsAsCsvForUiQueryError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
 /**
  * @summary Export experiment assignments as CSV file; BalanceCheck not included. csv header form: participant_id,arm_id,arm_name,strata_name1,strata_name2,...
  */
-export const useGetExperimentAssignmentsAsCsv = <
+export const useGetExperimentAssignmentsAsCsvForUi = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
 	datasourceId: string,
 	experimentId: string,
 	options?: {
 		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof getExperimentAssignmentsAsCsv>>,
+			Awaited<ReturnType<typeof getExperimentAssignmentsAsCsvForUi>>,
 			TError
 		> & { swrKey?: Key; enabled?: boolean };
 		request?: SecondParameter<typeof orvalFetch>;
@@ -3832,10 +3834,14 @@ export const useGetExperimentAssignmentsAsCsv = <
 		swrOptions?.swrKey ??
 		(() =>
 			isEnabled
-				? getGetExperimentAssignmentsAsCsvKey(datasourceId, experimentId)
+				? getGetExperimentAssignmentsAsCsvForUiKey(datasourceId, experimentId)
 				: null);
 	const swrFn = () =>
-		getExperimentAssignmentsAsCsv(datasourceId, experimentId, requestOptions);
+		getExperimentAssignmentsAsCsvForUi(
+			datasourceId,
+			experimentId,
+			requestOptions,
+		);
 
 	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
 		swrKey,
@@ -3962,6 +3968,97 @@ export const useGetExperimentAssignmentForParticipant = <
 		swrFn,
 		swrOptions,
 	);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * @summary Update Arm
+ */
+export const getUpdateArmUrl = (
+	datasourceId: string,
+	experimentId: string,
+	armId: string,
+) => {
+	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/arms/${armId}`;
+};
+
+export const updateArm = async (
+	datasourceId: string,
+	experimentId: string,
+	armId: string,
+	updateArmRequest: UpdateArmRequest,
+	options?: RequestInit,
+): Promise<void> => {
+	return orvalFetch<void>(getUpdateArmUrl(datasourceId, experimentId, armId), {
+		...options,
+		method: "PATCH",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(updateArmRequest),
+	});
+};
+
+export const getUpdateArmMutationFetcher = (
+	datasourceId: string,
+	experimentId: string,
+	armId: string,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, { arg }: { arg: UpdateArmRequest }): Promise<void> => {
+		return updateArm(datasourceId, experimentId, armId, arg, options);
+	};
+};
+export const getUpdateArmMutationKey = (
+	datasourceId: string,
+	experimentId: string,
+	armId: string,
+) =>
+	[
+		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/arms/${armId}`,
+	] as const;
+
+export type UpdateArmMutationResult = NonNullable<
+	Awaited<ReturnType<typeof updateArm>>
+>;
+export type UpdateArmMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+/**
+ * @summary Update Arm
+ */
+export const useUpdateArm = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	datasourceId: string,
+	experimentId: string,
+	armId: string,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof updateArm>>,
+			TError,
+			Key,
+			UpdateArmRequest,
+			Awaited<ReturnType<typeof updateArm>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey =
+		swrOptions?.swrKey ??
+		getUpdateArmMutationKey(datasourceId, experimentId, armId);
+	const swrFn = getUpdateArmMutationFetcher(
+		datasourceId,
+		experimentId,
+		armId,
+		requestOptions,
+	);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
 	return {
 		swrKey,

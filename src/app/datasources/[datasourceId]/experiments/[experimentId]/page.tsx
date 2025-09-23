@@ -15,7 +15,7 @@ import {
 } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
 import { CalendarIcon, CodeIcon, InfoCircledIcon, PersonIcon, FileTextIcon } from '@radix-ui/react-icons';
-import { useAnalyzeExperiment, useGetExperiment, useListSnapshots } from '@/api/admin';
+import { useAnalyzeExperiment, useGetExperimentForUi, useListSnapshots } from '@/api/admin';
 import { ForestPlot } from '@/components/features/experiments/forest-plot';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -69,7 +69,7 @@ export default function ExperimentViewPage() {
     data: experiment,
     isLoading: isLoadingExperiment,
     error: experimentError,
-  } = useGetExperiment(datasourceId, experimentId, {
+  } = useGetExperimentForUi(datasourceId, experimentId, {
     swr: { enabled: !!datasourceId },
   });
 
