@@ -22,17 +22,18 @@ export function EditableDateField({
   textFieldSize = '1',
   displayValue,
   onUpdate,
-  isUpdating = false
+  isUpdating = false,
 }: EditableDateFieldProps) {
   const [editing, setEditing] = useState(false);
+  const displayText = displayValue || new Date(initialValue).toLocaleDateString();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget as HTMLFormElement);
     const newValue = formData.get(fieldKey) as string;
 
-    if (newValue.trim() && newValue !== isoStringToDateInput(initialValue)) {
-      const processedValue = dateInputToIsoString(newValue.trim());
+    if (newValue && newValue !== isoStringToDateInput(initialValue)) {
+      const processedValue = dateInputToIsoString(newValue);
       formData.set(fieldKey, processedValue);
 
       try {
@@ -67,13 +68,7 @@ export function EditableDateField({
             <Button type="submit" size="1" disabled={isUpdating}>
               {isUpdating ? 'Updating...' : 'Update'}
             </Button>
-            <Button
-              type="button"
-              size="1"
-              variant="soft"
-              onClick={() => setEditing(false)}
-              disabled={isUpdating}
-            >
+            <Button type="button" size="1" variant="soft" onClick={() => setEditing(false)} disabled={isUpdating}>
               Cancel
             </Button>
           </Flex>
@@ -81,8 +76,6 @@ export function EditableDateField({
       </Flex>
     );
   }
-
-  const displayText = displayValue || new Date(initialValue).toLocaleDateString();
 
   return (
     <Flex gap="2" align="center">

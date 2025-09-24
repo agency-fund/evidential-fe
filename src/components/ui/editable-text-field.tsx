@@ -23,7 +23,9 @@ export function EditableTextField({
   onUpdate,
   isUpdating = false
 }: EditableTextFieldProps) {
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(false);  
+  const displayText = displayValue || initialValue;
+
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -77,8 +79,6 @@ export function EditableTextField({
       </Flex>
     );
   }
-
-  const displayText = displayValue || initialValue;
 
   return (
     <Flex gap="2" align="center">
