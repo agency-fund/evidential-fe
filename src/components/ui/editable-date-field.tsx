@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button, Flex, Text, TextField } from '@radix-ui/themes';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { EditIconButton } from '@/components/ui/buttons/edit-icon-button';
-import { formatDateForInput, formatLocalDateForApi } from '@/services/date-utils';
+import { isoStringToDateInput, dateInputToIsoString } from '@/services/date-utils';
 
 interface EditableDateFieldProps {
   initialValue: string; // ISO date string
@@ -34,8 +34,8 @@ export function EditableDateField({
     const formData = new FormData(event.currentTarget as HTMLFormElement);
     const newValue = formData.get(fieldKey) as string;
 
-    if (newValue.trim() && newValue !== formatDateForInput(initialValue)) {
-      const processedValue = formatLocalDateForApi(newValue.trim());
+    if (newValue.trim() && newValue !== isoStringToDateInput(initialValue)) {
+      const processedValue = dateInputToIsoString(newValue.trim());
       formData.set(fieldKey, processedValue);
 
       try {
@@ -57,7 +57,7 @@ export function EditableDateField({
             <TextField.Root
               name={fieldKey}
               type="date"
-              defaultValue={formatDateForInput(initialValue)}
+              defaultValue={isoStringToDateInput(initialValue)}
               size={textFieldSize}
               disabled={isUpdating}
               onKeyDown={(e) => {

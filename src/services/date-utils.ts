@@ -29,16 +29,16 @@ export const formatUtcDownToMinuteLabel = (date: Date): string => {
  * Converts an ISO datetime string to YYYY-MM-DD format for HTML date inputs
  * Handles timezone conversion properly by using the same Date object as display functions
  */
-export const formatDateForInput = (isoDateString: string): string => {
-  const date = new Date(isoDateString);
+export const isoStringToDateInput = (isoString: string): string => {
+  const date = new Date(isoString);
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
 
 /**
- * Converts a local date string (YYYY-MM-DD) to an ISO datetime string
- * Preserves the local date by creating a date in local timezone
+ * Converts a date input string (YYYY-MM-DD) to an ISO datetime string
+ * Preserves the local date by creating a date in local timezone at midnight
  */
-export const formatLocalDateForApi = (localDateString: string): string => {
-  const date = new Date(localDateString + 'T00:00:00');
+export const dateInputToIsoString = (dateInput: string): string => {
+  const date = new Date(dateInput + 'T00:00:00');
   return date.toISOString();
 };
