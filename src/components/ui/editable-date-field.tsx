@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Button, Flex, Text, TextField } from '@radix-ui/themes';
-import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { EditIconButton } from '@/components/ui/buttons/edit-icon-button';
 import { isoStringToDateInput, dateInputToIsoString } from '@/services/date-utils';
 
@@ -14,7 +13,6 @@ interface EditableDateFieldProps {
   displayValue?: string; // Optional formatted display value
   onUpdate: (formData: FormData) => Promise<void>;
   isUpdating?: boolean;
-  updateError?: Error;
 }
 
 export function EditableDateField({
@@ -24,8 +22,7 @@ export function EditableDateField({
   textFieldSize = '1',
   displayValue,
   onUpdate,
-  isUpdating = false,
-  updateError
+  isUpdating = false
 }: EditableDateFieldProps) {
   const [editing, setEditing] = useState(false);
 
@@ -81,13 +78,6 @@ export function EditableDateField({
             </Button>
           </Flex>
         </form>
-
-        {updateError && (
-          <GenericErrorCallout
-            title="Update failed"
-            error={updateError}
-          />
-        )}
       </Flex>
     );
   }

@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Button, Flex, TextArea } from '@radix-ui/themes';
 import { SectionCard } from '@/components/ui/cards/section-card';
-import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ReadMoreText } from '@/components/ui/read-more-text';
 import { EditIconButton } from '@/components/ui/buttons/edit-icon-button';
 
@@ -13,7 +12,6 @@ interface EditableTextAreaSectionProps {
   fieldKey: string;
   onUpdate: (formData: FormData) => Promise<void>;
   isUpdating?: boolean;
-  updateError?: Error;
 }
 
 export function EditableTextAreaSection({
@@ -21,8 +19,7 @@ export function EditableTextAreaSection({
   initialValue,
   fieldKey,
   onUpdate,
-  isUpdating = false,
-  updateError
+  isUpdating = false
 }: EditableTextAreaSectionProps) {
   const [editing, setEditing] = useState(false);
 
@@ -46,17 +43,11 @@ export function EditableTextAreaSection({
   return (
     <SectionCard
       title={title}
-      headerRight={<EditIconButton onClick={() => setEditing(true)} />}
+      headerRight={!editing ? <EditIconButton onClick={() => setEditing(true)} /> : null}
     >
       {editing ? (
         <form onSubmit={handleSubmit}>
           <Flex direction="column" gap="3">
-            {updateError && (
-              <GenericErrorCallout
-                title="Update failed"
-                error={updateError}
-              />
-            )}
             <TextArea
               name={fieldKey}
               defaultValue={initialValue}

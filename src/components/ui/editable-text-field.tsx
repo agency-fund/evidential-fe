@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Button, Flex, Heading, TextField } from '@radix-ui/themes';
-import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { EditIconButton } from '@/components/ui/buttons/edit-icon-button';
 
 interface EditableTextFieldProps {
@@ -13,7 +12,6 @@ interface EditableTextFieldProps {
   displayValue?: string;
   onUpdate: (formData: FormData) => Promise<void>;
   isUpdating?: boolean;
-  updateError?: Error;
 }
 
 export function EditableTextField({
@@ -23,8 +21,7 @@ export function EditableTextField({
   textFieldSize = '3',
   displayValue,
   onUpdate,
-  isUpdating = false,
-  updateError
+  isUpdating = false
 }: EditableTextFieldProps) {
   const [editing, setEditing] = useState(false);
 
@@ -77,13 +74,6 @@ export function EditableTextField({
             </Button>
           </Flex>
         </form>
-
-        {updateError && (
-          <GenericErrorCallout
-            title="Update failed"
-            error={updateError}
-          />
-        )}
       </Flex>
     );
   }

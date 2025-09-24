@@ -179,7 +179,6 @@ export default function ExperimentViewPage() {
               await handleExperimentUpdate('name', newName, experiment_name);
             }}
             isUpdating={isUpdatingExperiment}
-            updateError={updateExperimentError}
           />
           <CopyToClipBoard content={experimentId} tooltipContent="Copy experiment ID" size="1" />
         </Flex>
@@ -213,7 +212,6 @@ export default function ExperimentViewPage() {
                 await handleExperimentUpdate('start_date', newDate, start_date);
               }}
               isUpdating={isUpdatingExperiment}
-              updateError={updateExperimentError}
             />
 
             <Text>→</Text>
@@ -229,7 +227,6 @@ export default function ExperimentViewPage() {
                 await handleExperimentUpdate('end_date', newDate, end_date);
               }}
               isUpdating={isUpdatingExperiment}
-              updateError={updateExperimentError}
             />
           </Flex>
           {design_url && (
@@ -257,7 +254,6 @@ export default function ExperimentViewPage() {
             await handleExperimentUpdate('description', newDescription, description);
           }}
           isUpdating={isUpdatingExperiment}
-          updateError={updateExperimentError}
         />
 
         {/* Arms & Allocations Section */}
@@ -397,6 +393,13 @@ export default function ExperimentViewPage() {
             <GenericErrorCallout
               title="Error loading historical analyses"
               message="Historical analyses may not be available yet."
+            />
+          )}
+
+          {updateExperimentError && (
+            <GenericErrorCallout
+              title="Error updating experiment"
+              error={updateExperimentError}
             />
           )}
 
