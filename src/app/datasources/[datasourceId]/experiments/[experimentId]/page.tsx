@@ -15,7 +15,7 @@ import {
 } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
 import { CalendarIcon, CodeIcon, InfoCircledIcon, PersonIcon, FileTextIcon } from '@radix-ui/react-icons';
-import { useAnalyzeExperiment, useGetExperimentForUi, useListSnapshots } from '@/api/admin';
+import { useAnalyzeExperiment, useGetExperimentForUi, useListSnapshots, useUpdateExperiment } from '@/api/admin';
 import { ForestPlot } from '@/components/features/experiments/forest-plot';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -32,8 +32,12 @@ import {
   ExperimentAnalysisResponse,
   OnlineFrequentistExperimentSpecOutput,
   PreassignedFrequentistExperimentSpecOutput,
+  UpdateExperimentRequest,
 } from '@/api/methods.schemas';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
+import { EditableTextField } from '@/components/ui/editable-text-field';
+import { EditableDateField } from '@/components/ui/editable-date-field';
+import { EditableTextAreaSection } from '@/components/ui/editable-text-area-section';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date-utils';
 
@@ -64,6 +68,9 @@ export default function ExperimentViewPage() {
   });
   // which analysis we're actually displaying (live or a snapshot)
   const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisState>(liveAnalysis);
+
+  // Editing states for date fields (description now handled by EditableSectionCard)
+
 
   const {
     data: experiment,
@@ -126,6 +133,23 @@ export default function ExperimentViewPage() {
     },
   );
 
+  // Shared update experiment hook for all field editing
+  const {
+    trigger: triggerUpdateExperiment,
+    isMutating: isUpdatingExperiment,
+    error: updateExperimentError,
+  } = useUpdateExperiment(datasourceId, experimentId);
+
+  // Single unified update handler
+  const handleExperimentUpdate = async (fieldKey: keyof UpdateExperimentRequest, newValue: string, currentValue: string) => {
+    // Only update if value has changed and is not empty
+    if (newValue.trim() && newValue !== currentValue) {
+      const payload = { [fieldKey]: newValue.trim() };
+      await triggerUpdateExperiment(payload);
+    }
+  };
+
+
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
   }
@@ -145,8 +169,19 @@ export default function ExperimentViewPage() {
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
         <Flex direction="row" gap="2" align="center">
-          <Heading size="8">{experiment_name}</Heading>
-          <CopyToClipBoard content={experimentId} tooltipContent="Copy experiment ID" />
+          <EditableTextField
+            initialValue={experiment_name}
+            fieldKey="name"
+            headingSize="8"
+            textFieldSize="2"
+            onUpdate={async (formData) => {
+              const newName = formData.get('name') as string;
+              await handleExperimentUpdate('name', newName, experiment_name);
+            }}
+            isUpdating={isUpdatingExperiment}
+            updateError={updateExperimentError}
+          />
+          <CopyToClipBoard content={experimentId} tooltipContent="Copy experiment ID" size="1" />
         </Flex>
 
         <Flex gap="4" align="center">
@@ -166,9 +201,36 @@ export default function ExperimentViewPage() {
           <Separator orientation="vertical" />
           <Flex align="center" gap="2">
             <CalendarIcon />
-            <Text>{new Date(start_date).toLocaleDateString()}</Text>
+
+            <EditableDateField
+              initialValue={start_date}
+              fieldKey="start_date"
+              textSize="2"
+              textFieldSize="1"
+              displayValue={new Date(start_date).toLocaleDateString()}
+              onUpdate={async (formData) => {
+                const newDate = formData.get('start_date') as string;
+                await handleExperimentUpdate('start_date', newDate, start_date);
+              }}
+              isUpdating={isUpdatingExperiment}
+              updateError={updateExperimentError}
+            />
+
             <Text>→</Text>
-            <Text>{new Date(end_date).toLocaleDateString()}</Text>
+
+            <EditableDateField
+              initialValue={end_date}
+              fieldKey="end_date"
+              textSize="2"
+              textFieldSize="1"
+              displayValue={new Date(end_date).toLocaleDateString()}
+              onUpdate={async (formData) => {
+                const newDate = formData.get('end_date') as string;
+                await handleExperimentUpdate('end_date', newDate, end_date);
+              }}
+              isUpdating={isUpdatingExperiment}
+              updateError={updateExperimentError}
+            />
           </Flex>
           {design_url && (
             <>
@@ -186,9 +248,17 @@ export default function ExperimentViewPage() {
       </Flex>
       <Flex direction="column" gap="4">
         {/* Hypothesis Section */}
-        <SectionCard title="Hypothesis">
-          <ReadMoreText text={description} />
-        </SectionCard>
+        <EditableTextAreaSection
+          title="Hypothesis"
+          initialValue={description}
+          fieldKey="description"
+          onUpdate={async (formData) => {
+            const newDescription = formData.get('description') as string;
+            await handleExperimentUpdate('description', newDescription, description);
+          }}
+          isUpdating={isUpdatingExperiment}
+          updateError={updateExperimentError}
+        />
 
         {/* Arms & Allocations Section */}
         {assign_summary && (
