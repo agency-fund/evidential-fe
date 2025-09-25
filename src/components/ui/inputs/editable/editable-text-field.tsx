@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, Flex, Heading, TextField } from '@radix-ui/themes';
+import { Flex, Heading, IconButton, TextField, Tooltip } from '@radix-ui/themes';
+import { CheckIcon, Cross2Icon } from '@radix-ui/react-icons';
 import { EditIconButton } from '@/components/ui/buttons/edit-icon-button';
 
 interface EditableTextFieldProps {
@@ -48,32 +49,40 @@ export function EditableTextField({
     return (
       <Flex direction="column" gap="2">
         <form onSubmit={handleSubmit}>
-          <Flex gap="2" align="center">
+          <Flex direction="column" gap="2" align="start">
             <TextField.Root
               name={fieldKey}
               type="text"
               defaultValue={initialValue}
               size={textFieldSize}
               disabled={isUpdating}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape') {
-                  setEditing(false);
-                }
-              }}
               autoFocus
             />
-            <Button type="submit" size="2" disabled={isUpdating}>
-              {isUpdating ? 'Updating...' : 'Update'}
-            </Button>
-            <Button
-              type="button"
-              size="2"
-              variant="soft"
-              onClick={() => setEditing(false)}
-              disabled={isUpdating}
-            >
-              Cancel
-            </Button>
+            <Flex gap="2" justify="end">
+              <Tooltip content="Update">
+                <IconButton
+                  type="submit"
+                  size="1"
+                  disabled={isUpdating}
+                  color="green"
+                  variant="solid"
+                >
+                  <CheckIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip content="Cancel">
+                <IconButton
+                  type="button"
+                  size="1"
+                  variant="solid"
+                  color="red"
+                  onClick={() => setEditing(false)}
+                  disabled={isUpdating}
+                >
+                  <Cross2Icon />
+                </IconButton>
+              </Tooltip>
+            </Flex>
           </Flex>
         </form>
       </Flex>
@@ -81,7 +90,7 @@ export function EditableTextField({
   }
 
   return (
-    <Flex gap="2" align="center">
+    <Flex gap="2" align="start" justify="between" width="100%">
       <Heading size={headingSize}>{displayText}</Heading>
       <EditIconButton onClick={() => setEditing(true)} />
     </Flex>

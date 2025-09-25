@@ -35,9 +35,10 @@ import {
   UpdateExperimentRequest,
 } from '@/api/methods.schemas';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
-import { EditableTextField } from '@/components/ui/editable-text-field';
-import { EditableDateField } from '@/components/ui/editable-date-field';
-import { EditableTextAreaSection } from '@/components/ui/editable-text-area-section';
+import { ArmsAndAllocationsTable } from '@/components/features/experiments/arms-and-allocations-table';
+import { EditableTextField } from '@/components/ui/inputs/editable/editable-text-field';
+import { EditableDateField } from '@/components/ui/inputs/editable/editable-date-field';
+import { EditableTextAreaSection } from '@/components/ui/inputs/editable/editable-text-area-section';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date-utils';
 
@@ -70,7 +71,6 @@ export default function ExperimentViewPage() {
   const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisState>(liveAnalysis);
 
   // Editing states for date fields (description now handled by EditableSectionCard)
-
 
   const {
     data: experiment,
@@ -141,7 +141,11 @@ export default function ExperimentViewPage() {
   } = useUpdateExperiment(datasourceId, experimentId);
 
   // Single unified update handler
-  const handleExperimentUpdate = async (fieldKey: keyof UpdateExperimentRequest, newValue: string, currentValue: string) => {
+  const handleExperimentUpdate = async (
+    fieldKey: keyof UpdateExperimentRequest,
+    newValue: string,
+    currentValue: string,
+  ) => {
     // Only update if value has changed and is not empty
     if (newValue.trim() && newValue !== currentValue) {
       const payload = { [fieldKey]: newValue.trim() };
@@ -180,7 +184,7 @@ export default function ExperimentViewPage() {
             }}
             isUpdating={isUpdatingExperiment}
           />
-          <CopyToClipBoard content={experimentId} tooltipContent="Copy experiment ID" size="1" />
+          {/* <CopyToClipBoard content={experimentId} tooltipContent="Copy experiment ID" size="1" /> */}
         </Flex>
 
         <Flex gap="4" align="center">
@@ -204,7 +208,6 @@ export default function ExperimentViewPage() {
             <EditableDateField
               initialValue={start_date}
               fieldKey="start_date"
-              textSize="2"
               textFieldSize="1"
               displayValue={new Date(start_date).toLocaleDateString()}
               onUpdate={async (formData) => {
@@ -219,7 +222,6 @@ export default function ExperimentViewPage() {
             <EditableDateField
               initialValue={end_date}
               fieldKey="end_date"
-              textSize="2"
               textFieldSize="1"
               displayValue={new Date(end_date).toLocaleDateString()}
               onUpdate={async (formData) => {
@@ -270,42 +272,12 @@ export default function ExperimentViewPage() {
               </Flex>
             }
           >
-            <Table.Root>
-              <Table.Header>
-                <Table.Row>
-                  <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {arms.map((arm) => {
-                  const armSize = assign_summary.arm_sizes?.find((a) => a.arm.arm_id === arm.arm_id)?.size || 0;
-                  const percentage = (armSize / assign_summary.sample_size) * 100;
-                  return (
-                    <Table.Row key={arm.arm_id}>
-                      <Table.Cell>
-                        <Flex direction="column" gap="4" align="start">
-                          <Flex gap="2" align="center">
-                            <Heading size="2">{arm.arm_name}</Heading>
-                            {/* <CopyToClipBoard content={arm.arm_id || ''} tooltipContent="Copy arm ID" /> */}
-                          </Flex>
-                          <Flex direction="column" gap="3" align="start">
-                            <Badge>
-                              <PersonIcon />
-                              <Text>{armSize.toLocaleString()} participants</Text>
-                            </Badge>
-                            <Badge>{percentage.toFixed(1)}%</Badge>
-                          </Flex>
-                        </Flex>
-                      </Table.Cell>
-                      <Table.Cell>
-                        <ReadMoreText text={arm.arm_description || 'No description'} />
-                      </Table.Cell>
-                    </Table.Row>
-                  );
-                })}
-              </Table.Body>
-            </Table.Root>
+            <ArmsAndAllocationsTable
+              arms={arms}
+              assignSummary={assign_summary}
+              datasourceId={datasourceId}
+              experimentId={experimentId}
+            />
           </SectionCard>
         )}
 
@@ -397,10 +369,7 @@ export default function ExperimentViewPage() {
           )}
 
           {updateExperimentError && (
-            <GenericErrorCallout
-              title="Error updating experiment"
-              error={updateExperimentError}
-            />
+            <GenericErrorCallout title="Error updating experiment" error={updateExperimentError} />
           )}
 
           {selectedAnalysis.data && (

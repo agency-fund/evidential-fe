@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, Flex, TextArea } from '@radix-ui/themes';
+import { Flex, IconButton, TextArea, Tooltip } from '@radix-ui/themes';
+import { CheckIcon, Cross2Icon } from '@radix-ui/react-icons';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { ReadMoreText } from '@/components/ui/read-more-text';
 import { EditIconButton } from '@/components/ui/buttons/edit-icon-button';
@@ -57,17 +58,29 @@ export function EditableTextAreaSection({
               size="3"
             />
             <Flex gap="2" justify="end">
-              <Button type="submit" disabled={isUpdating}>
-                {isUpdating ? 'Updating...' : 'Update'}
-              </Button>
-              <Button
-                type="button"
-                variant="soft"
-                onClick={() => setEditing(false)}
-                disabled={isUpdating}
-              >
-                Cancel
-              </Button>
+              <Tooltip content="Update">
+                <IconButton
+                  type="submit"
+                  size="1"
+                  disabled={isUpdating}
+                  color="green"
+                  variant="solid"
+                >
+                  <CheckIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip content="Cancel">
+                <IconButton
+                  type="button"
+                  size="1"
+                  variant="solid"
+                  color="red"
+                  onClick={() => setEditing(false)}
+                  disabled={isUpdating}
+                >
+                  <Cross2Icon />
+                </IconButton>
+              </Tooltip>
             </Flex>
           </Flex>
         </form>

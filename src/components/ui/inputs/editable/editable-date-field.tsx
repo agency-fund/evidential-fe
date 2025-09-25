@@ -1,14 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, Flex, Text, TextField } from '@radix-ui/themes';
+import { Flex, IconButton, Text, TextField, Tooltip } from '@radix-ui/themes';
+import { CheckIcon, Cross2Icon } from '@radix-ui/react-icons';
 import { EditIconButton } from '@/components/ui/buttons/edit-icon-button';
 import { isoStringToDateInput, dateInputToIsoString } from '@/services/date-utils';
 
 interface EditableDateFieldProps {
   initialValue: string; // ISO date string
   fieldKey: string;
-  textSize?: '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
   textFieldSize?: '1' | '2' | '3';
   displayValue?: string; // Optional formatted display value
   onUpdate: (formData: FormData) => Promise<void>;
@@ -18,7 +18,6 @@ interface EditableDateFieldProps {
 export function EditableDateField({
   initialValue,
   fieldKey,
-  textSize = '3',
   textFieldSize = '1',
   displayValue,
   onUpdate,
@@ -58,19 +57,31 @@ export function EditableDateField({
               defaultValue={isoStringToDateInput(initialValue)}
               size={textFieldSize}
               disabled={isUpdating}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape') {
-                  setEditing(false);
-                }
-              }}
               autoFocus
             />
-            <Button type="submit" size="1" disabled={isUpdating}>
-              {isUpdating ? 'Updating...' : 'Update'}
-            </Button>
-            <Button type="button" size="1" variant="soft" onClick={() => setEditing(false)} disabled={isUpdating}>
-              Cancel
-            </Button>
+            <Tooltip content="Update">
+              <IconButton
+                type="submit"
+                size="1"
+                disabled={isUpdating}
+                color="green"
+                variant="solid"
+              >
+                <CheckIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip content="Cancel">
+              <IconButton
+                type="button"
+                size="1"
+                variant="solid"
+                color="red"
+                onClick={() => setEditing(false)}
+                disabled={isUpdating}
+              >
+                <Cross2Icon />
+              </IconButton>
+            </Tooltip>
           </Flex>
         </form>
       </Flex>
@@ -79,7 +90,7 @@ export function EditableDateField({
 
   return (
     <Flex gap="2" align="center">
-      <Text size={textSize}>{displayText}</Text>
+      <Text>{displayText}</Text>
       <EditIconButton onClick={() => setEditing(true)} />
     </Flex>
   );
