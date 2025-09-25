@@ -287,7 +287,7 @@ export default function ExperimentViewPage() {
                         <Flex direction="column" gap="4" align="start">
                           <Flex gap="2" align="center">
                             <Heading size="2">{arm.arm_name}</Heading>
-                            <CopyToClipBoard content={arm.arm_id || ''} tooltipContent="Copy arm ID" />
+                            {/* <CopyToClipBoard content={arm.arm_id || ''} tooltipContent="Copy arm ID" /> */}
                           </Flex>
                           <Flex direction="column" gap="3" align="start">
                             <Badge>

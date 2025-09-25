@@ -52,12 +52,9 @@ export function EditableTextAreaSection({
               name={fieldKey}
               defaultValue={initialValue}
               disabled={isUpdating}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape') {
-                  setEditing(false);
-                }
-              }}
               autoFocus
+              resize="vertical"
+              size="3"
             />
             <Flex gap="2" justify="end">
               <Button type="submit" disabled={isUpdating}>
