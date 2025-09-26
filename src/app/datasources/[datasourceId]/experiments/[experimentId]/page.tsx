@@ -1,30 +1,15 @@
 'use client';
-import {
-  Badge,
-  Box,
-  Flex,
-  Heading,
-  Separator,
-  Table,
-  Tabs,
-  Text,
-  Tooltip,
-  Select,
-  IconButton,
-  Link,
-} from '@radix-ui/themes';
+import { Badge, Box, Flex, Heading, Separator, Tabs, Text, Tooltip, Select, IconButton, Link } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
 import { CalendarIcon, CodeIcon, InfoCircledIcon, PersonIcon, FileTextIcon } from '@radix-ui/react-icons';
 import { useAnalyzeExperiment, useGetExperimentForUi, useListSnapshots, useUpdateExperiment } from '@/api/admin';
 import { ForestPlot } from '@/components/features/experiments/forest-plot';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
 import { useState } from 'react';
 import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
-import { ReadMoreText } from '@/components/ui/read-more-text';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import {
   DesignSpecOutput,
@@ -38,7 +23,7 @@ import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/
 import { ArmsAndAllocationsTable } from '@/components/features/experiments/arms-and-allocations-table';
 import { EditableTextField } from '@/components/ui/inputs/editable/editable-text-field';
 import { EditableDateField } from '@/components/ui/inputs/editable/editable-date-field';
-import { EditableTextAreaSection } from '@/components/ui/inputs/editable/editable-text-area-section';
+import { EditableTextArea } from '@/components/ui/inputs/editable/editable-text-area';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date-utils';
 
@@ -69,8 +54,6 @@ export default function ExperimentViewPage() {
   });
   // which analysis we're actually displaying (live or a snapshot)
   const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisState>(liveAnalysis);
-
-  // Editing states for date fields (description now handled by EditableSectionCard)
 
   const {
     data: experiment,
@@ -133,26 +116,22 @@ export default function ExperimentViewPage() {
     },
   );
 
-  // Shared update experiment hook for all field editing
   const {
     trigger: triggerUpdateExperiment,
     isMutating: isUpdatingExperiment,
     error: updateExperimentError,
   } = useUpdateExperiment(datasourceId, experimentId);
 
-  // Single unified update handler
   const handleExperimentUpdate = async (
     fieldKey: keyof UpdateExperimentRequest,
     newValue: string,
     currentValue: string,
   ) => {
-    // Only update if value has changed and is not empty
     if (newValue.trim() && newValue !== currentValue) {
       const payload = { [fieldKey]: newValue.trim() };
       await triggerUpdateExperiment(payload);
     }
   };
-
 
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
@@ -173,18 +152,18 @@ export default function ExperimentViewPage() {
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
         <Flex direction="row" gap="2" align="center">
-          <EditableTextField
-            initialValue={experiment_name}
+          <EditableTextField<UpdateExperimentRequest>
+            value={experiment_name}
             fieldKey="name"
-            headingSize="8"
-            textFieldSize="2"
+            inputSize="3"
             onUpdate={async (formData) => {
               const newName = formData.get('name') as string;
               await handleExperimentUpdate('name', newName, experiment_name);
             }}
             isUpdating={isUpdatingExperiment}
-          />
-          {/* <CopyToClipBoard content={experimentId} tooltipContent="Copy experiment ID" size="1" /> */}
+          >
+            <Heading size="8">{experiment_name}</Heading>
+          </EditableTextField>
         </Flex>
 
         <Flex gap="4" align="center">
@@ -205,11 +184,10 @@ export default function ExperimentViewPage() {
           <Flex align="center" gap="2">
             <CalendarIcon />
 
-            <EditableDateField
-              initialValue={start_date}
+            <EditableDateField<UpdateExperimentRequest>
+              isoValue={start_date}
               fieldKey="start_date"
-              textFieldSize="1"
-              displayValue={new Date(start_date).toLocaleDateString()}
+              inputSize="1"
               onUpdate={async (formData) => {
                 const newDate = formData.get('start_date') as string;
                 await handleExperimentUpdate('start_date', newDate, start_date);
@@ -219,11 +197,10 @@ export default function ExperimentViewPage() {
 
             <Text>→</Text>
 
-            <EditableDateField
-              initialValue={end_date}
+            <EditableDateField<UpdateExperimentRequest>
+              isoValue={end_date}
               fieldKey="end_date"
-              textFieldSize="1"
-              displayValue={new Date(end_date).toLocaleDateString()}
+              inputSize="1"
               onUpdate={async (formData) => {
                 const newDate = formData.get('end_date') as string;
                 await handleExperimentUpdate('end_date', newDate, end_date);
@@ -246,19 +223,19 @@ export default function ExperimentViewPage() {
         </Flex>
       </Flex>
       <Flex direction="column" gap="4">
-        {/* Hypothesis Section */}
-        <EditableTextAreaSection
-          title="Hypothesis"
-          initialValue={description}
-          fieldKey="description"
-          onUpdate={async (formData) => {
-            const newDescription = formData.get('description') as string;
-            await handleExperimentUpdate('description', newDescription, description);
-          }}
-          isUpdating={isUpdatingExperiment}
-        />
+        <SectionCard title="Hypothesis">
+          <EditableTextArea<UpdateExperimentRequest>
+            value={description}
+            fieldKey="description"
+            onUpdate={async (formData) => {
+              const newDescription = formData.get('description') as string;
+              await handleExperimentUpdate('description', newDescription, description);
+            }}
+            isUpdating={isUpdatingExperiment}
+            readMore={true}
+          />
+        </SectionCard>
 
-        {/* Arms & Allocations Section */}
         {assign_summary && (
           <SectionCard
             title="Arms & Allocations"
@@ -281,7 +258,6 @@ export default function ExperimentViewPage() {
           </SectionCard>
         )}
 
-        {/* Analysis Section */}
         <SectionCard
           title="Analysis"
           headerRight={

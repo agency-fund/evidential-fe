@@ -1,39 +1,38 @@
 'use client';
 
 import { useState } from 'react';
-import { Flex, IconButton, Text, TextField, Tooltip } from '@radix-ui/themes';
-import { CheckIcon, Cross2Icon } from '@radix-ui/react-icons';
+import { Flex, Text, TextField } from '@radix-ui/themes';
 import { EditIconButton } from '@/components/ui/buttons/edit-icon-button';
 import { isoStringToDateInput, dateInputToIsoString } from '@/services/date-utils';
+import { BaseEditableProps } from '@/components/ui/inputs/editable/types';
+import { BUTTON_LAYOUTS } from '@/components/ui/inputs/editable/utils';
+import { EditActionButtons } from '@/components/ui/inputs/editable/edit-action-buttons';
 
-interface EditableDateFieldProps {
-  initialValue: string; // ISO date string
-  fieldKey: string;
-  textFieldSize?: '1' | '2' | '3';
-  displayValue?: string; // Optional formatted display value
-  onUpdate: (formData: FormData) => Promise<void>;
-  isUpdating?: boolean;
+interface EditableDateFieldProps<T = Record<string, any>> extends Omit<BaseEditableProps<T>, 'value'> {
+  isoValue: string;
 }
 
-export function EditableDateField({
-  initialValue,
+export function EditableDateField<T = Record<string, any>>({
+  isoValue,
   fieldKey,
-  textFieldSize = '1',
-  displayValue,
+  inputSize = '1',
   onUpdate,
   isUpdating = false,
-}: EditableDateFieldProps) {
+  buttonPlacement = 'inline-right',
+}: EditableDateFieldProps<T>) {
   const [editing, setEditing] = useState(false);
-  const displayText = displayValue || new Date(initialValue).toLocaleDateString();
+  const displayText = new Date(isoValue).toLocaleDateString();
+  const layout = BUTTON_LAYOUTS[buttonPlacement];
+  const isRow = layout.direction === 'row';
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget as HTMLFormElement);
-    const newValue = formData.get(fieldKey) as string;
+    const newValue = formData.get(fieldKey as string) as string;
 
-    if (newValue && newValue !== isoStringToDateInput(initialValue)) {
+    if (newValue && newValue !== isoStringToDateInput(isoValue)) {
       const processedValue = dateInputToIsoString(newValue);
-      formData.set(fieldKey, processedValue);
+      formData.set(fieldKey as string, processedValue);
 
       try {
         await onUpdate(formData);
@@ -50,38 +49,20 @@ export function EditableDateField({
     return (
       <Flex direction="column" gap="2">
         <form onSubmit={handleSubmit}>
-          <Flex gap="2" align="center">
-            <TextField.Root
-              name={fieldKey}
-              type="date"
-              defaultValue={isoStringToDateInput(initialValue)}
-              size={textFieldSize}
-              disabled={isUpdating}
-              autoFocus
-            />
-            <Tooltip content="Update">
-              <IconButton
-                type="submit"
-                size="1"
+          <Flex direction={layout.direction} gap="2" align={layout.align}>
+            <Flex flexGrow={isRow ? '1' : undefined}>
+              <TextField.Root
+                name={fieldKey as string}
+                type="date"
+                defaultValue={isoStringToDateInput(isoValue)}
+                size={inputSize}
                 disabled={isUpdating}
-                color="green"
-                variant="solid"
-              >
-                <CheckIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip content="Cancel">
-              <IconButton
-                type="button"
-                size="1"
-                variant="solid"
-                color="red"
-                onClick={() => setEditing(false)}
-                disabled={isUpdating}
-              >
-                <Cross2Icon />
-              </IconButton>
-            </Tooltip>
+                autoFocus
+              />
+            </Flex>
+            <Flex gap="1" justify={layout.justify}>
+              <EditActionButtons disabled={isUpdating} onCancel={() => setEditing(false)} />
+            </Flex>
           </Flex>
         </form>
       </Flex>

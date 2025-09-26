@@ -17,7 +17,6 @@ export function ArmsAndAllocationsTable({
   datasourceId,
   experimentId,
 }: ArmsAndAllocationsTableProps) {
- 
   const sortedArms = [...arms].sort((a, b) => {
     if (!a.arm_id || !b.arm_id) return 0;
     return a.arm_id.localeCompare(b.arm_id);
@@ -29,7 +28,6 @@ export function ArmsAndAllocationsTable({
         <Table.Row>
           <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Participants</Table.ColumnHeaderCell>
         </Table.Row>
       </Table.Header>
       <Table.Body>
@@ -46,5 +44,3 @@ export function ArmsAndAllocationsTable({
     </Table.Root>
   );
 }
-
-

@@ -14,16 +14,11 @@ export function EditIconButton({
   onClick,
   size = '1',
   tooltipContent = 'Edit',
-  disabled = false
-}: EditButtonProps) {
+  disabled = false,
+}: EditIconButtonProps) {
   return (
     <Tooltip content={tooltipContent}>
-      <IconButton
-        size={size}
-        variant="ghost"
-        onClick={onClick}
-        disabled={disabled}
-      >
+      <IconButton size={size} variant="ghost" onClick={onClick} disabled={disabled}>
         <Pencil1Icon />
       </IconButton>
     </Tooltip>

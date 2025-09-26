@@ -1,39 +1,35 @@
 'use client';
 
-import { useState } from 'react';
-import { Flex, Heading, IconButton, TextField, Tooltip } from '@radix-ui/themes';
-import { CheckIcon, Cross2Icon } from '@radix-ui/react-icons';
+import { useState, ReactNode } from 'react';
+import { Flex, TextField } from '@radix-ui/themes';
 import { EditIconButton } from '@/components/ui/buttons/edit-icon-button';
+import { BaseEditableProps } from '@/components/ui/inputs/editable/types';
+import { BUTTON_LAYOUTS } from '@/components/ui/inputs/editable/utils';
+import { EditActionButtons } from '@/components/ui/inputs/editable/edit-action-buttons';
 
-interface EditableTextFieldProps {
-  initialValue: string;
-  fieldKey: string;
-  headingSize?: '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
-  textFieldSize?: '1' | '2' | '3';
-  displayValue?: string;
-  onUpdate: (formData: FormData) => Promise<void>;
-  isUpdating?: boolean;
+interface EditableTextFieldProps<T = Record<string, any>> extends BaseEditableProps<T> {
+  children: ReactNode;
 }
 
-export function EditableTextField({
-  initialValue,
+export function EditableTextField<T = Record<string, any>>({
+  value,
   fieldKey,
-  headingSize = '8',
-  textFieldSize = '3',
-  displayValue,
+  inputSize = '3',
   onUpdate,
-  isUpdating = false
-}: EditableTextFieldProps) {
-  const [editing, setEditing] = useState(false);  
-  const displayText = displayValue || initialValue;
-
+  isUpdating = false,
+  children,
+  buttonPlacement = 'inline-right',
+}: EditableTextFieldProps<T>) {
+  const [editing, setEditing] = useState(false);
+  const layout = BUTTON_LAYOUTS[buttonPlacement];
+  const isRow = layout.direction === 'row';
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget as HTMLFormElement);
-    const newValue = formData.get(fieldKey) as string;
+    const newValue = formData.get(fieldKey as string) as string;
 
-    if (newValue.trim() && newValue !== initialValue) {
+    if (newValue.trim() && newValue !== value) {
       try {
         await onUpdate(formData);
         setEditing(false);
@@ -49,39 +45,20 @@ export function EditableTextField({
     return (
       <Flex direction="column" gap="2">
         <form onSubmit={handleSubmit}>
-          <Flex direction="column" gap="2" align="start">
-            <TextField.Root
-              name={fieldKey}
-              type="text"
-              defaultValue={initialValue}
-              size={textFieldSize}
-              disabled={isUpdating}
-              autoFocus
-            />
-            <Flex gap="2" justify="end">
-              <Tooltip content="Update">
-                <IconButton
-                  type="submit"
-                  size="1"
-                  disabled={isUpdating}
-                  color="green"
-                  variant="solid"
-                >
-                  <CheckIcon />
-                </IconButton>
-              </Tooltip>
-              <Tooltip content="Cancel">
-                <IconButton
-                  type="button"
-                  size="1"
-                  variant="solid"
-                  color="red"
-                  onClick={() => setEditing(false)}
-                  disabled={isUpdating}
-                >
-                  <Cross2Icon />
-                </IconButton>
-              </Tooltip>
+          <Flex direction={layout.direction} gap="2" align={layout.align}>
+            <Flex flexGrow={isRow ? '1' : undefined}>
+              <TextField.Root
+                name={fieldKey as string}
+                type="text"
+                defaultValue={value}
+                size={inputSize}
+                disabled={isUpdating}
+                autoFocus
+                style={{ width: '100%' }}
+              />
+            </Flex>
+            <Flex gap="1" justify={layout.justify}>
+              <EditActionButtons disabled={isUpdating} onCancel={() => setEditing(false)} />
             </Flex>
           </Flex>
         </form>
@@ -91,7 +68,7 @@ export function EditableTextField({
 
   return (
     <Flex gap="2" align="start" justify="between" width="100%">
-      <Heading size={headingSize}>{displayText}</Heading>
+      {children}
       <EditIconButton onClick={() => setEditing(true)} />
     </Flex>
   );
