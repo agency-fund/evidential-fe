@@ -4,23 +4,21 @@ export const BUTTON_LAYOUTS: Record<ButtonPlacement, LayoutConfig> = {
   'inline-right': {
     direction: 'row',
     justify: 'end',
-    align: 'center'
+    align: 'center',
   },
   'inline-left': {
     direction: 'row',
     justify: 'start',
-    align: 'center'
+    align: 'center',
   },
   'bottom-right': {
     direction: 'column',
     justify: 'end',
-    align: 'stretch'
+    align: 'stretch',
   },
   'bottom-left': {
     direction: 'column',
     justify: 'start',
-    align: 'stretch'
-  }
+    align: 'stretch',
+  },
 };
-
-
