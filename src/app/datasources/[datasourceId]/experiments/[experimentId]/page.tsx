@@ -32,6 +32,7 @@ import {
   ExperimentAnalysisResponse,
   OnlineFrequentistExperimentSpecOutput,
   PreassignedFrequentistExperimentSpecOutput,
+  CMABExperimentSpecOutput,
 } from '@/api/methods.schemas';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { useCurrentOrganization } from '@/providers/organization-provider';
@@ -42,6 +43,9 @@ function isFrequentistDesign(
   designSpec: DesignSpecOutput,
 ): designSpec is PreassignedFrequentistExperimentSpecOutput | OnlineFrequentistExperimentSpecOutput {
   return designSpec.experiment_type === 'freq_preassigned' || designSpec.experiment_type === 'freq_online';
+}
+function isCMABDesign(designSpec: DesignSpecOutput): designSpec is CMABExperimentSpecOutput {
+  return designSpec.experiment_type === 'cmab_online';
 }
 
 export default function ExperimentViewPage() {
@@ -189,6 +193,43 @@ export default function ExperimentViewPage() {
         <SectionCard title="Hypothesis">
           <ReadMoreText text={description} />
         </SectionCard>
+
+        {/* CMAB Contexts Section */}
+        {isCMABDesign(design_spec) && (
+          <SectionCard title="Contexts">
+            <Table.Root>
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {design_spec.contexts?.map((context) => {
+                  return (
+                    <Table.Row key={context.context_id}>
+                      <Table.Cell>
+                        <Flex direction="column" gap="4" align="start">
+                          <Flex gap="2" align="center">
+                            <Heading size="2">{context.context_name}</Heading>
+                            <CopyToClipBoard content={context.context_id || ''} tooltipContent="Copy context ID" />
+                          </Flex>
+                        </Flex>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <ReadMoreText text={context.context_description || 'No description'} />
+                      </Table.Cell>
+                      <Table.Cell>
+                        <ReadMoreText text={context.value_type || 'No type provided'} />
+                      </Table.Cell>
+                    </Table.Row>
+                  );
+                })}
+              </Table.Body>
+            </Table.Root>
+          </SectionCard>
+        )}
 
         {/* Arms & Allocations Section */}
         {assign_summary && (
