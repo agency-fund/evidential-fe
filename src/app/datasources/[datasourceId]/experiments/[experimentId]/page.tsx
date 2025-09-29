@@ -26,6 +26,7 @@ import { ExperimentTypeBadge } from '@/components/features/experiments/experimen
 import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
 import { ReadMoreText } from '@/components/ui/read-more-text';
 import { SectionCard } from '@/components/ui/cards/section-card';
+import { EditableTextField } from '@/components/ui/inputs/editable-text-field';
 import {
   DesignSpecOutput,
   FreqExperimentAnalysisResponse,
@@ -145,8 +146,10 @@ export default function ExperimentViewPage() {
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
         <Flex direction="row" gap="2" align="center">
+          <EditableTextField id="experiment-name" name="experiment-name" defaultValue={experiment_name} onSubmit={() => console.log('submit')}>   
           <Heading size="8">{experiment_name}</Heading>
-          <CopyToClipBoard content={experimentId} tooltipContent="Copy experiment ID" />
+          </EditableTextField>
+          {/* <CopyToClipBoard content={experimentId} tooltipContent="Copy experiment ID" /> */}
         </Flex>
 
         <Flex gap="4" align="center">
