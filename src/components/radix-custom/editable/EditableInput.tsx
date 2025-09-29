@@ -7,14 +7,10 @@ interface EditableInputProps {
 }
 
 export function EditableInput({ asChild = false, children }: EditableInputProps) {
-  const { inputValue, setValue, submit, isEditing } = useEditable();
+  const { inputValue, setValue, isEditing } = useEditable();
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setValue(event.target.value);
-  };
-
-  const handleBlur = () => {
-    submit();
   };
 
   if (!isEditing) return null;
@@ -27,7 +23,6 @@ export function EditableInput({ asChild = false, children }: EditableInputProps)
         handleChange(event);
         childProps.onChange?.(event);
       },
-      onBlur: handleBlur,
     });
   }
 
@@ -36,7 +31,6 @@ export function EditableInput({ asChild = false, children }: EditableInputProps)
     <input
       value={inputValue}
       onChange={handleChange}
-      onBlur={handleBlur}
     />
   );
 }
