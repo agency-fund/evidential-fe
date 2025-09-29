@@ -20,9 +20,13 @@ export function EditableInput({ asChild = false, children }: EditableInputProps)
   if (!isEditing) return null;
 
   if (asChild && children && isValidElement(children)) {
+    const childProps = (children as ReactElement<any>).props;
     return cloneElement(children as ReactElement<any>, {
       value: inputValue,
-      onChange: handleChange,
+      onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+        handleChange(event);
+        childProps.onChange?.(event);
+      },
       onBlur: handleBlur,
     });
   }

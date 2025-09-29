@@ -8,7 +8,6 @@ interface EditableContextType {
   inputValue: string;
   setValue: (value: string) => void;
   originalValue: string;
-  id: string;
   name: string;
 }
 
@@ -16,13 +15,12 @@ export const EditableContext = createContext<EditableContextType | undefined>(un
 
 interface EditableRootProps {
   children: ReactNode;
-  id: string;
   name: string;
   defaultValue?: string;
   onSubmit?: (value: string) => Promise<void> | void;
 }
 
-export function EditableRoot({ children, id, name, defaultValue = '', onSubmit }: EditableRootProps) {
+export function EditableRoot({ children, name, defaultValue = '', onSubmit }: EditableRootProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(defaultValue);
   const [originalValue] = useState(defaultValue);
@@ -53,7 +51,6 @@ export function EditableRoot({ children, id, name, defaultValue = '', onSubmit }
     inputValue,
     setValue,
     originalValue,
-    id,
     name,
   };
 

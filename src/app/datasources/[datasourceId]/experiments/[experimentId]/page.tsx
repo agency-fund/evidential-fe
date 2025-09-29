@@ -15,7 +15,7 @@ import {
 } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
 import { CalendarIcon, CodeIcon, InfoCircledIcon, PersonIcon, FileTextIcon } from '@radix-ui/react-icons';
-import { useAnalyzeExperiment, useGetExperimentForUi, useListSnapshots } from '@/api/admin';
+import { useAnalyzeExperiment, useGetExperimentForUi, useListSnapshots, useUpdateExperiment } from '@/api/admin';
 import { ForestPlot } from '@/components/features/experiments/forest-plot';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -33,6 +33,7 @@ import {
   ExperimentAnalysisResponse,
   OnlineFrequentistExperimentSpecOutput,
   PreassignedFrequentistExperimentSpecOutput,
+  UpdateExperimentRequest
 } from '@/api/methods.schemas';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { useCurrentOrganization } from '@/providers/organization-provider';
@@ -127,6 +128,26 @@ export default function ExperimentViewPage() {
     },
   );
 
+  const { trigger: updateExperiment } = useUpdateExperiment(datasourceId, experimentId, {
+    swr: {
+      revalidate: false,
+    },
+  });
+
+  const handleUpdateExperiment = (field: keyof UpdateExperimentRequest) => {
+    return async (value: string) => {
+      try {
+        await updateExperiment({
+          [field]: value,
+        });
+      } catch (err) {
+        const error = err as any;
+        const errorMessage = error?.data?.detail?.[0]?.msg || error?.message || 'Update failed';
+        throw new Error(errorMessage);
+      }
+    };
+  };
+
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
   }
@@ -146,8 +167,12 @@ export default function ExperimentViewPage() {
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
         <Flex direction="row" gap="2" align="center">
-          <EditableTextField id="experiment-name" name="experiment-name" defaultValue={experiment_name} onSubmit={() => console.log('submit')}>   
-          <Heading size="8">{experiment_name}</Heading>
+          <EditableTextField
+            name="name"
+            defaultValue={experiment_name}
+            onSubmit={handleUpdateExperiment('name')}
+          >
+            <Heading size="8">{experiment_name}</Heading>
           </EditableTextField>
           {/* <CopyToClipBoard content={experimentId} tooltipContent="Copy experiment ID" /> */}
         </Flex>
