@@ -17,31 +17,26 @@ interface EditableDateFieldProps {
   size?: '1' | '2' | '3';
 }
 
-export function EditableDateField({
-  name,
-  defaultValue,
-  onSubmit,
-  size = '2',
-}: EditableDateFieldProps) {
-  const [error, setError] = useState<string>('');
+export function EditableDateField({ name, defaultValue, onSubmit, size = '2' }: EditableDateFieldProps) {
+  const [error, setError] = useState<boolean>();
   const [currentValue, setCurrentValue] = useState<string>(defaultValue);
   const displayDate = new Date(currentValue).toLocaleDateString();
   const dateInputValue = currentValue.split('T')[0];
 
   const handleSubmit = async (value: string) => {
     try {
-      setError('');
+      setError(false);
       const isoValue = new Date(value + 'T00:00:00').toISOString();
       await onSubmit(isoValue);
       setCurrentValue(isoValue);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Update failed');
+      setError(true);
       throw err;
     }
   };
 
   const handleChange = () => {
-    if (error) setError('');
+    if (error) setError(false);
   };
 
   return (

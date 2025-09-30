@@ -60,11 +60,7 @@ export function EditableRoot({ children, name, defaultValue = '', onSubmit }: Ed
     name,
   };
 
-  return (
-    <EditableContext.Provider value={value}>
-      {children}
-    </EditableContext.Provider>
-  );
+  return <EditableContext.Provider value={value}>{children}</EditableContext.Provider>;
 }
 
 export function useEditable() {

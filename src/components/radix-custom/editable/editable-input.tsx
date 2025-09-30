@@ -1,6 +1,6 @@
 'use client';
 import { ReactNode, ReactElement, cloneElement, isValidElement } from 'react';
-import { useEditable } from './EditableRoot';
+import { useEditable } from '@/components/radix-custom/editable/editable-root';
 
 interface EditableInputProps {
   asChild?: boolean;
@@ -27,12 +27,6 @@ export function EditableInput({ asChild = false, children }: EditableInputProps)
     });
   }
 
- 
   // Default fallback input
-  return (
-    <input
-      value={inputValue}
-      onChange={handleChange}
-    />
-  );
+  return <input value={inputValue} onChange={handleChange} />;
 }

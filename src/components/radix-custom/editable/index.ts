@@ -1,7 +1,7 @@
-export { EditableRoot, useEditable } from './EditableRoot';
-export { EditableArea } from './EditableArea';
-export { EditablePreview } from './EditablePreview';
-export { EditableInput } from './EditableInput';
-export { EditableEditTrigger } from './EditableEditTrigger';
-export { EditableCancelTrigger } from './EditableCancelTrigger';
-export { EditableSubmitTrigger } from './EditableSubmitTrigger';
+export { EditableRoot, useEditable } from './editable-root';
+export { EditableArea } from './editable-area';
+export { EditablePreview } from './editable-preview';
+export { EditableInput } from './editable-input';
+export { EditableEditTrigger } from './editable-edit-trigger';
+export { EditableCancelTrigger } from './editable-cancel-trigger';
+export { EditableSubmitTrigger } from './editable-submit-trigger';
