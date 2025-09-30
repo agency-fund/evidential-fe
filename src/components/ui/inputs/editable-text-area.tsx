@@ -1,5 +1,5 @@
 import { ReactNode, useState } from 'react';
-import { TextField, Flex, Text } from '@radix-ui/themes';
+import { TextArea, Flex, Text } from '@radix-ui/themes';
 import {
   EditableRoot,
   EditableArea,
@@ -10,7 +10,7 @@ import {
   EditableCancelTrigger,
 } from '@/components/radix-custom/editable';
 
-interface EditableTextFieldProps {
+interface EditableTextAreaProps {
   name: string;
   defaultValue?: string;
   onSubmit: (value: string) => Promise<void> | void;
@@ -18,13 +18,13 @@ interface EditableTextFieldProps {
   size?: '1' | '2' | '3';
 }
 
-export function EditableTextField({
+export function EditableTextArea({
   name,
   defaultValue = '',
   onSubmit,
   children,
   size = '2',
-}: EditableTextFieldProps) {
+}: EditableTextAreaProps) {
   const [error, setError] = useState<string>('');
 
   const handleSubmit = async (value: string) => {
@@ -49,9 +49,9 @@ export function EditableTextField({
             <Flex align="start" gap="2">
               <EditablePreview asChild>{children}</EditablePreview>
               <EditableInput asChild>
-                <TextField.Root
+                <TextArea
                   size={size}
-                  variant={error ? 'soft' : "surface"}
+                  variant={error ? 'soft' : 'surface'}
                   color={error ? 'red' : undefined}
                   autoFocus
                   onChange={handleChange}

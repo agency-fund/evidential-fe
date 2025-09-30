@@ -1,12 +1,13 @@
-import { ReactNode } from 'react';
-import { Button } from '@radix-ui/themes';
+'use client';
+import { IconButton} from '@radix-ui/themes';
 import { useEditable } from './EditableRoot';
+import { CheckIcon } from '@radix-ui/react-icons';
 
 interface EditableSubmitTriggerProps {
-  children?: ReactNode;
+  size?: '1' | '2' | '3';
 }
 
-export function EditableSubmitTrigger({ children }: EditableSubmitTriggerProps) {
+export function EditableSubmitTrigger({size = '2'}: EditableSubmitTriggerProps) {
   const { submit, isEditing } = useEditable();
 
   const handleClick = () => {
@@ -16,8 +17,8 @@ export function EditableSubmitTrigger({ children }: EditableSubmitTriggerProps) 
   if (!isEditing) return null;
 
   return (
-    <Button onClick={handleClick} type="button">
-      {children || 'Submit'}
-    </Button>
+    <IconButton onClick={handleClick} type="button" variant="soft" color="green" size={size}>
+      <CheckIcon />
+    </IconButton>
   );
 }

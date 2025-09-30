@@ -1,3 +1,4 @@
+'use client';
 import { createContext, useState, ReactNode, useContext } from 'react';
 
 interface EditableContextType {
@@ -27,6 +28,11 @@ export function EditableRoot({ children, name, defaultValue = '', onSubmit }: Ed
 
   const edit = () => setIsEditing(true);
   const submit = async () => {
+    if (inputValue.trim() === '') {
+      cancel();
+      return;
+    }
+
     if (onSubmit) {
       try {
         await onSubmit(inputValue);

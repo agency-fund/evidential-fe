@@ -1,3 +1,4 @@
+'use client';
 import { ReactNode, ReactElement, cloneElement, isValidElement } from 'react';
 import { useEditable } from './EditableRoot';
 
@@ -26,6 +27,7 @@ export function EditableInput({ asChild = false, children }: EditableInputProps)
     });
   }
 
+ 
   // Default fallback input
   return (
     <input

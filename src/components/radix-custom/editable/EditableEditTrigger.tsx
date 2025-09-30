@@ -1,13 +1,11 @@
-import { ReactNode } from 'react';
+'use client';
 import { IconButton } from '@radix-ui/themes';
 import { Pencil1Icon } from '@radix-ui/react-icons';
 import { useEditable } from './EditableRoot';
 
-interface EditableEditTriggerProps {
-  children?: ReactNode;
-}
 
-export function EditableEditTrigger({ children }: EditableEditTriggerProps) {
+
+export function EditableEditTrigger() {
   const { edit, isEditing } = useEditable();
 
   const handleClick = () => {
@@ -20,10 +18,9 @@ export function EditableEditTrigger({ children }: EditableEditTriggerProps) {
     <IconButton
       onClick={handleClick}
       variant="ghost"
-      size="1"
       style={{ opacity: 0.6 }}
     >
-      {children || <Pencil1Icon />}
+      <Pencil1Icon />
     </IconButton>
   );
 }

@@ -1,5 +1,5 @@
-import { ReactNode, useState } from 'react';
-import { TextField, Flex, Text } from '@radix-ui/themes';
+import { useState } from 'react';
+import { TextField, Flex } from '@radix-ui/themes';
 import {
   EditableRoot,
   EditableArea,
@@ -10,27 +10,30 @@ import {
   EditableCancelTrigger,
 } from '@/components/radix-custom/editable';
 
-interface EditableTextFieldProps {
+interface EditableDateFieldProps {
   name: string;
-  defaultValue?: string;
+  defaultValue: string;
   onSubmit: (value: string) => Promise<void> | void;
-  children: ReactNode;
   size?: '1' | '2' | '3';
 }
 
-export function EditableTextField({
+export function EditableDateField({
   name,
-  defaultValue = '',
+  defaultValue,
   onSubmit,
-  children,
   size = '2',
-}: EditableTextFieldProps) {
+}: EditableDateFieldProps) {
   const [error, setError] = useState<string>('');
+  const [currentValue, setCurrentValue] = useState<string>(defaultValue);
+  const displayDate = new Date(currentValue).toLocaleDateString();
+  const dateInputValue = currentValue.split('T')[0];
 
   const handleSubmit = async (value: string) => {
     try {
       setError('');
-      await onSubmit(value);
+      const isoValue = new Date(value + 'T00:00:00').toISOString();
+      await onSubmit(isoValue);
+      setCurrentValue(isoValue);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Update failed');
       throw err;
@@ -43,15 +46,16 @@ export function EditableTextField({
 
   return (
     <Flex direction="column" gap="2">
-      <EditableRoot name={name} defaultValue={defaultValue} onSubmit={handleSubmit}>
+      <EditableRoot name={name} defaultValue={dateInputValue} onSubmit={handleSubmit}>
         <EditableArea>
           <Flex align="center" gap="2">
             <Flex align="start" gap="2">
-              <EditablePreview asChild>{children}</EditablePreview>
+              <EditablePreview displayValue={displayDate} />
               <EditableInput asChild>
                 <TextField.Root
+                  type="date"
                   size={size}
-                  variant={error ? 'soft' : "surface"}
+                  variant={error ? 'soft' : 'surface'}
                   color={error ? 'red' : undefined}
                   autoFocus
                   onChange={handleChange}

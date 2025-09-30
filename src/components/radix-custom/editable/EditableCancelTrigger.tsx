@@ -1,12 +1,14 @@
-import { ReactNode } from 'react';
-import { Button } from '@radix-ui/themes';
+'use client';
+import { IconButton } from '@radix-ui/themes';
 import { useEditable } from './EditableRoot';
+import { Cross1Icon } from '@radix-ui/react-icons';
+
 
 interface EditableCancelTriggerProps {
-  children?: ReactNode;
+  size?: '1' | '2' | '3';
 }
 
-export function EditableCancelTrigger({ children }: EditableCancelTriggerProps) {
+export function EditableCancelTrigger({size = '2'}: EditableCancelTriggerProps) {
   const { cancel, isEditing } = useEditable();
 
   const handleClick = () => {
@@ -16,8 +18,8 @@ export function EditableCancelTrigger({ children }: EditableCancelTriggerProps) 
   if (!isEditing) return null;
 
   return (
-    <Button onClick={handleClick} type="button" variant="outline">
-      {children || 'Cancel'}
-    </Button>
+    <IconButton onClick={handleClick} type="button" variant="soft" color="red" size={size}>
+      <Cross1Icon/>
+    </IconButton>
   );
 }

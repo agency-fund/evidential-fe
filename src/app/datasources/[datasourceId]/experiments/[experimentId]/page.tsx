@@ -27,6 +27,7 @@ import { ParticipantTypeBadge } from '@/components/features/participants/partici
 import { ReadMoreText } from '@/components/ui/read-more-text';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { EditableTextField } from '@/components/ui/inputs/editable-text-field';
+import { EditableDateField } from '@/components/ui/inputs/editable-date-field';
 import {
   DesignSpecOutput,
   FreqExperimentAnalysisResponse,
@@ -171,6 +172,7 @@ export default function ExperimentViewPage() {
             name="name"
             defaultValue={experiment_name}
             onSubmit={handleUpdateExperiment('name')}
+            size='3'
           >
             <Heading size="8">{experiment_name}</Heading>
           </EditableTextField>
@@ -194,9 +196,19 @@ export default function ExperimentViewPage() {
           <Separator orientation="vertical" />
           <Flex align="center" gap="2">
             <CalendarIcon />
-            <Text>{new Date(start_date).toLocaleDateString()}</Text>
+            <EditableDateField
+              name="start_date"
+              defaultValue={start_date}
+              onSubmit={handleUpdateExperiment('start_date')}
+              size="1"
+            />
             <Text>→</Text>
-            <Text>{new Date(end_date).toLocaleDateString()}</Text>
+            <EditableDateField
+              name="end_date"
+              defaultValue={end_date}
+              onSubmit={handleUpdateExperiment('end_date')}
+              size="1"
+            />
           </Flex>
           {design_url && (
             <>
