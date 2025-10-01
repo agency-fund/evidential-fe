@@ -11,13 +11,12 @@ import {
 } from '@/components/radix-custom/editable';
 
 interface EditableDateFieldProps {
-  name: string;
   value: string;
   onSubmit: (value: string) => Promise<void> | void;
   size?: '1' | '2' | '3';
 }
 
-export function EditableDateField({ name, value, onSubmit, size = '2' }: EditableDateFieldProps) {
+export function EditableDateField({ value, onSubmit, size = '2' }: EditableDateFieldProps) {
   const [error, setError] = useState<boolean>();
   const displayDate = new Date(value).toLocaleDateString();
   const dateInputValue = value.split('T')[0];
@@ -39,7 +38,7 @@ export function EditableDateField({ name, value, onSubmit, size = '2' }: Editabl
 
   return (
     <Flex direction="column" gap="2">
-      <EditableRoot name={name} value={dateInputValue} onSubmit={handleSubmit}>
+      <EditableRoot value={dateInputValue} onSubmit={handleSubmit}>
         <EditableArea>
           <Flex align="center" gap="2">
             <Flex align="center" gap="2">

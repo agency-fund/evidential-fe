@@ -42,7 +42,7 @@ export function ArmsAndAllocationsTableRow({
       <Table.Cell width="20%">
         <Flex direction="column" gap="4" align="start">
           <Flex gap="2" align="center">
-            <EditableTextField name="name" value={arm.arm_name} onSubmit={handleUpdateArm('name')} size="1">
+            <EditableTextField value={arm.arm_name} onSubmit={handleUpdateArm('name')} size="1">
               <Heading size="2">{arm.arm_name}</Heading>
             </EditableTextField>
           </Flex>
@@ -57,7 +57,6 @@ export function ArmsAndAllocationsTableRow({
       </Table.Cell>
       <Table.Cell width="80%">
         <EditableTextArea
-          name="description"
           value={arm.arm_description || 'No description'}
           onSubmit={handleUpdateArm('description')}
           size="1"

@@ -11,7 +11,6 @@ import {
 } from '@/components/radix-custom/editable';
 
 interface EditableTextAreaProps {
-  name: string;
   value: string;
   onSubmit: (value: string) => Promise<void> | void;
   children: ReactNode;
@@ -20,7 +19,6 @@ interface EditableTextAreaProps {
 }
 
 export function EditableTextArea({
-  name,
   value,
   onSubmit,
   children,
@@ -45,7 +43,7 @@ export function EditableTextArea({
 
   return (
     <Flex direction="column" gap="2">
-      <EditableRoot name={name} value={value} onSubmit={handleSubmit}>
+      <EditableRoot value={value} onSubmit={handleSubmit}>
         <EditableArea>
           <Flex align="start" gap="2" direction="column" width="100%">
             <Flex align="start" gap="2" width="100%">

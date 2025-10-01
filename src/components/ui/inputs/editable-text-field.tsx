@@ -11,14 +11,13 @@ import {
 } from '@/components/radix-custom/editable';
 
 interface EditableTextFieldProps {
-  name: string;
   value: string;
   onSubmit: (value: string) => Promise<void> | void;
   children: ReactNode;
   size?: '1' | '2' | '3';
 }
 
-export function EditableTextField({ name, value, onSubmit, children, size = '2' }: EditableTextFieldProps) {
+export function EditableTextField({ value, onSubmit, children, size = '2' }: EditableTextFieldProps) {
   const [error, setError] = useState<boolean>();
 
   const handleSubmit = async (value: string) => {
@@ -37,7 +36,7 @@ export function EditableTextField({ name, value, onSubmit, children, size = '2' 
 
   return (
     <Flex direction="column" gap="2">
-      <EditableRoot name={name} value={value} onSubmit={handleSubmit}>
+      <EditableRoot value={value} onSubmit={handleSubmit}>
         <EditableArea>
           <Flex align="center" gap="2">
             <Flex align="center" gap="2">

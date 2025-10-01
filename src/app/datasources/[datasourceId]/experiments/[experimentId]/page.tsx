@@ -153,7 +153,6 @@ export default function ExperimentViewPage() {
       <Flex align="start" direction="column" gap="3">
         <Flex direction="row" justify="between" gap="2" align="center" width="100%">
           <EditableTextField
-            name="name"
             value={experiment_name}
             onSubmit={handleUpdateExperiment('name')}
             size="2"
@@ -179,14 +178,12 @@ export default function ExperimentViewPage() {
           <Flex align="center" gap="2">
             <CalendarIcon />
             <EditableDateField
-              name="start_date"
               value={start_date}
               onSubmit={handleUpdateExperiment('start_date')}
               size="1"
             />
             <Text>→</Text>
             <EditableDateField
-              name="end_date"
               value={end_date}
               onSubmit={handleUpdateExperiment('end_date')}
               size="1"
@@ -196,7 +193,6 @@ export default function ExperimentViewPage() {
           <Flex align="center" gap="2">
             <FileTextIcon />
             <EditableTextField
-              name="design_url"
               value={design_url ?? ''}
               onSubmit={handleUpdateExperiment('design_url')}
               size="1"
@@ -217,7 +213,7 @@ export default function ExperimentViewPage() {
       <Flex direction="column" gap="4">
         {/* Hypothesis Section */}
         <SectionCard title="Hypothesis">
-          <EditableTextArea name="description" value={description} onSubmit={handleUpdateExperiment('description')} size="2">
+          <EditableTextArea value={description} onSubmit={handleUpdateExperiment('description')} size="2">
             <ReadMoreText text={description} maxWords={30} />
           </EditableTextArea>
         </SectionCard>
