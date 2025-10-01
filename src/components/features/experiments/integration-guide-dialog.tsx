@@ -37,7 +37,7 @@ export function IntegrationGuideDialog({
       </DropdownMenu.Root>
 
       <Dialog.Root open={open} onOpenChange={setOpen}>
-        <Dialog.Content size="3" width="fit-content">
+        <Dialog.Content size="3" width="fit-content" onOpenAutoFocus={(e) => e.preventDefault()}>
           <Flex direction="column" gap="5">
             <Dialog.Title size="6">Integration Guide</Dialog.Title>
 
@@ -49,7 +49,7 @@ export function IntegrationGuideDialog({
                 <DataList.Item>
                   <DataList.Label>Organization ID</DataList.Label>
                   <DataList.Value>
-                    <Flex align="center" gap="2">
+                    <Flex align="center" gap="2" justify="between" width="100%">
                       {organizationId}
                       <CopyToClipBoard content={organizationId} tooltipContent="Copy Organization ID" />
                     </Flex>
@@ -59,7 +59,7 @@ export function IntegrationGuideDialog({
                 <DataList.Item>
                   <DataList.Label>Datasource ID</DataList.Label>
                   <DataList.Value>
-                    <Flex align="center" gap="2">
+                    <Flex align="center" gap="2" justify="between" width="100%">
                       {datasourceId}
                       <CopyToClipBoard content={datasourceId} tooltipContent="Copy Datasource ID" />
                     </Flex>
@@ -69,7 +69,7 @@ export function IntegrationGuideDialog({
                 <DataList.Item>
                   <DataList.Label>Experiment ID</DataList.Label>
                   <DataList.Value>
-                    <Flex align="center" gap="2">
+                    <Flex align="center" gap="2" justify="between" width="100%">
                       {experimentId}
                       <CopyToClipBoard content={experimentId} tooltipContent="Copy Experiment ID" />
                     </Flex>
@@ -87,7 +87,7 @@ export function IntegrationGuideDialog({
                   <DataList.Item key={arm.arm_id}>
                     <DataList.Label>{arm.arm_name}</DataList.Label>
                     <DataList.Value>
-                      <Flex align="center" gap="2">
+                      <Flex align="center" gap="2" justify="between" width="100%">
                         {arm.arm_id}
                         <CopyToClipBoard content={arm.arm_id ?? ''} tooltipContent={`Copy ${arm.arm_name} ID`} />
                       </Flex>
