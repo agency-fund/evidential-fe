@@ -1,39 +1,29 @@
 'use client';
-import { ReactNode, ReactElement, cloneElement, isValidElement } from 'react';
+import { ReactNode } from 'react';
 import { Text } from '@radix-ui/themes';
 import { useEditable } from '@/components/radix-custom/editable/editable-root';
 
-interface EditablePreviewProps {
-  asChild?: boolean;
-  children?: ReactNode;
-  displayValue?: string;
-  editOnClick?: boolean;
+interface EditablePreviewRenderProps {
+  value: string;
 }
 
-export function EditablePreview({ asChild = false, children, displayValue, editOnClick = true }: EditablePreviewProps) {
-  const { inputValue, edit, isEditing } = useEditable();
-  const valueToDisplay = displayValue ?? inputValue;
+interface EditablePreviewProps {
+  children?: ReactNode | ((props: EditablePreviewRenderProps) => ReactNode);
+  displayValue?: string;
+}
 
-  const handleClick = () => {
-    if (editOnClick) {
-      edit();
-    }
-  };
+export function EditablePreview({ children, displayValue }: EditablePreviewProps) {
+  const { inputValue, isEditing } = useEditable();
+  const valueToDisplay = displayValue ?? inputValue;
 
   if (isEditing) return null;
 
-  if (asChild && children && isValidElement(children)) {
-    return cloneElement(children as ReactElement<any>, {
-      onClick: editOnClick ? handleClick : undefined,
-      style: editOnClick ? { cursor: 'pointer' } : undefined,
-      children: valueToDisplay,
+  if (typeof children === 'function') {
+    return children({
+      value: valueToDisplay,
     });
   }
 
   // Default fallback text component
-  return (
-    <Text onClick={editOnClick ? handleClick : undefined} style={editOnClick ? { cursor: 'pointer' } : undefined}>
-      {children || valueToDisplay}
-    </Text>
-  );
+  return <Text>{children || valueToDisplay}</Text>;
 }

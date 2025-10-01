@@ -16,6 +16,7 @@ import { EditableDateField } from '@/components/ui/inputs/editable-date-field';
 import { EditableTextArea } from '@/components/ui/inputs/editable-text-area';
 import { ArmsAndAllocationsTable } from '@/components/features/experiments/arms-and-allocations-table';
 import { IntegrationGuideDialog } from '@/components/features/experiments/integration-guide-dialog';
+import { ReadMoreText } from '@/components/ui/read-more-text';
 import {
   DesignSpecOutput,
   FreqExperimentAnalysisResponse,
@@ -153,7 +154,7 @@ export default function ExperimentViewPage() {
         <Flex direction="row" justify="between" gap="2" align="center" width="100%">
           <EditableTextField
             name="name"
-            defaultValue={experiment_name}
+            value={experiment_name}
             onSubmit={handleUpdateExperiment('name')}
             size="2"
           >
@@ -179,14 +180,14 @@ export default function ExperimentViewPage() {
             <CalendarIcon />
             <EditableDateField
               name="start_date"
-              defaultValue={start_date}
+              value={start_date}
               onSubmit={handleUpdateExperiment('start_date')}
               size="1"
             />
             <Text>→</Text>
             <EditableDateField
               name="end_date"
-              defaultValue={end_date}
+              value={end_date}
               onSubmit={handleUpdateExperiment('end_date')}
               size="1"
             />
@@ -196,7 +197,7 @@ export default function ExperimentViewPage() {
             <FileTextIcon />
             <EditableTextField
               name="design_url"
-              defaultValue={design_url ?? undefined}
+              value={design_url ?? ''}
               onSubmit={handleUpdateExperiment('design_url')}
               size="1"
             >
@@ -216,14 +217,9 @@ export default function ExperimentViewPage() {
       <Flex direction="column" gap="4">
         {/* Hypothesis Section */}
         <SectionCard title="Hypothesis">
-          <EditableTextArea
-            name="description"
-            defaultValue={description}
-            onSubmit={handleUpdateExperiment('description')}
-            readMore={true}
-            maxWords={30}
-            size="2"
-          />
+          <EditableTextArea name="description" value={description} onSubmit={handleUpdateExperiment('description')} size="2">
+            <ReadMoreText text={description} maxWords={30} />
+          </EditableTextArea>
         </SectionCard>
 
         {/* Arms & Allocations Section */}

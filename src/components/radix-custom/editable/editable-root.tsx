@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useState, ReactNode, useContext } from 'react';
+import { createContext, useState, ReactNode, useContext, useEffect } from 'react';
 
 interface EditableContextType {
   isEditing: boolean;
@@ -17,14 +17,21 @@ export const EditableContext = createContext<EditableContextType | undefined>(un
 interface EditableRootProps {
   children: ReactNode;
   name: string;
-  defaultValue?: string;
+  value: string;
   onSubmit?: (value: string) => Promise<void> | void;
 }
 
-export function EditableRoot({ children, name, defaultValue = '', onSubmit }: EditableRootProps) {
+export function EditableRoot({ children, name, value, onSubmit }: EditableRootProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [inputValue, setInputValue] = useState(defaultValue);
-  const [originalValue] = useState(defaultValue);
+  const [inputValue, setInputValue] = useState(value);
+  const [originalValue, setOriginalValue] = useState(value);
+
+  useEffect(() => {
+    if (!isEditing) {
+      setInputValue(value);
+      setOriginalValue(value);
+    }
+  }, [value, isEditing]);
 
   const edit = () => setIsEditing(true);
   const submit = async () => {
@@ -36,6 +43,8 @@ export function EditableRoot({ children, name, defaultValue = '', onSubmit }: Ed
     if (onSubmit) {
       try {
         await onSubmit(inputValue);
+        // Update originalValue to the submitted value so cancel works correctly
+        setOriginalValue(inputValue);
       } catch (error) {
         console.error('Submit failed:', error);
         return;
@@ -47,9 +56,9 @@ export function EditableRoot({ children, name, defaultValue = '', onSubmit }: Ed
     setInputValue(originalValue);
     setIsEditing(false);
   };
-  const setValue = (value: string) => setInputValue(value);
+  const setValue = (val: string) => setInputValue(val);
 
-  const value: EditableContextType = {
+  const contextValue: EditableContextType = {
     isEditing,
     edit,
     submit,
@@ -60,7 +69,7 @@ export function EditableRoot({ children, name, defaultValue = '', onSubmit }: Ed
     name,
   };
 
-  return <EditableContext.Provider value={value}>{children}</EditableContext.Provider>;
+  return <EditableContext.Provider value={contextValue}>{children}</EditableContext.Provider>;
 }
 
 export function useEditable() {

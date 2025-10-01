@@ -1,32 +1,25 @@
 'use client';
-import { ReactNode, ReactElement, cloneElement, isValidElement } from 'react';
+import { ReactNode } from 'react';
 import { useEditable } from '@/components/radix-custom/editable/editable-root';
 
-interface EditableInputProps {
-  asChild?: boolean;
-  children?: ReactNode;
+type InputChangeEvent = React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
+
+interface EditableInputRenderProps {
+  value: string;
+  onChange: (event: InputChangeEvent) => void;
 }
 
-export function EditableInput({ asChild = false, children }: EditableInputProps) {
-  const { inputValue, setValue, isEditing } = useEditable();
+interface EditableInputProps {
+  children: (props: EditableInputRenderProps) => ReactNode;
+}
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(event.target.value);
-  };
+export function EditableInput({ children }: EditableInputProps) {
+  const { inputValue, setValue, isEditing } = useEditable();
 
   if (!isEditing) return null;
 
-  if (asChild && children && isValidElement(children)) {
-    const childProps = (children as ReactElement<any>).props;
-    return cloneElement(children as ReactElement<any>, {
-      value: inputValue,
-      onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
-        handleChange(event);
-        childProps.onChange?.(event);
-      },
-    });
-  }
-
-  // Default fallback input
-  return <input value={inputValue} onChange={handleChange} />;
+  return children({
+    value: inputValue,
+    onChange: (event: InputChangeEvent) => setValue(event.target.value),
+  });
 }

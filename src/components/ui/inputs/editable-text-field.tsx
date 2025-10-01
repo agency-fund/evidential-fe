@@ -12,13 +12,13 @@ import {
 
 interface EditableTextFieldProps {
   name: string;
-  defaultValue?: string;
+  value: string;
   onSubmit: (value: string) => Promise<void> | void;
   children: ReactNode;
   size?: '1' | '2' | '3';
 }
 
-export function EditableTextField({ name, defaultValue = '', onSubmit, children, size = '2' }: EditableTextFieldProps) {
+export function EditableTextField({ name, value, onSubmit, children, size = '2' }: EditableTextFieldProps) {
   const [error, setError] = useState<boolean>();
 
   const handleSubmit = async (value: string) => {
@@ -37,19 +37,25 @@ export function EditableTextField({ name, defaultValue = '', onSubmit, children,
 
   return (
     <Flex direction="column" gap="2">
-      <EditableRoot name={name} defaultValue={defaultValue} onSubmit={handleSubmit}>
+      <EditableRoot name={name} value={value} onSubmit={handleSubmit}>
         <EditableArea>
           <Flex align="center" gap="2">
-            <Flex align="start" gap="2">
-              <EditablePreview asChild>{children}</EditablePreview>
-              <EditableInput asChild>
-                <TextField.Root
-                  size={size}
-                  variant={error ? 'soft' : 'surface'}
-                  color={error ? 'red' : undefined}
-                  autoFocus
-                  onChange={handleChange}
-                />
+            <Flex align="center" gap="2">
+              <EditablePreview>{children}</EditablePreview>
+              <EditableInput>
+                {({ value, onChange }) => (
+                  <TextField.Root
+                    value={value}
+                    onChange={(e) => {
+                      onChange(e);
+                      handleChange();
+                    }}
+                    size={size}
+                    variant={error ? 'soft' : 'surface'}
+                    color={error ? 'red' : undefined}
+                    autoFocus
+                  />
+                )}
               </EditableInput>
               <EditableEditTrigger />
             </Flex>
