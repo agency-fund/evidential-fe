@@ -37,6 +37,7 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
       experimentType,
       name: 'My Experiment',
       hypothesis: 'Hypothesis.',
+      designUrl: undefined,
       startDate: getReasonableStartDate(),
       endDate: getReasonableEndDate(),
       selectedWebhookIds: webhooks.length === 1 ? [webhooks[0].id] : [],

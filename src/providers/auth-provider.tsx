@@ -7,20 +7,24 @@ import { XSpinner } from '@/components/ui/x-spinner';
 import { useAuthStorage } from '@/providers/use-auth-storage';
 import { AIRPLANE_MODE, API_BASE_URL } from '@/services/constants';
 import { useCustomEventListener } from '@/providers/use-custom-event-handler';
+import { getLogoutUrl } from '@/api/admin';
 
 export const API_401_EVENT = 'api_returned_401';
 const CODE_VERIFIER_KEY = 'code_verifier';
 
+// User satisfied IDP and has been invited to the application.
 interface AuthenticatedState {
   isAuthenticated: true;
-  idToken: string;
+  sessionToken: string;
   userEmail: string;
   isPrivileged: boolean;
   logout: () => void;
 }
 
+// User may or may not have satisfied IDP and does not have access to the application.
 interface UnauthenticatedState {
   isAuthenticated: false;
+  userIsMissingInvite: boolean;
   startLogin: () => void;
   reset: () => void;
 }
@@ -37,11 +41,11 @@ export const useAuth = () => {
   return context;
 };
 
-const checkCallerIdentity = async (idToken: string) => {
+const checkCallerIdentity = async (sessionToken: string) => {
   const url = new URL('/v1/m/caller-identity', API_BASE_URL);
   return await fetch(url, {
     headers: {
-      Authorization: `Bearer ${idToken}`,
+      Authorization: `Bearer ${sessionToken}`,
     },
   });
 };
@@ -52,13 +56,23 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useAuthStorage();
   const [fetching, setFetching] = useState<boolean>(false);
   const isGoogleLoginRedirect = user === null && searchParams.has('code') && searchParams.has('scope');
+  const [userIsMissingInvite, setUserIsMissingInvite] = useState(false);
 
-  const logout = useCallback(() => {
-    console.log('logout');
+  const logout = useCallback(async () => {
     localStorage.removeItem(CODE_VERIFIER_KEY);
+    if (user?.sessionToken) {
+      try {
+        await fetch(new URL(getLogoutUrl(), API_BASE_URL), {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${user.sessionToken}` },
+        });
+      } catch (_) {
+        // ignore
+      }
+    }
     setUser(null);
     router.push('/');
-  }, [setUser, router]);
+  }, [user, setUser, router]);
 
   useCustomEventListener(API_401_EVENT, logout);
 
@@ -78,21 +92,28 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
         const codeVerifier = localStorage.getItem(CODE_VERIFIER_KEY);
         const tokens = await exchangeCodeForTokens(searchParams.get('code') as string, codeVerifier!);
         localStorage.removeItem(CODE_VERIFIER_KEY);
-        const newToken = tokens.id_token ?? null;
+        const newToken = tokens.session_token ?? null;
         if (newToken === null) {
-          console.log('backend failed to return a usable token');
+          console.log('exchangeCodeForTokens failed to return a usable token');
           logout();
           return;
         }
         const response = await checkCallerIdentity(newToken);
         if (response.status === 200) {
           const callerIdentity = await response.json();
-          setUser({ idToken: newToken, email: callerIdentity['email'], isPrivileged: callerIdentity['is_privileged'] });
+          setUser({
+            sessionToken: newToken,
+            email: callerIdentity['email'],
+            isPrivileged: callerIdentity['is_privileged'],
+          });
           router.push('/');
+        } else if (response.status === 401) {
+          console.log('exchangeCodeForTokens succeeded but checkCallerIdentity failed');
+          setUserIsMissingInvite(true);
+          logout();
         } else {
           console.log('checkCallerIdentity failed');
           logout();
-          return;
         }
       } finally {
         setFetching(false);
@@ -104,13 +125,13 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
     if (!user) {
       return;
     }
-    const idToken = user.idToken;
+    const sessionToken = user.sessionToken;
     const validateToken = async () => {
       console.log('Validating token');
       try {
-        const response = await checkCallerIdentity(idToken);
+        const response = await checkCallerIdentity(sessionToken);
         if (response.status === 401) {
-          console.log('idToken has expired.');
+          console.log('session token has expired.');
           logout();
         }
       } catch (error) {
@@ -127,14 +148,14 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
     contextValue = {
       isAuthenticated: true,
       isPrivileged: true,
-      idToken: 'airplane-mode-token',
+      sessionToken: 'airplane-mode-token',
       userEmail: 'testing@example.com',
       logout: () => console.log('Login and logout functionality is not available when AIRPLANE_MODE is set.'),
     };
   } else if (user) {
     contextValue = {
       isAuthenticated: true,
-      idToken: user.idToken,
+      sessionToken: user.sessionToken,
       userEmail: user.email,
       isPrivileged: !!user.isPrivileged,
       logout: logout,
@@ -142,6 +163,7 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
   } else {
     contextValue = {
       isAuthenticated: false,
+      userIsMissingInvite,
       startLogin,
       reset: logout,
     };

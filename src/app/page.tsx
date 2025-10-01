@@ -162,21 +162,24 @@ export default function Page() {
             />
           ) : (
             <Grid columns={{ initial: '1', md: '2', lg: '3' }} gap="3">
-              {filteredExperiments.map((experiment) => (
-                <ExperimentCard
-                  key={experiment.experiment_id}
-                  title={experiment.design_spec.experiment_name}
-                  hypothesis={experiment.design_spec.description}
-                  type={experiment.design_spec.experiment_type}
-                  startDate={experiment.design_spec.start_date}
-                  endDate={experiment.design_spec.end_date}
-                  datasource={datasourcesToName.get(experiment.datasource_id) || ''}
-                  datasourceId={experiment.datasource_id}
-                  participantType={experiment.design_spec.participant_type}
-                  experimentId={experiment.experiment_id}
-                  organizationId={currentOrgId}
-                />
-              ))}
+              {filteredExperiments.map((experiment) => {
+                return (
+                  <ExperimentCard
+                    key={experiment.experiment_id}
+                    title={experiment.design_spec.experiment_name}
+                    hypothesis={experiment.design_spec.description}
+                    type={experiment.design_spec.experiment_type}
+                    startDate={experiment.design_spec.start_date}
+                    endDate={experiment.design_spec.end_date}
+                    datasource={datasourcesToName.get(experiment.datasource_id) || ''}
+                    datasourceId={experiment.datasource_id}
+                    designUrl={experiment.design_spec.design_url || ''}
+                    participantType={experiment.design_spec.participant_type}
+                    experimentId={experiment.experiment_id}
+                    organizationId={currentOrgId}
+                  />
+                );
+              })}
             </Grid>
           )}
         </Flex>

@@ -89,7 +89,11 @@ export default function CreateParticipantTypePage() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const tableIsSelected = selectedTable !== '';
-  const { data: tableData, isLoading: loadingTableData } = useInspectTableInDatasource(
+  const {
+    data: tableData,
+    isLoading: loadingTableData,
+    error: tableError,
+  } = useInspectTableInDatasource(
     datasourceId,
     selectedTable,
     { refresh },
@@ -304,6 +308,8 @@ export default function CreateParticipantTypePage() {
 
             {loadingTableData ? (
               <XSpinner message="Loading table data..." />
+            ) : tableError ? (
+              <GenericErrorCallout title="Failed to load table fields" error={tableError} />
             ) : selectedTable === '' ? (
               <></>
             ) : (

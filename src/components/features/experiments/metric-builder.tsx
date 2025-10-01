@@ -5,6 +5,7 @@ import { TrashIcon } from '@radix-ui/react-icons';
 import { FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { GetMetricsResponseElement } from '@/api/methods.schemas';
 import { ClickableBadge } from '@/components/features/experiments/clickable-badge';
+import FieldDataCard from '@/components/ui/cards/field-data-card';
 
 const DEFAULT_MDE = '10';
 
@@ -92,7 +93,15 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
             {formData.primaryMetric && (
               <Table.Row>
                 <Table.Cell>
-                  {formData.primaryMetric.metric.field_name} <Badge color={'green'}>Primary</Badge>
+                  <FieldDataCard
+                    field={formData.primaryMetric.metric}
+                    trigger={
+                      <Flex gap="2">
+                        <Text style={{ cursor: 'pointer' }}>{formData.primaryMetric.metric.field_name}</Text>
+                        <Badge color={'green'}>Primary</Badge>
+                      </Flex>
+                    }
+                  />
                 </Table.Cell>
                 <Table.Cell>
                   <TextField.Root
@@ -123,7 +132,10 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
               .map((selectedMetric) => (
                 <Table.Row key={selectedMetric.metric.field_name}>
                   <Table.Cell>
-                    <Text size="3">{selectedMetric.metric.field_name}</Text>
+                    <FieldDataCard
+                      field={selectedMetric.metric}
+                      trigger={<Text style={{ cursor: 'pointer' }}>{selectedMetric.metric.field_name}</Text>}
+                    />
                   </Table.Cell>
                   <Table.Cell>
                     <TextField.Root

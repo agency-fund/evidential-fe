@@ -37,6 +37,8 @@ export const getSnapshotResponseSnapshotDataMetricAnalysesItemMetricFieldNameReg
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getSnapshotResponseSnapshotDataMetricAnalysesItemArmAnalysesItemArmNameMax = 100;
 export const getSnapshotResponseSnapshotDataMetricAnalysesItemArmAnalysesItemArmDescriptionMaxOne = 2000;
+export const getSnapshotResponseSnapshotDataArmAnalysesItemArmNameMax = 100;
+export const getSnapshotResponseSnapshotDataArmAnalysesItemArmDescriptionMaxOne = 2000;
 
 export const getSnapshotResponse = zod
 	.object({
@@ -191,28 +193,114 @@ export const getSnapshotResponse = zod
 							.object({
 								type: zod.enum(["bandit"]),
 								experiment_id: zod.string().describe("ID of the experiment."),
-								n_trials: zod
-									.number()
+								arm_analyses: zod
+									.array(
+										zod
+											.object({
+												arm_id: zod
+													.string()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+													),
+												arm_name: zod
+													.string()
+													.max(
+														getSnapshotResponseSnapshotDataArmAnalysesItemArmNameMax,
+													),
+												arm_description: zod
+													.string()
+													.max(
+														getSnapshotResponseSnapshotDataArmAnalysesItemArmDescriptionMaxOne,
+													)
+													.or(zod.null())
+													.optional(),
+												alpha_init: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe("Initial alpha parameter for Beta prior"),
+												beta_init: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe("Initial beta parameter for Beta prior"),
+												mu_init: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe("Initial mean parameter for Normal prior"),
+												sigma_init: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Initial standard deviation parameter for Normal prior",
+													),
+												alpha: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe("Updated alpha parameter for Beta prior"),
+												beta: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe("Updated beta parameter for Beta prior"),
+												mu: zod
+													.array(zod.number())
+													.or(zod.null())
+													.optional()
+													.describe("Updated mean vector for Normal prior"),
+												covariance: zod
+													.array(zod.array(zod.number()))
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Updated covariance matrix for Normal prior",
+													),
+												prior_pred_mean: zod
+													.number()
+													.describe("Posterior predictive mean for this arm."),
+												prior_pred_stdev: zod
+													.number()
+													.describe(
+														"Posterior predictive standard deviation for this arm.",
+													),
+												post_pred_mean: zod
+													.number()
+													.describe("Posterior predictive mean for this arm."),
+												post_pred_stdev: zod
+													.number()
+													.describe(
+														"Posterior predictive standard deviation for this arm.",
+													),
+											})
+											.describe(
+												"Describes an experiment arm analysis for bandit experiments.",
+											),
+									)
 									.describe(
-										"The number of trials conducted for this experiment.",
+										"Contains one analysis per metric targeted by the experiment.",
 									),
 								n_outcomes: zod
 									.number()
 									.describe(
 										"The number of outcomes observed for this experiment.",
 									),
-								posterior_means: zod
-									.array(zod.number())
-									.describe("Posterior means for each arm in the experiment."),
-								posterior_stds: zod
-									.array(zod.number())
+								created_at: zod
+									.string()
+									.datetime({})
 									.describe(
-										"Posterior standard deviations for each arm in the experiment.",
+										"The date and time the experiment analysis was created.",
 									),
-								volumes: zod
+								contexts: zod
 									.array(zod.number())
+									.or(zod.null())
+									.optional()
 									.describe(
-										"Volume of participants for each arm in the experiment.",
+										"The context values used for the analysis, if applicable.",
 									),
 							})
 							.describe("Describes changes in arms for a bandit experiment"),
@@ -276,6 +364,8 @@ export const listSnapshotsResponseItemsItemDataMetricAnalysesItemMetricFieldName
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const listSnapshotsResponseItemsItemDataMetricAnalysesItemArmAnalysesItemArmNameMax = 100;
 export const listSnapshotsResponseItemsItemDataMetricAnalysesItemArmAnalysesItemArmDescriptionMaxOne = 2000;
+export const listSnapshotsResponseItemsItemDataArmAnalysesItemArmNameMax = 100;
+export const listSnapshotsResponseItemsItemDataArmAnalysesItemArmDescriptionMaxOne = 2000;
 
 export const listSnapshotsResponse = zod.object({
 	items: zod.array(
@@ -427,28 +517,112 @@ export const listSnapshotsResponse = zod.object({
 						.object({
 							type: zod.enum(["bandit"]),
 							experiment_id: zod.string().describe("ID of the experiment."),
-							n_trials: zod
-								.number()
+							arm_analyses: zod
+								.array(
+									zod
+										.object({
+											arm_id: zod
+												.string()
+												.or(zod.null())
+												.optional()
+												.describe(
+													"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+												),
+											arm_name: zod
+												.string()
+												.max(
+													listSnapshotsResponseItemsItemDataArmAnalysesItemArmNameMax,
+												),
+											arm_description: zod
+												.string()
+												.max(
+													listSnapshotsResponseItemsItemDataArmAnalysesItemArmDescriptionMaxOne,
+												)
+												.or(zod.null())
+												.optional(),
+											alpha_init: zod
+												.number()
+												.or(zod.null())
+												.optional()
+												.describe("Initial alpha parameter for Beta prior"),
+											beta_init: zod
+												.number()
+												.or(zod.null())
+												.optional()
+												.describe("Initial beta parameter for Beta prior"),
+											mu_init: zod
+												.number()
+												.or(zod.null())
+												.optional()
+												.describe("Initial mean parameter for Normal prior"),
+											sigma_init: zod
+												.number()
+												.or(zod.null())
+												.optional()
+												.describe(
+													"Initial standard deviation parameter for Normal prior",
+												),
+											alpha: zod
+												.number()
+												.or(zod.null())
+												.optional()
+												.describe("Updated alpha parameter for Beta prior"),
+											beta: zod
+												.number()
+												.or(zod.null())
+												.optional()
+												.describe("Updated beta parameter for Beta prior"),
+											mu: zod
+												.array(zod.number())
+												.or(zod.null())
+												.optional()
+												.describe("Updated mean vector for Normal prior"),
+											covariance: zod
+												.array(zod.array(zod.number()))
+												.or(zod.null())
+												.optional()
+												.describe("Updated covariance matrix for Normal prior"),
+											prior_pred_mean: zod
+												.number()
+												.describe("Posterior predictive mean for this arm."),
+											prior_pred_stdev: zod
+												.number()
+												.describe(
+													"Posterior predictive standard deviation for this arm.",
+												),
+											post_pred_mean: zod
+												.number()
+												.describe("Posterior predictive mean for this arm."),
+											post_pred_stdev: zod
+												.number()
+												.describe(
+													"Posterior predictive standard deviation for this arm.",
+												),
+										})
+										.describe(
+											"Describes an experiment arm analysis for bandit experiments.",
+										),
+								)
 								.describe(
-									"The number of trials conducted for this experiment.",
+									"Contains one analysis per metric targeted by the experiment.",
 								),
 							n_outcomes: zod
 								.number()
 								.describe(
 									"The number of outcomes observed for this experiment.",
 								),
-							posterior_means: zod
-								.array(zod.number())
-								.describe("Posterior means for each arm in the experiment."),
-							posterior_stds: zod
-								.array(zod.number())
+							created_at: zod
+								.string()
+								.datetime({})
 								.describe(
-									"Posterior standard deviations for each arm in the experiment.",
+									"The date and time the experiment analysis was created.",
 								),
-							volumes: zod
+							contexts: zod
 								.array(zod.number())
+								.or(zod.null())
+								.optional()
 								.describe(
-									"Volume of participants for each arm in the experiment.",
+									"The context values used for the analysis, if applicable.",
 								),
 						})
 						.describe("Describes changes in arms for a bandit experiment"),
@@ -2239,6 +2413,7 @@ export const createExperimentQueryParams = zod.object({
 export const createExperimentBodyDesignSpecParticipantTypeMax = 100;
 export const createExperimentBodyDesignSpecExperimentNameMax = 100;
 export const createExperimentBodyDesignSpecDescriptionMax = 2000;
+export const createExperimentBodyDesignSpecDesignUrlMaxOne = 500;
 export const createExperimentBodyDesignSpecArmsItemArmNameMax = 100;
 export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOne = 2000;
 export const createExperimentBodyDesignSpecArmsMin = 2;
@@ -2268,6 +2443,7 @@ export const createExperimentBodyDesignSpecFstatThreshMax = 1;
 export const createExperimentBodyDesignSpecParticipantTypeMaxOne = 100;
 export const createExperimentBodyDesignSpecExperimentNameMaxOne = 100;
 export const createExperimentBodyDesignSpecDescriptionMaxOne = 2000;
+export const createExperimentBodyDesignSpecDesignUrlMaxFour = 500;
 export const createExperimentBodyDesignSpecArmsItemArmNameMaxOne = 100;
 export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxFour = 2000;
 export const createExperimentBodyDesignSpecArmsMinOne = 2;
@@ -2297,6 +2473,7 @@ export const createExperimentBodyDesignSpecFstatThreshMaxOne = 1;
 export const createExperimentBodyDesignSpecParticipantTypeMaxTwo = 100;
 export const createExperimentBodyDesignSpecExperimentNameMaxTwo = 100;
 export const createExperimentBodyDesignSpecDescriptionMaxTwo = 2000;
+export const createExperimentBodyDesignSpecDesignUrlMaxSeven = 500;
 export const createExperimentBodyDesignSpecArmsItemArmNameMaxTwo = 100;
 export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxSeven = 2000;
 export const createExperimentBodyDesignSpecArmsMinTwo = 2;
@@ -2308,6 +2485,7 @@ export const createExperimentBodyDesignSpecContextsMaxOne = 150;
 export const createExperimentBodyDesignSpecParticipantTypeMaxThree = 100;
 export const createExperimentBodyDesignSpecExperimentNameMaxThree = 100;
 export const createExperimentBodyDesignSpecDescriptionMaxThree = 2000;
+export const createExperimentBodyDesignSpecDesignUrlMaxOnezero = 500;
 export const createExperimentBodyDesignSpecArmsItemArmNameMaxThree = 100;
 export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnezero = 2000;
 export const createExperimentBodyDesignSpecArmsMinThree = 2;
@@ -2319,6 +2497,7 @@ export const createExperimentBodyDesignSpecContextsMaxFour = 150;
 export const createExperimentBodyDesignSpecParticipantTypeMaxFour = 100;
 export const createExperimentBodyDesignSpecExperimentNameMaxFour = 100;
 export const createExperimentBodyDesignSpecDescriptionMaxFour = 2000;
+export const createExperimentBodyDesignSpecDesignUrlMaxOnethree = 500;
 export const createExperimentBodyDesignSpecArmsItemArmNameMaxFour = 100;
 export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
 export const createExperimentBodyDesignSpecArmsMinFour = 2;
@@ -2352,6 +2531,14 @@ export const createExperimentBody = zod.object({
 			description: zod
 				.string()
 				.max(createExperimentBodyDesignSpecDescriptionMax),
+			design_url: zod
+				.string()
+				.url()
+				.min(1)
+				.max(createExperimentBodyDesignSpecDesignUrlMaxOne)
+				.or(zod.null())
+				.optional()
+				.describe("Optional URL to a more detailed experiment design doc."),
 			start_date: zod.string().datetime({}),
 			end_date: zod.string().datetime({}),
 			arms: zod
@@ -2499,6 +2686,14 @@ export const createExperimentBody = zod.object({
 					description: zod
 						.string()
 						.max(createExperimentBodyDesignSpecDescriptionMaxOne),
+					design_url: zod
+						.string()
+						.url()
+						.min(1)
+						.max(createExperimentBodyDesignSpecDesignUrlMaxFour)
+						.or(zod.null())
+						.optional()
+						.describe("Optional URL to a more detailed experiment design doc."),
 					start_date: zod.string().datetime({}),
 					end_date: zod.string().datetime({}),
 					arms: zod
@@ -2651,6 +2846,14 @@ export const createExperimentBody = zod.object({
 					description: zod
 						.string()
 						.max(createExperimentBodyDesignSpecDescriptionMaxTwo),
+					design_url: zod
+						.string()
+						.url()
+						.min(1)
+						.max(createExperimentBodyDesignSpecDesignUrlMaxSeven)
+						.or(zod.null())
+						.optional()
+						.describe("Optional URL to a more detailed experiment design doc."),
 					start_date: zod.string().datetime({}),
 					end_date: zod.string().datetime({}),
 					arms: zod
@@ -2792,6 +2995,14 @@ export const createExperimentBody = zod.object({
 					description: zod
 						.string()
 						.max(createExperimentBodyDesignSpecDescriptionMaxThree),
+					design_url: zod
+						.string()
+						.url()
+						.min(1)
+						.max(createExperimentBodyDesignSpecDesignUrlMaxOnezero)
+						.or(zod.null())
+						.optional()
+						.describe("Optional URL to a more detailed experiment design doc."),
 					start_date: zod.string().datetime({}),
 					end_date: zod.string().datetime({}),
 					arms: zod
@@ -2933,6 +3144,14 @@ export const createExperimentBody = zod.object({
 					description: zod
 						.string()
 						.max(createExperimentBodyDesignSpecDescriptionMaxFour),
+					design_url: zod
+						.string()
+						.url()
+						.min(1)
+						.max(createExperimentBodyDesignSpecDesignUrlMaxOnethree)
+						.or(zod.null())
+						.optional()
+						.describe("Optional URL to a more detailed experiment design doc."),
 					start_date: zod.string().datetime({}),
 					end_date: zod.string().datetime({}),
 					arms: zod
@@ -3195,6 +3414,7 @@ export const createExperimentBody = zod.object({
 export const createExperimentResponseDesignSpecParticipantTypeMax = 100;
 export const createExperimentResponseDesignSpecExperimentNameMax = 100;
 export const createExperimentResponseDesignSpecDescriptionMax = 2000;
+export const createExperimentResponseDesignSpecDesignUrlMaxOne = 500;
 export const createExperimentResponseDesignSpecArmsItemArmNameMax = 100;
 export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOne = 2000;
 export const createExperimentResponseDesignSpecArmsMin = 2;
@@ -3224,6 +3444,7 @@ export const createExperimentResponseDesignSpecFstatThreshMax = 1;
 export const createExperimentResponseDesignSpecParticipantTypeMaxOne = 100;
 export const createExperimentResponseDesignSpecExperimentNameMaxOne = 100;
 export const createExperimentResponseDesignSpecDescriptionMaxOne = 2000;
+export const createExperimentResponseDesignSpecDesignUrlMaxFour = 500;
 export const createExperimentResponseDesignSpecArmsItemArmNameMaxOne = 100;
 export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxFour = 2000;
 export const createExperimentResponseDesignSpecArmsMinOne = 2;
@@ -3253,6 +3474,7 @@ export const createExperimentResponseDesignSpecFstatThreshMaxOne = 1;
 export const createExperimentResponseDesignSpecParticipantTypeMaxTwo = 100;
 export const createExperimentResponseDesignSpecExperimentNameMaxTwo = 100;
 export const createExperimentResponseDesignSpecDescriptionMaxTwo = 2000;
+export const createExperimentResponseDesignSpecDesignUrlMaxSeven = 500;
 export const createExperimentResponseDesignSpecArmsItemArmNameMaxTwo = 100;
 export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxSeven = 2000;
 export const createExperimentResponseDesignSpecArmsMinTwo = 2;
@@ -3264,6 +3486,7 @@ export const createExperimentResponseDesignSpecContextsMaxOne = 150;
 export const createExperimentResponseDesignSpecParticipantTypeMaxThree = 100;
 export const createExperimentResponseDesignSpecExperimentNameMaxThree = 100;
 export const createExperimentResponseDesignSpecDescriptionMaxThree = 2000;
+export const createExperimentResponseDesignSpecDesignUrlMaxOnezero = 500;
 export const createExperimentResponseDesignSpecArmsItemArmNameMaxThree = 100;
 export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnezero = 2000;
 export const createExperimentResponseDesignSpecArmsMinThree = 2;
@@ -3275,6 +3498,7 @@ export const createExperimentResponseDesignSpecContextsMaxFour = 150;
 export const createExperimentResponseDesignSpecParticipantTypeMaxFour = 100;
 export const createExperimentResponseDesignSpecExperimentNameMaxFour = 100;
 export const createExperimentResponseDesignSpecDescriptionMaxFour = 2000;
+export const createExperimentResponseDesignSpecDesignUrlMaxOnethree = 500;
 export const createExperimentResponseDesignSpecArmsItemArmNameMaxFour = 100;
 export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
 export const createExperimentResponseDesignSpecArmsMinFour = 2;
@@ -3336,6 +3560,14 @@ export const createExperimentResponse = zod
 				description: zod
 					.string()
 					.max(createExperimentResponseDesignSpecDescriptionMax),
+				design_url: zod
+					.string()
+					.url()
+					.min(1)
+					.max(createExperimentResponseDesignSpecDesignUrlMaxOne)
+					.or(zod.null())
+					.optional()
+					.describe("Optional URL to a more detailed experiment design doc."),
 				start_date: zod.string().datetime({}),
 				end_date: zod.string().datetime({}),
 				arms: zod
@@ -3487,6 +3719,16 @@ export const createExperimentResponse = zod
 						description: zod
 							.string()
 							.max(createExperimentResponseDesignSpecDescriptionMaxOne),
+						design_url: zod
+							.string()
+							.url()
+							.min(1)
+							.max(createExperimentResponseDesignSpecDesignUrlMaxFour)
+							.or(zod.null())
+							.optional()
+							.describe(
+								"Optional URL to a more detailed experiment design doc.",
+							),
 						start_date: zod.string().datetime({}),
 						end_date: zod.string().datetime({}),
 						arms: zod
@@ -3641,6 +3883,16 @@ export const createExperimentResponse = zod
 						description: zod
 							.string()
 							.max(createExperimentResponseDesignSpecDescriptionMaxTwo),
+						design_url: zod
+							.string()
+							.url()
+							.min(1)
+							.max(createExperimentResponseDesignSpecDesignUrlMaxSeven)
+							.or(zod.null())
+							.optional()
+							.describe(
+								"Optional URL to a more detailed experiment design doc.",
+							),
 						start_date: zod.string().datetime({}),
 						end_date: zod.string().datetime({}),
 						arms: zod
@@ -3784,6 +4036,16 @@ export const createExperimentResponse = zod
 						description: zod
 							.string()
 							.max(createExperimentResponseDesignSpecDescriptionMaxThree),
+						design_url: zod
+							.string()
+							.url()
+							.min(1)
+							.max(createExperimentResponseDesignSpecDesignUrlMaxOnezero)
+							.or(zod.null())
+							.optional()
+							.describe(
+								"Optional URL to a more detailed experiment design doc.",
+							),
 						start_date: zod.string().datetime({}),
 						end_date: zod.string().datetime({}),
 						arms: zod
@@ -3927,6 +4189,16 @@ export const createExperimentResponse = zod
 						description: zod
 							.string()
 							.max(createExperimentResponseDesignSpecDescriptionMaxFour),
+						design_url: zod
+							.string()
+							.url()
+							.min(1)
+							.max(createExperimentResponseDesignSpecDesignUrlMaxOnethree)
+							.or(zod.null())
+							.optional()
+							.describe(
+								"Optional URL to a more detailed experiment design doc.",
+							),
 						start_date: zod.string().datetime({}),
 						end_date: zod.string().datetime({}),
 						arms: zod
@@ -4272,6 +4544,8 @@ export const createExperimentResponse = zod
 	);
 
 /**
+ * For preassigned experiments, and online experiments (except contextual bandits),
+    returns an analysis of the experiment's performance, given datasource and experiment ID.
  * @summary Analyze Experiment
  */
 export const analyzeExperimentParams = zod.object({
@@ -4293,6 +4567,8 @@ export const analyzeExperimentResponseMetricAnalysesItemMetricFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const analyzeExperimentResponseMetricAnalysesItemArmAnalysesItemArmNameMax = 100;
 export const analyzeExperimentResponseMetricAnalysesItemArmAnalysesItemArmDescriptionMaxOne = 2000;
+export const analyzeExperimentResponseArmAnalysesItemArmNameMax = 100;
+export const analyzeExperimentResponseArmAnalysesItemArmDescriptionMaxOne = 2000;
 
 export const analyzeExperimentResponse = zod
 	.object({
@@ -4418,23 +4694,374 @@ export const analyzeExperimentResponse = zod
 			.object({
 				type: zod.enum(["bandit"]),
 				experiment_id: zod.string().describe("ID of the experiment."),
-				n_trials: zod
-					.number()
-					.describe("The number of trials conducted for this experiment."),
+				arm_analyses: zod
+					.array(
+						zod
+							.object({
+								arm_id: zod
+									.string()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+									),
+								arm_name: zod
+									.string()
+									.max(analyzeExperimentResponseArmAnalysesItemArmNameMax),
+								arm_description: zod
+									.string()
+									.max(
+										analyzeExperimentResponseArmAnalysesItemArmDescriptionMaxOne,
+									)
+									.or(zod.null())
+									.optional(),
+								alpha_init: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe("Initial alpha parameter for Beta prior"),
+								beta_init: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe("Initial beta parameter for Beta prior"),
+								mu_init: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe("Initial mean parameter for Normal prior"),
+								sigma_init: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Initial standard deviation parameter for Normal prior",
+									),
+								alpha: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe("Updated alpha parameter for Beta prior"),
+								beta: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe("Updated beta parameter for Beta prior"),
+								mu: zod
+									.array(zod.number())
+									.or(zod.null())
+									.optional()
+									.describe("Updated mean vector for Normal prior"),
+								covariance: zod
+									.array(zod.array(zod.number()))
+									.or(zod.null())
+									.optional()
+									.describe("Updated covariance matrix for Normal prior"),
+								prior_pred_mean: zod
+									.number()
+									.describe("Posterior predictive mean for this arm."),
+								prior_pred_stdev: zod
+									.number()
+									.describe(
+										"Posterior predictive standard deviation for this arm.",
+									),
+								post_pred_mean: zod
+									.number()
+									.describe("Posterior predictive mean for this arm."),
+								post_pred_stdev: zod
+									.number()
+									.describe(
+										"Posterior predictive standard deviation for this arm.",
+									),
+							})
+							.describe(
+								"Describes an experiment arm analysis for bandit experiments.",
+							),
+					)
+					.describe(
+						"Contains one analysis per metric targeted by the experiment.",
+					),
 				n_outcomes: zod
 					.number()
 					.describe("The number of outcomes observed for this experiment."),
-				posterior_means: zod
+				created_at: zod
+					.string()
+					.datetime({})
+					.describe("The date and time the experiment analysis was created."),
+				contexts: zod
 					.array(zod.number())
-					.describe("Posterior means for each arm in the experiment."),
-				posterior_stds: zod
-					.array(zod.number())
+					.or(zod.null())
+					.optional()
+					.describe("The context values used for the analysis, if applicable."),
+			})
+			.describe("Describes changes in arms for a bandit experiment"),
+	)
+	.describe("The type of experiment analysis response.");
+
+/**
+ * For contextual bandit experiments, returns an analysis of the experiment's performance,
+    given datasource and experiment ID and context values as input.
+ * @summary Analyze Cmab Experiment
+ */
+export const analyzeCmabExperimentParams = zod.object({
+	datasource_id: zod.string(),
+	experiment_id: zod.string(),
+});
+
+export const analyzeCmabExperimentBodyTypeDefault = "cmab_assignment";
+
+export const analyzeCmabExperimentBody = zod
+	.object({
+		type: zod.string().default(analyzeCmabExperimentBodyTypeDefault),
+		context_inputs: zod
+			.array(
+				zod
+					.object({
+						context_id: zod
+							.string()
+							.describe("Unique identifier for the context."),
+						context_value: zod.number().describe("Value of the context"),
+					})
+					.describe("Pydantic model for a context input"),
+			)
+			.describe(
+				"\n            List of context values for the assignment.\n            Must include exactly the same number contexts defined in the experiment.\n            The values are matched to the experiment's contexts by context_id, not by position in the list.\n            Each context_id must correspond to one of the IDs of the contexts defined in the experiment.\n            Can be None, when simply retrieving pre-existing assignments; must have valid inputs otherwise.\n            ",
+			),
+	})
+	.describe(
+		'Request model for creating a new CMAB assignment or a CMAB experiment analysis.\n\nWhen submitting context values for a CMAB experiment, the following rules apply:\n1. Each context_input must reference a valid context_id from the experiment\'s defined contexts\n2. The order of context_inputs does not need to match the order of contexts in the experiment\n3. You must provide values for all contexts defined in the experiment\n4. Number of input context values must match the number of contexts defined in the experiment\n5. The context value input can be None, but only in the case of retrieving a pre-existing assignment.\n\nExample:\n    If an experiment defines contexts with IDs ["ctx_1", "ctx_2"], your request must include\n    both of these context_ids in the context_inputs list, but they can be in any order.',
+	);
+
+export const analyzeCmabExperimentResponseMetricAnalysesItemMetricFieldNameRegExp =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const analyzeCmabExperimentResponseMetricAnalysesItemArmAnalysesItemArmNameMax = 100;
+export const analyzeCmabExperimentResponseMetricAnalysesItemArmAnalysesItemArmDescriptionMaxOne = 2000;
+export const analyzeCmabExperimentResponseArmAnalysesItemArmNameMax = 100;
+export const analyzeCmabExperimentResponseArmAnalysesItemArmDescriptionMaxOne = 2000;
+
+export const analyzeCmabExperimentResponse = zod
+	.object({
+		type: zod.enum(["freq"]),
+		experiment_id: zod.string().describe("ID of the experiment."),
+		metric_analyses: zod
+			.array(
+				zod
+					.object({
+						metric_name: zod.string().or(zod.null()).optional(),
+						metric: zod
+							.object({
+								field_name: zod
+									.string()
+									.regex(
+										analyzeCmabExperimentResponseMetricAnalysesItemMetricFieldNameRegExp,
+									),
+								metric_pct_change: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+									),
+								metric_target: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+									),
+							})
+							.describe(
+								"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+							)
+							.or(zod.null())
+							.optional(),
+						arm_analyses: zod
+							.array(
+								zod.object({
+									arm_id: zod
+										.string()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										),
+									arm_name: zod
+										.string()
+										.max(
+											analyzeCmabExperimentResponseMetricAnalysesItemArmAnalysesItemArmNameMax,
+										),
+									arm_description: zod
+										.string()
+										.max(
+											analyzeCmabExperimentResponseMetricAnalysesItemArmAnalysesItemArmDescriptionMaxOne,
+										)
+										.or(zod.null())
+										.optional(),
+									estimate: zod
+										.number()
+										.describe(
+											"The estimated treatment effect relative to the baseline arm.",
+										),
+									p_value: zod
+										.number()
+										.or(zod.null())
+										.describe(
+											"The p-value indicating statistical significance of the treatment effect. Value may be None if the t-stat is not available, e.g. due to inability to calculate the standard error.",
+										),
+									t_stat: zod
+										.number()
+										.or(zod.null())
+										.describe(
+											"The t-statistic from the statistical test. If the value is actually NaN, e.g. due to inability to calculate the standard error, we return None.",
+										),
+									std_error: zod
+										.number()
+										.describe(
+											"The standard error of the treatment effect estimate.",
+										),
+									num_missing_values: zod
+										.number()
+										.describe(
+											"The number of participants assigned to this arm with missing values (NaNs) for this metric. These rows are excluded from the analysis.",
+										),
+									is_baseline: zod
+										.boolean()
+										.describe(
+											"Whether this arm is the baseline/control arm for comparison.",
+										),
+								}),
+							)
+							.describe(
+								"The results of the analysis for each arm (coefficient) for this specific metric.",
+							),
+					})
 					.describe(
-						"Posterior standard deviations for each arm in the experiment.",
+						"Describes the change in a single metric for each arm of an experiment.",
 					),
-				volumes: zod
+			)
+			.describe("Contains one analysis per metric targeted by the experiment."),
+		num_participants: zod
+			.number()
+			.describe(
+				"The number of participants assigned to the experiment pulled from the dwh across all arms. Metric outcomes are not guaranteed to be present for all participants.",
+			),
+		num_missing_participants: zod
+			.number()
+			.or(zod.null())
+			.optional()
+			.describe(
+				"The number of participants assigned to the experiment across all arms that are not found in the data warehouse when pulling metrics.",
+			),
+		created_at: zod
+			.string()
+			.datetime({})
+			.describe("The date and time the experiment analysis was created."),
+	})
+	.describe("Describes the change if any in metrics targeted by an experiment.")
+	.or(
+		zod
+			.object({
+				type: zod.enum(["bandit"]),
+				experiment_id: zod.string().describe("ID of the experiment."),
+				arm_analyses: zod
+					.array(
+						zod
+							.object({
+								arm_id: zod
+									.string()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+									),
+								arm_name: zod
+									.string()
+									.max(analyzeCmabExperimentResponseArmAnalysesItemArmNameMax),
+								arm_description: zod
+									.string()
+									.max(
+										analyzeCmabExperimentResponseArmAnalysesItemArmDescriptionMaxOne,
+									)
+									.or(zod.null())
+									.optional(),
+								alpha_init: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe("Initial alpha parameter for Beta prior"),
+								beta_init: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe("Initial beta parameter for Beta prior"),
+								mu_init: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe("Initial mean parameter for Normal prior"),
+								sigma_init: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Initial standard deviation parameter for Normal prior",
+									),
+								alpha: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe("Updated alpha parameter for Beta prior"),
+								beta: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe("Updated beta parameter for Beta prior"),
+								mu: zod
+									.array(zod.number())
+									.or(zod.null())
+									.optional()
+									.describe("Updated mean vector for Normal prior"),
+								covariance: zod
+									.array(zod.array(zod.number()))
+									.or(zod.null())
+									.optional()
+									.describe("Updated covariance matrix for Normal prior"),
+								prior_pred_mean: zod
+									.number()
+									.describe("Posterior predictive mean for this arm."),
+								prior_pred_stdev: zod
+									.number()
+									.describe(
+										"Posterior predictive standard deviation for this arm.",
+									),
+								post_pred_mean: zod
+									.number()
+									.describe("Posterior predictive mean for this arm."),
+								post_pred_stdev: zod
+									.number()
+									.describe(
+										"Posterior predictive standard deviation for this arm.",
+									),
+							})
+							.describe(
+								"Describes an experiment arm analysis for bandit experiments.",
+							),
+					)
+					.describe(
+						"Contains one analysis per metric targeted by the experiment.",
+					),
+				n_outcomes: zod
+					.number()
+					.describe("The number of outcomes observed for this experiment."),
+				created_at: zod
+					.string()
+					.datetime({})
+					.describe("The date and time the experiment analysis was created."),
+				contexts: zod
 					.array(zod.number())
-					.describe("Volume of participants for each arm in the experiment."),
+					.or(zod.null())
+					.optional()
+					.describe("The context values used for the analysis, if applicable."),
 			})
 			.describe("Describes changes in arms for a bandit experiment"),
 	)
@@ -4471,6 +5098,7 @@ export const listOrganizationExperimentsParams = zod.object({
 export const listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMax = 100;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMax = 100;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMax = 2000;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxOne = 500;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMax = 100;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOne = 2000;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMin = 2;
@@ -4500,6 +5128,7 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMa
 export const listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxOne = 100;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxOne = 100;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxOne = 2000;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxFour = 500;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxOne = 100;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxFour = 2000;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinOne = 2;
@@ -4529,6 +5158,7 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMa
 export const listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxTwo = 100;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxTwo = 100;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxTwo = 2000;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxSeven = 500;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxTwo = 100;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxSeven = 2000;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinTwo = 2;
@@ -4540,6 +5170,7 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxOn
 export const listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxThree = 100;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxThree = 100;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxThree = 2000;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxOnezero = 500;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxThree = 100;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOnezero = 2000;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinThree = 2;
@@ -4551,6 +5182,7 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxFo
 export const listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxFour = 100;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxFour = 100;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxFour = 2000;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxOnethree = 500;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxFour = 100;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinFour = 2;
@@ -4619,6 +5251,18 @@ export const listOrganizationExperimentsResponse = zod.object({
 							.string()
 							.max(
 								listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMax,
+							),
+						design_url: zod
+							.string()
+							.url()
+							.min(1)
+							.max(
+								listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxOne,
+							)
+							.or(zod.null())
+							.optional()
+							.describe(
+								"Optional URL to a more detailed experiment design doc.",
 							),
 						start_date: zod.string().datetime({}),
 						end_date: zod.string().datetime({}),
@@ -4806,6 +5450,18 @@ export const listOrganizationExperimentsResponse = zod.object({
 									.string()
 									.max(
 										listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxOne,
+									),
+								design_url: zod
+									.string()
+									.url()
+									.min(1)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxFour,
+									)
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Optional URL to a more detailed experiment design doc.",
 									),
 								start_date: zod.string().datetime({}),
 								end_date: zod.string().datetime({}),
@@ -4999,6 +5655,18 @@ export const listOrganizationExperimentsResponse = zod.object({
 									.max(
 										listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxTwo,
 									),
+								design_url: zod
+									.string()
+									.url()
+									.min(1)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxSeven,
+									)
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Optional URL to a more detailed experiment design doc.",
+									),
 								start_date: zod.string().datetime({}),
 								end_date: zod.string().datetime({}),
 								arms: zod
@@ -5160,6 +5828,18 @@ export const listOrganizationExperimentsResponse = zod.object({
 									.max(
 										listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxThree,
 									),
+								design_url: zod
+									.string()
+									.url()
+									.min(1)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxOnezero,
+									)
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Optional URL to a more detailed experiment design doc.",
+									),
 								start_date: zod.string().datetime({}),
 								end_date: zod.string().datetime({}),
 								arms: zod
@@ -5320,6 +6000,18 @@ export const listOrganizationExperimentsResponse = zod.object({
 									.string()
 									.max(
 										listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxFour,
+									),
+								design_url: zod
+									.string()
+									.url()
+									.min(1)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxOnethree,
+									)
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Optional URL to a more detailed experiment design doc.",
 									),
 								start_date: zod.string().datetime({}),
 								end_date: zod.string().datetime({}),
@@ -5689,114 +6381,119 @@ export const listOrganizationExperimentsResponse = zod.object({
 
 /**
  * Returns the experiment with the specified ID.
- * @summary Get Experiment
+ * @summary Get Experiment For Ui
  */
-export const getExperimentParams = zod.object({
+export const getExperimentForUiParams = zod.object({
 	datasource_id: zod.string(),
 	experiment_id: zod.string(),
 });
 
-export const getExperimentResponseDesignSpecParticipantTypeMax = 100;
-export const getExperimentResponseDesignSpecExperimentNameMax = 100;
-export const getExperimentResponseDesignSpecDescriptionMax = 2000;
-export const getExperimentResponseDesignSpecArmsItemArmNameMax = 100;
-export const getExperimentResponseDesignSpecArmsItemArmDescriptionMaxOne = 2000;
-export const getExperimentResponseDesignSpecArmsMin = 2;
+export const getExperimentForUiResponseDesignSpecParticipantTypeMax = 100;
+export const getExperimentForUiResponseDesignSpecExperimentNameMax = 100;
+export const getExperimentForUiResponseDesignSpecDescriptionMax = 2000;
+export const getExperimentForUiResponseDesignSpecDesignUrlMaxOne = 500;
+export const getExperimentForUiResponseDesignSpecArmsItemArmNameMax = 100;
+export const getExperimentForUiResponseDesignSpecArmsItemArmDescriptionMaxOne = 2000;
+export const getExperimentForUiResponseDesignSpecArmsMin = 2;
 
-export const getExperimentResponseDesignSpecArmsMax = 10;
-export const getExperimentResponseDesignSpecStrataItemFieldNameRegExp =
+export const getExperimentForUiResponseDesignSpecArmsMax = 10;
+export const getExperimentForUiResponseDesignSpecStrataItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const getExperimentResponseDesignSpecStrataMax = 150;
-export const getExperimentResponseDesignSpecMetricsItemFieldNameRegExp =
+export const getExperimentForUiResponseDesignSpecStrataMax = 150;
+export const getExperimentForUiResponseDesignSpecMetricsItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const getExperimentResponseDesignSpecMetricsMax = 150;
-export const getExperimentResponseDesignSpecFiltersItemFieldNameRegExp =
+export const getExperimentForUiResponseDesignSpecMetricsMax = 150;
+export const getExperimentForUiResponseDesignSpecFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const getExperimentResponseDesignSpecFiltersMax = 20;
-export const getExperimentResponseDesignSpecPowerDefault = 0.8;
-export const getExperimentResponseDesignSpecPowerMin = 0;
+export const getExperimentForUiResponseDesignSpecFiltersMax = 20;
+export const getExperimentForUiResponseDesignSpecPowerDefault = 0.8;
+export const getExperimentForUiResponseDesignSpecPowerMin = 0;
 
-export const getExperimentResponseDesignSpecPowerMax = 1;
-export const getExperimentResponseDesignSpecAlphaDefault = 0.05;
-export const getExperimentResponseDesignSpecAlphaMin = 0;
+export const getExperimentForUiResponseDesignSpecPowerMax = 1;
+export const getExperimentForUiResponseDesignSpecAlphaDefault = 0.05;
+export const getExperimentForUiResponseDesignSpecAlphaMin = 0;
 
-export const getExperimentResponseDesignSpecAlphaMax = 1;
-export const getExperimentResponseDesignSpecFstatThreshDefault = 0.6;
-export const getExperimentResponseDesignSpecFstatThreshMin = 0;
+export const getExperimentForUiResponseDesignSpecAlphaMax = 1;
+export const getExperimentForUiResponseDesignSpecFstatThreshDefault = 0.6;
+export const getExperimentForUiResponseDesignSpecFstatThreshMin = 0;
 
-export const getExperimentResponseDesignSpecFstatThreshMax = 1;
-export const getExperimentResponseDesignSpecParticipantTypeMaxOne = 100;
-export const getExperimentResponseDesignSpecExperimentNameMaxOne = 100;
-export const getExperimentResponseDesignSpecDescriptionMaxOne = 2000;
-export const getExperimentResponseDesignSpecArmsItemArmNameMaxOne = 100;
-export const getExperimentResponseDesignSpecArmsItemArmDescriptionMaxFour = 2000;
-export const getExperimentResponseDesignSpecArmsMinOne = 2;
+export const getExperimentForUiResponseDesignSpecFstatThreshMax = 1;
+export const getExperimentForUiResponseDesignSpecParticipantTypeMaxOne = 100;
+export const getExperimentForUiResponseDesignSpecExperimentNameMaxOne = 100;
+export const getExperimentForUiResponseDesignSpecDescriptionMaxOne = 2000;
+export const getExperimentForUiResponseDesignSpecDesignUrlMaxFour = 500;
+export const getExperimentForUiResponseDesignSpecArmsItemArmNameMaxOne = 100;
+export const getExperimentForUiResponseDesignSpecArmsItemArmDescriptionMaxFour = 2000;
+export const getExperimentForUiResponseDesignSpecArmsMinOne = 2;
 
-export const getExperimentResponseDesignSpecArmsMaxOne = 10;
-export const getExperimentResponseDesignSpecStrataItemFieldNameRegExpOne =
+export const getExperimentForUiResponseDesignSpecArmsMaxOne = 10;
+export const getExperimentForUiResponseDesignSpecStrataItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const getExperimentResponseDesignSpecStrataMaxOne = 150;
-export const getExperimentResponseDesignSpecMetricsItemFieldNameRegExpOne =
+export const getExperimentForUiResponseDesignSpecStrataMaxOne = 150;
+export const getExperimentForUiResponseDesignSpecMetricsItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const getExperimentResponseDesignSpecMetricsMaxOne = 150;
-export const getExperimentResponseDesignSpecFiltersItemFieldNameRegExpOne =
+export const getExperimentForUiResponseDesignSpecMetricsMaxOne = 150;
+export const getExperimentForUiResponseDesignSpecFiltersItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const getExperimentResponseDesignSpecFiltersMaxOne = 20;
-export const getExperimentResponseDesignSpecPowerDefaultOne = 0.8;
-export const getExperimentResponseDesignSpecPowerMinOne = 0;
+export const getExperimentForUiResponseDesignSpecFiltersMaxOne = 20;
+export const getExperimentForUiResponseDesignSpecPowerDefaultOne = 0.8;
+export const getExperimentForUiResponseDesignSpecPowerMinOne = 0;
 
-export const getExperimentResponseDesignSpecPowerMaxOne = 1;
-export const getExperimentResponseDesignSpecAlphaDefaultOne = 0.05;
-export const getExperimentResponseDesignSpecAlphaMinOne = 0;
+export const getExperimentForUiResponseDesignSpecPowerMaxOne = 1;
+export const getExperimentForUiResponseDesignSpecAlphaDefaultOne = 0.05;
+export const getExperimentForUiResponseDesignSpecAlphaMinOne = 0;
 
-export const getExperimentResponseDesignSpecAlphaMaxOne = 1;
-export const getExperimentResponseDesignSpecFstatThreshDefaultOne = 0.6;
-export const getExperimentResponseDesignSpecFstatThreshMinOne = 0;
+export const getExperimentForUiResponseDesignSpecAlphaMaxOne = 1;
+export const getExperimentForUiResponseDesignSpecFstatThreshDefaultOne = 0.6;
+export const getExperimentForUiResponseDesignSpecFstatThreshMinOne = 0;
 
-export const getExperimentResponseDesignSpecFstatThreshMaxOne = 1;
-export const getExperimentResponseDesignSpecParticipantTypeMaxTwo = 100;
-export const getExperimentResponseDesignSpecExperimentNameMaxTwo = 100;
-export const getExperimentResponseDesignSpecDescriptionMaxTwo = 2000;
-export const getExperimentResponseDesignSpecArmsItemArmNameMaxTwo = 100;
-export const getExperimentResponseDesignSpecArmsItemArmDescriptionMaxSeven = 2000;
-export const getExperimentResponseDesignSpecArmsMinTwo = 2;
+export const getExperimentForUiResponseDesignSpecFstatThreshMaxOne = 1;
+export const getExperimentForUiResponseDesignSpecParticipantTypeMaxTwo = 100;
+export const getExperimentForUiResponseDesignSpecExperimentNameMaxTwo = 100;
+export const getExperimentForUiResponseDesignSpecDescriptionMaxTwo = 2000;
+export const getExperimentForUiResponseDesignSpecDesignUrlMaxSeven = 500;
+export const getExperimentForUiResponseDesignSpecArmsItemArmNameMaxTwo = 100;
+export const getExperimentForUiResponseDesignSpecArmsItemArmDescriptionMaxSeven = 2000;
+export const getExperimentForUiResponseDesignSpecArmsMinTwo = 2;
 
-export const getExperimentResponseDesignSpecArmsMaxTwo = 10;
-export const getExperimentResponseDesignSpecContextsItemContextNameMax = 100;
-export const getExperimentResponseDesignSpecContextsItemContextDescriptionMaxOne = 2000;
-export const getExperimentResponseDesignSpecContextsMaxOne = 150;
-export const getExperimentResponseDesignSpecParticipantTypeMaxThree = 100;
-export const getExperimentResponseDesignSpecExperimentNameMaxThree = 100;
-export const getExperimentResponseDesignSpecDescriptionMaxThree = 2000;
-export const getExperimentResponseDesignSpecArmsItemArmNameMaxThree = 100;
-export const getExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnezero = 2000;
-export const getExperimentResponseDesignSpecArmsMinThree = 2;
+export const getExperimentForUiResponseDesignSpecArmsMaxTwo = 10;
+export const getExperimentForUiResponseDesignSpecContextsItemContextNameMax = 100;
+export const getExperimentForUiResponseDesignSpecContextsItemContextDescriptionMaxOne = 2000;
+export const getExperimentForUiResponseDesignSpecContextsMaxOne = 150;
+export const getExperimentForUiResponseDesignSpecParticipantTypeMaxThree = 100;
+export const getExperimentForUiResponseDesignSpecExperimentNameMaxThree = 100;
+export const getExperimentForUiResponseDesignSpecDescriptionMaxThree = 2000;
+export const getExperimentForUiResponseDesignSpecDesignUrlMaxOnezero = 500;
+export const getExperimentForUiResponseDesignSpecArmsItemArmNameMaxThree = 100;
+export const getExperimentForUiResponseDesignSpecArmsItemArmDescriptionMaxOnezero = 2000;
+export const getExperimentForUiResponseDesignSpecArmsMinThree = 2;
 
-export const getExperimentResponseDesignSpecArmsMaxThree = 10;
-export const getExperimentResponseDesignSpecContextsItemContextNameMaxOne = 100;
-export const getExperimentResponseDesignSpecContextsItemContextDescriptionMaxFour = 2000;
-export const getExperimentResponseDesignSpecContextsMaxFour = 150;
-export const getExperimentResponseDesignSpecParticipantTypeMaxFour = 100;
-export const getExperimentResponseDesignSpecExperimentNameMaxFour = 100;
-export const getExperimentResponseDesignSpecDescriptionMaxFour = 2000;
-export const getExperimentResponseDesignSpecArmsItemArmNameMaxFour = 100;
-export const getExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
-export const getExperimentResponseDesignSpecArmsMinFour = 2;
+export const getExperimentForUiResponseDesignSpecArmsMaxThree = 10;
+export const getExperimentForUiResponseDesignSpecContextsItemContextNameMaxOne = 100;
+export const getExperimentForUiResponseDesignSpecContextsItemContextDescriptionMaxFour = 2000;
+export const getExperimentForUiResponseDesignSpecContextsMaxFour = 150;
+export const getExperimentForUiResponseDesignSpecParticipantTypeMaxFour = 100;
+export const getExperimentForUiResponseDesignSpecExperimentNameMaxFour = 100;
+export const getExperimentForUiResponseDesignSpecDescriptionMaxFour = 2000;
+export const getExperimentForUiResponseDesignSpecDesignUrlMaxOnethree = 500;
+export const getExperimentForUiResponseDesignSpecArmsItemArmNameMaxFour = 100;
+export const getExperimentForUiResponseDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
+export const getExperimentForUiResponseDesignSpecArmsMinFour = 2;
 
-export const getExperimentResponseDesignSpecArmsMaxFour = 10;
-export const getExperimentResponseDesignSpecContextsItemContextNameMaxTwo = 100;
-export const getExperimentResponseDesignSpecContextsItemContextDescriptionMaxSeven = 2000;
-export const getExperimentResponseDesignSpecContextsMaxSeven = 150;
-export const getExperimentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
+export const getExperimentForUiResponseDesignSpecArmsMaxFour = 10;
+export const getExperimentForUiResponseDesignSpecContextsItemContextNameMaxTwo = 100;
+export const getExperimentForUiResponseDesignSpecContextsItemContextDescriptionMaxSeven = 2000;
+export const getExperimentForUiResponseDesignSpecContextsMaxSeven = 150;
+export const getExperimentForUiResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const getExperimentResponsePowerAnalysesAnalysesMax = 150;
-export const getExperimentResponseAssignSummaryArmSizesItemArmArmNameMax = 100;
-export const getExperimentResponseAssignSummaryArmSizesItemArmArmDescriptionMaxOne = 2000;
-export const getExperimentResponseAssignSummaryArmSizesItemSizeDefault = 0;
-export const getExperimentResponseAssignSummaryArmSizesMaxOne = 10;
-export const getExperimentResponseWebhooksDefault = [];
+export const getExperimentForUiResponsePowerAnalysesAnalysesMax = 150;
+export const getExperimentForUiResponseAssignSummaryArmSizesItemArmArmNameMax = 100;
+export const getExperimentForUiResponseAssignSummaryArmSizesItemArmArmDescriptionMaxOne = 2000;
+export const getExperimentForUiResponseAssignSummaryArmSizesItemSizeDefault = 0;
+export const getExperimentForUiResponseAssignSummaryArmSizesMaxOne = 10;
+export const getExperimentForUiResponseWebhooksDefault = [];
 
-export const getExperimentResponse = zod
+export const getExperimentForUiResponse = zod
 	.object({
 		experiment_id: zod
 			.string()
@@ -5825,7 +6522,7 @@ export const getExperimentResponse = zod
 			.object({
 				participant_type: zod
 					.string()
-					.max(getExperimentResponseDesignSpecParticipantTypeMax),
+					.max(getExperimentForUiResponseDesignSpecParticipantTypeMax),
 				experiment_id: zod
 					.string()
 					.or(zod.null())
@@ -5836,10 +6533,18 @@ export const getExperimentResponse = zod
 				experiment_type: zod.enum(["freq_preassigned"]),
 				experiment_name: zod
 					.string()
-					.max(getExperimentResponseDesignSpecExperimentNameMax),
+					.max(getExperimentForUiResponseDesignSpecExperimentNameMax),
 				description: zod
 					.string()
-					.max(getExperimentResponseDesignSpecDescriptionMax),
+					.max(getExperimentForUiResponseDesignSpecDescriptionMax),
+				design_url: zod
+					.string()
+					.url()
+					.min(1)
+					.max(getExperimentForUiResponseDesignSpecDesignUrlMaxOne)
+					.or(zod.null())
+					.optional()
+					.describe("Optional URL to a more detailed experiment design doc."),
 				start_date: zod.string().datetime({}),
 				end_date: zod.string().datetime({}),
 				arms: zod
@@ -5855,19 +6560,19 @@ export const getExperimentResponse = zod
 									),
 								arm_name: zod
 									.string()
-									.max(getExperimentResponseDesignSpecArmsItemArmNameMax),
+									.max(getExperimentForUiResponseDesignSpecArmsItemArmNameMax),
 								arm_description: zod
 									.string()
 									.max(
-										getExperimentResponseDesignSpecArmsItemArmDescriptionMaxOne,
+										getExperimentForUiResponseDesignSpecArmsItemArmDescriptionMaxOne,
 									)
 									.or(zod.null())
 									.optional(),
 							})
 							.describe("Describes an experiment treatment arm."),
 					)
-					.min(getExperimentResponseDesignSpecArmsMin)
-					.max(getExperimentResponseDesignSpecArmsMax),
+					.min(getExperimentForUiResponseDesignSpecArmsMin)
+					.max(getExperimentForUiResponseDesignSpecArmsMax),
 				strata: zod
 					.array(
 						zod
@@ -5875,12 +6580,12 @@ export const getExperimentResponse = zod
 								field_name: zod
 									.string()
 									.regex(
-										getExperimentResponseDesignSpecStrataItemFieldNameRegExp,
+										getExperimentForUiResponseDesignSpecStrataItemFieldNameRegExp,
 									),
 							})
 							.describe("Describes a variable used for stratification."),
 					)
-					.max(getExperimentResponseDesignSpecStrataMax)
+					.max(getExperimentForUiResponseDesignSpecStrataMax)
 					.describe(
 						"Optional participant_type fields to use for stratified assignment.",
 					),
@@ -5891,7 +6596,7 @@ export const getExperimentResponse = zod
 								field_name: zod
 									.string()
 									.regex(
-										getExperimentResponseDesignSpecMetricsItemFieldNameRegExp,
+										getExperimentForUiResponseDesignSpecMetricsItemFieldNameRegExp,
 									),
 								metric_pct_change: zod
 									.number()
@@ -5913,7 +6618,7 @@ export const getExperimentResponse = zod
 							),
 					)
 					.min(1)
-					.max(getExperimentResponseDesignSpecMetricsMax)
+					.max(getExperimentForUiResponseDesignSpecMetricsMax)
 					.describe("Primary and optional secondary metrics to target."),
 				filters: zod
 					.array(
@@ -5922,7 +6627,7 @@ export const getExperimentResponse = zod
 								field_name: zod
 									.string()
 									.regex(
-										getExperimentResponseDesignSpecFiltersItemFieldNameRegExp,
+										getExperimentForUiResponseDesignSpecFiltersItemFieldNameRegExp,
 									),
 								relation: zod
 									.enum(["includes", "excludes", "between"])
@@ -5939,31 +6644,31 @@ export const getExperimentResponse = zod
 								'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 							),
 					)
-					.max(getExperimentResponseDesignSpecFiltersMax)
+					.max(getExperimentForUiResponseDesignSpecFiltersMax)
 					.describe(
 						"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
 					),
 				power: zod
 					.number()
-					.min(getExperimentResponseDesignSpecPowerMin)
-					.max(getExperimentResponseDesignSpecPowerMax)
-					.default(getExperimentResponseDesignSpecPowerDefault)
+					.min(getExperimentForUiResponseDesignSpecPowerMin)
+					.max(getExperimentForUiResponseDesignSpecPowerMax)
+					.default(getExperimentForUiResponseDesignSpecPowerDefault)
 					.describe(
 						"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
 					),
 				alpha: zod
 					.number()
-					.min(getExperimentResponseDesignSpecAlphaMin)
-					.max(getExperimentResponseDesignSpecAlphaMax)
-					.default(getExperimentResponseDesignSpecAlphaDefault)
+					.min(getExperimentForUiResponseDesignSpecAlphaMin)
+					.max(getExperimentForUiResponseDesignSpecAlphaMax)
+					.default(getExperimentForUiResponseDesignSpecAlphaDefault)
 					.describe(
 						"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
 					),
 				fstat_thresh: zod
 					.number()
-					.min(getExperimentResponseDesignSpecFstatThreshMin)
-					.max(getExperimentResponseDesignSpecFstatThreshMax)
-					.default(getExperimentResponseDesignSpecFstatThreshDefault)
+					.min(getExperimentForUiResponseDesignSpecFstatThreshMin)
+					.max(getExperimentForUiResponseDesignSpecFstatThreshMax)
+					.default(getExperimentForUiResponseDesignSpecFstatThreshDefault)
 					.describe(
 						'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
 					),
@@ -5976,7 +6681,7 @@ export const getExperimentResponse = zod
 					.object({
 						participant_type: zod
 							.string()
-							.max(getExperimentResponseDesignSpecParticipantTypeMaxOne),
+							.max(getExperimentForUiResponseDesignSpecParticipantTypeMaxOne),
 						experiment_id: zod
 							.string()
 							.or(zod.null())
@@ -5987,10 +6692,20 @@ export const getExperimentResponse = zod
 						experiment_type: zod.enum(["freq_online"]),
 						experiment_name: zod
 							.string()
-							.max(getExperimentResponseDesignSpecExperimentNameMaxOne),
+							.max(getExperimentForUiResponseDesignSpecExperimentNameMaxOne),
 						description: zod
 							.string()
-							.max(getExperimentResponseDesignSpecDescriptionMaxOne),
+							.max(getExperimentForUiResponseDesignSpecDescriptionMaxOne),
+						design_url: zod
+							.string()
+							.url()
+							.min(1)
+							.max(getExperimentForUiResponseDesignSpecDesignUrlMaxFour)
+							.or(zod.null())
+							.optional()
+							.describe(
+								"Optional URL to a more detailed experiment design doc.",
+							),
 						start_date: zod.string().datetime({}),
 						end_date: zod.string().datetime({}),
 						arms: zod
@@ -6007,20 +6722,20 @@ export const getExperimentResponse = zod
 										arm_name: zod
 											.string()
 											.max(
-												getExperimentResponseDesignSpecArmsItemArmNameMaxOne,
+												getExperimentForUiResponseDesignSpecArmsItemArmNameMaxOne,
 											),
 										arm_description: zod
 											.string()
 											.max(
-												getExperimentResponseDesignSpecArmsItemArmDescriptionMaxFour,
+												getExperimentForUiResponseDesignSpecArmsItemArmDescriptionMaxFour,
 											)
 											.or(zod.null())
 											.optional(),
 									})
 									.describe("Describes an experiment treatment arm."),
 							)
-							.min(getExperimentResponseDesignSpecArmsMinOne)
-							.max(getExperimentResponseDesignSpecArmsMaxOne),
+							.min(getExperimentForUiResponseDesignSpecArmsMinOne)
+							.max(getExperimentForUiResponseDesignSpecArmsMaxOne),
 						strata: zod
 							.array(
 								zod
@@ -6028,12 +6743,12 @@ export const getExperimentResponse = zod
 										field_name: zod
 											.string()
 											.regex(
-												getExperimentResponseDesignSpecStrataItemFieldNameRegExpOne,
+												getExperimentForUiResponseDesignSpecStrataItemFieldNameRegExpOne,
 											),
 									})
 									.describe("Describes a variable used for stratification."),
 							)
-							.max(getExperimentResponseDesignSpecStrataMaxOne)
+							.max(getExperimentForUiResponseDesignSpecStrataMaxOne)
 							.describe(
 								"Optional participant_type fields to use for stratified assignment.",
 							),
@@ -6044,7 +6759,7 @@ export const getExperimentResponse = zod
 										field_name: zod
 											.string()
 											.regex(
-												getExperimentResponseDesignSpecMetricsItemFieldNameRegExpOne,
+												getExperimentForUiResponseDesignSpecMetricsItemFieldNameRegExpOne,
 											),
 										metric_pct_change: zod
 											.number()
@@ -6066,7 +6781,7 @@ export const getExperimentResponse = zod
 									),
 							)
 							.min(1)
-							.max(getExperimentResponseDesignSpecMetricsMaxOne)
+							.max(getExperimentForUiResponseDesignSpecMetricsMaxOne)
 							.describe("Primary and optional secondary metrics to target."),
 						filters: zod
 							.array(
@@ -6075,7 +6790,7 @@ export const getExperimentResponse = zod
 										field_name: zod
 											.string()
 											.regex(
-												getExperimentResponseDesignSpecFiltersItemFieldNameRegExpOne,
+												getExperimentForUiResponseDesignSpecFiltersItemFieldNameRegExpOne,
 											),
 										relation: zod
 											.enum(["includes", "excludes", "between"])
@@ -6092,31 +6807,33 @@ export const getExperimentResponse = zod
 										'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value       | logical Result                                    |\n|----------|-------------|---------------------------------------------------|\n| INCLUDES | [None]      | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |\n\nString comparisons are case-sensitive.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of datetime and timestamp values\n\nDATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 									),
 							)
-							.max(getExperimentResponseDesignSpecFiltersMaxOne)
+							.max(getExperimentForUiResponseDesignSpecFiltersMaxOne)
 							.describe(
 								"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
 							),
 						power: zod
 							.number()
-							.min(getExperimentResponseDesignSpecPowerMinOne)
-							.max(getExperimentResponseDesignSpecPowerMaxOne)
-							.default(getExperimentResponseDesignSpecPowerDefaultOne)
+							.min(getExperimentForUiResponseDesignSpecPowerMinOne)
+							.max(getExperimentForUiResponseDesignSpecPowerMaxOne)
+							.default(getExperimentForUiResponseDesignSpecPowerDefaultOne)
 							.describe(
 								"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
 							),
 						alpha: zod
 							.number()
-							.min(getExperimentResponseDesignSpecAlphaMinOne)
-							.max(getExperimentResponseDesignSpecAlphaMaxOne)
-							.default(getExperimentResponseDesignSpecAlphaDefaultOne)
+							.min(getExperimentForUiResponseDesignSpecAlphaMinOne)
+							.max(getExperimentForUiResponseDesignSpecAlphaMaxOne)
+							.default(getExperimentForUiResponseDesignSpecAlphaDefaultOne)
 							.describe(
 								"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
 							),
 						fstat_thresh: zod
 							.number()
-							.min(getExperimentResponseDesignSpecFstatThreshMinOne)
-							.max(getExperimentResponseDesignSpecFstatThreshMaxOne)
-							.default(getExperimentResponseDesignSpecFstatThreshDefaultOne)
+							.min(getExperimentForUiResponseDesignSpecFstatThreshMinOne)
+							.max(getExperimentForUiResponseDesignSpecFstatThreshMaxOne)
+							.default(
+								getExperimentForUiResponseDesignSpecFstatThreshDefaultOne,
+							)
 							.describe(
 								'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
 							),
@@ -6130,7 +6847,7 @@ export const getExperimentResponse = zod
 					.object({
 						participant_type: zod
 							.string()
-							.max(getExperimentResponseDesignSpecParticipantTypeMaxTwo),
+							.max(getExperimentForUiResponseDesignSpecParticipantTypeMaxTwo),
 						experiment_id: zod
 							.string()
 							.or(zod.null())
@@ -6141,10 +6858,20 @@ export const getExperimentResponse = zod
 						experiment_type: zod.enum(["mab_online"]),
 						experiment_name: zod
 							.string()
-							.max(getExperimentResponseDesignSpecExperimentNameMaxTwo),
+							.max(getExperimentForUiResponseDesignSpecExperimentNameMaxTwo),
 						description: zod
 							.string()
-							.max(getExperimentResponseDesignSpecDescriptionMaxTwo),
+							.max(getExperimentForUiResponseDesignSpecDescriptionMaxTwo),
+						design_url: zod
+							.string()
+							.url()
+							.min(1)
+							.max(getExperimentForUiResponseDesignSpecDesignUrlMaxSeven)
+							.or(zod.null())
+							.optional()
+							.describe(
+								"Optional URL to a more detailed experiment design doc.",
+							),
 						start_date: zod.string().datetime({}),
 						end_date: zod.string().datetime({}),
 						arms: zod
@@ -6161,12 +6888,12 @@ export const getExperimentResponse = zod
 										arm_name: zod
 											.string()
 											.max(
-												getExperimentResponseDesignSpecArmsItemArmNameMaxTwo,
+												getExperimentForUiResponseDesignSpecArmsItemArmNameMaxTwo,
 											),
 										arm_description: zod
 											.string()
 											.max(
-												getExperimentResponseDesignSpecArmsItemArmDescriptionMaxSeven,
+												getExperimentForUiResponseDesignSpecArmsItemArmDescriptionMaxSeven,
 											)
 											.or(zod.null())
 											.optional(),
@@ -6217,8 +6944,8 @@ export const getExperimentResponse = zod
 										"Describes an experiment arm for bandit experiments.",
 									),
 							)
-							.min(getExperimentResponseDesignSpecArmsMinTwo)
-							.max(getExperimentResponseDesignSpecArmsMaxTwo),
+							.min(getExperimentForUiResponseDesignSpecArmsMinTwo)
+							.max(getExperimentForUiResponseDesignSpecArmsMaxTwo),
 						contexts: zod
 							.array(
 								zod
@@ -6233,12 +6960,12 @@ export const getExperimentResponse = zod
 										context_name: zod
 											.string()
 											.max(
-												getExperimentResponseDesignSpecContextsItemContextNameMax,
+												getExperimentForUiResponseDesignSpecContextsItemContextNameMax,
 											),
 										context_description: zod
 											.string()
 											.max(
-												getExperimentResponseDesignSpecContextsItemContextDescriptionMaxOne,
+												getExperimentForUiResponseDesignSpecContextsItemContextDescriptionMaxOne,
 											)
 											.or(zod.null())
 											.optional(),
@@ -6249,7 +6976,7 @@ export const getExperimentResponse = zod
 									})
 									.describe("Pydantic model for context of the experiment."),
 							)
-							.max(getExperimentResponseDesignSpecContextsMaxOne)
+							.max(getExperimentForUiResponseDesignSpecContextsMaxOne)
 							.or(zod.null())
 							.optional()
 							.describe(
@@ -6273,7 +7000,7 @@ export const getExperimentResponse = zod
 					.object({
 						participant_type: zod
 							.string()
-							.max(getExperimentResponseDesignSpecParticipantTypeMaxThree),
+							.max(getExperimentForUiResponseDesignSpecParticipantTypeMaxThree),
 						experiment_id: zod
 							.string()
 							.or(zod.null())
@@ -6284,10 +7011,20 @@ export const getExperimentResponse = zod
 						experiment_type: zod.enum(["cmab_online"]),
 						experiment_name: zod
 							.string()
-							.max(getExperimentResponseDesignSpecExperimentNameMaxThree),
+							.max(getExperimentForUiResponseDesignSpecExperimentNameMaxThree),
 						description: zod
 							.string()
-							.max(getExperimentResponseDesignSpecDescriptionMaxThree),
+							.max(getExperimentForUiResponseDesignSpecDescriptionMaxThree),
+						design_url: zod
+							.string()
+							.url()
+							.min(1)
+							.max(getExperimentForUiResponseDesignSpecDesignUrlMaxOnezero)
+							.or(zod.null())
+							.optional()
+							.describe(
+								"Optional URL to a more detailed experiment design doc.",
+							),
 						start_date: zod.string().datetime({}),
 						end_date: zod.string().datetime({}),
 						arms: zod
@@ -6304,12 +7041,12 @@ export const getExperimentResponse = zod
 										arm_name: zod
 											.string()
 											.max(
-												getExperimentResponseDesignSpecArmsItemArmNameMaxThree,
+												getExperimentForUiResponseDesignSpecArmsItemArmNameMaxThree,
 											),
 										arm_description: zod
 											.string()
 											.max(
-												getExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnezero,
+												getExperimentForUiResponseDesignSpecArmsItemArmDescriptionMaxOnezero,
 											)
 											.or(zod.null())
 											.optional(),
@@ -6360,8 +7097,8 @@ export const getExperimentResponse = zod
 										"Describes an experiment arm for bandit experiments.",
 									),
 							)
-							.min(getExperimentResponseDesignSpecArmsMinThree)
-							.max(getExperimentResponseDesignSpecArmsMaxThree),
+							.min(getExperimentForUiResponseDesignSpecArmsMinThree)
+							.max(getExperimentForUiResponseDesignSpecArmsMaxThree),
 						contexts: zod
 							.array(
 								zod
@@ -6376,12 +7113,12 @@ export const getExperimentResponse = zod
 										context_name: zod
 											.string()
 											.max(
-												getExperimentResponseDesignSpecContextsItemContextNameMaxOne,
+												getExperimentForUiResponseDesignSpecContextsItemContextNameMaxOne,
 											),
 										context_description: zod
 											.string()
 											.max(
-												getExperimentResponseDesignSpecContextsItemContextDescriptionMaxFour,
+												getExperimentForUiResponseDesignSpecContextsItemContextDescriptionMaxFour,
 											)
 											.or(zod.null())
 											.optional(),
@@ -6392,7 +7129,7 @@ export const getExperimentResponse = zod
 									})
 									.describe("Pydantic model for context of the experiment."),
 							)
-							.max(getExperimentResponseDesignSpecContextsMaxFour)
+							.max(getExperimentForUiResponseDesignSpecContextsMaxFour)
 							.or(zod.null())
 							.optional()
 							.describe(
@@ -6416,7 +7153,7 @@ export const getExperimentResponse = zod
 					.object({
 						participant_type: zod
 							.string()
-							.max(getExperimentResponseDesignSpecParticipantTypeMaxFour),
+							.max(getExperimentForUiResponseDesignSpecParticipantTypeMaxFour),
 						experiment_id: zod
 							.string()
 							.or(zod.null())
@@ -6427,10 +7164,20 @@ export const getExperimentResponse = zod
 						experiment_type: zod.enum(["bayes_ab_online"]),
 						experiment_name: zod
 							.string()
-							.max(getExperimentResponseDesignSpecExperimentNameMaxFour),
+							.max(getExperimentForUiResponseDesignSpecExperimentNameMaxFour),
 						description: zod
 							.string()
-							.max(getExperimentResponseDesignSpecDescriptionMaxFour),
+							.max(getExperimentForUiResponseDesignSpecDescriptionMaxFour),
+						design_url: zod
+							.string()
+							.url()
+							.min(1)
+							.max(getExperimentForUiResponseDesignSpecDesignUrlMaxOnethree)
+							.or(zod.null())
+							.optional()
+							.describe(
+								"Optional URL to a more detailed experiment design doc.",
+							),
 						start_date: zod.string().datetime({}),
 						end_date: zod.string().datetime({}),
 						arms: zod
@@ -6447,12 +7194,12 @@ export const getExperimentResponse = zod
 										arm_name: zod
 											.string()
 											.max(
-												getExperimentResponseDesignSpecArmsItemArmNameMaxFour,
+												getExperimentForUiResponseDesignSpecArmsItemArmNameMaxFour,
 											),
 										arm_description: zod
 											.string()
 											.max(
-												getExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnethree,
+												getExperimentForUiResponseDesignSpecArmsItemArmDescriptionMaxOnethree,
 											)
 											.or(zod.null())
 											.optional(),
@@ -6503,8 +7250,8 @@ export const getExperimentResponse = zod
 										"Describes an experiment arm for bandit experiments.",
 									),
 							)
-							.min(getExperimentResponseDesignSpecArmsMinFour)
-							.max(getExperimentResponseDesignSpecArmsMaxFour),
+							.min(getExperimentForUiResponseDesignSpecArmsMinFour)
+							.max(getExperimentForUiResponseDesignSpecArmsMaxFour),
 						contexts: zod
 							.array(
 								zod
@@ -6519,12 +7266,12 @@ export const getExperimentResponse = zod
 										context_name: zod
 											.string()
 											.max(
-												getExperimentResponseDesignSpecContextsItemContextNameMaxTwo,
+												getExperimentForUiResponseDesignSpecContextsItemContextNameMaxTwo,
 											),
 										context_description: zod
 											.string()
 											.max(
-												getExperimentResponseDesignSpecContextsItemContextDescriptionMaxSeven,
+												getExperimentForUiResponseDesignSpecContextsItemContextDescriptionMaxSeven,
 											)
 											.or(zod.null())
 											.optional(),
@@ -6535,7 +7282,7 @@ export const getExperimentResponse = zod
 									})
 									.describe("Pydantic model for context of the experiment."),
 							)
-							.max(getExperimentResponseDesignSpecContextsMaxSeven)
+							.max(getExperimentForUiResponseDesignSpecContextsMaxSeven)
 							.or(zod.null())
 							.optional()
 							.describe(
@@ -6566,7 +7313,7 @@ export const getExperimentResponse = zod
 										field_name: zod
 											.string()
 											.regex(
-												getExperimentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp,
+												getExperimentForUiResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp,
 											),
 										metric_pct_change: zod
 											.number()
@@ -6682,7 +7429,7 @@ export const getExperimentResponse = zod
 							})
 							.describe("Describes analysis results of a single metric."),
 					)
-					.max(getExperimentResponsePowerAnalysesAnalysesMax),
+					.max(getExperimentForUiResponsePowerAnalysesAnalysesMax),
 			})
 			.or(zod.null()),
 		assign_summary: zod
@@ -6740,12 +7487,12 @@ export const getExperimentResponse = zod
 										arm_name: zod
 											.string()
 											.max(
-												getExperimentResponseAssignSummaryArmSizesItemArmArmNameMax,
+												getExperimentForUiResponseAssignSummaryArmSizesItemArmArmNameMax,
 											),
 										arm_description: zod
 											.string()
 											.max(
-												getExperimentResponseAssignSummaryArmSizesItemArmArmDescriptionMaxOne,
+												getExperimentForUiResponseAssignSummaryArmSizesItemArmArmDescriptionMaxOne,
 											)
 											.or(zod.null())
 											.optional(),
@@ -6757,7 +7504,7 @@ export const getExperimentResponse = zod
 								"Describes the number of participants assigned to each arm.",
 							),
 					)
-					.max(getExperimentResponseAssignSummaryArmSizesMaxOne)
+					.max(getExperimentForUiResponseAssignSummaryArmSizesMaxOne)
 					.or(zod.null())
 					.optional()
 					.describe("For each arm, the number of participants assigned."),
@@ -6766,13 +7513,49 @@ export const getExperimentResponse = zod
 			.or(zod.null()),
 		webhooks: zod
 			.array(zod.string())
-			.default(getExperimentResponseWebhooksDefault)
+			.default(getExperimentForUiResponseWebhooksDefault)
 			.describe(
 				"List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed.",
 			),
 	})
 	.describe(
 		"An experiment configuration capturing all info at design time when assignment was made.",
+	);
+
+/**
+ * @summary Update Experiment
+ */
+export const updateExperimentParams = zod.object({
+	datasource_id: zod.string(),
+	experiment_id: zod.string(),
+});
+
+export const updateExperimentBodyNameMaxOne = 100;
+export const updateExperimentBodyDescriptionMaxOne = 2000;
+export const updateExperimentBodyDesignUrlMaxOne = 500;
+
+export const updateExperimentBody = zod
+	.object({
+		name: zod
+			.string()
+			.max(updateExperimentBodyNameMaxOne)
+			.or(zod.null())
+			.optional(),
+		description: zod
+			.string()
+			.max(updateExperimentBodyDescriptionMaxOne)
+			.or(zod.null())
+			.optional(),
+		design_url: zod
+			.string()
+			.max(updateExperimentBodyDesignUrlMaxOne)
+			.or(zod.null())
+			.optional(),
+		start_date: zod.string().datetime({}).or(zod.null()).optional(),
+		end_date: zod.string().datetime({}).or(zod.null()).optional(),
+	})
+	.describe(
+		"Defines the subset of fields that can be updated for an experiment after creation.",
 	);
 
 /**
@@ -6794,21 +7577,21 @@ export const deleteExperimentQueryParams = zod.object({
 });
 
 /**
- * @summary Get Experiment Assignments
+ * @summary Get Experiment Assignments For Ui
  */
-export const getExperimentAssignmentsParams = zod.object({
+export const getExperimentAssignmentsForUiParams = zod.object({
 	datasource_id: zod.string(),
 	experiment_id: zod.string(),
 });
 
-export const getExperimentAssignmentsResponseAssignmentsItemParticipantIdMax = 64;
-export const getExperimentAssignmentsResponseAssignmentsItemArmNameMax = 100;
-export const getExperimentAssignmentsResponseAssignmentsItemStrataItemFieldNameRegExp =
+export const getExperimentAssignmentsForUiResponseAssignmentsItemParticipantIdMax = 64;
+export const getExperimentAssignmentsForUiResponseAssignmentsItemArmNameMax = 100;
+export const getExperimentAssignmentsForUiResponseAssignmentsItemStrataItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const getExperimentAssignmentsResponseAssignmentsItemStrataMaxOne = 150;
-export const getExperimentAssignmentsResponseAssignmentsItemContextValuesMaxOne = 10;
+export const getExperimentAssignmentsForUiResponseAssignmentsItemStrataMaxOne = 150;
+export const getExperimentAssignmentsForUiResponseAssignmentsItemContextValuesMaxOne = 10;
 
-export const getExperimentAssignmentsResponse = zod
+export const getExperimentAssignmentsForUiResponse = zod
 	.object({
 		balance_check: zod
 			.object({
@@ -6857,14 +7640,14 @@ export const getExperimentAssignmentsResponse = zod
 					participant_id: zod
 						.string()
 						.max(
-							getExperimentAssignmentsResponseAssignmentsItemParticipantIdMax,
+							getExperimentAssignmentsForUiResponseAssignmentsItemParticipantIdMax,
 						)
 						.describe(
 							"Unique identifier for the participant. This is the primary key for the participant in the data warehouse.",
 						),
 					arm_name: zod
 						.string()
-						.max(getExperimentAssignmentsResponseAssignmentsItemArmNameMax)
+						.max(getExperimentAssignmentsForUiResponseAssignmentsItemArmNameMax)
 						.describe(
 							"The arm this participant was assigned to. Same as Arm.arm_name.",
 						),
@@ -6881,7 +7664,7 @@ export const getExperimentAssignmentsResponse = zod
 									field_name: zod
 										.string()
 										.regex(
-											getExperimentAssignmentsResponseAssignmentsItemStrataItemFieldNameRegExp,
+											getExperimentAssignmentsForUiResponseAssignmentsItemStrataItemFieldNameRegExp,
 										),
 									strata_value: zod.string().or(zod.null()).optional(),
 								})
@@ -6889,7 +7672,9 @@ export const getExperimentAssignmentsResponse = zod
 									"Describes stratification for an experiment participant.",
 								),
 						)
-						.max(getExperimentAssignmentsResponseAssignmentsItemStrataMaxOne)
+						.max(
+							getExperimentAssignmentsForUiResponseAssignmentsItemStrataMaxOne,
+						)
 						.or(zod.null())
 						.optional()
 						.describe(
@@ -6909,7 +7694,7 @@ export const getExperimentAssignmentsResponse = zod
 					context_values: zod
 						.array(zod.number())
 						.max(
-							getExperimentAssignmentsResponseAssignmentsItemContextValuesMaxOne,
+							getExperimentAssignmentsForUiResponseAssignmentsItemContextValuesMaxOne,
 						)
 						.or(zod.null())
 						.optional()
@@ -6927,12 +7712,12 @@ export const getExperimentAssignmentsResponse = zod
 /**
  * @summary Export experiment assignments as CSV file; BalanceCheck not included. csv header form: participant_id,arm_id,arm_name,strata_name1,strata_name2,...
  */
-export const getExperimentAssignmentsAsCsvParams = zod.object({
+export const getExperimentAssignmentsAsCsvForUiParams = zod.object({
 	datasource_id: zod.string(),
 	experiment_id: zod.string(),
 });
 
-export const getExperimentAssignmentsAsCsvResponse = zod.any();
+export const getExperimentAssignmentsAsCsvForUiResponse = zod.any();
 
 /**
  * Get the assignment for a specific participant, excluding strata if any.
@@ -7051,6 +7836,31 @@ export const getExperimentAssignmentForParticipantResponse = zod
 	);
 
 /**
+ * @summary Update Arm
+ */
+export const updateArmParams = zod.object({
+	datasource_id: zod.string(),
+	experiment_id: zod.string(),
+	arm_id: zod.string(),
+});
+
+export const updateArmBodyNameMaxOne = 100;
+export const updateArmBodyDescriptionMaxOne = 2000;
+
+export const updateArmBody = zod
+	.object({
+		name: zod.string().max(updateArmBodyNameMaxOne).or(zod.null()).optional(),
+		description: zod
+			.string()
+			.max(updateArmBodyDescriptionMaxOne)
+			.or(zod.null())
+			.optional(),
+	})
+	.describe(
+		"Defines the subset of fields that can be updated for an Arm after creation.",
+	);
+
+/**
  * Performs a power check for the specified datasource.
  * @summary Power Check
  */
@@ -7061,6 +7871,7 @@ export const powerCheckParams = zod.object({
 export const powerCheckBodyDesignSpecParticipantTypeMax = 100;
 export const powerCheckBodyDesignSpecExperimentNameMax = 100;
 export const powerCheckBodyDesignSpecDescriptionMax = 2000;
+export const powerCheckBodyDesignSpecDesignUrlMaxOne = 500;
 export const powerCheckBodyDesignSpecArmsItemArmNameMax = 100;
 export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOne = 2000;
 export const powerCheckBodyDesignSpecArmsMin = 2;
@@ -7093,6 +7904,7 @@ export const powerCheckBodyDesignSpecFstatThreshMax = 1;
 export const powerCheckBodyDesignSpecParticipantTypeMaxOne = 100;
 export const powerCheckBodyDesignSpecExperimentNameMaxOne = 100;
 export const powerCheckBodyDesignSpecDescriptionMaxOne = 2000;
+export const powerCheckBodyDesignSpecDesignUrlMaxFour = 500;
 export const powerCheckBodyDesignSpecArmsItemArmNameMaxOne = 100;
 export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxFour = 2000;
 export const powerCheckBodyDesignSpecArmsMinOne = 2;
@@ -7125,6 +7937,7 @@ export const powerCheckBodyDesignSpecFstatThreshMaxOne = 1;
 export const powerCheckBodyDesignSpecParticipantTypeMaxTwo = 100;
 export const powerCheckBodyDesignSpecExperimentNameMaxTwo = 100;
 export const powerCheckBodyDesignSpecDescriptionMaxTwo = 2000;
+export const powerCheckBodyDesignSpecDesignUrlMaxSeven = 500;
 export const powerCheckBodyDesignSpecArmsItemArmNameMaxTwo = 100;
 export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxSeven = 2000;
 export const powerCheckBodyDesignSpecArmsMinTwo = 2;
@@ -7136,6 +7949,7 @@ export const powerCheckBodyDesignSpecContextsMaxOne = 150;
 export const powerCheckBodyDesignSpecParticipantTypeMaxThree = 100;
 export const powerCheckBodyDesignSpecExperimentNameMaxThree = 100;
 export const powerCheckBodyDesignSpecDescriptionMaxThree = 2000;
+export const powerCheckBodyDesignSpecDesignUrlMaxOnezero = 500;
 export const powerCheckBodyDesignSpecArmsItemArmNameMaxThree = 100;
 export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOnezero = 2000;
 export const powerCheckBodyDesignSpecArmsMinThree = 2;
@@ -7147,6 +7961,7 @@ export const powerCheckBodyDesignSpecContextsMaxFour = 150;
 export const powerCheckBodyDesignSpecParticipantTypeMaxFour = 100;
 export const powerCheckBodyDesignSpecExperimentNameMaxFour = 100;
 export const powerCheckBodyDesignSpecDescriptionMaxFour = 2000;
+export const powerCheckBodyDesignSpecDesignUrlMaxOnethree = 500;
 export const powerCheckBodyDesignSpecArmsItemArmNameMaxFour = 100;
 export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
 export const powerCheckBodyDesignSpecArmsMinFour = 2;
@@ -7174,6 +7989,14 @@ export const powerCheckBody = zod.object({
 				.string()
 				.max(powerCheckBodyDesignSpecExperimentNameMax),
 			description: zod.string().max(powerCheckBodyDesignSpecDescriptionMax),
+			design_url: zod
+				.string()
+				.url()
+				.min(1)
+				.max(powerCheckBodyDesignSpecDesignUrlMaxOne)
+				.or(zod.null())
+				.optional()
+				.describe("Optional URL to a more detailed experiment design doc."),
 			start_date: zod.string().datetime({}),
 			end_date: zod.string().datetime({}),
 			arms: zod
@@ -7317,6 +8140,14 @@ export const powerCheckBody = zod.object({
 					description: zod
 						.string()
 						.max(powerCheckBodyDesignSpecDescriptionMaxOne),
+					design_url: zod
+						.string()
+						.url()
+						.min(1)
+						.max(powerCheckBodyDesignSpecDesignUrlMaxFour)
+						.or(zod.null())
+						.optional()
+						.describe("Optional URL to a more detailed experiment design doc."),
 					start_date: zod.string().datetime({}),
 					end_date: zod.string().datetime({}),
 					arms: zod
@@ -7467,6 +8298,14 @@ export const powerCheckBody = zod.object({
 					description: zod
 						.string()
 						.max(powerCheckBodyDesignSpecDescriptionMaxTwo),
+					design_url: zod
+						.string()
+						.url()
+						.min(1)
+						.max(powerCheckBodyDesignSpecDesignUrlMaxSeven)
+						.or(zod.null())
+						.optional()
+						.describe("Optional URL to a more detailed experiment design doc."),
 					start_date: zod.string().datetime({}),
 					end_date: zod.string().datetime({}),
 					arms: zod
@@ -7604,6 +8443,14 @@ export const powerCheckBody = zod.object({
 					description: zod
 						.string()
 						.max(powerCheckBodyDesignSpecDescriptionMaxThree),
+					design_url: zod
+						.string()
+						.url()
+						.min(1)
+						.max(powerCheckBodyDesignSpecDesignUrlMaxOnezero)
+						.or(zod.null())
+						.optional()
+						.describe("Optional URL to a more detailed experiment design doc."),
 					start_date: zod.string().datetime({}),
 					end_date: zod.string().datetime({}),
 					arms: zod
@@ -7743,6 +8590,14 @@ export const powerCheckBody = zod.object({
 					description: zod
 						.string()
 						.max(powerCheckBodyDesignSpecDescriptionMaxFour),
+					design_url: zod
+						.string()
+						.url()
+						.min(1)
+						.max(powerCheckBodyDesignSpecDesignUrlMaxOnethree)
+						.or(zod.null())
+						.optional()
+						.describe("Optional URL to a more detailed experiment design doc."),
 					start_date: zod.string().datetime({}),
 					end_date: zod.string().datetime({}),
 					arms: zod

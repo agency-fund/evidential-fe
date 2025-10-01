@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge, Flex, Grid, IconButton, Select, Text } from '@radix-ui/themes';
+import { Flex, Grid, IconButton, Select, Text } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
 import { DataType, FilterInput } from '@/api/methods.schemas';
 import { TypeSpecificFilterInput } from '@/components/features/experiments/querybuilder/type-specific-filter-input';
