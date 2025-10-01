@@ -9,6 +9,7 @@ import {
   EditableSubmitTrigger,
   EditableCancelTrigger,
 } from '@/components/radix-custom/editable';
+import { formatIsoDateLocal } from '@/services/date-utils';
 
 interface EditableDateFieldProps {
   value: string;
@@ -18,13 +19,18 @@ interface EditableDateFieldProps {
 
 export function EditableDateField({ value, onSubmit, size = '2' }: EditableDateFieldProps) {
   const [error, setError] = useState<boolean>();
-  const displayDate = new Date(value).toLocaleDateString();
+
+  // Extract date portion (YYYY-MM-DD) for the date input
   const dateInputValue = value.split('T')[0];
+
+  // Format for display without timezone conversion
+  const displayDate = formatIsoDateLocal(value);
 
   const handleSubmit = async (value: string) => {
     try {
       setError(false);
-      const isoValue = new Date(value + 'T00:00:00').toISOString();
+      // Create ISO string at midnight UTC to maintain the date
+      const isoValue = new Date(value + 'T00:00:00.000Z').toISOString();
       await onSubmit(isoValue);
     } catch (err) {
       setError(true);
