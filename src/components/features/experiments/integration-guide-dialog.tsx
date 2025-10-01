@@ -22,13 +22,13 @@ export function IntegrationGuideDialog({
 
   return (
     <>
-      <DropdownMenu.Root modal={false}>
+      <DropdownMenu.Root>
         <DropdownMenu.Trigger>
           <IconButton variant="ghost" size="3" color="gray">
             <DotsVerticalIcon />
           </IconButton>
         </DropdownMenu.Trigger>
-        <DropdownMenu.Content>
+        <DropdownMenu.Content align="end" side="bottom">
           <DropdownMenu.Item onClick={() => setOpen(true)}>
             <FileIcon />
             Integration Guide

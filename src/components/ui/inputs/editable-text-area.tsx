@@ -15,7 +15,6 @@ interface EditableTextAreaProps {
   onSubmit: (value: string) => Promise<void> | void;
   children: ReactNode;
   size?: '1' | '2' | '3';
-  rows?: number;
 }
 
 export function EditableTextArea({
@@ -23,7 +22,6 @@ export function EditableTextArea({
   onSubmit,
   children,
   size = '2',
-  rows = 3,
 }: EditableTextAreaProps) {
   const [error, setError] = useState<boolean>();
 
@@ -40,6 +38,9 @@ export function EditableTextArea({
   const handleChange = () => {
     if (error) setError(false);
   };
+
+
+  const estimatedRows = Math.max(3, Math.min(Math.ceil(value.length / 80), 15));
 
   return (
     <Flex direction="column" gap="2">
@@ -62,7 +63,7 @@ export function EditableTextArea({
                       color={error ? 'red' : undefined}
                       autoFocus
                       resize="vertical"
-                      rows={rows}
+                      rows={estimatedRows}
                       style={{ width: '100%' }}
                     />
                   )}

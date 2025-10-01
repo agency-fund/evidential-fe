@@ -5,6 +5,7 @@ import { UpdateArmRequest, Arm } from '@/api/methods.schemas';
 import { EditableTextField } from '@/components/ui/inputs/editable-text-field';
 import { EditableTextArea } from '@/components/ui/inputs/editable-text-area';
 import { useSWRConfig } from 'swr';
+import { ReadMoreText } from '@/components/ui/read-more-text';
 
 interface ArmsAndAllocationsTableRowProps {
   datasourceId: string;
@@ -57,7 +58,7 @@ export function ArmsAndAllocationsTableRow({
           onSubmit={makeHandleUpdateArm('description')}
           size="1"
         >
-          <Text>{arm.arm_description || 'No description'}</Text>
+         <ReadMoreText text={arm.arm_description || 'No description'} />
         </EditableTextArea>
       </Table.Cell>
     </Table.Row>
