@@ -10,7 +10,6 @@ interface EditableSubmitTriggerProps {
 export function EditableSubmitTrigger({ size = '2' }: EditableSubmitTriggerProps) {
   const { submit, isEditing } = useEditable();
 
-
   if (!isEditing) return null;
 
   return (

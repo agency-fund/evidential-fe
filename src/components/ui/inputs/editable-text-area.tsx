@@ -17,12 +17,7 @@ interface EditableTextAreaProps {
   size?: '1' | '2' | '3';
 }
 
-export function EditableTextArea({
-  value,
-  onSubmit,
-  children,
-  size = '2',
-}: EditableTextAreaProps) {
+export function EditableTextArea({ value, onSubmit, children, size = '2' }: EditableTextAreaProps) {
   const [error, setError] = useState<boolean>();
 
   const handleSubmit = async (value: string) => {
@@ -38,7 +33,6 @@ export function EditableTextArea({
   const handleChange = () => {
     if (error) setError(false);
   };
-
 
   const estimatedRows = Math.max(3, Math.min(Math.ceil(value.length / 80), 15));
 

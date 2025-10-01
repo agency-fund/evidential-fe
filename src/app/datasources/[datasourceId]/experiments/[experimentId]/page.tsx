@@ -123,9 +123,9 @@ export default function ExperimentViewPage() {
 
   const makeHandleUpdateExperiment = (field: keyof UpdateExperimentRequest) => {
     return async (value: string) => {
-        await updateExperiment({
-          [field]: value,
-        });
+      await updateExperiment({
+        [field]: value,
+      });
     };
   };
 
@@ -148,11 +148,7 @@ export default function ExperimentViewPage() {
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
         <Flex direction="row" justify="between" gap="2" align="center" width="100%">
-          <EditableTextField
-            value={experiment_name}
-            onSubmit={makeHandleUpdateExperiment('name')}
-            size="2"
-          >
+          <EditableTextField value={experiment_name} onSubmit={makeHandleUpdateExperiment('name')} size="2">
             <Heading size="8">{experiment_name}</Heading>
           </EditableTextField>
           <IntegrationGuideDialog
@@ -173,26 +169,14 @@ export default function ExperimentViewPage() {
           <Separator orientation="vertical" />
           <Flex align="center" gap="2">
             <CalendarIcon />
-            <EditableDateField
-              value={start_date}
-              onSubmit={makeHandleUpdateExperiment('start_date')}
-              size="1"
-            />
+            <EditableDateField value={start_date} onSubmit={makeHandleUpdateExperiment('start_date')} size="1" />
             <Text>→</Text>
-            <EditableDateField
-              value={end_date}
-              onSubmit={makeHandleUpdateExperiment('end_date')}
-              size="1"
-            />
+            <EditableDateField value={end_date} onSubmit={makeHandleUpdateExperiment('end_date')} size="1" />
           </Flex>
           <Separator orientation="vertical" />
           <Flex align="center" gap="2">
             <FileTextIcon />
-            <EditableTextField
-              value={design_url ?? ''}
-              onSubmit={makeHandleUpdateExperiment('design_url')}
-              size="1"
-            >
+            <EditableTextField value={design_url ?? ''} onSubmit={makeHandleUpdateExperiment('design_url')} size="1">
               {design_url ? (
                 <Link href={design_url} target="_blank" rel="noopener noreferrer">
                   <Text color="blue" style={{ textDecoration: 'underline' }}>

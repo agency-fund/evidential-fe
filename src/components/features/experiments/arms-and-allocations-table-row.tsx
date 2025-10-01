@@ -58,7 +58,7 @@ export function ArmsAndAllocationsTableRow({
           onSubmit={makeHandleUpdateArm('description')}
           size="1"
         >
-         <ReadMoreText text={arm.arm_description || 'No description'} />
+          <ReadMoreText text={arm.arm_description || 'No description'} />
         </EditableTextArea>
       </Table.Cell>
     </Table.Row>

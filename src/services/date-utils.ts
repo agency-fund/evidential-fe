@@ -47,7 +47,7 @@ export const dateInputToIsoString = (dateInput: string): string => {
  * Formats an ISO date string to a localized date string without timezone conversion
  * Extracts the date portion (YYYY-MM-DD) and parses it as a local date to avoid
  * timezone shifts that can cause off-by-one-day bugs
-*/
+ */
 export const formatIsoDateLocal = (isoString: string): string => {
   const datePart = isoString.split('T')[0];
   const [year, month, day] = datePart.split('-').map(Number);
