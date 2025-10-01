@@ -7,11 +7,19 @@ interface EditableContextType {
   submit: () => void;
   cancel: () => void;
   inputValue: string;
-  setValue: (value: string) => void;
+  setInputValue: (value: string) => void;
   originalValue: string;
 }
 
 export const EditableContext = createContext<EditableContextType | undefined>(undefined);
+
+export function useEditable() {
+  const context = useContext(EditableContext);
+  if (!context) {
+    throw new Error('useEditable must be used within EditableRoot');
+  }
+  return context;
+}
 
 interface EditableRootProps {
   children: ReactNode;
@@ -54,7 +62,6 @@ export function EditableRoot({ children, value, onSubmit }: EditableRootProps) {
     setInputValue(originalValue);
     setIsEditing(false);
   };
-  const setValue = (val: string) => setInputValue(val);
 
   const contextValue: EditableContextType = {
     isEditing,
@@ -62,17 +69,9 @@ export function EditableRoot({ children, value, onSubmit }: EditableRootProps) {
     submit,
     cancel,
     inputValue,
-    setValue,
+    setInputValue,
     originalValue,
   };
 
   return <EditableContext.Provider value={contextValue}>{children}</EditableContext.Provider>;
-}
-
-export function useEditable() {
-  const context = useContext(EditableContext);
-  if (!context) {
-    throw new Error('useEditable must be used within EditableRoot');
-  }
-  return context;
 }

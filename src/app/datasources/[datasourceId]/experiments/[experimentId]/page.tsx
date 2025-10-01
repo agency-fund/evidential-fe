@@ -121,15 +121,11 @@ export default function ExperimentViewPage() {
 
   const { trigger: updateExperiment } = useUpdateExperiment(datasourceId, experimentId);
 
-  const handleUpdateExperiment = (field: keyof UpdateExperimentRequest) => {
+  const makeHandleUpdateExperiment = (field: keyof UpdateExperimentRequest) => {
     return async (value: string) => {
-      try {
         await updateExperiment({
           [field]: value,
         });
-      } catch (err) {
-        throw err;
-      }
     };
   };
 
@@ -154,7 +150,7 @@ export default function ExperimentViewPage() {
         <Flex direction="row" justify="between" gap="2" align="center" width="100%">
           <EditableTextField
             value={experiment_name}
-            onSubmit={handleUpdateExperiment('name')}
+            onSubmit={makeHandleUpdateExperiment('name')}
             size="2"
           >
             <Heading size="8">{experiment_name}</Heading>
@@ -179,13 +175,13 @@ export default function ExperimentViewPage() {
             <CalendarIcon />
             <EditableDateField
               value={start_date}
-              onSubmit={handleUpdateExperiment('start_date')}
+              onSubmit={makeHandleUpdateExperiment('start_date')}
               size="1"
             />
             <Text>→</Text>
             <EditableDateField
               value={end_date}
-              onSubmit={handleUpdateExperiment('end_date')}
+              onSubmit={makeHandleUpdateExperiment('end_date')}
               size="1"
             />
           </Flex>
@@ -194,7 +190,7 @@ export default function ExperimentViewPage() {
             <FileTextIcon />
             <EditableTextField
               value={design_url ?? ''}
-              onSubmit={handleUpdateExperiment('design_url')}
+              onSubmit={makeHandleUpdateExperiment('design_url')}
               size="1"
             >
               {design_url ? (
@@ -213,7 +209,7 @@ export default function ExperimentViewPage() {
       <Flex direction="column" gap="4">
         {/* Hypothesis Section */}
         <SectionCard title="Hypothesis">
-          <EditableTextArea value={description} onSubmit={handleUpdateExperiment('description')} size="2">
+          <EditableTextArea value={description} onSubmit={makeHandleUpdateExperiment('description')} size="2">
             <ReadMoreText text={description} maxWords={30} />
           </EditableTextArea>
         </SectionCard>

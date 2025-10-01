@@ -14,12 +14,12 @@ interface EditableInputProps {
 }
 
 export function EditableInput({ children }: EditableInputProps) {
-  const { inputValue, setValue, isEditing } = useEditable();
+  const { inputValue, setInputValue, isEditing } = useEditable();
 
   if (!isEditing) return null;
 
   return children({
     value: inputValue,
-    onChange: (event: InputChangeEvent) => setValue(event.target.value),
+    onChange: (event: InputChangeEvent) => setInputValue(event.target.value),
   });
 }

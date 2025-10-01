@@ -10,14 +10,11 @@ interface EditableSubmitTriggerProps {
 export function EditableSubmitTrigger({ size = '2' }: EditableSubmitTriggerProps) {
   const { submit, isEditing } = useEditable();
 
-  const handleClick = () => {
-    submit();
-  };
 
   if (!isEditing) return null;
 
   return (
-    <IconButton onClick={handleClick} type="button" variant="soft" color="green" size={size}>
+    <IconButton onClick={submit} type="button" variant="soft" color="green" size={size}>
       <CheckIcon />
     </IconButton>
   );

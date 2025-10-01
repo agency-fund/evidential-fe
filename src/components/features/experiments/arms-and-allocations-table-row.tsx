@@ -24,16 +24,12 @@ export function ArmsAndAllocationsTableRow({
   const { mutate } = useSWRConfig();
   const { trigger: updateArm } = useUpdateArm(datasourceId, experimentId, arm.arm_id!);
 
-  const handleUpdateArm = (field: keyof UpdateArmRequest) => {
+  const makeHandleUpdateArm = (field: keyof UpdateArmRequest) => {
     return async (value: string) => {
-      try {
-        await updateArm({
-          [field]: value,
-        });
-        await mutate(getGetExperimentForUiKey(datasourceId, experimentId));
-      } catch (err) {
-        throw err;
-      }
+      await updateArm({
+        [field]: value,
+      });
+      await mutate(getGetExperimentForUiKey(datasourceId, experimentId));
     };
   };
 
@@ -42,7 +38,7 @@ export function ArmsAndAllocationsTableRow({
       <Table.Cell width="20%">
         <Flex direction="column" gap="4" align="start">
           <Flex gap="2" align="center">
-            <EditableTextField value={arm.arm_name} onSubmit={handleUpdateArm('name')} size="1">
+            <EditableTextField value={arm.arm_name} onSubmit={makeHandleUpdateArm('name')} size="1">
               <Heading size="2">{arm.arm_name}</Heading>
             </EditableTextField>
           </Flex>
@@ -58,7 +54,7 @@ export function ArmsAndAllocationsTableRow({
       <Table.Cell width="80%">
         <EditableTextArea
           value={arm.arm_description || 'No description'}
-          onSubmit={handleUpdateArm('description')}
+          onSubmit={makeHandleUpdateArm('description')}
           size="1"
         >
           <Text>{arm.arm_description || 'No description'}</Text>
