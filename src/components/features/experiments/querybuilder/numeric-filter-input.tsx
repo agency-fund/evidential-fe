@@ -9,14 +9,13 @@ import {
   TypedFilter,
 } from '@/components/features/experiments/querybuilder/utils';
 import React, { useEffect, useState } from 'react';
+import { BETWEEN_BASED_OPS } from '@/components/features/experiments/querybuilder/utils';
 
 export interface NumericFilterInputProps {
   filter: FilterInput & TypedFilter<number>;
   onChange: (filter: FilterInput) => void;
   dataType: DataType;
 }
-
-const BETWEEN_LIKE_OPS = new Set(['greater-than', 'less-than', 'between']);
 
 export function NumericFilterInput({ filter, onChange, dataType }: NumericFilterInputProps) {
   // Initialize operator state based on filter configuration
@@ -65,14 +64,17 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
     }
   }, [filter.value, operator]);
 
-  const includesNull = BETWEEN_LIKE_OPS.has(operator)
-    ? filter.value.length === 3 && filter.value[2] === null // we use the 3rd value to indicate null
+  const includesNull = BETWEEN_BASED_OPS.has(operator)
+    ? filter.value.length === 3 && filter.value[2] === null // 3rd value indicates NULL inclusion
     : filter.value.includes(null);
+  const includesNullValue = includesNull ? [null] : [];
 
   const handleOperatorChange = (newOperator: string) => {
     setOperator(newOperator);
     const relation = operatorToRelation(newOperator);
     const defaultValue = createDefaultValueForOperator(newOperator, dataType);
+
+    setListValues([String(defaultValue)]);
 
     onChange({
       ...filter,
@@ -160,15 +162,11 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
     // Update filter
     onChange({
       ...filter,
-      value: [...filter.value.filter((v) => v !== null), defaultValue, ...(includesNull ? [null] : [])],
+      value: [...filter.value.filter((v) => v !== null), defaultValue, ...includesNullValue],
     });
   };
 
   const removeValue = (index: number) => {
-    // Update string state
-    const newListValues = listValues.filter((_, i) => i !== index);
-    setListValues(newListValues);
-
     // Update filter
     const newValues = filter.value.filter(
       (_, i) => i !== filter.value.findIndex((v, idx) => v !== null && idx === index),
@@ -179,6 +177,10 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
       const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
       newValues.unshift(defaultValue);
       setListValues([String(defaultValue)]);
+    } else {
+      // Update string state
+      const newListValues = listValues.filter((_, i) => i !== index);
+      setListValues(newListValues);
     }
 
     onChange({
@@ -188,16 +190,10 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
   };
 
   const handleNullChange = (includeNull: boolean) => {
-    let newValues: FilterValueTypes;
-    if (includeNull) {
-      newValues = BETWEEN_LIKE_OPS.has(operator)
-        ? [filter.value[0], filter.value[1], null]
-        : [...filter.value.filter((v) => v !== null), null];
-    } else {
-      newValues = BETWEEN_LIKE_OPS.has(operator)
-        ? [filter.value[0], filter.value[1]]
-        : [...filter.value.filter((v) => v !== null)];
-    }
+    const baseValues = BETWEEN_BASED_OPS.has(operator)
+      ? [filter.value[0], filter.value[1]]
+      : filter.value.filter((v) => v !== null);
+    const newValues = includeNull ? [...baseValues, null] : baseValues;
     onChange({ ...filter, value: newValues });
   };
 
@@ -217,7 +213,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
 
               const parsedValue = parseValue(inputValue);
               if (parsedValue !== null) {
-                onChange({ ...filter, value: [parsedValue, null, ...(includesNull ? [null] : [])] });
+                onChange({ ...filter, value: [parsedValue, null, ...includesNullValue] });
               }
             }}
             onBlur={() => {
@@ -225,7 +221,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
               if (greaterThanValue.trim() === '' || greaterThanValue === '-') {
                 const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
                 setGreaterThanValue(String(defaultValue));
-                onChange({ ...filter, value: [defaultValue, null] });
+                onChange({ ...filter, value: [defaultValue, null, ...includesNullValue] });
               }
             }}
           />
@@ -245,7 +241,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
 
               const parsedValue = parseValue(inputValue);
               if (parsedValue !== null) {
-                onChange({ ...filter, value: [null, parsedValue, ...(includesNull ? [null] : [])] });
+                onChange({ ...filter, value: [null, parsedValue, ...includesNullValue] });
               }
             }}
             onBlur={() => {
@@ -253,7 +249,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
               if (lessThanValue.trim() === '' || lessThanValue === '-') {
                 const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
                 setLessThanValue(String(defaultValue));
-                onChange({ ...filter, value: [null, defaultValue] });
+                onChange({ ...filter, value: [null, defaultValue, ...includesNullValue] });
               }
             }}
           />
@@ -274,7 +270,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
 
                 const parsedValue = parseValue(inputValue);
                 if (parsedValue !== null) {
-                  onChange({ ...filter, value: [parsedValue, filter.value[1], ...(includesNull ? [null] : [])] });
+                  onChange({ ...filter, value: [parsedValue, filter.value[1], ...includesNullValue] });
                 }
               }}
               onBlur={() => {
@@ -282,7 +278,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
                 if (betweenMinValue.trim() === '' || betweenMinValue === '-') {
                   const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
                   setBetweenMinValue(String(defaultValue));
-                  onChange({ ...filter, value: [defaultValue, filter.value[1]] });
+                  onChange({ ...filter, value: [defaultValue, filter.value[1], ...includesNullValue] });
                 }
               }}
             />
@@ -298,7 +294,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
 
                 const parsedValue = parseValue(inputValue);
                 if (parsedValue !== null) {
-                  onChange({ ...filter, value: [filter.value[0], parsedValue, ...(includesNull ? [null] : [])] });
+                  onChange({ ...filter, value: [filter.value[0], parsedValue, ...includesNullValue] });
                 }
               }}
               onBlur={() => {
@@ -306,7 +302,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
                 if (betweenMaxValue.trim() === '' || betweenMaxValue === '-') {
                   const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
                   setBetweenMaxValue(String(defaultValue));
-                  onChange({ ...filter, value: [filter.value[0], defaultValue] });
+                  onChange({ ...filter, value: [filter.value[0], defaultValue, ...includesNullValue] });
                 }
               }}
             />
@@ -342,14 +338,14 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
                       newFilterValues[idx] = defaultValue;
                       onChange({
                         ...filter,
-                        value: [...newFilterValues, ...(includesNull ? [null] : [])],
+                        value: [...newFilterValues, ...includesNullValue],
                       });
                     }
                   }}
                 />
                 {/* Only show the remove button if there are multiple non-null values or if null
                     is included, since we allow a single null value. */}
-                {nonNullValues.length > 1 || includesNull ? (
+                {(nonNullValues.length > 1 || includesNull) && (
                   <IconButton
                     variant="soft"
                     size="1"
@@ -360,9 +356,6 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
                   >
                     <Cross2Icon />
                   </IconButton>
-                ) : (
-                  // empty spacer
-                  <Box width="24px" height="24px" />
                 )}
               </Flex>
             ))}
@@ -370,7 +363,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
             {(operator === 'in-list' ||
               operator === 'not-in-list' ||
               ((operator === 'equals' || operator === 'not-equals') && nonNullValues.length === 0)) && (
-              <Button variant="soft" size="1" onClick={addValue}>
+              <Button variant="soft" size="1" style={{ minWidth: '20ch' }} onClick={addValue}>
                 <PlusIcon /> Add value
               </Button>
             )}

@@ -1,5 +1,7 @@
 import { DataType, FilterInput, FilterValueTypes } from '@/api/methods.schemas';
 
+export const BETWEEN_BASED_OPS = new Set(['greater-than', 'less-than', 'between', 'after', 'before']);
+
 export type SingleTypeArray<T> = Array<T | null>;
 export type TypedFilter<T> = FilterInput & { value: SingleTypeArray<T> };
 
