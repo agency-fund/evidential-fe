@@ -129,11 +129,6 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
             onRemove={() => removeFilter(index)}
           />
           <Separator orientation="horizontal" key={index + 'hr'} size="4" />
-          {/* <Flex key={index + 'hr'}>
-          <Box width="100%">
-            <hr style={{ border: 0, borderTop: '1px solid var(--gray-4)', margin: '0' }} />
-          </Box>
-        </Flex> */}
         </>
       ))}
       <Flex>

@@ -142,7 +142,7 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
 
       {renderValueInputs()}
 
-      {(operator === 'equals' || operator === 'in-list' || operator === 'not-in-list') && (
+      {['equals', 'not-equals', 'in-list', 'not-in-list'].includes(operator) && (
         <Flex gap="1" align="center">
           <Checkbox checked={includesNull} onCheckedChange={(checked) => handleNullChange(!!checked)} />
           <Text size="2">Include NULL</Text>
