@@ -1,8 +1,8 @@
 'use client';
 
-import { Box, Button, Checkbox, Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
+import { Button, Checkbox, Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
-import { DataType, FilterInput, FilterValueTypes } from '@/api/methods.schemas';
+import { DataType, FilterInput } from '@/api/methods.schemas';
 import {
   createDefaultValueForOperator,
   operatorToRelation,
@@ -33,7 +33,6 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
   });
 
   // String-based input states for each possible input field
-  const [equalsValue, setEqualsValue] = useState(() => (filter.value[0] !== null ? String(filter.value[0]) : ''));
   const [greaterThanValue, setGreaterThanValue] = useState(() =>
     filter.value[0] !== null ? String(filter.value[0]) : '',
   );
@@ -44,23 +43,19 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
   const [betweenMaxValue, setBetweenMaxValue] = useState(() =>
     filter.value[1] !== null ? String(filter.value[1]) : '',
   );
-  const [listValues, setListValues] = useState<string[]>(() =>
-    filter.value.filter((v) => v !== null).map((v) => String(v)),
-  );
+  const [listValues, setListValues] = useState<string[]>(() => filter.value.filter((v) => v !== null).map(String));
 
   // Update string states when filter changes externally
   useEffect(() => {
-    if (operator === 'equals' || operator === 'not-equals') {
-      setEqualsValue(filter.value[0] !== null ? String(filter.value[0]) : '');
-    } else if (operator === 'greater-than') {
+    if (operator === 'greater-than') {
       setGreaterThanValue(filter.value[0] !== null ? String(filter.value[0]) : '');
     } else if (operator === 'less-than') {
       setLessThanValue(filter.value[1] !== null ? String(filter.value[1]) : '');
     } else if (operator === 'between') {
       setBetweenMinValue(filter.value[0] !== null ? String(filter.value[0]) : '');
       setBetweenMaxValue(filter.value[1] !== null ? String(filter.value[1]) : '');
-    } else if (operator === 'in-list' || operator === 'not-in-list') {
-      setListValues(filter.value.filter((v) => v !== null).map((v) => String(v)));
+    } else if (['equals', 'not-equals', 'in-list', 'not-in-list'].includes(operator)) {
+      setListValues(filter.value.filter((v) => v !== null).map(String));
     }
   }, [filter.value, operator]);
 
@@ -73,8 +68,6 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
     setOperator(newOperator);
     const relation = operatorToRelation(newOperator);
     const defaultValue = createDefaultValueForOperator(newOperator, dataType);
-
-    setListValues([String(defaultValue)]);
 
     onChange({
       ...filter,
@@ -108,23 +101,6 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
     } else {
       return 'any'; // Allows any decimal input for floating-point types
     }
-  };
-
-  const updateFilterValue = (index: number, value: number | null) => {
-    const newValues = [...filter.value];
-
-    // If value is null and we're not already tracking nulls, use 0 as fallback
-    if (value === null && !includesNull) {
-      const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
-      newValues[index] = defaultValue;
-    } else {
-      newValues[index] = value;
-    }
-
-    onChange({
-      ...filter,
-      value: newValues,
-    });
   };
 
   const handleListValueChange = (index: number, inputValue: string) => {
