@@ -1,8 +1,8 @@
 'use client';
 
-import { Box, Button, Checkbox, Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
+import { Button, Checkbox, Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
-import { DataType, FilterInput, FilterValueTypes } from '@/api/methods.schemas';
+import { DataType, FilterInput } from '@/api/methods.schemas';
 import {
   BETWEEN_BASED_OPS,
   createDefaultValueForOperator,
@@ -58,7 +58,7 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
     });
   };
 
-  const addValue = (e: React.MouseEvent) => {
+  const addValueForListBasedOp = (e: React.MouseEvent) => {
     e.preventDefault();
     const today = new Date().toISOString().split('T')[0];
     onChange({
@@ -67,7 +67,7 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
     });
   };
 
-  const removeValue = (index: number) => {
+  const removeValueForListBasedOp = (index: number) => {
     const newValues = filter.value.filter((_, i) => i !== index);
     if (newValues.length === 0) {
       // Don't allow removing all values - add a default one. A single null is allowed.
@@ -81,10 +81,16 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
   };
 
   const handleNullChange = (includeNull: boolean) => {
-    const baseValues = BETWEEN_BASED_OPS.has(operator)
-      ? [filter.value[0], filter.value[1]]
-      : filter.value.filter((v) => v !== null);
-    const newValues = includeNull ? [...baseValues, null] : baseValues;
+    let baseValues: typeof filter.value;
+    if (BETWEEN_BASED_OPS.has(operator)) {
+      // Ensure we have valid values for between-based operators
+      const val0 = filter.value[0] !== undefined ? filter.value[0] : null;
+      const val1 = filter.value[1] !== undefined ? filter.value[1] : null;
+      baseValues = [val0, val1] as typeof filter.value;
+    } else {
+      baseValues = filter.value.filter((v) => v !== null) as typeof filter.value;
+    }
+    const newValues = includeNull ? ([...baseValues, null] as typeof filter.value) : baseValues;
     onChange({ ...filter, value: newValues });
   };
 
@@ -163,7 +169,7 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
                     size="1"
                     onClick={(e) => {
                       e.preventDefault();
-                      removeValue(idx);
+                      removeValueForListBasedOp(idx);
                     }}
                   >
                     <Cross2Icon />
@@ -172,7 +178,7 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
               </Flex>
             ))}
 
-            <Button variant="soft" size="1" onClick={addValue}>
+            <Button variant="soft" size="1" onClick={addValueForListBasedOp}>
               <PlusIcon /> Add date
             </Button>
           </Flex>

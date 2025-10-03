@@ -129,7 +129,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
     }
   };
 
-  const addValue = (e: React.MouseEvent) => {
+  const addValueForListBasedOp = (e: React.MouseEvent) => {
     e.preventDefault();
     const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
 
@@ -143,33 +143,44 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
     });
   };
 
-  const removeValue = (index: number) => {
-    // Update filter
-    const newValues = filter.value.filter(
-      (_, i) => i !== filter.value.findIndex((v, idx) => v !== null && idx === index),
-    );
+  // Keeps listValues in sync with filter.value. Assumes that there can only be at most one null
+  // value in the filter.value list as managed by the 'Include NULL' button.
+  const removeValueForListBasedOp = (index: number) => {
+    // Derive new display string state
+    let newListValues = listValues.filter((_, i) => i !== index);
 
-    if (newValues.length === 0) {
-      // Don't allow removing all values - add a default one. A single null is allowed.
+    // Derive new filter.value state
+    // First remove any null value if it exists, in case it was added in some arbitrary position.
+    const nonNullFilterValues = filter.value.filter((v) => v !== null);
+    // Next remove the value at the given index from the non-null values, as it is safe to assume
+    // the ordering now is aligned with the old listValues.
+    let newNonNullFilterValues = nonNullFilterValues.filter((_, i) => i !== index);
+
+    // Don't allow removing all values (including special NULL) - add a default
+    if (newNonNullFilterValues.length === 0 && !includesNull) {
       const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
-      newValues.unshift(defaultValue);
-      setListValues([String(defaultValue)]);
-    } else {
-      // Update string state
-      const newListValues = listValues.filter((_, i) => i !== index);
-      setListValues(newListValues);
+      newListValues = [String(defaultValue)];
+      newNonNullFilterValues = [defaultValue];
     }
 
+    // Finally update display state and filter.value state
+    setListValues(newListValues);
     onChange({
       ...filter,
-      value: newValues,
+      value: [...newNonNullFilterValues, ...includesNullValue],
     });
   };
 
   const handleNullChange = (includeNull: boolean) => {
-    const baseValues = BETWEEN_BASED_OPS.has(operator)
-      ? [filter.value[0], filter.value[1]]
-      : filter.value.filter((v) => v !== null);
+    let baseValues: (number | null)[];
+    if (BETWEEN_BASED_OPS.has(operator)) {
+      // Ensure we have valid values for between-based operators
+      const val0 = filter.value[0] !== undefined ? filter.value[0] : null;
+      const val1 = filter.value[1] !== undefined ? filter.value[1] : null;
+      baseValues = [val0, val1];
+    } else {
+      baseValues = filter.value.filter((v) => v !== null);
+    }
     const newValues = includeNull ? [...baseValues, null] : baseValues;
     onChange({ ...filter, value: newValues });
   };
@@ -328,7 +339,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
                     size="1"
                     onClick={(e) => {
                       e.preventDefault();
-                      removeValue(idx);
+                      removeValueForListBasedOp(idx);
                     }}
                   >
                     <Cross2Icon />
@@ -340,7 +351,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
             {(operator === 'in-list' ||
               operator === 'not-in-list' ||
               ((operator === 'equals' || operator === 'not-equals') && nonNullValues.length === 0)) && (
-              <Button variant="soft" size="1" style={{ minWidth: '20ch' }} onClick={addValue}>
+              <Button variant="soft" size="1" style={{ minWidth: '20ch' }} onClick={addValueForListBasedOp}>
                 <PlusIcon /> Add value
               </Button>
             )}
