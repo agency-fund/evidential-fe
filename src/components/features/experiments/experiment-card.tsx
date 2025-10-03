@@ -6,6 +6,7 @@ import { ExperimentActionsMenu } from '@/components/features/experiments/experim
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
+import { formatIsoDateLocal } from '@/services/date-utils';
 import Link from 'next/link';
 
 interface ExperimentCardProps {
@@ -21,8 +22,6 @@ interface ExperimentCardProps {
   experimentId: string;
   organizationId: string;
 }
-
-const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString();
 
 const getExperimentStatus = (startDate: string, endDate: string) => {
   const now = new Date();
@@ -116,7 +115,7 @@ export default function ExperimentCard({
           <Flex align="center" gap="2">
             <CalendarIcon width="14" height="14" color="var(--gray-9)" />
             <Text size="2" color="gray">
-              {formatDate(startDate)} - {formatDate(endDate)}
+              {formatIsoDateLocal(startDate)} - {formatIsoDateLocal(endDate)}
             </Text>
           </Flex>
 

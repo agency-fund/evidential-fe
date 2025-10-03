@@ -24,3 +24,34 @@ export const formatUtcDownToMinuteLabel = (date: Date): string => {
   const timePart = extractUtcHHMMLabel(date);
   return `${datePart}, ${timePart}`;
 };
+
+/**
+ * Converts an ISO datetime string to YYYY-MM-DD format for HTML date inputs
+ * Uses local timezone to preserve the user's calendar date
+ */
+export const isoStringToDateInput = (isoString: string): string => {
+  const date = new Date(isoString);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
+/**
+ * Converts a date input string (YYYY-MM-DD) to an ISO datetime string
+ * Preserves the local date by creating a date in local timezone at midnight
+ */
+export const dateInputToIsoString = (dateInput: string): string => {
+  const date = new Date(dateInput + 'T00:00:00');
+  return date.toISOString();
+};
+
+/**
+ * Formats an ISO date string to a localized date string without timezone conversion
+ * Extracts the date portion (YYYY-MM-DD) and parses it as a local date to avoid
+ * timezone shifts that can cause off-by-one-day bugs
+ */
+export const formatIsoDateLocal = (isoString: string): string => {
+  const datePart = isoString.split('T')[0];
+  const [year, month, day] = datePart.split('-').map(Number);
+
+  // Create date in local timezone to avoid UTC conversion
+  return new Date(year, month - 1, day).toLocaleDateString();
+};

@@ -1,31 +1,28 @@
 'use client';
-import {
-  Badge,
-  Box,
-  Flex,
-  Heading,
-  Separator,
-  Table,
-  Tabs,
-  Text,
-  Tooltip,
-  Select,
-  IconButton,
-  Link,
-} from '@radix-ui/themes';
+import { Badge, Box, Flex, Heading, Separator, Tabs, Text, Tooltip, Select } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
 import { CalendarIcon, CodeIcon, InfoCircledIcon, PersonIcon, FileTextIcon } from '@radix-ui/react-icons';
-import { useAnalyzeExperiment, useGetExperimentForUi, useListSnapshots } from '@/api/admin';
+import {
+  useAnalyzeExperiment,
+  useGetExperimentForUi,
+  useListSnapshots,
+  useUpdateExperiment,
+  getGetExperimentForUiKey,
+} from '@/api/admin';
 import { ForestPlot } from '@/components/features/experiments/forest-plot';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
 import { useState } from 'react';
 import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
-import { ReadMoreText } from '@/components/ui/read-more-text';
 import { SectionCard } from '@/components/ui/cards/section-card';
+import { EditableTextField } from '@/components/ui/inputs/editable-text-field';
+import { EditableDateField } from '@/components/ui/inputs/editable-date-field';
+import { EditableTextArea } from '@/components/ui/inputs/editable-text-area';
+import { ArmsAndAllocationsTable } from '@/components/features/experiments/arms-and-allocations-table';
+import { IntegrationGuideDialog } from '@/components/features/experiments/integration-guide-dialog';
+import { ReadMoreText } from '@/components/ui/read-more-text';
 import {
   DesignSpecOutput,
   FreqExperimentAnalysisResponse,
@@ -36,6 +33,8 @@ import {
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date-utils';
+import Link from 'next/link';
+import { mutate } from 'swr';
 
 // Type guard to assure TypeScript that a DesignSpec is one of two types.
 function isFrequentistDesign(
@@ -126,6 +125,14 @@ export default function ExperimentViewPage() {
     },
   );
 
+  const { trigger: updateExperiment } = useUpdateExperiment(datasourceId, experimentId, {
+    swr: {
+      onSuccess: async () => {
+        await mutate(getGetExperimentForUiKey(datasourceId, experimentId));
+      },
+    },
+  });
+
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
   }
@@ -144,50 +151,63 @@ export default function ExperimentViewPage() {
   return (
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
-        <Flex direction="row" gap="2" align="center">
-          <Heading size="8">{experiment_name}</Heading>
-          <CopyToClipBoard content={experimentId} tooltipContent="Copy experiment ID" />
+        <Flex direction="row" justify="between" gap="2" align="center" width="100%">
+          <EditableTextField value={experiment_name} onSubmit={(value) => updateExperiment({ name: value })} size="2">
+            <Heading size="8">{experiment_name}</Heading>
+          </EditableTextField>
+          <IntegrationGuideDialog
+            experimentId={experimentId}
+            datasourceId={datasourceId}
+            organizationId={organizationId}
+            arms={arms}
+          />
         </Flex>
 
         <Flex gap="4" align="center">
-          <Flex align="center" gap="1">
-            <Text weight="bold">Type:</Text>
-            <ExperimentTypeBadge type={design_spec.experiment_type} />
-          </Flex>
+          <ExperimentTypeBadge type={design_spec.experiment_type} />
           <Separator orientation="vertical" />
-
-          <Flex align="center" gap="1">
-            <Text weight="bold">Participants:</Text>
-            <ParticipantTypeBadge
-              datasourceId={experiment.datasource_id}
-              participantType={experiment.design_spec.participant_type}
-            />
-          </Flex>
+          <ParticipantTypeBadge
+            datasourceId={experiment.datasource_id}
+            participantType={experiment.design_spec.participant_type}
+          />
           <Separator orientation="vertical" />
           <Flex align="center" gap="2">
             <CalendarIcon />
-            <Text>{new Date(start_date).toLocaleDateString()}</Text>
+            <EditableDateField
+              value={start_date}
+              onSubmit={(value) => updateExperiment({ start_date: value })}
+              size="1"
+            />
             <Text>→</Text>
-            <Text>{new Date(end_date).toLocaleDateString()}</Text>
+            <EditableDateField value={end_date} onSubmit={(value) => updateExperiment({ end_date: value })} size="1" />
           </Flex>
-          {design_url && (
-            <>
-              <Separator orientation="vertical" />
-              <Tooltip content="View design document">
-                <IconButton variant="soft" color="blue" size="2" asChild>
-                  <Link href={design_url} target="_blank" rel="noopener noreferrer">
-                    <FileTextIcon width="16" height="16" />
-                  </Link>
-                </IconButton>
-              </Tooltip>
-            </>
-          )}
+          <Separator orientation="vertical" />
+          <Flex align="center" gap="2">
+            <FileTextIcon />
+            <EditableTextField
+              value={design_url ?? ''}
+              onSubmit={(value) => updateExperiment({ design_url: value })}
+              size="1"
+            >
+              {design_url ? (
+                <Link href={design_url} target="_blank" rel="noopener noreferrer">
+                  <Text color="blue" style={{ textDecoration: 'underline' }}>
+                    {design_url}
+                  </Text>
+                </Link>
+              ) : (
+                <Text color="gray">No design doc</Text>
+              )}
+            </EditableTextField>
+          </Flex>
         </Flex>
       </Flex>
       <Flex direction="column" gap="4">
         {/* Hypothesis Section */}
         <SectionCard title="Hypothesis">
-          <ReadMoreText text={description} />
+          <EditableTextArea value={description} onSubmit={(value) => updateExperiment({ description: value })} size="2">
+            <ReadMoreText text={description} maxWords={30} />
+          </EditableTextArea>
         </SectionCard>
 
         {/* Arms & Allocations Section */}
@@ -204,42 +224,13 @@ export default function ExperimentViewPage() {
               </Flex>
             }
           >
-            <Table.Root>
-              <Table.Header>
-                <Table.Row>
-                  <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {arms.map((arm) => {
-                  const armSize = assign_summary.arm_sizes?.find((a) => a.arm.arm_id === arm.arm_id)?.size || 0;
-                  const percentage = (armSize / assign_summary.sample_size) * 100;
-                  return (
-                    <Table.Row key={arm.arm_id}>
-                      <Table.Cell>
-                        <Flex direction="column" gap="4" align="start">
-                          <Flex gap="2" align="center">
-                            <Heading size="2">{arm.arm_name}</Heading>
-                            <CopyToClipBoard content={arm.arm_id || ''} tooltipContent="Copy arm ID" />
-                          </Flex>
-                          <Flex direction="column" gap="3" align="start">
-                            <Badge>
-                              <PersonIcon />
-                              <Text>{armSize.toLocaleString()} participants</Text>
-                            </Badge>
-                            <Badge>{percentage.toFixed(1)}%</Badge>
-                          </Flex>
-                        </Flex>
-                      </Table.Cell>
-                      <Table.Cell>
-                        <ReadMoreText text={arm.arm_description || 'No description'} />
-                      </Table.Cell>
-                    </Table.Row>
-                  );
-                })}
-              </Table.Body>
-            </Table.Root>
+            <ArmsAndAllocationsTable
+              datasourceId={datasourceId}
+              experimentId={experimentId}
+              arms={arms}
+              sampleSize={assign_summary.sample_size}
+              armSizes={assign_summary.arm_sizes}
+            />
           </SectionCard>
         )}
 

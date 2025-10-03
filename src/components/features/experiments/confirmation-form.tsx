@@ -15,6 +15,7 @@ import { ReadMoreText } from '@/components/ui/read-more-text';
 import { ListSelectedWebhooksCard } from '@/components/features/experiments/list-selected-webhooks-card';
 import { MdeBadge } from '@/components/features/experiments/mde-badge';
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
+import { formatIsoDateLocal } from '@/services/date-utils';
 
 interface ConfirmationFormProps {
   formData: FrequentABFormData;
@@ -97,11 +98,11 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
             )}
             <Table.Row>
               <Table.RowHeaderCell>Start Date</Table.RowHeaderCell>
-              <Table.Cell>{new Date(formData.startDate).toLocaleDateString()}</Table.Cell>
+              <Table.Cell>{formatIsoDateLocal(formData.startDate)}</Table.Cell>
             </Table.Row>
             <Table.Row>
               <Table.RowHeaderCell>End Date</Table.RowHeaderCell>
-              <Table.Cell>{new Date(formData.endDate).toLocaleDateString()}</Table.Cell>
+              <Table.Cell>{formatIsoDateLocal(formData.endDate)}</Table.Cell>
             </Table.Row>
           </Table.Body>
         </Table.Root>
