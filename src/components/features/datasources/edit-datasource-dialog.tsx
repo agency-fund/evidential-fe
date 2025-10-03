@@ -206,7 +206,6 @@ export const EditDatasourceDialog = ({
                 Name
               </Text>
               <TextField.Root
-                name="name"
                 value={formData.name}
                 onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                 required
@@ -237,7 +236,6 @@ export const EditDatasourceDialog = ({
                   </Text>
                   <Flex direction="column" gap="2">
                     <TextField.Root
-                      name="host"
                       value={formData.host}
                       onChange={(e) => {
                         setFormData((prev) => ({ ...prev, host: e.target.value }));
@@ -262,7 +260,6 @@ export const EditDatasourceDialog = ({
                     Port
                   </Text>
                   <TextField.Root
-                    name="port"
                     type="number"
                     value={formData.port}
                     onChange={(e) => setFormData((prev) => ({ ...prev, port: e.target.value }))}
@@ -274,7 +271,6 @@ export const EditDatasourceDialog = ({
                     Database
                   </Text>
                   <TextField.Root
-                    name="dbname"
                     value={formData.dbname}
                     onChange={(e) => setFormData((prev) => ({ ...prev, dbname: e.target.value }))}
                     required
@@ -285,7 +281,6 @@ export const EditDatasourceDialog = ({
                     User
                   </Text>
                   <TextField.Root
-                    name="user"
                     value={formData.user}
                     onChange={(e) => setFormData((prev) => ({ ...prev, user: e.target.value }))}
                     required
@@ -297,7 +292,6 @@ export const EditDatasourceDialog = ({
                   </Text>
                   <Flex gap="2">
                     <TextField.Root
-                      name="password"
                       type={showPassword ? 'text' : 'password'}
                       onChange={(e) =>
                         setFormData((prev) => ({ ...prev, password: { type: 'revealed', value: e.target.value } }))
@@ -322,7 +316,6 @@ export const EditDatasourceDialog = ({
                       SSL Mode
                     </Text>
                     <select
-                      name="sslmode"
                       value={formData.sslmode}
                       onChange={(e) =>
                         setFormData((prev) => ({ ...prev, sslmode: e.target.value as PostgresSslModes }))
@@ -348,7 +341,6 @@ export const EditDatasourceDialog = ({
                     </a>
                   </Text>
                   <TextField.Root
-                    name="search_path"
                     value={formData.search_path}
                     onChange={(e) => setFormData((prev) => ({ ...prev, search_path: e.target.value }))}
                   />
@@ -363,7 +355,6 @@ export const EditDatasourceDialog = ({
                     Project ID
                   </Text>
                   <TextField.Root
-                    name="project_id"
                     value={formData.project_id}
                     onChange={(e) => setFormData((prev) => ({ ...prev, project_id: e.target.value }))}
                     required
@@ -374,7 +365,6 @@ export const EditDatasourceDialog = ({
                     Dataset
                   </Text>
                   <TextField.Root
-                    name="dataset"
                     value={formData.dataset}
                     onChange={(e) => setFormData((prev) => ({ ...prev, dataset: e.target.value }))}
                     required
