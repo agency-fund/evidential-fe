@@ -17,9 +17,6 @@ export default function Page() {
   const orgContext = useCurrentOrganization();
   const currentOrgId = orgContext?.current?.id;
   const router = useRouter();
-  // State to pause some SWR requests when the dialog is open, which would otherwise inadvertently close the dialog.
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [wasDialogOpen, setWasDialogOpen] = useState(false);
 
   const {
     data: datasourceMetadata,
@@ -28,7 +25,6 @@ export default function Page() {
   } = useGetDatasource(datasourceId!, {
     swr: {
       enabled: datasourceId !== null,
-      isPaused: () => isDialogOpen,
     },
   });
 
@@ -36,24 +32,11 @@ export default function Page() {
     data: inspectDatasourceData,
     isLoading: inspectDatasourceLoading,
     error: inspectError,
-    mutate: mutateInspect,
   } = useInspectDatasource(datasourceId!, undefined, {
     swr: {
       enabled: datasourceId !== null,
-      // Don't trigger the inspection if we're possibly editing the datasource.
-      isPaused: () => isDialogOpen,
     },
   });
-
-  // Only trigger revalidation when dialog transitions from open to closed,
-  // while avoiding the initial load triggering a revalidation.
-  useEffect(() => {
-    if (datasourceId && wasDialogOpen && !isDialogOpen) {
-      mutateInspect();
-    }
-    // Update previous state for next render
-    setWasDialogOpen(isDialogOpen);
-  }, [datasourceId, isDialogOpen, wasDialogOpen, mutateInspect]);
 
   // Redirect if datasource doesn't belong to current organization
   useEffect(() => {
@@ -66,7 +49,7 @@ export default function Page() {
   const isLoading = inspectDatasourceLoading || datasourceDetailsLoading;
 
   const editDatasourceDialogComponent = (
-    <EditDatasourceDialog datasourceId={datasourceId!} variant="button" onOpenChange={setIsDialogOpen} />
+    <EditDatasourceDialog datasourceId={datasourceId!} variant="button" />
   );
 
   if (isLoading) {

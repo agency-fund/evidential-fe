@@ -12,26 +12,52 @@ import {
 import { useEffect, useState } from 'react';
 import { mutate } from 'swr';
 import { GcpServiceAccount, Hidden, RevealedStr, UpdateDatasourceRequest } from '@/api/methods.schemas';
-import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { PostgresSslModes } from '@/services/typehelper';
 import { XNGIN_API_DOCS_LINK } from '@/services/constants';
+
+interface FormFields {
+  name: string;
+  host: string;
+  port: string;
+  dbname: string;
+  user: string;
+  password: RevealedStr | Hidden;
+  sslmode: PostgresSslModes;
+  search_path: string;
+  project_id: string;
+  dataset: string;
+  credentials_json: GcpServiceAccount | Hidden;
+}
+
+const defaultFormData: FormFields = {
+  name: '',
+  host: '',
+  port: '',
+  dbname: '',
+  user: '',
+  password: { type: 'hidden' },
+  search_path: '',
+  sslmode: 'require',
+  project_id: '',
+  dataset: '',
+  credentials_json: { type: 'hidden' },
+};
 
 export const EditDatasourceDialog = ({
   organizationId,
   datasourceId,
-  onOpenChange,
   variant = 'icon',
 }: {
   organizationId?: string;
   datasourceId: string;
-  onOpenChange?: (open: boolean) => void;
   variant?: 'icon' | 'button';
 }) => {
-  const {
-    trigger: updateDatasource,
-    error,
-    reset,
-  } = useUpdateDatasource(datasourceId, {
+  const { data, isLoading } = useGetDatasource(datasourceId);
+  const [open, setOpen] = useState(false);
+  const [error, setError] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState(defaultFormData);
+  const { trigger: updateDatasource, reset } = useUpdateDatasource(datasourceId, {
     swr: {
       onSuccess: () =>
         Promise.all([
@@ -41,50 +67,31 @@ export const EditDatasourceDialog = ({
         ]),
     },
   });
-  const { data, isLoading } = useGetDatasource(datasourceId);
-  const [open, setOpen] = useState(false);
 
-  // Notify parent when open state changes
-  const handleOpenChange = (newOpen: boolean) => {
-    if (!newOpen) {
-      setShowPassword(false);
-    }
-    if (onOpenChange) {
-      onOpenChange(newOpen);
-    }
-    setOpen(newOpen);
-  };
-
-  const [showPassword, setShowPassword] = useState(false);
-  const [name, setName] = useState('');
-  const [host, setHost] = useState('');
-  const [port, setPort] = useState('');
-  const [dbname, setDbname] = useState('');
-  const [user, setUser] = useState('');
-  const [password, setPassword] = useState<RevealedStr | Hidden>({ type: 'hidden' });
-  const [searchPath, setSearchPath] = useState('');
-  const [sslmode, setSslmode] = useState<PostgresSslModes>('require');
-  const [projectId, setProjectId] = useState('');
-  const [dataset, setDataset] = useState('');
-  const [credentialsJson, setCredentialsJson] = useState<GcpServiceAccount | Hidden>({ type: 'hidden' });
 
   useEffect(() => {
     if (open && data) {
       const dsn = data.dsn;
-      setName(data.name);
+      const newFormData = {
+        ...defaultFormData,
+        name: data.name,
+      };
+
       if (dsn.type === 'api_only') {
+        setFormData(newFormData);
         return;
       }
       if (dsn.type === 'bigquery') {
-        setProjectId(dsn.project_id);
-        setDataset(dsn.dataset_id);
-        setCredentialsJson(dsn.credentials);
+        newFormData.project_id = dsn.project_id;
+        newFormData.dataset = dsn.dataset_id;
+        newFormData.credentials_json = dsn.credentials;
       } else if (dsn.type === 'postgres' || dsn.type == 'redshift') {
-        setHost(dsn.host);
-        setPort(dsn.port ? dsn.port.toString() : '5432');
-        setDbname(dsn.dbname);
-        setUser(dsn.user);
-        setPassword(dsn.password);
+        newFormData.host = dsn.host;
+        newFormData.port = dsn.port ? dsn.port.toString() : '5432';
+        newFormData.dbname = dsn.dbname;
+        newFormData.user = dsn.user;
+        newFormData.password = dsn.password;
+        newFormData.search_path = dsn.search_path || '';
         // Only send sslmode for postgres.
         if (dsn.type === 'postgres') {
           // Only use a subset of the possible configuration options.
@@ -95,10 +102,10 @@ export const EditDatasourceDialog = ({
               ? fallbackType
               : (dsn.sslmode as PostgresSslModes)
             : fallbackType;
-          setSslmode(sslmode);
+          newFormData.sslmode = sslmode;
         }
-        setSearchPath(dsn.search_path || '');
       }
+      setFormData(newFormData);
     }
   }, [open, data]);
 
@@ -116,8 +123,10 @@ export const EditDatasourceDialog = ({
     <Dialog.Root
       open={open}
       onOpenChange={(op) => {
-        handleOpenChange(op);
+        setOpen(op);
         if (!op) {
+          setShowPassword(false);
+          setError(false);
           reset();
         }
       }}
@@ -140,7 +149,7 @@ export const EditDatasourceDialog = ({
           onSubmit={async (event) => {
             event.preventDefault();
             const updateData: UpdateDatasourceRequest = {
-              name,
+              name: formData.name,
             };
 
             if (isNoDWH) {
@@ -150,35 +159,39 @@ export const EditDatasourceDialog = ({
             } else if (isBigQuery) {
               updateData.dsn = {
                 type: 'bigquery',
-                project_id: projectId,
-                dataset_id: dataset,
-                credentials: credentialsJson,
+                project_id: formData.project_id,
+                dataset_id: formData.dataset,
+                credentials: formData.credentials_json,
               };
             } else if (isRedshift) {
               updateData.dsn = {
                 type: 'redshift',
-                host,
-                port: parseInt(port),
-                dbname,
-                user,
-                password,
-                search_path: searchPath || null,
+                host: formData.host,
+                port: parseInt(formData.port),
+                dbname: formData.dbname,
+                user: formData.user,
+                password: formData.password,
+                search_path: formData.search_path || null,
               };
             } else {
               updateData.dsn = {
                 type: 'postgres',
-                host,
-                port: parseInt(port),
-                dbname,
-                user,
-                password,
-                sslmode,
-                search_path: searchPath || null,
+                host: formData.host,
+                port: parseInt(formData.port),
+                dbname: formData.dbname,
+                user: formData.user,
+                password: formData.password,
+                sslmode: formData.sslmode,
+                search_path: formData.search_path || null,
               };
             }
 
-            await updateDatasource(updateData);
-            handleOpenChange(false);
+            try {
+              await updateDatasource(updateData);
+              setOpen(false);
+            } catch {
+              setError(true);
+            }
           }}
         >
           <Dialog.Title>Edit Datasource</Dialog.Title>
@@ -186,14 +199,19 @@ export const EditDatasourceDialog = ({
             Update the datasource settings.
           </Dialog.Description>
 
-          {error && <GenericErrorCallout title={'Failed to update datasource'} error={error} />}
+          {/* {error && <GenericErrorCallout title={'Failed to update datasource'} error={error} />} */}
 
           <Flex direction="column" gap="3">
             <label>
               <Text as="div" size="2" mb="1" weight="bold">
                 Name
               </Text>
-              <TextField.Root name="name" value={name} onChange={(e) => setName(e.target.value)} required />
+              <TextField.Root
+                name="name"
+                value={formData.name}
+                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                required
+              />
             </label>
 
             {isNoDWH && (
@@ -218,7 +236,27 @@ export const EditDatasourceDialog = ({
                   <Text as="div" size="2" mb="1" weight="bold">
                     Host
                   </Text>
-                  <TextField.Root name="host" value={host} onChange={(e) => setHost(e.target.value)} required />
+                  <Flex direction="column" gap="2">
+                    <TextField.Root
+                      name="host"
+                      value={formData.host}
+                      onChange={(e) => {
+                        setFormData((prev) => ({ ...prev, host: e.target.value }));
+                        setError(false);
+                      }}
+                      color={error ? 'red' : undefined}
+                      variant={error ? 'soft' : 'surface'}
+                      required
+                    />
+                    {error && (
+                      <Flex align="center" gap="2">
+                        <InfoCircledIcon color="red" />
+                        <Text size="1" color="red">
+                          This hostname does not resolve. Please try again.
+                        </Text>
+                      </Flex>
+                    )}
+                  </Flex>
                 </label>
                 <label>
                   <Text as="div" size="2" mb="1" weight="bold">
@@ -227,8 +265,8 @@ export const EditDatasourceDialog = ({
                   <TextField.Root
                     name="port"
                     type="number"
-                    value={port}
-                    onChange={(e) => setPort(e.target.value)}
+                    value={formData.port}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, port: e.target.value }))}
                     required
                   />
                 </label>
@@ -236,13 +274,23 @@ export const EditDatasourceDialog = ({
                   <Text as="div" size="2" mb="1" weight="bold">
                     Database
                   </Text>
-                  <TextField.Root name="dbname" value={dbname} onChange={(e) => setDbname(e.target.value)} required />
+                  <TextField.Root
+                    name="dbname"
+                    value={formData.dbname}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, dbname: e.target.value }))}
+                    required
+                  />
                 </label>
                 <label>
                   <Text as="div" size="2" mb="1" weight="bold">
                     User
                   </Text>
-                  <TextField.Root name="user" value={user} onChange={(e) => setUser(e.target.value)} required />
+                  <TextField.Root
+                    name="user"
+                    value={formData.user}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, user: e.target.value }))}
+                    required
+                  />
                 </label>
                 <label>
                   <Text as="div" size="2" mb="1" weight="bold">
@@ -252,16 +300,18 @@ export const EditDatasourceDialog = ({
                     <TextField.Root
                       name="password"
                       type={showPassword ? 'text' : 'password'}
-                      onChange={(e) => setPassword({ type: 'revealed', value: e.target.value })}
-                      placeholder={password.type === 'hidden' ? '(hidden)' : undefined}
-                      required={password.type !== 'hidden'}
-                      value={password.type === 'revealed' ? password.value : ''}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, password: { type: 'revealed', value: e.target.value } }))
+                      }
+                      placeholder={formData.password.type === 'hidden' ? '(hidden)' : undefined}
+                      required={formData.password.type !== 'hidden'}
+                      value={formData.password.type === 'revealed' ? formData.password.value : ''}
                     />
                     <Button
                       type="button"
                       variant="soft"
                       onClick={() => setShowPassword(!showPassword)}
-                      disabled={password.type === 'hidden'}
+                      disabled={formData.password.type === 'hidden'}
                     >
                       {showPassword ? <EyeOpenIcon /> : <EyeClosedIcon />}
                     </Button>
@@ -274,8 +324,10 @@ export const EditDatasourceDialog = ({
                     </Text>
                     <select
                       name="sslmode"
-                      value={sslmode}
-                      onChange={(e) => setSslmode(e.target.value as PostgresSslModes)}
+                      value={formData.sslmode}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, sslmode: e.target.value as PostgresSslModes }))
+                      }
                     >
                       <option value="disable">disable</option>
                       <option value="require">require</option>
@@ -298,8 +350,8 @@ export const EditDatasourceDialog = ({
                   </Text>
                   <TextField.Root
                     name="search_path"
-                    value={searchPath}
-                    onChange={(e) => setSearchPath(e.target.value)}
+                    value={formData.search_path}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, search_path: e.target.value }))}
                   />
                 </label>
               </>
@@ -313,8 +365,8 @@ export const EditDatasourceDialog = ({
                   </Text>
                   <TextField.Root
                     name="project_id"
-                    value={projectId}
-                    onChange={(e) => setProjectId(e.target.value)}
+                    value={formData.project_id}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, project_id: e.target.value }))}
                     required
                   />
                 </label>
@@ -324,17 +376,22 @@ export const EditDatasourceDialog = ({
                   </Text>
                   <TextField.Root
                     name="dataset"
-                    value={dataset}
-                    onChange={(e) => setDataset(e.target.value)}
+                    value={formData.dataset}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, dataset: e.target.value }))}
                     required
                   />
                 </label>
                 <ServiceAccountJsonField
-                  onChange={(value) => setCredentialsJson({ type: 'serviceaccountinfo', content: value })}
-                  onProjectIdFound={setProjectId}
-                  placeholder={credentialsJson.type === 'hidden' ? '(hidden)' : undefined}
-                  required={credentialsJson.type !== 'hidden'}
-                  value={credentialsJson.type === 'hidden' ? '' : credentialsJson.content}
+                  onChange={(value) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      credentials_json: { type: 'serviceaccountinfo', content: value },
+                    }))
+                  }
+                  onProjectIdFound={(projectId) => setFormData((prev) => ({ ...prev, project_id: projectId }))}
+                  placeholder={formData.credentials_json.type === 'hidden' ? '(hidden)' : undefined}
+                  required={formData.credentials_json.type !== 'hidden'}
+                  value={formData.credentials_json.type === 'hidden' ? '' : formData.credentials_json.content}
                 />
               </>
             )}
