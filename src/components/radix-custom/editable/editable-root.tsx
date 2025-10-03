@@ -8,7 +8,6 @@ interface EditableContextType {
   cancel: () => void;
   inputValue: string;
   setInputValue: (value: string) => void;
-  originalValue: string;
 }
 
 export const EditableContext = createContext<EditableContextType | undefined>(undefined);
@@ -30,12 +29,10 @@ interface EditableRootProps {
 export function EditableRoot({ children, value, onSubmit }: EditableRootProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(value);
-  const [originalValue, setOriginalValue] = useState(value);
 
   useEffect(() => {
     if (!isEditing) {
       setInputValue(value);
-      setOriginalValue(value);
     }
   }, [value, isEditing]);
 
@@ -49,8 +46,6 @@ export function EditableRoot({ children, value, onSubmit }: EditableRootProps) {
     if (onSubmit) {
       try {
         await onSubmit(inputValue);
-        // Update originalValue to the submitted value so cancel works correctly
-        setOriginalValue(inputValue);
       } catch (error) {
         console.error('Submit failed:', error);
         return;
@@ -58,10 +53,7 @@ export function EditableRoot({ children, value, onSubmit }: EditableRootProps) {
     }
     setIsEditing(false);
   };
-  const cancel = () => {
-    setInputValue(originalValue);
-    setIsEditing(false);
-  };
+  const cancel = () => setIsEditing(false);
 
   const contextValue: EditableContextType = {
     isEditing,
@@ -70,7 +62,6 @@ export function EditableRoot({ children, value, onSubmit }: EditableRootProps) {
     cancel,
     inputValue,
     setInputValue,
-    originalValue,
   };
 
   return <EditableContext.Provider value={contextValue}>{children}</EditableContext.Provider>;

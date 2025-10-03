@@ -4,7 +4,7 @@ import { useUpdateArm, getGetExperimentForUiKey } from '@/api/admin';
 import { UpdateArmRequest, Arm } from '@/api/methods.schemas';
 import { EditableTextField } from '@/components/ui/inputs/editable-text-field';
 import { EditableTextArea } from '@/components/ui/inputs/editable-text-area';
-import { useSWRConfig } from 'swr';
+import { mutate } from 'swr';
 import { ReadMoreText } from '@/components/ui/read-more-text';
 
 interface ArmsAndAllocationsTableRowProps {
@@ -22,24 +22,20 @@ export function ArmsAndAllocationsTableRow({
   armSize,
   percentage,
 }: ArmsAndAllocationsTableRowProps) {
-  const { mutate } = useSWRConfig();
-  const { trigger: updateArm } = useUpdateArm(datasourceId, experimentId, arm.arm_id!);
-
-  const makeHandleUpdateArm = (field: keyof UpdateArmRequest) => {
-    return async (value: string) => {
-      await updateArm({
-        [field]: value,
-      });
-      await mutate(getGetExperimentForUiKey(datasourceId, experimentId));
-    };
-  };
+  const { trigger: updateArm } = useUpdateArm(datasourceId, experimentId, arm.arm_id!, {
+    swr: {
+      onSuccess: async () => {
+        await mutate(getGetExperimentForUiKey(datasourceId, experimentId));
+      },
+    },
+  });
 
   return (
     <Table.Row>
       <Table.Cell width="20%">
         <Flex direction="column" gap="4" align="start">
           <Flex gap="2" align="center">
-            <EditableTextField value={arm.arm_name} onSubmit={makeHandleUpdateArm('name')} size="1">
+            <EditableTextField value={arm.arm_name} onSubmit={(value) => updateArm({name: value})} size="1">
               <Heading size="2">{arm.arm_name}</Heading>
             </EditableTextField>
           </Flex>
@@ -55,7 +51,7 @@ export function ArmsAndAllocationsTableRow({
       <Table.Cell width="80%">
         <EditableTextArea
           value={arm.arm_description || 'No description'}
-          onSubmit={makeHandleUpdateArm('description')}
+          onSubmit={(value) => updateArm({name: value})}
           size="1"
         >
           <ReadMoreText text={arm.arm_description || 'No description'} />
