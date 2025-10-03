@@ -68,7 +68,6 @@ export const EditDatasourceDialog = ({
     },
   });
 
-
   useEffect(() => {
     if (open && data) {
       const dsn = data.dsn;

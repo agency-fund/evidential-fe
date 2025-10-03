@@ -7,7 +7,7 @@ import { useGetDatasource, useInspectDatasource } from '@/api/admin';
 import { useParams, useRouter } from 'next/navigation';
 import { EditDatasourceDialog } from '@/components/features/datasources/edit-datasource-dialog';
 import { useCurrentOrganization } from '@/providers/organization-provider';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
 
@@ -48,9 +48,7 @@ export default function Page() {
 
   const isLoading = inspectDatasourceLoading || datasourceDetailsLoading;
 
-  const editDatasourceDialogComponent = (
-    <EditDatasourceDialog datasourceId={datasourceId!} variant="button" />
-  );
+  const editDatasourceDialogComponent = <EditDatasourceDialog datasourceId={datasourceId!} variant="button" />;
 
   if (isLoading) {
     return <XSpinner message="Loading datasource details..." />;
