@@ -2,7 +2,13 @@
 import { Badge, Box, Flex, Heading, Separator, Tabs, Text, Tooltip, Select } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
 import { CalendarIcon, CodeIcon, InfoCircledIcon, PersonIcon, FileTextIcon } from '@radix-ui/react-icons';
-import { useAnalyzeExperiment, useGetExperimentForUi, useListSnapshots, useUpdateExperiment, getGetExperimentForUiKey } from '@/api/admin';
+import {
+  useAnalyzeExperiment,
+  useGetExperimentForUi,
+  useListSnapshots,
+  useUpdateExperiment,
+  getGetExperimentForUiKey,
+} from '@/api/admin';
 import { ForestPlot } from '@/components/features/experiments/forest-plot';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -29,7 +35,6 @@ import { useCurrentOrganization } from '@/providers/organization-provider';
 import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date-utils';
 import Link from 'next/link';
 import { mutate } from 'swr';
-
 
 // Type guard to assure TypeScript that a DesignSpec is one of two types.
 function isFrequentistDesign(
@@ -121,14 +126,12 @@ export default function ExperimentViewPage() {
   );
 
   const { trigger: updateExperiment } = useUpdateExperiment(datasourceId, experimentId, {
-      swr: {
-        onSuccess: async () => {
-          await mutate(getGetExperimentForUiKey(datasourceId, experimentId));
-        },
+    swr: {
+      onSuccess: async () => {
+        await mutate(getGetExperimentForUiKey(datasourceId, experimentId));
       },
-    });
-
-
+    },
+  });
 
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
@@ -149,7 +152,7 @@ export default function ExperimentViewPage() {
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
         <Flex direction="row" justify="between" gap="2" align="center" width="100%">
-          <EditableTextField value={experiment_name} onSubmit={(value) => updateExperiment({name: value})} size="2">
+          <EditableTextField value={experiment_name} onSubmit={(value) => updateExperiment({ name: value })} size="2">
             <Heading size="8">{experiment_name}</Heading>
           </EditableTextField>
           <IntegrationGuideDialog
@@ -170,14 +173,22 @@ export default function ExperimentViewPage() {
           <Separator orientation="vertical" />
           <Flex align="center" gap="2">
             <CalendarIcon />
-            <EditableDateField value={start_date} onSubmit={(value) => updateExperiment({start_date: value})} size="1" />
+            <EditableDateField
+              value={start_date}
+              onSubmit={(value) => updateExperiment({ start_date: value })}
+              size="1"
+            />
             <Text>→</Text>
-            <EditableDateField value={end_date} onSubmit={(value) => updateExperiment({end_date: value})} size="1" />
+            <EditableDateField value={end_date} onSubmit={(value) => updateExperiment({ end_date: value })} size="1" />
           </Flex>
           <Separator orientation="vertical" />
           <Flex align="center" gap="2">
             <FileTextIcon />
-            <EditableTextField value={design_url ?? ''} onSubmit={(value) => updateExperiment({design_url: value})} size="1">
+            <EditableTextField
+              value={design_url ?? ''}
+              onSubmit={(value) => updateExperiment({ design_url: value })}
+              size="1"
+            >
               {design_url ? (
                 <Link href={design_url} target="_blank" rel="noopener noreferrer">
                   <Text color="blue" style={{ textDecoration: 'underline' }}>
@@ -194,7 +205,7 @@ export default function ExperimentViewPage() {
       <Flex direction="column" gap="4">
         {/* Hypothesis Section */}
         <SectionCard title="Hypothesis">
-          <EditableTextArea value={description} onSubmit={(value) => updateExperiment({description: value})} size="2">
+          <EditableTextArea value={description} onSubmit={(value) => updateExperiment({ description: value })} size="2">
             <ReadMoreText text={description} maxWords={30} />
           </EditableTextArea>
         </SectionCard>

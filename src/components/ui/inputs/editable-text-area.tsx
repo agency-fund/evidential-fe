@@ -24,7 +24,7 @@ export function EditableTextArea({ value, onSubmit, children, size = '2' }: Edit
     try {
       setError(false);
       await onSubmit(value);
-    } catch (err) {
+    } catch {
       setError(true);
     }
   };

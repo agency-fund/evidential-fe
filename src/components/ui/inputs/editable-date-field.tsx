@@ -32,7 +32,7 @@ export function EditableDateField({ value, onSubmit, size = '2' }: EditableDateF
       // Create ISO string at midnight UTC to maintain the date
       const isoValue = new Date(value + 'T00:00:00.000Z').toISOString();
       await onSubmit(isoValue);
-    } catch (err) {
+    } catch {
       setError(true);
     }
   };
@@ -55,7 +55,7 @@ export function EditableDateField({ value, onSubmit, size = '2' }: EditableDateF
                     value={value}
                     onChange={(e) => {
                       onChange(e);
-                     clearError();
+                      clearError();
                     }}
                     onKeyDown={onKeyDown}
                     size={size}

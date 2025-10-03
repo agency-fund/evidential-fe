@@ -24,7 +24,7 @@ export function EditableTextField({ value, onSubmit, children, size = '2' }: Edi
     try {
       setError(false);
       await onSubmit(value);
-    } catch (err) {
+    } catch {
       setError(true);
     }
   };

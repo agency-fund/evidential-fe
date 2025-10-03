@@ -10,7 +10,6 @@ interface EditableCancelTriggerProps {
 export function EditableCancelTrigger({ size = '2' }: EditableCancelTriggerProps) {
   const { cancel, isEditing } = useEditable();
 
-
   if (!isEditing) return null;
 
   return (

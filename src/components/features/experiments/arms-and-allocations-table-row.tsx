@@ -1,7 +1,7 @@
 import { Table, Flex, Heading, Badge, Text } from '@radix-ui/themes';
 import { PersonIcon } from '@radix-ui/react-icons';
 import { useUpdateArm, getGetExperimentForUiKey } from '@/api/admin';
-import { UpdateArmRequest, Arm } from '@/api/methods.schemas';
+import { Arm } from '@/api/methods.schemas';
 import { EditableTextField } from '@/components/ui/inputs/editable-text-field';
 import { EditableTextArea } from '@/components/ui/inputs/editable-text-area';
 import { mutate } from 'swr';
@@ -35,7 +35,7 @@ export function ArmsAndAllocationsTableRow({
       <Table.Cell width="20%">
         <Flex direction="column" gap="4" align="start">
           <Flex gap="2" align="center">
-            <EditableTextField value={arm.arm_name} onSubmit={(value) => updateArm({name: value})} size="1">
+            <EditableTextField value={arm.arm_name} onSubmit={(value) => updateArm({ name: value })} size="1">
               <Heading size="2">{arm.arm_name}</Heading>
             </EditableTextField>
           </Flex>
@@ -51,7 +51,7 @@ export function ArmsAndAllocationsTableRow({
       <Table.Cell width="80%">
         <EditableTextArea
           value={arm.arm_description || 'No description'}
-          onSubmit={(value) => updateArm({description: value})}
+          onSubmit={(value) => updateArm({ description: value })}
           size="1"
         >
           <ReadMoreText text={arm.arm_description || 'No description'} />

@@ -6,7 +6,6 @@ import { useEditable } from '@/components/radix-custom/editable/editable-root';
 export function EditableEditTrigger() {
   const { edit, isEditing } = useEditable();
 
-
   if (isEditing) return null;
 
   return (
