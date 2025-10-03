@@ -10,14 +10,11 @@ interface EditableCancelTriggerProps {
 export function EditableCancelTrigger({ size = '2' }: EditableCancelTriggerProps) {
   const { cancel, isEditing } = useEditable();
 
-  const handleClick = () => {
-    cancel();
-  };
 
   if (!isEditing) return null;
 
   return (
-    <IconButton onClick={handleClick} type="button" variant="soft" color="red" size={size}>
+    <IconButton onClick={cancel} type="button" variant="soft" color="red" size={size}>
       <Cross2Icon />
     </IconButton>
   );

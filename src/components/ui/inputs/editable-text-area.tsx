@@ -26,11 +26,10 @@ export function EditableTextArea({ value, onSubmit, children, size = '2' }: Edit
       await onSubmit(value);
     } catch (err) {
       setError(true);
-      throw err;
     }
   };
 
-  const handleChange = () => {
+  const clearError = () => {
     if (error) setError(false);
   };
 
@@ -45,13 +44,14 @@ export function EditableTextArea({ value, onSubmit, children, size = '2' }: Edit
               <Flex style={{ flexGrow: 1 }}>
                 <EditablePreview>{children}</EditablePreview>
                 <EditableInput>
-                  {({ value, onChange }) => (
+                  {({ value, onChange, onKeyDown }) => (
                     <TextArea
                       value={value}
                       onChange={(e) => {
                         onChange(e);
-                        handleChange();
+                        clearError();
                       }}
+                      onKeyDown={onKeyDown}
                       size={size}
                       variant={error ? 'soft' : 'surface'}
                       color={error ? 'red' : undefined}

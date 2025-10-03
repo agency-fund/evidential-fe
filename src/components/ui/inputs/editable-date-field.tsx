@@ -34,11 +34,10 @@ export function EditableDateField({ value, onSubmit, size = '2' }: EditableDateF
       await onSubmit(isoValue);
     } catch (err) {
       setError(true);
-      throw err;
     }
   };
 
-  const handleChange = () => {
+  const clearError = () => {
     if (error) setError(false);
   };
 
@@ -50,14 +49,15 @@ export function EditableDateField({ value, onSubmit, size = '2' }: EditableDateF
             <Flex align="center" gap="2">
               <EditablePreview displayValue={displayDate} />
               <EditableInput>
-                {({ value, onChange }) => (
+                {({ value, onChange, onKeyDown }) => (
                   <TextField.Root
                     type="date"
                     value={value}
                     onChange={(e) => {
                       onChange(e);
-                      handleChange();
+                     clearError();
                     }}
+                    onKeyDown={onKeyDown}
                     size={size}
                     variant={error ? 'soft' : 'surface'}
                     color={error ? 'red' : undefined}

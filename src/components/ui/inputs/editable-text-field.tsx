@@ -26,11 +26,10 @@ export function EditableTextField({ value, onSubmit, children, size = '2' }: Edi
       await onSubmit(value);
     } catch (err) {
       setError(true);
-      throw err;
     }
   };
 
-  const handleChange = () => {
+  const clearError = () => {
     if (error) setError(false);
   };
 
@@ -42,13 +41,14 @@ export function EditableTextField({ value, onSubmit, children, size = '2' }: Edi
             <Flex align="center" gap="2">
               <EditablePreview>{children}</EditablePreview>
               <EditableInput>
-                {({ value, onChange }) => (
+                {({ value, onChange, onKeyDown }) => (
                   <TextField.Root
                     value={value}
                     onChange={(e) => {
                       onChange(e);
-                      handleChange();
+                      clearError();
                     }}
+                    onKeyDown={onKeyDown}
                     size={size}
                     variant={error ? 'soft' : 'surface'}
                     color={error ? 'red' : undefined}

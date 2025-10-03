@@ -51,7 +51,7 @@ export function ArmsAndAllocationsTableRow({
       <Table.Cell width="80%">
         <EditableTextArea
           value={arm.arm_description || 'No description'}
-          onSubmit={(value) => updateArm({name: value})}
+          onSubmit={(value) => updateArm({description: value})}
           size="1"
         >
           <ReadMoreText text={arm.arm_description || 'No description'} />
