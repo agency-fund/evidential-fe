@@ -112,7 +112,9 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
           </Flex>
         ))}
 
-        {(operator === 'in-list' || operator === 'not-in-list') && (
+        {(operator === 'in-list' ||
+          operator === 'not-in-list' ||
+          ((operator === 'equals' || operator === 'not-equals') && nonNullValues.length === 0)) && (
           <Button variant="soft" size="1" onClick={addValue}>
             <PlusIcon /> Add value
           </Button>

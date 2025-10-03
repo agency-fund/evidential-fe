@@ -43,6 +43,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
   const [betweenMaxValue, setBetweenMaxValue] = useState(() =>
     filter.value[1] !== null ? String(filter.value[1]) : '',
   );
+  // equals and not-equals also use listValues as state
   const [listValues, setListValues] = useState<string[]>(() => filter.value.filter((v) => v !== null).map(String));
 
   // Update string states when filter changes externally

@@ -118,18 +118,17 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
   };
 
   return (
-    <Flex direction="column" gap="2" overflow="auto">
+    <Flex direction="column" gap="3" overflow="auto">
       {filters.map((filter, index) => (
-        <>
+        <React.Fragment key={`${index}-${filter.field_name}`}>
           <FilterRow
-            key={index}
             filter={filter}
             availableFields={availableFields}
             onChange={(updatedFilter) => updateFilter(index, updatedFilter)}
             onRemove={() => removeFilter(index)}
           />
-          <Separator orientation="horizontal" key={index + 'hr'} size="4" />
-        </>
+          <Separator orientation="horizontal" size="4" />
+        </React.Fragment>
       ))}
       <Flex>
         <Button onClick={addFilter} variant="soft" size="2">
