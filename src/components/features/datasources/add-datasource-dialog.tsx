@@ -3,12 +3,15 @@ import { getGetOrganizationKey, getListOrganizationDatasourcesKey, useCreateData
 import { useState } from 'react';
 import { Button, Dialog, Flex, RadioGroup, Text, TextField } from '@radix-ui/themes';
 import { ServiceAccountJsonField } from '@/components/features/datasources/service-account-json-field';
+import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { EyeClosedIcon, EyeOpenIcon, InfoCircledIcon, PlusIcon } from '@radix-ui/react-icons';
 import { ApiOnlyDsn, BqDsnInput, DsnInput, PostgresDsn, PostgresDsnSslmode, RedshiftDsn } from '@/api/methods.schemas';
 import { mutate } from 'swr';
 import { PostgresSslModes } from '@/services/typehelper';
+import { ApiError } from '@/services/orval-fetch';
 
 type AllowedDwhTypes = Exclude<DsnInput['type'], ApiOnlyDsn['type']>;
+
 
 interface FormFields {
   name: string;
@@ -43,16 +46,19 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
   const [dwhType, setDwhType] = useState<AllowedDwhTypes>('postgres');
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState(defaultFormData);
-  const [error, setError] = useState(false);
-  const { trigger, reset } = useCreateDatasource({
+  const { trigger, reset, error } = useCreateDatasource({
     swr: {
-      onSuccess: () =>
+      onSuccess: () => {
+        setOpen(false);
         Promise.all([
           mutate(getListOrganizationDatasourcesKey(organizationId)),
           mutate(getGetOrganizationKey(organizationId)),
-        ]),
+        ]);
+      },
     },
   });
+
+  const isDNSError = error instanceof ApiError && error.response.status === 400;
 
   return (
     <Dialog.Root
@@ -62,7 +68,6 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
         if (!op) {
           setDwhType('postgres');
           setFormData(defaultFormData);
-          setError(false);
           reset();
         }
       }}
@@ -112,22 +117,24 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
               };
             }
 
-            try {
-              await trigger({
+            await trigger(
+              {
                 organization_id: organizationId,
                 name: formData.name,
                 dsn,
-              });
-              setOpen(false);
-            } catch {
-              setError(true);
-            }
+              },
+              {
+                throwOnError: false,
+              },
+            );
           }}
         >
           <Dialog.Title>Add Datasource</Dialog.Title>
           <Dialog.Description size="2" mb="4">
             <Text>Add a datasource to this organization.</Text>
           </Dialog.Description>
+
+          {error && !isDNSError && <GenericErrorCallout title="Failed to add datasource" error={error} />}
 
           <Flex direction="column" gap="3">
             <label>
@@ -184,12 +191,11 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                       value={formData.host}
                       onChange={(e) => {
                         setFormData((prev) => ({ ...prev, host: e.target.value }));
-                        setError(false);
                       }}
-                      color={error ? 'red' : undefined}
-                      variant={error ? 'soft' : 'surface'}
+                      color={isDNSError ? 'red' : undefined}
+                      variant={isDNSError ? 'soft' : 'surface'}
                     />
-                    {error && (
+                    {isDNSError && (
                       <Flex align="center" gap="1">
                         <InfoCircledIcon color="red" />
                         <Text size="1" color="red">

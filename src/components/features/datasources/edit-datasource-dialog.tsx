@@ -1,6 +1,7 @@
 'use client';
 import { Button, Dialog, Flex, IconButton, Text, TextField } from '@radix-ui/themes';
 import { ServiceAccountJsonField } from '@/components/features/datasources/service-account-json-field';
+import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { EyeClosedIcon, EyeOpenIcon, GearIcon, InfoCircledIcon, Pencil2Icon } from '@radix-ui/react-icons';
 import {
   getGetDatasourceKey,
@@ -14,6 +15,7 @@ import { mutate } from 'swr';
 import { GcpServiceAccount, Hidden, RevealedStr, UpdateDatasourceRequest } from '@/api/methods.schemas';
 import { PostgresSslModes } from '@/services/typehelper';
 import { XNGIN_API_DOCS_LINK } from '@/services/constants';
+import { ApiError } from '@/services/orval-fetch';
 
 interface FormFields {
   name: string;
@@ -54,24 +56,25 @@ export const EditDatasourceDialog = ({
 }) => {
   const { data, isLoading } = useGetDatasource(datasourceId);
   const [open, setOpen] = useState(false);
-  const [error, setError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState(defaultFormData);
-  const { trigger: updateDatasource, reset } = useUpdateDatasource(datasourceId, {
+  const { trigger: updateDatasource, reset, error } = useUpdateDatasource(datasourceId, {
     swr: {
-      onSuccess: () =>
-        Promise.all([
+      onSuccess: () => {
+        setOpen(false);
+         Promise.all([
           mutate(getGetDatasourceKey(datasourceId)),
           mutate(getInspectDatasourceKey(datasourceId)),
           ...(organizationId ? [mutate(getGetOrganizationKey(organizationId))] : []),
-        ]),
+        ]);
+      },
     },
   });
 
   useEffect(() => {
     if (open && data) {
       const dsn = data.dsn;
-      const newFormData = {
+      let newFormData: FormFields = {
         ...defaultFormData,
         name: data.name,
       };
@@ -81,16 +84,22 @@ export const EditDatasourceDialog = ({
         return;
       }
       if (dsn.type === 'bigquery') {
-        newFormData.project_id = dsn.project_id;
-        newFormData.dataset = dsn.dataset_id;
-        newFormData.credentials_json = dsn.credentials;
+        newFormData = {
+          ...newFormData,
+          project_id: dsn.project_id,
+          dataset: dsn.dataset_id,
+          credentials_json: dsn.credentials,
+        };
       } else if (dsn.type === 'postgres' || dsn.type == 'redshift') {
-        newFormData.host = dsn.host;
-        newFormData.port = dsn.port ? dsn.port.toString() : '5432';
-        newFormData.dbname = dsn.dbname;
-        newFormData.user = dsn.user;
-        newFormData.password = dsn.password;
-        newFormData.search_path = dsn.search_path || '';
+        newFormData = {
+          ...newFormData,
+          host: dsn.host,
+          port: dsn.port ? dsn.port.toString() : '5432',
+          dbname: dsn.dbname,
+          user: dsn.user,
+          password: dsn.password,
+          search_path: dsn.search_path || '',
+        };
         // Only send sslmode for postgres.
         if (dsn.type === 'postgres') {
           // Only use a subset of the possible configuration options.
@@ -101,7 +110,10 @@ export const EditDatasourceDialog = ({
               ? fallbackType
               : (dsn.sslmode as PostgresSslModes)
             : fallbackType;
-          newFormData.sslmode = sslmode;
+          newFormData = {
+            ...newFormData,
+            sslmode,
+          };
         }
       }
       setFormData(newFormData);
@@ -118,6 +130,8 @@ export const EditDatasourceDialog = ({
   const isNoDWH = dsn.type === 'api_only';
   const isRedshift = dsn.type === 'redshift';
 
+  const isDNSError = error instanceof ApiError && error.response.status === 400;
+
   return (
     <Dialog.Root
       open={open}
@@ -125,7 +139,6 @@ export const EditDatasourceDialog = ({
         setOpen(op);
         if (!op) {
           setShowPassword(false);
-          setError(false);
           reset();
         }
       }}
@@ -185,12 +198,9 @@ export const EditDatasourceDialog = ({
               };
             }
 
-            try {
-              await updateDatasource(updateData);
-              setOpen(false);
-            } catch {
-              setError(true);
-            }
+            await updateDatasource(updateData, {
+              throwOnError: false,
+            });
           }}
         >
           <Dialog.Title>Edit Datasource</Dialog.Title>
@@ -198,7 +208,7 @@ export const EditDatasourceDialog = ({
             Update the datasource settings.
           </Dialog.Description>
 
-          {/* {error && <GenericErrorCallout title={'Failed to update datasource'} error={error} />} */}
+          {error && !isDNSError && <GenericErrorCallout title="Failed to update datasource" error={error} />}
 
           <Flex direction="column" gap="3">
             <label>
@@ -239,13 +249,12 @@ export const EditDatasourceDialog = ({
                       value={formData.host}
                       onChange={(e) => {
                         setFormData((prev) => ({ ...prev, host: e.target.value }));
-                        setError(false);
                       }}
-                      color={error ? 'red' : undefined}
-                      variant={error ? 'soft' : 'surface'}
+                      color={isDNSError ? 'red' : undefined}
+                      variant={isDNSError ? 'soft' : 'surface'}
                       required
                     />
-                    {error && (
+                    {isDNSError && (
                       <Flex align="center" gap="2">
                         <InfoCircledIcon color="red" />
                         <Text size="1" color="red">
