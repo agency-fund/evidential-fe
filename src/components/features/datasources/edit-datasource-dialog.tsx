@@ -58,11 +58,15 @@ export const EditDatasourceDialog = ({
   const [open, setOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState(defaultFormData);
-  const { trigger: updateDatasource, reset, error } = useUpdateDatasource(datasourceId, {
+  const {
+    trigger: updateDatasource,
+    reset,
+    error,
+  } = useUpdateDatasource(datasourceId, {
     swr: {
       onSuccess: () => {
         setOpen(false);
-         Promise.all([
+        Promise.all([
           mutate(getGetDatasourceKey(datasourceId)),
           mutate(getInspectDatasourceKey(datasourceId)),
           ...(organizationId ? [mutate(getGetOrganizationKey(organizationId))] : []),

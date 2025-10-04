@@ -12,7 +12,6 @@ import { ApiError } from '@/services/orval-fetch';
 
 type AllowedDwhTypes = Exclude<DsnInput['type'], ApiOnlyDsn['type']>;
 
-
 interface FormFields {
   name: string;
   host: string;
