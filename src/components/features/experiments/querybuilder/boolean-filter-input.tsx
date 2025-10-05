@@ -52,7 +52,7 @@ export function BooleanFilterInput({ filter, onChange }: BooleanFilterInputProps
   };
 
   return (
-    <Flex gap="2" align="start" wrap="wrap">
+    <Flex gap="2" wrap="wrap">
       {nonNullValues.length > 0 ? (
         <Flex gap="1" align="center">
           <Select.Root value={hasTrue ? 'true' : 'false'} onValueChange={(v) => handleValueChange(v === 'true')}>

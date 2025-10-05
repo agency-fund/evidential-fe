@@ -141,7 +141,7 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
 
       case 'between':
         return (
-          <Flex gap="2" align="start">
+          <Flex gap="2" align="center">
             <TextField.Root
               type="date"
               value={filter.value[0] as string}
@@ -167,7 +167,7 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
         return (
           <Flex direction="column" gap="1">
             {nonNullValues.map((val, idx) => (
-              <Flex key={idx} gap="1" align="start">
+              <Flex key={idx} gap="1" align="center">
                 <TextField.Root
                   type="date"
                   value={val as string}
@@ -195,7 +195,7 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
   };
 
   return (
-    <Flex gap="2" align="start" wrap="wrap">
+    <Flex gap="2" wrap="wrap">
       <Select.Root value={operator} onValueChange={handleOperatorChange}>
         <Select.Trigger style={{ width: 128 }} />
         <Select.Content>

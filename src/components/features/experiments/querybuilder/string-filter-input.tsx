@@ -122,7 +122,7 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
   const isUuid = dataType === 'uuid';
 
   return (
-    <Flex gap="2" align="start" wrap="wrap">
+    <Flex gap="2" wrap="wrap">
       <Select.Root value={operator} onValueChange={handleOperatorChange}>
         <Select.Trigger style={{ width: 128 }} />
         <Select.Content>

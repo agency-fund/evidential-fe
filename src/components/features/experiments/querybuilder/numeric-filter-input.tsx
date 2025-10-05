@@ -309,7 +309,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
         return (
           <Flex direction="column" gap="1">
             {listValues.map((val, idx) => (
-              <Flex key={idx} gap="1" align="start">
+              <Flex key={idx} gap="1" align="center">
                 <TextField.Root
                   type="text"
                   inputMode="decimal"
@@ -360,7 +360,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
   };
 
   return (
-    <Flex gap="2" align="start" wrap="wrap">
+    <Flex gap="2" wrap="wrap">
       <Select.Root value={operator} onValueChange={handleOperatorChange}>
         <Select.Trigger style={{ width: 128 }} />
         <Select.Content>
