@@ -205,10 +205,12 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
 
       {renderValueInputs()}
 
-      <Flex gap="1" align="center">
-        <Checkbox checked={includesNull} onCheckedChange={(checked) => handleNullChange(!!checked)} />
-        <Text size="2">Include NULL</Text>
-      </Flex>
+      <Text as="label" size="2">
+        <Flex gap="1" align="center">
+          <Checkbox checked={includesNull} onCheckedChange={(checked) => handleNullChange(!!checked)} />
+          Include NULL
+        </Flex>
+      </Text>
     </Flex>
   );
 }
