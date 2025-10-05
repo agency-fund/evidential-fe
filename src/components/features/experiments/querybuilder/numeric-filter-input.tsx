@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Checkbox, Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
+import { Button, Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 import { DataType, FilterInput } from '@/api/methods.schemas';
 import {
@@ -10,6 +10,7 @@ import {
 } from '@/components/features/experiments/querybuilder/utils';
 import React, { useEffect, useState } from 'react';
 import { BETWEEN_BASED_OPS } from '@/components/features/experiments/querybuilder/utils';
+import { IncludeNullCheckbox } from '@/components/features/experiments/querybuilder/include-null-checkbox';
 
 export interface NumericFilterInputProps {
   filter: FilterInput & TypedFilter<number>;
@@ -380,12 +381,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
 
       {renderValueInputs()}
 
-      <Text as="label" size="2">
-        <Flex gap="1" align="center">
-          <Checkbox checked={includesNull} onCheckedChange={(checked) => handleNullChange(!!checked)} />
-          Include NULL
-        </Flex>
-      </Text>
+      <IncludeNullCheckbox checked={includesNull} onChange={handleNullChange} />
     </Flex>
   );
 }

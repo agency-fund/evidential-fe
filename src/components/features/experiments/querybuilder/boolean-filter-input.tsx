@@ -1,8 +1,9 @@
 'use client';
 
-import { Checkbox, Flex, Select, Text } from '@radix-ui/themes';
+import { Flex, Select } from '@radix-ui/themes';
 import { FilterInput } from '@/api/methods.schemas';
 import { TypedFilter } from '@/components/features/experiments/querybuilder/utils';
+import { IncludeNullCheckbox } from '@/components/features/experiments/querybuilder/include-null-checkbox';
 
 export interface BooleanFilterInputProps {
   filter: FilterInput & TypedFilter<boolean>;
@@ -11,13 +12,13 @@ export interface BooleanFilterInputProps {
 
 export function BooleanFilterInput({ filter, onChange }: BooleanFilterInputProps) {
   const hasTrue = filter.value.some((v) => v === true);
-  const hasNull = filter.value.some((v) => v === null);
+  const includesNull = filter.value.some((v) => v === null);
 
   const handleValueChange = (newValue: boolean) => {
     onChange({
       ...filter,
       relation: 'includes',
-      value: hasNull ? [newValue, null] : [newValue],
+      value: includesNull ? [newValue, null] : [newValue],
     });
   };
 
@@ -40,10 +41,7 @@ export function BooleanFilterInput({ filter, onChange }: BooleanFilterInputProps
         </Select.Content>
       </Select.Root>
 
-      <Flex gap="1" align="center">
-        <Checkbox checked={hasNull} onCheckedChange={(checked) => handleNullChange(checked === true)} />
-        <Text size="2">Include NULL values</Text>
-      </Flex>
+      <IncludeNullCheckbox checked={includesNull} onChange={handleNullChange} />
     </Flex>
   );
 }
