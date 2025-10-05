@@ -147,7 +147,8 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
 
   // Keeps listValues in sync with filter.value. Assumes that there can only be at most one null
   // value in the filter.value list as managed by the 'Include NULL' button.
-  const removeValueForListBasedOp = (index: number) => {
+  const removeValueForListBasedOp = (index: number, e: React.MouseEvent) => {
+    e.preventDefault();
     // Derive new display string state
     let newListValues = listValues.filter((_, i) => i !== index);
 
@@ -336,14 +337,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
                 {/* Only show the remove button if there are multiple non-null values or if null
                     is included, since we allow a single null value. */}
                 {(nonNullValues.length > 1 || includesNull) && (
-                  <IconButton
-                    variant="soft"
-                    size="1"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      removeValueForListBasedOp(idx);
-                    }}
-                  >
+                  <IconButton variant="soft" size="1" onClick={(e) => removeValueForListBasedOp(idx, e)}>
                     <Cross2Icon />
                   </IconButton>
                 )}

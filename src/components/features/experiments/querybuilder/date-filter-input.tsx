@@ -71,7 +71,8 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
 
   // Preserves NULL values when removing items from the list.  Assumes that there can only be at
   // most one null value in filter.value as managed by the 'Include NULL' button.
-  const removeValueForListBasedOp = (index: number) => {
+  const removeValueForListBasedOp = (index: number, e: React.MouseEvent) => {
+    e.preventDefault();
     // Derive new filter.value state
     // First remove any null value if it exists, in case it was added in some arbitrary position.
     const nonNullFilterValues = filter.value.filter((v) => v !== null);
@@ -175,14 +176,7 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
                 {/* Only show the remove button if there are multiple non-null values or if null
                     is included, since we allow a single null value. */}
                 {(nonNullValues.length > 1 || includesNull) && (
-                  <IconButton
-                    variant="soft"
-                    size="1"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      removeValueForListBasedOp(idx);
-                    }}
-                  >
+                  <IconButton variant="soft" size="1" onClick={(e) => removeValueForListBasedOp(idx, e)}>
                     <Cross2Icon />
                   </IconButton>
                 )}

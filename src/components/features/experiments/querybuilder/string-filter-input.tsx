@@ -58,7 +58,8 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
     });
   };
 
-  const removeValue = (index: number) => {
+  const removeValue = (index: number, e: React.MouseEvent) => {
+    e.preventDefault();
     const newValues = filter.value.filter((_, i) => i !== index);
     if (newValues.length === 0) {
       // Don't allow removing all values - add a default empty one
@@ -99,14 +100,7 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
             {/* Only show the remove button if there are multiple non-null values or if null
                 is included, since we allow a single null value. */}
             {(nonNullValues.length > 1 || includesNull) && (
-              <IconButton
-                variant="soft"
-                size="1"
-                onClick={(e) => {
-                  e.preventDefault();
-                  removeValue(idx);
-                }}
-              >
+              <IconButton variant="soft" size="1" onClick={(e) => removeValue(idx, e)}>
                 <Cross2Icon />
               </IconButton>
             )}
