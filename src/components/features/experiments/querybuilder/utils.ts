@@ -2,6 +2,10 @@ import { DataType, FilterInput, FilterValueTypes } from '@/api/methods.schemas';
 
 export const BETWEEN_BASED_OPS = new Set(['greater-than', 'less-than', 'between', 'after', 'before']);
 
+// For between-based operators, the value array has length 3 when NULL is included:
+// [lowerBound, upperBound, null]
+export const BETWEEN_WITH_NULL_LENGTH = 3;
+
 export type SingleTypeArray<T> = Array<T | null>;
 export type TypedFilter<T> = FilterInput & { value: SingleTypeArray<T> };
 

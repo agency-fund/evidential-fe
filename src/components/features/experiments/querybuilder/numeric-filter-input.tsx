@@ -7,9 +7,10 @@ import {
   createDefaultValueForOperator,
   operatorToRelation,
   TypedFilter,
+  BETWEEN_BASED_OPS,
+  BETWEEN_WITH_NULL_LENGTH,
 } from '@/components/features/experiments/querybuilder/utils';
 import React, { useEffect, useState } from 'react';
-import { BETWEEN_BASED_OPS } from '@/components/features/experiments/querybuilder/utils';
 import { IncludeNullCheckbox } from '@/components/features/experiments/querybuilder/include-null-checkbox';
 
 export interface NumericFilterInputProps {
@@ -62,7 +63,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
   }, [filter.value, operator]);
 
   const includesNull = BETWEEN_BASED_OPS.has(operator)
-    ? filter.value.length === 3 && filter.value[2] === null // 3rd value indicates NULL inclusion
+    ? filter.value.length === BETWEEN_WITH_NULL_LENGTH && filter.value[2] === null
     : filter.value.includes(null);
   const includesNullValue = includesNull ? [null] : [];
 
@@ -157,7 +158,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
     // the ordering now is aligned with the old listValues.
     let newNonNullFilterValues = nonNullFilterValues.filter((_, i) => i !== index);
 
-    // Don't allow removing all values (including special NULL) - add a default
+    // Don't allow removing all values (unless NULL is included) - add a default
     if (newNonNullFilterValues.length === 0 && !includesNull) {
       const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
       newListValues = [String(defaultValue)];

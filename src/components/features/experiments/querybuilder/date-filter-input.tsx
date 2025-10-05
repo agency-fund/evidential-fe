@@ -5,6 +5,7 @@ import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 import { DataType, FilterInput } from '@/api/methods.schemas';
 import {
   BETWEEN_BASED_OPS,
+  BETWEEN_WITH_NULL_LENGTH,
   createDefaultValueForOperator,
   operatorToRelation,
   TypedFilter,
@@ -34,7 +35,7 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
   });
 
   const includesNull = BETWEEN_BASED_OPS.has(operator)
-    ? filter.value.length === 3 && filter.value[2] === null // 3rd value indicates NULL inclusion
+    ? filter.value.length === BETWEEN_WITH_NULL_LENGTH && filter.value[2] === null
     : filter.value.includes(null);
   const includesNullValue = includesNull ? [null] : [];
 
@@ -68,16 +69,25 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
     });
   };
 
+  // Preserves NULL values when removing items from the list.  Assumes that there can only be at
+  // most one null value in filter.value as managed by the 'Include NULL' button.
   const removeValueForListBasedOp = (index: number) => {
-    const newValues = filter.value.filter((_, i) => i !== index);
-    if (newValues.length === 0) {
-      // Don't allow removing all values - add a default one. A single null is allowed.
+    // Derive new filter.value state
+    // First remove any null value if it exists, in case it was added in some arbitrary position.
+    const nonNullFilterValues = filter.value.filter((v) => v !== null);
+    // Next remove the value at the given index from the non-null values, as it is safe to assume
+    // the ordering now is aligned with the old listValues.
+    let newNonNullFilterValues = nonNullFilterValues.filter((_, i) => i !== index);
+
+    // Don't allow removing all values (unless NULL is included) - add a default
+    if (newNonNullFilterValues.length === 0 && !includesNull) {
       const today = new Date().toISOString().split('T')[0];
-      newValues.unshift(today);
+      newNonNullFilterValues = [today];
     }
+
     onChange({
       ...filter,
-      value: newValues,
+      value: [...newNonNullFilterValues, ...includesNullValue],
     });
   };
 
