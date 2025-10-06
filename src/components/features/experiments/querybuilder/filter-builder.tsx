@@ -1,9 +1,10 @@
 'use client';
 
-import { Button, Flex } from '@radix-ui/themes';
+import { Button, Flex, Separator } from '@radix-ui/themes';
 import { PlusIcon } from '@radix-ui/react-icons';
 import { DataType, FilterInput } from '@/api/methods.schemas';
 import { FilterRow } from '@/components/features/experiments/querybuilder/filter-row';
+import { getDefaultFilterForType } from '@/components/features/experiments/querybuilder/utils';
 import React from 'react';
 
 export interface FilterBuilderProps {
@@ -23,34 +24,7 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
 
     // Create a default filter using the first available field
     const defaultField = availableFields[0];
-    let defaultValue;
-
-    // Set appropriate default value based on data type
-    switch (defaultField.data_type) {
-      case 'boolean':
-        defaultValue = [true];
-        break;
-      case 'integer':
-      case 'bigint':
-        defaultValue = [0]; // Numeric value, not string
-        break;
-      case 'double precision':
-      case 'numeric':
-        defaultValue = [0.0]; // Numeric value, not string
-        break;
-      case 'date':
-      case 'timestamp without time zone':
-        defaultValue = [new Date().toISOString().split('T')[0]];
-        break;
-      default:
-        defaultValue = [''];
-    }
-
-    const defaultFilter: FilterInput = {
-      field_name: defaultField.field_name,
-      relation: 'includes',
-      value: defaultValue,
-    };
+    const defaultFilter = getDefaultFilterForType(defaultField.field_name, defaultField.data_type);
 
     onChange([...filters, defaultFilter]);
   };
@@ -118,15 +92,17 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
   };
 
   return (
-    <Flex direction="column" gap="2">
+    <Flex direction="column" gap="3" overflow="auto">
       {filters.map((filter, index) => (
-        <FilterRow
-          key={index}
-          filter={filter}
-          availableFields={availableFields}
-          onChange={(updatedFilter) => updateFilter(index, updatedFilter)}
-          onRemove={() => removeFilter(index)}
-        />
+        <React.Fragment key={`${index}-${filter.field_name}`}>
+          <FilterRow
+            filter={filter}
+            availableFields={availableFields}
+            onChange={(updatedFilter) => updateFilter(index, updatedFilter)}
+            onRemove={() => removeFilter(index)}
+          />
+          <Separator orientation="horizontal" size="4" />
+        </React.Fragment>
       ))}
       <Flex>
         <Button onClick={addFilter} variant="soft" size="2">

@@ -1,14 +1,17 @@
 'use client';
 
-import { Button, Checkbox, Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
+import { Button, Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 import { DataType, FilterInput } from '@/api/methods.schemas';
 import {
+  BETWEEN_BASED_OPS,
+  BETWEEN_WITH_NULL_LENGTH,
   createDefaultValueForOperator,
   operatorToRelation,
   TypedFilter,
 } from '@/components/features/experiments/querybuilder/utils';
 import { useState } from 'react';
+import { IncludeNullCheckbox } from '@/components/features/experiments/querybuilder/include-null-checkbox';
 
 export interface DateFilterInputProps {
   filter: FilterInput & TypedFilter<string>;
@@ -31,7 +34,10 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
     return filter.value.length > 1 ? 'in-list' : 'on';
   });
 
-  const includesNull = filter.value.includes(null);
+  const includesNull = BETWEEN_BASED_OPS.has(operator)
+    ? filter.value.length === BETWEEN_WITH_NULL_LENGTH && filter.value[2] === null
+    : filter.value.includes(null);
+  const includesNullValue = includesNull ? [null] : [];
 
   const handleOperatorChange = (newOperator: string) => {
     setOperator(newOperator);
@@ -46,68 +52,70 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
   };
 
   const handleValueChange = (index: number, newValue: string) => {
-    const newValues = [...filter.value];
-    newValues[index] = newValue;
+    // Extract non-null values, update the correct one by index, then re-append null if present
+    const newNonNullValues = filter.value.filter((v) => v !== null);
+    newNonNullValues[index] = newValue;
     onChange({
       ...filter,
-      value: newValues,
+      value: [...newNonNullValues, ...includesNullValue],
     });
   };
 
-  const addValue = (e: React.MouseEvent) => {
+  const addValueForListBasedOp = (e: React.MouseEvent) => {
     e.preventDefault();
     const today = new Date().toISOString().split('T')[0];
     onChange({
       ...filter,
-      value: [...filter.value.filter((v) => v !== null), today, ...(includesNull ? [null] : [])],
+      value: [...filter.value.filter((v) => v !== null), today, ...includesNullValue],
     });
   };
 
-  const removeValue = (index: number) => {
-    const newValues = filter.value.filter((_, i) => i !== index);
-    if (newValues.length === 0) {
-      // Don't allow removing all values - add a default one. A single null is allowed.
+  // Preserves NULL values when removing items from the list.  Assumes that there can only be at
+  // most one null value in filter.value as managed by the 'Include NULL' button.
+  const removeValueForListBasedOp = (index: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    // Derive new filter.value state
+    // First remove any null value if it exists, in case it was added in some arbitrary position.
+    const nonNullFilterValues = filter.value.filter((v) => v !== null);
+    // Next remove the value at the given index from the non-null values, as it is safe to assume
+    // the ordering now is aligned with the old listValues.
+    let newNonNullFilterValues = nonNullFilterValues.filter((_, i) => i !== index);
+
+    // Don't allow removing all values (unless NULL is included) - add a default
+    if (newNonNullFilterValues.length === 0 && !includesNull) {
       const today = new Date().toISOString().split('T')[0];
-      newValues.unshift(today);
+      newNonNullFilterValues = [today];
     }
+
     onChange({
       ...filter,
-      value: newValues,
+      value: [...newNonNullFilterValues, ...includesNullValue],
     });
   };
 
   const handleNullChange = (includeNull: boolean) => {
-    if (includeNull) {
-      onChange({
-        ...filter,
-        value: [...filter.value.filter((v) => v !== null), null],
-      });
+    let baseValues: typeof filter.value;
+    if (BETWEEN_BASED_OPS.has(operator)) {
+      // Ensure we have valid values for between-based operators
+      const val0 = filter.value[0] !== undefined ? filter.value[0] : null;
+      const val1 = filter.value[1] !== undefined ? filter.value[1] : null;
+      baseValues = [val0, val1] as typeof filter.value;
     } else {
-      onChange({
-        ...filter,
-        value: filter.value.filter((v) => v !== null),
-      });
+      baseValues = filter.value.filter((v) => v !== null) as typeof filter.value;
     }
+    const newValues = includeNull ? ([...baseValues, null] as typeof filter.value) : baseValues;
+    onChange({ ...filter, value: newValues });
   };
 
   const renderValueInputs = () => {
     switch (operator) {
-      case 'on':
-        return (
-          <TextField.Root
-            type="date"
-            value={filter.value[0] as string}
-            onChange={(e) => handleValueChange(0, e.target.value)}
-          />
-        );
-
       case 'after':
         return (
           <TextField.Root
             type="date"
             value={filter.value[0] as string}
             onChange={(e) => {
-              onChange({ ...filter, value: [e.target.value, null] });
+              onChange({ ...filter, value: [e.target.value, null, ...includesNullValue] });
             }}
           />
         );
@@ -118,7 +126,7 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
             type="date"
             value={filter.value[1] as string}
             onChange={(e) => {
-              onChange({ ...filter, value: [null, e.target.value] });
+              onChange({ ...filter, value: [null, e.target.value, ...includesNullValue] });
             }}
           />
         );
@@ -130,7 +138,7 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
               type="date"
               value={filter.value[0] as string}
               onChange={(e) => {
-                onChange({ ...filter, value: [e.target.value, filter.value[1]] });
+                onChange({ ...filter, value: [e.target.value, filter.value[1], ...includesNullValue] });
               }}
             />
             <Text>and</Text>
@@ -138,12 +146,13 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
               type="date"
               value={filter.value[1] as string}
               onChange={(e) => {
-                onChange({ ...filter, value: [filter.value[0], e.target.value] });
+                onChange({ ...filter, value: [filter.value[0], e.target.value, ...includesNullValue] });
               }}
             />
           </Flex>
         );
 
+      case 'on':
       case 'in-list':
       case 'not-in-list':
         const nonNullValues = filter.value.filter((v) => v !== null);
@@ -160,23 +169,19 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
                 {/* Only show the remove button if there are multiple non-null values or if null
                     is included, since we allow a single null value. */}
                 {(nonNullValues.length > 1 || includesNull) && (
-                  <IconButton
-                    variant="soft"
-                    size="1"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      removeValue(idx);
-                    }}
-                  >
+                  <IconButton variant="soft" size="1" onClick={(e) => removeValueForListBasedOp(idx, e)}>
                     <Cross2Icon />
                   </IconButton>
                 )}
               </Flex>
             ))}
 
-            <Button variant="soft" size="1" onClick={addValue}>
-              <PlusIcon /> Add date
-            </Button>
+            {/* Always show add button for in-list/not-in-list, and for 'on' only if no values */}
+            {(operator === 'in-list' || operator === 'not-in-list' || nonNullValues.length === 0) && (
+              <Button variant="soft" size="1" onClick={addValueForListBasedOp}>
+                <PlusIcon /> Add date
+              </Button>
+            )}
           </Flex>
         );
 
@@ -186,9 +191,9 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
   };
 
   return (
-    <Flex gap="2" align="center">
+    <Flex gap="2" wrap="wrap">
       <Select.Root value={operator} onValueChange={handleOperatorChange}>
-        <Select.Trigger />
+        <Select.Trigger style={{ width: 128 }} />
         <Select.Content>
           <Select.Item value="on">On</Select.Item>
           <Select.Item value="before">Before</Select.Item>
@@ -201,12 +206,7 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
 
       {renderValueInputs()}
 
-      {(operator === 'on' || operator === 'in-list' || operator === 'not-in-list') && (
-        <Flex gap="1" align="center">
-          <Checkbox checked={includesNull} onCheckedChange={(checked) => handleNullChange(!!checked)} />
-          <Text size="2">Include NULL</Text>
-        </Flex>
-      )}
+      <IncludeNullCheckbox checked={includesNull} onChange={handleNullChange} />
     </Flex>
   );
 }

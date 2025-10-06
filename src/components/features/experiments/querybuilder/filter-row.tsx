@@ -50,7 +50,7 @@ export function FilterRow({ filter, availableFields, onChange, onRemove }: Filte
 
   return (
     <Grid columns={'2'} width={'auto'} gap={'3'}>
-      <Flex gap={'2'} align={'center'}>
+      <Flex gap={'2'} align={'start'}>
         <IconButton
           variant="soft"
           color="red"

@@ -1,8 +1,10 @@
 'use client';
 
-import { Checkbox, Flex, Select, Text } from '@radix-ui/themes';
+import { Button, Flex, IconButton, Select } from '@radix-ui/themes';
+import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 import { FilterInput } from '@/api/methods.schemas';
 import { TypedFilter } from '@/components/features/experiments/querybuilder/utils';
+import { IncludeNullCheckbox } from '@/components/features/experiments/querybuilder/include-null-checkbox';
 
 export interface BooleanFilterInputProps {
   filter: FilterInput & TypedFilter<boolean>;
@@ -10,14 +12,33 @@ export interface BooleanFilterInputProps {
 }
 
 export function BooleanFilterInput({ filter, onChange }: BooleanFilterInputProps) {
+  const nonNullValues = filter.value.filter((v) => v !== null);
   const hasTrue = filter.value.some((v) => v === true);
-  const hasNull = filter.value.some((v) => v === null);
+  const includesNull = filter.value.some((v) => v === null);
 
   const handleValueChange = (newValue: boolean) => {
     onChange({
       ...filter,
       relation: 'includes',
-      value: hasNull ? [newValue, null] : [newValue],
+      value: includesNull ? [newValue, null] : [newValue],
+    });
+  };
+
+  const addValue = (e: React.MouseEvent) => {
+    e.preventDefault();
+    // Add a default boolean value (true) when none exists
+    onChange({
+      ...filter,
+      value: includesNull ? [true, null] : [true],
+    });
+  };
+
+  const removeValue = (e: React.MouseEvent) => {
+    e.preventDefault();
+    // Remove the non-null value, leaving only null
+    onChange({
+      ...filter,
+      value: [null],
     });
   };
 
@@ -31,19 +52,32 @@ export function BooleanFilterInput({ filter, onChange }: BooleanFilterInputProps
   };
 
   return (
-    <Flex gap="2" align="center">
-      <Select.Root value={hasTrue ? 'true' : 'false'} onValueChange={(v) => handleValueChange(v === 'true')}>
-        <Select.Trigger />
-        <Select.Content>
-          <Select.Item value="true">Is True</Select.Item>
-          <Select.Item value="false">Is False</Select.Item>
-        </Select.Content>
-      </Select.Root>
+    <Flex gap="2" wrap="wrap">
+      {nonNullValues.length > 0 ? (
+        <Flex gap="1" align="center">
+          <Select.Root value={hasTrue ? 'true' : 'false'} onValueChange={(v) => handleValueChange(v === 'true')}>
+            <Select.Trigger style={{ width: 128 }} />
+            <Select.Content>
+              <Select.Item value="true">Is True</Select.Item>
+              <Select.Item value="false">Is False</Select.Item>
+            </Select.Content>
+          </Select.Root>
 
-      <Flex gap="1" align="center">
-        <Checkbox checked={hasNull} onCheckedChange={(checked) => handleNullChange(checked === true)} />
-        <Text size="2">Include NULL values</Text>
-      </Flex>
+          {/* Only show the remove button if null is included */}
+          {includesNull && (
+            <IconButton variant="soft" size="1" onClick={removeValue}>
+              <Cross2Icon />
+            </IconButton>
+          )}
+        </Flex>
+      ) : (
+        /* Show "Add value" button when there are no non-null values */
+        <Button variant="soft" size="1" onClick={addValue}>
+          <PlusIcon /> Add value
+        </Button>
+      )}
+
+      <IncludeNullCheckbox checked={includesNull} onChange={handleNullChange} />
     </Flex>
   );
 }
