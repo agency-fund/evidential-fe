@@ -52,11 +52,12 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
   };
 
   const handleValueChange = (index: number, newValue: string) => {
-    const newValues = [...filter.value];
-    newValues[index] = newValue;
+    // Extract non-null values, update the correct one by index, then re-append null if present
+    const newNonNullValues = filter.value.filter((v) => v !== null);
+    newNonNullValues[index] = newValue;
     onChange({
       ...filter,
-      value: newValues,
+      value: [...newNonNullValues, ...includesNullValue],
     });
   };
 
@@ -108,15 +109,6 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
 
   const renderValueInputs = () => {
     switch (operator) {
-      case 'on':
-        return (
-          <TextField.Root
-            type="date"
-            value={filter.value[0] as string}
-            onChange={(e) => handleValueChange(0, e.target.value)}
-          />
-        );
-
       case 'after':
         return (
           <TextField.Root
@@ -160,6 +152,7 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
           </Flex>
         );
 
+      case 'on':
       case 'in-list':
       case 'not-in-list':
         const nonNullValues = filter.value.filter((v) => v !== null);
@@ -183,9 +176,12 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
               </Flex>
             ))}
 
-            <Button variant="soft" size="1" onClick={addValueForListBasedOp}>
-              <PlusIcon /> Add date
-            </Button>
+            {/* Always show add button for in-list/not-in-list, and for 'on' only if no values */}
+            {(operator === 'in-list' || operator === 'not-in-list' || nonNullValues.length === 0) && (
+              <Button variant="soft" size="1" onClick={addValueForListBasedOp}>
+                <PlusIcon /> Add date
+              </Button>
+            )}
           </Flex>
         );
 

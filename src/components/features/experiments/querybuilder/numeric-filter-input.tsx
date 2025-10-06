@@ -116,17 +116,12 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
     const parsedValue = parseValue(inputValue);
     if (parsedValue !== null) {
       const nonNullValues = filter.value.filter((v) => v !== null);
-      const newValues: typeof filter.value = [...nonNullValues];
-      newValues[index] = parsedValue;
-
-      // Preserve null if it was there
-      if (includesNull) {
-        newValues.push(null);
-      }
+      const newNonNullValues = [...nonNullValues];
+      newNonNullValues[index] = parsedValue;
 
       onChange({
         ...filter,
-        value: newValues,
+        value: [...newNonNullValues, ...includesNullValue],
       });
     }
   };
@@ -344,9 +339,8 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
               </Flex>
             ))}
 
-            {(operator === 'in-list' ||
-              operator === 'not-in-list' ||
-              ((operator === 'equals' || operator === 'not-equals') && nonNullValues.length === 0)) && (
+            {/* Always show add button for in-list/not-in-list, and for equals/not-equals only if no values */}
+            {(operator === 'in-list' || operator === 'not-in-list' || nonNullValues.length === 0) && (
               <Button variant="soft" size="1" style={{ minWidth: '20ch' }} onClick={addValueForListBasedOp}>
                 <PlusIcon /> Add value
               </Button>

@@ -28,6 +28,7 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
   });
 
   const includesNull = filter.value.includes(null);
+  const includesNullValue = includesNull ? [null] : [];
 
   const handleOperatorChange = (newOperator: string) => {
     setOperator(newOperator);
@@ -42,11 +43,13 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
   };
 
   const handleValueChange = (index: number, newValue: string) => {
-    const newValues = [...filter.value];
-    newValues[index] = newValue;
+    // Extract non-null values, update the correct one by index, then re-append null if present
+    const newNonNullValues = filter.value.filter((v) => v !== null);
+    newNonNullValues[index] = newValue;
+
     onChange({
       ...filter,
-      value: newValues,
+      value: [...newNonNullValues, ...includesNullValue],
     });
   };
 
@@ -54,20 +57,29 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
     e.preventDefault();
     onChange({
       ...filter,
-      value: [...filter.value.filter((v) => v !== null), '', ...(includesNull ? [null] : [])],
+      value: [...filter.value.filter((v) => v !== null), '', ...includesNullValue],
     });
   };
 
+  // Preserves NULL values when removing items from the list. Assumes that there can only be at
+  // most one null value in filter.value as managed by the 'Include NULL' button.
   const removeValue = (index: number, e: React.MouseEvent) => {
     e.preventDefault();
-    const newValues = filter.value.filter((_, i) => i !== index);
-    if (newValues.length === 0) {
-      // Don't allow removing all values - add a default empty one
-      newValues.push('');
+    // Derive new filter.value state
+    // First remove any null value if it exists, in case it was added in some arbitrary position.
+    const nonNullFilterValues = filter.value.filter((v) => v !== null);
+    // Next remove the value at the given index from the non-null values, as it is safe to assume
+    // the ordering now is aligned with the displayed values.
+    let newNonNullFilterValues = nonNullFilterValues.filter((_, i) => i !== index);
+
+    // Don't allow removing all values (unless NULL is included) - add a default
+    if (newNonNullFilterValues.length === 0 && !includesNull) {
+      newNonNullFilterValues = [''];
     }
+
     onChange({
       ...filter,
-      value: newValues,
+      value: [...newNonNullFilterValues, ...includesNullValue],
     });
   };
 
@@ -107,9 +119,8 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
           </Flex>
         ))}
 
-        {(operator === 'in-list' ||
-          operator === 'not-in-list' ||
-          ((operator === 'equals' || operator === 'not-equals') && nonNullValues.length === 0)) && (
+        {/* Always show add button for in-list/not-in-list, and for equals/not-equals only if no values */}
+        {(operator === 'in-list' || operator === 'not-in-list' || nonNullValues.length === 0) && (
           <Button variant="soft" size="1" onClick={addValue}>
             <PlusIcon /> Add value
           </Button>
