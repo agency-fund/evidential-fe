@@ -1,7 +1,7 @@
 'use client';
 
-import { Button, Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
-import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
+import { Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
+import { Cross2Icon } from '@radix-ui/react-icons';
 import { DataType, FilterInput } from '@/api/methods.schemas';
 import {
   BETWEEN_BASED_OPS,
@@ -12,6 +12,7 @@ import {
 } from '@/components/features/experiments/querybuilder/utils';
 import { useState } from 'react';
 import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
+import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
 
 export interface DateFilterInputProps {
   filter: FilterInput & TypedFilter<string>;
@@ -193,9 +194,7 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
 
             {/* Always show add button for in-list/not-in-list, and for 'on' only if no values */}
             {(operator === 'in-list' || operator === 'not-in-list' || nonNullValues.length === 0) && (
-              <Button variant="soft" size="1" style={{ minWidth: '145px' }} onClick={addValueForListBasedOp}>
-                <PlusIcon /> Add date
-              </Button>
+              <AddValueButton minWidth="145px" onClick={addValueForListBasedOp} />
             )}
           </Flex>
         );

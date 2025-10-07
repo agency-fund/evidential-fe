@@ -1,7 +1,7 @@
 'use client';
 
-import { Button, Flex, IconButton, Select, TextField } from '@radix-ui/themes';
-import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
+import { Flex, IconButton, Select, TextField } from '@radix-ui/themes';
+import { Cross2Icon } from '@radix-ui/react-icons';
 import { DataType, FilterInput } from '@/api/methods.schemas';
 import {
   createDefaultValueForOperator,
@@ -10,6 +10,7 @@ import {
 } from '@/components/features/experiments/querybuilder/utils';
 import React, { useState } from 'react';
 import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
+import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
 
 export interface StringFilterInputProps {
   filter: FilterInput & TypedFilter<string>;
@@ -127,9 +128,7 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
 
         {/* Always show add button for in-list/not-in-list, and for equals/not-equals only if no values */}
         {(operator === 'in-list' || operator === 'not-in-list' || nonNullValues.length === 0) && (
-          <Button variant="soft" size="1" style={{ minWidth: '176px' }} onClick={addValue}>
-            <PlusIcon /> Add value
-          </Button>
+          <AddValueButton minWidth="176px" onClick={addValue} />
         )}
       </Flex>
     );

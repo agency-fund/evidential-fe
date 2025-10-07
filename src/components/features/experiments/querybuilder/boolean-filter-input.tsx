@@ -1,10 +1,11 @@
 'use client';
 
-import { Button, Flex, IconButton, Select } from '@radix-ui/themes';
-import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
+import { Flex, IconButton, Select } from '@radix-ui/themes';
+import { Cross2Icon } from '@radix-ui/react-icons';
 import { FilterInput } from '@/api/methods.schemas';
 import { TypedFilter } from '@/components/features/experiments/querybuilder/utils';
 import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
+import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
 
 export interface BooleanFilterInputProps {
   filter: FilterInput & TypedFilter<boolean>;
@@ -78,9 +79,7 @@ export function BooleanFilterInput({ filter, onChange }: BooleanFilterInputProps
         <Flex direction="column" gap="1">
           <IncludeNullButton checked={includesNull} onChange={handleNullChange} />
 
-          <Button variant="soft" size="1" style={{ minWidth: '128px' }} onClick={addValue}>
-            <PlusIcon /> Add value
-          </Button>
+          <AddValueButton minWidth="128px" onClick={addValue} />
         </Flex>
       )}
     </Flex>
