@@ -22,7 +22,7 @@ import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipCont
 import { ChartOffset } from 'recharts/types/util/types';
 
 // Color constants
-const COLORS = {
+export const COLORS = {
   DEFAULT: '#bbbbbb', // Lighter gray for default/control
   DEFAULT_CI: '#757575', // Gray for default stroke
   BASELINE: '#7575ff', // baseline vertical indicator
@@ -72,12 +72,12 @@ type CustomShapeProps = {
 };
 
 // Function to create a diamond shape
-const createDiamondShape = (cx: number = 0, cy: number = 0, size: number = 6) => {
+export const createDiamondShape = (cx: number = 0, cy: number = 0, size: number = 6) => {
   return `${cx},${cy - size} ${cx + size},${cy} ${cx},${cy + size} ${cx - size},${cy}`;
 };
 
 // Simple truncation of long labels with an ellipsis for readability. ~42 roughly keeps the labels to 2 lines.
-const truncateLabel = (label: string, maxChars: number = 42): string => {
+export const truncateLabel = (label: string, maxChars: number = 42): string => {
   if (!label) return '';
   return label.length > maxChars ? label.slice(0, maxChars) + '…' : label;
 };

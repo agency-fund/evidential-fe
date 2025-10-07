@@ -33,10 +33,13 @@ import {
   OnlineFrequentistExperimentSpecOutput,
   PreassignedFrequentistExperimentSpecOutput,
   CMABExperimentSpecOutput,
+  BanditExperimentAnalysisResponse,
+  MABExperimentSpecInput,
 } from '@/api/methods.schemas';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date-utils';
+import { ForestPlotBandit } from '@/components/features/experiments/forest-plot-bandit';
 
 // Type guard to assure TypeScript that a DesignSpec is one of two types.
 function isFrequentistDesign(
@@ -397,6 +400,13 @@ export default function ExperimentViewPage() {
                             />
                           ),
                         )}
+                      {!isFrequentistDesign(design_spec) && !isCMABDesign(design_spec) && assign_summary && (
+                        <ForestPlotBandit
+                          analysis={selectedAnalysis.data as BanditExperimentAnalysisResponse}
+                          designSpec={design_spec as MABExperimentSpecInput}
+                          assignSummary={assign_summary}
+                        />
+                      )}
                     </Flex>
                   </Tabs.Content>
 
