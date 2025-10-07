@@ -29,10 +29,10 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
       return 'between';
     }
     if (filter.relation === 'excludes') {
-      return filter.value.length > 1 ? 'not-in-list' : 'not-equals';
+      return 'not-in-list';
     }
     // Default for includes relation
-    return filter.value.length > 1 ? 'in-list' : 'equals';
+    return 'in-list';
   });
 
   // String-based input states for each possible input field
@@ -46,7 +46,6 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
   const [betweenMaxValue, setBetweenMaxValue] = useState(() =>
     filter.value[1] !== null ? String(filter.value[1]) : '',
   );
-  // equals and not-equals also use listValues as state
   const [listValues, setListValues] = useState<string[]>(() => filter.value.filter((v) => v !== null).map(String));
 
   // Update string states when filter changes externally
@@ -58,7 +57,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
     } else if (operator === 'between') {
       setBetweenMinValue(filter.value[0] !== null ? String(filter.value[0]) : '');
       setBetweenMaxValue(filter.value[1] !== null ? String(filter.value[1]) : '');
-    } else if (['equals', 'not-equals', 'in-list', 'not-in-list'].includes(operator)) {
+    } else if (['in-list', 'not-in-list'].includes(operator)) {
       setListValues(filter.value.filter((v) => v !== null).map(String));
     }
   }, [filter.value, operator]);
@@ -305,8 +304,6 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
           </Flex>
         );
 
-      case 'equals':
-      case 'not-equals':
       case 'in-list':
       case 'not-in-list':
         const nonNullValues = filter.value.filter((v) => v !== null);
@@ -351,10 +348,8 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
 
             <IncludeNullButton checked={includesNull} onChange={handleNullChange} />
 
-            {/* Always show add button for in-list/not-in-list, and for equals/not-equals only if no values */}
-            {(operator === 'in-list' || operator === 'not-in-list' || nonNullValues.length === 0) && (
-              <AddValueButton minWidth="176px" onClick={addValueForListBasedOp} />
-            )}
+            {/* Always show add button for list operators, even when no values */}
+            <AddValueButton minWidth="176px" onClick={addValueForListBasedOp} />
           </Flex>
         );
 
@@ -368,13 +363,11 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
       <Select.Root value={operator} onValueChange={handleOperatorChange}>
         <Select.Trigger style={{ width: 128 }} />
         <Select.Content>
-          <Select.Item value="equals">Equals</Select.Item>
-          <Select.Item value="not-equals">Not equals</Select.Item>
+          <Select.Item value="in-list">Is one of</Select.Item>
+          <Select.Item value="not-in-list">Not any of</Select.Item>
           <Select.Item value="greater-than">Greater than</Select.Item>
           <Select.Item value="less-than">Less than</Select.Item>
           <Select.Item value="between">Between</Select.Item>
-          <Select.Item value="in-list">In list</Select.Item>
-          <Select.Item value="not-in-list">Not in list</Select.Item>
         </Select.Content>
       </Select.Root>
 

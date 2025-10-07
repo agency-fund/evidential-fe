@@ -29,10 +29,10 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
       return 'between';
     }
     if (filter.relation === 'excludes') {
-      return filter.value.length > 1 ? 'not-in-list' : 'not-equals';
+      return 'not-in-list';
     }
     // Default for includes relation
-    return filter.value.length > 1 ? 'in-list' : 'on';
+    return 'in-list';
   });
 
   const includesNull = BETWEEN_BASED_OPS.has(operator)
@@ -162,7 +162,6 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
           </Flex>
         );
 
-      case 'on':
       case 'in-list':
       case 'not-in-list':
         const nonNullValues = filter.value.filter((v) => v !== null);
@@ -192,10 +191,8 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
               singularValue={nonNullValues.length === 0}
             />
 
-            {/* Always show add button for in-list/not-in-list, and for 'on' only if no values */}
-            {(operator === 'in-list' || operator === 'not-in-list' || nonNullValues.length === 0) && (
-              <AddValueButton minWidth="145px" onClick={addValueForListBasedOp} />
-            )}
+            {/* Always show add button for list operators, even when no values */}
+            <AddValueButton minWidth="145px" onClick={addValueForListBasedOp} />
           </Flex>
         );
 
@@ -209,12 +206,11 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
       <Select.Root value={operator} onValueChange={handleOperatorChange}>
         <Select.Trigger style={{ width: 128 }} />
         <Select.Content>
-          <Select.Item value="on">On</Select.Item>
+          <Select.Item value="in-list">Is one of</Select.Item>
+          <Select.Item value="not-in-list">Not any of</Select.Item>
           <Select.Item value="before">Before</Select.Item>
           <Select.Item value="after">After</Select.Item>
           <Select.Item value="between">Between</Select.Item>
-          <Select.Item value="in-list">In list</Select.Item>
-          <Select.Item value="not-in-list">Not in list</Select.Item>
         </Select.Content>
       </Select.Root>
 

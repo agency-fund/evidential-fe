@@ -22,10 +22,10 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
   // Initialize operator state based on filter configuration
   const [operator, setOperator] = useState(() => {
     if (filter.relation === 'excludes') {
-      return filter.value.length > 1 ? 'not-in-list' : 'not-equals';
+      return 'not-in-list';
     }
     // Default for includes relation
-    return filter.value.length > 1 ? 'in-list' : 'equals';
+    return 'in-list';
   });
 
   const includesNull = filter.value.includes(null);
@@ -126,30 +126,19 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
           singularValue={nonNullValues.length === 0}
         />
 
-        {/* Always show add button for in-list/not-in-list, and for equals/not-equals only if no values */}
-        {(operator === 'in-list' || operator === 'not-in-list' || nonNullValues.length === 0) && (
-          <AddValueButton minWidth="176px" onClick={addValue} />
-        )}
+        {/* Always show add button for list operators, even when no values */}
+        <AddValueButton minWidth="176px" onClick={addValue} />
       </Flex>
     );
   };
-
-  // For UUID, we only want to show includes/excludes operators
-  const isUuid = dataType === 'uuid';
 
   return (
     <Flex gap="2" wrap="wrap">
       <Select.Root value={operator} onValueChange={handleOperatorChange}>
         <Select.Trigger style={{ width: 128 }} />
         <Select.Content>
-          <Select.Item value="equals">Equals</Select.Item>
-          <Select.Item value="not-equals">Not equals</Select.Item>
-          {!isUuid && (
-            <>
-              <Select.Item value="in-list">Is one of</Select.Item>
-              <Select.Item value="not-in-list">Is not one of</Select.Item>
-            </>
-          )}
+          <Select.Item value="in-list">Is one of</Select.Item>
+          <Select.Item value="not-in-list">Not any of</Select.Item>
         </Select.Content>
       </Select.Root>
 
