@@ -120,7 +120,7 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
                 onChange({ ...filter, value: [e.target.value, null, ...includesNullValue] });
               }}
             />
-            <IncludeNullButton checked={includesNull} onChange={handleNullChange} />
+            <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="145px" />
           </Flex>
         );
 
@@ -134,7 +134,7 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
                 onChange({ ...filter, value: [null, e.target.value, ...includesNullValue] });
               }}
             />
-            <IncludeNullButton checked={includesNull} onChange={handleNullChange} />
+            <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="145px" />
           </Flex>
         );
 
@@ -158,7 +158,7 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
                 }}
               />
             </Flex>
-            <IncludeNullButton checked={includesNull} onChange={handleNullChange} />
+            <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="334px" />
           </Flex>
         );
 
@@ -189,6 +189,7 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
               checked={includesNull}
               onChange={handleNullChange}
               singularValue={nonNullValues.length === 0}
+              minWidth="145px"
             />
 
             {/* Always show add button for list operators, even when no values */}

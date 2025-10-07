@@ -124,6 +124,7 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
           checked={includesNull}
           onChange={handleNullChange}
           singularValue={nonNullValues.length === 0}
+          minWidth="176px"
         />
 
         {/* Always show add button for list operators, even when no values */}

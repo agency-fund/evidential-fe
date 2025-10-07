@@ -212,7 +212,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
                 }
               }}
             />
-            <IncludeNullButton checked={includesNull} onChange={handleNullChange} />
+            <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="176px" />
           </Flex>
         );
 
@@ -243,7 +243,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
                 }
               }}
             />
-            <IncludeNullButton checked={includesNull} onChange={handleNullChange} />
+            <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="176px" />
           </Flex>
         );
 
@@ -300,7 +300,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
                 }}
               />
             </Flex>
-            <IncludeNullButton checked={includesNull} onChange={handleNullChange} />
+            <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="375px" />
           </Flex>
         );
 
@@ -346,7 +346,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
               </Flex>
             ))}
 
-            <IncludeNullButton checked={includesNull} onChange={handleNullChange} />
+            <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="176px" />
 
             {/* Always show add button for list operators, even when no values */}
             <AddValueButton minWidth="176px" onClick={addValueForListBasedOp} />

@@ -1,15 +1,16 @@
 'use client';
 
-import { Button, Flex, IconButton, Text } from '@radix-ui/themes';
+import { Box, Button, Flex, IconButton, Text } from '@radix-ui/themes';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 
 export interface IncludeNullButtonProps {
   checked: boolean;
   singularValue?: boolean;
   onChange: (checked: boolean) => void;
+  minWidth?: string;
 }
 
-export function IncludeNullButton({ checked, onChange, singularValue = false }: IncludeNullButtonProps) {
+export function IncludeNullButton({ checked, onChange, singularValue = false, minWidth }: IncludeNullButtonProps) {
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     onChange(true);
@@ -34,10 +35,10 @@ export function IncludeNullButton({ checked, onChange, singularValue = false }: 
   }
 
   return (
-    <Flex direction="column" py="1">
-      <Button variant="soft" size="1" onClick={handleClick}>
+    <Box py="1">
+      <Button variant="soft" size="1" style={minWidth ? { minWidth } : undefined} onClick={handleClick}>
         <PlusIcon /> OR NULL
       </Button>
-    </Flex>
+    </Box>
   );
 }

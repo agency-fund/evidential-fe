@@ -72,12 +72,12 @@ export function BooleanFilterInput({ filter, onChange }: BooleanFilterInputProps
               </IconButton>
             )}
           </Flex>
-          <IncludeNullButton checked={includesNull} onChange={handleNullChange} />
+          <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="128px" />
         </Flex>
       ) : (
         /* Show "Add value" button when there are no non-null values */
         <Flex direction="column" gap="1">
-          <IncludeNullButton checked={includesNull} onChange={handleNullChange} />
+          <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="128px" />
 
           <AddValueButton minWidth="128px" onClick={addValue} />
         </Flex>
