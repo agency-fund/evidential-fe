@@ -11,7 +11,7 @@ import {
   TypedFilter,
 } from '@/components/features/experiments/querybuilder/utils';
 import { useState } from 'react';
-import { IncludeNullCheckbox } from '@/components/features/experiments/querybuilder/include-null-checkbox';
+import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
 
 export interface DateFilterInputProps {
   filter: FilterInput & TypedFilter<string>;
@@ -111,44 +111,53 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
     switch (operator) {
       case 'after':
         return (
-          <TextField.Root
-            type="date"
-            value={filter.value[0] as string}
-            onChange={(e) => {
-              onChange({ ...filter, value: [e.target.value, null, ...includesNullValue] });
-            }}
-          />
-        );
-
-      case 'before':
-        return (
-          <TextField.Root
-            type="date"
-            value={filter.value[1] as string}
-            onChange={(e) => {
-              onChange({ ...filter, value: [null, e.target.value, ...includesNullValue] });
-            }}
-          />
-        );
-
-      case 'between':
-        return (
-          <Flex gap="2" align="center">
+          <Flex direction="column" gap="1">
             <TextField.Root
               type="date"
               value={filter.value[0] as string}
               onChange={(e) => {
-                onChange({ ...filter, value: [e.target.value, filter.value[1], ...includesNullValue] });
+                onChange({ ...filter, value: [e.target.value, null, ...includesNullValue] });
               }}
             />
-            <Text>and</Text>
+            <IncludeNullButton checked={includesNull} onChange={handleNullChange} />
+          </Flex>
+        );
+
+      case 'before':
+        return (
+          <Flex direction="column" gap="1">
             <TextField.Root
               type="date"
               value={filter.value[1] as string}
               onChange={(e) => {
-                onChange({ ...filter, value: [filter.value[0], e.target.value, ...includesNullValue] });
+                onChange({ ...filter, value: [null, e.target.value, ...includesNullValue] });
               }}
             />
+            <IncludeNullButton checked={includesNull} onChange={handleNullChange} />
+          </Flex>
+        );
+
+      case 'between':
+        return (
+          <Flex direction="column" gap="1">
+            <Flex gap="2" align="center">
+              <TextField.Root
+                type="date"
+                value={filter.value[0] as string}
+                onChange={(e) => {
+                  onChange({ ...filter, value: [e.target.value, filter.value[1], ...includesNullValue] });
+                }}
+              />
+              <Text>and</Text>
+              <TextField.Root
+                type="date"
+                value={filter.value[1] as string}
+                onChange={(e) => {
+                  onChange({ ...filter, value: [filter.value[0], e.target.value, ...includesNullValue] });
+                }}
+              />
+            </Flex>
+            <IncludeNullButton checked={includesNull} onChange={handleNullChange} />
           </Flex>
         );
 
@@ -176,9 +185,15 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
               </Flex>
             ))}
 
+            <IncludeNullButton
+              checked={includesNull}
+              onChange={handleNullChange}
+              singularValue={nonNullValues.length === 0}
+            />
+
             {/* Always show add button for in-list/not-in-list, and for 'on' only if no values */}
             {(operator === 'in-list' || operator === 'not-in-list' || nonNullValues.length === 0) && (
-              <Button variant="soft" size="1" onClick={addValueForListBasedOp}>
+              <Button variant="soft" size="1" style={{ minWidth: '145px' }} onClick={addValueForListBasedOp}>
                 <PlusIcon /> Add date
               </Button>
             )}
@@ -205,8 +220,6 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
       </Select.Root>
 
       {renderValueInputs()}
-
-      <IncludeNullCheckbox checked={includesNull} onChange={handleNullChange} />
     </Flex>
   );
 }

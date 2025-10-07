@@ -4,7 +4,7 @@ import { Button, Flex, IconButton, Select } from '@radix-ui/themes';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 import { FilterInput } from '@/api/methods.schemas';
 import { TypedFilter } from '@/components/features/experiments/querybuilder/utils';
-import { IncludeNullCheckbox } from '@/components/features/experiments/querybuilder/include-null-checkbox';
+import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
 
 export interface BooleanFilterInputProps {
   filter: FilterInput & TypedFilter<boolean>;
@@ -54,30 +54,35 @@ export function BooleanFilterInput({ filter, onChange }: BooleanFilterInputProps
   return (
     <Flex gap="2" wrap="wrap">
       {nonNullValues.length > 0 ? (
-        <Flex gap="1" align="center">
-          <Select.Root value={hasTrue ? 'true' : 'false'} onValueChange={(v) => handleValueChange(v === 'true')}>
-            <Select.Trigger style={{ width: 128 }} />
-            <Select.Content>
-              <Select.Item value="true">Is True</Select.Item>
-              <Select.Item value="false">Is False</Select.Item>
-            </Select.Content>
-          </Select.Root>
+        <Flex direction="column" gap="1">
+          <Flex gap="1" align="center">
+            <Select.Root value={hasTrue ? 'true' : 'false'} onValueChange={(v) => handleValueChange(v === 'true')}>
+              <Select.Trigger style={{ width: 128 }} />
+              <Select.Content>
+                <Select.Item value="true">Is True</Select.Item>
+                <Select.Item value="false">Is False</Select.Item>
+              </Select.Content>
+            </Select.Root>
 
-          {/* Only show the remove button if null is included */}
-          {includesNull && (
-            <IconButton variant="soft" size="1" onClick={removeValue}>
-              <Cross2Icon />
-            </IconButton>
-          )}
+            {/* Only show the remove button if null is included */}
+            {includesNull && (
+              <IconButton variant="soft" size="1" onClick={removeValue}>
+                <Cross2Icon />
+              </IconButton>
+            )}
+          </Flex>
+          <IncludeNullButton checked={includesNull} onChange={handleNullChange} />
         </Flex>
       ) : (
         /* Show "Add value" button when there are no non-null values */
-        <Button variant="soft" size="1" onClick={addValue}>
-          <PlusIcon /> Add value
-        </Button>
-      )}
+        <Flex direction="column" gap="1">
+          <IncludeNullButton checked={includesNull} onChange={handleNullChange} />
 
-      <IncludeNullCheckbox checked={includesNull} onChange={handleNullChange} />
+          <Button variant="soft" size="1" style={{ minWidth: '128px' }} onClick={addValue}>
+            <PlusIcon /> Add value
+          </Button>
+        </Flex>
+      )}
     </Flex>
   );
 }

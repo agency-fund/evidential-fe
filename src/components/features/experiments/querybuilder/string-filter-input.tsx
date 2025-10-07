@@ -9,7 +9,7 @@ import {
   TypedFilter,
 } from '@/components/features/experiments/querybuilder/utils';
 import React, { useState } from 'react';
-import { IncludeNullCheckbox } from '@/components/features/experiments/querybuilder/include-null-checkbox';
+import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
 
 export interface StringFilterInputProps {
   filter: FilterInput & TypedFilter<string>;
@@ -119,9 +119,15 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
           </Flex>
         ))}
 
+        <IncludeNullButton
+          checked={includesNull}
+          onChange={handleNullChange}
+          singularValue={nonNullValues.length === 0}
+        />
+
         {/* Always show add button for in-list/not-in-list, and for equals/not-equals only if no values */}
         {(operator === 'in-list' || operator === 'not-in-list' || nonNullValues.length === 0) && (
-          <Button variant="soft" size="1" onClick={addValue}>
+          <Button variant="soft" size="1" style={{ minWidth: '176px' }} onClick={addValue}>
             <PlusIcon /> Add value
           </Button>
         )}
@@ -149,8 +155,6 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
       </Select.Root>
 
       {renderValueInputs()}
-
-      <IncludeNullCheckbox checked={includesNull} onChange={handleNullChange} />
     </Flex>
   );
 }
