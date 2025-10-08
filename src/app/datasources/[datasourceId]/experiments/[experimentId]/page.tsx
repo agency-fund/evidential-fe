@@ -141,7 +141,7 @@ export default function ExperimentViewPage() {
     { status: ['success'] },
     {
       swr: {
-        enabled: !!organizationId && !!datasourceId && !!experimentId,
+        enabled: !!organizationId && !!datasourceId && !!experimentId && !!experiment,
         shouldRetryOnError: false,
         onSuccess: (data) => {
           // Make human-readable labels for the dropdown, showing UTC down to the minute.
@@ -434,8 +434,8 @@ export default function ExperimentViewPage() {
                 <Box px="4">
                   <Tabs.Content value="visualization">
                     <Flex direction="column" gap="3" py="3">
-                      {isFrequentistDesign(design_spec) && assign_summary && selectedMetric && (
-                        <ForestPlot analysis={selectedMetric} designSpec={design_spec} />
+                      {selectedAnalysis.effectSizesByMetric && (
+                        <ForestPlot effectSizes={selectedAnalysis.effectSizesByMetric.get(selectedMetricName)} />
                       )}
                     </Flex>
                   </Tabs.Content>

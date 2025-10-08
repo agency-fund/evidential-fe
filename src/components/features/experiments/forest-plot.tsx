@@ -1,10 +1,4 @@
 'use client';
-import {
-  AssignSummary,
-  MetricAnalysis,
-  OnlineFrequentistExperimentSpecOutput,
-  PreassignedFrequentistExperimentSpecOutput,
-} from '@/api/methods.schemas';
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 import { Box, Callout, Card, Flex, Text } from '@radix-ui/themes';
 import {
@@ -19,7 +13,7 @@ import {
 } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { ChartOffset } from 'recharts/types/util/types';
-import { EffectSizeData, generateEffectSizeData } from './forest-plot-utils';
+import { EffectSizeData } from './forest-plot-utils';
 
 // Color constants
 const COLORS = {
@@ -31,8 +25,7 @@ const COLORS = {
 } as const;
 
 interface ForestPlotProps {
-  analysis: MetricAnalysis;
-  designSpec: OnlineFrequentistExperimentSpecOutput | PreassignedFrequentistExperimentSpecOutput;
+  effectSizes?: EffectSizeData[];
 }
 
 // Define a type for the shape props that matches what we need; leverages the fact that
@@ -80,12 +73,9 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   );
 }
 
-export function ForestPlot({ analysis, designSpec }: ForestPlotProps) {
-  // Generate effect size data for visualization
-  const effectSizes = generateEffectSizeData(analysis, designSpec.alpha || 0.05);
-
+export function ForestPlot({ effectSizes }: ForestPlotProps) {
   // Only render if we have data
-  if (effectSizes.length === 0) {
+  if (!effectSizes || effectSizes.length === 0) {
     return <Text>No treatment arms to display</Text>;
   }
 
