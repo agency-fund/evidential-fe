@@ -29,6 +29,7 @@ import {
   ExperimentAnalysisResponse,
   OnlineFrequentistExperimentSpecOutput,
   PreassignedFrequentistExperimentSpecOutput,
+  Snapshot,
 } from '@/api/methods.schemas';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { useCurrentOrganization } from '@/providers/organization-provider';
@@ -109,15 +110,28 @@ export default function ExperimentViewPage() {
         onSuccess: (data) => {
           // Make human-readable labels for the dropdown, showing UTC down to the minute.
           // Use the snapshot ID as the key, looking up the analysisState by ID upon selection.
-          const opts: AnalysisState[] = [];
           if (data?.items) {
+            // Group snapshots by date and keep only the most recent one per date
+            const snapshotsByDate = new Map<string, Snapshot>();
+
             for (const s of data.items) {
-              opts.push({
-                key: s.id,
-                data: s.data as ExperimentAnalysisResponse,
-                label: formatUtcDownToMinuteLabel(new Date(s.updated_at)),
-              });
+              const dateKey = s.updated_at.split('T')[0]; // Get YYYY-MM-DD from ISO string
+              const existing = snapshotsByDate.get(dateKey);
+              if (!existing || s.updated_at > existing.updated_at) {
+                snapshotsByDate.set(dateKey, s);
+              }
             }
+
+            // Convert to array and sort by date descending (most recent first)
+            const filteredSnapshots = Array.from(snapshotsByDate.values());
+            filteredSnapshots.sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+
+            const opts: AnalysisState[] = filteredSnapshots.map((s) => ({
+              key: s.id,
+              data: s.data as ExperimentAnalysisResponse,
+              label: formatUtcDownToMinuteLabel(new Date(s.updated_at)),
+            }));
+
             setSnapshotDropdownOptions(opts);
           }
         },
