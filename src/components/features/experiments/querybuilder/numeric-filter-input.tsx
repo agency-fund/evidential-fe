@@ -1,7 +1,7 @@
 'use client';
 
-import { Button, Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
-import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
+import { Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
+import { Cross2Icon } from '@radix-ui/react-icons';
 import { DataType, FilterInput } from '@/api/methods.schemas';
 import {
   createDefaultValueForOperator,
@@ -11,7 +11,8 @@ import {
   BETWEEN_WITH_NULL_LENGTH,
 } from '@/components/features/experiments/querybuilder/utils';
 import React, { useEffect, useState } from 'react';
-import { IncludeNullCheckbox } from '@/components/features/experiments/querybuilder/include-null-checkbox';
+import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
+import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
 
 export interface NumericFilterInputProps {
   filter: FilterInput & TypedFilter<number>;
@@ -28,10 +29,10 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
       return 'between';
     }
     if (filter.relation === 'excludes') {
-      return filter.value.length > 1 ? 'not-in-list' : 'not-equals';
+      return 'not-in-list';
     }
     // Default for includes relation
-    return filter.value.length > 1 ? 'in-list' : 'equals';
+    return 'in-list';
   });
 
   // String-based input states for each possible input field
@@ -45,7 +46,6 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
   const [betweenMaxValue, setBetweenMaxValue] = useState(() =>
     filter.value[1] !== null ? String(filter.value[1]) : '',
   );
-  // equals and not-equals also use listValues as state
   const [listValues, setListValues] = useState<string[]>(() => filter.value.filter((v) => v !== null).map(String));
 
   // Update string states when filter changes externally
@@ -57,7 +57,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
     } else if (operator === 'between') {
       setBetweenMinValue(filter.value[0] !== null ? String(filter.value[0]) : '');
       setBetweenMaxValue(filter.value[1] !== null ? String(filter.value[1]) : '');
-    } else if (['equals', 'not-equals', 'in-list', 'not-in-list'].includes(operator)) {
+    } else if (['in-list', 'not-in-list'].includes(operator)) {
       setListValues(filter.value.filter((v) => v !== null).map(String));
     }
   }, [filter.value, operator]);
@@ -187,116 +187,123 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
     switch (operator) {
       case 'greater-than':
         return (
-          <TextField.Root
-            type="text"
-            inputMode="decimal"
-            step={getStepAttribute()}
-            value={greaterThanValue}
-            style={{ width: '20ch' }}
-            onChange={(e) => {
-              const inputValue = e.target.value;
-              setGreaterThanValue(inputValue);
+          <Flex direction="column" gap="1">
+            <TextField.Root
+              type="text"
+              inputMode="decimal"
+              step={getStepAttribute()}
+              value={greaterThanValue}
+              style={{ width: '20ch' }}
+              onChange={(e) => {
+                const inputValue = e.target.value;
+                setGreaterThanValue(inputValue);
 
-              const parsedValue = parseValue(inputValue);
-              if (parsedValue !== null) {
-                onChange({ ...filter, value: [parsedValue, null, ...includesNullValue] });
-              }
-            }}
-            onBlur={() => {
-              // On blur, if the field is empty, set a default value
-              if (greaterThanValue.trim() === '' || greaterThanValue === '-') {
-                const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
-                setGreaterThanValue(String(defaultValue));
-                onChange({ ...filter, value: [defaultValue, null, ...includesNullValue] });
-              }
-            }}
-          />
+                const parsedValue = parseValue(inputValue);
+                if (parsedValue !== null) {
+                  onChange({ ...filter, value: [parsedValue, null, ...includesNullValue] });
+                }
+              }}
+              onBlur={() => {
+                // On blur, if the field is empty, set a default value
+                if (greaterThanValue.trim() === '' || greaterThanValue === '-') {
+                  const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
+                  setGreaterThanValue(String(defaultValue));
+                  onChange({ ...filter, value: [defaultValue, null, ...includesNullValue] });
+                }
+              }}
+            />
+            <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="176px" />
+          </Flex>
         );
 
       case 'less-than':
         return (
-          <TextField.Root
-            type="text"
-            inputMode="decimal"
-            step={getStepAttribute()}
-            value={lessThanValue}
-            style={{ width: '20ch' }}
-            onChange={(e) => {
-              const inputValue = e.target.value;
-              setLessThanValue(inputValue);
+          <Flex direction="column" gap="1">
+            <TextField.Root
+              type="text"
+              inputMode="decimal"
+              step={getStepAttribute()}
+              value={lessThanValue}
+              style={{ width: '20ch' }}
+              onChange={(e) => {
+                const inputValue = e.target.value;
+                setLessThanValue(inputValue);
 
-              const parsedValue = parseValue(inputValue);
-              if (parsedValue !== null) {
-                onChange({ ...filter, value: [null, parsedValue, ...includesNullValue] });
-              }
-            }}
-            onBlur={() => {
-              // On blur, if the field is empty, set a default value
-              if (lessThanValue.trim() === '' || lessThanValue === '-') {
-                const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
-                setLessThanValue(String(defaultValue));
-                onChange({ ...filter, value: [null, defaultValue, ...includesNullValue] });
-              }
-            }}
-          />
+                const parsedValue = parseValue(inputValue);
+                if (parsedValue !== null) {
+                  onChange({ ...filter, value: [null, parsedValue, ...includesNullValue] });
+                }
+              }}
+              onBlur={() => {
+                // On blur, if the field is empty, set a default value
+                if (lessThanValue.trim() === '' || lessThanValue === '-') {
+                  const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
+                  setLessThanValue(String(defaultValue));
+                  onChange({ ...filter, value: [null, defaultValue, ...includesNullValue] });
+                }
+              }}
+            />
+            <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="176px" />
+          </Flex>
         );
 
       case 'between':
         return (
-          <Flex gap="2" align="center">
-            <TextField.Root
-              type="text"
-              inputMode="decimal"
-              step={getStepAttribute()}
-              value={betweenMinValue}
-              style={{ width: '20ch' }}
-              onChange={(e) => {
-                const inputValue = e.target.value;
-                setBetweenMinValue(inputValue);
+          <Flex direction="column" gap="1">
+            <Flex gap="2" align="center">
+              <TextField.Root
+                type="text"
+                inputMode="decimal"
+                step={getStepAttribute()}
+                value={betweenMinValue}
+                style={{ width: '20ch' }}
+                onChange={(e) => {
+                  const inputValue = e.target.value;
+                  setBetweenMinValue(inputValue);
 
-                const parsedValue = parseValue(inputValue);
-                if (parsedValue !== null) {
-                  onChange({ ...filter, value: [parsedValue, filter.value[1], ...includesNullValue] });
-                }
-              }}
-              onBlur={() => {
-                // On blur, if the field is empty, set a default value
-                if (betweenMinValue.trim() === '' || betweenMinValue === '-') {
-                  const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
-                  setBetweenMinValue(String(defaultValue));
-                  onChange({ ...filter, value: [defaultValue, filter.value[1], ...includesNullValue] });
-                }
-              }}
-            />
-            <Text>and</Text>
-            <TextField.Root
-              type="text"
-              inputMode="decimal"
-              step={getStepAttribute()}
-              value={betweenMaxValue}
-              onChange={(e) => {
-                const inputValue = e.target.value;
-                setBetweenMaxValue(inputValue);
+                  const parsedValue = parseValue(inputValue);
+                  if (parsedValue !== null) {
+                    onChange({ ...filter, value: [parsedValue, filter.value[1], ...includesNullValue] });
+                  }
+                }}
+                onBlur={() => {
+                  // On blur, if the field is empty, set a default value
+                  if (betweenMinValue.trim() === '' || betweenMinValue === '-') {
+                    const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
+                    setBetweenMinValue(String(defaultValue));
+                    onChange({ ...filter, value: [defaultValue, filter.value[1], ...includesNullValue] });
+                  }
+                }}
+              />
+              <Text>and</Text>
+              <TextField.Root
+                type="text"
+                inputMode="decimal"
+                step={getStepAttribute()}
+                value={betweenMaxValue}
+                onChange={(e) => {
+                  const inputValue = e.target.value;
+                  setBetweenMaxValue(inputValue);
 
-                const parsedValue = parseValue(inputValue);
-                if (parsedValue !== null) {
-                  onChange({ ...filter, value: [filter.value[0], parsedValue, ...includesNullValue] });
-                }
-              }}
-              onBlur={() => {
-                // On blur, if the field is empty, set a default value
-                if (betweenMaxValue.trim() === '' || betweenMaxValue === '-') {
-                  const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
-                  setBetweenMaxValue(String(defaultValue));
-                  onChange({ ...filter, value: [filter.value[0], defaultValue, ...includesNullValue] });
-                }
-              }}
-            />
+                  const parsedValue = parseValue(inputValue);
+                  if (parsedValue !== null) {
+                    onChange({ ...filter, value: [filter.value[0], parsedValue, ...includesNullValue] });
+                  }
+                }}
+                onBlur={() => {
+                  // On blur, if the field is empty, set a default value
+                  if (betweenMaxValue.trim() === '' || betweenMaxValue === '-') {
+                    const defaultValue = dataType === 'integer' || dataType === 'bigint' ? 0 : 0.0;
+                    setBetweenMaxValue(String(defaultValue));
+                    onChange({ ...filter, value: [filter.value[0], defaultValue, ...includesNullValue] });
+                  }
+                }}
+              />
+            </Flex>
+            <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="375px" />
           </Flex>
         );
 
-      case 'equals':
-      case 'not-equals':
       case 'in-list':
       case 'not-in-list':
         const nonNullValues = filter.value.filter((v) => v !== null);
@@ -339,12 +346,10 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
               </Flex>
             ))}
 
-            {/* Always show add button for in-list/not-in-list, and for equals/not-equals only if no values */}
-            {(operator === 'in-list' || operator === 'not-in-list' || nonNullValues.length === 0) && (
-              <Button variant="soft" size="1" style={{ minWidth: '20ch' }} onClick={addValueForListBasedOp}>
-                <PlusIcon /> Add value
-              </Button>
-            )}
+            <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="176px" />
+
+            {/* Always show add button for list operators, even when no values */}
+            <AddValueButton minWidth="176px" onClick={addValueForListBasedOp} />
           </Flex>
         );
 
@@ -358,19 +363,15 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
       <Select.Root value={operator} onValueChange={handleOperatorChange}>
         <Select.Trigger style={{ width: 128 }} />
         <Select.Content>
-          <Select.Item value="equals">Equals</Select.Item>
-          <Select.Item value="not-equals">Not equals</Select.Item>
+          <Select.Item value="in-list">Is one of</Select.Item>
+          <Select.Item value="not-in-list">is not one of</Select.Item>
           <Select.Item value="greater-than">Greater than</Select.Item>
           <Select.Item value="less-than">Less than</Select.Item>
           <Select.Item value="between">Between</Select.Item>
-          <Select.Item value="in-list">In list</Select.Item>
-          <Select.Item value="not-in-list">Not in list</Select.Item>
         </Select.Content>
       </Select.Root>
 
       {renderValueInputs()}
-
-      <IncludeNullCheckbox checked={includesNull} onChange={handleNullChange} />
     </Flex>
   );
 }

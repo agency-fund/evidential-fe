@@ -1,7 +1,7 @@
 'use client';
 
-import { Button, Flex, IconButton, Select, TextField } from '@radix-ui/themes';
-import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
+import { Flex, IconButton, Select, TextField } from '@radix-ui/themes';
+import { Cross2Icon } from '@radix-ui/react-icons';
 import { DataType, FilterInput } from '@/api/methods.schemas';
 import {
   createDefaultValueForOperator,
@@ -9,7 +9,8 @@ import {
   TypedFilter,
 } from '@/components/features/experiments/querybuilder/utils';
 import React, { useState } from 'react';
-import { IncludeNullCheckbox } from '@/components/features/experiments/querybuilder/include-null-checkbox';
+import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
+import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
 
 export interface StringFilterInputProps {
   filter: FilterInput & TypedFilter<string>;
@@ -21,10 +22,10 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
   // Initialize operator state based on filter configuration
   const [operator, setOperator] = useState(() => {
     if (filter.relation === 'excludes') {
-      return filter.value.length > 1 ? 'not-in-list' : 'not-equals';
+      return 'not-in-list';
     }
     // Default for includes relation
-    return filter.value.length > 1 ? 'in-list' : 'equals';
+    return 'in-list';
   });
 
   const includesNull = filter.value.includes(null);
@@ -119,38 +120,30 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
           </Flex>
         ))}
 
-        {/* Always show add button for in-list/not-in-list, and for equals/not-equals only if no values */}
-        {(operator === 'in-list' || operator === 'not-in-list' || nonNullValues.length === 0) && (
-          <Button variant="soft" size="1" onClick={addValue}>
-            <PlusIcon /> Add value
-          </Button>
-        )}
+        <IncludeNullButton
+          checked={includesNull}
+          onChange={handleNullChange}
+          singularValue={nonNullValues.length === 0}
+          minWidth="176px"
+        />
+
+        {/* Always show add button for list operators, even when no values */}
+        <AddValueButton minWidth="176px" onClick={addValue} />
       </Flex>
     );
   };
-
-  // For UUID, we only want to show includes/excludes operators
-  const isUuid = dataType === 'uuid';
 
   return (
     <Flex gap="2" wrap="wrap">
       <Select.Root value={operator} onValueChange={handleOperatorChange}>
         <Select.Trigger style={{ width: 128 }} />
         <Select.Content>
-          <Select.Item value="equals">Equals</Select.Item>
-          <Select.Item value="not-equals">Not equals</Select.Item>
-          {!isUuid && (
-            <>
-              <Select.Item value="in-list">Is one of</Select.Item>
-              <Select.Item value="not-in-list">Is not one of</Select.Item>
-            </>
-          )}
+          <Select.Item value="in-list">Is one of</Select.Item>
+          <Select.Item value="not-in-list">is not one of</Select.Item>
         </Select.Content>
       </Select.Root>
 
       {renderValueInputs()}
-
-      <IncludeNullCheckbox checked={includesNull} onChange={handleNullChange} />
     </Flex>
   );
 }
