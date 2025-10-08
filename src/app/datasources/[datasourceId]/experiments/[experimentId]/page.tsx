@@ -17,6 +17,7 @@ import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
 import { SectionCard } from '@/components/ui/cards/section-card';
+import { MdeBadge } from '@/components/features/experiments/mde-badge';
 import { EditableTextField } from '@/components/ui/inputs/editable-text-field';
 import { EditableDateField } from '@/components/ui/inputs/editable-date-field';
 import { EditableTextArea } from '@/components/ui/inputs/editable-text-area';
@@ -182,6 +183,12 @@ export default function ExperimentViewPage() {
   const selectedMetricAnalyses =
     selectedAnalysis.data && 'metric_analyses' in selectedAnalysis.data ? selectedAnalysis.data.metric_analyses : null;
 
+  // Calculate MDE percentage for the selected metric
+  let mdePct: string | null = null;
+  if (selectedMetric?.metric?.metric_pct_change) {
+    mdePct = (selectedMetric.metric.metric_pct_change * 100).toFixed(1);
+  }
+
   return (
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
@@ -274,36 +281,39 @@ export default function ExperimentViewPage() {
             <Flex gap="3" align="center" wrap="wrap">
               <Heading size="3">Analysis</Heading>
               {selectedMetricAnalyses && (
-                <Badge size="2">
-                  <Flex gap="2" align="center">
-                    <Heading size="2">Metric:</Heading>
-                    {selectedMetricAnalyses.length === 1 ? (
-                      <Text>{selectedMetricName}</Text>
-                    ) : (
-                      <Select.Root
-                        size="1"
-                        value={selectedMetricName}
-                        onValueChange={(value) =>
-                          setSelectedMetric(
-                            selectedMetricAnalyses.find((metric) => metric.metric?.field_name === value) || null,
-                          )
-                        }
-                      >
-                        <Select.Trigger style={{ height: 18 }} />
-                        <Select.Content>
-                          {selectedMetricAnalyses.map((metric) => {
-                            const metricName = metric.metric?.field_name ?? 'unknown';
-                            return (
-                              <Select.Item key={metricName} value={metricName}>
-                                {metricName}
-                              </Select.Item>
-                            );
-                          })}
-                        </Select.Content>
-                      </Select.Root>
-                    )}
-                  </Flex>
-                </Badge>
+                <>
+                  <Badge size="2">
+                    <Flex gap="2" align="center">
+                      <Heading size="2">Metric:</Heading>
+                      {selectedMetricAnalyses.length === 1 ? (
+                        <Text>{selectedMetricName}</Text>
+                      ) : (
+                        <Select.Root
+                          size="1"
+                          value={selectedMetricName}
+                          onValueChange={(value) =>
+                            setSelectedMetric(
+                              selectedMetricAnalyses.find((metric) => metric.metric?.field_name === value) || null,
+                            )
+                          }
+                        >
+                          <Select.Trigger style={{ height: 18 }} />
+                          <Select.Content>
+                            {selectedMetricAnalyses.map((metric) => {
+                              const metricName = metric.metric?.field_name ?? 'unknown';
+                              return (
+                                <Select.Item key={metricName} value={metricName}>
+                                  {metricName}
+                                </Select.Item>
+                              );
+                            })}
+                          </Select.Content>
+                        </Select.Root>
+                      )}
+                    </Flex>
+                  </Badge>
+                  <MdeBadge value={mdePct} />
+                </>
               )}
             </Flex>
           }

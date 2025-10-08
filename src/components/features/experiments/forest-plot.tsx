@@ -7,7 +7,6 @@ import {
 } from '@/api/methods.schemas';
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 import { Box, Callout, Card, Flex, Text } from '@radix-ui/themes';
-import { MdeBadge } from '@/components/features/experiments/mde-badge';
 import {
   CartesianGrid,
   ResponsiveContainer,
@@ -196,13 +195,6 @@ export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotPr
     return (x / (maxX - minX)) * width;
   };
 
-  let mdePct: string | null;
-  if (analysis.metric?.metric_pct_change) {
-    mdePct = (analysis.metric?.metric_pct_change * 100).toFixed(1);
-  } else {
-    mdePct = null;
-  }
-
   const commonAxisStyle = {
     fontSize: '16px',
     fontFamily: 'Arial, sans-serif',
@@ -217,11 +209,6 @@ export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotPr
 
   return (
     <Flex direction="column" gap="3">
-      <Flex direction="row" align="baseline" wrap="wrap">
-        <Text weight="bold">Effect of {analysis.metric_name || 'Unknown Metric'}&nbsp;</Text>
-        <MdeBadge value={mdePct} />
-      </Flex>
-
       {effectSizes.some((e) => e.invalidStatTest) && (
         <Callout.Root color="orange" size="1">
           <Callout.Icon>
