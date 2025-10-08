@@ -19,6 +19,7 @@ import {
 } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { ChartOffset } from 'recharts/types/util/types';
+import { EffectSizeData, generateEffectSizeData } from './forest-plot-utils';
 
 // Color constants
 const COLORS = {
@@ -28,25 +29,6 @@ const COLORS = {
   POSITIVE: '#00c853', // Green for positive effects
   NEGATIVE: '#ff5252', // Red for negative effects
 } as const;
-
-interface EffectSizeData {
-  isBaseline: boolean;
-  armId: string;
-  armName: string;
-  baselineEffect: number;
-  effect: number;
-  absEffect: number;
-  ci95Lower: number;
-  ci95Upper: number;
-  ci95: number;
-  absCI95Lower: number;
-  absCI95Upper: number;
-  pValue: number | null;
-  invalidStatTest: boolean;
-  significant: boolean;
-  sampleSize: number;
-  totalSampleSize: number;
-}
 
 interface ForestPlotProps {
   analysis: MetricAnalysis;
@@ -100,53 +82,10 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
 }
 
 export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotProps) {
-  // Get total sample size from assign summary
-  const availableN = assignSummary.sample_size;
-
-  // Extract data for visualization
-  const controlArmIndex = analysis.arm_analyses.findIndex((a) => a.is_baseline);
-  const controlArmAnalysis = analysis.arm_analyses[controlArmIndex];
-  const controlEstimate = controlArmAnalysis.estimate; // regression intercept
-
-  // Our data structure for Recharts
-  const effectSizes: EffectSizeData[] = analysis.arm_analyses.map((armAnalysis, index) => {
-    const isBaseline = armAnalysis.is_baseline;
-    const armId = armAnalysis.arm_id || 'MISSING_ARM_ID'; // should be impossible
-    const armSize = assignSummary.arm_sizes?.find((a) => a.arm.arm_id === armId)?.size || 0;
-
-    const estimate = armAnalysis.estimate; // regression coefficient
-    const stdError = armAnalysis.std_error;
-    const pValue = armAnalysis.p_value;
-    const tStat = armAnalysis.t_stat;
-    const invalidStatTest = pValue === null || pValue === undefined || tStat === null || tStat === undefined;
-
-    // Calculate 95% confidence interval
-    const ci95 = 1.96 * stdError;
-    const ci95Lower = estimate - ci95;
-    const ci95Upper = estimate + ci95;
-    const absEffect = estimate + (isBaseline ? 0 : controlEstimate);
-    const absCI95Lower = ci95Lower + (isBaseline ? 0 : controlEstimate);
-    const absCI95Upper = ci95Upper + (isBaseline ? 0 : controlEstimate);
-
-    return {
-      isBaseline,
-      armId,
-      armName: armAnalysis.arm_name || `Arm ${index}`,
-      baselineEffect: controlEstimate,
-      effect: estimate, // relative to baseline effect
-      absEffect: absEffect,
-      ci95Lower,
-      ci95Upper,
-      ci95: ci95, // for symmetric ErrorBars
-      absCI95Lower,
-      absCI95Upper,
-      pValue,
-      invalidStatTest,
-      significant: !!(pValue && pValue < (designSpec.alpha || 0.05)),
-      sampleSize: armSize,
-      totalSampleSize: availableN,
-    };
-  });
+  // Transform assign summary data for the utility function
+  const armSizes = new Map(assignSummary.arm_sizes?.map((a) => [a.arm.arm_id as string, a.size || 0]));
+  // Generate effect size data for visualization
+  const effectSizes = generateEffectSizeData(analysis, designSpec.alpha || 0.05, assignSummary.sample_size, armSizes);
 
   // Only render if we have data
   if (effectSizes.length === 0) {
