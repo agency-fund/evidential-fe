@@ -24,9 +24,11 @@ export function IncludeNullButton({ checked, onChange, singularValue = false, mi
   if (checked) {
     return (
       <Flex gap="1" align="center" justify="center" py="1">
-        <Text size="2" weight="medium" style={{ textAlign: 'center', flex: 1 }}>
-          {singularValue ? 'NULL' : 'OR NULL'}
-        </Text>
+        <Flex flexGrow="1" justify="center">
+          <Text size="2" weight="medium" style={{ textAlign: 'center' }}>
+            {singularValue ? 'NULL' : 'OR NULL'}
+          </Text>
+        </Flex>
         <IconButton variant="soft" size="1" onClick={handleRemove}>
           <Cross2Icon />
         </IconButton>
