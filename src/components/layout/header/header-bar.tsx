@@ -1,9 +1,9 @@
 'use client';
-import { DropdownMenu, Flex, Heading, IconButton, Text } from '@radix-ui/themes';
+import { DropdownMenu, Flex, IconButton, Text } from '@radix-ui/themes';
 import { useAuth } from '@/providers/auth-provider';
 import { ArrowLeftIcon, AvatarIcon, BackpackIcon, ExitIcon, GearIcon, RocketIcon } from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
-import { PRODUCT_NAME, XNGIN_API_DOCS_LINK } from '@/services/constants';
+import { XNGIN_API_DOCS_LINK } from '@/services/constants';
 import { useListOrganizations } from '@/api/admin';
 import { useState } from 'react';
 import { useLocalStorage } from '@/providers/use-local-storage';
@@ -40,8 +40,8 @@ export function HeaderBar() {
         borderBottom: '1px solid var(--gray-5)',
       }}
     >
-      <Link href="/" style={{ textDecoration: 'none', color: 'inherit', lineHeight: "0"}}>
-        <Image src="/evidential-logo.svg" alt="Evidential Logo" width={200} height={35}/>
+      <Link href="/" style={{ textDecoration: 'none', color: 'inherit', lineHeight: '0' }}>
+        <Image src="/evidential-logo.svg" alt="Evidential Logo" width={200} height={35} />
       </Link>
       <DropdownMenu.Root
         open={dropdownOpen !== 'closed'}
