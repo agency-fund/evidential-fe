@@ -139,7 +139,7 @@ export function StringFilterInput({ filter, onChange, dataType }: StringFilterIn
         <Select.Trigger style={{ width: 128 }} />
         <Select.Content>
           <Select.Item value="in-list">Is one of</Select.Item>
-          <Select.Item value="not-in-list">Not any of</Select.Item>
+          <Select.Item value="not-in-list">is not one of</Select.Item>
         </Select.Content>
       </Select.Root>
 

@@ -364,7 +364,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
         <Select.Trigger style={{ width: 128 }} />
         <Select.Content>
           <Select.Item value="in-list">Is one of</Select.Item>
-          <Select.Item value="not-in-list">Not any of</Select.Item>
+          <Select.Item value="not-in-list">is not one of</Select.Item>
           <Select.Item value="greater-than">Greater than</Select.Item>
           <Select.Item value="less-than">Less than</Select.Item>
           <Select.Item value="between">Between</Select.Item>

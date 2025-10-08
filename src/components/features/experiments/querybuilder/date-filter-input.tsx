@@ -208,7 +208,7 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
         <Select.Trigger style={{ width: 128 }} />
         <Select.Content>
           <Select.Item value="in-list">Is one of</Select.Item>
-          <Select.Item value="not-in-list">Not any of</Select.Item>
+          <Select.Item value="not-in-list">is not one of</Select.Item>
           <Select.Item value="before">Before</Select.Item>
           <Select.Item value="after">After</Select.Item>
           <Select.Item value="between">Between</Select.Item>
