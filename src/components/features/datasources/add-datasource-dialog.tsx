@@ -26,7 +26,7 @@ interface FormFields {
   credentials_json: string;
 }
 
-const defaultFormData: FormFields = {
+const defaultFormData = (): FormFields => ({
   name: '',
   host: '',
   port: '5432',
@@ -38,17 +38,17 @@ const defaultFormData: FormFields = {
   project_id: '',
   dataset: '',
   credentials_json: '',
-};
+});
 
 export function AddDatasourceDialog({ organizationId }: { organizationId: string }) {
   const [open, setOpen] = useState(false);
   const [dwhType, setDwhType] = useState<AllowedDwhTypes>('postgres');
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState(defaultFormData);
+  const [formData, setFormData] = useState(defaultFormData());
   const { trigger, reset, error } = useCreateDatasource({
     swr: {
       onSuccess: () => {
-        setOpen(false);
+        handleClose();
         Promise.all([
           mutate(getListOrganizationDatasourcesKey(organizationId)),
           mutate(getGetOrganizationKey(organizationId)),
@@ -57,17 +57,23 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
     },
   });
 
+  const handleClose = () => {
+    setFormData(defaultFormData());
+    setDwhType('postgres');
+    reset();
+    setOpen(false);
+  };
+
   const isDNSError = error instanceof ApiError && error.response.status === 400;
 
   return (
     <Dialog.Root
       open={open}
       onOpenChange={(op) => {
-        setOpen(op);
         if (!op) {
-          setDwhType('postgres');
-          setFormData(defaultFormData);
-          reset();
+          handleClose();
+        } else {
+          setOpen(op);
         }
       }}
     >

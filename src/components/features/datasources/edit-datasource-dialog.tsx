@@ -31,7 +31,7 @@ interface FormFields {
   credentials_json: GcpServiceAccount | Hidden;
 }
 
-const defaultFormData: FormFields = {
+const defaultFormData = (): FormFields => ({
   name: '',
   host: '',
   port: '',
@@ -43,7 +43,7 @@ const defaultFormData: FormFields = {
   project_id: '',
   dataset: '',
   credentials_json: { type: 'hidden' },
-};
+});
 
 export const EditDatasourceDialog = ({
   organizationId,
@@ -57,7 +57,7 @@ export const EditDatasourceDialog = ({
   const { data, isLoading } = useGetDatasource(datasourceId);
   const [open, setOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState(defaultFormData);
+  const [formData, setFormData] = useState(defaultFormData());
   const {
     trigger: updateDatasource,
     reset,
@@ -65,7 +65,7 @@ export const EditDatasourceDialog = ({
   } = useUpdateDatasource(datasourceId, {
     swr: {
       onSuccess: () => {
-        setOpen(false);
+        handleClose();
         Promise.all([
           mutate(getGetDatasourceKey(datasourceId)),
           mutate(getInspectDatasourceKey(datasourceId)),
@@ -75,11 +75,17 @@ export const EditDatasourceDialog = ({
     },
   });
 
+  const handleClose = () => {
+    setShowPassword(false);
+    reset();
+    setOpen(false);
+  };
+
   useEffect(() => {
     if (open && data) {
       const dsn = data.dsn;
       let newFormData: FormFields = {
-        ...defaultFormData,
+        ...defaultFormData(),
         name: data.name,
       };
 
@@ -140,10 +146,10 @@ export const EditDatasourceDialog = ({
     <Dialog.Root
       open={open}
       onOpenChange={(op) => {
-        setOpen(op);
         if (!op) {
-          setShowPassword(false);
-          reset();
+          handleClose();
+        } else {
+          setOpen(op);
         }
       }}
     >
