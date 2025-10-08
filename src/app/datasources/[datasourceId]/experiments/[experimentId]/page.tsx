@@ -25,11 +25,11 @@ import { IntegrationGuideDialog } from '@/components/features/experiments/integr
 import { ReadMoreText } from '@/components/ui/read-more-text';
 import {
   DesignSpecOutput,
-  FreqExperimentAnalysisResponse,
   ExperimentAnalysisResponse,
   OnlineFrequentistExperimentSpecOutput,
   PreassignedFrequentistExperimentSpecOutput,
   Snapshot,
+  MetricAnalysis,
 } from '@/api/methods.schemas';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { useCurrentOrganization } from '@/providers/organization-provider';
@@ -64,6 +64,22 @@ export default function ExperimentViewPage() {
   });
   // which analysis we're actually displaying (live or a snapshot)
   const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisState>(liveAnalysis);
+  const [selectedMetric, setSelectedMetric] = useState<MetricAnalysis | null>(null);
+
+  function setSelectedAnalysisAndMetrics(analysis: AnalysisState) {
+    setSelectedAnalysis(analysis);
+    if (analysis.data && 'metric_analyses' in analysis.data) {
+      const metricAnalyses = analysis.data.metric_analyses || [];
+      // Try to maintain the same metric as before when switching between snapshots.
+      // The fallback to the first metric should not actually happen in practice.
+      const oldMetricName = selectedMetric?.metric?.field_name;
+      setSelectedMetric(
+        metricAnalyses.find((metric) => metric.metric?.field_name === oldMetricName) || metricAnalyses[0] || null,
+      );
+    } else {
+      setSelectedMetric(null);
+    }
+  }
 
   const {
     data: experiment,
@@ -91,7 +107,7 @@ export default function ExperimentViewPage() {
           setLiveAnalysis(analysis);
           // Only update the display if we were previously viewing live data.
           if (selectedAnalysis.key === 'live') {
-            setSelectedAnalysis(analysis);
+            setSelectedAnalysisAndMetrics(analysis);
           }
         },
       },
@@ -161,6 +177,10 @@ export default function ExperimentViewPage() {
 
   const { design_spec, assign_summary } = experiment;
   const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
+
+  const selectedMetricName = selectedMetric?.metric?.field_name ?? 'unknown';
+  const selectedMetricAnalyses =
+    selectedAnalysis.data && 'metric_analyses' in selectedAnalysis.data ? selectedAnalysis.data.metric_analyses : null;
 
   return (
     <Flex direction="column" gap="6">
@@ -250,7 +270,43 @@ export default function ExperimentViewPage() {
 
         {/* Analysis Section */}
         <SectionCard
-          title="Analysis"
+          headerLeft={
+            <Flex gap="3" align="center" wrap="wrap">
+              <Heading size="3">Analysis</Heading>
+              {selectedMetricAnalyses && (
+                <Badge size="2">
+                  <Flex gap="2" align="center">
+                    <Heading size="2">Metric:</Heading>
+                    {selectedMetricAnalyses.length === 1 ? (
+                      <Text>{selectedMetricName}</Text>
+                    ) : (
+                      <Select.Root
+                        size="1"
+                        value={selectedMetricName}
+                        onValueChange={(value) =>
+                          setSelectedMetric(
+                            selectedMetricAnalyses.find((metric) => metric.metric?.field_name === value) || null,
+                          )
+                        }
+                      >
+                        <Select.Trigger style={{ height: 18 }} />
+                        <Select.Content>
+                          {selectedMetricAnalyses.map((metric) => {
+                            const metricName = metric.metric?.field_name ?? 'unknown';
+                            return (
+                              <Select.Item key={metricName} value={metricName}>
+                                {metricName}
+                              </Select.Item>
+                            );
+                          })}
+                        </Select.Content>
+                      </Select.Root>
+                    )}
+                  </Flex>
+                </Badge>
+              )}
+            </Flex>
+          }
           headerRight={
             (design_spec?.experiment_type === 'freq_online' || design_spec?.experiment_type === 'freq_preassigned') && (
               <Flex gap="3" wrap="wrap">
@@ -267,21 +323,21 @@ export default function ExperimentViewPage() {
                           onValueChange={(key) => {
                             const analysis =
                               key === 'live' ? liveAnalysis : snapshotDropdownOptions.find((opt) => opt.key === key);
-                            setSelectedAnalysis(analysis || liveAnalysis); // shouldn't ever need to fall back though
+                            setSelectedAnalysisAndMetrics(analysis || liveAnalysis); // shouldn't ever need to fall back though
                           }}
                         >
                           <Select.Trigger style={{ height: 18 }} />
                           <Select.Content>
                             <Select.Group>
                               <Select.Item key="live" value="live">
-                                {liveAnalysis.label}
+                                <Box minWidth="136px">{liveAnalysis.label}</Box>
                               </Select.Item>
                             </Select.Group>
                             <Select.Separator />
                             <Select.Group>
                               {snapshotDropdownOptions.map((opt) => (
                                 <Select.Item key={opt.key} value={opt.key}>
-                                  {opt.label}
+                                  <Box minWidth="136px">{opt.label}</Box>
                                 </Select.Item>
                               ))}
                             </Select.Group>
@@ -349,18 +405,9 @@ export default function ExperimentViewPage() {
                 <Box px="4">
                   <Tabs.Content value="visualization">
                     <Flex direction="column" gap="3" py="3">
-                      {isFrequentistDesign(design_spec) &&
-                        assign_summary &&
-                        (selectedAnalysis.data as FreqExperimentAnalysisResponse).metric_analyses.map(
-                          (metric_analysis, index) => (
-                            <ForestPlot
-                              key={index}
-                              analysis={metric_analysis}
-                              designSpec={design_spec}
-                              assignSummary={assign_summary}
-                            />
-                          ),
-                        )}
+                      {isFrequentistDesign(design_spec) && assign_summary && selectedMetric && (
+                        <ForestPlot analysis={selectedMetric} designSpec={design_spec} assignSummary={assign_summary} />
+                      )}
                     </Flex>
                   </Tabs.Content>
 
