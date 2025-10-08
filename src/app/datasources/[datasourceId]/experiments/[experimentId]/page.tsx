@@ -10,6 +10,7 @@ import {
   getGetExperimentForUiKey,
 } from '@/api/admin';
 import { ForestPlot } from '@/components/features/experiments/forest-plot';
+import { generateEffectSizeData, EffectSizeData } from '@/components/features/experiments/forest-plot-utils';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { useState } from 'react';
@@ -27,6 +28,7 @@ import { ReadMoreText } from '@/components/ui/read-more-text';
 import {
   DesignSpecOutput,
   ExperimentAnalysisResponse,
+  FreqExperimentAnalysisResponse,
   OnlineFrequentistExperimentSpecOutput,
   PreassignedFrequentistExperimentSpecOutput,
   Snapshot,
@@ -56,6 +58,8 @@ export default function ExperimentViewPage() {
     key: string;
     data: ExperimentAnalysisResponse | undefined;
     label: string;
+    // Pre-computed effect size data for each metric, keyed by metric field name
+    effectSizesByMetric?: Map<string, EffectSizeData[]>;
   };
   const [snapshotDropdownOptions, setSnapshotDropdownOptions] = useState<AnalysisState[]>([]);
   const [liveAnalysis, setLiveAnalysis] = useState<AnalysisState>({
@@ -90,6 +94,21 @@ export default function ExperimentViewPage() {
     swr: { enabled: !!datasourceId },
   });
 
+  function precomputeEffectSizes(analysisData: ExperimentAnalysisResponse, designSpec: DesignSpecOutput) {
+    if (!isFrequentistDesign(designSpec)) return undefined;
+
+    // Pre-generate effect size data for all metrics
+    const effectSizesByMetric = new Map<string, EffectSizeData[]>();
+    const freqAnalysisData = analysisData as FreqExperimentAnalysisResponse;
+    for (const metricAnalysis of freqAnalysisData.metric_analyses) {
+      // TODO: cleanup fallback when metric_name is not nullable in the backend (wasn't supposed to be)
+      const metricName = metricAnalysis.metric_name || '';
+      const effectSizes = generateEffectSizeData(metricAnalysis, designSpec.alpha || 0.05);
+      effectSizesByMetric.set(metricName, effectSizes);
+    }
+    return effectSizesByMetric;
+  }
+
   const { isLoading: isLoadingAnalysis, error: analysisError } = useAnalyzeExperiment(
     datasourceId,
     experimentId,
@@ -98,12 +117,12 @@ export default function ExperimentViewPage() {
       swr: {
         enabled: !!datasourceId && !!experiment,
         shouldRetryOnError: false,
-        onSuccess: (data) => {
-          const d = new Date();
+        onSuccess: (analysisData) => {
           const analysis = {
             key: 'live',
-            data: data as ExperimentAnalysisResponse,
-            label: `LIVE as of ${extractUtcHHMMLabel(d)}`,
+            data: analysisData,
+            label: `LIVE as of ${extractUtcHHMMLabel(new Date())}`,
+            effectSizesByMetric: precomputeEffectSizes(analysisData, design_spec),
           };
           setLiveAnalysis(analysis);
           // Only update the display if we were previously viewing live data.
@@ -144,11 +163,15 @@ export default function ExperimentViewPage() {
           const filteredSnapshots = Array.from(snapshotsByDate.values());
           filteredSnapshots.sort((a, b) => b.updated_at.localeCompare(a.updated_at));
 
-          const opts: AnalysisState[] = filteredSnapshots.map((s) => ({
-            key: s.id,
-            data: s.data as ExperimentAnalysisResponse,
-            label: formatUtcDownToMinuteLabel(new Date(s.updated_at)),
-          }));
+          const opts: AnalysisState[] = filteredSnapshots.map((s) => {
+            const analysisData = s.data as ExperimentAnalysisResponse;
+            return {
+              key: s.id,
+              data: analysisData,
+              label: formatUtcDownToMinuteLabel(new Date(s.updated_at)),
+              effectSizesByMetric: precomputeEffectSizes(analysisData, design_spec),
+            };
+          });
 
           setSnapshotDropdownOptions(opts);
         },
@@ -314,7 +337,7 @@ export default function ExperimentViewPage() {
             </Flex>
           }
           headerRight={
-            (design_spec?.experiment_type === 'freq_online' || design_spec?.experiment_type === 'freq_preassigned') && (
+            (design_spec.experiment_type === 'freq_online' || design_spec?.experiment_type === 'freq_preassigned') && (
               <Flex gap="3" wrap="wrap">
                 <Flex gap="3" wrap="wrap" align="center" justify="between">
                   <Badge size="2">
@@ -412,7 +435,7 @@ export default function ExperimentViewPage() {
                   <Tabs.Content value="visualization">
                     <Flex direction="column" gap="3" py="3">
                       {isFrequentistDesign(design_spec) && assign_summary && selectedMetric && (
-                        <ForestPlot analysis={selectedMetric} designSpec={design_spec} assignSummary={assign_summary} />
+                        <ForestPlot analysis={selectedMetric} designSpec={design_spec} />
                       )}
                     </Flex>
                   </Tabs.Content>

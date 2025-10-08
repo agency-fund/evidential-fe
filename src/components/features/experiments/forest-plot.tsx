@@ -32,7 +32,6 @@ const COLORS = {
 
 interface ForestPlotProps {
   analysis: MetricAnalysis;
-  assignSummary: AssignSummary;
   designSpec: OnlineFrequentistExperimentSpecOutput | PreassignedFrequentistExperimentSpecOutput;
 }
 
@@ -81,11 +80,9 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   );
 }
 
-export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotProps) {
-  // Transform assign summary data for the utility function
-  const armSizes = new Map(assignSummary.arm_sizes?.map((a) => [a.arm.arm_id as string, a.size || 0]));
+export function ForestPlot({ analysis, designSpec }: ForestPlotProps) {
   // Generate effect size data for visualization
-  const effectSizes = generateEffectSizeData(analysis, designSpec.alpha || 0.05, assignSummary.sample_size, armSizes);
+  const effectSizes = generateEffectSizeData(analysis, designSpec.alpha || 0.05);
 
   // Only render if we have data
   if (effectSizes.length === 0) {

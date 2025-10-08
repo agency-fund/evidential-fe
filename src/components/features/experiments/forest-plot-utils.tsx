@@ -15,8 +15,6 @@ export interface EffectSizeData {
   pValue: number | null;
   invalidStatTest: boolean;
   significant: boolean;
-  sampleSize: number;
-  totalSampleSize: number;
 }
 
 /**
@@ -24,16 +22,9 @@ export interface EffectSizeData {
  *
  * @param analysis - The metric analysis containing arm-level analyses
  * @param alpha - The significance threshold (e.g., 0.05 for 95% confidence)
- * @param totalSampleSize - The total sample size across all arms
- * @param armSizes - Map of arm IDs to their sample sizes
  * @returns Array of effect size data for each arm
  */
-export function generateEffectSizeData(
-  analysis: MetricAnalysis,
-  alpha: number,
-  totalSampleSize: number,
-  armSizes: Map<string, number>,
-): EffectSizeData[] {
+export function generateEffectSizeData(analysis: MetricAnalysis, alpha: number): EffectSizeData[] {
   // Extract data for visualization
   const controlArmIndex = analysis.arm_analyses.findIndex((a) => a.is_baseline);
   const controlArmAnalysis = analysis.arm_analyses[controlArmIndex];
@@ -43,7 +34,6 @@ export function generateEffectSizeData(
   const effectSizes: EffectSizeData[] = analysis.arm_analyses.map((armAnalysis, index) => {
     const isBaseline = armAnalysis.is_baseline;
     const armId = armAnalysis.arm_id || 'MISSING_ARM_ID'; // should be impossible
-    const armSize = armSizes.get(armId) || 0;
 
     const estimate = armAnalysis.estimate; // regression coefficient
     const stdError = armAnalysis.std_error;
@@ -74,8 +64,6 @@ export function generateEffectSizeData(
       pValue,
       invalidStatTest,
       significant: !!(pValue && pValue < alpha),
-      sampleSize: armSize,
-      totalSampleSize,
     };
   });
 
