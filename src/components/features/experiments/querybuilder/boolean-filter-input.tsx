@@ -1,6 +1,6 @@
 'use client';
 
-import { Flex, IconButton, Select } from '@radix-ui/themes';
+import { Flex, IconButton, Select, TextField } from '@radix-ui/themes';
 import { Cross2Icon } from '@radix-ui/react-icons';
 import { FilterInput } from '@/api/methods.schemas';
 import { TypedFilter } from '@/components/features/experiments/querybuilder/utils';
@@ -52,16 +52,16 @@ export function BooleanFilterInput({ filter, onChange }: BooleanFilterInputProps
     });
   };
 
-  return (
-    <Flex gap="2" wrap="wrap">
-      {nonNullValues.length > 0 ? (
+  const renderValueInputs = () => {
+    if (nonNullValues.length > 0) {
+      return (
         <Flex direction="column" gap="1">
           <Flex gap="1" align="center">
             <Select.Root value={hasTrue ? 'true' : 'false'} onValueChange={(v) => handleValueChange(v === 'true')}>
               <Select.Trigger style={{ width: 128 }} />
               <Select.Content>
-                <Select.Item value="true">Is True</Select.Item>
-                <Select.Item value="false">Is False</Select.Item>
+                <Select.Item value="true">True</Select.Item>
+                <Select.Item value="false">False</Select.Item>
               </Select.Content>
             </Select.Root>
 
@@ -72,16 +72,27 @@ export function BooleanFilterInput({ filter, onChange }: BooleanFilterInputProps
               </IconButton>
             )}
           </Flex>
-          <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="128px" />
-        </Flex>
-      ) : (
-        /* Show "Add value" button when there are no non-null values */
-        <Flex direction="column" gap="1">
-          <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="128px" />
 
-          <AddValueButton minWidth="128px" onClick={addValue} />
+          <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="128px" />
         </Flex>
-      )}
+      );
+    }
+
+    /* Also show "Add value" button when there are no non-null values */
+    return (
+      <Flex direction="column" gap="1">
+        <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="128px" singularValue={true} />
+
+        <AddValueButton minWidth="128px" onClick={addValue} />
+      </Flex>
+    );
+  };
+
+  return (
+    <Flex gap="2" wrap="wrap">
+      <TextField.Root value="Is" disabled style={{ width: 128 }} />
+
+      {renderValueInputs()}
     </Flex>
   );
 }
