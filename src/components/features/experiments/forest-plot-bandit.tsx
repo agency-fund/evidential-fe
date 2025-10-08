@@ -41,7 +41,6 @@ interface BanditData {
 interface ForestPlotBanditProps {
   analysis: BanditExperimentAnalysisResponse;
   assignSummary: AssignSummary;
-  designSpec: MABExperimentSpecOutput | CMABExperimentSpecOutput;
 }
 
 // Define a type for the shape props that matches what we need; leverages the fact that
@@ -74,7 +73,7 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   );
 }
 
-export function ForestPlotBandit({ analysis, designSpec, assignSummary }: ForestPlotBanditProps) {
+export function ForestPlotBandit({ analysis, assignSummary }: ForestPlotBanditProps) {
   // Get total sample size from assign summary
   const availableN = assignSummary.sample_size;
   const minMean = Math.min(...analysis.arm_analyses.map((d) => d.post_pred_mean));
@@ -168,7 +167,6 @@ export function ForestPlotBandit({ analysis, designSpec, assignSummary }: Forest
   const plotHeightPx = Math.max(160, 64 * banditData.length);
   // Coarse adjustment of the width of the left Y-axis based on the length of the arm names.
   const maxArmNameLength = banditData.reduce((max, e) => Math.max(max, e.armName.length), 0);
-  const yRightAxisWidthPx = 80;
   const yLeftAxisWidthPx = maxArmNameLength > 20 ? 180 : 80;
 
   return (

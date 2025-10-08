@@ -403,7 +403,6 @@ export default function ExperimentViewPage() {
                       {!isFrequentistDesign(design_spec) && !isCMABDesign(design_spec) && assign_summary && (
                         <ForestPlotBandit
                           analysis={selectedAnalysis.data as BanditExperimentAnalysisResponse}
-                          designSpec={design_spec as MABExperimentSpecInput}
                           assignSummary={assign_summary}
                         />
                       )}
