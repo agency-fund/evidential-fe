@@ -127,30 +127,30 @@ export default function ExperimentViewPage() {
         onSuccess: (data) => {
           // Make human-readable labels for the dropdown, showing UTC down to the minute.
           // Use the snapshot ID as the key, looking up the analysisState by ID upon selection.
-          if (data?.items) {
-            // Group snapshots by date and keep only the most recent one per date
-            const snapshotsByDate = new Map<string, Snapshot>();
+          if (!data?.items) return;
 
-            for (const s of data.items) {
-              const dateKey = s.updated_at.split('T')[0]; // Get YYYY-MM-DD from ISO string
-              const existing = snapshotsByDate.get(dateKey);
-              if (!existing || s.updated_at > existing.updated_at) {
-                snapshotsByDate.set(dateKey, s);
-              }
+          // Group snapshots by date and keep only the most recent one per date
+          const snapshotsByDate = new Map<string, Snapshot>();
+
+          for (const s of data.items) {
+            const dateKey = s.updated_at.split('T')[0]; // Get YYYY-MM-DD from ISO string
+            const existing = snapshotsByDate.get(dateKey);
+            if (!existing || s.updated_at > existing.updated_at) {
+              snapshotsByDate.set(dateKey, s);
             }
-
-            // Convert to array and sort by date descending (most recent first)
-            const filteredSnapshots = Array.from(snapshotsByDate.values());
-            filteredSnapshots.sort((a, b) => b.updated_at.localeCompare(a.updated_at));
-
-            const opts: AnalysisState[] = filteredSnapshots.map((s) => ({
-              key: s.id,
-              data: s.data as ExperimentAnalysisResponse,
-              label: formatUtcDownToMinuteLabel(new Date(s.updated_at)),
-            }));
-
-            setSnapshotDropdownOptions(opts);
           }
+
+          // Convert to array and sort by date descending (most recent first)
+          const filteredSnapshots = Array.from(snapshotsByDate.values());
+          filteredSnapshots.sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+
+          const opts: AnalysisState[] = filteredSnapshots.map((s) => ({
+            key: s.id,
+            data: s.data as ExperimentAnalysisResponse,
+            label: formatUtcDownToMinuteLabel(new Date(s.updated_at)),
+          }));
+
+          setSnapshotDropdownOptions(opts);
         },
       },
     },
@@ -280,41 +280,37 @@ export default function ExperimentViewPage() {
           headerLeft={
             <Flex gap="3" align="center" wrap="wrap">
               <Heading size="3">Analysis</Heading>
-              {selectedMetricAnalyses && (
-                <>
-                  <Badge size="2">
-                    <Flex gap="2" align="center">
-                      <Heading size="2">Metric:</Heading>
-                      {selectedMetricAnalyses.length === 1 ? (
-                        <Text>{selectedMetricName}</Text>
-                      ) : (
-                        <Select.Root
-                          size="1"
-                          value={selectedMetricName}
-                          onValueChange={(value) =>
-                            setSelectedMetric(
-                              selectedMetricAnalyses.find((metric) => metric.metric?.field_name === value) || null,
-                            )
-                          }
-                        >
-                          <Select.Trigger style={{ height: 18 }} />
-                          <Select.Content>
-                            {selectedMetricAnalyses.map((metric) => {
-                              const metricName = metric.metric?.field_name ?? 'unknown';
-                              return (
-                                <Select.Item key={metricName} value={metricName}>
-                                  {metricName}
-                                </Select.Item>
-                              );
-                            })}
-                          </Select.Content>
-                        </Select.Root>
-                      )}
-                    </Flex>
-                  </Badge>
-                  <MdeBadge value={mdePct} />
-                </>
-              )}
+              <Badge size="2">
+                <Flex gap="2" align="center">
+                  <Heading size="2">Metric:</Heading>
+                  {selectedMetricAnalyses && selectedMetricAnalyses.length > 1 ? (
+                    <Select.Root
+                      size="1"
+                      value={selectedMetricName}
+                      onValueChange={(value) =>
+                        setSelectedMetric(
+                          selectedMetricAnalyses.find((metric) => metric.metric?.field_name === value) || null,
+                        )
+                      }
+                    >
+                      <Select.Trigger style={{ height: 18 }} />
+                      <Select.Content>
+                        {selectedMetricAnalyses.map((metric) => {
+                          const metricName = metric.metric?.field_name ?? 'unknown';
+                          return (
+                            <Select.Item key={metricName} value={metricName}>
+                              {metricName}
+                            </Select.Item>
+                          );
+                        })}
+                      </Select.Content>
+                    </Select.Root>
+                  ) : (
+                    <Text>{selectedMetricName}</Text>
+                  )}
+                </Flex>
+              </Badge>
+              <MdeBadge value={mdePct} />
             </Flex>
           }
           headerRight={
