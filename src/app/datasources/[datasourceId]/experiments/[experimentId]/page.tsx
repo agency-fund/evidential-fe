@@ -319,15 +319,17 @@ export default function ExperimentViewPage() {
         {/* Arms & Allocations Section */}
         {assign_summary && (
           <SectionCard
-            title="Arms & Allocations"
-            headerRight={
-              <Flex justify="between" width="100%">
+            headerLeft={
+              <Flex gap="3" align="center">
+                <Heading size="3">Arms & Allocations</Heading>
                 <DownloadAssignmentsCsvButton datasourceId={experiment.datasource_id} experimentId={experimentId} />
-                <Badge>
-                  <PersonIcon />
-                  <Text size="2">{assign_summary.sample_size.toLocaleString()} participants</Text>
-                </Badge>
               </Flex>
+            }
+            headerRight={
+              <Badge>
+                <PersonIcon />
+                <Text size="2">{assign_summary.sample_size.toLocaleString()} participants</Text>
+              </Badge>
             }
           >
             <ArmsAndAllocationsTable
