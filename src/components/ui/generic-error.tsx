@@ -33,7 +33,7 @@ const FormattedError = ({ error }: { error: Error }) => {
             <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
               {validationError.detail.map((detail, index) => (
                 <li key={index}>
-                  <Text size="2">
+                  <Text size="2" wrap="wrap">
                     <strong>{detail.loc.join('.')}</strong>: {detail.msg} ({detail.type})
                   </Text>
                 </li>
