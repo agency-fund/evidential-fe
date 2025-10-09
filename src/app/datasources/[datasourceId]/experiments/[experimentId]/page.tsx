@@ -71,47 +71,59 @@ export default function ExperimentViewPage() {
   const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisState>(liveAnalysis);
   const [selectedMetric, setSelectedMetric] = useState<MetricAnalysis | null>(null);
 
-  // Track the min/max CI bounds seen across all selected analyses for the current metric
+  // Track the min/max CI bounds across a recent window of snapshots for more stable forest plot display.
   const [minAbsCI95Lower, setMinAbsCI95Lower] = useState<number | undefined>(undefined);
   const [maxAbsCI95Upper, setMaxAbsCI95Upper] = useState<number | undefined>(undefined);
 
-  // Helper to update min/max bounds for a given metric.
-  // Caller must set shouldReset=true if the effectSizes are for a new metric.
-  function updateBoundsForMetric(effectSizes: EffectSizeData[] | undefined, shouldReset: boolean) {
-    if (shouldReset) {
+  // Compute min/max bounds for a given metric from a subset of snapshots
+  function computeBoundsForMetric(metricName: string | undefined, analysisStates: AnalysisState[]) {
+    if (!metricName) {
       setMinAbsCI95Lower(undefined);
       setMaxAbsCI95Upper(undefined);
+      return;
     }
-    if (!effectSizes) return;
 
-    // Update min/max for all arms in the selected metric
-    for (const effectSize of effectSizes) {
-      const { absCI95Lower, absCI95Upper } = effectSize;
+    let minLower: number | undefined = undefined;
+    let maxUpper: number | undefined = undefined;
 
-      setMinAbsCI95Lower((prev) => (prev === undefined ? absCI95Lower : Math.min(prev, absCI95Lower)));
-      setMaxAbsCI95Upper((prev) => (prev === undefined ? absCI95Upper : Math.max(prev, absCI95Upper)));
+    // Include up to 7 most recent snapshots
+    const analysesToCheck = analysisStates.slice(0, 7);
+
+    // Iterate through all analyses and find min/max
+    for (const analysis of analysesToCheck) {
+      const effectSizes = analysis.effectSizesByMetric?.get(metricName);
+      if (!effectSizes) continue;
+
+      for (const effectSize of effectSizes) {
+        const { absCI95Lower, absCI95Upper } = effectSize;
+        minLower = minLower === undefined ? absCI95Lower : Math.min(minLower, absCI95Lower);
+        maxUpper = maxUpper === undefined ? absCI95Upper : Math.max(maxUpper, absCI95Upper);
+      }
     }
+
+    setMinAbsCI95Lower(minLower);
+    setMaxAbsCI95Upper(maxUpper);
   }
 
   function setSelectedAnalysisAndMetrics(analysis: AnalysisState) {
     setSelectedAnalysis(analysis);
-    if (analysis.data && 'metric_analyses' in analysis.data) {
-      const metricAnalyses = analysis.data.metric_analyses || [];
-      // Try to maintain the same metric as before when switching between snapshots.
-      // The fallback to the first metric should not actually happen in practice.
-      const oldMetricName = selectedMetric?.metric?.field_name;
-      const newMetric =
-        metricAnalyses.find((metric) => metric.metric?.field_name === oldMetricName) || metricAnalyses[0] || null;
-      setSelectedMetric(newMetric);
-
-      // Reset bounds if the metric name changed, otherwise accumulate
-      const newMetricName = newMetric?.metric?.field_name || '';
-      const shouldReset = oldMetricName !== newMetricName;
-      const effectSizes = analysis.effectSizesByMetric?.get(newMetricName);
-      updateBoundsForMetric(effectSizes, shouldReset);
-    } else {
+    if (analysis.data?.type !== 'freq') {
       setSelectedMetric(null);
+      return;
     }
+
+    const metricAnalyses = analysis.data.metric_analyses;
+    // Try to maintain the same metric as before when switching between snapshots.
+    // The fallback to the first metric should not actually happen in practice.
+    const oldMetricName = selectedMetric?.metric_name || '';
+    const newMetric =
+      metricAnalyses.find((metric) => metric.metric?.field_name === oldMetricName) || metricAnalyses[0] || null;
+    // Recompute bounds if the metric changed
+    const newMetricName = newMetric?.metric_name || '';
+    if (oldMetricName !== newMetricName) {
+      computeBoundsForMetric(newMetricName, [liveAnalysis, ...snapshotDropdownOptions]);
+    }
+    setSelectedMetric(newMetric);
   }
 
   const {
@@ -202,6 +214,8 @@ export default function ExperimentViewPage() {
           });
 
           setSnapshotDropdownOptions(opts);
+          const currentMetricName = selectedMetric?.metric?.field_name;
+          computeBoundsForMetric(currentMetricName, [liveAnalysis, ...opts]);
         },
       },
     },
@@ -342,8 +356,7 @@ export default function ExperimentViewPage() {
                         const newMetric =
                           selectedMetricAnalyses.find((metric) => metric.metric?.field_name === value) || null;
                         setSelectedMetric(newMetric);
-                        const effectSizeData = selectedAnalysis.effectSizesByMetric?.get(value);
-                        updateBoundsForMetric(effectSizeData, true);
+                        computeBoundsForMetric(value, [...snapshotDropdownOptions, liveAnalysis]);
                       }}
                     >
                       <Select.Trigger style={{ height: 18 }} />
