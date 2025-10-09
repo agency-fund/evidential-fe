@@ -75,57 +75,6 @@ export default function ExperimentViewPage() {
   const [minAbsCI95Lower, setMinAbsCI95Lower] = useState<number | undefined>(undefined);
   const [maxAbsCI95Upper, setMaxAbsCI95Upper] = useState<number | undefined>(undefined);
 
-  // Compute min/max bounds for a given metric from a subset of snapshots
-  function computeBoundsForMetric(metricName: string | undefined, analysisStates: AnalysisState[]) {
-    if (!metricName) {
-      setMinAbsCI95Lower(undefined);
-      setMaxAbsCI95Upper(undefined);
-      return;
-    }
-
-    let minLower: number | undefined = undefined;
-    let maxUpper: number | undefined = undefined;
-
-    // Include up to 7 most recent snapshots
-    const analysesToCheck = analysisStates.slice(0, 7);
-
-    // Iterate through all analyses and find min/max
-    for (const analysis of analysesToCheck) {
-      const effectSizes = analysis.effectSizesByMetric?.get(metricName);
-      if (!effectSizes) continue;
-
-      for (const effectSize of effectSizes) {
-        const { absCI95Lower, absCI95Upper } = effectSize;
-        minLower = minLower === undefined ? absCI95Lower : Math.min(minLower, absCI95Lower);
-        maxUpper = maxUpper === undefined ? absCI95Upper : Math.max(maxUpper, absCI95Upper);
-      }
-    }
-
-    setMinAbsCI95Lower(minLower);
-    setMaxAbsCI95Upper(maxUpper);
-  }
-
-  function setSelectedAnalysisAndMetrics(analysis: AnalysisState) {
-    setSelectedAnalysis(analysis);
-    if (analysis.data?.type !== 'freq') {
-      setSelectedMetric(null);
-      return;
-    }
-
-    const metricAnalyses = analysis.data.metric_analyses;
-    // Try to maintain the same metric as before when switching between snapshots.
-    // The fallback to the first metric should not actually happen in practice.
-    const oldMetricName = selectedMetric?.metric_name || '';
-    const newMetric =
-      metricAnalyses.find((metric) => metric.metric?.field_name === oldMetricName) || metricAnalyses[0] || null;
-    // Recompute bounds if the metric changed
-    const newMetricName = newMetric?.metric_name || '';
-    if (oldMetricName !== newMetricName) {
-      computeBoundsForMetric(newMetricName, [liveAnalysis, ...snapshotDropdownOptions]);
-    }
-    setSelectedMetric(newMetric);
-  }
-
   const {
     data: experiment,
     isLoading: isLoadingExperiment,
@@ -133,21 +82,6 @@ export default function ExperimentViewPage() {
   } = useGetExperimentForUi(datasourceId, experimentId, {
     swr: { enabled: !!datasourceId },
   });
-
-  function precomputeEffectSizes(analysisData: ExperimentAnalysisResponse, designSpec: DesignSpecOutput) {
-    if (!isFrequentistDesign(designSpec)) return undefined;
-
-    // Pre-generate effect size data for all metrics
-    const effectSizesByMetric = new Map<string, EffectSizeData[]>();
-    const freqAnalysisData = analysisData as FreqExperimentAnalysisResponse;
-    for (const metricAnalysis of freqAnalysisData.metric_analyses) {
-      // TODO: cleanup fallback when metric_name is not nullable in the backend (wasn't supposed to be)
-      const metricName = metricAnalysis.metric_name || '';
-      const effectSizes = generateEffectSizeData(metricAnalysis, designSpec.alpha || 0.05);
-      effectSizesByMetric.set(metricName, effectSizes);
-    }
-    return effectSizesByMetric;
-  }
 
   const { isLoading: isLoadingAnalysis, error: analysisError } = useAnalyzeExperiment(
     datasourceId,
@@ -228,6 +162,72 @@ export default function ExperimentViewPage() {
       },
     },
   });
+
+  // Compute min/max bounds for a given metric from a subset of snapshots
+  function computeBoundsForMetric(metricName: string | undefined, analysisStates: AnalysisState[]) {
+    if (!metricName) {
+      setMinAbsCI95Lower(undefined);
+      setMaxAbsCI95Upper(undefined);
+      return;
+    }
+
+    let minLower: number | undefined = undefined;
+    let maxUpper: number | undefined = undefined;
+
+    // Include up to 7 most recent snapshots
+    const analysesToCheck = analysisStates.slice(0, 7);
+
+    // Iterate through all analyses and find min/max
+    for (const analysis of analysesToCheck) {
+      const effectSizes = analysis.effectSizesByMetric?.get(metricName);
+      if (!effectSizes) continue;
+
+      for (const effectSize of effectSizes) {
+        const { absCI95Lower, absCI95Upper } = effectSize;
+        minLower = minLower === undefined ? absCI95Lower : Math.min(minLower, absCI95Lower);
+        maxUpper = maxUpper === undefined ? absCI95Upper : Math.max(maxUpper, absCI95Upper);
+      }
+    }
+
+    setMinAbsCI95Lower(minLower);
+    setMaxAbsCI95Upper(maxUpper);
+  }
+
+  function setSelectedAnalysisAndMetrics(analysis: AnalysisState) {
+    setSelectedAnalysis(analysis);
+    if (analysis.data?.type !== 'freq') {
+      setSelectedMetric(null);
+      return;
+    }
+
+    const metricAnalyses = analysis.data.metric_analyses;
+    // Try to maintain the same metric as before when switching between snapshots.
+    // The fallback to the first metric should not actually happen in practice.
+    const oldMetricName = selectedMetric?.metric_name || '';
+    const newMetric =
+      metricAnalyses.find((metric) => metric.metric?.field_name === oldMetricName) || metricAnalyses[0] || null;
+    // Recompute bounds if the metric changed
+    const newMetricName = newMetric?.metric_name || '';
+    if (oldMetricName !== newMetricName) {
+      computeBoundsForMetric(newMetricName, [liveAnalysis, ...snapshotDropdownOptions]);
+    }
+    setSelectedMetric(newMetric);
+  }
+
+  function precomputeEffectSizes(analysisData: ExperimentAnalysisResponse, designSpec: DesignSpecOutput) {
+    if (!isFrequentistDesign(designSpec)) return undefined;
+
+    // Pre-generate effect size data for all metrics
+    const effectSizesByMetric = new Map<string, EffectSizeData[]>();
+    const freqAnalysisData = analysisData as FreqExperimentAnalysisResponse;
+    for (const metricAnalysis of freqAnalysisData.metric_analyses) {
+      // TODO: cleanup fallback when metric_name is not nullable in the backend (wasn't supposed to be)
+      const metricName = metricAnalysis.metric_name || '';
+      const effectSizes = generateEffectSizeData(metricAnalysis, designSpec.alpha || 0.05);
+      effectSizesByMetric.set(metricName, effectSizes);
+    }
+    return effectSizesByMetric;
+  }
 
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
