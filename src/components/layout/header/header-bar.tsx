@@ -1,14 +1,15 @@
 'use client';
-import { DropdownMenu, Flex, Heading, IconButton, Text } from '@radix-ui/themes';
+import { DropdownMenu, Flex, IconButton, Text } from '@radix-ui/themes';
 import { useAuth } from '@/providers/auth-provider';
 import { ArrowLeftIcon, AvatarIcon, BackpackIcon, ExitIcon, GearIcon, RocketIcon } from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
-import { PRODUCT_NAME, XNGIN_API_DOCS_LINK } from '@/services/constants';
+import { XNGIN_API_DOCS_LINK } from '@/services/constants';
 import { useListOrganizations } from '@/api/admin';
 import { useState } from 'react';
 import { useLocalStorage } from '@/providers/use-local-storage';
 import { CURRENT_ORG_ID_KEY, useCurrentOrganization } from '@/providers/organization-provider';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export function HeaderBar() {
   const auth = useAuth();
@@ -33,14 +34,14 @@ export function HeaderBar() {
     <Flex
       justify="between"
       align="center"
-      p={'4'}
+      px="4"
+      py="5"
       style={{
         borderBottom: '1px solid var(--gray-5)',
       }}
     >
-      {/* Using Link instead of router.push for accessibility */}
-      <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-        <Heading>{PRODUCT_NAME}</Heading>
+      <Link href="/" style={{ textDecoration: 'none', color: 'inherit', lineHeight: '0' }}>
+        <Image src="/evidential-logo.svg" alt="Evidential Logo" width={200} height={35} />
       </Link>
       <DropdownMenu.Root
         open={dropdownOpen !== 'closed'}
@@ -56,7 +57,6 @@ export function HeaderBar() {
 
         {dropdownOpen === 'main' ? (
           <DropdownMenu.Content id="user-menu">
-            {/* Main menu */}
             {hasMultipleOrgs && (
               <>
                 <DropdownMenu.Label>
