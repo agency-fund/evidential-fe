@@ -42,6 +42,7 @@ export function generateEffectSizeData(analysis: MetricAnalysis, alpha: number):
     const invalidStatTest = pValue === null || pValue === undefined || tStat === null || tStat === undefined;
 
     // Calculate 95% confidence interval
+    // TODO: backend should return CIs; this approximation is for z-tests, and not appropriate for small sample sizes.
     const ci95 = 1.96 * stdError;
     const ci95Lower = estimate - ci95;
     const ci95Upper = estimate + ci95;

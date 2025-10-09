@@ -26,6 +26,10 @@ const COLORS = {
 
 interface ForestPlotProps {
   effectSizes?: EffectSizeData[];
+  // If provided, use these values as hints for the x-axis domain.
+  // May still be adjusted to accommodate the displayed effect sizes.
+  minX?: number;
+  maxX?: number;
 }
 
 // Define a type for the shape props that matches what we need; leverages the fact that
@@ -73,16 +77,19 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   );
 }
 
-export function ForestPlot({ effectSizes }: ForestPlotProps) {
+export function ForestPlot({ effectSizes, minX: minXProp, maxX: maxXProp }: ForestPlotProps) {
   // Only render if we have data
   if (!effectSizes || effectSizes.length === 0) {
     return <Text>No treatment arms to display</Text>;
   }
 
   // Get the min and max x-axis values in metric units to use in our charts.
-  function getMinMaxX(effectSizes: EffectSizeData[]) {
+  function getMinMaxX(effectSizes: EffectSizeData[], minXProp: number | undefined, maxXProp: number | undefined) {
     let minX = Math.min(...effectSizes.map((d) => d.absCI95Lower));
     let maxX = Math.max(...effectSizes.map((d) => d.absCI95Upper));
+    if (minXProp !== undefined) minX = Math.min(minX, minXProp);
+    if (maxXProp !== undefined) maxX = Math.max(maxX, maxXProp);
+
     const viewportWidth = maxX - minX;
     minX = minX - viewportWidth * 0.1;
     maxX = maxX + viewportWidth * 0.1;
@@ -98,7 +105,8 @@ export function ForestPlot({ effectSizes }: ForestPlotProps) {
     return [minX, maxX];
   }
 
-  const [minX, maxX] = getMinMaxX(effectSizes);
+  // Use provided min/max if available, otherwise calculate from effect sizes
+  const [minX, maxX] = getMinMaxX(effectSizes, minXProp, maxXProp);
   // Space 3 ticks evenly across the domain, but filter out duplicates,
   // which can occur when the effect is 0.
   const xGridPoints = [0, 1, 2, 3, 4]
