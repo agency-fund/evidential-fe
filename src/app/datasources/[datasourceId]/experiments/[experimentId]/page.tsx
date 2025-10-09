@@ -71,6 +71,28 @@ export default function ExperimentViewPage() {
   const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisState>(liveAnalysis);
   const [selectedMetric, setSelectedMetric] = useState<MetricAnalysis | null>(null);
 
+  // Track the min/max CI bounds seen across all selected analyses for the current metric
+  const [minAbsCI95Lower, setMinAbsCI95Lower] = useState<number | undefined>(undefined);
+  const [maxAbsCI95Upper, setMaxAbsCI95Upper] = useState<number | undefined>(undefined);
+
+  // Helper to update min/max bounds for a given metric.
+  // Caller must set shouldReset=true if the effectSizes are for a new metric.
+  function updateBoundsForMetric(effectSizes: EffectSizeData[] | undefined, shouldReset: boolean) {
+    if (shouldReset) {
+      setMinAbsCI95Lower(undefined);
+      setMaxAbsCI95Upper(undefined);
+    }
+    if (!effectSizes) return;
+
+    // Update min/max for all arms in the selected metric
+    for (const effectSize of effectSizes) {
+      const { absCI95Lower, absCI95Upper } = effectSize;
+
+      setMinAbsCI95Lower((prev) => (prev === undefined ? absCI95Lower : Math.min(prev, absCI95Lower)));
+      setMaxAbsCI95Upper((prev) => (prev === undefined ? absCI95Upper : Math.max(prev, absCI95Upper)));
+    }
+  }
+
   function setSelectedAnalysisAndMetrics(analysis: AnalysisState) {
     setSelectedAnalysis(analysis);
     if (analysis.data && 'metric_analyses' in analysis.data) {
@@ -78,9 +100,15 @@ export default function ExperimentViewPage() {
       // Try to maintain the same metric as before when switching between snapshots.
       // The fallback to the first metric should not actually happen in practice.
       const oldMetricName = selectedMetric?.metric?.field_name;
-      setSelectedMetric(
-        metricAnalyses.find((metric) => metric.metric?.field_name === oldMetricName) || metricAnalyses[0] || null,
-      );
+      const newMetric =
+        metricAnalyses.find((metric) => metric.metric?.field_name === oldMetricName) || metricAnalyses[0] || null;
+      setSelectedMetric(newMetric);
+
+      // Reset bounds if the metric name changed, otherwise accumulate
+      const newMetricName = newMetric?.metric?.field_name || '';
+      const shouldReset = oldMetricName !== newMetricName;
+      const effectSizes = analysis.effectSizesByMetric?.get(newMetricName);
+      updateBoundsForMetric(effectSizes, shouldReset);
     } else {
       setSelectedMetric(null);
     }
@@ -310,11 +338,13 @@ export default function ExperimentViewPage() {
                     <Select.Root
                       size="1"
                       value={selectedMetricName}
-                      onValueChange={(value) =>
-                        setSelectedMetric(
-                          selectedMetricAnalyses.find((metric) => metric.metric?.field_name === value) || null,
-                        )
-                      }
+                      onValueChange={(value) => {
+                        const newMetric =
+                          selectedMetricAnalyses.find((metric) => metric.metric?.field_name === value) || null;
+                        setSelectedMetric(newMetric);
+                        const effectSizeData = selectedAnalysis.effectSizesByMetric?.get(value);
+                        updateBoundsForMetric(effectSizeData, true);
+                      }}
                     >
                       <Select.Trigger style={{ height: 18 }} />
                       <Select.Content>
@@ -435,7 +465,11 @@ export default function ExperimentViewPage() {
                   <Tabs.Content value="visualization">
                     <Flex direction="column" gap="3" py="3">
                       {selectedAnalysis.effectSizesByMetric && (
-                        <ForestPlot effectSizes={selectedAnalysis.effectSizesByMetric.get(selectedMetricName)} />
+                        <ForestPlot
+                          effectSizes={selectedAnalysis.effectSizesByMetric.get(selectedMetricName)}
+                          minX={minAbsCI95Lower}
+                          maxX={maxAbsCI95Upper}
+                        />
                       )}
                     </Flex>
                   </Tabs.Content>
