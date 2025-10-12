@@ -1,13 +1,6 @@
 'use client';
-import {
-  AssignSummary,
-  MetricAnalysis,
-  OnlineFrequentistExperimentSpecOutput,
-  PreassignedFrequentistExperimentSpecOutput,
-} from '@/api/methods.schemas';
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 import { Box, Callout, Card, Flex, Text } from '@radix-ui/themes';
-import { MdeBadge } from '@/components/features/experiments/mde-badge';
 import {
   CartesianGrid,
   ResponsiveContainer,
@@ -20,6 +13,7 @@ import {
 } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { ChartOffset } from 'recharts/types/util/types';
+import { EffectSizeData } from './forest-plot-utils';
 
 // Color constants
 const COLORS = {
@@ -30,29 +24,12 @@ const COLORS = {
   NEGATIVE: '#ff5252', // Red for negative effects
 } as const;
 
-interface EffectSizeData {
-  isBaseline: boolean;
-  armId: string;
-  armName: string;
-  baselineEffect: number;
-  effect: number;
-  absEffect: number;
-  ci95Lower: number;
-  ci95Upper: number;
-  ci95: number;
-  absCI95Lower: number;
-  absCI95Upper: number;
-  pValue: number | null;
-  invalidStatTest: boolean;
-  significant: boolean;
-  sampleSize: number;
-  totalSampleSize: number;
-}
-
 interface ForestPlotProps {
-  analysis: MetricAnalysis;
-  assignSummary: AssignSummary;
-  designSpec: OnlineFrequentistExperimentSpecOutput | PreassignedFrequentistExperimentSpecOutput;
+  effectSizes?: EffectSizeData[];
+  // If provided, use these values as hints for the x-axis domain.
+  // May still be adjusted to accommodate the displayed effect sizes.
+  minX?: number;
+  maxX?: number;
 }
 
 // Define a type for the shape props that matches what we need; leverages the fact that
@@ -100,64 +77,19 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   );
 }
 
-export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotProps) {
-  // Get total sample size from assign summary
-  const availableN = assignSummary.sample_size;
-
-  // Extract data for visualization
-  const controlArmIndex = analysis.arm_analyses.findIndex((a) => a.is_baseline);
-  const controlArmAnalysis = analysis.arm_analyses[controlArmIndex];
-  const controlEstimate = controlArmAnalysis.estimate; // regression intercept
-
-  // Our data structure for Recharts
-  const effectSizes: EffectSizeData[] = analysis.arm_analyses.map((armAnalysis, index) => {
-    const isBaseline = armAnalysis.is_baseline;
-    const armId = armAnalysis.arm_id || 'MISSING_ARM_ID'; // should be impossible
-    const armSize = assignSummary.arm_sizes?.find((a) => a.arm.arm_id === armId)?.size || 0;
-
-    const estimate = armAnalysis.estimate; // regression coefficient
-    const stdError = armAnalysis.std_error;
-    const pValue = armAnalysis.p_value;
-    const tStat = armAnalysis.t_stat;
-    const invalidStatTest = pValue === null || pValue === undefined || tStat === null || tStat === undefined;
-
-    // Calculate 95% confidence interval
-    const ci95 = 1.96 * stdError;
-    const ci95Lower = estimate - ci95;
-    const ci95Upper = estimate + ci95;
-    const absEffect = estimate + (isBaseline ? 0 : controlEstimate);
-    const absCI95Lower = ci95Lower + (isBaseline ? 0 : controlEstimate);
-    const absCI95Upper = ci95Upper + (isBaseline ? 0 : controlEstimate);
-
-    return {
-      isBaseline,
-      armId,
-      armName: armAnalysis.arm_name || `Arm ${index}`,
-      baselineEffect: controlEstimate,
-      effect: estimate, // relative to baseline effect
-      absEffect: absEffect,
-      ci95Lower,
-      ci95Upper,
-      ci95: ci95, // for symmetric ErrorBars
-      absCI95Lower,
-      absCI95Upper,
-      pValue,
-      invalidStatTest,
-      significant: !!(pValue && pValue < (designSpec.alpha || 0.05)),
-      sampleSize: armSize,
-      totalSampleSize: availableN,
-    };
-  });
-
+export function ForestPlot({ effectSizes, minX: minXProp, maxX: maxXProp }: ForestPlotProps) {
   // Only render if we have data
-  if (effectSizes.length === 0) {
+  if (!effectSizes || effectSizes.length === 0) {
     return <Text>No treatment arms to display</Text>;
   }
 
   // Get the min and max x-axis values in metric units to use in our charts.
-  function getMinMaxX(effectSizes: EffectSizeData[]) {
+  function getMinMaxX(effectSizes: EffectSizeData[], minXProp: number | undefined, maxXProp: number | undefined) {
     let minX = Math.min(...effectSizes.map((d) => d.absCI95Lower));
     let maxX = Math.max(...effectSizes.map((d) => d.absCI95Upper));
+    if (minXProp !== undefined) minX = Math.min(minX, minXProp);
+    if (maxXProp !== undefined) maxX = Math.max(maxX, maxXProp);
+
     const viewportWidth = maxX - minX;
     minX = minX - viewportWidth * 0.1;
     maxX = maxX + viewportWidth * 0.1;
@@ -173,7 +105,8 @@ export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotPr
     return [minX, maxX];
   }
 
-  const [minX, maxX] = getMinMaxX(effectSizes);
+  // Use provided min/max if available, otherwise calculate from effect sizes
+  const [minX, maxX] = getMinMaxX(effectSizes, minXProp, maxXProp);
   // Space 3 ticks evenly across the domain, but filter out duplicates,
   // which can occur when the effect is 0.
   const xGridPoints = [0, 1, 2, 3, 4]
@@ -196,13 +129,6 @@ export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotPr
     return (x / (maxX - minX)) * width;
   };
 
-  let mdePct: string | null;
-  if (analysis.metric?.metric_pct_change) {
-    mdePct = (analysis.metric?.metric_pct_change * 100).toFixed(1);
-  } else {
-    mdePct = null;
-  }
-
   const commonAxisStyle = {
     fontSize: '16px',
     fontFamily: 'Arial, sans-serif',
@@ -217,11 +143,6 @@ export function ForestPlot({ analysis, designSpec, assignSummary }: ForestPlotPr
 
   return (
     <Flex direction="column" gap="3">
-      <Flex direction="row" align="baseline" wrap="wrap">
-        <Text weight="bold">Effect of {analysis.metric_name || 'Unknown Metric'}&nbsp;</Text>
-        <MdeBadge value={mdePct} />
-      </Flex>
-
       {effectSizes.some((e) => e.invalidStatTest) && (
         <Callout.Root color="orange" size="1">
           <Callout.Icon>

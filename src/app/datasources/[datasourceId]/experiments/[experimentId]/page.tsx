@@ -10,6 +10,7 @@ import {
   getGetExperimentForUiKey,
 } from '@/api/admin';
 import { ForestPlot } from '@/components/features/experiments/forest-plot';
+import { generateEffectSizeData, EffectSizeData } from '@/components/features/experiments/forest-plot-utils';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { useState } from 'react';
@@ -17,6 +18,7 @@ import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
 import { SectionCard } from '@/components/ui/cards/section-card';
+import { MdeBadge } from '@/components/features/experiments/mde-badge';
 import { EditableTextField } from '@/components/ui/inputs/editable-text-field';
 import { EditableDateField } from '@/components/ui/inputs/editable-date-field';
 import { EditableTextArea } from '@/components/ui/inputs/editable-text-area';
@@ -25,10 +27,12 @@ import { IntegrationGuideDialog } from '@/components/features/experiments/integr
 import { ReadMoreText } from '@/components/ui/read-more-text';
 import {
   DesignSpecOutput,
-  FreqExperimentAnalysisResponse,
   ExperimentAnalysisResponse,
+  FreqExperimentAnalysisResponse,
   OnlineFrequentistExperimentSpecOutput,
   PreassignedFrequentistExperimentSpecOutput,
+  Snapshot,
+  MetricAnalysis,
 } from '@/api/methods.schemas';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { useCurrentOrganization } from '@/providers/organization-provider';
@@ -51,9 +55,11 @@ export default function ExperimentViewPage() {
   const experimentId = (params.experimentId as string) || '';
 
   type AnalysisState = {
-    key: string;
+    key: string; // 'live' or snapshot ID
     data: ExperimentAnalysisResponse | undefined;
-    label: string;
+    label: string; // human-readable timestamp for UI
+    // Pre-computed effect size data for each metric, keyed by metric field name
+    effectSizesByMetric?: Map<string, EffectSizeData[]>;
   };
   const [snapshotDropdownOptions, setSnapshotDropdownOptions] = useState<AnalysisState[]>([]);
   const [liveAnalysis, setLiveAnalysis] = useState<AnalysisState>({
@@ -63,6 +69,10 @@ export default function ExperimentViewPage() {
   });
   // which analysis we're actually displaying (live or a snapshot)
   const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisState>(liveAnalysis);
+  const [selectedMetricAnalysis, setSelectedMetricAnalysis] = useState<MetricAnalysis | null>(null);
+
+  // Track the min/max CI bounds across a recent window of snapshots for more stable forest plot display.
+  const [ciBounds, setCiBounds] = useState<[number | undefined, number | undefined]>([undefined, undefined]);
 
   const {
     data: experiment,
@@ -80,17 +90,17 @@ export default function ExperimentViewPage() {
       swr: {
         enabled: !!datasourceId && !!experiment,
         shouldRetryOnError: false,
-        onSuccess: (data) => {
-          const d = new Date();
+        onSuccess: (analysisData) => {
           const analysis = {
             key: 'live',
-            data: data as ExperimentAnalysisResponse,
-            label: `LIVE as of ${extractUtcHHMMLabel(d)}`,
+            data: analysisData,
+            label: `LIVE as of ${extractUtcHHMMLabel(new Date())}`,
+            effectSizesByMetric: precomputeEffectSizes(analysisData, design_spec),
           };
           setLiveAnalysis(analysis);
           // Only update the display if we were previously viewing live data.
           if (selectedAnalysis.key === 'live') {
-            setSelectedAnalysis(analysis);
+            setSelectedAnalysisAndMetrics(analysis);
           }
         },
       },
@@ -104,22 +114,41 @@ export default function ExperimentViewPage() {
     { status: ['success'] },
     {
       swr: {
-        enabled: !!organizationId && !!datasourceId && !!experimentId,
+        enabled: !!organizationId && !!datasourceId && !!experimentId && !!experiment,
         shouldRetryOnError: false,
         onSuccess: (data) => {
           // Make human-readable labels for the dropdown, showing UTC down to the minute.
           // Use the snapshot ID as the key, looking up the analysisState by ID upon selection.
-          const opts: AnalysisState[] = [];
-          if (data?.items) {
-            for (const s of data.items) {
-              opts.push({
-                key: s.id,
-                data: s.data as ExperimentAnalysisResponse,
-                label: formatUtcDownToMinuteLabel(new Date(s.updated_at)),
-              });
+          if (!data?.items) return;
+
+          // Group snapshots by date and keep only the most recent one per date
+          const snapshotsByDate = new Map<string, Snapshot>();
+
+          for (const s of data.items) {
+            const dateKey = s.updated_at.split('T')[0]; // Get YYYY-MM-DD from ISO string
+            const existing = snapshotsByDate.get(dateKey);
+            if (!existing || s.updated_at > existing.updated_at) {
+              snapshotsByDate.set(dateKey, s);
             }
-            setSnapshotDropdownOptions(opts);
           }
+
+          // Convert to array and sort by date descending (most recent first)
+          const filteredSnapshots = Array.from(snapshotsByDate.values());
+          filteredSnapshots.sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+
+          const opts: AnalysisState[] = filteredSnapshots.map((s) => {
+            const analysisData = s.data as ExperimentAnalysisResponse;
+            return {
+              key: s.id,
+              data: analysisData,
+              label: formatUtcDownToMinuteLabel(new Date(s.updated_at)),
+              effectSizesByMetric: precomputeEffectSizes(analysisData, design_spec),
+            };
+          });
+
+          setSnapshotDropdownOptions(opts);
+          const currentMetricName = selectedMetricAnalysis?.metric?.field_name;
+          computeBoundsForMetric(currentMetricName, [liveAnalysis, ...opts]);
         },
       },
     },
@@ -132,6 +161,74 @@ export default function ExperimentViewPage() {
       },
     },
   });
+
+  // Compute min/max bounds for a given metric from a subset of snapshots for more stable plot axes.
+  const computeBoundsForMetric = (metricName: string | undefined, analysisStates: AnalysisState[]) => {
+    if (!metricName) {
+      setCiBounds([undefined, undefined]);
+      return;
+    }
+
+    let minLower: number | undefined = undefined;
+    let maxUpper: number | undefined = undefined;
+
+    // Include up to 7 most recent days' worth of snapshots and live analysis
+    const analysesToCheck = analysisStates.slice(0, 8);
+
+    // Iterate through all analyses and find min/max
+    for (const analysis of analysesToCheck) {
+      const effectSizes = analysis.effectSizesByMetric?.get(metricName);
+      if (!effectSizes) continue;
+
+      for (const effectSize of effectSizes) {
+        const { absCI95Lower, absCI95Upper } = effectSize;
+        minLower = minLower === undefined ? absCI95Lower : Math.min(minLower, absCI95Lower);
+        maxUpper = maxUpper === undefined ? absCI95Upper : Math.max(maxUpper, absCI95Upper);
+      }
+    }
+
+    setCiBounds([minLower, maxUpper]);
+  };
+
+  const setSelectedAnalysisAndMetrics = (analysis: AnalysisState) => {
+    setSelectedAnalysis(analysis);
+    if (analysis.data?.type !== 'freq') {
+      setSelectedMetricAnalysis(null);
+      return;
+    }
+
+    const metricAnalyses = analysis.data.metric_analyses;
+    // Try to maintain the same metric as before when switching between snapshots.
+    // The fallback to the first metric should not actually happen in practice.
+    const oldMetricName = selectedMetricAnalysis?.metric_name || '';
+    const newMetric =
+      metricAnalyses.find((metric) => metric.metric?.field_name === oldMetricName) || metricAnalyses[0] || null;
+    // Recompute bounds if the metric changed
+    const newMetricName = newMetric?.metric_name || '';
+    if (oldMetricName !== newMetricName) {
+      // check if the selection is 'live' and use it since the state may not have been updated yet.
+      computeBoundsForMetric(newMetricName, [
+        analysis.key === 'live' ? analysis : liveAnalysis,
+        ...snapshotDropdownOptions,
+      ]);
+    }
+    setSelectedMetricAnalysis(newMetric);
+  };
+
+  const precomputeEffectSizes = (analysisData: ExperimentAnalysisResponse, designSpec: DesignSpecOutput) => {
+    if (!isFrequentistDesign(designSpec)) return undefined;
+
+    // Pre-generate effect size data for all metrics
+    const effectSizesByMetric = new Map<string, EffectSizeData[]>();
+    const freqAnalysisData = analysisData as FreqExperimentAnalysisResponse;
+    for (const metricAnalysis of freqAnalysisData.metric_analyses) {
+      // TODO: cleanup fallback when metric_name is not nullable in the backend (wasn't supposed to be)
+      const metricName = metricAnalysis.metric_name || '';
+      const effectSizes = generateEffectSizeData(metricAnalysis, designSpec.alpha || 0.05);
+      effectSizesByMetric.set(metricName, effectSizes);
+    }
+    return effectSizesByMetric;
+  };
 
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
@@ -147,6 +244,16 @@ export default function ExperimentViewPage() {
 
   const { design_spec, assign_summary } = experiment;
   const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
+
+  const selectedMetricName = selectedMetricAnalysis?.metric?.field_name ?? 'unknown';
+  const selectedMetricAnalyses =
+    selectedAnalysis.data && 'metric_analyses' in selectedAnalysis.data ? selectedAnalysis.data.metric_analyses : null;
+
+  // Calculate MDE percentage for the selected metric
+  let mdePct: string | null = null;
+  if (selectedMetricAnalysis?.metric?.metric_pct_change) {
+    mdePct = (selectedMetricAnalysis.metric.metric_pct_change * 100).toFixed(1);
+  }
 
   return (
     <Flex direction="column" gap="6">
@@ -213,15 +320,17 @@ export default function ExperimentViewPage() {
         {/* Arms & Allocations Section */}
         {assign_summary && (
           <SectionCard
-            title="Arms & Allocations"
-            headerRight={
-              <Flex justify="between" width="100%">
+            headerLeft={
+              <Flex gap="3" align="center">
+                <Heading size="3">Arms & Allocations</Heading>
                 <DownloadAssignmentsCsvButton datasourceId={experiment.datasource_id} experimentId={experimentId} />
-                <Badge>
-                  <PersonIcon />
-                  <Text size="2">{assign_summary.sample_size.toLocaleString()} participants</Text>
-                </Badge>
               </Flex>
+            }
+            headerRight={
+              <Badge>
+                <PersonIcon />
+                <Text size="2">{assign_summary.sample_size.toLocaleString()} participants</Text>
+              </Badge>
             }
           >
             <ArmsAndAllocationsTable
@@ -236,9 +345,45 @@ export default function ExperimentViewPage() {
 
         {/* Analysis Section */}
         <SectionCard
-          title="Analysis"
+          headerLeft={
+            <Flex gap="3" align="center" wrap="wrap">
+              <Heading size="3">Analysis</Heading>
+              <Badge size="2">
+                <Flex gap="2" align="center">
+                  <Heading size="2">Metric:</Heading>
+                  {selectedMetricAnalyses && selectedMetricAnalyses.length > 1 ? (
+                    <Select.Root
+                      size="1"
+                      value={selectedMetricName}
+                      onValueChange={(value) => {
+                        const newMetric =
+                          selectedMetricAnalyses.find((metric) => metric.metric?.field_name === value) || null;
+                        setSelectedMetricAnalysis(newMetric);
+                        computeBoundsForMetric(value, [liveAnalysis, ...snapshotDropdownOptions]);
+                      }}
+                    >
+                      <Select.Trigger style={{ height: 18 }} />
+                      <Select.Content>
+                        {selectedMetricAnalyses.map((metric) => {
+                          const metricName = metric.metric?.field_name ?? 'unknown';
+                          return (
+                            <Select.Item key={metricName} value={metricName}>
+                              {metricName}
+                            </Select.Item>
+                          );
+                        })}
+                      </Select.Content>
+                    </Select.Root>
+                  ) : (
+                    <Text>{selectedMetricName}</Text>
+                  )}
+                </Flex>
+              </Badge>
+              <MdeBadge value={mdePct} />
+            </Flex>
+          }
           headerRight={
-            (design_spec?.experiment_type === 'freq_online' || design_spec?.experiment_type === 'freq_preassigned') && (
+            (design_spec.experiment_type === 'freq_online' || design_spec?.experiment_type === 'freq_preassigned') && (
               <Flex gap="3" wrap="wrap">
                 <Flex gap="3" wrap="wrap" align="center" justify="between">
                   <Badge size="2">
@@ -253,21 +398,21 @@ export default function ExperimentViewPage() {
                           onValueChange={(key) => {
                             const analysis =
                               key === 'live' ? liveAnalysis : snapshotDropdownOptions.find((opt) => opt.key === key);
-                            setSelectedAnalysis(analysis || liveAnalysis); // shouldn't ever need to fall back though
+                            setSelectedAnalysisAndMetrics(analysis || liveAnalysis); // shouldn't ever need to fall back though
                           }}
                         >
                           <Select.Trigger style={{ height: 18 }} />
                           <Select.Content>
                             <Select.Group>
                               <Select.Item key="live" value="live">
-                                {liveAnalysis.label}
+                                <Box minWidth="136px">{liveAnalysis.label}</Box>
                               </Select.Item>
                             </Select.Group>
                             <Select.Separator />
                             <Select.Group>
                               {snapshotDropdownOptions.map((opt) => (
                                 <Select.Item key={opt.key} value={opt.key}>
-                                  {opt.label}
+                                  <Box minWidth="136px">{opt.label}</Box>
                                 </Select.Item>
                               ))}
                             </Select.Group>
@@ -335,18 +480,13 @@ export default function ExperimentViewPage() {
                 <Box px="4">
                   <Tabs.Content value="visualization">
                     <Flex direction="column" gap="3" py="3">
-                      {isFrequentistDesign(design_spec) &&
-                        assign_summary &&
-                        (selectedAnalysis.data as FreqExperimentAnalysisResponse).metric_analyses.map(
-                          (metric_analysis, index) => (
-                            <ForestPlot
-                              key={index}
-                              analysis={metric_analysis}
-                              designSpec={design_spec}
-                              assignSummary={assign_summary}
-                            />
-                          ),
-                        )}
+                      {selectedAnalysis.effectSizesByMetric && (
+                        <ForestPlot
+                          effectSizes={selectedAnalysis.effectSizesByMetric.get(selectedMetricName)}
+                          minX={ciBounds[0]}
+                          maxX={ciBounds[1]}
+                        />
+                      )}
                     </Flex>
                   </Tabs.Content>
 
