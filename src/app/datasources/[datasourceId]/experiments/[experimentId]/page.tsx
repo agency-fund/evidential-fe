@@ -43,6 +43,7 @@ import { useCurrentOrganization } from '@/providers/organization-provider';
 import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date-utils';
 import Link from 'next/link';
 import { mutate } from 'swr';
+import ForestTimeseriesPlot from '@/components/features/experiments/forest-timeseries-plot';
 
 // Helper to safely extract alpha from frequentist experiment design specs
 const getAlpha = (designSpec: DesignSpecOutput | undefined): number | undefined => {
@@ -62,7 +63,7 @@ export default function ExperimentViewPage() {
   const [liveAnalysis, setLiveAnalysis] = useState<AnalysisState>({
     key: 'live',
     data: undefined,
-    date: new Date(),
+    updated_at: new Date(),
     label: 'No live data yet',
   });
   // which analysis we're actually displaying (live or a snapshot)
@@ -93,7 +94,7 @@ export default function ExperimentViewPage() {
           const analysis = {
             key: 'live',
             data: analysisData,
-            date: date,
+            updated_at: date,
             label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
             effectSizesByMetric: precomputeEffectSizesByMetric(analysisData, getAlpha(experiment?.design_spec)),
           };
@@ -142,7 +143,7 @@ export default function ExperimentViewPage() {
             return {
               key: s.id,
               data: analysisData,
-              date: date,
+              updated_at: date,
               label: formatUtcDownToMinuteLabel(date),
               effectSizesByMetric: precomputeEffectSizesByMetric(analysisData, getAlpha(experiment?.design_spec)),
             };
@@ -430,6 +431,7 @@ export default function ExperimentViewPage() {
               <Tabs.Root defaultValue="leaderboard">
                 <Tabs.List>
                   <Tabs.Trigger value="leaderboard">Leaderboard</Tabs.Trigger>
+                  <Tabs.Trigger value="metric-over-time">Metric over time</Tabs.Trigger>
                   <Tabs.Trigger value="raw">
                     <Flex gap="2" align="center">
                       Raw Data <CodeIcon />
@@ -448,6 +450,26 @@ export default function ExperimentViewPage() {
                       )}
                     </Flex>
                   </Tabs.Content>
+
+                  <Tabs.Content value="metric-over-time">
+                    <Flex direction="column" gap="3" py="3">
+                      {analysisHistory.length > 0 && (
+                        <ForestTimeseriesPlot
+                          effectSizesOverTime={analysisHistory.map((analysis) => {
+                            const armEffects = analysis.effectSizesByMetric?.get(selectedMetricName);
+                            return {
+                              key: analysis.key,
+                              date: analysis.updated_at,
+                              effectSizes: armEffects ?? [],
+                            };
+                          })}
+                          minY={ciBounds[0]}
+                          maxY={ciBounds[1]}
+                        />
+                      )}
+                    </Flex>
+                  </Tabs.Content>
+
                   <Tabs.Content value="raw">
                     <Flex direction="column" gap="3" py="3">
                       <CodeSnippetCard

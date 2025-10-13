@@ -20,7 +20,7 @@ export interface EffectSizeData {
 export interface AnalysisState {
   key: string;
   data: ExperimentAnalysisResponse | undefined;
-  date: Date;
+  updated_at: Date;
   label: string;
   effectSizesByMetric?: Map<string, EffectSizeData[]>;
 }
