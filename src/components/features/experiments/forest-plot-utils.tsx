@@ -1,4 +1,4 @@
-import { MetricAnalysis } from '@/api/methods.schemas';
+import { MetricAnalysis, ExperimentAnalysisResponse, FreqExperimentAnalysisResponse } from '@/api/methods.schemas';
 
 export interface EffectSizeData {
   isBaseline: boolean;
@@ -15,6 +15,89 @@ export interface EffectSizeData {
   pValue: number | null;
   invalidStatTest: boolean;
   significant: boolean;
+}
+
+export interface AnalysisState {
+  key: string;
+  data: ExperimentAnalysisResponse | undefined;
+  date: Date;
+  label: string;
+  effectSizesByMetric?: Map<string, EffectSizeData[]>;
+}
+
+/**
+ * Type guard to check if an analysis response is a frequentist experiment.
+ *
+ * @param analysisData - The experiment analysis response to check
+ * @returns True if the analysis is for a frequentist experiment
+ */
+export function isFrequentist(
+  analysisData: ExperimentAnalysisResponse | undefined,
+): analysisData is FreqExperimentAnalysisResponse {
+  return analysisData?.type === 'freq';
+}
+
+/**
+ * Pre-computes effect size data for all metrics in a frequentist analysis.
+ * Returns undefined for non-frequentist experiments.
+ *
+ * @param analysisData - The experiment analysis response
+ * @param alpha - The significance threshold (e.g., 0.05 for 95% confidence)
+ * @returns Map of metric names to effect size arrays, or undefined
+ */
+export function precomputeEffectSizesByMetric(
+  analysisData: ExperimentAnalysisResponse,
+  alpha: number = 0.05,
+): Map<string, EffectSizeData[]> | undefined {
+  if (!isFrequentist(analysisData)) return undefined;
+
+  const effectSizesByMetric = new Map<string, EffectSizeData[]>();
+  for (const metricAnalysis of analysisData.metric_analyses) {
+    // TODO: cleanup fallback when metric_name is not nullable in the backend (wasn't supposed to be)
+    const metricName = metricAnalysis.metric_name || '';
+    const effectSizes = generateEffectSizeData(metricAnalysis, alpha);
+    effectSizesByMetric.set(metricName, effectSizes);
+  }
+  return effectSizesByMetric;
+}
+
+/**
+ * Computes min/max CI bounds for a given metric from a subset of analysis states.
+ * This is useful for creating stable plot axes.
+ *
+ * @param metricName - The metric field name to compute bounds for
+ * @param analysisStates - Array of analysis states (e.g., snapshots and live analysis)
+ * @param numSnapshots - Number of most recent analyses to include (default: 8)
+ * @returns Tuple of [minLower, maxUpper] or [undefined, undefined] if no data
+ */
+export function computeBoundsForMetric(
+  metricName: string | undefined,
+  analysisStates: AnalysisState[],
+  numSnapshots: number = 8,
+): [number | undefined, number | undefined] {
+  if (!metricName) {
+    return [undefined, undefined];
+  }
+
+  let minLower: number | undefined = undefined;
+  let maxUpper: number | undefined = undefined;
+
+  // Include up to numSnapshots most recent analyses
+  const analysesToCheck = analysisStates.slice(0, numSnapshots);
+
+  // Iterate through all analyses and find min/max
+  for (const analysis of analysesToCheck) {
+    const effectSizes = analysis.effectSizesByMetric?.get(metricName);
+    if (!effectSizes) continue;
+
+    for (const effectSize of effectSizes) {
+      const { absCI95Lower, absCI95Upper } = effectSize;
+      minLower = minLower === undefined ? absCI95Lower : Math.min(minLower, absCI95Lower);
+      maxUpper = maxUpper === undefined ? absCI95Upper : Math.max(maxUpper, absCI95Upper);
+    }
+  }
+
+  return [minLower, maxUpper];
 }
 
 /**
