@@ -142,6 +142,32 @@ function CustomTimeseriesTooltip({ active, payload, armIds = [], armNames = new 
   );
 }
 
+// Helper function to calculate x-axis jitter offset
+function calculateJitterOffset(armIndex: number, totalArms: number): number {
+  const jitterSpacing = 8; // pixels between each arm's position
+  const totalWidth = (totalArms - 1) * jitterSpacing;
+  return armIndex * jitterSpacing - totalWidth / 2;
+}
+
+// Custom dot component for Line that applies jitter
+interface JitteredDotProps {
+  cx?: number;
+  cy?: number;
+  r?: number;
+  fill?: string;
+  stroke?: string;
+  armIndex: number;
+  totalArms: number;
+}
+
+function JitteredDot({ cx, cy, r = 4, fill, stroke, armIndex, totalArms }: JitteredDotProps) {
+  if (cx === undefined || cy === undefined) return null;
+
+  const xOffset = calculateJitterOffset(armIndex, totalArms);
+
+  return <circle cx={cx + xOffset} cy={cy} r={r} fill={fill} stroke={stroke} strokeWidth={0} />;
+}
+
 // Custom component to render confidence intervals for a single arm
 interface ArmConfidenceIntervalProps {
   xAxisMap?: Record<string, { scale: (value: string) => number }>;
@@ -149,9 +175,19 @@ interface ArmConfidenceIntervalProps {
   chartData: TimeSeriesDataPoint[];
   armId: string;
   color: string;
+  armIndex: number;
+  totalArms: number;
 }
 
-function ArmConfidenceInterval({ xAxisMap, yAxisMap, chartData, armId, color }: ArmConfidenceIntervalProps) {
+function ArmConfidenceInterval({
+  xAxisMap,
+  yAxisMap,
+  chartData,
+  armId,
+  color,
+  armIndex,
+  totalArms,
+}: ArmConfidenceIntervalProps) {
   if (!xAxisMap || !yAxisMap || !chartData.length || !armId || !color) return null;
   // These params are special internal params for recharts.
   // TODO: update to recharts 3+ API to replace magic with hooks.
@@ -169,6 +205,9 @@ function ArmConfidenceInterval({ xAxisMap, yAxisMap, chartData, armId, color }: 
   // Width of the horizontal caps
   const capWidth = 6;
 
+  // Calculate jitter offset for this arm to prevent overlapping CIs
+  const xOffset = calculateJitterOffset(armIndex, totalArms);
+
   // Render confidence intervals for this arm at each data point
   return (
     <g>
@@ -176,7 +215,7 @@ function ArmConfidenceInterval({ xAxisMap, yAxisMap, chartData, armId, color }: 
         const armData = dataPoint.armData.get(armId);
         if (!armData) return null;
 
-        const x = xScale(dataPoint.date);
+        const x = xScale(dataPoint.date) + xOffset;
         const yLower = yScale(armData.lower);
         const yUpper = yScale(armData.upper);
 
@@ -313,13 +352,30 @@ export default function ForestTimeseriesPlot({
             return (
               <Line
                 key={`${armId}_effect`}
-                // type="monotone"
+                // type="monotone" - removed to allow jittered dots to be connected by straight lines
                 dataKey={(point: TimeSeriesDataPoint) => point.armData.get(armId)?.estimate ?? null}
                 name={armNames.get(armId) || armId}
                 stroke={color}
                 strokeWidth={2}
-                dot={{ r: 4 }}
-                activeDot={{ r: 6 }}
+                dot={(props: unknown) => (
+                  <JitteredDot
+                    {...(props as JitteredDotProps)}
+                    fill={color}
+                    armIndex={index}
+                    totalArms={armIds.length}
+                  />
+                )}
+                activeDot={(props: unknown) => (
+                  <JitteredDot
+                    {...(props as JitteredDotProps)}
+                    r={6}
+                    fill={color}
+                    armIndex={index}
+                    totalArms={armIds.length}
+                  />
+                )}
+                connectNulls={false}
+                isAnimationActive={true}
               />
             );
           })}
@@ -331,7 +387,15 @@ export default function ForestTimeseriesPlot({
             return (
               <Customized
                 key={`ci_${armId}`}
-                component={<ArmConfidenceInterval chartData={chartData} armId={armId} color={color} />}
+                component={
+                  <ArmConfidenceInterval
+                    chartData={chartData}
+                    armId={armId}
+                    color={color}
+                    armIndex={index}
+                    totalArms={armIds.length}
+                  />
+                }
               />
             );
           })}
