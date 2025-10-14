@@ -168,6 +168,66 @@ function JitteredDot({ cx, cy, r = 4, fill, stroke, armIndex, totalArms }: Jitte
   return <circle cx={cx + xOffset} cy={cy} r={r} fill={fill} stroke={stroke} strokeWidth={0} />;
 }
 
+// Custom component to render a jittered line for a single arm
+interface ArmJitteredLineProps {
+  xAxisMap?: Record<string, { scale: (value: string) => number }>;
+  yAxisMap?: Record<string, { scale: (value: number) => number }>;
+  chartData: TimeSeriesDataPoint[];
+  armId: string;
+  color: string;
+  armIndex: number;
+  totalArms: number;
+  strokeWidth?: number;
+}
+
+function ArmJitteredLine({
+  xAxisMap,
+  yAxisMap,
+  chartData,
+  armId,
+  color,
+  armIndex,
+  totalArms,
+  strokeWidth = 2,
+}: ArmJitteredLineProps) {
+  if (!xAxisMap || !yAxisMap || !chartData.length || !armId || !color) return null;
+
+  const xAxis = Object.values(xAxisMap)[0];
+  const yAxis = Object.values(yAxisMap)[0];
+
+  if (!xAxis || !yAxis) return null;
+
+  const { scale: xScale } = xAxis;
+  const { scale: yScale } = yAxis;
+
+  if (!xScale || !yScale) return null;
+
+  const xOffset = calculateJitterOffset(armIndex, totalArms);
+
+  // Build path from points with jitter applied
+  const validPoints = chartData
+    .map((dataPoint) => {
+      const armData = dataPoint.armData.get(armId);
+      if (!armData) return null;
+
+      const x = xScale(dataPoint.date) + xOffset;
+      const y = yScale(armData.estimate);
+
+      return { x, y };
+    })
+    .filter((p): p is { x: number; y: number } => p !== null);
+
+  if (validPoints.length < 2) return null;
+
+  const pathData = validPoints
+    .map((point, index) => {
+      return index === 0 ? `M ${point.x} ${point.y}` : `L ${point.x} ${point.y}`;
+    })
+    .join(' ');
+
+  return <path d={pathData} stroke={color} strokeWidth={strokeWidth} fill="none" />;
+}
+
 // Custom component to render confidence intervals for a single arm
 interface ArmConfidenceIntervalProps {
   xAxisMap?: Record<string, { scale: (value: string) => number }>;
@@ -323,7 +383,7 @@ export default function ForestTimeseriesPlot({
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" style={commonAxisStyle} />
+          <XAxis dataKey="date" style={commonAxisStyle} padding={{ left: 30, right: 30 }} />
           <YAxis
             domain={[minY, maxY]}
             style={commonAxisStyle}
@@ -345,37 +405,57 @@ export default function ForestTimeseriesPlot({
             }}
           />
 
-          {/* Render lines for each arm */}
+          {/* Render jittered lines and dots for each arm */}
           {armIds.map((armId, index) => {
             const isBaseline = armIsBaseline.get(armId) || false;
             const color = getArmColor(index, isBaseline);
             return (
               <Line
                 key={`${armId}_effect`}
-                // type="monotone" - removed to allow jittered dots to be connected by straight lines
                 dataKey={(point: TimeSeriesDataPoint) => point.armData.get(armId)?.estimate ?? null}
                 name={armNames.get(armId) || armId}
-                stroke={color}
-                strokeWidth={2}
-                dot={(props: unknown) => (
-                  <JitteredDot
-                    {...(props as JitteredDotProps)}
-                    fill={color}
-                    armIndex={index}
-                    totalArms={armIds.length}
-                  />
-                )}
-                activeDot={(props: unknown) => (
-                  <JitteredDot
-                    {...(props as JitteredDotProps)}
-                    r={6}
-                    fill={color}
-                    armIndex={index}
-                    totalArms={armIds.length}
-                  />
-                )}
+                stroke="none"
+                dot={(props: unknown) => {
+                  const { key, ...restProps } = props as JitteredDotProps & { key?: string };
+                  return (
+                    <JitteredDot key={key} {...restProps} fill={color} armIndex={index} totalArms={armIds.length} />
+                  );
+                }}
+                activeDot={(props: unknown) => {
+                  const { key, ...restProps } = props as JitteredDotProps & { key?: string };
+                  return (
+                    <JitteredDot
+                      key={key}
+                      {...restProps}
+                      r={6}
+                      fill={color}
+                      armIndex={index}
+                      totalArms={armIds.length}
+                    />
+                  );
+                }}
                 connectNulls={false}
                 isAnimationActive={true}
+              />
+            );
+          })}
+
+          {/* Render jittered line segments for each arm */}
+          {armIds.map((armId, index) => {
+            const isBaseline = armIsBaseline.get(armId) || false;
+            const color = getArmColor(index, isBaseline);
+            return (
+              <Customized
+                key={`line_${armId}`}
+                component={
+                  <ArmJitteredLine
+                    chartData={chartData}
+                    armId={armId}
+                    color={color}
+                    armIndex={index}
+                    totalArms={armIds.length}
+                  />
+                }
               />
             );
           })}
