@@ -14,17 +14,11 @@ import {
   YAxis,
 } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
-import { EffectSizeData, computeAxisBounds } from './forest-plot-utils';
-import { formatIsoDateYYYYMMDD } from '@/services/date-utils';
-
-export type EffectSizeDataOnDate = {
-  key: string;
-  date: Date;
-  effectSizes: EffectSizeData[];
-};
+import { computeAxisBounds, TimeSeriesDataPoint, ArmMetadata } from './forest-plot-utils';
 
 interface ForestTimeseriesPlotProps {
-  effectSizesOverTime?: EffectSizeDataOnDate[];
+  data: TimeSeriesDataPoint[];
+  armMetadata: ArmMetadata[];
   // If provided, use these values as hints for the y-axis domain.
   // May still be adjusted to accommodate the displayed effect sizes.
   minY?: number;
@@ -40,70 +34,6 @@ const getArmColor = (armIndex: number, isBaseline: boolean | undefined): string 
   if (isBaseline === undefined || isBaseline) return CONTROL_COLOR;
   return ARM_COLORS[armIndex % ARM_COLORS.length];
 };
-
-// Transform data for recharts LineChart
-interface ArmDataPoint {
-  estimate: number;
-  upper: number;
-  lower: number;
-}
-
-interface TimeSeriesDataPoint {
-  date: string; // YYYY-MM-DD format
-  dateObj: Date; // For sorting/reference
-  armEffects: Map<string, ArmDataPoint>; // armId => ArmDataPoint
-}
-
-interface ArmMetadata {
-  id: string;
-  name: string;
-  isBaseline: boolean;
-}
-
-function transformDataForChart(effectSizesOverTime: EffectSizeDataOnDate[]): {
-  chartData: TimeSeriesDataPoint[];
-  armMetadata: ArmMetadata[];
-} {
-  const chartData: TimeSeriesDataPoint[] = [];
-
-  // Sort by date ascending (oldest to newest)
-  const sortedData = [...effectSizesOverTime].sort((a, b) => a.date.getTime() - b.date.getTime());
-
-  // We can get all metadata from the first data point.
-  const armMetadata: ArmMetadata[] = [];
-  const effectSizes = sortedData[0].effectSizes;
-  for (const e of effectSizes) {
-    armMetadata.push({
-      id: e.armId,
-      name: e.armName,
-      isBaseline: e.isBaseline,
-    });
-  }
-
-  for (const dataPoint of sortedData) {
-    const dateStr = formatIsoDateYYYYMMDD(dataPoint.date.toISOString());
-    const armEffects = new Map<string, ArmDataPoint>();
-
-    for (const effectSize of dataPoint.effectSizes) {
-      armEffects.set(effectSize.armId, {
-        estimate: effectSize.absEffect,
-        upper: effectSize.absCI95Upper,
-        lower: effectSize.absCI95Lower,
-      });
-    }
-
-    chartData.push({
-      date: dateStr,
-      dateObj: dataPoint.date,
-      armEffects: armEffects,
-    });
-  }
-
-  return {
-    chartData,
-    armMetadata,
-  };
-}
 
 // Custom tooltip for the timeseries
 interface CustomTimeseriesTooltipProps extends TooltipProps<ValueType, NameType> {
@@ -425,7 +355,8 @@ function ArmConfidenceInterval({
 }
 
 export default function ForestTimeseriesPlot({
-  effectSizesOverTime,
+  data: chartData,
+  armMetadata,
   minY: minYProp,
   maxY: maxYProp,
 }: ForestTimeseriesPlotProps) {
@@ -447,17 +378,11 @@ export default function ForestTimeseriesPlot({
     };
 
     requestAnimationFrame(animate);
-  }, [effectSizesOverTime]);
+  }, [chartData]);
 
   // Early return if no data
-  if (!effectSizesOverTime || effectSizesOverTime.length === 0) {
+  if (!chartData || chartData.length === 0) {
     return <Text>No timeseries data to display</Text>;
-  }
-
-  const { chartData, armMetadata } = transformDataForChart(effectSizesOverTime);
-
-  if (chartData.length === 0 || armMetadata.length === 0) {
-    return <Text>No valid data points to display</Text>;
   }
 
   const yAxisValues: number[] = [];

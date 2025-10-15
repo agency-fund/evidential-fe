@@ -200,3 +200,93 @@ export function computeAxisBounds(
 
   return [min, max];
 }
+
+/**
+ * Data structures for timeseries visualization
+ */
+export interface ArmDataPoint {
+  estimate: number;
+  upper: number;
+  lower: number;
+}
+
+export interface TimeSeriesDataPoint {
+  date: string; // YYYY-MM-DD format
+  dateObj: Date; // For sorting/reference
+  armEffects: Map<string, ArmDataPoint>; // armId => ArmDataPoint
+}
+
+export interface ArmMetadata {
+  id: string;
+  name: string;
+  isBaseline: boolean;
+}
+
+/**
+ * Transforms analysis states into chart data suitable for timeseries visualization.
+ * Processes multiple analysis snapshots and converts them into a format ready for Recharts.
+ *
+ * @param analysisStates - Array of analysis states (e.g., snapshots and live analysis)
+ * @param metricName - The metric field name to extract effect sizes for
+ * @returns Object containing chartData and armMetadata for rendering
+ */
+export function transformAnalysisForForestTimeseriesPlot(
+  analysisStates: AnalysisState[],
+  metricName: string,
+): {
+  timeseriesData: TimeSeriesDataPoint[];
+  armMetadata: ArmMetadata[];
+} {
+  const timeseriesData: TimeSeriesDataPoint[] = [];
+
+  // Sort by date ascending (oldest to newest)
+  const sortedStates = [...analysisStates].sort((a, b) => a.updated_at.getTime() - b.updated_at.getTime());
+
+  // Filter out states that don't have effect sizes for this metric
+  const validStates = sortedStates.filter((state) => state.effectSizesByMetric?.has(metricName));
+
+  if (validStates.length === 0) {
+    return { timeseriesData: [], armMetadata: [] };
+  }
+
+  // Extract arm metadata from the first valid data point
+  const armMetadata: ArmMetadata[] = [];
+  const firstEffectSizes = validStates[0].effectSizesByMetric?.get(metricName);
+  if (firstEffectSizes) {
+    for (const e of firstEffectSizes) {
+      armMetadata.push({
+        id: e.armId,
+        name: e.armName,
+        isBaseline: e.isBaseline,
+      });
+    }
+  }
+
+  // Transform each state into a timeseries data point
+  for (const state of validStates) {
+    const effectSizes = state.effectSizesByMetric?.get(metricName);
+    if (!effectSizes) continue;
+
+    const dateStr = state.updated_at.toISOString().split('T')[0]; // YYYY-MM-DD format
+    const armEffects = new Map<string, ArmDataPoint>();
+
+    for (const effectSize of effectSizes) {
+      armEffects.set(effectSize.armId, {
+        estimate: effectSize.absEffect,
+        upper: effectSize.absCI95Upper,
+        lower: effectSize.absCI95Lower,
+      });
+    }
+
+    timeseriesData.push({
+      date: dateStr,
+      dateObj: state.updated_at,
+      armEffects: armEffects,
+    });
+  }
+
+  return {
+    timeseriesData,
+    armMetadata,
+  };
+}

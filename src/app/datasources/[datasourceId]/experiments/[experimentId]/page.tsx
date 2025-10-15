@@ -15,6 +15,7 @@ import {
   AnalysisState,
   precomputeEffectSizesByMetric,
   isFrequentist,
+  transformAnalysisForForestTimeseriesPlot,
 } from '@/components/features/experiments/forest-plot-utils';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -213,6 +214,8 @@ export default function ExperimentViewPage() {
   if (selectedMetricAnalysis?.metric?.metric_pct_change) {
     mdePct = (selectedMetricAnalysis.metric.metric_pct_change * 100).toFixed(1);
   }
+
+  const { timeseriesData, armMetadata } = transformAnalysisForForestTimeseriesPlot(analysisHistory, selectedMetricName);
 
   return (
     <Flex direction="column" gap="6">
@@ -448,18 +451,7 @@ export default function ExperimentViewPage() {
                         />
                       )}
 
-                      {!isLoadingAnalysisHistory && analysisHistory.length > 0 && (
-                        <ForestTimeseriesPlot
-                          effectSizesOverTime={analysisHistory.map((analysis) => {
-                            const armEffects = analysis.effectSizesByMetric?.get(selectedMetricName);
-                            return {
-                              key: analysis.key,
-                              date: analysis.updated_at,
-                              effectSizes: armEffects ?? [],
-                            };
-                          })}
-                        />
-                      )}
+                      <ForestTimeseriesPlot data={timeseriesData} armMetadata={armMetadata} />
                     </Flex>
                   </Tabs.Content>
 
