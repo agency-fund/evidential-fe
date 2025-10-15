@@ -1,6 +1,6 @@
 'use client';
 import { Box, Card, Flex, Text } from '@radix-ui/themes';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   CartesianGrid,
   Customized,
@@ -163,9 +163,6 @@ function ArmJitteredLine({
   strokeWidth = 2,
   animationProgress = 1,
 }: ArmJitteredLineProps) {
-  const pathRef = useRef<SVGPathElement>(null);
-  const [pathLength, setPathLength] = useState(0);
-
   // Build path data - use useMemo since it's derived from props
   const pathData = useMemo(() => {
     if (!xAxisMap || !yAxisMap || !chartData.length || !armId) return '';
@@ -200,41 +197,21 @@ function ArmJitteredLine({
       .join(' ');
   }, [xAxisMap, yAxisMap, chartData, armId, armIndex, totalArms]);
 
-  // Measure path length for animation when path data changes
-  useEffect(() => {
-    if (!pathRef.current || !pathData) return;
-
-    const timer = setTimeout(() => {
-      if (pathRef.current) {
-        const length = pathRef.current.getTotalLength();
-        if (length > 0) {
-          setPathLength(length);
-        }
-      }
-    }, 0);
-
-    return () => clearTimeout(timer);
-  }, [pathData]);
-
   if (!pathData) return null;
 
-  if (pathLength === 0) {
-    // Render invisible path to measure it
-    return <path ref={pathRef} d={pathData} stroke="none" fill="none" />;
-  }
-
+  // Use pathLength="1" to normalize, allowing us to work with 0-1 values
   // Calculate stroke-dashoffset based on animation progress
   // Start with full offset (hidden) and reduce to 0 (fully visible)
-  const dashOffset = pathLength * (1 - animationProgress);
+  const dashOffset = 1 - animationProgress;
 
   return (
     <path
-      ref={pathRef}
       d={pathData}
       stroke={color}
       strokeWidth={strokeWidth}
       fill="none"
-      strokeDasharray={pathLength}
+      pathLength="1"
+      strokeDasharray="1"
       strokeDashoffset={dashOffset}
     />
   );
