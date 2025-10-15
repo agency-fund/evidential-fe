@@ -51,34 +51,41 @@ interface ArmDataPoint {
 interface TimeSeriesDataPoint {
   date: string; // YYYY-MM-DD format
   dateObj: Date; // For sorting/reference
-  armData: Map<string, ArmDataPoint>; // armId => ArmDataPoint
+  armEffects: Map<string, ArmDataPoint>; // armId => ArmDataPoint
+}
+
+interface ArmMetadata {
+  id: string;
+  name: string;
+  isBaseline: boolean;
 }
 
 function transformDataForChart(effectSizesOverTime: EffectSizeDataOnDate[]): {
   chartData: TimeSeriesDataPoint[];
-  armIds: string[];
-  armNames: Map<string, string>;
-  armIsBaseline: Map<string, boolean>;
+  armMetadata: ArmMetadata[];
 } {
   const chartData: TimeSeriesDataPoint[] = [];
-  const armIds = new Set<string>();
-  const armNames = new Map<string, string>();
-  const armIsBaseline = new Map<string, boolean>();
 
   // Sort by date ascending (oldest to newest)
   const sortedData = [...effectSizesOverTime].sort((a, b) => a.date.getTime() - b.date.getTime());
 
+  // We can get all metadata from the first data point.
+  const armMetadata: ArmMetadata[] = [];
+  const effectSizes = sortedData[0].effectSizes;
+  for (const e of effectSizes) {
+    armMetadata.push({
+      id: e.armId,
+      name: e.armName,
+      isBaseline: e.isBaseline,
+    });
+  }
+
   for (const dataPoint of sortedData) {
     const dateStr = formatIsoDateYYYYMMDD(dataPoint.date.toISOString());
-    const armData = new Map<string, ArmDataPoint>();
+    const armEffects = new Map<string, ArmDataPoint>();
 
     for (const effectSize of dataPoint.effectSizes) {
-      armIds.add(effectSize.armId);
-      armNames.set(effectSize.armId, effectSize.armName);
-      armIsBaseline.set(effectSize.armId, effectSize.isBaseline);
-
-      // Store arm data in the map
-      armData.set(effectSize.armId, {
+      armEffects.set(effectSize.armId, {
         estimate: effectSize.absEffect,
         upper: effectSize.absCI95Upper,
         lower: effectSize.absCI95Lower,
@@ -88,25 +95,22 @@ function transformDataForChart(effectSizesOverTime: EffectSizeDataOnDate[]): {
     chartData.push({
       date: dateStr,
       dateObj: dataPoint.date,
-      armData,
+      armEffects: armEffects,
     });
   }
 
   return {
     chartData,
-    armIds: Array.from(armIds),
-    armNames,
-    armIsBaseline,
+    armMetadata,
   };
 }
 
 // Custom tooltip for the timeseries
 interface CustomTimeseriesTooltipProps extends TooltipProps<ValueType, NameType> {
-  armIds?: string[];
-  armNames?: Map<string, string>;
+  armMetadata: ArmMetadata[];
 }
 
-function CustomTimeseriesTooltip({ active, payload, armIds = [], armNames = new Map() }: CustomTimeseriesTooltipProps) {
+function CustomTimeseriesTooltip({ active, payload, armMetadata }: CustomTimeseriesTooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
 
   const dataPoint = payload[0]?.payload as TimeSeriesDataPoint | undefined;
@@ -118,18 +122,18 @@ function CustomTimeseriesTooltip({ active, payload, armIds = [], armNames = new 
         <Text weight="bold" size="2">
           {dataPoint.date}
         </Text>
-        {armIds.map((armId, idx) => {
-          const armData = dataPoint.armData.get(armId);
+        {armMetadata.map((armInfo) => {
+          const armData = dataPoint.armEffects.get(armInfo.id);
           if (!armData) return null;
 
           // Find the color from the payload if available
-          const payloadEntry = payload.find((p) => p.name === armNames.get(armId));
+          const payloadEntry = payload.find((p) => p.name === armInfo.name);
           const color = payloadEntry?.color || 'var(--gray-12)';
 
           return (
-            <Flex key={idx} direction="column" gap="1">
+            <Flex key={armInfo.id} direction="column" gap="1">
               <Text size="2" style={{ color }}>
-                {armNames.get(armId) || armId}
+                {armInfo.name || armInfo.id}
               </Text>
               <Text size="1">Effect: {armData.estimate.toFixed(2)}</Text>
               <Text size="1">
@@ -263,7 +267,7 @@ function ArmJitteredLine({
     // Build path from points with jitter applied
     const validPoints = chartData
       .map((dataPoint) => {
-        const armData = dataPoint.armData.get(armId);
+        const armData = dataPoint.armEffects.get(armId);
         if (!armData) return null;
 
         const x = xScale(dataPoint.date) + xOffset;
@@ -377,7 +381,7 @@ function ArmConfidenceInterval({
   return (
     <g>
       {chartData.map((dataPoint, pointIndex) => {
-        const armData = dataPoint.armData.get(armId);
+        const armData = dataPoint.armEffects.get(armId);
         if (!armData) return null;
 
         const x = xScale(dataPoint.date) + xOffset;
@@ -450,14 +454,14 @@ export default function ForestTimeseriesPlot({
     return <Text>No timeseries data to display</Text>;
   }
 
-  const { chartData, armIds, armNames, armIsBaseline } = transformDataForChart(effectSizesOverTime);
+  const { chartData, armMetadata } = transformDataForChart(effectSizesOverTime);
 
-  if (chartData.length === 0 || armIds.length === 0) {
+  if (chartData.length === 0 || armMetadata.length === 0) {
     return <Text>No valid data points to display</Text>;
   }
 
   const yAxisValues: number[] = [];
-  chartData.forEach((point) => point.armData.forEach((arm) => yAxisValues.push(arm.lower, arm.upper)));
+  chartData.forEach((point) => point.armEffects.forEach((arm) => yAxisValues.push(arm.lower, arm.upper)));
   const [minY, maxY] = computeAxisBounds(yAxisValues, minYProp, maxYProp);
 
   const commonAxisStyle = {
@@ -484,7 +488,7 @@ export default function ForestTimeseriesPlot({
                   : value.toFixed(2)
             }
           />
-          <Tooltip content={<CustomTimeseriesTooltip armIds={armIds} armNames={armNames} />} />
+          <Tooltip content={<CustomTimeseriesTooltip armMetadata={armMetadata} />} />
           <Legend
             wrapperStyle={{ paddingTop: '10px' }}
             formatter={(value, entry) => {
@@ -494,13 +498,13 @@ export default function ForestTimeseriesPlot({
           />
 
           {/* Render jittered lines and dots for each arm */}
-          {armIds.map((armId, index) => {
-            const color = getArmColor(index, armIsBaseline.get(armId));
+          {armMetadata.map((armInfo, index) => {
+            const color = getArmColor(index, armInfo.isBaseline);
             return (
               <Line
-                key={`${armId}_effect`}
-                dataKey={(point: TimeSeriesDataPoint) => point.armData.get(armId)?.estimate ?? null}
-                name={armNames.get(armId) || armId}
+                key={`${armInfo.id}_effect`}
+                dataKey={(point: TimeSeriesDataPoint) => point.armEffects.get(armInfo.id)?.estimate ?? null}
+                name={armInfo.name || armInfo.id}
                 stroke="none"
                 dot={(props: unknown) => {
                   const { key, ...restProps } = props as JitteredDotProps & { key?: string };
@@ -510,7 +514,7 @@ export default function ForestTimeseriesPlot({
                       {...restProps}
                       fill={color}
                       armIndex={index}
-                      totalArms={armIds.length}
+                      totalArms={armMetadata.length}
                       animationProgress={animationProgress}
                       totalPoints={chartData.length}
                     />
@@ -525,7 +529,7 @@ export default function ForestTimeseriesPlot({
                       r={6}
                       fill={color}
                       armIndex={index}
-                      totalArms={armIds.length}
+                      totalArms={armMetadata.length}
                       animationProgress={animationProgress}
                       totalPoints={chartData.length}
                     />
@@ -538,17 +542,17 @@ export default function ForestTimeseriesPlot({
           })}
 
           {/* Render jittered line segments for each arm. Separate loop to keep as direct children of the LineChart. */}
-          {armIds.map((armId, index) => {
+          {armMetadata.map((armInfo, index) => {
             return (
               <Customized
-                key={`line_${armId}`}
+                key={`line_${armInfo.id}`}
                 component={
                   <ArmJitteredLine
                     chartData={chartData}
-                    armId={armId}
-                    color={getArmColor(index, armIsBaseline.get(armId))}
+                    armId={armInfo.id}
+                    color={getArmColor(index, armInfo.isBaseline)}
                     armIndex={index}
-                    totalArms={armIds.length}
+                    totalArms={armMetadata.length}
                     animationProgress={animationProgress}
                   />
                 }
@@ -557,17 +561,17 @@ export default function ForestTimeseriesPlot({
           })}
 
           {/* Render confidence intervals for each arm */}
-          {armIds.map((armId, index) => {
+          {armMetadata.map((armInfo, index) => {
             return (
               <Customized
-                key={`ci_${armId}`}
+                key={`ci_${armInfo.id}`}
                 component={
                   <ArmConfidenceInterval
                     chartData={chartData}
-                    armId={armId}
-                    color={getArmColor(index, armIsBaseline.get(armId))}
+                    armId={armInfo.id}
+                    color={getArmColor(index, armInfo.isBaseline)}
                     armIndex={index}
-                    totalArms={armIds.length}
+                    totalArms={armMetadata.length}
                     animationProgress={animationProgress}
                   />
                 }
