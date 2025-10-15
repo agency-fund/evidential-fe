@@ -14,7 +14,7 @@ import {
   YAxis,
 } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
-import { EffectSizeData } from './forest-plot-utils';
+import { EffectSizeData, computeAxisBounds } from './forest-plot-utils';
 import { formatIsoDateYYYYMMDD } from '@/services/date-utils';
 
 export type EffectSizeDataOnDate = {
@@ -456,51 +456,9 @@ export default function ForestTimeseriesPlot({
     return <Text>No valid data points to display</Text>;
   }
 
-  // Calculate Y-axis domain
-  function getMinMaxY(
-    data: TimeSeriesDataPoint[],
-    armIds: string[],
-    minYProp: number | undefined,
-    maxYProp: number | undefined,
-  ): [number, number] {
-    let minY = Number.POSITIVE_INFINITY;
-    let maxY = Number.NEGATIVE_INFINITY;
-
-    for (const point of data) {
-      for (const armId of armIds) {
-        const armData = point.armData.get(armId);
-        if (armData) {
-          minY = Math.min(minY, armData.lower);
-          maxY = Math.max(maxY, armData.upper);
-        }
-      }
-    }
-
-    // Apply provided bounds if available
-    if (minYProp !== undefined) minY = Math.min(minY, minYProp);
-    if (maxYProp !== undefined) maxY = Math.max(maxY, maxYProp);
-
-    // Add 10% padding
-    const range = maxY - minY;
-    minY = minY - range * 0.1;
-    maxY = maxY + range * 0.1;
-
-    // Round to nice numbers if values are large
-    if (Math.abs(minY) > 1 && Math.abs(maxY) > 1) {
-      minY = Math.floor(minY);
-      maxY = Math.ceil(maxY);
-    }
-
-    // Ensure non-zero range
-    if (Math.abs(maxY - minY) < 0.0000001) {
-      minY = minY - 1;
-      maxY = maxY + 1;
-    }
-
-    return [minY, maxY];
-  }
-
-  const [minY, maxY] = getMinMaxY(chartData, armIds, minYProp, maxYProp);
+  const yAxisValues: number[] = [];
+  chartData.forEach((point) => point.armData.forEach((arm) => yAxisValues.push(arm.lower, arm.upper)));
+  const [minY, maxY] = computeAxisBounds(yAxisValues, minYProp, maxYProp);
 
   const commonAxisStyle = {
     fontSize: '14px',

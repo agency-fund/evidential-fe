@@ -153,3 +153,50 @@ export function generateEffectSizeData(analysis: MetricAnalysis, alpha: number):
 
   return effectSizes;
 }
+
+/**
+ * Computes axis bounds (min/max) from an array of numeric values with padding and rounding.
+ * This is used to create stable, nicely-formatted chart axes.
+ *
+ * @param values - Array of numeric values to compute bounds for
+ * @param minProp - Optional minimum bound hint to enforce
+ * @param maxProp - Optional maximum bound to enforce
+ * @param padding - Fraction of range to add as padding (default: 0.1 for 10%)
+ * @returns Tuple of [min, max] bounds
+ */
+export function computeAxisBounds(
+  values: number[],
+  minProp?: number,
+  maxProp?: number,
+  padding: number = 0.1,
+): [number, number] {
+  if (values.length === 0) {
+    return [0, 1];
+  }
+
+  let min = Math.min(...values);
+  let max = Math.max(...values);
+
+  // Apply provided bounds hints if available
+  if (minProp !== undefined) min = Math.min(min, minProp);
+  if (maxProp !== undefined) max = Math.max(max, maxProp);
+
+  // Add padding so points to render on the edges of your domain
+  const range = max - min;
+  min = min - range * padding;
+  max = max + range * padding;
+
+  // Round to nice numbers if values are large
+  if (Math.abs(min) > 1 && Math.abs(max) > 1) {
+    min = Math.floor(min);
+    max = Math.ceil(max);
+  }
+
+  // If the domain appears to be essentially a singular value, make it larger to avoid a 0-width.
+  if (Math.abs(max - min) < 0.0000001) {
+    min = min - 1;
+    max = max + 1;
+  }
+
+  return [min, max];
+}

@@ -13,7 +13,7 @@ import {
 } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { ChartOffset } from 'recharts/types/util/types';
-import { EffectSizeData } from './forest-plot-utils';
+import { EffectSizeData, computeAxisBounds } from './forest-plot-utils';
 
 // Color constants
 const COLORS = {
@@ -83,30 +83,9 @@ export function ForestPlot({ effectSizes, minX: minXProp, maxX: maxXProp }: Fore
     return <Text>No treatment arms to display</Text>;
   }
 
-  // Get the min and max x-axis values in metric units to use in our charts.
-  function getMinMaxX(effectSizes: EffectSizeData[], minXProp: number | undefined, maxXProp: number | undefined) {
-    let minX = Math.min(...effectSizes.map((d) => d.absCI95Lower));
-    let maxX = Math.max(...effectSizes.map((d) => d.absCI95Upper));
-    if (minXProp !== undefined) minX = Math.min(minX, minXProp);
-    if (maxXProp !== undefined) maxX = Math.max(maxX, maxXProp);
-
-    const viewportWidth = maxX - minX;
-    minX = minX - viewportWidth * 0.1;
-    maxX = maxX + viewportWidth * 0.1;
-    if (Math.abs(minX) > 1 && Math.abs(maxX) > 1) {
-      minX = Math.floor(minX);
-      maxX = Math.ceil(maxX);
-    }
-    // If the domain appears to be essentially a singular value, make it larger to avoid a 0-width.
-    if (Math.abs(minX - maxX) < 0.0000001) {
-      minX = minX - 1;
-      maxX = maxX + 1;
-    }
-    return [minX, maxX];
-  }
-
-  // Use provided min/max if available, otherwise calculate from effect sizes
-  const [minX, maxX] = getMinMaxX(effectSizes, minXProp, maxXProp);
+  // Flatten effect sizes into array of CI bounds for axis calculation
+  const xAxisValues = effectSizes.flatMap((d) => [d.absCI95Lower, d.absCI95Upper]);
+  const [minX, maxX] = computeAxisBounds(xAxisValues, minXProp, maxXProp);
   // Space 3 ticks evenly across the domain, but filter out duplicates,
   // which can occur when the effect is 0.
   const xGridPoints = [0, 1, 2, 3, 4]
