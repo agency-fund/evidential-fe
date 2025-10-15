@@ -1,5 +1,6 @@
 'use client';
-import { Box, Flex, Text } from '@radix-ui/themes';
+import { Box, Card, Flex, Text } from '@radix-ui/themes';
+import { useEffect, useRef, useState } from 'react';
 import {
   CartesianGrid,
   Customized,
@@ -35,8 +36,8 @@ const ARM_COLORS = ['#5746af', '#3e63dd', '#3e5ba9', '#0090ff'] as const; // vio
 const CONTROL_COLOR = '#bbbbbb'; // Gray for control/baseline arm
 
 // Get color for an arm based on its index and baseline status
-const getArmColor = (armIndex: number, isBaseline: boolean): string => {
-  if (isBaseline) return CONTROL_COLOR;
+const getArmColor = (armIndex: number, isBaseline: boolean | undefined): string => {
+  if (isBaseline === undefined || isBaseline) return CONTROL_COLOR;
   return ARM_COLORS[armIndex % ARM_COLORS.length];
 };
 
@@ -112,7 +113,7 @@ function CustomTimeseriesTooltip({ active, payload, armIds = [], armNames = new 
   if (!dataPoint) return null;
 
   return (
-    <Box style={{ background: 'white', padding: '12px', border: '1px solid var(--gray-6)', borderRadius: '8px' }}>
+    <Card size="1" variant="surface">
       <Flex direction="column" gap="2">
         <Text weight="bold" size="2">
           {dataPoint.date}
@@ -138,7 +139,7 @@ function CustomTimeseriesTooltip({ active, payload, armIds = [], armNames = new 
           );
         })}
       </Flex>
-    </Box>
+    </Card>
   );
 }
 
@@ -147,6 +148,11 @@ function calculateJitterOffset(armIndex: number, totalArms: number): number {
   const jitterSpacing = 8; // pixels between each arm's position
   const totalWidth = (totalArms - 1) * jitterSpacing;
   return armIndex * jitterSpacing - totalWidth / 2;
+}
+
+// Ease-out cubic function for smooth animation
+function easeOutCubic(t: number): number {
+  return 1 - Math.pow(1 - t, 3);
 }
 
 // Custom dot component for Line that applies jitter
@@ -158,14 +164,47 @@ interface JitteredDotProps {
   stroke?: string;
   armIndex: number;
   totalArms: number;
+  index?: number;
+  animationProgress?: number;
+  totalPoints?: number;
 }
 
-function JitteredDot({ cx, cy, r = 4, fill, stroke, armIndex, totalArms }: JitteredDotProps) {
+function JitteredDot({
+  cx,
+  cy,
+  r = 4,
+  fill,
+  stroke,
+  armIndex,
+  totalArms,
+  index = 0,
+  animationProgress = 1,
+  totalPoints = 1,
+}: JitteredDotProps) {
   if (cx === undefined || cy === undefined) return null;
 
   const xOffset = calculateJitterOffset(armIndex, totalArms);
 
-  return <circle cx={cx + xOffset} cy={cy} r={r} fill={fill} stroke={stroke} strokeWidth={0} />;
+  // Calculate if this dot should be visible based on animation progress
+  // Apply ease-out to the progress
+  const easedProgress = easeOutCubic(animationProgress);
+  // Dot appears when the line reaches its position (index / (totalPoints - 1))
+  // For a single point, show immediately
+  const dotThreshold = totalPoints > 1 ? index / (totalPoints - 1) : 0;
+  const opacity = easedProgress >= dotThreshold ? 1 : 0;
+
+  return (
+    <circle
+      cx={cx + xOffset}
+      cy={cy}
+      r={r}
+      fill={fill}
+      stroke={stroke}
+      strokeWidth={0}
+      opacity={opacity}
+      style={{ transition: 'opacity 0.15s ease-out' }}
+    />
+  );
 }
 
 // Custom component to render a jittered line for a single arm
@@ -178,6 +217,7 @@ interface ArmJitteredLineProps {
   armIndex: number;
   totalArms: number;
   strokeWidth?: number;
+  animationProgress?: number;
 }
 
 function ArmJitteredLine({
@@ -189,43 +229,103 @@ function ArmJitteredLine({
   armIndex,
   totalArms,
   strokeWidth = 2,
+  animationProgress = 1,
 }: ArmJitteredLineProps) {
-  if (!xAxisMap || !yAxisMap || !chartData.length || !armId || !color) return null;
+  const pathRef = useRef<SVGPathElement>(null);
+  const [pathLength, setPathLength] = useState(0);
+  const [pathData, setPathData] = useState('');
 
-  const xAxis = Object.values(xAxisMap)[0];
-  const yAxis = Object.values(yAxisMap)[0];
+  // Build path data - must be before early returns to avoid hook issues
+  useEffect(() => {
+    if (!xAxisMap || !yAxisMap || !chartData.length || !armId || !color) {
+      setPathData('');
+      return;
+    }
 
-  if (!xAxis || !yAxis) return null;
+    const xAxis = Object.values(xAxisMap)[0];
+    const yAxis = Object.values(yAxisMap)[0];
 
-  const { scale: xScale } = xAxis;
-  const { scale: yScale } = yAxis;
+    if (!xAxis || !yAxis) {
+      setPathData('');
+      return;
+    }
 
-  if (!xScale || !yScale) return null;
+    const { scale: xScale } = xAxis;
+    const { scale: yScale } = yAxis;
 
-  const xOffset = calculateJitterOffset(armIndex, totalArms);
+    if (!xScale || !yScale) {
+      setPathData('');
+      return;
+    }
 
-  // Build path from points with jitter applied
-  const validPoints = chartData
-    .map((dataPoint) => {
-      const armData = dataPoint.armData.get(armId);
-      if (!armData) return null;
+    const xOffset = calculateJitterOffset(armIndex, totalArms);
 
-      const x = xScale(dataPoint.date) + xOffset;
-      const y = yScale(armData.estimate);
+    // Build path from points with jitter applied
+    const validPoints = chartData
+      .map((dataPoint) => {
+        const armData = dataPoint.armData.get(armId);
+        if (!armData) return null;
 
-      return { x, y };
-    })
-    .filter((p): p is { x: number; y: number } => p !== null);
+        const x = xScale(dataPoint.date) + xOffset;
+        const y = yScale(armData.estimate);
 
-  if (validPoints.length < 2) return null;
+        return { x, y };
+      })
+      .filter((p): p is { x: number; y: number } => p !== null);
 
-  const pathData = validPoints
-    .map((point, index) => {
-      return index === 0 ? `M ${point.x} ${point.y}` : `L ${point.x} ${point.y}`;
-    })
-    .join(' ');
+    if (validPoints.length < 2) {
+      setPathData('');
+      return;
+    }
 
-  return <path d={pathData} stroke={color} strokeWidth={strokeWidth} fill="none" />;
+    const newPathData = validPoints
+      .map((point, index) => {
+        return index === 0 ? `M ${point.x} ${point.y}` : `L ${point.x} ${point.y}`;
+      })
+      .join(' ');
+
+    setPathData(newPathData);
+  }, [xAxisMap, yAxisMap, chartData, armId, color, armIndex, totalArms]);
+
+  // Get path length for animation - need to update when ref is set
+  useEffect(() => {
+    if (pathRef.current && pathData && pathLength === 0) {
+      // Use setTimeout to ensure path is fully rendered before measuring
+      const timer = setTimeout(() => {
+        if (pathRef.current) {
+          const length = pathRef.current.getTotalLength();
+          if (length > 0) {
+            setPathLength(length);
+          }
+        }
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [pathData, pathLength]);
+
+  if (!pathData) return null;
+
+  if (pathLength === 0) {
+    // Render invisible path to measure it
+    return <path ref={pathRef} d={pathData} stroke="none" fill="none" />;
+  }
+
+  // Calculate stroke-dashoffset based on animation progress with ease-out
+  const easedProgress = easeOutCubic(animationProgress);
+  // Start with full offset (hidden) and reduce to 0 (fully visible)
+  const dashOffset = pathLength * (1 - easedProgress);
+
+  return (
+    <path
+      ref={pathRef}
+      d={pathData}
+      stroke={color}
+      strokeWidth={strokeWidth}
+      fill="none"
+      strokeDasharray={pathLength}
+      strokeDashoffset={dashOffset}
+    />
+  );
 }
 
 // Custom component to render confidence intervals for a single arm
@@ -237,6 +337,7 @@ interface ArmConfidenceIntervalProps {
   color: string;
   armIndex: number;
   totalArms: number;
+  animationProgress?: number;
 }
 
 function ArmConfidenceInterval({
@@ -247,6 +348,7 @@ function ArmConfidenceInterval({
   color,
   armIndex,
   totalArms,
+  animationProgress = 1,
 }: ArmConfidenceIntervalProps) {
   if (!xAxisMap || !yAxisMap || !chartData.length || !armId || !color) return null;
   // These params are special internal params for recharts.
@@ -268,6 +370,9 @@ function ArmConfidenceInterval({
   // Calculate jitter offset for this arm to prevent overlapping CIs
   const xOffset = calculateJitterOffset(armIndex, totalArms);
 
+  // Apply ease-out to the progress
+  const easedProgress = easeOutCubic(animationProgress);
+
   // Render confidence intervals for this arm at each data point
   return (
     <g>
@@ -279,10 +384,15 @@ function ArmConfidenceInterval({
         const yLower = yScale(armData.lower);
         const yUpper = yScale(armData.upper);
 
+        // Each CI appears when the line reaches its position
+        const totalPoints = chartData.length;
+        const ciThreshold = totalPoints > 1 ? pointIndex / (totalPoints - 1) : 0;
+        const opacity = easedProgress >= ciThreshold ? 0.6 : 0;
+
         return (
-          <g key={`ci-${armId}-${pointIndex}`}>
+          <g key={`ci-${armId}-${pointIndex}`} style={{ transition: 'opacity 0.15s ease-out' }}>
             {/* Vertical line from lower to upper CI */}
-            <line x1={x} y1={yLower} x2={x} y2={yUpper} stroke={color} strokeWidth={1.5} opacity={0.6} />
+            <line x1={x} y1={yLower} x2={x} y2={yUpper} stroke={color} strokeWidth={1.5} opacity={opacity} />
             {/* Lower cap */}
             <line
               x1={x - capWidth / 2}
@@ -291,7 +401,7 @@ function ArmConfidenceInterval({
               y2={yLower}
               stroke={color}
               strokeWidth={1.5}
-              opacity={0.6}
+              opacity={opacity}
             />
             {/* Upper cap */}
             <line
@@ -301,7 +411,7 @@ function ArmConfidenceInterval({
               y2={yUpper}
               stroke={color}
               strokeWidth={1.5}
-              opacity={0.6}
+              opacity={opacity}
             />
           </g>
         );
@@ -315,6 +425,26 @@ export default function ForestTimeseriesPlot({
   minY: minYProp,
   maxY: maxYProp,
 }: ForestTimeseriesPlotProps) {
+  const [animationProgress, setAnimationProgress] = useState(0);
+
+  // Animation: 0 to 1 over 1.5 seconds
+  useEffect(() => {
+    const durationMs = 1500;
+    const startTime = Date.now();
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const rawProgress = Math.min(elapsed / durationMs, 1);
+      setAnimationProgress(rawProgress);
+
+      if (rawProgress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }, [effectSizesOverTime]);
+
   // Early return if no data
   if (!effectSizesOverTime || effectSizesOverTime.length === 0) {
     return <Text>No timeseries data to display</Text>;
@@ -407,8 +537,7 @@ export default function ForestTimeseriesPlot({
 
           {/* Render jittered lines and dots for each arm */}
           {armIds.map((armId, index) => {
-            const isBaseline = armIsBaseline.get(armId) || false;
-            const color = getArmColor(index, isBaseline);
+            const color = getArmColor(index, armIsBaseline.get(armId));
             return (
               <Line
                 key={`${armId}_effect`}
@@ -418,7 +547,15 @@ export default function ForestTimeseriesPlot({
                 dot={(props: unknown) => {
                   const { key, ...restProps } = props as JitteredDotProps & { key?: string };
                   return (
-                    <JitteredDot key={key} {...restProps} fill={color} armIndex={index} totalArms={armIds.length} />
+                    <JitteredDot
+                      key={key}
+                      {...restProps}
+                      fill={color}
+                      armIndex={index}
+                      totalArms={armIds.length}
+                      animationProgress={animationProgress}
+                      totalPoints={chartData.length}
+                    />
                   );
                 }}
                 activeDot={(props: unknown) => {
@@ -431,6 +568,8 @@ export default function ForestTimeseriesPlot({
                       fill={color}
                       armIndex={index}
                       totalArms={armIds.length}
+                      animationProgress={animationProgress}
+                      totalPoints={chartData.length}
                     />
                   );
                 }}
@@ -440,10 +579,8 @@ export default function ForestTimeseriesPlot({
             );
           })}
 
-          {/* Render jittered line segments for each arm */}
+          {/* Render jittered line segments for each arm. Separate loop to keep as direct children of the LineChart. */}
           {armIds.map((armId, index) => {
-            const isBaseline = armIsBaseline.get(armId) || false;
-            const color = getArmColor(index, isBaseline);
             return (
               <Customized
                 key={`line_${armId}`}
@@ -451,9 +588,10 @@ export default function ForestTimeseriesPlot({
                   <ArmJitteredLine
                     chartData={chartData}
                     armId={armId}
-                    color={color}
+                    color={getArmColor(index, armIsBaseline.get(armId))}
                     armIndex={index}
                     totalArms={armIds.length}
+                    animationProgress={animationProgress}
                   />
                 }
               />
@@ -462,8 +600,6 @@ export default function ForestTimeseriesPlot({
 
           {/* Render confidence intervals for each arm */}
           {armIds.map((armId, index) => {
-            const isBaseline = armIsBaseline.get(armId) || false;
-            const color = getArmColor(index, isBaseline);
             return (
               <Customized
                 key={`ci_${armId}`}
@@ -471,9 +607,10 @@ export default function ForestTimeseriesPlot({
                   <ArmConfidenceInterval
                     chartData={chartData}
                     armId={armId}
-                    color={color}
+                    color={getArmColor(index, armIsBaseline.get(armId))}
                     armIndex={index}
                     totalArms={armIds.length}
+                    animationProgress={animationProgress}
                   />
                 }
               />
