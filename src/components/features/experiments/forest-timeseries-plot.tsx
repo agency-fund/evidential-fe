@@ -1,6 +1,6 @@
 'use client';
 import { Box, Card, Flex, Text } from '@radix-ui/themes';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   CartesianGrid,
   Customized,
@@ -165,30 +165,18 @@ function ArmJitteredLine({
 }: ArmJitteredLineProps) {
   const pathRef = useRef<SVGPathElement>(null);
   const [pathLength, setPathLength] = useState(0);
-  const [pathData, setPathData] = useState('');
 
-  // Build path data - must be before early returns to avoid hook issues
-  useEffect(() => {
-    if (!xAxisMap || !yAxisMap || !chartData.length || !armId || !color) {
-      setPathData('');
-      return;
-    }
+  // Build path data - use useMemo since it's derived from props
+  const pathData = useMemo(() => {
+    if (!xAxisMap || !yAxisMap || !chartData.length || !armId) return '';
 
     const xAxis = Object.values(xAxisMap)[0];
     const yAxis = Object.values(yAxisMap)[0];
-
-    if (!xAxis || !yAxis) {
-      setPathData('');
-      return;
-    }
+    if (!xAxis || !yAxis) return '';
 
     const { scale: xScale } = xAxis;
     const { scale: yScale } = yAxis;
-
-    if (!xScale || !yScale) {
-      setPathData('');
-      return;
-    }
+    if (!xScale || !yScale) return '';
 
     const xOffset = calculateJitterOffset(armIndex, totalArms);
 
@@ -205,35 +193,28 @@ function ArmJitteredLine({
       })
       .filter((p): p is { x: number; y: number } => p !== null);
 
-    if (validPoints.length < 2) {
-      setPathData('');
-      return;
-    }
+    if (validPoints.length < 2) return '';
 
-    const newPathData = validPoints
-      .map((point, index) => {
-        return index === 0 ? `M ${point.x} ${point.y}` : `L ${point.x} ${point.y}`;
-      })
+    return validPoints
+      .map((point, index) => (index === 0 ? `M ${point.x} ${point.y}` : `L ${point.x} ${point.y}`))
       .join(' ');
+  }, [xAxisMap, yAxisMap, chartData, armId, armIndex, totalArms]);
 
-    setPathData(newPathData);
-  }, [xAxisMap, yAxisMap, chartData, armId, color, armIndex, totalArms]);
-
-  // Get path length for animation - need to update when ref is set
+  // Measure path length for animation when path data changes
   useEffect(() => {
-    if (pathRef.current && pathData && pathLength === 0) {
-      // Use setTimeout to ensure path is fully rendered before measuring
-      const timer = setTimeout(() => {
-        if (pathRef.current) {
-          const length = pathRef.current.getTotalLength();
-          if (length > 0) {
-            setPathLength(length);
-          }
+    if (!pathRef.current || !pathData) return;
+
+    const timer = setTimeout(() => {
+      if (pathRef.current) {
+        const length = pathRef.current.getTotalLength();
+        if (length > 0) {
+          setPathLength(length);
         }
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-  }, [pathData, pathLength]);
+      }
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [pathData]);
 
   if (!pathData) return null;
 
