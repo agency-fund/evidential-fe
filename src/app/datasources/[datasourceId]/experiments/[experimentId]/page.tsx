@@ -108,7 +108,7 @@ export default function ExperimentViewPage() {
     },
   );
 
-  const { error: snapshotsError } = useListSnapshots(
+  const { isLoading: isLoadingAnalysisHistory, error: analysisHistoryError } = useListSnapshots(
     organizationId,
     datasourceId,
     experimentId,
@@ -419,7 +419,7 @@ export default function ExperimentViewPage() {
             />
           )}
 
-          {snapshotsError && (
+          {analysisHistoryError && (
             <GenericErrorCallout
               title="Error loading historical analyses"
               message="Historical analyses may not be available yet."
@@ -431,7 +431,6 @@ export default function ExperimentViewPage() {
               <Tabs.Root defaultValue="leaderboard">
                 <Tabs.List>
                   <Tabs.Trigger value="leaderboard">Leaderboard</Tabs.Trigger>
-                  <Tabs.Trigger value="metric-over-time">Metric over time</Tabs.Trigger>
                   <Tabs.Trigger value="raw">
                     <Flex gap="2" align="center">
                       Raw Data <CodeIcon />
@@ -448,12 +447,8 @@ export default function ExperimentViewPage() {
                           maxX={ciBounds[1]}
                         />
                       )}
-                    </Flex>
-                  </Tabs.Content>
 
-                  <Tabs.Content value="metric-over-time">
-                    <Flex direction="column" gap="3" py="3">
-                      {analysisHistory.length > 0 && (
+                      {!isLoadingAnalysisHistory && analysisHistory.length > 0 && (
                         <ForestTimeseriesPlot
                           effectSizesOverTime={analysisHistory.map((analysis) => {
                             const armEffects = analysis.effectSizesByMetric?.get(selectedMetricName);
@@ -463,8 +458,6 @@ export default function ExperimentViewPage() {
                               effectSizes: armEffects ?? [],
                             };
                           })}
-                          minY={ciBounds[0]}
-                          maxY={ciBounds[1]}
                         />
                       )}
                     </Flex>
