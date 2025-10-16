@@ -1,6 +1,6 @@
 'use client';
 import { Box, Card, Flex, Text } from '@radix-ui/themes';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   CartesianGrid,
   Customized,
@@ -14,7 +14,16 @@ import {
   YAxis,
 } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
-import { computeAxisBounds, TimeSeriesDataPoint, ArmMetadata } from './forest-plot-utils';
+import {
+  computeAxisBounds,
+  TimeSeriesDataPoint,
+  ArmMetadata,
+  calculateJitterOffset,
+  easeOutCubic,
+} from '../forest-plot-utils';
+import { JitteredDot, JitteredDotProps } from './jittered-dot';
+import { JitteredLine } from './jittered-line';
+import { ConfidenceInterval } from './confidence-interval';
 
 interface ForestTimeseriesPlotProps {
   data: TimeSeriesDataPoint[];
@@ -74,230 +83,6 @@ function CustomTimeseriesTooltip({ active, payload, armMetadata }: CustomTimeser
         })}
       </Flex>
     </Card>
-  );
-}
-
-// Helper function to calculate x-axis jitter offset
-const calculateJitterOffset = (armIndex: number, totalArms: number): number => {
-  const jitterSpacing = 6; // pixels between each arm's position
-  const totalWidth = (totalArms - 1) * jitterSpacing;
-  return armIndex * jitterSpacing - totalWidth / 2;
-};
-
-// Ease-out cubic function for smooth animation
-const easeOutCubic = (t: number): number => {
-  return 1 - Math.pow(1 - t, 3);
-};
-
-// Custom dot component for Line that applies jitter
-interface JitteredDotProps {
-  cx?: number;
-  cy?: number;
-  r?: number;
-  fill?: string;
-  stroke?: string;
-  jitterOffset?: number;
-  index?: number;
-  totalPoints?: number;
-  animationProgress?: number;
-}
-
-function JitteredDot({
-  cx,
-  cy,
-  r = 4,
-  fill,
-  stroke,
-  jitterOffset = 0,
-  index = 0,
-  totalPoints = 1,
-  animationProgress = 1,
-}: JitteredDotProps) {
-  if (cx === undefined || cy === undefined) return null;
-
-  // Calculate if this dot should be visible based on animation progress
-  // Dot appears when the line reaches its position (index / (totalPoints - 1))
-  // For a single point, show immediately.
-  const dotThreshold = totalPoints > 1 ? index / (totalPoints - 1) : 0;
-  const opacity = animationProgress >= dotThreshold ? 1 : 0;
-
-  return (
-    <circle
-      cx={cx + jitterOffset}
-      cy={cy}
-      r={r}
-      fill={fill}
-      stroke={stroke}
-      strokeWidth={0}
-      opacity={opacity}
-      style={{ transition: 'opacity 0.15s ease-out' }}
-    />
-  );
-}
-
-// Custom component to render a jittered line for a single arm
-interface ArmJitteredLineProps {
-  xAxisMap?: Record<string, { scale: (value: string) => number }>;
-  yAxisMap?: Record<string, { scale: (value: number) => number }>;
-  chartData: TimeSeriesDataPoint[];
-  armId: string;
-  color: string;
-  jitterOffset?: number;
-  strokeWidth?: number;
-  animationProgress?: number;
-}
-
-function ArmJitteredLine({
-  xAxisMap,
-  yAxisMap,
-  chartData,
-  armId,
-  color,
-  jitterOffset = 0,
-  strokeWidth = 2,
-  animationProgress = 1,
-}: ArmJitteredLineProps) {
-  // Build path data - use useMemo since it's derived from props
-  const pathData = useMemo(() => {
-    if (!xAxisMap || !yAxisMap || !chartData.length || !armId) return '';
-
-    const xAxis = Object.values(xAxisMap)[0];
-    const yAxis = Object.values(yAxisMap)[0];
-
-    // Build path from points with jitter applied
-    const validPoints = chartData
-      .map((dataPoint) => {
-        const armData = dataPoint.armEffects.get(armId);
-        if (!armData) return null;
-
-        const x = xAxis.scale(dataPoint.date) + jitterOffset;
-        const y = yAxis.scale(armData.estimate);
-
-        return { x, y };
-      })
-      .filter((p): p is { x: number; y: number } => p !== null);
-
-    if (validPoints.length < 2) return '';
-
-    return validPoints
-      .map((point, index) => (index === 0 ? `M ${point.x} ${point.y}` : `L ${point.x} ${point.y}`))
-      .join(' ');
-  }, [xAxisMap, yAxisMap, chartData, armId, jitterOffset]);
-
-  if (!pathData) return null;
-
-  // Use pathLength="1" to normalize, allowing us to work with 0-1 values
-  // Calculate stroke-dashoffset based on animation progress
-  // Start with full offset (hidden) and reduce to 0 (fully visible)
-  const dashOffset = 1 - animationProgress;
-
-  return (
-    <path
-      d={pathData}
-      stroke={color}
-      strokeWidth={strokeWidth}
-      fill="none"
-      pathLength="1"
-      strokeDasharray="1"
-      strokeDashoffset={dashOffset}
-    />
-  );
-}
-
-// Custom component to render confidence intervals for a single arm
-interface ArmConfidenceIntervalProps {
-  xAxisMap?: Record<string, { scale: (value: string) => number }>;
-  yAxisMap?: Record<string, { scale: (value: number) => number }>;
-  chartData: TimeSeriesDataPoint[];
-  armId: string;
-  color: string;
-  jitterOffset?: number; // jitter to prevent overlapping CIs in pixels
-  strokeWidth?: number;
-  capWidth?: number; // Width of the horizontal cap lines
-  strokeLinecap?: 'round' | 'inherit' | 'butt' | 'square';
-  opacity?: number;
-  animationProgress?: number;
-}
-
-function ArmConfidenceInterval({
-  xAxisMap,
-  yAxisMap,
-  chartData,
-  armId,
-  color,
-  jitterOffset = 0,
-  strokeWidth = 3,
-  capWidth = 0,
-  strokeLinecap = 'round',
-  opacity = 0.5,
-  animationProgress = 1,
-}: ArmConfidenceIntervalProps) {
-  if (!xAxisMap || !yAxisMap || !chartData.length || !armId || !color) return null;
-  // These params are special internal params for recharts.
-  // TODO: update to recharts 3+ API to replace magic with hooks.
-  const xAxis = Object.values(xAxisMap)[0];
-  const yAxis = Object.values(yAxisMap)[0];
-
-  // Render confidence intervals for this arm at each data point
-  return (
-    <g>
-      {chartData.map((dataPoint, pointIndex) => {
-        const armData = dataPoint.armEffects.get(armId);
-        if (!armData) return null;
-
-        // Rescale the x and y values to the pixel coordinates
-        const x = xAxis.scale(dataPoint.date) + jitterOffset;
-        const yLower = yAxis.scale(armData.lower);
-        const yUpper = yAxis.scale(armData.upper);
-
-        // Each CI appears when the line reaches its position
-        const totalPoints = chartData.length;
-        const ciThreshold = totalPoints > 1 ? pointIndex / (totalPoints - 1) : 0;
-        const currentOpacity = animationProgress >= ciThreshold ? opacity : 0;
-
-        return (
-          <g key={`ci-${armId}-${pointIndex}`} style={{ transition: 'opacity 0.15s ease-out' }}>
-            {/* Vertical line from lower to upper CI */}
-            <line
-              x1={x}
-              y1={yLower}
-              x2={x}
-              y2={yUpper}
-              stroke={color}
-              strokeWidth={strokeWidth}
-              opacity={currentOpacity}
-              strokeLinecap={strokeLinecap}
-            />
-            {/* Upper cap */}
-            {capWidth > 0 && (
-              <line
-                x1={x - capWidth / 2}
-                y1={yUpper}
-                x2={x + capWidth / 2}
-                y2={yUpper}
-                stroke={color}
-                strokeWidth={strokeWidth}
-                opacity={currentOpacity}
-                strokeLinecap={strokeLinecap}
-              />
-            )}
-            {/* Lower cap */}
-            {capWidth > 0 && (
-              <line
-                x1={x - capWidth / 2}
-                y1={yLower}
-                x2={x + capWidth / 2}
-                y2={yLower}
-                stroke={color}
-                strokeWidth={strokeWidth}
-                opacity={currentOpacity}
-                strokeLinecap={strokeLinecap}
-              />
-            )}
-          </g>
-        );
-      })}
-    </g>
   );
 }
 
@@ -418,7 +203,7 @@ export default function ForestTimeseriesPlot({
               <Customized
                 key={`line_${armInfo.id}`}
                 component={
-                  <ArmJitteredLine
+                  <JitteredLine
                     chartData={chartData}
                     armId={armInfo.id}
                     color={getArmColor(index, armInfo.isBaseline)}
@@ -436,7 +221,7 @@ export default function ForestTimeseriesPlot({
               <Customized
                 key={`ci_${armInfo.id}`}
                 component={
-                  <ArmConfidenceInterval
+                  <ConfidenceInterval
                     chartData={chartData}
                     armId={armInfo.id}
                     color={getArmColor(index, armInfo.isBaseline)}

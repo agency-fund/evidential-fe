@@ -44,7 +44,7 @@ import { useCurrentOrganization } from '@/providers/organization-provider';
 import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date-utils';
 import Link from 'next/link';
 import { mutate } from 'swr';
-import ForestTimeseriesPlot from '@/components/features/experiments/forest-timeseries-plot';
+import ForestTimeseriesPlot from '@/components/features/experiments/plots/forest-timeseries-plot';
 
 // Helper to safely extract alpha from frequentist experiment design specs
 const getAlpha = (designSpec: DesignSpecOutput | undefined): number | undefined => {
@@ -109,7 +109,7 @@ export default function ExperimentViewPage() {
     },
   );
 
-  const { isLoading: isLoadingAnalysisHistory, error: analysisHistoryError } = useListSnapshots(
+  const { error: analysisHistoryError } = useListSnapshots(
     organizationId,
     datasourceId,
     experimentId,
