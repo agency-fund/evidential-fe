@@ -451,7 +451,11 @@ export default function ExperimentViewPage() {
                         />
                       )}
 
-                      <ForestTimeseriesPlot data={timeseriesData} armMetadata={armMetadata} />
+                      <ForestTimeseriesPlot
+                        data={timeseriesData}
+                        armMetadata={armMetadata}
+                        forMetricName={selectedMetricName}
+                      />
                     </Flex>
                   </Tabs.Content>
 

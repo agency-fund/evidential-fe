@@ -1,6 +1,6 @@
 'use client';
 import { Box, Card, Flex, Text } from '@radix-ui/themes';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   CartesianGrid,
   Customized,
@@ -28,6 +28,7 @@ import { ConfidenceInterval } from './confidence-interval';
 interface ForestTimeseriesPlotProps {
   data: TimeSeriesDataPoint[];
   armMetadata: ArmMetadata[];
+  forMetricName: string;
   // If provided, use these values as hints for the y-axis domain.
   // May still be adjusted to accommodate the displayed effect sizes.
   minY?: number;
@@ -89,13 +90,37 @@ function CustomTimeseriesTooltip({ active, payload, armMetadata }: CustomTimeser
 export default function ForestTimeseriesPlot({
   data: chartData,
   armMetadata,
+  forMetricName: selectedMetricName,
   minY: minYProp,
   maxY: maxYProp,
 }: ForestTimeseriesPlotProps) {
+  // Initialize ref with empty string so animation always runs on first mount
+  const prevStableKeyRef = useRef<string>('');
   const [animationProgress, setAnimationProgress] = useState(0);
 
+  // Create a stable key based on the date range and metric name
+  // Only re-trigger animation when the actual data scope changes
+  const dataStableKey = (() => {
+    if (!chartData || chartData.length === 0) return '';
+    const dates = chartData.map((d) => d.date).sort();
+    const oldestDate = dates[0];
+    const newestDate = dates[dates.length - 1];
+    return `${selectedMetricName}:${oldestDate}:${newestDate}`;
+  })();
+
   // Animation: 0 to 1 over 1.5 seconds
+  // Only trigger when the stable key changes (metric, date range)
   useEffect(() => {
+    // Skip animation if the stable key hasn't changed
+    if (dataStableKey === prevStableKeyRef.current) {
+      return;
+    }
+
+    prevStableKeyRef.current = dataStableKey;
+
+    // Reset animation progress to 0 at the start
+    setAnimationProgress(0);
+
     const durationMs = 1500;
     const startTime = Date.now();
 
@@ -110,7 +135,7 @@ export default function ForestTimeseriesPlot({
     };
 
     requestAnimationFrame(animate);
-  }, [chartData]);
+  }, [dataStableKey]);
 
   // Early return if no data
   if (!chartData || chartData.length === 0) {
