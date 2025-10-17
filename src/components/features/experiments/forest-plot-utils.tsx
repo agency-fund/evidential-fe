@@ -31,11 +31,11 @@ export interface AnalysisState {
  * @param analysisData - The experiment analysis response to check
  * @returns True if the analysis is for a frequentist experiment
  */
-export function isFrequentist(
+export const isFrequentist = (
   analysisData: ExperimentAnalysisResponse | undefined,
-): analysisData is FreqExperimentAnalysisResponse {
+): analysisData is FreqExperimentAnalysisResponse => {
   return analysisData?.type === 'freq';
-}
+};
 
 /**
  * Pre-computes effect size data for all metrics in a frequentist analysis.
@@ -45,10 +45,10 @@ export function isFrequentist(
  * @param alpha - The significance threshold (e.g., 0.05 for 95% confidence)
  * @returns Map of metric names to effect size arrays, or undefined
  */
-export function precomputeEffectSizesByMetric(
+export const precomputeEffectSizesByMetric = (
   analysisData: ExperimentAnalysisResponse,
   alpha: number = 0.05,
-): Map<string, EffectSizeData[]> | undefined {
+): Map<string, EffectSizeData[]> | undefined => {
   if (!isFrequentist(analysisData)) return undefined;
 
   const effectSizesByMetric = new Map<string, EffectSizeData[]>();
@@ -59,7 +59,7 @@ export function precomputeEffectSizesByMetric(
     effectSizesByMetric.set(metricName, effectSizes);
   }
   return effectSizesByMetric;
-}
+};
 
 /**
  * Computes min/max CI bounds for a given metric from a subset of analysis states.
@@ -70,11 +70,11 @@ export function precomputeEffectSizesByMetric(
  * @param numSnapshots - Number of most recent analyses to include (default: 8)
  * @returns Tuple of [minLower, maxUpper] or [undefined, undefined] if no data
  */
-export function computeBoundsForMetric(
+export const computeBoundsForMetric = (
   metricName: string | undefined,
   analysisStates: AnalysisState[],
   numSnapshots: number = 8,
-): [number | undefined, number | undefined] {
+): [number | undefined, number | undefined] => {
   if (!metricName) {
     return [undefined, undefined];
   }
@@ -98,7 +98,7 @@ export function computeBoundsForMetric(
   }
 
   return [minLower, maxUpper];
-}
+};
 
 /**
  * Generates effect size data for our forest plot visualization from a metric analysis.
@@ -107,7 +107,7 @@ export function computeBoundsForMetric(
  * @param alpha - The significance threshold (e.g., 0.05 for 95% confidence)
  * @returns Array of effect size data for each arm
  */
-export function generateEffectSizeData(analysis: MetricAnalysis, alpha: number): EffectSizeData[] {
+export const generateEffectSizeData = (analysis: MetricAnalysis, alpha: number): EffectSizeData[] => {
   // Extract data for visualization
   const controlArmIndex = analysis.arm_analyses.findIndex((a) => a.is_baseline);
   const controlArmAnalysis = analysis.arm_analyses[controlArmIndex];
@@ -152,7 +152,7 @@ export function generateEffectSizeData(analysis: MetricAnalysis, alpha: number):
   });
 
   return effectSizes;
-}
+};
 
 /**
  * Computes axis bounds (min/max) from an array of numeric values with padding and rounding.
@@ -164,12 +164,12 @@ export function generateEffectSizeData(analysis: MetricAnalysis, alpha: number):
  * @param padding - Fraction of range to add as padding (default: 0.1 for 10%)
  * @returns Tuple of [min, max] bounds
  */
-export function computeAxisBounds(
+export const computeAxisBounds = (
   values: number[],
   minProp?: number,
   maxProp?: number,
   padding: number = 0.1,
-): [number, number] {
+): [number, number] => {
   if (values.length === 0) {
     return [0, 1];
   }
@@ -199,7 +199,7 @@ export function computeAxisBounds(
   }
 
   return [min, max];
-}
+};
 
 /**
  * Data structures for timeseries visualization
@@ -246,7 +246,7 @@ export const easeOutCubic = (t: number): number => {
  * @param metricName - The metric field name to extract effect sizes for
  * @returns Object containing chartData, armMetadata, and date range for rendering
  */
-export function transformAnalysisForForestTimeseriesPlot(
+export const transformAnalysisForForestTimeseriesPlot = (
   analysisStates: AnalysisState[],
   metricName: string,
 ): {
@@ -254,7 +254,7 @@ export function transformAnalysisForForestTimeseriesPlot(
   armMetadata: ArmMetadata[];
   minDate: Date;
   maxDate: Date;
-} {
+} => {
   const timeseriesData: TimeSeriesDataPoint[] = [];
 
   // Sort by date ascending (oldest to newest)
@@ -313,4 +313,4 @@ export function transformAnalysisForForestTimeseriesPlot(
   maxDate.setUTCHours(0, 0, 0, 0);
 
   return { timeseriesData, armMetadata, minDate, maxDate };
-}
+};
