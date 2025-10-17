@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { TimeSeriesDataPoint } from '../forest-plot-utils';
 
 export interface JitteredLineProps {
-  xAxisMap?: Record<string, { scale: (value: string) => number }>;
+  xAxisMap?: Record<string, { scale: (value: number) => number }>;
   yAxisMap?: Record<string, { scale: (value: number) => number }>;
   chartData: TimeSeriesDataPoint[];
   armId: string;
@@ -38,7 +38,7 @@ export function JitteredLine({
         const armData = dataPoint.armEffects.get(armId);
         if (!armData) return null;
 
-        const x = xAxis.scale(dataPoint.date) + jitterOffset;
+        const x = xAxis.scale(dataPoint.dateTimestampMs) + jitterOffset;
         const y = yAxis.scale(armData.estimate);
 
         return { x, y };

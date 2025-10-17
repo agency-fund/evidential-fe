@@ -159,8 +159,8 @@ export function generateEffectSizeData(analysis: MetricAnalysis, alpha: number):
  * This is used to create stable, nicely-formatted chart axes.
  *
  * @param values - Array of numeric values to compute bounds for
- * @param minProp - Optional minimum bound hint to enforce
- * @param maxProp - Optional maximum bound to enforce
+ * @param minProp - Optional minimum bound hint
+ * @param maxProp - Optional maximum bound hint
  * @param padding - Fraction of range to add as padding (default: 0.1 for 10%)
  * @returns Tuple of [min, max] bounds
  */
@@ -212,7 +212,7 @@ export interface ArmDataPoint {
 
 export interface TimeSeriesDataPoint {
   date: string; // YYYY-MM-DD format
-  dateObj: Date; // For sorting/reference
+  dateTimestampMs: number; // Timestamp in milliseconds for numeric axis
   armEffects: Map<string, ArmDataPoint>; // armId => ArmDataPoint
 }
 
@@ -244,7 +244,7 @@ export const easeOutCubic = (t: number): number => {
  *
  * @param analysisStates - Array of analysis states (e.g., snapshots and live analysis)
  * @param metricName - The metric field name to extract effect sizes for
- * @returns Object containing chartData and armMetadata for rendering
+ * @returns Object containing chartData, armMetadata, and date range for rendering
  */
 export function transformAnalysisForForestTimeseriesPlot(
   analysisStates: AnalysisState[],
@@ -252,6 +252,8 @@ export function transformAnalysisForForestTimeseriesPlot(
 ): {
   timeseriesData: TimeSeriesDataPoint[];
   armMetadata: ArmMetadata[];
+  minDate: Date;
+  maxDate: Date;
 } {
   const timeseriesData: TimeSeriesDataPoint[] = [];
 
@@ -262,7 +264,8 @@ export function transformAnalysisForForestTimeseriesPlot(
   const validStates = sortedStates.filter((state) => state.effectSizesByMetric?.has(metricName));
 
   if (validStates.length === 0) {
-    return { timeseriesData: [], armMetadata: [] };
+    const now = new Date();
+    return { timeseriesData: [], armMetadata: [], minDate: now, maxDate: now };
   }
 
   // Extract arm metadata from the first valid data point
@@ -283,9 +286,7 @@ export function transformAnalysisForForestTimeseriesPlot(
     const effectSizes = state.effectSizesByMetric?.get(metricName);
     if (!effectSizes) continue;
 
-    const dateStr = state.updated_at.toISOString().split('T')[0]; // YYYY-MM-DD format
     const armEffects = new Map<string, ArmDataPoint>();
-
     for (const effectSize of effectSizes) {
       armEffects.set(effectSize.armId, {
         estimate: effectSize.absEffect,
@@ -294,15 +295,22 @@ export function transformAnalysisForForestTimeseriesPlot(
       });
     }
 
+    // Truncate timestamp to start of day UTC to align with ticks.
+    // If we need the precision in the future, just set updated_at directly.
+    const truncatedDate = new Date(state.updated_at);
+    truncatedDate.setUTCHours(0, 0, 0, 0);
     timeseriesData.push({
-      date: dateStr,
-      dateObj: state.updated_at,
+      date: truncatedDate.toISOString().split('T')[0], // YYYY-MM-DD format
+      dateTimestampMs: truncatedDate.getTime(),
       armEffects: armEffects,
     });
   }
 
-  return {
-    timeseriesData,
-    armMetadata,
-  };
+  // Compute min and max dates for the axis domain (truncated to start of day)
+  const minDate = new Date(validStates[0].updated_at);
+  minDate.setUTCHours(0, 0, 0, 0);
+  const maxDate = new Date(validStates[validStates.length - 1].updated_at);
+  maxDate.setUTCHours(0, 0, 0, 0);
+
+  return { timeseriesData, armMetadata, minDate, maxDate };
 }

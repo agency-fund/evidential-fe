@@ -29,10 +29,8 @@ interface ForestTimeseriesPlotProps {
   data: TimeSeriesDataPoint[];
   armMetadata: ArmMetadata[];
   forMetricName: string;
-  // If provided, use these values as hints for the y-axis domain.
-  // May still be adjusted to accommodate the displayed effect sizes.
-  minY?: number;
-  maxY?: number;
+  minDate: Date;
+  maxDate: Date;
 }
 
 // Radix level 12 colors for different arms (high contrast, suitable for text/icons)
@@ -91,8 +89,8 @@ export default function ForestTimeseriesPlot({
   data: chartData,
   armMetadata,
   forMetricName: selectedMetricName,
-  minY: minYProp,
-  maxY: maxYProp,
+  minDate,
+  maxDate,
 }: ForestTimeseriesPlotProps) {
   // Initialize ref with empty string so animation always runs on first mount
   const prevStableKeyRef = useRef<string>('');
@@ -144,7 +142,18 @@ export default function ForestTimeseriesPlot({
 
   const yAxisValues: number[] = [];
   chartData.forEach((point) => point.armEffects.forEach((arm) => yAxisValues.push(arm.lower, arm.upper)));
-  const [minY, maxY] = computeAxisBounds(yAxisValues, minYProp, maxYProp);
+  const [minY, maxY] = computeAxisBounds(yAxisValues);
+
+  // Generate all date ticks between minDate and maxDate for x-axis
+  const allDateTicks: number[] = [];
+  const currentDate = new Date(minDate);
+  currentDate.setUTCHours(0, 0, 0, 0);
+  const endDate = new Date(maxDate);
+  endDate.setUTCHours(0, 0, 0, 0);
+  while (currentDate <= endDate) {
+    allDateTicks.push(currentDate.getTime());
+    currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+  }
 
   const commonAxisStyle = {
     fontSize: '14px',
@@ -157,7 +166,19 @@ export default function ForestTimeseriesPlot({
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" style={commonAxisStyle} padding={{ left: 12, right: 0 }} />
+          <XAxis
+            dataKey="dateTimestampMs"
+            type="number"
+            domain={[allDateTicks[0], allDateTicks[allDateTicks.length - 1]]}
+            ticks={allDateTicks}
+            style={commonAxisStyle}
+            padding={{ left: 12, right: 0 }}
+            interval="preserveStartEnd"
+            tickFormatter={(timestamp) => {
+              const date = new Date(timestamp);
+              return date.toISOString().split('T')[0];
+            }}
+          />
           <YAxis
             domain={[minY, maxY]}
             style={commonAxisStyle}

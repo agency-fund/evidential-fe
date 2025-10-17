@@ -1,7 +1,7 @@
 import { TimeSeriesDataPoint } from '../forest-plot-utils';
 
 export interface ConfidenceIntervalProps {
-  xAxisMap?: Record<string, { scale: (value: string) => number }>;
+  xAxisMap?: Record<string, { scale: (value: number) => number }>;
   yAxisMap?: Record<string, { scale: (value: number) => number }>;
   chartData: TimeSeriesDataPoint[];
   armId: string;
@@ -44,7 +44,7 @@ export function ConfidenceInterval({
         if (!armData) return null;
 
         // Rescale the x and y values to the pixel coordinates
-        const x = xAxis.scale(dataPoint.date) + jitterOffset;
+        const x = xAxis.scale(dataPoint.dateTimestampMs) + jitterOffset;
         const yLower = yAxis.scale(armData.lower);
         const yUpper = yAxis.scale(armData.upper);
 
