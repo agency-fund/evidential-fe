@@ -215,7 +215,10 @@ export default function ExperimentViewPage() {
     mdePct = (selectedMetricAnalysis.metric.metric_pct_change * 100).toFixed(1);
   }
 
-  const { timeseriesData, armMetadata } = transformAnalysisForForestTimeseriesPlot(analysisHistory, selectedMetricName);
+  const { timeseriesData, armMetadata, minDate, maxDate } = transformAnalysisForForestTimeseriesPlot(
+    [liveAnalysis, ...analysisHistory],
+    selectedMetricName,
+  );
 
   return (
     <Flex direction="column" gap="6">
@@ -455,6 +458,8 @@ export default function ExperimentViewPage() {
                         data={timeseriesData}
                         armMetadata={armMetadata}
                         forMetricName={selectedMetricName}
+                        minDate={minDate}
+                        maxDate={maxDate}
                       />
                     </Flex>
                   </Tabs.Content>
