@@ -107,6 +107,8 @@ export default function ForestTimeseriesPlot({
   const baselineArm = armMetadata.find((arm) => arm.isBaseline);
   const [selectedArmId, setSelectedArmId] = useState<string | null>(baselineArm?.id || armMetadata[0]?.id || null);
 
+  const selectedArmName = armMetadata.find((arm) => arm.id === selectedArmId)?.name || null;
+
   // Early return if no data
   if (!chartData || chartData.length === 0) {
     return <Text>No timeseries data to display</Text>;
@@ -173,10 +175,19 @@ export default function ForestTimeseriesPlot({
               transform: 'translateX(-50%)', // 3. Center it based on its own width
               zIndex: 1000, // 4. Ensure it's above other page content
               cursor: 'pointer',
+              // Allow the legend to wrap to multiple lines if the text is too long:
+              whiteSpace: 'normal',
+              width: '100%',
             }}
             formatter={(value, entry) => {
               // When dataKey is a function, use the entry name directly
-              return entry.value || value;
+              const armName = entry.value || value;
+              const selected = armName === selectedArmName;
+              return (
+                <Text size="3" weight={selected ? 'bold' : 'regular'}>
+                  {armName}
+                </Text>
+              );
             }}
             onClick={(data) => {
               const clickedArm = armMetadata.find((arm) => arm.name === data.value);
