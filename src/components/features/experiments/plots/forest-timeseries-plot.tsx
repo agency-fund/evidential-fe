@@ -33,9 +33,9 @@ interface ForestTimeseriesPlotProps {
   maxDate: Date;
 }
 
-// Radix level 12 colors for different arms (high contrast, suitable for text/icons)
-const ARM_COLORS = ['#5746af', '#3e63dd', '#3e5ba9', '#0090ff'] as const; // violet-12, iris-12, indigo-12, blue-12
-const CONTROL_COLOR = '#bbbbbb'; // Gray for control/baseline arm
+// Aiming for reasonably visually distinct colors for different arm line plots.
+const ARM_COLORS = ['var(--violet-12)', 'var(--iris-12)', 'var(--indigo-12)', 'var(--blue-12)'] as const;
+const CONTROL_COLOR = 'var(--gray-8)'; // Gray for control/baseline arm
 
 // Get color for an arm based on its index and baseline status
 const getArmColor = (armIndex: number, isBaseline: boolean | undefined): string => {
@@ -100,10 +100,7 @@ export default function ForestTimeseriesPlot({
   // Only re-trigger animation when the actual data scope changes
   const dataStableKey = (() => {
     if (!chartData || chartData.length === 0) return '';
-    const dates = chartData.map((d) => d.date).sort();
-    const oldestDate = dates[0];
-    const newestDate = dates[dates.length - 1];
-    return `${selectedMetricName}:${oldestDate}:${newestDate}`;
+    return `${selectedMetricName}:${minDate.toISOString()}:${maxDate.toISOString()}`;
   })();
 
   // Animation: 0 to 1 over 1.5 seconds
