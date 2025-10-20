@@ -457,7 +457,6 @@ export default function ExperimentViewPage() {
                       <ForestTimeseriesPlot
                         data={timeseriesData}
                         armMetadata={armMetadata}
-                        forMetricName={selectedMetricName}
                         minDate={minDate}
                         maxDate={maxDate}
                       />

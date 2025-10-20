@@ -2,6 +2,36 @@ import { MetricAnalysis, ExperimentAnalysisResponse, FreqExperimentAnalysisRespo
 import { EffectSizeData, AnalysisState, ArmDataPoint, TimeSeriesDataPoint, ArmMetadata } from './forest-plot-models';
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 
+// Aiming for reasonably visually distinct colors for different arm line plots.
+export const ARM_COLORS = [
+  'var(--blue-10)',
+  'var(--iris-10)',
+  'var(--plum-10)',
+  'var(--brown-10)',
+  'var(--cyan-10)',
+  'var(--indigo-10)',
+  'var(--violet-10)',
+  'var(--purple-10)',
+] as const;
+export const INACTIVE_ARM_COLORS = [
+  'var(--blue-a6)',
+  'var(--iris-a6)',
+  'var(--plum-a6)',
+  'var(--brown-a6)',
+  'var(--cyan-a6)',
+  'var(--indigo-a6)',
+  'var(--violet-a6)',
+  'var(--purple-a6)',
+] as const;
+export const BASELINE_INDICATOR_COLOR = 'var(--indigo-8)';
+export const DEFAULT_POINT_COLOR = 'var(--gray-9)';
+export const CONTROL_COLOR = 'var(--gray-10)';
+export const INACTIVE_CONTROL_COLOR = 'var(--gray-a8)';
+export const POSITIVE_COLOR = 'var(--jade-10)';
+export const NEGATIVE_COLOR = 'var(--ruby-10)';
+export const INACTIVE_POSITIVE_COLOR = 'var(--jade-a8)';
+export const INACTIVE_NEGATIVE_COLOR = 'var(--ruby-a8)';
+
 /**
  * Type guard to check if an analysis response is a frequentist experiment.
  *
@@ -124,7 +154,7 @@ export const generateEffectSizeData = (analysis: MetricAnalysis, alpha: number):
       absCI95Upper,
       pValue,
       invalidStatTest,
-      significant: !!(pValue && pValue < alpha),
+      significant: !isBaseline && !!(pValue && pValue < alpha),
     };
   });
 
@@ -188,6 +218,31 @@ export const calculateJitterOffset = (armIndex: number, totalArms: number): numb
 };
 
 /**
+ * Determines the color for a confidence interval based on significance and effect direction.
+ *
+ * @param baseColor - The default color to use when not significant
+ * @param isSignificant - Whether the effect is statistically significant; default false
+ * @param isPositive - Whether the effect is positive (only relevant when significant); default false
+ * @param isSelected - Whether the arm is selected; default false
+ * @returns The color string for the confidence interval
+ */
+export const getColorWithSignificance = (
+  baseColor: string,
+  isSignificant: boolean = false,
+  isPositive: boolean = false,
+  isSelected: boolean = false,
+): string => {
+  if (!isSignificant) return baseColor;
+  return isPositive
+    ? isSelected
+      ? POSITIVE_COLOR
+      : INACTIVE_POSITIVE_COLOR
+    : isSelected
+      ? NEGATIVE_COLOR
+      : INACTIVE_NEGATIVE_COLOR;
+};
+
+/**
  * Transforms analysis states into chart data suitable for timeseries visualization.
  * Processes multiple analysis snapshots and converts them into a format ready for Recharts.
  *
@@ -238,9 +293,11 @@ export const transformAnalysisForForestTimeseriesPlot = (
     const armEffects = new Map<string, ArmDataPoint>();
     for (const effectSize of effectSizes) {
       armEffects.set(effectSize.armId, {
-        estimate: effectSize.absEffect,
+        estimate: effectSize.effect,
+        absEstimate: effectSize.absEffect,
         upper: effectSize.absCI95Upper,
         lower: effectSize.absCI95Lower,
+        significant: effectSize.significant,
       });
     }
 

@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import { Box, Card, Flex, Text } from '@radix-ui/themes';
 import {
   CartesianGrid,
@@ -13,7 +14,17 @@ import {
   YAxis,
 } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
-import { computeAxisBounds, TimeSeriesDataPoint, ArmMetadata, calculateJitterOffset } from './forest-plot-utils';
+import {
+  computeAxisBounds,
+  TimeSeriesDataPoint,
+  ArmMetadata,
+  calculateJitterOffset,
+  ARM_COLORS,
+  INACTIVE_ARM_COLORS,
+  CONTROL_COLOR,
+  INACTIVE_CONTROL_COLOR,
+  getColorWithSignificance,
+} from './forest-plot-utils';
 import { JitteredDot, JitteredDotProps } from './jittered-dot';
 import { JitteredLine } from './jittered-line';
 import { ConfidenceInterval } from './confidence-interval';
@@ -22,28 +33,18 @@ import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 interface ForestTimeseriesPlotProps {
   data: TimeSeriesDataPoint[];
   armMetadata: ArmMetadata[];
-  forMetricName: string;
   minDate: Date;
   maxDate: Date;
 }
 
-// Aiming for reasonably visually distinct colors for different arm line plots.
-const ARM_COLORS = [
-  'var(--blue-10)',
-  'var(--iris-10)',
-  'var(--purple-10)',
-  'var(--cyan-10)',
-  'var(--indigo-10)',
-  'var(--violet-10)',
-  'var(--plum-10)',
-  'var(--brown-10)',
-] as const;
-const CONTROL_COLOR = 'var(--gray-10)'; // Gray for control/baseline arm
+// Get color for an arm based on its index, baseline status, and selection state
+const getArmColor = (armIndex: number, isBaseline: boolean | undefined, isSelected: boolean): string => {
+  if (isBaseline === undefined || isBaseline) {
+    return isSelected ? CONTROL_COLOR : INACTIVE_CONTROL_COLOR;
+  }
 
-// Get color for an arm based on its index and baseline status
-const getArmColor = (armIndex: number, isBaseline: boolean | undefined): string => {
-  if (isBaseline === undefined || isBaseline) return CONTROL_COLOR;
-  return ARM_COLORS[armIndex % ARM_COLORS.length];
+  const colorIndex = (armIndex - 1) % ARM_COLORS.length;
+  return isSelected ? ARM_COLORS[colorIndex] : INACTIVE_ARM_COLORS[colorIndex];
 };
 
 // Custom tooltip for the timeseries
@@ -73,10 +74,12 @@ function CustomTimeseriesTooltip({ active, payload, armMetadata }: CustomTimeser
 
           return (
             <Flex key={armInfo.id} direction="column" gap="1">
-              <Text size="2" style={{ color }}>
-                {armInfo.name || armInfo.id}
-              </Text>
-              <Text size="1">Effect: {armData.estimate.toFixed(2)}</Text>
+              <Flex direction="row" gap="1">
+                <Text size="2" weight="bold" style={{ color }}>
+                  {armInfo.name || armInfo.id}:
+                </Text>
+                <Text size="2"> {armData.absEstimate.toFixed(2)}</Text>
+              </Flex>
               <Text size="1">
                 95% CI: [{armData.lower.toFixed(2)}, {armData.upper.toFixed(2)}]
               </Text>
@@ -91,10 +94,13 @@ function CustomTimeseriesTooltip({ active, payload, armMetadata }: CustomTimeser
 export default function ForestTimeseriesPlot({
   data: chartData,
   armMetadata,
-  forMetricName: selectedMetricName,
   minDate,
   maxDate,
 }: ForestTimeseriesPlotProps) {
+  // Default selected arm to the baseline
+  const baselineArm = armMetadata.find((arm) => arm.isBaseline);
+  const [selectedArmId, setSelectedArmId] = useState<string | null>(baselineArm?.id || armMetadata[0]?.id || null);
+
   // Early return if no data
   if (!chartData || chartData.length === 0) {
     return <Text>No timeseries data to display</Text>;
@@ -120,10 +126,12 @@ export default function ForestTimeseriesPlot({
     fontFamily: 'Arial, sans-serif',
   };
 
+  // Grow the plot height to accommodate the tooltip
+  const height = Math.max(400, armMetadata.length * 60);
+  const minWidth = allDateTicks.length * armMetadata.length * 8;
   return (
-    // TODO? should we make height dynamic somehow?
-    <Box height="400px">
-      <ResponsiveContainer width="100%" height="100%">
+    <Box height={`${height}px`} overflowY="clip" overflowX="auto">
+      <ResponsiveContainer height="100%" minWidth={`${minWidth}px`}>
         <LineChart data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
@@ -153,10 +161,17 @@ export default function ForestTimeseriesPlot({
           />
           <Tooltip content={<CustomTimeseriesTooltip armMetadata={armMetadata} />} />
           <Legend
-            wrapperStyle={{ paddingTop: '10px' }}
+            wrapperStyle={{
+              paddingTop: '10px',
+              cursor: 'pointer',
+            }}
             formatter={(value, entry) => {
               // When dataKey is a function, use the entry name directly
               return entry.value || value;
+            }}
+            onClick={(data) => {
+              const clickedArm = armMetadata.find((arm) => arm.name === data.value);
+              if (clickedArm) setSelectedArmId(clickedArm.id);
             }}
           />
 
@@ -169,7 +184,7 @@ export default function ForestTimeseriesPlot({
                   <JitteredLine
                     chartData={chartData}
                     armId={armInfo.id}
-                    color={getArmColor(index, armInfo.isBaseline)}
+                    color={getArmColor(index, armInfo.isBaseline, selectedArmId === armInfo.id)}
                     jitterOffset={calculateJitterOffset(index, armMetadata.length)}
                   />
                 }
@@ -179,6 +194,7 @@ export default function ForestTimeseriesPlot({
 
           {/* Render confidence intervals for each arm */}
           {armMetadata.map((armInfo, index) => {
+            const selected = selectedArmId === armInfo.id;
             return (
               <Customized
                 key={`ci_${armInfo.id}`}
@@ -186,7 +202,8 @@ export default function ForestTimeseriesPlot({
                   <ConfidenceInterval
                     chartData={chartData}
                     armId={armInfo.id}
-                    color={getArmColor(index, armInfo.isBaseline)}
+                    selected={selected}
+                    baseColor={getArmColor(index, armInfo.isBaseline, selected)}
                     jitterOffset={calculateJitterOffset(index, armMetadata.length)}
                   />
                 }
@@ -196,33 +213,52 @@ export default function ForestTimeseriesPlot({
 
           {/* Place JitteredDots on top for each arm. Hide line with width=0 since we use ArmJitteredLine. */}
           {armMetadata.map((armInfo, index) => {
-            const color = getArmColor(index, armInfo.isBaseline);
+            const selected = selectedArmId === armInfo.id;
+            // Always emphasize points and the legend
+            const baseDotColor = getArmColor(index, armInfo.isBaseline, true);
             return (
               <Line
                 key={`${armInfo.id}_effect`}
-                dataKey={(point: TimeSeriesDataPoint) => point.armEffects.get(armInfo.id)?.estimate ?? null}
+                dataKey={(point: TimeSeriesDataPoint) => point.armEffects.get(armInfo.id)?.absEstimate ?? null}
                 name={armInfo.name || armInfo.id}
-                stroke={color} // color is still needed since it is used by the legend and tooltip
+                stroke={baseDotColor} // color is still needed since it is used by the legend and tooltip
                 strokeWidth={0} // 0 to avoid drawing this line between dots
                 dot={(props: unknown) => {
                   const { key, ...restProps } = props as JitteredDotProps & { key?: string };
+                  const dataPoint = restProps.payload as TimeSeriesDataPoint;
+                  const armData = dataPoint.armEffects.get(armInfo.id);
+                  const dotColor = armData
+                    ? getColorWithSignificance(baseDotColor, armData.significant, armData.estimate > 0, selected)
+                    : baseDotColor;
+
                   return (
                     <JitteredDot
                       key={key}
                       {...restProps}
-                      fill={color}
+                      fill={baseDotColor}
+                      stroke={dotColor}
+                      r={3}
+                      strokeWidth={1}
                       jitterOffset={calculateJitterOffset(index, armMetadata.length)}
                     />
                   );
                 }}
                 activeDot={(props: unknown) => {
                   const { key, ...restProps } = props as JitteredDotProps & { key?: string };
+                  const dataPoint = restProps.payload as TimeSeriesDataPoint;
+                  const armData = dataPoint.armEffects.get(armInfo.id);
+                  const dotColor = armData
+                    ? getColorWithSignificance(baseDotColor, armData.significant, armData.estimate > 0, selected)
+                    : baseDotColor;
+
                   return (
                     <JitteredDot
                       key={key}
                       {...restProps}
-                      r={6}
-                      fill={color}
+                      fill={baseDotColor}
+                      stroke={dotColor}
+                      r={4}
+                      strokeWidth={2}
                       jitterOffset={calculateJitterOffset(index, armMetadata.length)}
                     />
                   );

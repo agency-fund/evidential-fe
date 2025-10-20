@@ -29,9 +29,11 @@ export interface AnalysisState {
  * Data structures for timeseries visualization
  */
 export interface ArmDataPoint {
-  estimate: number;
+  estimate: number; // if baseline, this is an absolute estimate
+  absEstimate: number;
   upper: number;
   lower: number;
+  significant: boolean;
 }
 
 export interface TimeSeriesDataPoint {
