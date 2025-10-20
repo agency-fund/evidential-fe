@@ -9,14 +9,14 @@ import {
   useUpdateExperiment,
   getGetExperimentForUiKey,
 } from '@/api/admin';
-import { ForestPlot } from '@/components/features/experiments/forest-plot';
+import { ForestPlot } from '@/components/features/experiments/plots/forest-plot';
 import {
   computeBoundsForMetric,
   AnalysisState,
   precomputeEffectSizesByMetric,
   isFrequentist,
   transformAnalysisForForestTimeseriesPlot,
-} from '@/components/features/experiments/forest-plot-utils';
+} from '@/components/features/experiments/plots/forest-plot-utils';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { useState } from 'react';

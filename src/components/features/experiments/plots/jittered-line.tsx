@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { TimeSeriesDataPoint } from '../forest-plot-utils';
+import { TimeSeriesDataPoint } from './forest-plot-utils';
 
 export interface JitteredLineProps {
   xAxisMap?: Record<string, { scale: (value: number) => number }>;

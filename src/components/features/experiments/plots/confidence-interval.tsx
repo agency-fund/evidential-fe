@@ -1,4 +1,4 @@
-import { TimeSeriesDataPoint } from '../forest-plot-utils';
+import { TimeSeriesDataPoint } from './forest-plot-utils';
 
 export interface ConfidenceIntervalProps {
   xAxisMap?: Record<string, { scale: (value: number) => number }>;

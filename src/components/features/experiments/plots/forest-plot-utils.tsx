@@ -1,11 +1,5 @@
 import { MetricAnalysis, ExperimentAnalysisResponse, FreqExperimentAnalysisResponse } from '@/api/methods.schemas';
-import {
-  EffectSizeData,
-  AnalysisState,
-  ArmDataPoint,
-  TimeSeriesDataPoint,
-  ArmMetadata,
-} from './plots/forest-plot-models';
+import { EffectSizeData, AnalysisState, ArmDataPoint, TimeSeriesDataPoint, ArmMetadata } from './forest-plot-models';
 
 /**
  * Type guard to check if an analysis response is a frequentist experiment.
@@ -276,4 +270,4 @@ export type {
   ArmDataPoint,
   TimeSeriesDataPoint,
   ArmMetadata,
-} from './plots/forest-plot-models';
+} from './forest-plot-models';

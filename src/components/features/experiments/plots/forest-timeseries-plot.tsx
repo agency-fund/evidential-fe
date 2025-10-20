@@ -13,7 +13,7 @@ import {
   YAxis,
 } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
-import { computeAxisBounds, TimeSeriesDataPoint, ArmMetadata, calculateJitterOffset } from '../forest-plot-utils';
+import { computeAxisBounds, TimeSeriesDataPoint, ArmMetadata, calculateJitterOffset } from './forest-plot-utils';
 import { JitteredDot, JitteredDotProps } from './jittered-dot';
 import { JitteredLine } from './jittered-line';
 import { ConfidenceInterval } from './confidence-interval';
