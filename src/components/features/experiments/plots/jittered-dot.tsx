@@ -5,32 +5,14 @@ export interface JitteredDotProps {
   fill?: string;
   stroke?: string;
   jitterOffset?: number;
-  index?: number;
-  totalPoints?: number;
-  animationProgress?: number;
+  opacity?: number;
 }
 
 /**
  * Custom dot component for Line that applies jitter
  */
-export function JitteredDot({
-  cx,
-  cy,
-  r = 4,
-  fill,
-  stroke,
-  jitterOffset = 0,
-  index = 0,
-  totalPoints = 1,
-  animationProgress = 1,
-}: JitteredDotProps) {
+export function JitteredDot({ cx, cy, r = 4, fill, stroke, jitterOffset = 0, opacity = 1 }: JitteredDotProps) {
   if (cx === undefined || cy === undefined) return null;
-
-  // Calculate if this dot should be visible based on animation progress
-  // Dot appears when the line reaches its position (index / (totalPoints - 1))
-  // For a single point, show immediately.
-  const dotThreshold = totalPoints > 1 ? index / (totalPoints - 1) : 0;
-  const opacity = animationProgress >= dotThreshold ? 1 : 0;
 
   return (
     <circle

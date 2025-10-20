@@ -193,13 +193,6 @@ export const calculateJitterOffset = (armIndex: number, totalArms: number): numb
 };
 
 /**
- * Ease-out cubic function for smooth animation
- */
-export const easeOutCubic = (t: number): number => {
-  return 1 - Math.pow(1 - t, 3);
-};
-
-/**
  * Transforms analysis states into chart data suitable for timeseries visualization.
  * Processes multiple analysis snapshots and converts them into a format ready for Recharts.
  *

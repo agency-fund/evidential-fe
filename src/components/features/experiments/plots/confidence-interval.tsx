@@ -11,7 +11,6 @@ export interface ConfidenceIntervalProps {
   capWidth?: number; // Width of the horizontal cap lines
   strokeLinecap?: 'round' | 'inherit' | 'butt' | 'square';
   opacity?: number;
-  animationProgress?: number;
 }
 
 /**
@@ -27,8 +26,7 @@ export function ConfidenceInterval({
   strokeWidth = 3,
   capWidth = 0,
   strokeLinecap = 'round',
-  opacity = 0.5,
-  animationProgress = 1,
+  opacity = 1,
 }: ConfidenceIntervalProps) {
   if (!xAxisMap || !yAxisMap || !chartData.length || !armId || !color) return null;
   // These params are special internal params for recharts.
@@ -48,13 +46,8 @@ export function ConfidenceInterval({
         const yLower = yAxis.scale(armData.lower);
         const yUpper = yAxis.scale(armData.upper);
 
-        // Each CI appears when the line reaches its position
-        const totalPoints = chartData.length;
-        const ciThreshold = totalPoints > 1 ? pointIndex / (totalPoints - 1) : 0;
-        const currentOpacity = animationProgress >= ciThreshold ? opacity : 0;
-
         return (
-          <g key={`ci-${armId}-${pointIndex}`} style={{ transition: 'opacity 0.15s ease-out' }}>
+          <g key={`ci-${armId}-${pointIndex}`}>
             {/* Vertical line from lower to upper CI */}
             <line
               x1={x}
@@ -63,7 +56,7 @@ export function ConfidenceInterval({
               y2={yUpper}
               stroke={color}
               strokeWidth={strokeWidth}
-              opacity={currentOpacity}
+              opacity={opacity}
               strokeLinecap={strokeLinecap}
             />
             {/* Upper cap */}
@@ -75,7 +68,7 @@ export function ConfidenceInterval({
                 y2={yUpper}
                 stroke={color}
                 strokeWidth={strokeWidth}
-                opacity={currentOpacity}
+                opacity={opacity}
                 strokeLinecap={strokeLinecap}
               />
             )}
@@ -88,7 +81,7 @@ export function ConfidenceInterval({
                 y2={yLower}
                 stroke={color}
                 strokeWidth={strokeWidth}
-                opacity={currentOpacity}
+                opacity={opacity}
                 strokeLinecap={strokeLinecap}
               />
             )}

@@ -1,6 +1,5 @@
 'use client';
 import { Box, Card, Flex, Text } from '@radix-ui/themes';
-import { useEffect, useRef, useState } from 'react';
 import {
   CartesianGrid,
   Customized,
@@ -14,13 +13,7 @@ import {
   YAxis,
 } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
-import {
-  computeAxisBounds,
-  TimeSeriesDataPoint,
-  ArmMetadata,
-  calculateJitterOffset,
-  easeOutCubic,
-} from '../forest-plot-utils';
+import { computeAxisBounds, TimeSeriesDataPoint, ArmMetadata, calculateJitterOffset } from '../forest-plot-utils';
 import { JitteredDot, JitteredDotProps } from './jittered-dot';
 import { JitteredLine } from './jittered-line';
 import { ConfidenceInterval } from './confidence-interval';
@@ -92,46 +85,6 @@ export default function ForestTimeseriesPlot({
   minDate,
   maxDate,
 }: ForestTimeseriesPlotProps) {
-  // Initialize ref with empty string so animation always runs on first mount
-  const prevStableKeyRef = useRef<string>('');
-  const [animationProgress, setAnimationProgress] = useState(0);
-
-  // Create a stable key based on the date range and metric name
-  // Only re-trigger animation when the actual data scope changes
-  const dataStableKey = (() => {
-    if (!chartData || chartData.length === 0) return '';
-    return `${selectedMetricName}:${minDate.toISOString()}:${maxDate.toISOString()}`;
-  })();
-
-  // Animation: 0 to 1 over 1.5 seconds
-  // Only trigger when the stable key changes (metric, date range)
-  useEffect(() => {
-    // Skip animation if the stable key hasn't changed
-    if (dataStableKey === prevStableKeyRef.current) {
-      return;
-    }
-
-    prevStableKeyRef.current = dataStableKey;
-
-    // Reset animation progress to 0 at the start
-    setAnimationProgress(0);
-
-    const durationMs = 1500;
-    const startTime = Date.now();
-
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
-      const rawProgress = Math.min(elapsed / durationMs, 1);
-      setAnimationProgress(easeOutCubic(rawProgress));
-
-      if (rawProgress < 1) {
-        requestAnimationFrame(animate);
-      }
-    };
-
-    requestAnimationFrame(animate);
-  }, [dataStableKey]);
-
   // Early return if no data
   if (!chartData || chartData.length === 0) {
     return <Text>No timeseries data to display</Text>;
@@ -215,8 +168,6 @@ export default function ForestTimeseriesPlot({
                       {...restProps}
                       fill={color}
                       jitterOffset={calculateJitterOffset(index, armMetadata.length)}
-                      totalPoints={chartData.length}
-                      animationProgress={animationProgress}
                     />
                   );
                 }}
@@ -229,8 +180,6 @@ export default function ForestTimeseriesPlot({
                       r={6}
                       fill={color}
                       jitterOffset={calculateJitterOffset(index, armMetadata.length)}
-                      totalPoints={chartData.length}
-                      animationProgress={animationProgress}
                     />
                   );
                 }}
@@ -251,7 +200,6 @@ export default function ForestTimeseriesPlot({
                     armId={armInfo.id}
                     color={getArmColor(index, armInfo.isBaseline)}
                     jitterOffset={calculateJitterOffset(index, armMetadata.length)}
-                    animationProgress={animationProgress}
                   />
                 }
               />
@@ -269,7 +217,6 @@ export default function ForestTimeseriesPlot({
                     armId={armInfo.id}
                     color={getArmColor(index, armInfo.isBaseline)}
                     jitterOffset={calculateJitterOffset(index, armMetadata.length)}
-                    animationProgress={animationProgress}
                   />
                 }
               />
