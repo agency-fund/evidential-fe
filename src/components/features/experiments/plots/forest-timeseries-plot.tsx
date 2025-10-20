@@ -162,7 +162,10 @@ export default function ForestTimeseriesPlot({
           <Tooltip content={<CustomTimeseriesTooltip armMetadata={armMetadata} />} />
           <Legend
             wrapperStyle={{
-              paddingTop: '10px',
+              position: 'fixed', // 1. Break it out of the chart's flow
+              left: '50%', // 2. Position it relative to the viewport
+              transform: 'translateX(-50%)', // 3. Center it based on its own width
+              zIndex: 1000, // 4. Ensure it's above other page content
               cursor: 'pointer',
             }}
             formatter={(value, entry) => {
