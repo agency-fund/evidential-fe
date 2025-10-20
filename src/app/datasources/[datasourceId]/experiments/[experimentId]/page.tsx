@@ -10,7 +10,13 @@ import {
   getGetExperimentForUiKey,
 } from '@/api/admin';
 import { ForestPlot } from '@/components/features/experiments/forest-plot';
-import { generateEffectSizeData, EffectSizeData } from '@/components/features/experiments/forest-plot-utils';
+import {
+  computeBoundsForMetric,
+  AnalysisState,
+  precomputeEffectSizesByMetric,
+  isFrequentist,
+  transformAnalysisForForestTimeseriesPlot,
+} from '@/components/features/experiments/forest-plot-utils';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { useState } from 'react';
@@ -27,25 +33,25 @@ import { IntegrationGuideDialog } from '@/components/features/experiments/integr
 import { ReadMoreText } from '@/components/ui/read-more-text';
 import {
   DesignSpecOutput,
-  ExperimentAnalysisResponse,
-  FreqExperimentAnalysisResponse,
-  OnlineFrequentistExperimentSpecOutput,
-  PreassignedFrequentistExperimentSpecOutput,
   Snapshot,
   MetricAnalysis,
+  ExperimentAnalysisResponse,
+  OnlineFrequentistExperimentSpecOutput,
+  PreassignedFrequentistExperimentSpecOutput,
 } from '@/api/methods.schemas';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date-utils';
 import Link from 'next/link';
 import { mutate } from 'swr';
+import ForestTimeseriesPlot from '@/components/features/experiments/plots/forest-timeseries-plot';
 
-// Type guard to assure TypeScript that a DesignSpec is one of two types.
-function isFrequentistDesign(
-  designSpec: DesignSpecOutput,
-): designSpec is PreassignedFrequentistExperimentSpecOutput | OnlineFrequentistExperimentSpecOutput {
-  return designSpec.experiment_type === 'freq_preassigned' || designSpec.experiment_type === 'freq_online';
-}
+// Helper to safely extract alpha from frequentist experiment design specs
+const getAlpha = (designSpec: DesignSpecOutput | undefined): number | undefined => {
+  if (!designSpec) return undefined;
+  if (!['freq_preassigned', 'freq_online'].includes(designSpec.experiment_type)) return undefined;
+  return (designSpec as OnlineFrequentistExperimentSpecOutput | PreassignedFrequentistExperimentSpecOutput).alpha;
+};
 
 export default function ExperimentViewPage() {
   const params = useParams();
@@ -54,17 +60,11 @@ export default function ExperimentViewPage() {
   const datasourceId = (params.datasourceId as string) || '';
   const experimentId = (params.experimentId as string) || '';
 
-  type AnalysisState = {
-    key: string; // 'live' or snapshot ID
-    data: ExperimentAnalysisResponse | undefined;
-    label: string; // human-readable timestamp for UI
-    // Pre-computed effect size data for each metric, keyed by metric field name
-    effectSizesByMetric?: Map<string, EffectSizeData[]>;
-  };
-  const [snapshotDropdownOptions, setSnapshotDropdownOptions] = useState<AnalysisState[]>([]);
+  const [analysisHistory, setAnalysisHistory] = useState<AnalysisState[]>([]);
   const [liveAnalysis, setLiveAnalysis] = useState<AnalysisState>({
     key: 'live',
     data: undefined,
+    updated_at: new Date(),
     label: 'No live data yet',
   });
   // which analysis we're actually displaying (live or a snapshot)
@@ -91,11 +91,13 @@ export default function ExperimentViewPage() {
         enabled: !!datasourceId && !!experiment,
         shouldRetryOnError: false,
         onSuccess: (analysisData) => {
+          const date = new Date();
           const analysis = {
             key: 'live',
             data: analysisData,
-            label: `LIVE as of ${extractUtcHHMMLabel(new Date())}`,
-            effectSizesByMetric: precomputeEffectSizes(analysisData, design_spec),
+            updated_at: date,
+            label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
+            effectSizesByMetric: precomputeEffectSizesByMetric(analysisData, getAlpha(experiment?.design_spec)),
           };
           setLiveAnalysis(analysis);
           // Only update the display if we were previously viewing live data.
@@ -107,7 +109,7 @@ export default function ExperimentViewPage() {
     },
   );
 
-  const { error: snapshotsError } = useListSnapshots(
+  const { error: analysisHistoryError } = useListSnapshots(
     organizationId,
     datasourceId,
     experimentId,
@@ -138,17 +140,19 @@ export default function ExperimentViewPage() {
 
           const opts: AnalysisState[] = filteredSnapshots.map((s) => {
             const analysisData = s.data as ExperimentAnalysisResponse;
+            const date = new Date(s.updated_at);
             return {
               key: s.id,
               data: analysisData,
-              label: formatUtcDownToMinuteLabel(new Date(s.updated_at)),
-              effectSizesByMetric: precomputeEffectSizes(analysisData, design_spec),
+              updated_at: date,
+              label: formatUtcDownToMinuteLabel(date),
+              effectSizesByMetric: precomputeEffectSizesByMetric(analysisData, getAlpha(experiment?.design_spec)),
             };
           });
 
-          setSnapshotDropdownOptions(opts);
+          setAnalysisHistory(opts);
           const currentMetricName = selectedMetricAnalysis?.metric?.field_name;
-          computeBoundsForMetric(currentMetricName, [liveAnalysis, ...opts]);
+          setCiBounds(computeBoundsForMetric(currentMetricName, [liveAnalysis, ...opts]));
         },
       },
     },
@@ -162,37 +166,9 @@ export default function ExperimentViewPage() {
     },
   });
 
-  // Compute min/max bounds for a given metric from a subset of snapshots for more stable plot axes.
-  const computeBoundsForMetric = (metricName: string | undefined, analysisStates: AnalysisState[]) => {
-    if (!metricName) {
-      setCiBounds([undefined, undefined]);
-      return;
-    }
-
-    let minLower: number | undefined = undefined;
-    let maxUpper: number | undefined = undefined;
-
-    // Include up to 7 most recent days' worth of snapshots and live analysis
-    const analysesToCheck = analysisStates.slice(0, 8);
-
-    // Iterate through all analyses and find min/max
-    for (const analysis of analysesToCheck) {
-      const effectSizes = analysis.effectSizesByMetric?.get(metricName);
-      if (!effectSizes) continue;
-
-      for (const effectSize of effectSizes) {
-        const { absCI95Lower, absCI95Upper } = effectSize;
-        minLower = minLower === undefined ? absCI95Lower : Math.min(minLower, absCI95Lower);
-        maxUpper = maxUpper === undefined ? absCI95Upper : Math.max(maxUpper, absCI95Upper);
-      }
-    }
-
-    setCiBounds([minLower, maxUpper]);
-  };
-
   const setSelectedAnalysisAndMetrics = (analysis: AnalysisState) => {
     setSelectedAnalysis(analysis);
-    if (analysis.data?.type !== 'freq') {
+    if (!isFrequentist(analysis.data)) {
       setSelectedMetricAnalysis(null);
       return;
     }
@@ -207,27 +183,11 @@ export default function ExperimentViewPage() {
     const newMetricName = newMetric?.metric_name || '';
     if (oldMetricName !== newMetricName) {
       // check if the selection is 'live' and use it since the state may not have been updated yet.
-      computeBoundsForMetric(newMetricName, [
-        analysis.key === 'live' ? analysis : liveAnalysis,
-        ...snapshotDropdownOptions,
-      ]);
+      setCiBounds(
+        computeBoundsForMetric(newMetricName, [analysis.key === 'live' ? analysis : liveAnalysis, ...analysisHistory]),
+      );
     }
     setSelectedMetricAnalysis(newMetric);
-  };
-
-  const precomputeEffectSizes = (analysisData: ExperimentAnalysisResponse, designSpec: DesignSpecOutput) => {
-    if (!isFrequentistDesign(designSpec)) return undefined;
-
-    // Pre-generate effect size data for all metrics
-    const effectSizesByMetric = new Map<string, EffectSizeData[]>();
-    const freqAnalysisData = analysisData as FreqExperimentAnalysisResponse;
-    for (const metricAnalysis of freqAnalysisData.metric_analyses) {
-      // TODO: cleanup fallback when metric_name is not nullable in the backend (wasn't supposed to be)
-      const metricName = metricAnalysis.metric_name || '';
-      const effectSizes = generateEffectSizeData(metricAnalysis, designSpec.alpha || 0.05);
-      effectSizesByMetric.set(metricName, effectSizes);
-    }
-    return effectSizesByMetric;
   };
 
   if (isLoadingExperiment) {
@@ -254,6 +214,11 @@ export default function ExperimentViewPage() {
   if (selectedMetricAnalysis?.metric?.metric_pct_change) {
     mdePct = (selectedMetricAnalysis.metric.metric_pct_change * 100).toFixed(1);
   }
+
+  const { timeseriesData, armMetadata, minDate, maxDate } = transformAnalysisForForestTimeseriesPlot(
+    [liveAnalysis, ...analysisHistory],
+    selectedMetricName,
+  );
 
   return (
     <Flex direction="column" gap="6">
@@ -359,7 +324,8 @@ export default function ExperimentViewPage() {
                         const newMetric =
                           selectedMetricAnalyses.find((metric) => metric.metric?.field_name === value) || null;
                         setSelectedMetricAnalysis(newMetric);
-                        computeBoundsForMetric(value, [liveAnalysis, ...snapshotDropdownOptions]);
+                        const bounds = computeBoundsForMetric(value, [liveAnalysis, ...analysisHistory]);
+                        setCiBounds(bounds);
                       }}
                     >
                       <Select.Trigger style={{ height: 18 }} />
@@ -389,7 +355,7 @@ export default function ExperimentViewPage() {
                   <Badge size="2">
                     <Flex gap="2" align="center">
                       <Heading size="2">Viewing:</Heading>
-                      {snapshotDropdownOptions.length == 0 ? (
+                      {analysisHistory.length == 0 ? (
                         <Text>{liveAnalysis.label}</Text>
                       ) : (
                         <Select.Root
@@ -397,7 +363,7 @@ export default function ExperimentViewPage() {
                           value={selectedAnalysis.key}
                           onValueChange={(key) => {
                             const analysis =
-                              key === 'live' ? liveAnalysis : snapshotDropdownOptions.find((opt) => opt.key === key);
+                              key === 'live' ? liveAnalysis : analysisHistory.find((opt) => opt.key === key);
                             setSelectedAnalysisAndMetrics(analysis || liveAnalysis); // shouldn't ever need to fall back though
                           }}
                         >
@@ -410,7 +376,7 @@ export default function ExperimentViewPage() {
                             </Select.Group>
                             <Select.Separator />
                             <Select.Group>
-                              {snapshotDropdownOptions.map((opt) => (
+                              {analysisHistory.map((opt) => (
                                 <Select.Item key={opt.key} value={opt.key}>
                                   <Box minWidth="136px">{opt.label}</Box>
                                 </Select.Item>
@@ -459,7 +425,7 @@ export default function ExperimentViewPage() {
             />
           )}
 
-          {snapshotsError && (
+          {analysisHistoryError && (
             <GenericErrorCallout
               title="Error loading historical analyses"
               message="Historical analyses may not be available yet."
@@ -468,9 +434,9 @@ export default function ExperimentViewPage() {
 
           {selectedAnalysis.data && (
             <Flex direction="column" gap="3">
-              <Tabs.Root defaultValue="visualization">
+              <Tabs.Root defaultValue="leaderboard">
                 <Tabs.List>
-                  <Tabs.Trigger value="visualization">Visualization</Tabs.Trigger>
+                  <Tabs.Trigger value="leaderboard">Leaderboard</Tabs.Trigger>
                   <Tabs.Trigger value="raw">
                     <Flex gap="2" align="center">
                       Raw Data <CodeIcon />
@@ -478,7 +444,7 @@ export default function ExperimentViewPage() {
                   </Tabs.Trigger>
                 </Tabs.List>
                 <Box px="4">
-                  <Tabs.Content value="visualization">
+                  <Tabs.Content value="leaderboard">
                     <Flex direction="column" gap="3" py="3">
                       {selectedAnalysis.effectSizesByMetric && (
                         <ForestPlot
@@ -487,6 +453,14 @@ export default function ExperimentViewPage() {
                           maxX={ciBounds[1]}
                         />
                       )}
+
+                      <ForestTimeseriesPlot
+                        data={timeseriesData}
+                        armMetadata={armMetadata}
+                        forMetricName={selectedMetricName}
+                        minDate={minDate}
+                        maxDate={maxDate}
+                      />
                     </Flex>
                   </Tabs.Content>
 
