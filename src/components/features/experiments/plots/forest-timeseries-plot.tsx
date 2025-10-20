@@ -28,8 +28,17 @@ interface ForestTimeseriesPlotProps {
 }
 
 // Aiming for reasonably visually distinct colors for different arm line plots.
-const ARM_COLORS = ['var(--violet-12)', 'var(--iris-12)', 'var(--indigo-12)', 'var(--blue-12)'] as const;
-const CONTROL_COLOR = 'var(--gray-8)'; // Gray for control/baseline arm
+const ARM_COLORS = [
+  'var(--blue-10)',
+  'var(--iris-10)',
+  'var(--purple-10)',
+  'var(--cyan-10)',
+  'var(--indigo-10)',
+  'var(--violet-10)',
+  'var(--plum-10)',
+  'var(--brown-10)',
+] as const;
+const CONTROL_COLOR = 'var(--gray-10)'; // Gray for control/baseline arm
 
 // Get color for an arm based on its index and baseline status
 const getArmColor = (armIndex: number, isBaseline: boolean | undefined): string => {
@@ -60,7 +69,7 @@ function CustomTimeseriesTooltip({ active, payload, armMetadata }: CustomTimeser
 
           // Find the color from the payload if available
           const payloadEntry = payload.find((p) => p.name === armInfo.name);
-          const color = payloadEntry?.color || 'var(--gray-12)';
+          const color = payloadEntry?.color || CONTROL_COLOR;
 
           return (
             <Flex key={armInfo.id} direction="column" gap="1">
@@ -151,45 +160,6 @@ export default function ForestTimeseriesPlot({
             }}
           />
 
-          {/* Render line and custom JitteredDots for each arm. Line is hidden since we'll use ArmJitteredLine instead. */}
-          {armMetadata.map((armInfo, index) => {
-            const color = getArmColor(index, armInfo.isBaseline);
-            return (
-              <Line
-                key={`${armInfo.id}_effect`}
-                dataKey={(point: TimeSeriesDataPoint) => point.armEffects.get(armInfo.id)?.estimate ?? null}
-                name={armInfo.name || armInfo.id}
-                stroke={color}
-                strokeWidth={0} // 0 to avoid drawing this line between dots
-                dot={(props: unknown) => {
-                  const { key, ...restProps } = props as JitteredDotProps & { key?: string };
-                  return (
-                    <JitteredDot
-                      key={key}
-                      {...restProps}
-                      fill={color}
-                      jitterOffset={calculateJitterOffset(index, armMetadata.length)}
-                    />
-                  );
-                }}
-                activeDot={(props: unknown) => {
-                  const { key, ...restProps } = props as JitteredDotProps & { key?: string };
-                  return (
-                    <JitteredDot
-                      key={key}
-                      {...restProps}
-                      r={6}
-                      fill={color}
-                      jitterOffset={calculateJitterOffset(index, armMetadata.length)}
-                    />
-                  );
-                }}
-                connectNulls={false}
-                isAnimationActive={false} // disable recharts' default animation to use our own with dots.
-              />
-            );
-          })}
-
           {/* Render jittered line segments for each arm. Separate loop to keep as direct children of the LineChart. */}
           {armMetadata.map((armInfo, index) => {
             return (
@@ -220,6 +190,45 @@ export default function ForestTimeseriesPlot({
                     jitterOffset={calculateJitterOffset(index, armMetadata.length)}
                   />
                 }
+              />
+            );
+          })}
+
+          {/* Place JitteredDots on top for each arm. Hide line with width=0 since we use ArmJitteredLine. */}
+          {armMetadata.map((armInfo, index) => {
+            const color = getArmColor(index, armInfo.isBaseline);
+            return (
+              <Line
+                key={`${armInfo.id}_effect`}
+                dataKey={(point: TimeSeriesDataPoint) => point.armEffects.get(armInfo.id)?.estimate ?? null}
+                name={armInfo.name || armInfo.id}
+                stroke={color} // color is still needed since it is used by the legend and tooltip
+                strokeWidth={0} // 0 to avoid drawing this line between dots
+                dot={(props: unknown) => {
+                  const { key, ...restProps } = props as JitteredDotProps & { key?: string };
+                  return (
+                    <JitteredDot
+                      key={key}
+                      {...restProps}
+                      fill={color}
+                      jitterOffset={calculateJitterOffset(index, armMetadata.length)}
+                    />
+                  );
+                }}
+                activeDot={(props: unknown) => {
+                  const { key, ...restProps } = props as JitteredDotProps & { key?: string };
+                  return (
+                    <JitteredDot
+                      key={key}
+                      {...restProps}
+                      r={6}
+                      fill={color}
+                      jitterOffset={calculateJitterOffset(index, armMetadata.length)}
+                    />
+                  );
+                }}
+                connectNulls={false}
+                isAnimationActive={false} // disable recharts' default animation to use our own with dots.
               />
             );
           })}
