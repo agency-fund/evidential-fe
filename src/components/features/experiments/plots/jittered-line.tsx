@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { TimeSeriesDataPoint } from '../forest-plot-utils';
+import { TimeSeriesDataPoint } from './forest-plot-utils';
 
 export interface JitteredLineProps {
   xAxisMap?: Record<string, { scale: (value: number) => number }>;
@@ -9,7 +9,7 @@ export interface JitteredLineProps {
   color: string;
   jitterOffset?: number;
   strokeWidth?: number;
-  animationProgress?: number;
+  opacity?: number;
 }
 
 /**
@@ -23,7 +23,7 @@ export function JitteredLine({
   color,
   jitterOffset = 0,
   strokeWidth = 2,
-  animationProgress = 1,
+  opacity = 1,
 }: JitteredLineProps) {
   // Build path data - use useMemo since it's derived from props
   const pathData = useMemo(() => {
@@ -54,11 +54,6 @@ export function JitteredLine({
 
   if (!pathData) return null;
 
-  // Use pathLength="1" to normalize, allowing us to work with 0-1 values
-  // Calculate stroke-dashoffset based on animation progress
-  // Start with full offset (hidden) and reduce to 0 (fully visible)
-  const dashOffset = Math.max(0, 1 - animationProgress);
-
   return (
     <path
       d={pathData}
@@ -67,7 +62,8 @@ export function JitteredLine({
       fill="none"
       pathLength="1"
       strokeDasharray="1"
-      strokeDashoffset={dashOffset}
+      strokeDashoffset={0}
+      opacity={opacity}
     />
   );
 }

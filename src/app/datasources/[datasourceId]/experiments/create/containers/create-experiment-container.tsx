@@ -16,6 +16,7 @@ import { FrequentABContainer } from '@/app/datasources/[datasourceId]/experiment
 import { MABContainer } from '@/app/datasources/[datasourceId]/experiments/create/containers/mab/mab-container';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import { useGetDatasource } from '@/api/admin';
+import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 
 interface CreateExperimentContainerProps {
   webhooks: WebhookSummary[];
@@ -207,12 +208,12 @@ function getReasonableStartDate(): string {
   const date = new Date();
   date.setDate(0);
   date.setMonth(date.getMonth() + 2);
-  return date.toISOString().split('T')[0];
+  return formatDateUtcYYYYMMDD(date);
 }
 
 function getReasonableEndDate(): string {
   const date = new Date();
   date.setDate(0);
   date.setMonth(date.getMonth() + 3);
-  return date.toISOString().split('T')[0];
+  return formatDateUtcYYYYMMDD(date);
 }

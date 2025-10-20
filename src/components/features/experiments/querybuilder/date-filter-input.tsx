@@ -13,6 +13,7 @@ import {
 import { useState } from 'react';
 import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
 import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
+import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 
 export interface DateFilterInputProps {
   filter: FilterInput & TypedFilter<string>;
@@ -64,7 +65,7 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
 
   const addValueForListBasedOp = (e: React.MouseEvent) => {
     e.preventDefault();
-    const today = new Date().toISOString().split('T')[0];
+    const today = formatDateUtcYYYYMMDD(new Date());
     onChange({
       ...filter,
       value: [...filter.value.filter((v) => v !== null), today, ...includesNullValue],
@@ -84,7 +85,7 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
 
     // Don't allow removing all values (unless NULL is included) - add a default
     if (newNonNullFilterValues.length === 0 && !includesNull) {
-      const today = new Date().toISOString().split('T')[0];
+      const today = formatDateUtcYYYYMMDD(new Date());
       newNonNullFilterValues = [today];
     }
 
