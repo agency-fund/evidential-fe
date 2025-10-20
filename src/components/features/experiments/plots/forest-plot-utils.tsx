@@ -1,5 +1,6 @@
 import { MetricAnalysis, ExperimentAnalysisResponse, FreqExperimentAnalysisResponse } from '@/api/methods.schemas';
 import { EffectSizeData, AnalysisState, ArmDataPoint, TimeSeriesDataPoint, ArmMetadata } from './forest-plot-models';
+import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 
 /**
  * Type guard to check if an analysis response is a frequentist experiment.
@@ -248,7 +249,7 @@ export const transformAnalysisForForestTimeseriesPlot = (
     const truncatedDate = new Date(state.updated_at);
     truncatedDate.setUTCHours(0, 0, 0, 0);
     timeseriesData.push({
-      date: truncatedDate.toISOString().split('T')[0], // YYYY-MM-DD format
+      date: formatDateUtcYYYYMMDD(truncatedDate),
       dateTimestampMs: truncatedDate.getTime(),
       armEffects: armEffects,
     });

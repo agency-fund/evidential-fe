@@ -35,12 +35,10 @@ export const formatIsoDateYYYYMMDD = (dateInput: string | Date): string => {
 };
 
 /**
- * Converts a date input string (YYYY-MM-DD) to an ISO datetime string
- * Preserves the local date by creating a date in local timezone at midnight
+ * Converts a date object to YYYY-MM-DD format (UTC)
  */
-export const dateInputToIsoString = (dateInput: string): string => {
-  const date = new Date(dateInput + 'T00:00:00');
-  return date.toISOString();
+export const formatDateUtcYYYYMMDD = (date: Date): string => {
+  return date.toISOString().split('T')[0];
 };
 
 /**

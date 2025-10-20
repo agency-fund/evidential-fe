@@ -17,6 +17,7 @@ import { computeAxisBounds, TimeSeriesDataPoint, ArmMetadata, calculateJitterOff
 import { JitteredDot, JitteredDotProps } from './jittered-dot';
 import { JitteredLine } from './jittered-line';
 import { ConfidenceInterval } from './confidence-interval';
+import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 
 interface ForestTimeseriesPlotProps {
   data: TimeSeriesDataPoint[];
@@ -126,7 +127,7 @@ export default function ForestTimeseriesPlot({
             interval="preserveStartEnd"
             tickFormatter={(timestamp) => {
               const date = new Date(timestamp);
-              return date.toISOString().split('T')[0];
+              return formatDateUtcYYYYMMDD(date);
             }}
           />
           <YAxis
