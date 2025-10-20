@@ -50,9 +50,10 @@ const getArmColor = (armIndex: number, isBaseline: boolean | undefined, isSelect
 // Custom tooltip for the timeseries
 interface CustomTimeseriesTooltipProps extends TooltipProps<ValueType, NameType> {
   armMetadata: ArmMetadata[];
+  selectedArmId: string | null;
 }
 
-function CustomTimeseriesTooltip({ active, payload, armMetadata }: CustomTimeseriesTooltipProps) {
+function CustomTimeseriesTooltip({ active, payload, armMetadata, selectedArmId }: CustomTimeseriesTooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
 
   const dataPoint = payload[0]?.payload as TimeSeriesDataPoint | undefined;
@@ -72,10 +73,12 @@ function CustomTimeseriesTooltip({ active, payload, armMetadata }: CustomTimeser
           const payloadEntry = payload.find((p) => p.name === armInfo.name);
           const color = payloadEntry?.color || CONTROL_COLOR;
 
+          const isSelected = selectedArmId === armInfo.id;
+
           return (
             <Flex key={armInfo.id} direction="column" gap="1">
-              <Flex direction="row" gap="1">
-                <Text size="2" weight="bold" style={{ color }}>
+              <Flex direction="row" gap="1" align="center">
+                <Text size={isSelected ? '4' : '2'} weight="bold" style={{ color }}>
                   {armInfo.name || armInfo.id}:
                 </Text>
                 <Text size="2"> {armData.absEstimate.toFixed(2)}</Text>
@@ -159,7 +162,7 @@ export default function ForestTimeseriesPlot({
                   : value.toFixed(2)
             }
           />
-          <Tooltip content={<CustomTimeseriesTooltip armMetadata={armMetadata} />} />
+          <Tooltip content={<CustomTimeseriesTooltip armMetadata={armMetadata} selectedArmId={selectedArmId} />} />
           <Legend
             wrapperStyle={{
               position: 'fixed', // 1. Break it out of the chart's flow
@@ -263,6 +266,7 @@ export default function ForestTimeseriesPlot({
                       r={4}
                       strokeWidth={2}
                       jitterOffset={calculateJitterOffset(index, armMetadata.length)}
+                      onClick={() => setSelectedArmId(armInfo.id)}
                     />
                   );
                 }}

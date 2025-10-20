@@ -10,6 +10,7 @@ export interface JitteredDotProps {
   r?: number;
   jitterOffset?: number;
   opacity?: number;
+  onClick?: (event: React.MouseEvent<SVGCircleElement>) => void;
 }
 
 /**
@@ -24,6 +25,7 @@ export function JitteredDot({
   r = 4,
   jitterOffset = 0,
   opacity = 1,
+  onClick,
 }: JitteredDotProps) {
   if (cx === undefined || cy === undefined) return null;
 
@@ -36,7 +38,8 @@ export function JitteredDot({
       stroke={stroke}
       strokeWidth={strokeWidth}
       opacity={opacity}
-      style={{ transition: 'opacity 0.15s ease-out' }}
+      style={{ cursor: onClick ? 'pointer' : undefined }}
+      onClick={onClick}
     />
   );
 }
