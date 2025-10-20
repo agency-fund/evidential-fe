@@ -35,6 +35,8 @@ interface ForestTimeseriesPlotProps {
   armMetadata: ArmMetadata[];
   minDate: Date;
   maxDate: Date;
+  // Can notify parent of what snapshot key was used for the data point that was clicked.
+  onPointClick?: (key: string) => void;
 }
 
 // Get color for an arm based on its index, baseline status, and selection state
@@ -99,6 +101,7 @@ export default function ForestTimeseriesPlot({
   armMetadata,
   minDate,
   maxDate,
+  onPointClick,
 }: ForestTimeseriesPlotProps) {
   // Default selected arm to the baseline
   const baselineArm = armMetadata.find((arm) => arm.isBaseline);
@@ -263,10 +266,14 @@ export default function ForestTimeseriesPlot({
                       {...restProps}
                       fill={baseDotColor}
                       stroke={dotColor}
-                      r={4}
+                      r={5}
                       strokeWidth={2}
                       jitterOffset={calculateJitterOffset(index, armMetadata.length)}
-                      onClick={() => setSelectedArmId(armInfo.id)}
+                      onClick={() => {
+                        // Updates the plot and tooltip, and notifies parent of what snapshot was clicked.
+                        setSelectedArmId(armInfo.id);
+                        onPointClick?.(dataPoint.key);
+                      }}
                     />
                   );
                 }}

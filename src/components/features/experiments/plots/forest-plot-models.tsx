@@ -40,6 +40,7 @@ export interface TimeSeriesDataPoint {
   date: string; // YYYY-MM-DD format
   dateTimestampMs: number; // Timestamp in milliseconds for numeric axis
   armEffects: Map<string, ArmDataPoint>; // armId => ArmDataPoint
+  key: string; // Key to identify an analysis snapshot backing this data
 }
 
 export interface ArmMetadata {

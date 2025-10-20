@@ -309,6 +309,7 @@ export const transformAnalysisForForestTimeseriesPlot = (
       date: formatDateUtcYYYYMMDD(truncatedDate),
       dateTimestampMs: truncatedDate.getTime(),
       armEffects: armEffects,
+      key: state.key,
     });
   }
 

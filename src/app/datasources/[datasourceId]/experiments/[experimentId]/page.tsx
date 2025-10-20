@@ -190,6 +190,11 @@ export default function ExperimentViewPage() {
     setSelectedMetricAnalysis(newMetric);
   };
 
+  const selectAnalysisByKey = (key: string) => {
+    const analysis = key === 'live' ? liveAnalysis : analysisHistory.find((opt) => opt.key === key);
+    setSelectedAnalysisAndMetrics(analysis || liveAnalysis);
+  };
+
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
   }
@@ -358,15 +363,7 @@ export default function ExperimentViewPage() {
                       {analysisHistory.length == 0 ? (
                         <Text>{liveAnalysis.label}</Text>
                       ) : (
-                        <Select.Root
-                          size="1"
-                          value={selectedAnalysis.key}
-                          onValueChange={(key) => {
-                            const analysis =
-                              key === 'live' ? liveAnalysis : analysisHistory.find((opt) => opt.key === key);
-                            setSelectedAnalysisAndMetrics(analysis || liveAnalysis); // shouldn't ever need to fall back though
-                          }}
-                        >
+                        <Select.Root size="1" value={selectedAnalysis.key} onValueChange={selectAnalysisByKey}>
                           <Select.Trigger style={{ height: 18 }} />
                           <Select.Content>
                             <Select.Group>
@@ -459,6 +456,7 @@ export default function ExperimentViewPage() {
                         armMetadata={armMetadata}
                         minDate={minDate}
                         maxDate={maxDate}
+                        onPointClick={selectAnalysisByKey}
                       />
                     </Flex>
                   </Tabs.Content>
