@@ -1,4 +1,5 @@
 import { DataType, FilterInput, FilterValueTypes } from '@/api/methods.schemas';
+import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 
 export const BETWEEN_BASED_OPS = new Set(['greater-than', 'less-than', 'between', 'after', 'before']);
 
@@ -40,7 +41,7 @@ export function getDefaultFilterForType(fieldName: string, dataType: DataType): 
       return {
         field_name: fieldName,
         relation: 'includes',
-        value: [new Date().toISOString().split('T')[0]],
+        value: [formatDateUtcYYYYMMDD(new Date())],
       };
 
     case 'character varying':
@@ -90,7 +91,7 @@ export function createDefaultValueForOperator(operator: string, dataType: DataTy
       if (dataType === 'integer' || dataType === 'bigint') return [0];
       if (dataType === 'double precision' || dataType === 'numeric') return [0.0];
       if (dataType.includes('date') || dataType.includes('timestamp')) {
-        return [new Date().toISOString().split('T')[0]];
+        return [formatDateUtcYYYYMMDD(new Date())];
       }
       return [''];
 
@@ -99,7 +100,7 @@ export function createDefaultValueForOperator(operator: string, dataType: DataTy
       if (dataType === 'integer' || dataType === 'bigint') return [0, null];
       if (dataType === 'double precision' || dataType === 'numeric') return [0.0, null];
       if (dataType.includes('date') || dataType.includes('timestamp')) {
-        return [new Date().toISOString().split('T')[0], null];
+        return [formatDateUtcYYYYMMDD(new Date()), null];
       }
       return ['', null];
 
@@ -108,7 +109,7 @@ export function createDefaultValueForOperator(operator: string, dataType: DataTy
       if (dataType === 'integer' || dataType === 'bigint') return [null, 0];
       if (dataType === 'double precision' || dataType === 'numeric') return [null, 0.0];
       if (dataType.includes('date') || dataType.includes('timestamp')) {
-        return [null, new Date().toISOString().split('T')[0]];
+        return [null, formatDateUtcYYYYMMDD(new Date())];
       }
       return [null, ''];
 
@@ -119,7 +120,7 @@ export function createDefaultValueForOperator(operator: string, dataType: DataTy
         const today = new Date();
         const nextWeek = new Date();
         nextWeek.setDate(today.getDate() + 7);
-        return [today.toISOString().split('T')[0], nextWeek.toISOString().split('T')[0]];
+        return [formatDateUtcYYYYMMDD(today), formatDateUtcYYYYMMDD(nextWeek)];
       }
       return ['a', 'z'];
 
@@ -129,7 +130,7 @@ export function createDefaultValueForOperator(operator: string, dataType: DataTy
       if (dataType === 'integer' || dataType === 'bigint') return [0];
       if (dataType === 'double precision' || dataType === 'numeric') return [0.0];
       if (dataType.includes('date') || dataType.includes('timestamp')) {
-        return [new Date().toISOString().split('T')[0]];
+        return [formatDateUtcYYYYMMDD(new Date())];
       }
       return [''];
 
