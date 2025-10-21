@@ -1,11 +1,12 @@
-import { TimeSeriesDataPoint } from './forest-plot-utils';
+import { TimeSeriesDataPoint, getColorWithSignificance } from './forest-plot-utils';
 
 export interface ConfidenceIntervalProps {
   xAxisMap?: Record<string, { scale: (value: number) => number }>;
   yAxisMap?: Record<string, { scale: (value: number) => number }>;
   chartData: TimeSeriesDataPoint[];
   armId: string;
-  color: string;
+  selected: boolean;
+  baseColor: string;
   jitterOffset?: number; // jitter to prevent overlapping CIs in pixels
   strokeWidth?: number;
   capWidth?: number; // Width of the horizontal cap lines
@@ -21,14 +22,15 @@ export function ConfidenceInterval({
   yAxisMap,
   chartData,
   armId,
-  color,
+  selected,
+  baseColor,
   jitterOffset = 0,
   strokeWidth = 3,
   capWidth = 0,
   strokeLinecap = 'round',
   opacity = 1,
 }: ConfidenceIntervalProps) {
-  if (!xAxisMap || !yAxisMap || !chartData.length || !armId || !color) return null;
+  if (!xAxisMap || !yAxisMap || !chartData.length) return null;
   // These params are special internal params for recharts.
   // TODO: update to recharts 3+ API to replace magic with hooks.
   const xAxis = Object.values(xAxisMap)[0];
@@ -45,6 +47,7 @@ export function ConfidenceInterval({
         const x = xAxis.scale(dataPoint.dateTimestampMs) + jitterOffset;
         const yLower = yAxis.scale(armData.lower);
         const yUpper = yAxis.scale(armData.upper);
+        const color = getColorWithSignificance(baseColor, armData.significant, armData.estimate > 0, selected);
 
         return (
           <g key={`ci-${armId}-${pointIndex}`}>

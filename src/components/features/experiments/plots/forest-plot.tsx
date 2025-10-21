@@ -13,15 +13,23 @@ import {
 } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { ChartOffset } from 'recharts/types/util/types';
-import { EffectSizeData, computeAxisBounds } from './forest-plot-utils';
+import {
+  EffectSizeData,
+  computeAxisBounds,
+  BASELINE_INDICATOR_COLOR,
+  CONTROL_COLOR,
+  DEFAULT_POINT_COLOR,
+  POSITIVE_COLOR,
+  NEGATIVE_COLOR,
+} from './forest-plot-utils';
 
 // Color constants
 const COLORS = {
-  DEFAULT: '#bbbbbb', // Lighter gray for default/control
-  DEFAULT_CI: '#757575', // Gray for default stroke
-  BASELINE: '#7575ff', // baseline vertical indicator
-  POSITIVE: '#00c853', // Green for positive effects
-  NEGATIVE: '#ff5252', // Red for negative effects
+  DEFAULT: DEFAULT_POINT_COLOR,
+  DEFAULT_CI: CONTROL_COLOR,
+  BASELINE: BASELINE_INDICATOR_COLOR,
+  POSITIVE: POSITIVE_COLOR,
+  NEGATIVE: NEGATIVE_COLOR,
 } as const;
 
 interface ForestPlotProps {

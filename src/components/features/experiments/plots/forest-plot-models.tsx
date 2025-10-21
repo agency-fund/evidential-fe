@@ -29,15 +29,18 @@ export interface AnalysisState {
  * Data structures for timeseries visualization
  */
 export interface ArmDataPoint {
-  estimate: number;
+  estimate: number; // if baseline, this is an absolute estimate
+  absEstimate: number;
   upper: number;
   lower: number;
+  significant: boolean;
 }
 
 export interface TimeSeriesDataPoint {
   date: string; // YYYY-MM-DD format
   dateTimestampMs: number; // Timestamp in milliseconds for numeric axis
   armEffects: Map<string, ArmDataPoint>; // armId => ArmDataPoint
+  key: string; // Key to identify an analysis snapshot backing this data
 }
 
 export interface ArmMetadata {
