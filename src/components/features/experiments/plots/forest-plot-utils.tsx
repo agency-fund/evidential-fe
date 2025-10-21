@@ -221,16 +221,16 @@ export const calculateJitterOffset = (armIndex: number, totalArms: number): numb
  * Determines the color for a confidence interval based on significance and effect direction.
  *
  * @param baseColor - The default color to use when not significant
- * @param isSignificant - Whether the effect is statistically significant; default false
- * @param isPositive - Whether the effect is positive (only relevant when significant); default false
- * @param isSelected - Whether the arm is selected; default false
+ * @param isSignificant - Whether the effect is statistically significant
+ * @param isPositive - Whether the effect is positive (only relevant when significant)
+ * @param isSelected - Whether the arm is selected
  * @returns The color string for the confidence interval
  */
 export const getColorWithSignificance = (
   baseColor: string,
-  isSignificant: boolean = false,
-  isPositive: boolean = false,
-  isSelected: boolean = false,
+  isSignificant: boolean,
+  isPositive: boolean,
+  isSelected: boolean,
 ): string => {
   if (!isSignificant) return baseColor;
   return isPositive

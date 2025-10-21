@@ -40,8 +40,8 @@ interface ForestTimeseriesPlotProps {
 }
 
 // Get color for an arm based on its index, baseline status, and selection state
-const getArmColor = (armIndex: number, isBaseline: boolean | undefined, isSelected: boolean): string => {
-  if (isBaseline === undefined || isBaseline) {
+const getArmColor = (armIndex: number, isBaseline: boolean, isSelected: boolean): string => {
+  if (isBaseline) {
     return isSelected ? CONTROL_COLOR : INACTIVE_CONTROL_COLOR;
   }
 

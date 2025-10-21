@@ -190,7 +190,7 @@ export default function ExperimentViewPage() {
     setSelectedMetricAnalysis(newMetric);
   };
 
-  const selectAnalysisByKey = (key: string) => {
+  const handleSelectAnalysis = (key: string) => {
     const analysis = key === 'live' ? liveAnalysis : analysisHistory.find((opt) => opt.key === key);
     setSelectedAnalysisAndMetrics(analysis || liveAnalysis);
   };
@@ -363,7 +363,7 @@ export default function ExperimentViewPage() {
                       {analysisHistory.length == 0 ? (
                         <Text>{liveAnalysis.label}</Text>
                       ) : (
-                        <Select.Root size="1" value={selectedAnalysis.key} onValueChange={selectAnalysisByKey}>
+                        <Select.Root size="1" value={selectedAnalysis.key} onValueChange={handleSelectAnalysis}>
                           <Select.Trigger style={{ height: 18 }} />
                           <Select.Content>
                             <Select.Group>
@@ -456,7 +456,7 @@ export default function ExperimentViewPage() {
                         armMetadata={armMetadata}
                         minDate={minDate}
                         maxDate={maxDate}
-                        onPointClick={selectAnalysisByKey}
+                        onPointClick={handleSelectAnalysis}
                       />
                     </Flex>
                   </Tabs.Content>
