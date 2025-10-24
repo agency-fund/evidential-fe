@@ -3,7 +3,7 @@
 import { Button, Dialog, Flex, IconButton, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { Pencil2Icon } from '@radix-ui/react-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { WebhookSummary } from '@/api/methods.schemas';
 import { getListOrganizationWebhooksKey, useUpdateOrganizationWebhook } from '@/api/admin';
 import { mutate } from 'swr';
@@ -28,12 +28,6 @@ export function EditWebhookDialog({ organizationId, webhook }: EditWebhookDialog
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState(defaultFormData(webhook));
 
-  const handleClose = () => {
-    setFormData(defaultFormData(webhook));
-    reset();
-    setOpen(false);
-  };
-
   const { trigger, isMutating, error, reset } = useUpdateOrganizationWebhook(organizationId, webhook.id, {
     swr: {
       onSuccess: () => {
@@ -42,6 +36,17 @@ export function EditWebhookDialog({ organizationId, webhook }: EditWebhookDialog
       },
     },
   });
+
+  useEffect(() => {
+    if (open && webhook) {
+      setFormData(defaultFormData(webhook));
+    }
+  }, [open, webhook]);
+
+  const handleClose = () => {
+    reset();
+    setOpen(false);
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();

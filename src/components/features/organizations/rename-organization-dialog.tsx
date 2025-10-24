@@ -1,6 +1,6 @@
 'use client';
 import { getGetOrganizationKey, getListOrganizationsKey, useUpdateOrganization } from '@/api/admin';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Dialog, Flex, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GearIcon } from '@radix-ui/react-icons';
@@ -25,12 +25,6 @@ export function RenameOrganizationDialog({
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState(defaultFormData(currentName));
 
-  const handleClose = () => {
-    setFormData(defaultFormData(currentName));
-    reset();
-    setOpen(false);
-  };
-
   const { trigger, isMutating, error, reset } = useUpdateOrganization(organizationId, {
     swr: {
       onSuccess: () => {
@@ -39,6 +33,17 @@ export function RenameOrganizationDialog({
       },
     },
   });
+
+  useEffect(() => {
+    if (open && currentName) {
+      setFormData(defaultFormData(currentName));
+    }
+  }, [open, currentName]);
+
+  const handleClose = () => {
+    reset();
+    setOpen(false);
+  };
 
   return (
     <Dialog.Root
