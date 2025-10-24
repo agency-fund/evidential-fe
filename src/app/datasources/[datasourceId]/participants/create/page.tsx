@@ -43,6 +43,18 @@ const makeFieldDescriptorComparator = (candidatesForUniqueIdField: string[]) => 
   };
 };
 
+interface FormFields {
+  participant_type: string;
+  table_name: string;
+  fields: FieldDescriptor[];
+}
+
+const defaultFormData = (): FormFields => ({
+  participant_type: '',
+  table_name: '',
+  fields: [],
+});
+
 export default function CreateParticipantTypePage() {
   const params = useParams();
   const router = useRouter();
@@ -80,43 +92,30 @@ export default function CreateParticipantTypePage() {
     },
   });
 
-  const [selectedTable, setSelectedTable] = useState<string>('');
-  const [fields, setFields] = useState<FieldDescriptor[]>([]);
+  const [formData, setFormData] = useState(defaultFormData());
 
   // New state for searchable dropdown
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const tableIsSelected = selectedTable !== '';
   const {
     data: tableData,
     isLoading: loadingTableData,
     error: tableError,
   } = useInspectTableInDatasource(
     datasourceId,
-    selectedTable,
+    formData.table_name,
     { refresh },
     {
       swr: {
-        enabled: tableIsSelected,
+        enabled: formData.table_name !== '',
         revalidateIfStale: false,
         revalidateOnFocus: false,
         revalidateOnReconnect: false,
       },
     },
   );
-
-  const updateSelectedTable = (table: string) => {
-    setSelectedTable(table);
-    setSearchQuery(table);
-    setFields([]);
-    setIsDropdownOpen(false);
-    reset();
-  };
-
-  const filteredTables =
-    datasourceData?.tables.filter((table: string) => table.toLowerCase().includes(searchQuery.toLowerCase())) || [];
 
   // Handle click outside to close dropdown
   useEffect(() => {
@@ -151,10 +150,35 @@ export default function CreateParticipantTypePage() {
     );
 
     const sortedFields = [...initialFields].sort(makeFieldDescriptorComparator(tableData.detected_unique_id_fields));
-    setFields(sortedFields);
+    setFormData((prev) => ({ ...prev, fields: sortedFields }));
   }, [tableData]);
 
+  const filteredTables =
+    datasourceData?.tables.filter((table: string) => table.toLowerCase().includes(searchQuery.toLowerCase())) || [];
   const uniqueIdCandidates = tableData ? tableData.detected_unique_id_fields : [];
+
+  const updateSelectedTable = (table: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      table_name: table,
+      participant_type: table,
+      fields: [],
+    }));
+    setSearchQuery(table);
+    setIsDropdownOpen(false);
+    reset();
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    await trigger({
+      participant_type: formData.participant_type,
+      schema_def: {
+        table_name: formData.table_name,
+        fields: formData.fields,
+      },
+    });
+  };
 
   const handleCancel = () => {
     router.push(`/datasources/${datasourceId}`);
@@ -184,21 +208,7 @@ export default function CreateParticipantTypePage() {
       {isMutating ? (
         <XSpinner message="Creating participant type..." />
       ) : (
-        <form
-          onSubmit={async (event) => {
-            event.preventDefault();
-            const fd = new FormData(event.currentTarget);
-            const participant_type = fd.get('participant_type') as string;
-            const table_name = selectedTable; // Use selectedTable instead of form data
-            await trigger({
-              participant_type,
-              schema_def: {
-                table_name,
-                fields: fields,
-              },
-            });
-          }}
-        >
+        <form onSubmit={handleSubmit}>
           {error && <GenericErrorCallout title={'Failed to save participant type'} error={error} />}
 
           <Flex direction="column" gap="6">
@@ -251,14 +261,14 @@ export default function CreateParticipantTypePage() {
                               padding: '0.5rem 0.75rem',
                               cursor: 'pointer',
                               borderBottom: '1px solid var(--gray-3)',
-                              backgroundColor: selectedTable === table ? 'var(--gray-3)' : 'transparent',
+                              backgroundColor: formData.table_name === table ? 'var(--gray-3)' : 'transparent',
                             }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.backgroundColor = 'var(--gray-2)';
                             }}
                             onMouseLeave={(e) => {
                               e.currentTarget.style.backgroundColor =
-                                selectedTable === table ? 'var(--gray-3)' : 'transparent';
+                                formData.table_name === table ? 'var(--gray-3)' : 'transparent';
                             }}
                           >
                             <Text size="2">{table}</Text>
@@ -273,9 +283,6 @@ export default function CreateParticipantTypePage() {
                       )}
                     </div>
                   )}
-
-                  {/* Hidden input for form submission */}
-                  <input type="hidden" name="table_name" value={selectedTable} required />
                 </Box>
                 <IconButton
                   variant={'soft'}
@@ -298,11 +305,11 @@ export default function CreateParticipantTypePage() {
                 Participant Type Name
               </Text>
               <TextField.Root
-                name="participant_type"
+                value={formData.participant_type}
+                onChange={(e) => setFormData((prev) => ({ ...prev, participant_type: e.target.value }))}
                 placeholder="e.g., students, faculty, organizers"
                 required
                 maxLength={40}
-                defaultValue={selectedTable}
               />
             </Flex>
 
@@ -310,7 +317,7 @@ export default function CreateParticipantTypePage() {
               <XSpinner message="Loading table data..." />
             ) : tableError ? (
               <GenericErrorCallout title="Failed to load table fields" error={tableError} />
-            ) : selectedTable === '' ? (
+            ) : formData.table_name === '' ? (
               <></>
             ) : (
               <Flex direction="column" gap="3">
@@ -318,8 +325,8 @@ export default function CreateParticipantTypePage() {
                   Fields
                 </Text>
                 <ParticipantFieldsEditor
-                  fields={fields}
-                  onFieldsChange={setFields}
+                  fields={formData.fields}
+                  onFieldsChange={(newFields) => setFormData((prev) => ({ ...prev, fields: newFields }))}
                   uniqueIdCandidates={uniqueIdCandidates}
                   allowFieldRemoval={true}
                 />
@@ -331,7 +338,7 @@ export default function CreateParticipantTypePage() {
             <Button variant="soft" color="gray" type="button" onClick={handleCancel}>
               Cancel
             </Button>
-            <Button type="submit" disabled={!selectedTable || fields.length === 0}>
+            <Button type="submit" disabled={!formData.table_name || formData.fields.length === 0}>
               Create
             </Button>
           </Flex>
