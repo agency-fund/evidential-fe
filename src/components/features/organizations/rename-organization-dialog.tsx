@@ -7,6 +7,14 @@ import { GearIcon } from '@radix-ui/react-icons';
 import { mutate } from 'swr';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 
+interface FormFields {
+  name: string;
+}
+
+const defaultFormData = (currentName: string): FormFields => ({
+  name: currentName,
+});
+
 export function RenameOrganizationDialog({
   organizationId,
   currentName,
@@ -14,20 +22,32 @@ export function RenameOrganizationDialog({
   organizationId: string;
   currentName: string;
 }) {
+  const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState(defaultFormData(currentName));
+
+  const handleClose = () => {
+    setFormData(defaultFormData(currentName));
+    reset();
+    setOpen(false);
+  };
+
   const { trigger, isMutating, error, reset } = useUpdateOrganization(organizationId, {
     swr: {
-      onSuccess: () => Promise.all([mutate(getGetOrganizationKey(organizationId)), mutate(getListOrganizationsKey())]),
+      onSuccess: () => {
+        handleClose();
+        Promise.all([mutate(getGetOrganizationKey(organizationId)), mutate(getListOrganizationsKey())]);
+      },
     },
   });
-  const [open, setOpen] = useState(false);
 
   return (
     <Dialog.Root
       open={open}
       onOpenChange={(op) => {
-        setOpen(op);
         if (!op) {
-          reset();
+          handleClose();
+        } else {
+          setOpen(op);
         }
       }}
     >
@@ -45,12 +65,9 @@ export function RenameOrganizationDialog({
           <form
             onSubmit={async (event) => {
               event.preventDefault();
-              const fd = new FormData(event.currentTarget);
-              const name = fd.get('name') as string;
               await trigger({
-                name,
+                name: formData.name,
               });
-              setOpen(false);
             }}
           >
             <Dialog.Title>Rename Organization</Dialog.Title>
@@ -66,11 +83,11 @@ export function RenameOrganizationDialog({
                   Name
                 </Text>
                 <TextField.Root
-                  name="name"
-                  defaultValue={currentName}
+                  value={formData.name}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                   placeholder="Enter organization name"
                   required
-                ></TextField.Root>
+                />
               </label>
             </Flex>
 
