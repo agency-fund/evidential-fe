@@ -40,6 +40,13 @@ export function RenameOrganizationDialog({
     }
   }, [open, currentName]);
 
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    await trigger({
+      name: formData.name,
+    });
+  };
+
   const handleClose = () => {
     reset();
     setOpen(false);
@@ -67,14 +74,7 @@ export function RenameOrganizationDialog({
         {isMutating ? (
           <XSpinner message="Renaming organization..." />
         ) : (
-          <form
-            onSubmit={async (event) => {
-              event.preventDefault();
-              await trigger({
-                name: formData.name,
-              });
-            }}
-          >
+          <form onSubmit={handleSubmit}>
             <Dialog.Title>Rename Organization</Dialog.Title>
             <Dialog.Description size="2" mb="4">
               Change the organization name.

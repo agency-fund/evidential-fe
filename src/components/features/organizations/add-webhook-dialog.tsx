@@ -9,15 +9,43 @@ import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { AddWebhookToOrganizationResponse } from '@/api/methods.schemas';
 import { WebhookInfoContent } from '@/components/features/organizations/webhook-info-content';
 
+interface FormFields {
+  name: string;
+  url: string;
+}
+
+const defaultFormData = (): FormFields => ({
+  name: '',
+  url: '',
+});
+
 export function AddWebhookDialog({ organizationId, disabled = false }: { organizationId: string; disabled?: boolean }) {
-  const { trigger, isMutating, error, reset } = useAddWebhookToOrganization(organizationId, {
-    swr: { onSuccess: () => mutate(getListOrganizationWebhooksKey(organizationId)) },
-  });
   const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState(defaultFormData());
   const [webhookCreated, setWebhookCreated] = useState(false);
   const [webhookResponse, setWebhookResponse] = useState<AddWebhookToOrganizationResponse | null>(null);
 
+  const { trigger, isMutating, error, reset } = useAddWebhookToOrganization(organizationId, {
+    swr: { onSuccess: () => mutate(getListOrganizationWebhooksKey(organizationId)) },
+  });
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    try {
+      const response = await trigger({
+        type: 'experiment.created',
+        name: formData.name,
+        url: formData.url,
+      });
+      setWebhookResponse(response);
+      setWebhookCreated(true);
+    } catch (e) {
+      console.error('Failed to create webhook:', e);
+    }
+  };
+
   const handleClose = () => {
+    setFormData(defaultFormData());
     setOpen(false);
     setWebhookCreated(false);
     setWebhookResponse(null);
@@ -67,25 +95,7 @@ export function AddWebhookDialog({ organizationId, disabled = false }: { organiz
             </Flex>
           </>
         ) : (
-          <form
-            onSubmit={async (event) => {
-              event.preventDefault();
-              const fd = new FormData(event.currentTarget);
-              const name = fd.get('name') as string;
-              const url = fd.get('url') as string;
-              try {
-                const response = await trigger({
-                  type: 'experiment.created',
-                  name,
-                  url,
-                });
-                setWebhookResponse(response);
-                setWebhookCreated(true);
-              } catch (e) {
-                console.error('Failed to create webhook:', e);
-              }
-            }}
-          >
+          <form onSubmit={handleSubmit}>
             <Dialog.Title>Add Webhook</Dialog.Title>
             <Dialog.Description size="2" mb="4">
               Add a webhook to receive notifications when events occur in this organization.
@@ -98,7 +108,12 @@ export function AddWebhookDialog({ organizationId, disabled = false }: { organiz
                 <Text as="div" size="2" mb="1" weight="bold">
                   Name
                 </Text>
-                <TextField.Root name="name" placeholder="My webhook name" required />
+                <TextField.Root
+                  value={formData.name}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                  placeholder="My webhook name"
+                  required
+                />
                 <Text as="div" size="1" color="gray" mt="1">
                   A user-friendly name to identify this webhook.
                 </Text>
@@ -108,11 +123,12 @@ export function AddWebhookDialog({ organizationId, disabled = false }: { organiz
                   URL
                 </Text>
                 <TextField.Root
-                  name="url"
+                  value={formData.url}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, url: e.target.value }))}
                   type="url"
                   placeholder="https://your-webhook-endpoint.com/path"
                   required
-                ></TextField.Root>
+                />
                 <Text as="div" size="1" color="gray" mt="1">
                   The URL you wish to receive a POST request every time an experiment is created.
                 </Text>
