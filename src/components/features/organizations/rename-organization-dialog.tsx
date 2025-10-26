@@ -27,9 +27,9 @@ export function RenameOrganizationDialog({
 
   const { trigger, isMutating, error, reset } = useUpdateOrganization(organizationId, {
     swr: {
-      onSuccess: () => {
+      onSuccess: async () => {
         handleClose();
-        Promise.all([mutate(getGetOrganizationKey(organizationId)), mutate(getListOrganizationsKey())]);
+        await Promise.all([mutate(getGetOrganizationKey(organizationId)), mutate(getListOrganizationsKey())]);
       },
     },
   });

@@ -65,9 +65,9 @@ export const EditDatasourceDialog = ({
     error,
   } = useUpdateDatasource(datasourceId, {
     swr: {
-      onSuccess: () => {
+      onSuccess: async () => {
         handleClose();
-        Promise.all([
+        await Promise.all([
           mutate(getGetDatasourceKey(datasourceId)),
           mutate(getInspectDatasourceKey(datasourceId)),
           ...(organizationId ? [mutate(getGetOrganizationKey(organizationId))] : []),

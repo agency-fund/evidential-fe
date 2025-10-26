@@ -47,9 +47,9 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
   const [formData, setFormData] = useState(defaultFormData());
   const { trigger, reset, error } = useCreateDatasource({
     swr: {
-      onSuccess: () => {
+      onSuccess: async () => {
         handleClose();
-        Promise.all([
+        await Promise.all([
           mutate(getListOrganizationDatasourcesKey(organizationId)),
           mutate(getGetOrganizationKey(organizationId)),
         ]);
