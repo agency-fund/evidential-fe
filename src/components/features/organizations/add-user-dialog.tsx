@@ -5,15 +5,53 @@ import { Button, Dialog, Flex, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { PlusIcon } from '@radix-ui/react-icons';
 import { mutate } from 'swr';
+import { GenericErrorCallout } from '@/components/ui/generic-error';
+
+interface FormFields {
+  email: string;
+}
+
+const defaultFormData = (): FormFields => ({
+  email: '',
+});
 
 export function AddUserDialog({ organizationId }: { organizationId: string }) {
-  const { trigger, isMutating } = useAddMemberToOrganization(organizationId, {
-    swr: { onSuccess: () => mutate(getGetOrganizationKey(organizationId)) },
-  });
   const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState(defaultFormData());
+
+  const { trigger, isMutating, error, reset } = useAddMemberToOrganization(organizationId, {
+    swr: {
+      onSuccess: () => {
+        handleClose();
+        mutate(getGetOrganizationKey(organizationId));
+      },
+    },
+  });
+
+  const handleClose = () => {
+    setFormData(defaultFormData());
+    reset();
+    setOpen(false);
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    await trigger({
+      email: formData.email,
+    });
+  };
 
   return (
-    <Dialog.Root open={open} onOpenChange={setOpen}>
+    <Dialog.Root
+      open={open}
+      onOpenChange={(op) => {
+        if (!op) {
+          handleClose();
+        } else {
+          setOpen(op);
+        }
+      }}
+    >
       <Dialog.Trigger>
         <Button>
           <PlusIcon />
@@ -25,21 +63,13 @@ export function AddUserDialog({ organizationId }: { organizationId: string }) {
         {isMutating ? (
           <XSpinner message="Adding user..." />
         ) : (
-          <form
-            onSubmit={async (event) => {
-              event.preventDefault();
-              const fd = new FormData(event.currentTarget);
-              const email = fd.get('email') as string;
-              await trigger({
-                email,
-              });
-              setOpen(false);
-            }}
-          >
+          <form onSubmit={handleSubmit}>
             <Dialog.Title>Add Member</Dialog.Title>
             <Dialog.Description size="2" mb="4">
               Add a member to this organization.
             </Dialog.Description>
+
+            {error && <GenericErrorCallout title="Failed to add member" error={error} />}
 
             <Flex direction="column" gap="3">
               <label>
@@ -47,12 +77,13 @@ export function AddUserDialog({ organizationId }: { organizationId: string }) {
                   Email
                 </Text>
                 <TextField.Root
-                  name="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
                   type="email"
                   placeholder="Enter member email"
                   required
                   autoComplete={'off'}
-                ></TextField.Root>
+                />
               </label>
             </Flex>
 

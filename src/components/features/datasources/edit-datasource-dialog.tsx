@@ -54,19 +54,20 @@ export const EditDatasourceDialog = ({
   datasourceId: string;
   variant?: 'icon' | 'button';
 }) => {
-  const { data, isLoading } = useGetDatasource(datasourceId);
   const [open, setOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState(defaultFormData());
+
+  const { data, isLoading } = useGetDatasource(datasourceId);
   const {
     trigger: updateDatasource,
     reset,
     error,
   } = useUpdateDatasource(datasourceId, {
     swr: {
-      onSuccess: () => {
+      onSuccess: async () => {
         handleClose();
-        Promise.all([
+        await Promise.all([
           mutate(getGetDatasourceKey(datasourceId)),
           mutate(getInspectDatasourceKey(datasourceId)),
           ...(organizationId ? [mutate(getGetOrganizationKey(organizationId))] : []),
@@ -74,12 +75,6 @@ export const EditDatasourceDialog = ({
       },
     },
   });
-
-  const handleClose = () => {
-    setShowPassword(false);
-    reset();
-    setOpen(false);
-  };
 
   useEffect(() => {
     if (open && data) {
@@ -135,12 +130,61 @@ export const EditDatasourceDialog = ({
   }
 
   const dsn = data.dsn;
-
   const isBigQuery = dsn.type === 'bigquery';
   const isNoDWH = dsn.type === 'api_only';
   const isRedshift = dsn.type === 'redshift';
-
   const isDNSError = error instanceof ApiError && error.response.status === 400;
+
+  const handleClose = () => {
+    setShowPassword(false);
+    reset();
+    setOpen(false);
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const updateData: UpdateDatasourceRequest = {
+      name: formData.name,
+    };
+
+    if (isNoDWH) {
+      updateData.dsn = {
+        type: 'api_only',
+      };
+    } else if (isBigQuery) {
+      updateData.dsn = {
+        type: 'bigquery',
+        project_id: formData.project_id,
+        dataset_id: formData.dataset,
+        credentials: formData.credentials_json,
+      };
+    } else if (isRedshift) {
+      updateData.dsn = {
+        type: 'redshift',
+        host: formData.host,
+        port: parseInt(formData.port),
+        dbname: formData.dbname,
+        user: formData.user,
+        password: formData.password,
+        search_path: formData.search_path || null,
+      };
+    } else {
+      updateData.dsn = {
+        type: 'postgres',
+        host: formData.host,
+        port: parseInt(formData.port),
+        dbname: formData.dbname,
+        user: formData.user,
+        password: formData.password,
+        sslmode: formData.sslmode,
+        search_path: formData.search_path || null,
+      };
+    }
+
+    await updateDatasource(updateData, {
+      throwOnError: false,
+    });
+  };
 
   return (
     <Dialog.Root
@@ -167,52 +211,7 @@ export const EditDatasourceDialog = ({
       </Dialog.Trigger>
 
       <Dialog.Content>
-        <form
-          onSubmit={async (event) => {
-            event.preventDefault();
-            const updateData: UpdateDatasourceRequest = {
-              name: formData.name,
-            };
-
-            if (isNoDWH) {
-              updateData.dsn = {
-                type: 'api_only',
-              };
-            } else if (isBigQuery) {
-              updateData.dsn = {
-                type: 'bigquery',
-                project_id: formData.project_id,
-                dataset_id: formData.dataset,
-                credentials: formData.credentials_json,
-              };
-            } else if (isRedshift) {
-              updateData.dsn = {
-                type: 'redshift',
-                host: formData.host,
-                port: parseInt(formData.port),
-                dbname: formData.dbname,
-                user: formData.user,
-                password: formData.password,
-                search_path: formData.search_path || null,
-              };
-            } else {
-              updateData.dsn = {
-                type: 'postgres',
-                host: formData.host,
-                port: parseInt(formData.port),
-                dbname: formData.dbname,
-                user: formData.user,
-                password: formData.password,
-                sslmode: formData.sslmode,
-                search_path: formData.search_path || null,
-              };
-            }
-
-            await updateDatasource(updateData, {
-              throwOnError: false,
-            });
-          }}
-        >
+        <form onSubmit={handleSubmit}>
           <Dialog.Title>Edit Datasource</Dialog.Title>
           <Dialog.Description size="2" mb="4">
             Update the datasource settings.

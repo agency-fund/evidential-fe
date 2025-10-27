@@ -47,9 +47,9 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
   const [formData, setFormData] = useState(defaultFormData());
   const { trigger, reset, error } = useCreateDatasource({
     swr: {
-      onSuccess: () => {
+      onSuccess: async () => {
         handleClose();
-        Promise.all([
+        await Promise.all([
           mutate(getListOrganizationDatasourcesKey(organizationId)),
           mutate(getGetOrganizationKey(organizationId)),
         ]);
@@ -62,6 +62,55 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
     setDwhType('postgres');
     reset();
     setOpen(false);
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    let dsn: PostgresDsn | RedshiftDsn | BqDsnInput;
+    if (dwhType === 'postgres') {
+      dsn = {
+        type: 'postgres',
+        host: formData.host,
+        port: parseInt(formData.port),
+        dbname: formData.database,
+        user: formData.user,
+        password: { type: 'revealed', value: formData.password },
+        sslmode: formData.sslmode as PostgresSslModes,
+        search_path: formData.search_path || null,
+      };
+    } else if (dwhType === 'redshift') {
+      dsn = {
+        type: 'redshift',
+        host: formData.host,
+        port: parseInt(formData.port),
+        dbname: formData.database,
+        user: formData.user,
+        password: { type: 'revealed', value: formData.password },
+        search_path: formData.search_path || null,
+      };
+    } else {
+      dsn = {
+        type: 'bigquery',
+        project_id: formData.project_id,
+        dataset_id: formData.dataset,
+        credentials: {
+          type: 'serviceaccountinfo',
+          content: formData.credentials_json,
+        },
+      };
+    }
+
+    await trigger(
+      {
+        organization_id: organizationId,
+        name: formData.name,
+        dsn,
+      },
+      {
+        throwOnError: false,
+      },
+    );
   };
 
   const isDNSError = error instanceof ApiError && error.response.status === 400;
@@ -84,56 +133,7 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
       </Dialog.Trigger>
 
       <Dialog.Content>
-        <form
-          onSubmit={async (event) => {
-            event.preventDefault();
-
-            let dsn: PostgresDsn | RedshiftDsn | BqDsnInput;
-            if (dwhType === 'postgres') {
-              dsn = {
-                type: 'postgres',
-                host: formData.host,
-                port: parseInt(formData.port),
-                dbname: formData.database,
-                user: formData.user,
-                password: { type: 'revealed', value: formData.password },
-                sslmode: formData.sslmode as PostgresSslModes,
-                search_path: formData.search_path || null,
-              };
-            } else if (dwhType === 'redshift') {
-              dsn = {
-                type: 'redshift',
-                host: formData.host,
-                port: parseInt(formData.port),
-                dbname: formData.database,
-                user: formData.user,
-                password: { type: 'revealed', value: formData.password },
-                search_path: formData.search_path || null,
-              };
-            } else {
-              dsn = {
-                type: 'bigquery',
-                project_id: formData.project_id,
-                dataset_id: formData.dataset,
-                credentials: {
-                  type: 'serviceaccountinfo',
-                  content: formData.credentials_json,
-                },
-              };
-            }
-
-            await trigger(
-              {
-                organization_id: organizationId,
-                name: formData.name,
-                dsn,
-              },
-              {
-                throwOnError: false,
-              },
-            );
-          }}
-        >
+        <form onSubmit={handleSubmit}>
           <Dialog.Title>Add Datasource</Dialog.Title>
           <Dialog.Description size="2" mb="4">
             <Text>Add a datasource to this organization.</Text>

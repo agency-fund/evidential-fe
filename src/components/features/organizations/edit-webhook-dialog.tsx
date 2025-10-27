@@ -3,7 +3,7 @@
 import { Button, Dialog, Flex, IconButton, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { Pencil2Icon } from '@radix-ui/react-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { WebhookSummary } from '@/api/methods.schemas';
 import { getListOrganizationWebhooksKey, useUpdateOrganizationWebhook } from '@/api/admin';
 import { mutate } from 'swr';
@@ -14,27 +14,43 @@ interface EditWebhookDialogProps {
   webhook: WebhookSummary;
 }
 
+interface FormFields {
+  name: string;
+  url: string;
+}
+
+const defaultFormData = (webhook: WebhookSummary): FormFields => ({
+  name: webhook.name,
+  url: webhook.url,
+});
+
 export function EditWebhookDialog({ organizationId, webhook }: EditWebhookDialogProps) {
   const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState(defaultFormData(webhook));
 
   const { trigger, isMutating, error, reset } = useUpdateOrganizationWebhook(organizationId, webhook.id, {
     swr: {
-      onSuccess: () => mutate(getListOrganizationWebhooksKey(organizationId)),
+      onSuccess: () => {
+        handleClose();
+        mutate(getListOrganizationWebhooksKey(organizationId));
+      },
     },
   });
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    const fd = new FormData(event.currentTarget as HTMLFormElement);
-    const newName = fd.get('name') as string;
-    const newUrl = fd.get('url') as string;
-    await trigger({ name: newName, url: newUrl });
+  useEffect(() => {
+    if (open && webhook) {
+      setFormData(defaultFormData(webhook));
+    }
+  }, [open, webhook]);
+
+  const handleClose = () => {
+    reset();
     setOpen(false);
   };
 
-  const handleClose = () => {
-    setOpen(false);
-    reset();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    await trigger({ name: formData.name, url: formData.url });
   };
 
   return (
@@ -70,7 +86,12 @@ export function EditWebhookDialog({ organizationId, webhook }: EditWebhookDialog
                 <Text as="div" size="2" mb="1" weight="bold">
                   Name
                 </Text>
-                <TextField.Root name="name" placeholder="My webhook name" defaultValue={webhook.name} required />
+                <TextField.Root
+                  value={formData.name}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                  placeholder="My webhook name"
+                  required
+                />
                 <Text as="div" size="1" color="gray" mt="1">
                   A user-friendly name to identify this webhook.
                 </Text>
@@ -80,9 +101,9 @@ export function EditWebhookDialog({ organizationId, webhook }: EditWebhookDialog
                   URL
                 </Text>
                 <TextField.Root
-                  name="url"
+                  value={formData.url}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, url: e.target.value }))}
                   placeholder="https://your-webhook-endpoint.com"
-                  defaultValue={webhook.url}
                   required
                 />
                 <Text as="div" size="1" color="gray" mt="1">

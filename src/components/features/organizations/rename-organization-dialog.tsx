@@ -1,11 +1,19 @@
 'use client';
 import { getGetOrganizationKey, getListOrganizationsKey, useUpdateOrganization } from '@/api/admin';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Dialog, Flex, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GearIcon } from '@radix-ui/react-icons';
 import { mutate } from 'swr';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
+
+interface FormFields {
+  name: string;
+}
+
+const defaultFormData = (currentName: string): FormFields => ({
+  name: currentName,
+});
 
 export function RenameOrganizationDialog({
   organizationId,
@@ -14,20 +22,44 @@ export function RenameOrganizationDialog({
   organizationId: string;
   currentName: string;
 }) {
+  const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState(defaultFormData(currentName));
+
   const { trigger, isMutating, error, reset } = useUpdateOrganization(organizationId, {
     swr: {
-      onSuccess: () => Promise.all([mutate(getGetOrganizationKey(organizationId)), mutate(getListOrganizationsKey())]),
+      onSuccess: async () => {
+        handleClose();
+        await Promise.all([mutate(getGetOrganizationKey(organizationId)), mutate(getListOrganizationsKey())]);
+      },
     },
   });
-  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (open && currentName) {
+      setFormData(defaultFormData(currentName));
+    }
+  }, [open, currentName]);
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    await trigger({
+      name: formData.name,
+    });
+  };
+
+  const handleClose = () => {
+    reset();
+    setOpen(false);
+  };
 
   return (
     <Dialog.Root
       open={open}
       onOpenChange={(op) => {
-        setOpen(op);
         if (!op) {
-          reset();
+          handleClose();
+        } else {
+          setOpen(op);
         }
       }}
     >
@@ -42,17 +74,7 @@ export function RenameOrganizationDialog({
         {isMutating ? (
           <XSpinner message="Renaming organization..." />
         ) : (
-          <form
-            onSubmit={async (event) => {
-              event.preventDefault();
-              const fd = new FormData(event.currentTarget);
-              const name = fd.get('name') as string;
-              await trigger({
-                name,
-              });
-              setOpen(false);
-            }}
-          >
+          <form onSubmit={handleSubmit}>
             <Dialog.Title>Rename Organization</Dialog.Title>
             <Dialog.Description size="2" mb="4">
               Change the organization name.
@@ -66,11 +88,11 @@ export function RenameOrganizationDialog({
                   Name
                 </Text>
                 <TextField.Root
-                  name="name"
-                  defaultValue={currentName}
+                  value={formData.name}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                   placeholder="Enter organization name"
                   required
-                ></TextField.Root>
+                />
               </label>
             </Flex>
 
