@@ -1,7 +1,7 @@
 'use client';
 
-import { Badge, Button, Flex, Grid, Table, Text, TextField } from '@radix-ui/themes';
-import { TrashIcon } from '@radix-ui/react-icons';
+import { Badge, Button, Flex, Grid, Table, Text, TextField, Tooltip } from '@radix-ui/themes';
+import { CheckCircledIcon, TrashIcon } from '@radix-ui/react-icons';
 import { FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { GetMetricsResponseElement } from '@/api/methods.schemas';
 import { ClickableBadge } from '@/components/features/experiments/clickable-badge';
@@ -24,9 +24,37 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
   };
 
   const handlePrimaryMetricDeselect = () => {
+    const [nextPrimary, ...remainingSecondary] = formData.secondaryMetrics.toSorted((a, b) =>
+      a.metric.field_name.localeCompare(b.metric.field_name),
+    );
+
+    if (nextPrimary) {
+      onFormDataChange({
+        ...formData,
+        primaryMetric: { metric: nextPrimary.metric, mde: nextPrimary.mde },
+        secondaryMetrics: remainingSecondary,
+      });
+      return;
+    }
+
     onFormDataChange({
       ...formData,
       primaryMetric: undefined,
+    });
+  };
+
+  const handlePromoteSecondaryToPrimary = (metricName: string) => {
+    const metricToPromote = formData.secondaryMetrics.find((m) => m.metric.field_name === metricName)!;
+    const currentPrimary = formData.primaryMetric!;
+
+    const newSecondaryMetrics = formData.secondaryMetrics
+      .filter((m) => m.metric.field_name !== metricName)
+      .concat([{ metric: currentPrimary.metric, mde: currentPrimary.mde }]);
+
+    onFormDataChange({
+      ...formData,
+      primaryMetric: { metric: metricToPromote.metric, mde: metricToPromote.mde },
+      secondaryMetrics: newSecondaryMetrics,
     });
   };
 
@@ -72,13 +100,13 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
     .toSorted((a, b) => a.field_name.localeCompare(b.field_name));
 
   return (
-    <Grid columns={'2'} gap={'4'}>
-      <Table.Root layout={'fixed'}>
+    <Grid columns="2" gap="4">
+      <Table.Root layout="fixed">
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeaderCell>Metric</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell width="140px">Minimum Effect (% change)</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell width="64px"> </Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell width="50%">Metric</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Minimum Effect (% change)</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -98,14 +126,16 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
                     trigger={
                       <Flex gap="2">
                         <Text style={{ cursor: 'pointer' }}>{formData.primaryMetric.metric.field_name}</Text>
-                        <Badge color={'green'}>Primary</Badge>
+                        <Badge color="green">
+                          <CheckCircledIcon /> Primary
+                        </Badge>
                       </Flex>
                     }
                   />
                 </Table.Cell>
                 <Table.Cell>
                   <TextField.Root
-                    type={'number'}
+                    type="number"
                     value={formData.primaryMetric?.mde}
                     onChange={(e) =>
                       handleMdeChange('primary', formData.primaryMetric!.metric.field_name, e.target.value)
@@ -146,40 +176,49 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
                     />
                   </Table.Cell>
                   <Table.Cell>
-                    <Button
-                      variant="soft"
-                      color="red"
-                      onClick={(event) => {
-                        event.preventDefault();
-                        handleSecondaryMetricRemove(selectedMetric.metric.field_name);
-                      }}
-                    >
-                      <TrashIcon />
-                    </Button>
+                    <Flex gap="2">
+                      <Tooltip content="Make Primary">
+                        <Button
+                          variant="soft"
+                          color="green"
+                          onClick={(event) => {
+                            event.preventDefault();
+                            handlePromoteSecondaryToPrimary(selectedMetric.metric.field_name);
+                          }}
+                        >
+                          <CheckCircledIcon />
+                        </Button>
+                      </Tooltip>
+                      <Button
+                        variant="soft"
+                        color="red"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          handleSecondaryMetricRemove(selectedMetric.metric.field_name);
+                        }}
+                      >
+                        <TrashIcon />
+                      </Button>
+                    </Flex>
                   </Table.Cell>
                 </Table.Row>
               ))}
           </>
         </Table.Body>
       </Table.Root>
-      <Flex direction="column" gap="3" overflowX={'auto'}>
+      <Flex direction="column" gap="3" overflowX="auto">
         <Flex direction="column" gap="2">
+          <Flex gap="2">
+            <Text as="label" size="2" weight="bold">
+              Select a metric:
+            </Text>
+          </Flex>
           {!formData.primaryMetric ? (
             <>
-              <Flex gap="2">
-                <Text as={'label'} size={'2'} weight={'bold'}>
-                  Select a primary metric:
-                </Text>
-              </Flex>
-              <Flex gap={'2'} wrap={'wrap'}>
+              <Flex gap="2" wrap="wrap">
                 {availablePrimaryMetricBadges.map((metric) => (
                   <ClickableBadge key={metric.field_name} input={metric} onClick={handlePrimaryMetricSelect} />
                 ))}
-                {availablePrimaryMetricBadges.length === 0 && metricFields.length > 0 && (
-                  <Text color="gray" size="2">
-                    All available metrics are selected as secondary. Deselect one to make it primary.
-                  </Text>
-                )}
                 {metricFields.length === 0 && (
                   <Text color="gray" size="2">
                     No metrics available for this participant type.
@@ -189,12 +228,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
             </>
           ) : availableSecondaryMetricBadges.length > 0 && formData.primaryMetric ? (
             <>
-              <Flex gap={'2'}>
-                <Text as="label" size="2" weight="bold">
-                  Add optional secondary metrics:
-                </Text>
-              </Flex>
-              <Flex gap="2" wrap={'wrap'}>
+              <Flex gap="2" wrap="wrap">
                 {availableSecondaryMetricBadges.map((metric) => (
                   <ClickableBadge key={metric.field_name} input={metric} onClick={handleSecondaryMetricAdd} />
                 ))}

@@ -15,8 +15,10 @@ interface PowerCheckSectionProps {
 }
 
 export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSectionProps) {
-  const { trigger, data, isMutating, error } = usePowerCheck(formData.datasourceId!);
   const [validationError, setValidationError] = useState<ZodError | null>(null);
+  const { trigger, isMutating, error } = usePowerCheck(formData.datasourceId!);
+
+  const isButtonDisabled = isMutating || formData.primaryMetric === undefined;
 
   const handlePowerCheck = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -39,8 +41,6 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
     }
   };
 
-  const isButtonDisabled = isMutating || formData.primaryMetric === undefined;
-
   return (
     <Flex direction="column" gap="3" align="center">
       <Button disabled={isButtonDisabled} onClick={handlePowerCheck} style={{ minWidth: '25%' }} loading={isMutating}>
@@ -49,7 +49,7 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
           Run Power Check
         </>
       </Button>
-      {data !== undefined && (
+      {formData.powerCheckResponse !== undefined && (
         <>
           <Text>Target sample size to distribute across all arms: </Text>
           <TextField.Root
@@ -93,9 +93,9 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
         </Flex>
       )}
 
-      {data !== undefined &&
+      {formData.powerCheckResponse !== undefined &&
         !validationError &&
-        data.analyses.map((metricAnalysis, i) => (
+        formData.powerCheckResponse.analyses.map((metricAnalysis, i) => (
           <Card key={i}>
             <Flex direction="column" gap="3">
               <Text weight={'bold'}>{metricAnalysis.metric_spec.field_name}</Text>
