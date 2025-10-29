@@ -39,15 +39,24 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
     chosen_n: formData.chosenN!,
   });
 
-  // Extract metrics and filters from the API response
   const metricFields: GetMetricsResponseElement[] =
     participantTypesData !== undefined ? participantTypesData.metrics : [];
-
   const filterFields: GetFiltersResponseElement[] =
     participantTypesData !== undefined ? participantTypesData.filters : [];
-
-  // 2. Get the available strata fields
   const strataFields = participantTypesData?.strata || [];
+  const supportsPowerCheck = formData.experimentType === 'freq_preassigned';
+  const isNextButtonDisabled =
+    !formData.primaryMetric?.metric.field_name ||
+    !formData.primaryMetric?.mde ||
+    (supportsPowerCheck && (formData.powerCheckResponse === undefined || isMutating));
+
+  const handleMetricChange = (newData: FrequentABFormData) => {
+    onFormDataChange({
+      ...newData,
+      powerCheckResponse: undefined,
+      chosenN: undefined,
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,12 +77,6 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
     }
   };
 
-  const supportsPowerCheck = formData.experimentType === 'freq_preassigned';
-  const isNextButtonDisabled =
-    !formData.primaryMetric?.metric.field_name ||
-    !formData.primaryMetric?.mde ||
-    (supportsPowerCheck && (formData.powerCheckResponse === undefined || isMutating));
-
   return (
     <form onSubmit={handleSubmit}>
       <Flex direction="column" gap="4">
@@ -84,7 +87,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
               <Text size="2">Loading metrics...</Text>
             </Flex>
           ) : (
-            <MetricBuilder formData={formData} onFormDataChange={onFormDataChange} metricFields={metricFields} />
+            <MetricBuilder formData={formData} onFormDataChange={handleMetricChange} metricFields={metricFields} />
           )}
         </SectionCard>
 
