@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge, Button, Flex, Grid, Table, Text, TextField, Tooltip } from '@radix-ui/themes';
+import { Badge, Flex, Grid, IconButton, Table, Text, TextField, Tooltip } from '@radix-ui/themes';
 import { CheckCircledIcon, TrashIcon } from '@radix-ui/react-icons';
 import { FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { GetMetricsResponseElement } from '@/api/methods.schemas';
@@ -144,7 +144,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
                   />
                 </Table.Cell>
                 <Table.Cell>
-                  <Button
+                  <IconButton
                     variant="soft"
                     color="red"
                     onClick={(event) => {
@@ -153,7 +153,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
                     }}
                   >
                     <TrashIcon />
-                  </Button>
+                  </IconButton>
                 </Table.Cell>
               </Table.Row>
             )}
@@ -178,7 +178,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
                   <Table.Cell>
                     <Flex gap="2">
                       <Tooltip content="Make Primary">
-                        <Button
+                        <IconButton
                           variant="soft"
                           color="green"
                           onClick={(event) => {
@@ -187,9 +187,9 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
                           }}
                         >
                           <CheckCircledIcon />
-                        </Button>
+                        </IconButton>
                       </Tooltip>
-                      <Button
+                      <IconButton
                         variant="soft"
                         color="red"
                         onClick={(event) => {
@@ -198,7 +198,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
                         }}
                       >
                         <TrashIcon />
-                      </Button>
+                      </IconButton>
                     </Flex>
                   </Table.Cell>
                 </Table.Row>
