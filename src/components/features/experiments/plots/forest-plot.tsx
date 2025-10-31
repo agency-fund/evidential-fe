@@ -1,5 +1,5 @@
 'use client';
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
+import { ExclamationTriangleIcon, InfoCircledIcon } from '@radix-ui/react-icons';
 import { Box, Callout, Card, Flex, Text } from '@radix-ui/themes';
 import {
   CartesianGrid,
@@ -88,7 +88,14 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
 export function ForestPlot({ effectSizes, minX: minXProp, maxX: maxXProp }: ForestPlotProps) {
   // Only render if we have data
   if (!effectSizes || effectSizes.length === 0) {
-    return <Text>No treatment arms to display</Text>;
+    return (
+      <Callout.Root color={'orange'}>
+        <Callout.Icon>
+          <InfoCircledIcon />
+        </Callout.Icon>
+        <Callout.Text>No analysis to display yet.</Callout.Text>
+      </Callout.Root>
+    );
   }
 
   // Flatten effect sizes into array of CI bounds for axis calculation
