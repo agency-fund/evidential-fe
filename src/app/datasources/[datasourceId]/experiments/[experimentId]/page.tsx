@@ -66,6 +66,7 @@ export default function ExperimentViewPage() {
     data: undefined,
     updated_at: new Date(),
     label: 'No live data yet',
+    effectSizesByMetric: undefined,
   });
   // which analysis we're actually displaying (live or a snapshot)
   const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisState>(liveAnalysis);
@@ -82,34 +83,11 @@ export default function ExperimentViewPage() {
     swr: { enabled: !!datasourceId },
   });
 
-  const { isLoading: isLoadingAnalysis, error: analysisError } = useAnalyzeExperiment(
-    datasourceId,
-    experimentId,
-    undefined,
-    {
-      swr: {
-        enabled: !!datasourceId && !!experiment,
-        shouldRetryOnError: false,
-        onSuccess: (analysisData) => {
-          const date = new Date();
-          const analysis = {
-            key: 'live',
-            data: analysisData,
-            updated_at: date,
-            label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
-            effectSizesByMetric: precomputeEffectSizesByMetric(analysisData, getAlpha(experiment?.design_spec)),
-          };
-          setLiveAnalysis(analysis);
-          // Only update the display if we were previously viewing live data.
-          if (selectedAnalysis.key === 'live') {
-            setSelectedAnalysisAndMetrics(analysis);
-          }
-        },
-      },
-    },
-  );
-
-  const { error: analysisHistoryError } = useListSnapshots(
+  const {
+    data: analysisHistoryData,
+    isLoading: isLoadingHistory,
+    error: analysisHistoryError,
+  } = useListSnapshots(
     organizationId,
     datasourceId,
     experimentId,
@@ -121,7 +99,7 @@ export default function ExperimentViewPage() {
         onSuccess: (data) => {
           // Make human-readable labels for the dropdown, showing UTC down to the minute.
           // Use the snapshot ID as the key, looking up the analysisState by ID upon selection.
-          if (!data?.items) return;
+          if (data?.items.length === 0) return;
 
           // Group snapshots by date and keep only the most recent one per date
           const snapshotsByDate = new Map<string, Snapshot>();
@@ -153,6 +131,41 @@ export default function ExperimentViewPage() {
           setAnalysisHistory(opts);
           const currentMetricName = selectedMetricAnalysis?.metric?.field_name;
           setCiBounds(computeBoundsForMetric(currentMetricName, [liveAnalysis, ...opts]));
+          // If we're not viewing real data, set the selected analysis to the most recent snapshot
+          if (selectedAnalysis.data === undefined) {
+            setSelectedAnalysisAndMetrics(opts[0]);
+          }
+        },
+      },
+    },
+  );
+
+  const { isLoading: isLoadingAnalysis, error: analysisError } = useAnalyzeExperiment(
+    datasourceId,
+    experimentId,
+    undefined,
+    {
+      swr: {
+        enabled:
+          !!datasourceId &&
+          !!experiment &&
+          !!analysisHistoryData && // wait for the historical snapshots request to complete
+          analysisHistoryData.items.length === 0,
+        shouldRetryOnError: false,
+        onSuccess: (analysisData) => {
+          const date = new Date();
+          const analysis = {
+            key: 'live',
+            data: analysisData,
+            updated_at: date,
+            label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
+            effectSizesByMetric: precomputeEffectSizesByMetric(analysisData, getAlpha(experiment?.design_spec)),
+          };
+          setLiveAnalysis(analysis);
+          // Only update the display if we were previously viewing live data.
+          if (selectedAnalysis.key === 'live') {
+            setSelectedAnalysisAndMetrics(analysis);
+          }
         },
       },
     },
@@ -211,6 +224,7 @@ export default function ExperimentViewPage() {
   const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
 
   const selectedMetricName = selectedMetricAnalysis?.metric?.field_name ?? 'unknown';
+
   const selectedMetricAnalyses =
     selectedAnalysis.data && 'metric_analyses' in selectedAnalysis.data ? selectedAnalysis.data.metric_analyses : null;
 
@@ -221,7 +235,7 @@ export default function ExperimentViewPage() {
   }
 
   const { timeseriesData, armMetadata, minDate, maxDate } = transformAnalysisForForestTimeseriesPlot(
-    [liveAnalysis, ...analysisHistory],
+    analysisHistory,
     selectedMetricName,
   );
 
@@ -413,7 +427,9 @@ export default function ExperimentViewPage() {
             )
           }
         >
-          {isLoadingAnalysis && <XSpinner message="Loading analysis data..." />}
+          {isLoadingHistory && <XSpinner message="Loading historical analyses..." />}
+
+          {isLoadingAnalysis && <XSpinner message="Loading live analysis..." />}
 
           {analysisError && (
             <GenericErrorCallout

@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Box, Card, Flex, Text } from '@radix-ui/themes';
+import { Box, Callout, Card, Flex, Text } from '@radix-ui/themes';
 import {
   CartesianGrid,
   Customized,
@@ -29,6 +29,7 @@ import { JitteredDot, JitteredDotProps } from './jittered-dot';
 import { JitteredLine } from './jittered-line';
 import { ConfidenceInterval } from './confidence-interval';
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
+import { InfoCircledIcon } from '@radix-ui/react-icons';
 
 interface ForestTimeseriesPlotProps {
   data: TimeSeriesDataPoint[];
@@ -111,7 +112,14 @@ export default function ForestTimeseriesPlot({
 
   // Early return if no data
   if (!chartData || chartData.length === 0) {
-    return <Text>No timeseries data to display</Text>;
+    return (
+      <Callout.Root color={'orange'}>
+        <Callout.Icon>
+          <InfoCircledIcon />
+        </Callout.Icon>
+        <Callout.Text>No timeseries data to display</Callout.Text>
+      </Callout.Root>
+    );
   }
 
   const yAxisValues: number[] = [];
