@@ -84,10 +84,35 @@ export default function ExperimentViewPage() {
   });
 
   const {
-    data: analysisHistoryData,
-    isLoading: isLoadingHistory,
-    error: analysisHistoryError,
-  } = useListSnapshots(
+    mutate: analyzeLive,
+    isLoading: isLoadingLiveAnalysis,
+    error: liveAnalysisError,
+  } = useAnalyzeExperiment(datasourceId, experimentId, undefined, {
+    swr: {
+      enabled: !!datasourceId && !!experiment,
+      // Disable revalidation to only allow manual triggering of the live analysis
+      revalidateOnMount: false,
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+      onSuccess: (analysisData) => {
+        const date = new Date();
+        const analysis = {
+          key: 'live',
+          data: analysisData,
+          updated_at: date,
+          label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
+          effectSizesByMetric: precomputeEffectSizesByMetric(analysisData, getAlpha(experiment?.design_spec)),
+        };
+        setLiveAnalysis(analysis);
+        // Only update the display if we were previously viewing live data.
+        if (selectedAnalysis.key === 'live') {
+          setSelectedAnalysisAndMetrics(analysis);
+        }
+      },
+    },
+  });
+
+  const { isLoading: isLoadingHistory, error: analysisHistoryError } = useListSnapshots(
     organizationId,
     datasourceId,
     experimentId,
@@ -95,11 +120,17 @@ export default function ExperimentViewPage() {
     {
       swr: {
         enabled: !!organizationId && !!datasourceId && !!experimentId && !!experiment,
+        revalidateOnFocus: false,
         shouldRetryOnError: false,
         onSuccess: (data) => {
           // Make human-readable labels for the dropdown, showing UTC down to the minute.
           // Use the snapshot ID as the key, looking up the analysisState by ID upon selection.
-          if (data?.items.length === 0) return;
+
+          // Do live analysis if there are no snapshots
+          if (data.items.length === 0) {
+            analyzeLive();
+            return;
+          }
 
           // Group snapshots by date and keep only the most recent one per date
           const snapshotsByDate = new Map<string, Snapshot>();
@@ -136,36 +167,9 @@ export default function ExperimentViewPage() {
             setSelectedAnalysisAndMetrics(opts[0]);
           }
         },
-      },
-    },
-  );
-
-  const { isLoading: isLoadingAnalysis, error: analysisError } = useAnalyzeExperiment(
-    datasourceId,
-    experimentId,
-    undefined,
-    {
-      swr: {
-        enabled:
-          !!datasourceId &&
-          !!experiment &&
-          !!analysisHistoryData && // wait for the historical snapshots request to complete
-          analysisHistoryData.items.length === 0,
-        shouldRetryOnError: false,
-        onSuccess: (analysisData) => {
-          const date = new Date();
-          const analysis = {
-            key: 'live',
-            data: analysisData,
-            updated_at: date,
-            label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
-            effectSizesByMetric: precomputeEffectSizesByMetric(analysisData, getAlpha(experiment?.design_spec)),
-          };
-          setLiveAnalysis(analysis);
-          // Only update the display if we were previously viewing live data.
-          if (selectedAnalysis.key === 'live') {
-            setSelectedAnalysisAndMetrics(analysis);
-          }
+        onError: () => {
+          // Trigger live analysis if snapshot loading fails
+          analyzeLive();
         },
       },
     },
@@ -206,6 +210,10 @@ export default function ExperimentViewPage() {
   const handleSelectAnalysis = (key: string) => {
     const analysis = key === 'live' ? liveAnalysis : analysisHistory.find((opt) => opt.key === key);
     setSelectedAnalysisAndMetrics(analysis || liveAnalysis);
+    // If we haven't fetched it yet, trigger a live analysis.
+    if (key == 'live' && liveAnalysis.data === undefined) {
+      analyzeLive();
+    }
   };
 
   if (isLoadingExperiment) {
@@ -429,9 +437,9 @@ export default function ExperimentViewPage() {
         >
           {isLoadingHistory && <XSpinner message="Loading historical analyses..." />}
 
-          {isLoadingAnalysis && <XSpinner message="Loading live analysis..." />}
+          {isLoadingLiveAnalysis && <XSpinner message="Loading live analysis..." />}
 
-          {analysisError && (
+          {liveAnalysisError && (
             <GenericErrorCallout
               title="Error loading analysis"
               message="Analysis may not be available yet or the experiment hasn't collected enough data."
@@ -445,53 +453,49 @@ export default function ExperimentViewPage() {
             />
           )}
 
-          {selectedAnalysis.data && (
-            <Flex direction="column" gap="3">
-              <Tabs.Root defaultValue="leaderboard">
-                <Tabs.List>
-                  <Tabs.Trigger value="leaderboard">Leaderboard</Tabs.Trigger>
-                  <Tabs.Trigger value="raw">
-                    <Flex gap="2" align="center">
-                      Raw Data <CodeIcon />
-                    </Flex>
-                  </Tabs.Trigger>
-                </Tabs.List>
-                <Box px="4">
-                  <Tabs.Content value="leaderboard">
-                    <Flex direction="column" gap="3" py="3">
-                      {selectedAnalysis.effectSizesByMetric && (
-                        <ForestPlot
-                          effectSizes={selectedAnalysis.effectSizesByMetric.get(selectedMetricName)}
-                          minX={ciBounds[0]}
-                          maxX={ciBounds[1]}
-                        />
-                      )}
+          <Flex direction="column" gap="3">
+            <Tabs.Root defaultValue="leaderboard">
+              <Tabs.List>
+                <Tabs.Trigger value="leaderboard">Leaderboard</Tabs.Trigger>
+                <Tabs.Trigger value="raw">
+                  <Flex gap="2" align="center">
+                    Raw Data <CodeIcon />
+                  </Flex>
+                </Tabs.Trigger>
+              </Tabs.List>
+              <Box px="4">
+                <Tabs.Content value="leaderboard">
+                  <Flex direction="column" gap="3" py="3">
+                    <ForestPlot
+                      effectSizes={selectedAnalysis.effectSizesByMetric?.get(selectedMetricName)}
+                      minX={ciBounds[0]}
+                      maxX={ciBounds[1]}
+                    />
 
-                      <ForestTimeseriesPlot
-                        data={timeseriesData}
-                        armMetadata={armMetadata}
-                        minDate={minDate}
-                        maxDate={maxDate}
-                        onPointClick={handleSelectAnalysis}
-                      />
-                    </Flex>
-                  </Tabs.Content>
+                    <ForestTimeseriesPlot
+                      data={timeseriesData}
+                      armMetadata={armMetadata}
+                      minDate={minDate}
+                      maxDate={maxDate}
+                      onPointClick={handleSelectAnalysis}
+                    />
+                  </Flex>
+                </Tabs.Content>
 
-                  <Tabs.Content value="raw">
-                    <Flex direction="column" gap="3" py="3">
-                      <CodeSnippetCard
-                        title="Raw Data"
-                        content={JSON.stringify(selectedAnalysis.data, null, 2)}
-                        height="200px"
-                        tooltipContent="Copy raw data"
-                        variant="ghost"
-                      />
-                    </Flex>
-                  </Tabs.Content>
-                </Box>
-              </Tabs.Root>
-            </Flex>
-          )}
+                <Tabs.Content value="raw">
+                  <Flex direction="column" gap="3" py="3">
+                    <CodeSnippetCard
+                      title="Raw Data"
+                      content={selectedAnalysis.data ? JSON.stringify(selectedAnalysis.data, null, 2) : 'NO DATA'}
+                      height="200px"
+                      tooltipContent="Copy raw data"
+                      variant="ghost"
+                    />
+                  </Flex>
+                </Tabs.Content>
+              </Box>
+            </Tabs.Root>
+          </Flex>
         </SectionCard>
       </Flex>
     </Flex>

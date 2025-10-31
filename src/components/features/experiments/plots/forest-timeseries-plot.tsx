@@ -117,7 +117,7 @@ export default function ForestTimeseriesPlot({
         <Callout.Icon>
           <InfoCircledIcon />
         </Callout.Icon>
-        <Callout.Text>No timeseries data to display</Callout.Text>
+        <Callout.Text>No timeseries data to display yet.</Callout.Text>
       </Callout.Root>
     );
   }
