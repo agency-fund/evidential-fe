@@ -1176,19 +1176,28 @@ export interface FieldMetadata {
 
 ## Examples
 
-| Relation | Value       | logical Result                                    |
-|----------|-------------|---------------------------------------------------|
-| INCLUDES | [None]      | Match when `x IS NULL`                            |
-| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |
-| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |
-| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |
-| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |
-| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |
-| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |
-| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |
-| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |
+| Relation | Value             | logical Result                                    |
+|----------|-------------------|---------------------------------------------------|
+| INCLUDES | [None]            | Match when `x IS NULL`                            |
+| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |
+| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |
+| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |
+| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |
+| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |
+| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |
+| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |
+| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |
+| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |
+| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |
+| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |
 
 String comparisons are case-sensitive.
+
+## Special Handling for BETWEEN support of including NULL
+
+When the relation is BETWEEN, we allow for up to 3 values to support the special case of
+including null in addition to the values in the between range via an OR IS NULL clause, as
+indicated by a 3rd value of None. Any other 3rd value is invalid.
 
 ## Special Handling for Comma-Separated Fields
 
@@ -1205,9 +1214,9 @@ Note: The BETWEEN relation is not supported for comma-separated values.
 
 Note: CSV field comparisons are case-insensitive.
 
-## Handling of datetime and timestamp values
+## Handling of DATE, DATETIME and TIMESTAMP values
 
-DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.
+DATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.
 
 Values must be expressed as ISO8601 datetime strings compatible with Python's datetime.fromisoformat()
 (https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).
@@ -1226,19 +1235,28 @@ export interface FilterInput {
 
 ## Examples
 
-| Relation | Value       | logical Result                                    |
-|----------|-------------|---------------------------------------------------|
-| INCLUDES | [None]      | Match when `x IS NULL`                            |
-| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |
-| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |
-| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |
-| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |
-| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |
-| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |
-| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |
-| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |
+| Relation | Value             | logical Result                                    |
+|----------|-------------------|---------------------------------------------------|
+| INCLUDES | [None]            | Match when `x IS NULL`                            |
+| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |
+| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |
+| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |
+| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |
+| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |
+| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |
+| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |
+| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |
+| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |
+| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |
+| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |
 
 String comparisons are case-sensitive.
+
+## Special Handling for BETWEEN support of including NULL
+
+When the relation is BETWEEN, we allow for up to 3 values to support the special case of
+including null in addition to the values in the between range via an OR IS NULL clause, as
+indicated by a 3rd value of None. Any other 3rd value is invalid.
 
 ## Special Handling for Comma-Separated Fields
 
@@ -1255,9 +1273,9 @@ Note: The BETWEEN relation is not supported for comma-separated values.
 
 Note: CSV field comparisons are case-insensitive.
 
-## Handling of datetime and timestamp values
+## Handling of DATE, DATETIME and TIMESTAMP values
 
-DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.
+DATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.
 
 Values must be expressed as ISO8601 datetime strings compatible with Python's datetime.fromisoformat()
 (https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).
