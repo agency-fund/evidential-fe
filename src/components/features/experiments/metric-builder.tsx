@@ -1,7 +1,7 @@
 'use client';
 
 import { Badge, Flex, Grid, IconButton, Table, Text, TextField, Tooltip } from '@radix-ui/themes';
-import { CheckCircledIcon, TrashIcon } from '@radix-ui/react-icons';
+import { TrashIcon } from '@radix-ui/react-icons';
 import { FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { GetMetricsResponseElement } from '@/api/methods.schemas';
 import { ClickableBadge } from '@/components/features/experiments/clickable-badge';
@@ -126,9 +126,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
                     trigger={
                       <Flex gap="2">
                         <Text style={{ cursor: 'pointer' }}>{formData.primaryMetric.metric.field_name}</Text>
-                        <Badge color="green">
-                          {"\u24F5"} Primary
-                        </Badge>
+                        <Badge color="green">{'\u24F5'} Primary</Badge>
                       </Flex>
                     }
                   />
@@ -186,7 +184,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
                             handlePromoteSecondaryToPrimary(selectedMetric.metric.field_name);
                           }}
                         >
-                          {"\u24F5"}
+                          {'\u24F5'}
                         </IconButton>
                       </Tooltip>
                       <IconButton
