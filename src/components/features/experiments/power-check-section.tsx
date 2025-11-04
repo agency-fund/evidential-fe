@@ -8,6 +8,7 @@ import { convertFormDataToCreateExperimentRequest } from '@/app/datasources/[dat
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ZodError } from 'zod';
 import { useState } from 'react';
+import { prettyJSON } from '@/services/json-utils';
 
 interface PowerCheckSectionProps {
   formData: FrequentABFormData;
@@ -70,10 +71,7 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
 
       {error && (
         <Flex align="center" gap="2">
-          <GenericErrorCallout
-            title={'Power check failed'}
-            message={error ? JSON.stringify(error, null, 2) : 'unknown'}
-          />
+          <GenericErrorCallout title={'Power check failed'} message={error ? prettyJSON(error) : 'unknown'} />
         </Flex>
       )}
 

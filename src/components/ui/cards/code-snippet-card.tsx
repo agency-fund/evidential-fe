@@ -1,6 +1,7 @@
 'use client';
 import { Box, Card, Code, Flex, Text } from '@radix-ui/themes';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
+import { prettyJSON } from '@/services/json-utils';
 
 interface CodeSnippetCardProps {
   title?: string;
@@ -18,7 +19,7 @@ export function CodeSnippetCard({
   variant = 'surface',
 }: CodeSnippetCardProps) {
   // Format the content as a JSON string if it's an object.
-  const formattedContent = typeof content === 'object' ? JSON.stringify(content, null, 2) : content;
+  const formattedContent = typeof content === 'object' ? prettyJSON(content) : content;
 
   // Auto-detect if we should fill width based on newlines.
   const shouldFill = formattedContent.includes('\n');

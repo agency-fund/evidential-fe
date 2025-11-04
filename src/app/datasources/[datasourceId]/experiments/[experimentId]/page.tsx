@@ -21,6 +21,7 @@ import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { useState } from 'react';
 import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
+import { prettyJSON } from '@/services/json-utils';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
 import { SectionCard } from '@/components/ui/cards/section-card';
@@ -66,6 +67,7 @@ export default function ExperimentViewPage() {
     data: undefined,
     updated_at: new Date(),
     label: 'No live data yet',
+    effectSizesByMetric: undefined,
   });
   // which analysis we're actually displaying (live or a snapshot)
   const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisState>(liveAnalysis);
@@ -82,34 +84,36 @@ export default function ExperimentViewPage() {
     swr: { enabled: !!datasourceId },
   });
 
-  const { isLoading: isLoadingAnalysis, error: analysisError } = useAnalyzeExperiment(
-    datasourceId,
-    experimentId,
-    undefined,
-    {
-      swr: {
-        enabled: !!datasourceId && !!experiment,
-        shouldRetryOnError: false,
-        onSuccess: (analysisData) => {
-          const date = new Date();
-          const analysis = {
-            key: 'live',
-            data: analysisData,
-            updated_at: date,
-            label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
-            effectSizesByMetric: precomputeEffectSizesByMetric(analysisData, getAlpha(experiment?.design_spec)),
-          };
-          setLiveAnalysis(analysis);
-          // Only update the display if we were previously viewing live data.
-          if (selectedAnalysis.key === 'live') {
-            setSelectedAnalysisAndMetrics(analysis);
-          }
-        },
+  const {
+    mutate: analyzeLive,
+    isLoading: isLoadingLiveAnalysis,
+    error: liveAnalysisError,
+  } = useAnalyzeExperiment(datasourceId, experimentId, undefined, {
+    swr: {
+      enabled: !!datasourceId && !!experiment,
+      // Disable revalidation to only allow manual triggering of the live analysis
+      revalidateOnMount: false,
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+      onSuccess: (analysisData) => {
+        const date = new Date();
+        const analysis = {
+          key: 'live',
+          data: analysisData,
+          updated_at: date,
+          label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
+          effectSizesByMetric: precomputeEffectSizesByMetric(analysisData, getAlpha(experiment?.design_spec)),
+        };
+        setLiveAnalysis(analysis);
+        // Only update the display if we were previously viewing live data.
+        if (selectedAnalysis.key === 'live') {
+          setSelectedAnalysisAndMetrics(analysis);
+        }
       },
     },
-  );
+  });
 
-  const { error: analysisHistoryError } = useListSnapshots(
+  const { isLoading: isLoadingHistory, error: analysisHistoryError } = useListSnapshots(
     organizationId,
     datasourceId,
     experimentId,
@@ -117,11 +121,17 @@ export default function ExperimentViewPage() {
     {
       swr: {
         enabled: !!organizationId && !!datasourceId && !!experimentId && !!experiment,
+        revalidateOnFocus: false,
         shouldRetryOnError: false,
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
           // Make human-readable labels for the dropdown, showing UTC down to the minute.
           // Use the snapshot ID as the key, looking up the analysisState by ID upon selection.
-          if (!data?.items) return;
+
+          // Do live analysis if there are no snapshots
+          if (data.items.length === 0) {
+            await analyzeLive();
+            return;
+          }
 
           // Group snapshots by date and keep only the most recent one per date
           const snapshotsByDate = new Map<string, Snapshot>();
@@ -153,6 +163,14 @@ export default function ExperimentViewPage() {
           setAnalysisHistory(opts);
           const currentMetricName = selectedMetricAnalysis?.metric?.field_name;
           setCiBounds(computeBoundsForMetric(currentMetricName, [liveAnalysis, ...opts]));
+          // If we're not viewing real data, set the selected analysis to the most recent snapshot
+          if (selectedAnalysis.data === undefined) {
+            setSelectedAnalysisAndMetrics(opts[0]);
+          }
+        },
+        onError: async () => {
+          // Trigger live analysis if snapshot loading fails
+          await analyzeLive();
         },
       },
     },
@@ -190,9 +208,13 @@ export default function ExperimentViewPage() {
     setSelectedMetricAnalysis(newMetric);
   };
 
-  const handleSelectAnalysis = (key: string) => {
+  const handleSelectAnalysis = async (key: string) => {
     const analysis = key === 'live' ? liveAnalysis : analysisHistory.find((opt) => opt.key === key);
     setSelectedAnalysisAndMetrics(analysis || liveAnalysis);
+    // If we haven't fetched it yet, trigger a live analysis.
+    if (key == 'live' && liveAnalysis.data === undefined) {
+      await analyzeLive();
+    }
   };
 
   if (isLoadingExperiment) {
@@ -211,6 +233,7 @@ export default function ExperimentViewPage() {
   const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
 
   const selectedMetricName = selectedMetricAnalysis?.metric?.field_name ?? 'unknown';
+
   const selectedMetricAnalyses =
     selectedAnalysis.data && 'metric_analyses' in selectedAnalysis.data ? selectedAnalysis.data.metric_analyses : null;
 
@@ -221,7 +244,7 @@ export default function ExperimentViewPage() {
   }
 
   const { timeseriesData, armMetadata, minDate, maxDate } = transformAnalysisForForestTimeseriesPlot(
-    [liveAnalysis, ...analysisHistory],
+    analysisHistory,
     selectedMetricName,
   );
 
@@ -413,9 +436,11 @@ export default function ExperimentViewPage() {
             )
           }
         >
-          {isLoadingAnalysis && <XSpinner message="Loading analysis data..." />}
+          {isLoadingHistory && <XSpinner message="Loading historical analyses..." />}
 
-          {analysisError && (
+          {isLoadingLiveAnalysis && <XSpinner message="Loading live analysis..." />}
+
+          {liveAnalysisError && (
             <GenericErrorCallout
               title="Error loading analysis"
               message="Analysis may not be available yet or the experiment hasn't collected enough data."
@@ -429,53 +454,49 @@ export default function ExperimentViewPage() {
             />
           )}
 
-          {selectedAnalysis.data && (
-            <Flex direction="column" gap="3">
-              <Tabs.Root defaultValue="leaderboard">
-                <Tabs.List>
-                  <Tabs.Trigger value="leaderboard">Leaderboard</Tabs.Trigger>
-                  <Tabs.Trigger value="raw">
-                    <Flex gap="2" align="center">
-                      Raw Data <CodeIcon />
-                    </Flex>
-                  </Tabs.Trigger>
-                </Tabs.List>
-                <Box px="4">
-                  <Tabs.Content value="leaderboard">
-                    <Flex direction="column" gap="3" py="3">
-                      {selectedAnalysis.effectSizesByMetric && (
-                        <ForestPlot
-                          effectSizes={selectedAnalysis.effectSizesByMetric.get(selectedMetricName)}
-                          minX={ciBounds[0]}
-                          maxX={ciBounds[1]}
-                        />
-                      )}
+          <Flex direction="column" gap="3">
+            <Tabs.Root defaultValue="leaderboard">
+              <Tabs.List>
+                <Tabs.Trigger value="leaderboard">Leaderboard</Tabs.Trigger>
+                <Tabs.Trigger value="raw">
+                  <Flex gap="2" align="center">
+                    Raw Data <CodeIcon />
+                  </Flex>
+                </Tabs.Trigger>
+              </Tabs.List>
+              <Box px="4">
+                <Tabs.Content value="leaderboard">
+                  <Flex direction="column" gap="3" py="3">
+                    <ForestPlot
+                      effectSizes={selectedAnalysis.effectSizesByMetric?.get(selectedMetricName)}
+                      minX={ciBounds[0]}
+                      maxX={ciBounds[1]}
+                    />
 
-                      <ForestTimeseriesPlot
-                        data={timeseriesData}
-                        armMetadata={armMetadata}
-                        minDate={minDate}
-                        maxDate={maxDate}
-                        onPointClick={handleSelectAnalysis}
-                      />
-                    </Flex>
-                  </Tabs.Content>
+                    <ForestTimeseriesPlot
+                      data={timeseriesData}
+                      armMetadata={armMetadata}
+                      minDate={minDate}
+                      maxDate={maxDate}
+                      onPointClick={handleSelectAnalysis}
+                    />
+                  </Flex>
+                </Tabs.Content>
 
-                  <Tabs.Content value="raw">
-                    <Flex direction="column" gap="3" py="3">
-                      <CodeSnippetCard
-                        title="Raw Data"
-                        content={JSON.stringify(selectedAnalysis.data, null, 2)}
-                        height="200px"
-                        tooltipContent="Copy raw data"
-                        variant="ghost"
-                      />
-                    </Flex>
-                  </Tabs.Content>
-                </Box>
-              </Tabs.Root>
-            </Flex>
-          )}
+                <Tabs.Content value="raw">
+                  <Flex direction="column" gap="3" py="3">
+                    <CodeSnippetCard
+                      title="Raw Data"
+                      content={selectedAnalysis.data ? prettyJSON(selectedAnalysis.data) : 'NO DATA'}
+                      height="200px"
+                      tooltipContent="Copy raw data"
+                      variant="ghost"
+                    />
+                  </Flex>
+                </Tabs.Content>
+              </Box>
+            </Tabs.Root>
+          </Flex>
         </SectionCard>
       </Flex>
     </Flex>
