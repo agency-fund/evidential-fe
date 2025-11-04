@@ -127,7 +127,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
                       <Flex gap="2">
                         <Text style={{ cursor: 'pointer' }}>{formData.primaryMetric.metric.field_name}</Text>
                         <Badge color="green">
-                          <CheckCircledIcon /> Primary
+                          {"\u24F5"} Primary
                         </Badge>
                       </Flex>
                     }
@@ -186,7 +186,7 @@ export function MetricBuilder({ formData, onFormDataChange, metricFields }: Metr
                             handlePromoteSecondaryToPrimary(selectedMetric.metric.field_name);
                           }}
                         >
-                          <CheckCircledIcon />
+                          {"\u24F5"}
                         </IconButton>
                       </Tooltip>
                       <IconButton
