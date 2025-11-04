@@ -122,13 +122,13 @@ export default function ExperimentViewPage() {
         enabled: !!organizationId && !!datasourceId && !!experimentId && !!experiment,
         revalidateOnFocus: false,
         shouldRetryOnError: false,
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
           // Make human-readable labels for the dropdown, showing UTC down to the minute.
           // Use the snapshot ID as the key, looking up the analysisState by ID upon selection.
 
           // Do live analysis if there are no snapshots
           if (data.items.length === 0) {
-            analyzeLive();
+            await analyzeLive();
             return;
           }
 
@@ -167,9 +167,9 @@ export default function ExperimentViewPage() {
             setSelectedAnalysisAndMetrics(opts[0]);
           }
         },
-        onError: () => {
+        onError: async () => {
           // Trigger live analysis if snapshot loading fails
-          analyzeLive();
+          await analyzeLive();
         },
       },
     },
@@ -207,12 +207,12 @@ export default function ExperimentViewPage() {
     setSelectedMetricAnalysis(newMetric);
   };
 
-  const handleSelectAnalysis = (key: string) => {
+  const handleSelectAnalysis = async (key: string) => {
     const analysis = key === 'live' ? liveAnalysis : analysisHistory.find((opt) => opt.key === key);
     setSelectedAnalysisAndMetrics(analysis || liveAnalysis);
     // If we haven't fetched it yet, trigger a live analysis.
     if (key == 'live' && liveAnalysis.data === undefined) {
-      analyzeLive();
+      await analyzeLive();
     }
   };
 
