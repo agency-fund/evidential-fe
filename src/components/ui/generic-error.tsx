@@ -3,6 +3,7 @@ import { Callout, Code, Flex, Text } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { ApiError, ApiValidationError } from '@/services/orval-fetch';
 import { HTTPValidationError } from '@/api/methods.schemas';
+import { prettyJSON } from '@/services/json-utils';
 
 const FormattedError = ({ error }: { error: Error }) => {
   if (error instanceof ApiError && error.response) {
@@ -14,7 +15,7 @@ const FormattedError = ({ error }: { error: Error }) => {
           <Flex direction="column" gap="1">
             <Text size="2">Response data:</Text>
             <Code style={{ whiteSpace: 'pre-wrap' }}>
-              {typeof response.data === 'object' ? JSON.stringify(response.data, null, 2) : String(response.data)}
+              {typeof response.data === 'object' ? prettyJSON(response.data) : String(response.data)}
             </Code>
           </Flex>
         )}

@@ -21,6 +21,7 @@ import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { useState } from 'react';
 import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
+import { prettyJSON } from '@/services/json-utils';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
 import { SectionCard } from '@/components/ui/cards/section-card';
@@ -486,7 +487,7 @@ export default function ExperimentViewPage() {
                   <Flex direction="column" gap="3" py="3">
                     <CodeSnippetCard
                       title="Raw Data"
-                      content={selectedAnalysis.data ? JSON.stringify(selectedAnalysis.data, null, 2) : 'NO DATA'}
+                      content={selectedAnalysis.data ? prettyJSON(selectedAnalysis.data) : 'NO DATA'}
                       height="200px"
                       tooltipContent="Copy raw data"
                       variant="ghost"
