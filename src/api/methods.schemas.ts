@@ -1897,6 +1897,24 @@ export const MetricType = {
 } as const;
 
 /**
+ * Request model for creating a new frequentist online assignment with server-side filtering.
+
+Usage notes:
+1. Currently only used for FREQ_ONLINE experiments.
+2. If the experiment defines no filters, use the corresponding GET endpoint instead.
+3. If an assignment already exists for a given participant, the property list is ignored and assignment returned.
+4. Property names must reference a valid field_name from the participant_type defined in the experiment.
+5. Property list may be empty.
+6. If a filter is specified but no value is found, it is treated as NULL.
+7. Other differences from the SQL-based filtering logic:
+    - NO support for special experiment_id-based filters.
+ */
+export interface OnlineAssignmentWithFiltersRequest {
+	/** List of participant properties to potentially filter against the experiment's filters. */
+	properties: ParticipantProperty[];
+}
+
+/**
  * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
 DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
  * @deprecated
@@ -2071,6 +2089,15 @@ export interface OrganizationSummary {
 	id: string;
 	/** @maxLength 100 */
 	name: string;
+}
+
+/**
+ * Properties about a participant that are used to filter the assignment.
+ */
+export interface ParticipantProperty {
+	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	field_name: string;
+	value: PropertyValueTypes;
 }
 
 export type ParticipantsConfig = ParticipantsDef;
@@ -2352,6 +2379,13 @@ export const PriorTypes = {
 	beta: "beta",
 	normal: "normal",
 } as const;
+
+export type PropertyValueTypes =
+	| StrictInt
+	| StrictFloat
+	| string
+	| boolean
+	| null;
 
 export type RedshiftDsnType =
 	(typeof RedshiftDsnType)[keyof typeof RedshiftDsnType];
