@@ -1,5 +1,17 @@
-import { MetricAnalysis, ExperimentAnalysisResponse, FreqExperimentAnalysisResponse } from '@/api/methods.schemas';
-import { EffectSizeData, AnalysisState, ArmDataPoint, TimeSeriesDataPoint, ArmMetadata } from './forest-plot-models';
+import {
+  MetricAnalysis,
+  ExperimentAnalysisResponse,
+  FreqExperimentAnalysisResponse,
+  BanditExperimentAnalysisResponse,
+} from '@/api/methods.schemas';
+import {
+  BanditEffectData,
+  EffectSizeData,
+  AnalysisState,
+  ArmDataPoint,
+  TimeSeriesDataPoint,
+  ArmMetadata,
+} from './forest-plot-models';
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 
 // Aiming for reasonably visually distinct colors for different arm line plots.
@@ -44,6 +56,12 @@ export const isFrequentist = (
   return analysisData?.type === 'freq';
 };
 
+export const isBandit = (
+  analysisData: ExperimentAnalysisResponse | undefined,
+): analysisData is BanditExperimentAnalysisResponse => {
+  return analysisData?.type === 'bandit';
+};
+
 /**
  * Pre-computes effect size data for all metrics in a frequentist analysis.
  * Returns undefined for non-frequentist experiments.
@@ -53,7 +71,7 @@ export const isFrequentist = (
  * @returns Map of metric names to effect size arrays, or undefined
  */
 export const precomputeEffectSizesByMetric = (
-  analysisData: ExperimentAnalysisResponse,
+  analysisData: FreqExperimentAnalysisResponse,
   alpha: number = 0.05,
 ): Map<string, EffectSizeData[]> | undefined => {
   if (!isFrequentist(analysisData)) return undefined;
@@ -66,6 +84,13 @@ export const precomputeEffectSizesByMetric = (
     effectSizesByMetric.set(metricName, effectSizes);
   }
   return effectSizesByMetric;
+};
+
+export const precomputeBanditEffects = (
+  analysisData: BanditExperimentAnalysisResponse,
+): BanditEffectData[] | undefined => {
+  if (!isBandit(analysisData)) return undefined;
+  return generateBanditEffectData(analysisData);
 };
 
 /**
@@ -82,10 +107,6 @@ export const computeBoundsForMetric = (
   analysisStates: AnalysisState[],
   numSnapshots: number = 8,
 ): [number | undefined, number | undefined] => {
-  if (!metricName) {
-    return [undefined, undefined];
-  }
-
   let minLower: number | undefined = undefined;
   let maxUpper: number | undefined = undefined;
 
@@ -93,17 +114,35 @@ export const computeBoundsForMetric = (
   const analysesToCheck = analysisStates.slice(0, numSnapshots);
 
   // Iterate through all analyses and find min/max
-  for (const analysis of analysesToCheck) {
-    const effectSizes = analysis.effectSizesByMetric?.get(metricName);
-    if (!effectSizes) continue;
+  if (analysisStates.length > 0 && analysisStates[0].data?.type === 'freq') {
+    if (!metricName) {
+      return [undefined, undefined];
+    } else {
+      for (const analysis of analysesToCheck) {
+        const effectSizes = analysis.effectSizesByMetric?.get(metricName);
+        if (!effectSizes) continue;
 
-    for (const effectSize of effectSizes) {
-      const { absCI95Lower, absCI95Upper } = effectSize;
-      minLower = minLower === undefined ? absCI95Lower : Math.min(minLower, absCI95Lower);
-      maxUpper = maxUpper === undefined ? absCI95Upper : Math.max(maxUpper, absCI95Upper);
+        for (const effectSize of effectSizes) {
+          const { absCI95Lower, absCI95Upper } = effectSize;
+          minLower = minLower === undefined ? absCI95Lower : Math.min(minLower, absCI95Lower);
+          maxUpper = maxUpper === undefined ? absCI95Upper : Math.max(maxUpper, absCI95Upper);
+        }
+      }
+    }
+  } else if (analysisStates.length > 0 && analysisStates[0].data?.type === 'bandit') {
+    for (const analysis of analysesToCheck) {
+      const banditEffects = analysis.banditEffects;
+      if (!banditEffects) continue;
+
+      for (const effect of banditEffects) {
+        const { postPredabsCI95Lower, priorPredabsCI95Lower, postPredabsCI95Upper, priorPredabsCI95Upper } = effect;
+        const currentMinLower = Math.min(postPredabsCI95Lower, priorPredabsCI95Lower);
+        const currentMaxUpper = Math.max(postPredabsCI95Upper, priorPredabsCI95Upper);
+        minLower = minLower === undefined ? currentMinLower : Math.min(minLower, currentMinLower);
+        maxUpper = maxUpper === undefined ? currentMaxUpper : Math.max(maxUpper, currentMaxUpper);
+      }
     }
   }
-
   return [minLower, maxUpper];
 };
 
@@ -159,6 +198,61 @@ export const generateEffectSizeData = (analysis: MetricAnalysis, alpha: number):
   });
 
   return effectSizes;
+};
+
+/**
+ * Generates effect data for our forest plot visualization for the bandit experiments.
+ *
+ * @param analysis - The metric analysis containing arm-level analyses
+ * @param alpha - The significance threshold (e.g., 0.05 for 95% confidence)
+ * @returns Array of effect data for each arm
+ */
+export const generateBanditEffectData = (analysis: BanditExperimentAnalysisResponse): BanditEffectData[] => {
+  // Our data structure for visualization
+  const minMean = Math.min(...analysis.arm_analyses.map((d) => d.post_pred_mean));
+  const effects: BanditEffectData[] = analysis.arm_analyses.map((armAnalysis, index) => {
+    const armId = armAnalysis.arm_id || 'MISSING_ARM_ID'; // should be impossible
+    const armName = armAnalysis.arm_name || `Arm ${index}`;
+
+    // Calculate 95% confidence interval for posterior predictive distribution
+    const postPredMean = armAnalysis.post_pred_mean;
+    const postPredStd = armAnalysis.post_pred_stdev;
+    const postPredci95 = 1.96 * postPredStd;
+    const postPredci95Lower = postPredMean - postPredci95;
+    const postPredci95Upper = postPredMean + postPredci95;
+    const postPredabsCI95Lower = postPredci95Lower + postPredMean == minMean ? 0 : minMean;
+    const postPredabsCI95Upper = postPredci95Upper + postPredMean == minMean ? 0 : minMean;
+
+    // Calculate 95% confidence interval for prior predictive distribution
+    const priorPredMean = armAnalysis.prior_pred_mean;
+    const priorPredStd = armAnalysis.prior_pred_stdev;
+    const priorPredci95 = 1.96 * priorPredStd;
+    const priorPredci95Lower = priorPredMean - priorPredci95;
+    const priorPredci95Upper = priorPredMean + priorPredci95;
+    const priorPredabsCI95Lower = priorPredci95Lower + priorPredMean == minMean ? 0 : minMean;
+    const priorPredabsCI95Upper = priorPredci95Upper + priorPredMean == minMean ? 0 : minMean;
+
+    return {
+      armId,
+      armName,
+      postPredMean,
+      postPredStd,
+      postPredci95Lower,
+      postPredci95Upper,
+      postPredci95,
+      postPredabsCI95Lower,
+      postPredabsCI95Upper,
+      priorPredMean,
+      priorPredStd,
+      priorPredci95Lower,
+      priorPredci95Upper,
+      priorPredci95,
+      priorPredabsCI95Lower,
+      priorPredabsCI95Upper,
+    };
+  });
+
+  return effects;
 };
 
 /**

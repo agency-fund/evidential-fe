@@ -14,7 +14,9 @@ import {
   computeBoundsForMetric,
   AnalysisState,
   precomputeEffectSizesByMetric,
+  precomputeBanditEffects,
   isFrequentist,
+  isBandit,
   transformAnalysisForForestTimeseriesPlot,
 } from '@/components/features/experiments/plots/forest-plot-utils';
 import { XSpinner } from '@/components/ui/x-spinner';
@@ -68,6 +70,7 @@ export default function ExperimentViewPage() {
     updated_at: new Date(),
     label: 'No live data yet',
     effectSizesByMetric: undefined,
+    banditEffects: undefined,
   });
   // which analysis we're actually displaying (live or a snapshot)
   const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisState>(liveAnalysis);
@@ -102,7 +105,10 @@ export default function ExperimentViewPage() {
           data: analysisData,
           updated_at: date,
           label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
-          effectSizesByMetric: precomputeEffectSizesByMetric(analysisData, getAlpha(experiment?.design_spec)),
+          effectSizesByMetric: isFrequentist(analysisData)
+            ? precomputeEffectSizesByMetric(analysisData, getAlpha(experiment?.design_spec))
+            : undefined,
+          banditEffects: isBandit(analysisData) ? precomputeBanditEffects(analysisData) : undefined,
         };
         setLiveAnalysis(analysis);
         // Only update the display if we were previously viewing live data.
@@ -156,7 +162,10 @@ export default function ExperimentViewPage() {
               data: analysisData,
               updated_at: date,
               label: formatUtcDownToMinuteLabel(date),
-              effectSizesByMetric: precomputeEffectSizesByMetric(analysisData, getAlpha(experiment?.design_spec)),
+              effectSizesByMetric: isFrequentist(analysisData)
+                ? precomputeEffectSizesByMetric(analysisData, getAlpha(experiment?.design_spec))
+                : undefined,
+              banditEffects: isBandit(analysisData) ? precomputeBanditEffects(analysisData) : undefined,
             };
           });
 
@@ -247,6 +256,7 @@ export default function ExperimentViewPage() {
     analysisHistory,
     selectedMetricName,
   );
+  console.log('Analysis state:', liveAnalysis);
 
   return (
     <Flex direction="column" gap="6">

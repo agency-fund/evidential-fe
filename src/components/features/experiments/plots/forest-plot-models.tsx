@@ -17,12 +17,34 @@ export interface EffectSizeData {
   significant: boolean;
 }
 
+export interface BanditEffectData {
+  armId: string;
+  armName: string;
+
+  postPredMean: number;
+  postPredStd: number;
+  postPredci95Lower: number;
+  postPredci95Upper: number;
+  postPredci95: number;
+  postPredabsCI95Lower: number;
+  postPredabsCI95Upper: number;
+
+  priorPredMean: number;
+  priorPredStd: number;
+  priorPredci95Lower: number;
+  priorPredci95Upper: number;
+  priorPredci95: number;
+  priorPredabsCI95Lower: number;
+  priorPredabsCI95Upper: number;
+}
+
 export interface AnalysisState {
   key: string;
   data: ExperimentAnalysisResponse | undefined;
   updated_at: Date;
   label: string;
   effectSizesByMetric?: Map<string, EffectSizeData[]>;
+  banditEffects?: BanditEffectData[];
 }
 
 /**
