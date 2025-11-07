@@ -11,6 +11,7 @@ import {
   ArmDataPoint,
   TimeSeriesDataPoint,
   ArmMetadata,
+  BanditArmDataPoint,
 } from './forest-plot-models';
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 
@@ -209,7 +210,8 @@ export const generateEffectSizeData = (analysis: MetricAnalysis, alpha: number):
  */
 export const generateBanditEffectData = (analysis: BanditExperimentAnalysisResponse): BanditEffectData[] => {
   // Our data structure for visualization
-  const minMean = Math.min(...analysis.arm_analyses.map((d) => d.post_pred_mean));
+  const postMinMean = Math.min(...analysis.arm_analyses.map((d) => d.post_pred_mean));
+  const priorMinMean = Math.min(...analysis.arm_analyses.map((d) => d.prior_pred_mean));
   const effects: BanditEffectData[] = analysis.arm_analyses.map((armAnalysis, index) => {
     const armId = armAnalysis.arm_id || 'MISSING_ARM_ID'; // should be impossible
     const armName = armAnalysis.arm_name || `Arm ${index}`;
@@ -220,8 +222,8 @@ export const generateBanditEffectData = (analysis: BanditExperimentAnalysisRespo
     const postPredci95 = 1.96 * postPredStd;
     const postPredci95Lower = postPredMean - postPredci95;
     const postPredci95Upper = postPredMean + postPredci95;
-    const postPredabsCI95Lower = postPredci95Lower + postPredMean == minMean ? 0 : minMean;
-    const postPredabsCI95Upper = postPredci95Upper + postPredMean == minMean ? 0 : minMean;
+    const postPredabsCI95Lower = postPredci95Lower + (postPredMean == postMinMean ? 0 : postMinMean);
+    const postPredabsCI95Upper = postPredci95Upper + (postPredMean == postMinMean ? 0 : postMinMean);
 
     // Calculate 95% confidence interval for prior predictive distribution
     const priorPredMean = armAnalysis.prior_pred_mean;
@@ -229,8 +231,8 @@ export const generateBanditEffectData = (analysis: BanditExperimentAnalysisRespo
     const priorPredci95 = 1.96 * priorPredStd;
     const priorPredci95Lower = priorPredMean - priorPredci95;
     const priorPredci95Upper = priorPredMean + priorPredci95;
-    const priorPredabsCI95Lower = priorPredci95Lower + priorPredMean == minMean ? 0 : minMean;
-    const priorPredabsCI95Upper = priorPredci95Upper + priorPredMean == minMean ? 0 : minMean;
+    const priorPredabsCI95Lower = priorPredci95Lower + (priorPredMean == priorMinMean ? 0 : priorMinMean);
+    const priorPredabsCI95Upper = priorPredci95Upper + (priorPredMean == priorMinMean ? 0 : priorMinMean);
 
     return {
       armId,
@@ -359,7 +361,12 @@ export const transformAnalysisForForestTimeseriesPlot = (
   const sortedStates = [...analysisStates].sort((a, b) => a.updated_at.getTime() - b.updated_at.getTime());
 
   // Filter out states that don't have effect sizes for this metric
-  const validStates = sortedStates.filter((state) => state.effectSizesByMetric?.has(metricName));
+  let validStates: AnalysisState[] = [];
+  if (isFrequentist(sortedStates[0]?.data)) {
+    validStates = sortedStates.filter((state) => state.effectSizesByMetric?.has(metricName));
+  } else if (isBandit(sortedStates[0]?.data)) {
+    validStates = sortedStates.filter((state) => state.banditEffects !== undefined);
+  }
 
   if (validStates.length === 0) {
     const now = new Date();
@@ -368,31 +375,50 @@ export const transformAnalysisForForestTimeseriesPlot = (
 
   // Extract arm metadata from the first valid data point
   const armMetadata: ArmMetadata[] = [];
-  const firstEffectSizes = validStates[0].effectSizesByMetric?.get(metricName);
-  if (firstEffectSizes) {
-    for (const e of firstEffectSizes) {
+  const firstState = isFrequentist(validStates[0].data)
+    ? validStates[0].effectSizesByMetric?.get(metricName)
+    : validStates[0].banditEffects;
+  if (firstState) {
+    for (const e of firstState) {
       armMetadata.push({
         id: e.armId,
         name: e.armName,
-        isBaseline: e.isBaseline,
+        isBaseline: 'isBaseline' in e ? e.isBaseline : false,
       });
     }
   }
 
   // Transform each state into a timeseries data point
   for (const state of validStates) {
-    const effectSizes = state.effectSizesByMetric?.get(metricName);
-    if (!effectSizes) continue;
+    let armEffects: Map<string, ArmDataPoint | BanditArmDataPoint> = new Map();
 
-    const armEffects = new Map<string, ArmDataPoint>();
-    for (const effectSize of effectSizes) {
-      armEffects.set(effectSize.armId, {
-        estimate: effectSize.effect,
-        absEstimate: effectSize.absEffect,
-        upper: effectSize.absCI95Upper,
-        lower: effectSize.absCI95Lower,
-        significant: effectSize.significant,
-      });
+    if (isFrequentist(state.data)) {
+      const effectSizes = state.effectSizesByMetric?.get(metricName);
+      if (!effectSizes) continue;
+
+      armEffects = new Map<string, ArmDataPoint>();
+      for (const effectSize of effectSizes) {
+        armEffects.set(effectSize.armId, {
+          estimate: effectSize.effect,
+          absEstimate: effectSize.absEffect,
+          upper: effectSize.absCI95Upper,
+          lower: effectSize.absCI95Lower,
+          significant: effectSize.significant,
+        });
+      }
+    } else if (isBandit(state.data)) {
+      const banditEffects = state.banditEffects;
+      if (!banditEffects) continue;
+
+      armEffects = new Map<string, BanditArmDataPoint>();
+      for (const effect of banditEffects) {
+        armEffects.set(effect.armId, {
+          postPredMean: effect.postPredMean,
+          postPredStd: effect.postPredStd,
+          postPredci95Lower: effect.postPredci95Lower,
+          postPredci95Upper: effect.postPredci95Upper,
+        });
+      }
     }
 
     // Truncate timestamp to start of day UTC to align with ticks.

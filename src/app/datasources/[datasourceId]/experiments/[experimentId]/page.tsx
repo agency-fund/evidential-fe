@@ -256,7 +256,6 @@ export default function ExperimentViewPage() {
     analysisHistory,
     selectedMetricName,
   );
-  console.log('Analysis state:', liveAnalysis);
 
   return (
     <Flex direction="column" gap="6">

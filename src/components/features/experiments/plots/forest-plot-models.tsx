@@ -58,10 +58,17 @@ export interface ArmDataPoint {
   significant: boolean;
 }
 
+export interface BanditArmDataPoint {
+  postPredMean: number;
+  postPredStd: number;
+  postPredci95Lower: number;
+  postPredci95Upper: number;
+}
+
 export interface TimeSeriesDataPoint {
   date: string; // YYYY-MM-DD format
   dateTimestampMs: number; // Timestamp in milliseconds for numeric axis
-  armEffects: Map<string, ArmDataPoint>; // armId => ArmDataPoint
+  armEffects: Map<string, ArmDataPoint | BanditArmDataPoint>; // armId => ArmDataPoint | BanditArmDataPoint
   key: string; // Key to identify an analysis snapshot backing this data
 }
 
