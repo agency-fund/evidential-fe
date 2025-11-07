@@ -1176,19 +1176,28 @@ export interface FieldMetadata {
 
 ## Examples
 
-| Relation | Value       | logical Result                                    |
-|----------|-------------|---------------------------------------------------|
-| INCLUDES | [None]      | Match when `x IS NULL`                            |
-| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |
-| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |
-| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |
-| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |
-| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |
-| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |
-| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |
-| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |
+| Relation | Value             | logical Result                                    |
+|----------|-------------------|---------------------------------------------------|
+| INCLUDES | [None]            | Match when `x IS NULL`                            |
+| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |
+| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |
+| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |
+| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |
+| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |
+| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |
+| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |
+| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |
+| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |
+| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |
+| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |
 
 String comparisons are case-sensitive.
+
+## Special Handling for BETWEEN support of including NULL
+
+When the relation is BETWEEN, we allow for up to 3 values to support the special case of
+including null in addition to the values in the between range via an OR IS NULL clause, as
+indicated by a 3rd value of None. Any other 3rd value is invalid.
 
 ## Special Handling for Comma-Separated Fields
 
@@ -1205,9 +1214,9 @@ Note: The BETWEEN relation is not supported for comma-separated values.
 
 Note: CSV field comparisons are case-insensitive.
 
-## Handling of datetime and timestamp values
+## Handling of DATE, DATETIME and TIMESTAMP values
 
-DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.
+DATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.
 
 Values must be expressed as ISO8601 datetime strings compatible with Python's datetime.fromisoformat()
 (https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).
@@ -1226,19 +1235,28 @@ export interface FilterInput {
 
 ## Examples
 
-| Relation | Value       | logical Result                                    |
-|----------|-------------|---------------------------------------------------|
-| INCLUDES | [None]      | Match when `x IS NULL`                            |
-| INCLUDES | ["a"]       | Match when `x IN ("a")`                           |
-| INCLUDES | ["a", None] | Match when `x IS NULL OR x IN ("a")`              |
-| INCLUDES | ["a", "b"]  | Match when `x IN ("a", "b")`                      |
-| EXCLUDES | [None]      | Match `x IS NOT NULL`                             |
-| EXCLUDES | ["a", None] | Match `x IS NOT NULL AND x NOT IN ("a")`          |
-| EXCLUDES | ["a", "b"]  | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |
-| BETWEEN  | ["a", "z"]  | Match `"a" <= x <= "z"`                           |
-| BETWEEN  | ["a", None] | Match `x >= "a"`                                  |
+| Relation | Value             | logical Result                                    |
+|----------|-------------------|---------------------------------------------------|
+| INCLUDES | [None]            | Match when `x IS NULL`                            |
+| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |
+| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |
+| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |
+| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |
+| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |
+| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |
+| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |
+| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |
+| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |
+| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |
+| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |
 
 String comparisons are case-sensitive.
+
+## Special Handling for BETWEEN support of including NULL
+
+When the relation is BETWEEN, we allow for up to 3 values to support the special case of
+including null in addition to the values in the between range via an OR IS NULL clause, as
+indicated by a 3rd value of None. Any other 3rd value is invalid.
 
 ## Special Handling for Comma-Separated Fields
 
@@ -1255,9 +1273,9 @@ Note: The BETWEEN relation is not supported for comma-separated values.
 
 Note: CSV field comparisons are case-insensitive.
 
-## Handling of datetime and timestamp values
+## Handling of DATE, DATETIME and TIMESTAMP values
 
-DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.
+DATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.
 
 Values must be expressed as ISO8601 datetime strings compatible with Python's datetime.fromisoformat()
 (https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).
@@ -1879,6 +1897,24 @@ export const MetricType = {
 } as const;
 
 /**
+ * Request model for creating a new frequentist online assignment with server-side filtering.
+
+Usage notes:
+1. Currently only used for FREQ_ONLINE experiments.
+2. If the experiment defines no filters, use the corresponding GET endpoint instead.
+3. If an assignment already exists for a given participant, the property list is ignored and assignment returned.
+4. Property names must reference a valid field_name from the participant_type defined in the experiment.
+5. Property list may be empty.
+6. If a filter is specified but no value is found, it is treated as NULL.
+7. Other differences from the SQL-based filtering logic:
+    - NO support for special experiment_id-based filters.
+ */
+export interface OnlineAssignmentWithFiltersRequest {
+	/** List of participant properties to potentially filter against the experiment's filters. */
+	properties: ParticipantProperty[];
+}
+
+/**
  * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
 DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
  * @deprecated
@@ -2053,6 +2089,15 @@ export interface OrganizationSummary {
 	id: string;
 	/** @maxLength 100 */
 	name: string;
+}
+
+/**
+ * Properties about a participant that are used to filter the assignment.
+ */
+export interface ParticipantProperty {
+	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	field_name: string;
+	value: PropertyValueTypes;
 }
 
 export type ParticipantsConfig = ParticipantsDef;
@@ -2334,6 +2379,13 @@ export const PriorTypes = {
 	beta: "beta",
 	normal: "normal",
 } as const;
+
+export type PropertyValueTypes =
+	| StrictInt
+	| StrictFloat
+	| string
+	| boolean
+	| null;
 
 export type RedshiftDsnType =
 	(typeof RedshiftDsnType)[keyof typeof RedshiftDsnType];
