@@ -445,6 +445,7 @@ export const transformAnalysisForForestTimeseriesPlot = (
 // Re-export the interfaces for backward compatibility
 export type {
   EffectSizeData,
+  BanditEffectData,
   AnalysisState,
   ArmDataPoint,
   TimeSeriesDataPoint,
