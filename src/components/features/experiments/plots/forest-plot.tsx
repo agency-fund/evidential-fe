@@ -428,7 +428,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                   // Always return an element even if empty.
                   if (!props.payload || !props.xAxis?.width) return <g />;
 
-                  const { postPredci95, postPredMean } = props.payload as BanditEffectData;
+                  const { postPredci95 } = props.payload as BanditEffectData;
                   const {
                     cx: centerX,
                     cy: centerY,
@@ -436,10 +436,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                   } = props;
 
                   // Determine stroke color based on significance and direction
-                  let strokeColor: string = COLORS.DEFAULT_CI;
-                  if (postPredMean !== undefined) {
-                    strokeColor = postPredMean > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
-                  }
+                  const strokeColor: string = COLORS.DEFAULT_CI;
                   return (
                     <line
                       x1={(centerX || 0) - scaleHalfIntervalToViewport(postPredci95, xAxisWidth)}
@@ -463,14 +460,10 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                   // Always return an element even if empty.
                   if (!props.payload) return <g />;
 
-                  const { postPredMean } = props.payload as BanditEffectData;
                   const { cx: centerX, cy: centerY } = props;
+                  const fillColor: string = COLORS.DEFAULT;
 
-                  let fillColor: string = COLORS.DEFAULT;
-                  if (postPredMean !== undefined) {
-                    fillColor = postPredMean > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
-                  }
-                  return <circle cx={centerX} cy={centerY} r={5} fill={fillColor} stroke={COLORS.DEFAULT_CI} />;
+                  return <circle cx={centerX} cy={centerY} r={5} fill={fillColor} stroke={COLORS.DEFAULT} />;
                 }}
               />
 

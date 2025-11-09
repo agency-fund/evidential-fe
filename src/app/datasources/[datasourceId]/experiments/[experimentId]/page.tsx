@@ -355,38 +355,41 @@ export default function ExperimentViewPage() {
             <Flex gap="3" align="center" wrap="wrap">
               <Heading size="3">Analysis</Heading>
               {isFrequentist(selectedAnalysis.data) ? (
-                <Badge size="2">
-                  <Flex gap="2" align="center">
-                    <Heading size="2">Metric:</Heading>
-                    {selectedMetricAnalyses && selectedMetricAnalyses.length > 1 ? (
-                      <Select.Root
-                        size="1"
-                        value={selectedMetricName}
-                        onValueChange={(value) => {
-                          const newMetric =
-                            selectedMetricAnalyses.find((metric) => metric.metric?.field_name === value) || null;
-                          setSelectedMetricAnalysis(newMetric);
-                          const bounds = computeBoundsForMetric(value, [liveAnalysis, ...analysisHistory]);
-                          setCiBounds(bounds);
-                        }}
-                      >
-                        <Select.Trigger style={{ height: 18 }} />
-                        <Select.Content>
-                          {selectedMetricAnalyses.map((metric) => {
-                            const metricName = metric.metric?.field_name ?? 'unknown';
-                            return (
-                              <Select.Item key={metricName} value={metricName}>
-                                {metricName}
-                              </Select.Item>
-                            );
-                          })}
-                        </Select.Content>
-                      </Select.Root>
-                    ) : (
-                      <Text>{selectedMetricName}</Text>
-                    )}
-                  </Flex>
-                </Badge>
+                <Flex gap="3" wrap="wrap">
+                  <Badge size="2">
+                    <Flex gap="2" align="center">
+                      <Heading size="2">Metric:</Heading>
+                      {selectedMetricAnalyses && selectedMetricAnalyses.length > 1 ? (
+                        <Select.Root
+                          size="1"
+                          value={selectedMetricName}
+                          onValueChange={(value) => {
+                            const newMetric =
+                              selectedMetricAnalyses.find((metric) => metric.metric?.field_name === value) || null;
+                            setSelectedMetricAnalysis(newMetric);
+                            const bounds = computeBoundsForMetric(value, [liveAnalysis, ...analysisHistory]);
+                            setCiBounds(bounds);
+                          }}
+                        >
+                          <Select.Trigger style={{ height: 18 }} />
+                          <Select.Content>
+                            {selectedMetricAnalyses.map((metric) => {
+                              const metricName = metric.metric?.field_name ?? 'unknown';
+                              return (
+                                <Select.Item key={metricName} value={metricName}>
+                                  {metricName}
+                                </Select.Item>
+                              );
+                            })}
+                          </Select.Content>
+                        </Select.Root>
+                      ) : (
+                        <Text>{selectedMetricName}</Text>
+                      )}
+                    </Flex>
+                  </Badge>
+                  <MdeBadge value={mdePct} />
+                </Flex>
               ) : isBandit(selectedAnalysis.data) &&
                 selectedAnalysis.banditEffects &&
                 selectedAnalysis.banditEffects.length > 1 ? (
@@ -405,8 +408,6 @@ export default function ExperimentViewPage() {
                   </Badge>
                 </>
               ) : null}
-
-              {!isBandit(selectedAnalysis.data) && <MdeBadge value={mdePct} />}
             </Flex>
           }
           headerRight={

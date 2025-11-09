@@ -1,4 +1,5 @@
-import { TimeSeriesDataPoint, getColorWithSignificance } from './forest-plot-utils';
+import { BanditArmDataPoint } from './forest-plot-models';
+import { ArmDataPoint, TimeSeriesDataPoint, getColorWithSignificance } from './forest-plot-utils';
 
 export interface ConfidenceIntervalProps {
   xAxisMap?: Record<string, { scale: (value: number) => number }>;
@@ -45,9 +46,18 @@ export function ConfidenceInterval({
 
         // Rescale the x and y values to the pixel coordinates
         const x = xAxis.scale(dataPoint.dateTimestampMs) + jitterOffset;
-        const yLower = yAxis.scale(armData.lower);
-        const yUpper = yAxis.scale(armData.upper);
-        const color = getColorWithSignificance(baseColor, armData.significant, armData.estimate > 0, selected);
+        const yLower = yAxis.scale(
+          'lower' in armData ? (armData as ArmDataPoint).lower : (armData as BanditArmDataPoint).postPredci95Lower,
+        );
+        const yUpper = yAxis.scale(
+          'upper' in armData ? (armData as ArmDataPoint).upper : (armData as BanditArmDataPoint).postPredci95Upper,
+        );
+        const color = getColorWithSignificance(
+          baseColor,
+          'significant' in armData ? armData.significant : false,
+          'estimate' in armData ? armData.estimate > 0 : true,
+          selected,
+        );
 
         return (
           <g key={`ci-${armId}-${pointIndex}`}>
