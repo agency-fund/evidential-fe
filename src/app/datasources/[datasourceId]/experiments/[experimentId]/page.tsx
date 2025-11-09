@@ -41,7 +41,6 @@ import {
   ExperimentAnalysisResponse,
   OnlineFrequentistExperimentSpecOutput,
   PreassignedFrequentistExperimentSpecOutput,
-  BanditExperimentAnalysisResponse,
   MABExperimentSpecOutput,
 } from '@/api/methods.schemas';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
@@ -172,7 +171,7 @@ export default function ExperimentViewPage() {
           });
 
           setAnalysisHistory(opts);
-          const currentMetricName = isFrequentist(analysisHistory[0].data)
+          const currentMetricName = isFrequentist(opts[0].data)
             ? selectedMetricAnalysis?.metric?.field_name
             : undefined;
           setCiBounds(computeBoundsForMetric(currentMetricName, [liveAnalysis, ...opts]));
