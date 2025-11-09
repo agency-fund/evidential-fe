@@ -1733,8 +1733,8 @@ export const updateDatasource = async (
 	datasourceId: string,
 	updateDatasourceRequest: UpdateDatasourceRequest,
 	options?: RequestInit,
-): Promise<unknown> => {
-	return orvalFetch<unknown>(getUpdateDatasourceUrl(datasourceId), {
+): Promise<void> => {
+	return orvalFetch<void>(getUpdateDatasourceUrl(datasourceId), {
 		...options,
 		method: "PATCH",
 		headers: { "Content-Type": "application/json", ...options?.headers },
@@ -1746,10 +1746,7 @@ export const getUpdateDatasourceMutationFetcher = (
 	datasourceId: string,
 	options?: SecondParameter<typeof orvalFetch>,
 ) => {
-	return (
-		_: Key,
-		{ arg }: { arg: UpdateDatasourceRequest },
-	): Promise<unknown> => {
+	return (_: Key, { arg }: { arg: UpdateDatasourceRequest }): Promise<void> => {
 		return updateDatasource(datasourceId, arg, options);
 	};
 };
@@ -3207,14 +3204,11 @@ export const commitExperiment = async (
 	datasourceId: string,
 	experimentId: string,
 	options?: RequestInit,
-): Promise<unknown | void> => {
-	return orvalFetch<unknown | void>(
-		getCommitExperimentUrl(datasourceId, experimentId),
-		{
-			...options,
-			method: "POST",
-		},
-	);
+): Promise<void> => {
+	return orvalFetch<void>(getCommitExperimentUrl(datasourceId, experimentId), {
+		...options,
+		method: "POST",
+	});
 };
 
 export const getCommitExperimentMutationFetcher = (
@@ -3222,7 +3216,7 @@ export const getCommitExperimentMutationFetcher = (
 	experimentId: string,
 	options?: SecondParameter<typeof orvalFetch>,
 ) => {
-	return (_: Key, __: { arg: Arguments }): Promise<unknown | void> => {
+	return (_: Key, __: { arg: Arguments }): Promise<void> => {
 		return commitExperiment(datasourceId, experimentId, options);
 	};
 };
@@ -3292,14 +3286,11 @@ export const abandonExperiment = async (
 	datasourceId: string,
 	experimentId: string,
 	options?: RequestInit,
-): Promise<unknown | void> => {
-	return orvalFetch<unknown | void>(
-		getAbandonExperimentUrl(datasourceId, experimentId),
-		{
-			...options,
-			method: "POST",
-		},
-	);
+): Promise<void> => {
+	return orvalFetch<void>(getAbandonExperimentUrl(datasourceId, experimentId), {
+		...options,
+		method: "POST",
+	});
 };
 
 export const getAbandonExperimentMutationFetcher = (
@@ -3307,7 +3298,7 @@ export const getAbandonExperimentMutationFetcher = (
 	experimentId: string,
 	options?: SecondParameter<typeof orvalFetch>,
 ) => {
-	return (_: Key, __: { arg: Arguments }): Promise<unknown | void> => {
+	return (_: Key, __: { arg: Arguments }): Promise<void> => {
 		return abandonExperiment(datasourceId, experimentId, options);
 	};
 };

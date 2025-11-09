@@ -24,7 +24,6 @@ import {
   CONTROL_COLOR,
   INACTIVE_CONTROL_COLOR,
   getColorWithSignificance,
-  isFrequentist,
   ArmDataPoint,
 } from './forest-plot-utils';
 import { JitteredDot, JitteredDotProps } from './jittered-dot';
@@ -32,7 +31,6 @@ import { JitteredLine } from './jittered-line';
 import { ConfidenceInterval } from './confidence-interval';
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
-import { data } from 'motion/react-client';
 import { BanditArmDataPoint } from './forest-plot-models';
 
 interface ForestTimeseriesPlotProps {
