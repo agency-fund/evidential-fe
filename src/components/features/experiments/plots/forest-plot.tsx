@@ -14,6 +14,7 @@ import {
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { ChartOffset } from 'recharts/types/util/types';
 import {
+  BanditEffectData,
   EffectSizeData,
   computeAxisBounds,
   BASELINE_INDICATOR_COLOR,
@@ -34,6 +35,7 @@ const COLORS = {
 
 interface ForestPlotProps {
   effectSizes?: EffectSizeData[];
+  banditEffects?: BanditEffectData[];
   // If provided, use these values as hints for the x-axis domain.
   // May still be adjusted to accommodate the displayed effect sizes.
   minX?: number;
@@ -47,13 +49,21 @@ interface ForestPlotProps {
 type CustomShapeProps = {
   cx?: number;
   cy?: number;
-  payload?: EffectSizeData;
+  payload?: EffectSizeData | BanditEffectData;
   xAxis?: {
     width?: number;
   };
   yAxis?: {
     height?: number;
   };
+};
+
+const isFrequentistPayload = (payload: EffectSizeData | BanditEffectData): payload is EffectSizeData => {
+  return 'isBaseline' in payload;
+};
+
+const isBanditPayload = (payload: EffectSizeData | BanditEffectData): payload is BanditEffectData => {
+  return 'postPredMean' in payload;
 };
 
 // Function to create a diamond shape
@@ -70,24 +80,39 @@ const truncateLabel = (label: string, maxChars: number = 42): string => {
 function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   if (!active || !payload || !payload.length) return null;
   const data = payload[0].payload;
-  const percentChange = (((data.absEffect - data.baselineEffect) / data.baselineEffect) * 100).toFixed(1);
-  return (
-    <Card style={{ padding: '8px' }}>
-      <Flex direction="column" gap="2">
-        <Text weight="bold">{data.armName}</Text>
-        <Text>Effect: {data.absEffect.toFixed(2)}</Text>
-        {data.isBaseline ? null : <Text>vs baseline: {percentChange}%</Text>}
-        <Text>
-          95% CI: [{data.absCI95Lower.toFixed(2)}, {data.absCI95Upper.toFixed(2)}]
-        </Text>
-      </Flex>
-    </Card>
-  );
+  if (isFrequentistPayload(data)) {
+    const percentChange = (((data.absEffect - data.baselineEffect) / data.baselineEffect) * 100).toFixed(1);
+    return (
+      <Card style={{ padding: '8px' }}>
+        <Flex direction="column" gap="2">
+          <Text weight="bold">{data.armName}</Text>
+          <Text>Effect: {data.absEffect.toFixed(2)}</Text>
+          {data.isBaseline ? null : <Text>vs baseline: {percentChange}%</Text>}
+          <Text>
+            95% CI: [{data.absCI95Lower.toFixed(2)}, {data.absCI95Upper.toFixed(2)}]
+          </Text>
+        </Flex>
+      </Card>
+    );
+  } else if (isBanditPayload(data)) {
+    return (
+      <Card style={{ padding: '8px' }}>
+        <Flex direction="column" gap="2">
+          <Text weight="bold">{data.armName}</Text>
+          <Text>Mean outcome value: {data.postPredMean.toFixed(2)}</Text>
+          <Text>Std. dev: {data.postPredStd.toFixed(2)}</Text>
+          <Text>
+            95% CI: [{data.postPredci95Lower.toFixed(2)}, {data.postPredci95Upper.toFixed(2)}]
+          </Text>
+        </Flex>
+      </Card>
+    );
+  }
 }
 
-export function ForestPlot({ effectSizes, minX: minXProp, maxX: maxXProp }: ForestPlotProps) {
+export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: maxXProp }: ForestPlotProps) {
   // Only render if we have data
-  if (!effectSizes || effectSizes.length === 0) {
+  if ((!effectSizes && !banditEffects) || (effectSizes?.length === 0 && banditEffects?.length === 0)) {
     return (
       <Callout.Root color={'orange'}>
         <Callout.Icon>
@@ -99,7 +124,13 @@ export function ForestPlot({ effectSizes, minX: minXProp, maxX: maxXProp }: Fore
   }
 
   // Flatten effect sizes into array of CI bounds for axis calculation
-  const xAxisValues = effectSizes.flatMap((d) => [d.absCI95Lower, d.absCI95Upper]);
+  const xAxisValues =
+    effectSizes !== undefined
+      ? effectSizes.flatMap((d) => [d.absCI95Lower, d.absCI95Upper])
+      : banditEffects!.flatMap((d) => [
+          Math.min(d.postPredabsCI95Lower, d.priorPredabsCI95Lower),
+          Math.max(d.postPredabsCI95Upper, d.priorPredabsCI95Upper),
+        ]);
   const [minX, maxX] = computeAxisBounds(xAxisValues, minXProp, maxXProp);
   // Space 3 ticks evenly across the domain, but filter out duplicates,
   // which can occur when the effect is 0.
@@ -129,219 +160,347 @@ export function ForestPlot({ effectSizes, minX: minXProp, maxX: maxXProp }: Fore
   };
 
   // Adjust plot height based on the number of arms.
-  const plotHeightPx = Math.max(160, 64 * effectSizes.length);
+  const lenEffects = effectSizes !== undefined ? effectSizes.length : banditEffects!.length;
+  const plotHeightPx = Math.max(160, 64 * lenEffects);
   // Coarse adjustment of the width of the left Y-axis based on the length of the arm names.
-  const maxArmNameLength = effectSizes.reduce((max, e) => Math.max(max, e.armName.length), 0);
+  const maxArmNameLength =
+    effectSizes !== undefined
+      ? effectSizes.reduce((max, e) => Math.max(max, e.armName.length), 0)
+      : banditEffects!.reduce((max, e) => Math.max(max, e.armName.length), 0);
   const yRightAxisWidthPx = 80;
   const yLeftAxisWidthPx = maxArmNameLength > 20 ? 180 : 80;
 
-  return (
-    <Flex direction="column" gap="3">
-      {effectSizes.some((e) => e.invalidStatTest) && (
-        <Callout.Root color="orange" size="1">
-          <Callout.Icon>
-            <ExclamationTriangleIcon />
-          </Callout.Icon>
-          <Callout.Text>
-            Statistical test is invalid for one or more arms. The experiment might not have enough data or no variation
-            in the metric right now.
-          </Callout.Text>
-        </Callout.Root>
-      )}
+  if (effectSizes !== undefined) {
+    return (
+      <Flex direction="column" gap="3">
+        {effectSizes.some((e) => e.invalidStatTest) && (
+          <Callout.Root color="orange" size="1">
+            <Callout.Icon>
+              <ExclamationTriangleIcon />
+            </Callout.Icon>
+            <Callout.Text>
+              Statistical test is invalid for one or more arms. The experiment might not have enough data or no
+              variation in the metric right now.
+            </Callout.Text>
+          </Callout.Root>
+        )}
 
-      <Box height={`${plotHeightPx}px`}>
-        <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-            {/* Supply our own coordinates generator since default rendering is off for ratio metrics */}
-            <CartesianGrid strokeDasharray="3 3" verticalCoordinatesGenerator={scaleXGridPoints} />
-            <XAxis
-              type="number"
-              dataKey="absEffect"
-              interval="preserveStartEnd"
-              scale="linear"
-              domain={[minX, maxX]}
-              style={commonAxisStyle}
-              ticks={xGridPoints} // use our own ticks due to auto rendering issues
-              tickFormatter={(value) =>
-                // Show <= 2 decimal places only for values < 10
-                Math.abs(value) >= 10 || value === 0
-                  ? value.toFixed()
-                  : Math.abs(value) >= 1
-                    ? value.toFixed(1)
-                    : value.toFixed(2)
-              }
-            />
-            <YAxis
-              type="category"
-              domain={effectSizes.map((e, i) => i)}
-              // hide={true} - use ticks for arm names
-              width={yLeftAxisWidthPx}
-              style={commonAxisStyle}
-              tickFormatter={(index) => {
-                const name = index >= 0 && index < effectSizes.length ? effectSizes[index].armName : '';
-                return truncateLabel(name);
-              }}
-              allowDataOverflow={true} // bit of a hack since the ErrorBar is internally messing with the y-axis domain
-            />
-            <YAxis
-              yAxisId="stats"
-              type="category"
-              orientation="right"
-              // work with an index into our different effect sizes
-              domain={effectSizes.map((e, i) => i)}
-              width={yRightAxisWidthPx}
-              tick={(e) => {
-                const {
-                  payload: { value },
-                } = e;
-                const armData = effectSizes[value];
+        <Box height={`${plotHeightPx}px`}>
+          <ResponsiveContainer width="100%" height="100%">
+            <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+              {/* Supply our own coordinates generator since default rendering is off for ratio metrics */}
+              <CartesianGrid strokeDasharray="3 3" verticalCoordinatesGenerator={scaleXGridPoints} />
+              <XAxis
+                type="number"
+                dataKey="absEffect"
+                interval="preserveStartEnd"
+                scale="linear"
+                domain={[minX, maxX]}
+                style={commonAxisStyle}
+                ticks={xGridPoints} // use our own ticks due to auto rendering issues
+                tickFormatter={(value) =>
+                  // Show <= 2 decimal places only for values < 10
+                  Math.abs(value) >= 10 || value === 0
+                    ? value.toFixed()
+                    : Math.abs(value) >= 1
+                      ? value.toFixed(1)
+                      : value.toFixed(2)
+                }
+              />
+              <YAxis
+                type="category"
+                domain={effectSizes.map((e, i) => i)}
+                // hide={true} - use ticks for arm names
+                width={yLeftAxisWidthPx}
+                style={commonAxisStyle}
+                tickFormatter={(index) => {
+                  const name = index >= 0 && index < effectSizes.length ? effectSizes[index].armName : '';
+                  return truncateLabel(name);
+                }}
+                allowDataOverflow={true} // bit of a hack since the ErrorBar is internally messing with the y-axis domain
+              />
+              <YAxis
+                yAxisId="stats"
+                type="category"
+                orientation="right"
+                // work with an index into our different effect sizes
+                domain={effectSizes.map((e, i) => i)}
+                width={yRightAxisWidthPx}
+                tick={(e) => {
+                  const {
+                    payload: { value },
+                  } = e;
+                  const armData = effectSizes[value];
 
-                let percentChangeText = '';
-                if (!armData.isBaseline) {
-                  const rawPercentChange =
-                    ((armData.absEffect - armData.baselineEffect) / armData.baselineEffect) * 100;
-                  // Handle cases where baselineEffect is 0 or very small to avoid Infinity or NaN
-                  if (isFinite(rawPercentChange)) {
-                    percentChangeText = `Δ = ${rawPercentChange.toFixed(1)}%`;
-                  } else {
-                    percentChangeText = 'change: N/A';
+                  let percentChangeText = '';
+                  if (!armData.isBaseline) {
+                    const rawPercentChange =
+                      ((armData.absEffect - armData.baselineEffect) / armData.baselineEffect) * 100;
+                    // Handle cases where baselineEffect is 0 or very small to avoid Infinity or NaN
+                    if (isFinite(rawPercentChange)) {
+                      percentChangeText = `Δ = ${rawPercentChange.toFixed(1)}%`;
+                    } else {
+                      percentChangeText = 'change: N/A';
+                    }
                   }
-                }
 
-                const pValueText = `p = ${armData.pValue !== null ? armData.pValue.toFixed(3) : 'N/A'}`;
+                  const pValueText = `p = ${armData.pValue !== null ? armData.pValue.toFixed(3) : 'N/A'}`;
 
-                const commonRightAxisTextProps = {
-                  x: e.x,
-                  textAnchor: e.textAnchor,
-                  // Only bold/black if significant AND not baseline arm
-                  fill: armData.significant && !armData.isBaseline ? 'black' : undefined,
-                  fontWeight: armData.significant && !armData.isBaseline ? 'bold' : undefined,
-                };
+                  const commonRightAxisTextProps = {
+                    x: e.x,
+                    textAnchor: e.textAnchor,
+                    // Only bold/black if significant AND not baseline arm
+                    fill: armData.significant && !armData.isBaseline ? 'black' : undefined,
+                    fontWeight: armData.significant && !armData.isBaseline ? 'bold' : undefined,
+                  };
 
-                return (
-                  <g>
-                    <text
-                      {...commonRightAxisTextProps}
-                      style={commonAxisStyle}
-                      y={e.y}
-                      // dy shift here and below to align the two lines of text around the tick mark better
-                      dy={!armData.isBaseline ? '-8px' : '0'}
-                      dominantBaseline="middle"
-                    >
-                      {percentChangeText}
-                    </text>
-                    <text
-                      {...commonRightAxisTextProps}
-                      // Purposely smaller font size for the p-value
-                      style={{ ...commonAxisStyle, fontSize: '12px' }}
-                      y={e.y}
-                      dy={!armData.isBaseline ? '8px' : '0'}
-                      dominantBaseline="middle"
-                    >
-                      {pValueText}
-                    </text>
-                  </g>
-                );
-              }} // end tickFormatter, whew
-              allowDataOverflow={true}
-            />
-
-            <Tooltip content={<CustomTooltip />} />
-
-            {/* Confidence intervals - place under points */}
-            <Scatter
-              data={effectSizes}
-              fill="none"
-              // Draw a custom line for CIs since ErrorBars don't give us enough control
-              shape={(props: CustomShapeProps) => {
-                // Always return an element even if empty.
-                if (!props.payload || !props.xAxis?.width) return <g />;
-
-                const { ci95, significant, effect, isBaseline } = props.payload;
-                const {
-                  cx: centerX,
-                  cy: centerY,
-                  xAxis: { width: xAxisWidth },
-                } = props;
-
-                // Determine stroke color based on significance and direction
-                let strokeColor: string = COLORS.DEFAULT_CI;
-                if (significant && !isBaseline) {
-                  strokeColor = effect > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
-                }
-                return (
-                  <line
-                    x1={(centerX || 0) - scaleHalfIntervalToViewport(ci95, xAxisWidth)}
-                    y1={centerY}
-                    x2={(centerX || 0) + scaleHalfIntervalToViewport(ci95, xAxisWidth)}
-                    y2={centerY}
-                    stroke={strokeColor}
-                    strokeWidth={5}
-                    strokeLinecap="round"
-                  />
-                );
-              }}
-            >
-              {/* <ErrorBar dataKey="ci95" width={0} strokeWidth={10} stroke={"red"} opacity={0.2} direction="x"/> */}
-            </Scatter>
-
-            {/* All arms */}
-            <Scatter
-              data={effectSizes}
-              shape={(props: CustomShapeProps) => {
-                // Always return an element even if empty.
-                if (!props.payload) return <g />;
-
-                const { significant, isBaseline, effect } = props.payload;
-                const { cx: centerX, cy: centerY } = props;
-
-                let fillColor: string = COLORS.DEFAULT;
-                if (significant && !isBaseline) {
-                  fillColor = effect > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
-                }
-                if (isBaseline) {
-                  // Mark the control arm with a larger diamond shape
                   return (
-                    <polygon
-                      points={createDiamondShape(centerX, centerY, 8)}
-                      fill={COLORS.DEFAULT}
-                      stroke={COLORS.DEFAULT_CI}
+                    <g>
+                      <text
+                        {...commonRightAxisTextProps}
+                        style={commonAxisStyle}
+                        y={e.y}
+                        // dy shift here and below to align the two lines of text around the tick mark better
+                        dy={!armData.isBaseline ? '-8px' : '0'}
+                        dominantBaseline="middle"
+                      >
+                        {percentChangeText}
+                      </text>
+                      <text
+                        {...commonRightAxisTextProps}
+                        // Purposely smaller font size for the p-value
+                        style={{ ...commonAxisStyle, fontSize: '12px' }}
+                        y={e.y}
+                        dy={!armData.isBaseline ? '8px' : '0'}
+                        dominantBaseline="middle"
+                      >
+                        {pValueText}
+                      </text>
+                    </g>
+                  );
+                }} // end tickFormatter, whew
+                allowDataOverflow={true}
+              />
+
+              <Tooltip content={<CustomTooltip />} />
+
+              {/* Confidence intervals - place under points */}
+              <Scatter
+                data={effectSizes}
+                fill="none"
+                // Draw a custom line for CIs since ErrorBars don't give us enough control
+                shape={(props: CustomShapeProps) => {
+                  // Always return an element even if empty.
+                  if (!props.payload || !props.xAxis?.width) return <g />;
+
+                  const { ci95, significant, effect, isBaseline } = props.payload as EffectSizeData;
+                  const {
+                    cx: centerX,
+                    cy: centerY,
+                    xAxis: { width: xAxisWidth },
+                  } = props;
+
+                  // Determine stroke color based on significance and direction
+                  let strokeColor: string = COLORS.DEFAULT_CI;
+                  if (significant && !isBaseline) {
+                    strokeColor = effect > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
+                  }
+                  return (
+                    <line
+                      x1={(centerX || 0) - scaleHalfIntervalToViewport(ci95, xAxisWidth)}
+                      y1={centerY}
+                      x2={(centerX || 0) + scaleHalfIntervalToViewport(ci95, xAxisWidth)}
+                      y2={centerY}
+                      stroke={strokeColor}
+                      strokeWidth={5}
+                      strokeLinecap="round"
                     />
                   );
-                } else {
-                  return <circle cx={centerX} cy={centerY} r={5} fill={fillColor} stroke={COLORS.DEFAULT_CI} />;
+                }}
+              >
+                {/* <ErrorBar dataKey="ci95" width={0} strokeWidth={10} stroke={"red"} opacity={0.2} direction="x"/> */}
+              </Scatter>
+
+              {/* All arms */}
+              <Scatter
+                data={effectSizes}
+                shape={(props: CustomShapeProps) => {
+                  // Always return an element even if empty.
+                  if (!props.payload) return <g />;
+
+                  const { significant, isBaseline, effect } = props.payload as EffectSizeData;
+                  const { cx: centerX, cy: centerY } = props;
+
+                  let fillColor: string = COLORS.DEFAULT;
+                  if (significant && !isBaseline) {
+                    fillColor = effect > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
+                  }
+                  if (isBaseline) {
+                    // Mark the control arm with a larger diamond shape
+                    return (
+                      <polygon
+                        points={createDiamondShape(centerX, centerY, 8)}
+                        fill={COLORS.DEFAULT}
+                        stroke={COLORS.DEFAULT_CI}
+                      />
+                    );
+                  } else {
+                    return <circle cx={centerX} cy={centerY} r={5} fill={fillColor} stroke={COLORS.DEFAULT_CI} />;
+                  }
+                }}
+              />
+
+              {/* Control arm mean - vertical marker */}
+              <Scatter
+                data={effectSizes}
+                fill="none"
+                // Draw a custom SVG line for CIs since ErrorBars don't give us enough control
+                shape={(props: CustomShapeProps) => {
+                  // Always return an element even if empty.
+                  if (!(props.payload as EffectSizeData)?.isBaseline) return <g />;
+
+                  const { cx: centerX, yAxis } = props;
+
+                  return (
+                    <line
+                      x1={centerX}
+                      y1={0}
+                      x2={centerX}
+                      y2={(yAxis?.height || 0) + 20} // where's the extra 20 from? Margins?
+                      stroke={COLORS.BASELINE}
+                      strokeWidth={5}
+                      strokeDasharray="1 1"
+                      opacity={0.2}
+                    />
+                  );
+                }}
+              />
+            </ScatterChart>
+          </ResponsiveContainer>
+        </Box>
+      </Flex>
+    );
+  } else if (banditEffects !== undefined) {
+    return (
+      <Flex direction="column" gap="3">
+        <Box height={`${plotHeightPx}px`}>
+          <ResponsiveContainer width="100%" height="100%">
+            <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+              {/* Supply our own coordinates generator since default rendering is off for ratio metrics */}
+              <CartesianGrid strokeDasharray="3 3" verticalCoordinatesGenerator={scaleXGridPoints} />
+              <XAxis
+                type="number"
+                dataKey="postPredMean"
+                interval="preserveStartEnd"
+                scale="linear"
+                domain={[minX, maxX]}
+                style={commonAxisStyle}
+                ticks={xGridPoints} // use our own ticks due to auto rendering issues
+                tickFormatter={(value) =>
+                  // Show <= 2 decimal places only for values < 10
+                  Math.abs(value) >= 10 || value === 0
+                    ? value.toFixed()
+                    : Math.abs(value) >= 1
+                      ? value.toFixed(1)
+                      : value.toFixed(2)
                 }
-              }}
-            />
+              />
+              <YAxis
+                type="category"
+                domain={banditEffects.map((e, i) => i)}
+                // hide={true} - use ticks for arm names
+                width={yLeftAxisWidthPx}
+                style={commonAxisStyle}
+                tickFormatter={(index) => {
+                  const name = index >= 0 && index < banditEffects.length ? banditEffects[index].armName : '';
+                  return truncateLabel(name);
+                }}
+                allowDataOverflow={true} // bit of a hack since the ErrorBar is internally messing with the y-axis domain
+              />
+              <Tooltip content={<CustomTooltip />} />
 
-            {/* Control arm mean - vertical marker */}
-            <Scatter
-              data={effectSizes}
-              fill="none"
-              // Draw a custom SVG line for CIs since ErrorBars don't give us enough control
-              shape={(props: CustomShapeProps) => {
-                // Always return an element even if empty.
-                if (!props.payload?.isBaseline) return <g />;
+              {/* Confidence intervals - place under points */}
+              <Scatter
+                data={banditEffects}
+                fill="none"
+                // Draw a custom line for CIs since ErrorBars don't give us enough control
+                shape={(props: CustomShapeProps) => {
+                  // Always return an element even if empty.
+                  if (!props.payload || !props.xAxis?.width) return <g />;
 
-                const { cx: centerX, yAxis } = props;
+                  const { postPredci95, postPredMean } = props.payload as BanditEffectData;
+                  const {
+                    cx: centerX,
+                    cy: centerY,
+                    xAxis: { width: xAxisWidth },
+                  } = props;
 
-                return (
-                  <line
-                    x1={centerX}
-                    y1={0}
-                    x2={centerX}
-                    y2={(yAxis?.height || 0) + 20} // where's the extra 20 from? Margins?
-                    stroke={COLORS.BASELINE}
-                    strokeWidth={5}
-                    strokeDasharray="1 1"
-                    opacity={0.2}
-                  />
-                );
-              }}
-            />
-          </ScatterChart>
-        </ResponsiveContainer>
-      </Box>
-    </Flex>
-  );
+                  // Determine stroke color based on significance and direction
+                  let strokeColor: string = COLORS.DEFAULT_CI;
+                  if (postPredMean !== undefined) {
+                    strokeColor = postPredMean > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
+                  }
+                  return (
+                    <line
+                      x1={(centerX || 0) - scaleHalfIntervalToViewport(postPredci95, xAxisWidth)}
+                      y1={centerY}
+                      x2={(centerX || 0) + scaleHalfIntervalToViewport(postPredci95, xAxisWidth)}
+                      y2={centerY}
+                      stroke={strokeColor}
+                      strokeWidth={5}
+                      strokeLinecap="round"
+                    />
+                  );
+                }}
+              >
+                {/* <ErrorBar dataKey="ci95" width={0} strokeWidth={10} stroke={"red"} opacity={0.2} direction="x"/> */}
+              </Scatter>
+
+              {/* All arms */}
+              <Scatter
+                data={banditEffects}
+                shape={(props: CustomShapeProps) => {
+                  // Always return an element even if empty.
+                  if (!props.payload) return <g />;
+
+                  const { postPredMean } = props.payload as BanditEffectData;
+                  const { cx: centerX, cy: centerY } = props;
+
+                  let fillColor: string = COLORS.DEFAULT;
+                  if (postPredMean !== undefined) {
+                    fillColor = postPredMean > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
+                  }
+                  return <circle cx={centerX} cy={centerY} r={5} fill={fillColor} stroke={COLORS.DEFAULT_CI} />;
+                }}
+              />
+
+              {/* Control arm mean - vertical marker */}
+              <Scatter
+                data={banditEffects}
+                fill="none"
+                // Draw a custom SVG line for CIs since ErrorBars don't give us enough control
+                shape={(props: CustomShapeProps) => {
+                  // Always return an element even if empty.
+                  const { cx: centerX, yAxis } = props;
+
+                  return (
+                    <line
+                      x1={centerX}
+                      y1={0}
+                      x2={centerX}
+                      y2={(yAxis?.height || 0) + 20} // where's the extra 20 from? Margins?
+                      stroke={COLORS.BASELINE}
+                      strokeWidth={5}
+                      strokeDasharray="1 1"
+                      opacity={0.2}
+                    />
+                  );
+                }}
+              />
+            </ScatterChart>
+          </ResponsiveContainer>
+        </Box>
+      </Flex>
+    );
+  } else return null;
 }

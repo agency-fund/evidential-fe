@@ -41,6 +41,8 @@ import {
   ExperimentAnalysisResponse,
   OnlineFrequentistExperimentSpecOutput,
   PreassignedFrequentistExperimentSpecOutput,
+  BanditExperimentAnalysisResponse,
+  MABExperimentSpecOutput,
 } from '@/api/methods.schemas';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { useCurrentOrganization } from '@/providers/organization-provider';
@@ -170,7 +172,9 @@ export default function ExperimentViewPage() {
           });
 
           setAnalysisHistory(opts);
-          const currentMetricName = selectedMetricAnalysis?.metric?.field_name;
+          const currentMetricName = isFrequentist(analysisHistory[0].data)
+            ? selectedMetricAnalysis?.metric?.field_name
+            : undefined;
           setCiBounds(computeBoundsForMetric(currentMetricName, [liveAnalysis, ...opts]));
           // If we're not viewing real data, set the selected analysis to the most recent snapshot
           if (selectedAnalysis.data === undefined) {
@@ -350,79 +354,101 @@ export default function ExperimentViewPage() {
           headerLeft={
             <Flex gap="3" align="center" wrap="wrap">
               <Heading size="3">Analysis</Heading>
-              <Badge size="2">
-                <Flex gap="2" align="center">
-                  <Heading size="2">Metric:</Heading>
-                  {selectedMetricAnalyses && selectedMetricAnalyses.length > 1 ? (
-                    <Select.Root
-                      size="1"
-                      value={selectedMetricName}
-                      onValueChange={(value) => {
-                        const newMetric =
-                          selectedMetricAnalyses.find((metric) => metric.metric?.field_name === value) || null;
-                        setSelectedMetricAnalysis(newMetric);
-                        const bounds = computeBoundsForMetric(value, [liveAnalysis, ...analysisHistory]);
-                        setCiBounds(bounds);
-                      }}
-                    >
-                      <Select.Trigger style={{ height: 18 }} />
-                      <Select.Content>
-                        {selectedMetricAnalyses.map((metric) => {
-                          const metricName = metric.metric?.field_name ?? 'unknown';
-                          return (
-                            <Select.Item key={metricName} value={metricName}>
-                              {metricName}
-                            </Select.Item>
-                          );
-                        })}
-                      </Select.Content>
-                    </Select.Root>
-                  ) : (
-                    <Text>{selectedMetricName}</Text>
-                  )}
-                </Flex>
-              </Badge>
-              <MdeBadge value={mdePct} />
+              {isFrequentist(selectedAnalysis.data) ? (
+                <Badge size="2">
+                  <Flex gap="2" align="center">
+                    <Heading size="2">Metric:</Heading>
+                    {selectedMetricAnalyses && selectedMetricAnalyses.length > 1 ? (
+                      <Select.Root
+                        size="1"
+                        value={selectedMetricName}
+                        onValueChange={(value) => {
+                          const newMetric =
+                            selectedMetricAnalyses.find((metric) => metric.metric?.field_name === value) || null;
+                          setSelectedMetricAnalysis(newMetric);
+                          const bounds = computeBoundsForMetric(value, [liveAnalysis, ...analysisHistory]);
+                          setCiBounds(bounds);
+                        }}
+                      >
+                        <Select.Trigger style={{ height: 18 }} />
+                        <Select.Content>
+                          {selectedMetricAnalyses.map((metric) => {
+                            const metricName = metric.metric?.field_name ?? 'unknown';
+                            return (
+                              <Select.Item key={metricName} value={metricName}>
+                                {metricName}
+                              </Select.Item>
+                            );
+                          })}
+                        </Select.Content>
+                      </Select.Root>
+                    ) : (
+                      <Text>{selectedMetricName}</Text>
+                    )}
+                  </Flex>
+                </Badge>
+              ) : isBandit(selectedAnalysis.data) &&
+                selectedAnalysis.banditEffects &&
+                selectedAnalysis.banditEffects.length > 1 ? (
+                <>
+                  <Badge size="2">
+                    <Flex gap="2" align="center">
+                      <Heading size="2"> Prior Type:</Heading>
+                      <Text>{(experiment.design_spec as MABExperimentSpecOutput).prior_type}</Text>
+                    </Flex>
+                  </Badge>
+                  <Badge size="2">
+                    <Flex gap="2" align="center">
+                      <Heading size="2">Reward Type:</Heading>
+                      <Text>{(experiment.design_spec as MABExperimentSpecOutput).reward_type}</Text>
+                    </Flex>
+                  </Badge>
+                </>
+              ) : null}
+
+              {!isBandit(selectedAnalysis.data) && <MdeBadge value={mdePct} />}
             </Flex>
           }
           headerRight={
-            (design_spec.experiment_type === 'freq_online' || design_spec?.experiment_type === 'freq_preassigned') && (
-              <Flex gap="3" wrap="wrap">
-                <Flex gap="3" wrap="wrap" align="center" justify="between">
-                  <Badge size="2">
-                    <Flex gap="2" align="center">
-                      <Heading size="2">Viewing:</Heading>
-                      {analysisHistory.length == 0 ? (
-                        <Text>{liveAnalysis.label}</Text>
-                      ) : (
-                        <Select.Root size="1" value={selectedAnalysis.key} onValueChange={handleSelectAnalysis}>
-                          <Select.Trigger style={{ height: 18 }} />
-                          <Select.Content>
-                            <Select.Group>
-                              <Select.Item key="live" value="live">
-                                <Box minWidth="136px">{liveAnalysis.label}</Box>
+            <Flex gap="3" wrap="wrap">
+              <Flex gap="3" wrap="wrap" align="center" justify="between">
+                <Badge size="2">
+                  <Flex gap="2" align="center">
+                    <Heading size="2">Viewing:</Heading>
+                    {analysisHistory.length == 0 ? (
+                      <Text>{liveAnalysis.label}</Text>
+                    ) : (
+                      <Select.Root size="1" value={selectedAnalysis.key} onValueChange={handleSelectAnalysis}>
+                        <Select.Trigger style={{ height: 18 }} />
+                        <Select.Content>
+                          <Select.Group>
+                            <Select.Item key="live" value="live">
+                              <Box minWidth="136px">{liveAnalysis.label}</Box>
+                            </Select.Item>
+                          </Select.Group>
+                          <Select.Separator />
+                          <Select.Group>
+                            {analysisHistory.map((opt) => (
+                              <Select.Item key={opt.key} value={opt.key}>
+                                <Box minWidth="136px">{opt.label}</Box>
                               </Select.Item>
-                            </Select.Group>
-                            <Select.Separator />
-                            <Select.Group>
-                              {analysisHistory.map((opt) => (
-                                <Select.Item key={opt.key} value={opt.key}>
-                                  <Box minWidth="136px">{opt.label}</Box>
-                                </Select.Item>
-                              ))}
-                            </Select.Group>
-                          </Select.Content>
-                        </Select.Root>
-                      )}
-                    </Flex>
-                  </Badge>
-                </Flex>
+                            ))}
+                          </Select.Group>
+                        </Select.Content>
+                      </Select.Root>
+                    )}
+                  </Flex>
+                </Badge>
+              </Flex>
+              {isFrequentist(selectedAnalysis.data) ? (
                 <Flex gap="3" wrap="wrap">
                   <Badge size="2">
                     <Flex gap="4" align="center">
                       <Heading size="2">Confidence:</Heading>
                       <Flex gap="2" align="center">
-                        <Text>{(1 - (design_spec.alpha || 0.05)) * 100}%</Text>
+                        <Text>
+                          {(1 - ((design_spec as OnlineFrequentistExperimentSpecOutput).alpha || 0.05)) * 100}%
+                        </Text>
                         <Tooltip content="Chance that our test correctly shows no significant difference, if there truly is none. (The probability of avoiding a false positive.)">
                           <InfoCircledIcon />
                         </Tooltip>
@@ -433,7 +459,11 @@ export default function ExperimentViewPage() {
                     <Flex gap="4" align="center">
                       <Heading size="2">Power:</Heading>
                       <Flex gap="2" align="center">
-                        <Text>{design_spec.power ? `${design_spec.power * 100}%` : '?'}</Text>
+                        <Text>
+                          {(design_spec as PreassignedFrequentistExperimentSpecOutput).power
+                            ? `${(design_spec as PreassignedFrequentistExperimentSpecOutput).power! * 100}%`
+                            : '?'}
+                        </Text>
                         <Tooltip content="Chance of detecting a difference at least as large as the pre-specified minimum effect for the metric, if that difference truly exists. (The probability of avoiding a false negative.)">
                           <InfoCircledIcon />
                         </Tooltip>
@@ -441,8 +471,8 @@ export default function ExperimentViewPage() {
                     </Flex>
                   </Badge>
                 </Flex>
-              </Flex>
-            )
+              ) : null}
+            </Flex>
           }
         >
           {isLoadingHistory && <XSpinner message="Loading historical analyses..." />}
@@ -478,6 +508,7 @@ export default function ExperimentViewPage() {
                   <Flex direction="column" gap="3" py="3">
                     <ForestPlot
                       effectSizes={selectedAnalysis.effectSizesByMetric?.get(selectedMetricName)}
+                      banditEffects={selectedAnalysis.banditEffects}
                       minX={ciBounds[0]}
                       maxX={ciBounds[1]}
                     />
