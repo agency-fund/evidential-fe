@@ -24,14 +24,13 @@ import {
   CONTROL_COLOR,
   INACTIVE_CONTROL_COLOR,
   getColorWithSignificance,
-  ArmDataPoint,
+  Significance,
 } from './forest-plot-utils';
 import { JitteredDot, JitteredDotProps } from './jittered-dot';
 import { JitteredLine } from './jittered-line';
 import { ConfidenceInterval } from './confidence-interval';
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
-import { BanditArmDataPoint } from './forest-plot-models';
 
 interface ForestTimeseriesPlotProps {
   data: TimeSeriesDataPoint[];
@@ -80,32 +79,19 @@ function CustomTimeseriesTooltip({ active, payload, armMetadata, selectedArmId }
 
           const isSelected = selectedArmId === armInfo.id;
 
-          return 'absEstimate' in armData ? (
+          return (
             <Flex key={armInfo.id} direction="column" gap="1">
               <Flex direction="row" gap="1" align="center">
                 <Text size={isSelected ? '4' : '2'} weight="bold" style={{ color }}>
                   {armInfo.name || armInfo.id}:
                 </Text>
-                <Text size="2"> {(armData as ArmDataPoint).absEstimate.toFixed(2)}</Text>
+                <Text size="2"> {armData.absMean.toFixed(2)}</Text>
               </Flex>
               <Text size="1">
-                95% CI: [{(armData as ArmDataPoint).lower.toFixed(2)}, {(armData as ArmDataPoint).upper.toFixed(2)}]
+                95% CI: [{armData.lowerCI.toFixed(2)}, {armData.upperCI.toFixed(2)}]
               </Text>
             </Flex>
-          ) : 'postPredMean' in armData ? (
-            <Flex key={armInfo.id} direction="column" gap="1">
-              <Flex direction="row" gap="1" align="center">
-                <Text size={isSelected ? '4' : '2'} weight="bold" style={{ color }}>
-                  {armInfo.name || armInfo.id}:
-                </Text>
-                <Text size="2"> {(armData as BanditArmDataPoint).postPredMean.toFixed(2)}</Text>
-              </Flex>
-              <Text size="1">
-                95% CI: [{(armData as BanditArmDataPoint).postPredci95Lower.toFixed(2)},{' '}
-                {(armData as BanditArmDataPoint).postPredci95Upper.toFixed(2)}]
-              </Text>
-            </Flex>
-          ) : null;
+          );
         })}
       </Flex>
     </Card>
@@ -138,14 +124,7 @@ export default function ForestTimeseriesPlot({
   }
 
   const yAxisValues: number[] = [];
-  chartData.forEach((point) =>
-    point.armEffects.forEach((arm) =>
-      yAxisValues.push(
-        'lower' in arm ? (arm as ArmDataPoint).lower : (arm as BanditArmDataPoint).postPredci95Lower,
-        'upper' in arm ? (arm as ArmDataPoint).upper : (arm as BanditArmDataPoint).postPredci95Upper,
-      ),
-    ),
-  );
+  chartData.forEach((point) => point.armEffects.forEach((arm) => yAxisValues.push(arm.lowerCI, arm.upperCI)));
   const [minY, maxY] = computeAxisBounds(yAxisValues);
 
   // Generate all date ticks between minDate and maxDate for x-axis
@@ -272,7 +251,7 @@ export default function ForestTimeseriesPlot({
                 dataKey={(point: TimeSeriesDataPoint) => {
                   const armPoint = point.armEffects.get(armInfo.id);
                   if (!armPoint) return null;
-                  return 'absEstimate' in armPoint ? armPoint.absEstimate : armPoint.postPredMean;
+                  return armPoint.absMean;
                 }}
                 name={armInfo.name || armInfo.id}
                 stroke={baseDotColor} // color is still needed since it is used by the legend and tooltip
@@ -281,10 +260,8 @@ export default function ForestTimeseriesPlot({
                   const { key, ...restProps } = props as JitteredDotProps & { key?: string };
                   const dataPoint = restProps.payload as TimeSeriesDataPoint;
                   const armData = dataPoint.armEffects.get(armInfo.id);
-                  const dotColor =
-                    armData && 'significant' in armData && 'estimate' in armData
-                      ? getColorWithSignificance(baseDotColor, armData.significant, armData.estimate > 0, selected)
-                      : baseDotColor;
+                  const significance = armData ? armData.significance : Significance.No;
+                  const dotColor = getColorWithSignificance(baseDotColor, significance, selected);
 
                   return (
                     <JitteredDot
@@ -302,10 +279,8 @@ export default function ForestTimeseriesPlot({
                   const { key, ...restProps } = props as JitteredDotProps & { key?: string };
                   const dataPoint = restProps.payload as TimeSeriesDataPoint;
                   const armData = dataPoint.armEffects.get(armInfo.id);
-                  const dotColor =
-                    armData && 'significant' in armData && 'estimate' in armData
-                      ? getColorWithSignificance(baseDotColor, armData.significant, armData.estimate > 0, selected)
-                      : baseDotColor;
+                  const significance = armData ? armData.significance : Significance.No;
+                  const dotColor = getColorWithSignificance(baseDotColor, significance, selected);
 
                   return (
                     <JitteredDot

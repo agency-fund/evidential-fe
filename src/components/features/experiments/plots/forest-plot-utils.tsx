@@ -17,7 +17,7 @@ import {
   ArmDataPoint,
   TimeSeriesDataPoint,
   ArmMetadata,
-  BanditArmDataPoint,
+  Significance,
 } from './forest-plot-models';
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 
@@ -344,22 +344,20 @@ export const calculateJitterOffset = (armIndex: number, totalArms: number): numb
 };
 
 /**
- * Determines the color for a confidence interval based on significance and effect direction.
+ * Determines the color for a confidence interval based on significance.
  *
  * @param baseColor - The default color to use when not significant
- * @param isSignificant - Whether the effect is statistically significant
- * @param isPositive - Whether the effect is positive (only relevant when significant)
+ * @param significance - The significance of the arm's mean effect
  * @param isSelected - Whether the arm is selected
  * @returns The color string for the confidence interval
  */
 export const getColorWithSignificance = (
   baseColor: string,
-  isSignificant: boolean,
-  isPositive: boolean,
+  significance: Significance,
   isSelected: boolean,
 ): string => {
-  if (!isSignificant) return baseColor;
-  return isPositive
+  if (significance === Significance.No) return baseColor;
+  return significance === Significance.Positive
     ? isSelected
       ? POSITIVE_COLOR
       : INACTIVE_POSITIVE_COLOR
@@ -420,33 +418,37 @@ export const transformAnalysisForForestTimeseriesPlot = (
 
   // Transform each state into a timeseries data point
   for (const state of validStates) {
-    let armEffects: Map<string, ArmDataPoint | BanditArmDataPoint> = new Map();
+    const armEffects = new Map<string, ArmDataPoint>();
 
     if (isFrequentist(state.data)) {
       const effectSizes = state.effectSizesByMetric?.get(metricName);
       if (!effectSizes) continue;
 
-      armEffects = new Map<string, ArmDataPoint>();
       for (const effectSize of effectSizes) {
+        // Determine significance based on the effect
+        let significance = Significance.No;
+        if (effectSize.significant) {
+          significance = effectSize.effect > 0 ? Significance.Positive : Significance.Negative;
+        }
+
         armEffects.set(effectSize.armId, {
-          estimate: effectSize.effect,
-          absEstimate: effectSize.absEffect,
-          upper: effectSize.absCI95Upper,
-          lower: effectSize.absCI95Lower,
-          significant: effectSize.significant,
+          absMean: effectSize.absEffect,
+          upperCI: effectSize.absCI95Upper,
+          lowerCI: effectSize.absCI95Lower,
+          significance,
         });
       }
     } else if (isBandit(state.data)) {
       const banditEffects = state.banditEffects;
       if (!banditEffects) continue;
 
-      armEffects = new Map<string, BanditArmDataPoint>();
       for (const effect of banditEffects) {
+        // Bandit experiments don't have a baseline comparison, so significance is always 'no'
         armEffects.set(effect.armId, {
-          postPredMean: effect.postPredMean,
-          postPredStd: effect.postPredStd,
-          postPredci95Lower: effect.postPredci95Lower,
-          postPredci95Upper: effect.postPredci95Upper,
+          absMean: effect.postPredMean,
+          upperCI: effect.postPredci95Upper,
+          lowerCI: effect.postPredci95Lower,
+          significance: Significance.No,
         });
       }
     }
@@ -472,7 +474,7 @@ export const transformAnalysisForForestTimeseriesPlot = (
   return { timeseriesData, armMetadata, minDate, maxDate };
 };
 
-// Re-export the interfaces for backward compatibility
+// Re-export the interfaces and types for backward compatibility
 export type {
   EffectSizeData,
   BanditEffectData,
@@ -481,3 +483,4 @@ export type {
   TimeSeriesDataPoint,
   ArmMetadata,
 } from './forest-plot-models';
+export { Significance } from './forest-plot-models';

@@ -48,27 +48,29 @@ export interface AnalysisState {
 }
 
 /**
- * Data structures for timeseries visualization
+ * Significance enum for indicating effect direction relative to baseline
  */
-export interface ArmDataPoint {
-  estimate: number; // if baseline, this is an absolute estimate
-  absEstimate: number;
-  upper: number;
-  lower: number;
-  significant: boolean;
+export enum Significance {
+  No = 'no',
+  Positive = 'pos',
+  Negative = 'neg',
 }
 
-export interface BanditArmDataPoint {
-  postPredMean: number;
-  postPredStd: number;
-  postPredci95Lower: number;
-  postPredci95Upper: number;
+/**
+ * Unified data structure for timeseries visualization
+ * Works for both frequentist and bandit experiments
+ */
+export interface ArmDataPoint {
+  absMean: number;
+  lowerCI: number;
+  upperCI: number;
+  significance: Significance;
 }
 
 export interface TimeSeriesDataPoint {
   date: string; // YYYY-MM-DD format
   dateTimestampMs: number; // Timestamp in milliseconds for numeric axis
-  armEffects: Map<string, ArmDataPoint | BanditArmDataPoint>; // armId => ArmDataPoint | BanditArmDataPoint
+  armEffects: Map<string, ArmDataPoint>; // armId => ArmDataPoint
   key: string; // Key to identify an analysis snapshot backing this data
 }
 
