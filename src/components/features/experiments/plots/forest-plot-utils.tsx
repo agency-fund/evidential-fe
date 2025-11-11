@@ -112,7 +112,7 @@ export const precomputeFreqEffectsByMetric = (
   for (const metricAnalysis of analysisData.metric_analyses) {
     // TODO: cleanup fallback when metric_name is not nullable in the backend (wasn't supposed to be)
     const metricName = metricAnalysis.metric_name || '';
-    const effectSizes = generateFreqEffectSizeData(metricAnalysis, alpha);
+    const effectSizes = _generateFreqEffectSizeData(metricAnalysis, alpha);
     effectSizesByMetric.set(metricName, effectSizes);
   }
   return effectSizesByMetric;
@@ -123,7 +123,7 @@ export const precomputeFreqEffectsByMetric = (
  */
 export const precomputeBanditEffects = (analysisData: ExperimentAnalysisResponse): BanditEffectData[] | undefined => {
   if (!isBandit(analysisData)) return undefined;
-  return generateBanditEffectData(analysisData);
+  return _generateBanditEffectData(analysisData);
 };
 
 /**
@@ -184,7 +184,7 @@ export const computeBoundsForMetric = (
  * @param alpha - The significance threshold (e.g., 0.05 for 95% confidence)
  * @returns Array of effect size data for each arm
  */
-export const generateFreqEffectSizeData = (analysis: MetricAnalysis, alpha: number): EffectSizeData[] => {
+const _generateFreqEffectSizeData = (analysis: MetricAnalysis, alpha: number): EffectSizeData[] => {
   // Extract data for visualization
   const controlArmIndex = analysis.arm_analyses.findIndex((a) => a.is_baseline);
   const controlArmAnalysis = analysis.arm_analyses[controlArmIndex];
@@ -238,7 +238,7 @@ export const generateFreqEffectSizeData = (analysis: MetricAnalysis, alpha: numb
  * @param alpha - The significance threshold (e.g., 0.05 for 95% confidence)
  * @returns Array of effect data for each arm
  */
-export const generateBanditEffectData = (analysis: BanditExperimentAnalysisResponse): BanditEffectData[] => {
+const _generateBanditEffectData = (analysis: BanditExperimentAnalysisResponse): BanditEffectData[] => {
   // Our data structure for visualization
   const postMinMean = Math.min(...analysis.arm_analyses.map((d) => d.post_pred_mean));
   const priorMinMean = Math.min(...analysis.arm_analyses.map((d) => d.prior_pred_mean));
@@ -341,6 +341,19 @@ export const calculateJitterOffset = (armIndex: number, totalArms: number): numb
   const jitterSpacing = 6; // pixels between each arm's position
   const totalWidth = (totalArms - 1) * jitterSpacing;
   return armIndex * jitterSpacing - totalWidth / 2;
+};
+
+/**
+ * Get color for an arm based on its index, baseline status, and selection state.
+ */
+export const getArmColor = (armIndex: number, isBaseline: boolean, isSelected: boolean): string => {
+  if (isBaseline) {
+    return isSelected ? CONTROL_COLOR : INACTIVE_CONTROL_COLOR;
+  }
+
+  const modulus = ARM_COLORS.length;
+  const colorIndex = (((armIndex - 1) % modulus) + modulus) % modulus;
+  return isSelected ? ARM_COLORS[colorIndex] : INACTIVE_ARM_COLORS[colorIndex];
 };
 
 /**

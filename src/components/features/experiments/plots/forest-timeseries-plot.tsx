@@ -19,12 +19,10 @@ import {
   TimeSeriesDataPoint,
   ArmMetadata,
   calculateJitterOffset,
-  ARM_COLORS,
-  INACTIVE_ARM_COLORS,
   CONTROL_COLOR,
-  INACTIVE_CONTROL_COLOR,
   getColorWithSignificance,
   Significance,
+  getArmColor,
 } from './forest-plot-utils';
 import { JitteredDot, JitteredDotProps } from './jittered-dot';
 import { JitteredLine } from './jittered-line';
@@ -40,16 +38,6 @@ interface ForestTimeseriesPlotProps {
   // Can notify parent of what snapshot key was used for the data point that was clicked.
   onPointClick?: (key: string) => void;
 }
-
-// Get color for an arm based on its index, baseline status, and selection state
-const getArmColor = (armIndex: number, isBaseline: boolean, isSelected: boolean): string => {
-  if (isBaseline) {
-    return isSelected ? CONTROL_COLOR : INACTIVE_CONTROL_COLOR;
-  }
-
-  const colorIndex = (armIndex - 1) % ARM_COLORS.length;
-  return isSelected ? ARM_COLORS[colorIndex] : INACTIVE_ARM_COLORS[colorIndex];
-};
 
 // Custom tooltip for the timeseries
 interface CustomTimeseriesTooltipProps extends TooltipProps<ValueType, NameType> {
@@ -105,9 +93,13 @@ export default function ForestTimeseriesPlot({
   maxDate,
   onPointClick,
 }: ForestTimeseriesPlotProps) {
-  // Default selected arm to the baseline
-  const baselineArm = armMetadata.find((arm) => arm.isBaseline);
-  const [selectedArmId, setSelectedArmId] = useState<string | null>(baselineArm?.id || armMetadata[0]?.id || null);
+  const [selectedArmId, setSelectedArmId] = useState<string | null>(null);
+
+  // Default selected arm to the baseline if there is one, else fallback to the first arm.
+  if (!selectedArmId && armMetadata.length > 0) {
+    const baselineArm = armMetadata.find((arm) => arm.isBaseline);
+    setSelectedArmId(baselineArm?.id || armMetadata[0]?.id || null);
+  }
 
   const selectedArmName = armMetadata.find((arm) => arm.id === selectedArmId)?.name || null;
 
@@ -240,7 +232,7 @@ export default function ForestTimeseriesPlot({
             );
           })}
 
-          {/* Place JitteredDots on top for each arm. Hide line with width=0 since we use ArmJitteredLine. */}
+          {/* Place JitteredDots on top for each arm. Hide line with width=0 since we use JitteredLine. */}
           {armMetadata.map((armInfo, index) => {
             const selected = selectedArmId === armInfo.id;
             // Always emphasize points and the legend

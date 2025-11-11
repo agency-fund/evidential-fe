@@ -35,16 +35,7 @@ import { EditableTextArea } from '@/components/ui/inputs/editable-text-area';
 import { ArmsAndAllocationsTable } from '@/components/features/experiments/arms-and-allocations-table';
 import { IntegrationGuideDialog } from '@/components/features/experiments/integration-guide-dialog';
 import { ReadMoreText } from '@/components/ui/read-more-text';
-import {
-  DesignSpecOutput,
-  Snapshot,
-  MetricAnalysis,
-  ExperimentAnalysisResponse,
-  OnlineFrequentistExperimentSpecOutput,
-  PreassignedFrequentistExperimentSpecOutput,
-  MABExperimentSpecOutput,
-  GetExperimentResponse,
-} from '@/api/methods.schemas';
+import { Snapshot, MetricAnalysis, ExperimentAnalysisResponse, MABExperimentSpecOutput } from '@/api/methods.schemas';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date-utils';
