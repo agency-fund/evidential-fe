@@ -102,7 +102,7 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
           <Text>Mean outcome value: {data.postPredMean.toFixed(2)}</Text>
           <Text>Std. dev: {data.postPredStd.toFixed(2)}</Text>
           <Text>
-            95% CI: [{data.postPredci95Lower.toFixed(2)}, {data.postPredci95Upper.toFixed(2)}]
+            95% CI: [{data.postPredCI95Lower.toFixed(2)}, {data.postPredCI95Upper.toFixed(2)}]
           </Text>
         </Flex>
       </Card>
@@ -428,7 +428,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                   // Always return an element even if empty.
                   if (!props.payload || !props.xAxis?.width) return <g />;
 
-                  const { postPredci95 } = props.payload as BanditEffectData;
+                  const { postPredCI95 } = props.payload as BanditEffectData;
                   const {
                     cx: centerX,
                     cy: centerY,
@@ -439,9 +439,9 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                   const strokeColor: string = COLORS.DEFAULT_CI;
                   return (
                     <line
-                      x1={(centerX || 0) - scaleHalfIntervalToViewport(postPredci95, xAxisWidth)}
+                      x1={(centerX || 0) - scaleHalfIntervalToViewport(postPredCI95, xAxisWidth)}
                       y1={centerY}
-                      x2={(centerX || 0) + scaleHalfIntervalToViewport(postPredci95, xAxisWidth)}
+                      x2={(centerX || 0) + scaleHalfIntervalToViewport(postPredCI95, xAxisWidth)}
                       y2={centerY}
                       stroke={strokeColor}
                       strokeWidth={5}

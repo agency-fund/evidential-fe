@@ -249,11 +249,11 @@ const _generateBanditEffectData = (analysis: BanditExperimentAnalysisResponse): 
     // Calculate 95% confidence interval for posterior predictive distribution
     const postPredMean = armAnalysis.post_pred_mean;
     const postPredStd = armAnalysis.post_pred_stdev;
-    const postPredci95 = 1.96 * postPredStd;
-    const postPredci95Lower = postPredMean - postPredci95;
-    const postPredci95Upper = postPredMean + postPredci95;
-    const postPredabsCI95Lower = postPredci95Lower + (postPredMean == postMinMean ? 0 : postMinMean);
-    const postPredabsCI95Upper = postPredci95Upper + (postPredMean == postMinMean ? 0 : postMinMean);
+    const postPredCI95 = 1.96 * postPredStd;
+    const postPredCI95Lower = postPredMean - postPredCI95;
+    const postPredCI95Upper = postPredMean + postPredCI95;
+    const postPredabsCI95Lower = postPredCI95Lower + (postPredMean == postMinMean ? 0 : postMinMean);
+    const postPredabsCI95Upper = postPredCI95Upper + (postPredMean == postMinMean ? 0 : postMinMean);
 
     // Calculate 95% confidence interval for prior predictive distribution
     const priorPredMean = armAnalysis.prior_pred_mean;
@@ -269,9 +269,9 @@ const _generateBanditEffectData = (analysis: BanditExperimentAnalysisResponse): 
       armName,
       postPredMean,
       postPredStd,
-      postPredci95Lower,
-      postPredci95Upper,
-      postPredci95,
+      postPredCI95Lower,
+      postPredCI95Upper,
+      postPredCI95,
       postPredabsCI95Lower,
       postPredabsCI95Upper,
       priorPredMean,
@@ -459,8 +459,8 @@ export const transformAnalysisForForestTimeseriesPlot = (
         // Bandit experiments don't have a baseline comparison, so significance is always 'no'
         armEffects.set(effect.armId, {
           absMean: effect.postPredMean,
-          upperCI: effect.postPredci95Upper,
-          lowerCI: effect.postPredci95Lower,
+          upperCI: effect.postPredCI95Upper,
+          lowerCI: effect.postPredCI95Lower,
           significance: Significance.No,
         });
       }
