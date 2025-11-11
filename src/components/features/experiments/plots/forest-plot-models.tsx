@@ -31,9 +31,9 @@ export interface BanditEffectData {
 
   priorPredMean: number;
   priorPredStd: number;
-  priorPredci95Lower: number;
-  priorPredci95Upper: number;
-  priorPredci95: number;
+  priorPredCI95Lower: number;
+  priorPredCI95Upper: number;
+  priorPredCI95: number;
   priorPredabsCI95Lower: number;
   priorPredabsCI95Upper: number;
 }

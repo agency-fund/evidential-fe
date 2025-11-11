@@ -258,11 +258,11 @@ const _generateBanditEffectData = (analysis: BanditExperimentAnalysisResponse): 
     // Calculate 95% confidence interval for prior predictive distribution
     const priorPredMean = armAnalysis.prior_pred_mean;
     const priorPredStd = armAnalysis.prior_pred_stdev;
-    const priorPredci95 = 1.96 * priorPredStd;
-    const priorPredci95Lower = priorPredMean - priorPredci95;
-    const priorPredci95Upper = priorPredMean + priorPredci95;
-    const priorPredabsCI95Lower = priorPredci95Lower + (priorPredMean == priorMinMean ? 0 : priorMinMean);
-    const priorPredabsCI95Upper = priorPredci95Upper + (priorPredMean == priorMinMean ? 0 : priorMinMean);
+    const priorPredCI95 = 1.96 * priorPredStd;
+    const priorPredCI95Lower = priorPredMean - priorPredCI95;
+    const priorPredCI95Upper = priorPredMean + priorPredCI95;
+    const priorPredabsCI95Lower = priorPredCI95Lower + (priorPredMean == priorMinMean ? 0 : priorMinMean);
+    const priorPredabsCI95Upper = priorPredCI95Upper + (priorPredMean == priorMinMean ? 0 : priorMinMean);
 
     return {
       armId,
@@ -276,9 +276,9 @@ const _generateBanditEffectData = (analysis: BanditExperimentAnalysisResponse): 
       postPredabsCI95Upper,
       priorPredMean,
       priorPredStd,
-      priorPredci95Lower,
-      priorPredci95Upper,
-      priorPredci95,
+      priorPredCI95Lower,
+      priorPredCI95Upper,
+      priorPredCI95,
       priorPredabsCI95Lower,
       priorPredabsCI95Upper,
     };
