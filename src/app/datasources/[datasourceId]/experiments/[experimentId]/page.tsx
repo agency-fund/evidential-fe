@@ -13,11 +13,12 @@ import { ForestPlot } from '@/components/features/experiments/plots/forest-plot'
 import {
   computeBoundsForMetric,
   AnalysisState,
-  precomputeEffectSizesByMetric,
+  precomputeFreqEffectsByMetric,
   precomputeBanditEffects,
   isFrequentist,
   isBandit,
   transformAnalysisForForestTimeseriesPlot,
+  getAlphaAndPower,
 } from '@/components/features/experiments/plots/forest-plot-utils';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -42,6 +43,7 @@ import {
   OnlineFrequentistExperimentSpecOutput,
   PreassignedFrequentistExperimentSpecOutput,
   MABExperimentSpecOutput,
+  GetExperimentResponse,
 } from '@/api/methods.schemas';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { useCurrentOrganization } from '@/providers/organization-provider';
@@ -49,13 +51,6 @@ import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date
 import Link from 'next/link';
 import { mutate } from 'swr';
 import ForestTimeseriesPlot from '@/components/features/experiments/plots/forest-timeseries-plot';
-
-// Helper to safely extract alpha from frequentist experiment design specs
-const getAlpha = (designSpec: DesignSpecOutput | undefined): number | undefined => {
-  if (!designSpec) return undefined;
-  if (!['freq_preassigned', 'freq_online'].includes(designSpec.experiment_type)) return undefined;
-  return (designSpec as OnlineFrequentistExperimentSpecOutput | PreassignedFrequentistExperimentSpecOutput).alpha;
-};
 
 export default function ExperimentViewPage() {
   const params = useParams();
@@ -106,10 +101,8 @@ export default function ExperimentViewPage() {
           data: analysisData,
           updated_at: date,
           label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
-          effectSizesByMetric: isFrequentist(analysisData)
-            ? precomputeEffectSizesByMetric(analysisData, getAlpha(experiment?.design_spec))
-            : undefined,
-          banditEffects: isBandit(analysisData) ? precomputeBanditEffects(analysisData) : undefined,
+          effectSizesByMetric: precomputeFreqEffectsByMetric(analysisData, alpha),
+          banditEffects: precomputeBanditEffects(analysisData),
         };
         setLiveAnalysis(analysis);
         // Only update the display if we were previously viewing live data.
@@ -163,10 +156,8 @@ export default function ExperimentViewPage() {
               data: analysisData,
               updated_at: date,
               label: formatUtcDownToMinuteLabel(date),
-              effectSizesByMetric: isFrequentist(analysisData)
-                ? precomputeEffectSizesByMetric(analysisData, getAlpha(experiment?.design_spec))
-                : undefined,
-              banditEffects: isBandit(analysisData) ? precomputeBanditEffects(analysisData) : undefined,
+              effectSizesByMetric: precomputeFreqEffectsByMetric(analysisData, alpha),
+              banditEffects: precomputeBanditEffects(analysisData),
             };
           });
 
@@ -243,6 +234,7 @@ export default function ExperimentViewPage() {
 
   const { design_spec, assign_summary } = experiment;
   const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
+  const { alpha, power } = getAlphaAndPower(experiment); // undefined for non-frequentist experiments
 
   const selectedMetricName = selectedMetricAnalysis?.metric?.field_name ?? 'unknown';
 
@@ -446,9 +438,7 @@ export default function ExperimentViewPage() {
                     <Flex gap="4" align="center">
                       <Heading size="2">Confidence:</Heading>
                       <Flex gap="2" align="center">
-                        <Text>
-                          {(1 - ((design_spec as OnlineFrequentistExperimentSpecOutput).alpha || 0.05)) * 100}%
-                        </Text>
+                        <Text>{alpha ? `${(1 - alpha) * 100}%` : '?'}</Text>
                         <Tooltip content="Chance that our test correctly shows no significant difference, if there truly is none. (The probability of avoiding a false positive.)">
                           <InfoCircledIcon />
                         </Tooltip>
@@ -459,11 +449,7 @@ export default function ExperimentViewPage() {
                     <Flex gap="4" align="center">
                       <Heading size="2">Power:</Heading>
                       <Flex gap="2" align="center">
-                        <Text>
-                          {(design_spec as PreassignedFrequentistExperimentSpecOutput).power
-                            ? `${(design_spec as PreassignedFrequentistExperimentSpecOutput).power! * 100}%`
-                            : '?'}
-                        </Text>
+                        <Text>{power ? `${power * 100}%` : '?'}</Text>
                         <Tooltip content="Chance of detecting a difference at least as large as the pre-specified minimum effect for the metric, if that difference truly exists. (The probability of avoiding a false negative.)">
                           <InfoCircledIcon />
                         </Tooltip>

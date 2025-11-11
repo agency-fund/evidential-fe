@@ -3,6 +3,12 @@ import {
   ExperimentAnalysisResponse,
   FreqExperimentAnalysisResponse,
   BanditExperimentAnalysisResponse,
+  PreassignedFrequentistExperimentSpecOutput,
+  GetExperimentResponse,
+  OnlineFrequentistExperimentSpecOutput,
+  PreassignedFrequentistExperimentSpecInputExperimentType,
+  OnlineFrequentistExperimentSpecInputExperimentType,
+  DesignSpecOutput,
 } from '@/api/methods.schemas';
 import {
   BanditEffectData,
@@ -63,16 +69,41 @@ export const isBandit = (
   return analysisData?.type === 'bandit';
 };
 
+export const isFrequentistSpec = (
+  spec: DesignSpecOutput | undefined,
+): spec is OnlineFrequentistExperimentSpecOutput | PreassignedFrequentistExperimentSpecOutput => {
+  if (!spec) return false;
+  return (
+    spec?.experiment_type in PreassignedFrequentistExperimentSpecInputExperimentType ||
+    spec?.experiment_type in OnlineFrequentistExperimentSpecInputExperimentType
+  );
+};
+
+/**
+ * Helper to safely extract alpha and power from frequentist experiment design specs
+ *
+ * @returns obj with alpha & power values from the exp design. Values are undefined if not a frequentist experiment.
+ */
+export const getAlphaAndPower = (
+  experiment: GetExperimentResponse | undefined,
+): { alpha: number | undefined; power: number | undefined } => {
+  if (!isFrequentistSpec(experiment?.design_spec)) return { alpha: undefined, power: undefined };
+  return {
+    alpha: experiment?.design_spec?.alpha,
+    power: experiment?.design_spec?.power,
+  };
+};
+
 /**
  * Pre-computes effect size data for all metrics in a frequentist analysis.
- * Returns undefined for non-frequentist experiments.
+ * Returns undefined for non-frequentist experiments (i.e. not FreqExperimentAnalysisResponse).
  *
- * @param analysisData - The experiment analysis response
+ * @param analysisData - The experiment analysis response.
  * @param alpha - The significance threshold (e.g., 0.05 for 95% confidence)
  * @returns Map of metric names to effect size arrays, or undefined
  */
-export const precomputeEffectSizesByMetric = (
-  analysisData: FreqExperimentAnalysisResponse,
+export const precomputeFreqEffectsByMetric = (
+  analysisData: ExperimentAnalysisResponse,
   alpha: number = 0.05,
 ): Map<string, EffectSizeData[]> | undefined => {
   if (!isFrequentist(analysisData)) return undefined;
@@ -81,15 +112,16 @@ export const precomputeEffectSizesByMetric = (
   for (const metricAnalysis of analysisData.metric_analyses) {
     // TODO: cleanup fallback when metric_name is not nullable in the backend (wasn't supposed to be)
     const metricName = metricAnalysis.metric_name || '';
-    const effectSizes = generateEffectSizeData(metricAnalysis, alpha);
+    const effectSizes = generateFreqEffectSizeData(metricAnalysis, alpha);
     effectSizesByMetric.set(metricName, effectSizes);
   }
   return effectSizesByMetric;
 };
 
-export const precomputeBanditEffects = (
-  analysisData: BanditExperimentAnalysisResponse,
-): BanditEffectData[] | undefined => {
+/**
+ * @returns undefined for non-bandit experiments (i.e. not BanditExperimentAnalysisResponse).
+ */
+export const precomputeBanditEffects = (analysisData: ExperimentAnalysisResponse): BanditEffectData[] | undefined => {
   if (!isBandit(analysisData)) return undefined;
   return generateBanditEffectData(analysisData);
 };
@@ -116,18 +148,16 @@ export const computeBoundsForMetric = (
 
   // Iterate through all analyses and find min/max
   if (analysisStates.length > 0 && analysisStates[0].data?.type === 'freq') {
-    if (!metricName) {
-      return [undefined, undefined];
-    } else {
-      for (const analysis of analysesToCheck) {
-        const effectSizes = analysis.effectSizesByMetric?.get(metricName);
-        if (!effectSizes) continue;
+    if (!metricName) return [undefined, undefined];
 
-        for (const effectSize of effectSizes) {
-          const { absCI95Lower, absCI95Upper } = effectSize;
-          minLower = minLower === undefined ? absCI95Lower : Math.min(minLower, absCI95Lower);
-          maxUpper = maxUpper === undefined ? absCI95Upper : Math.max(maxUpper, absCI95Upper);
-        }
+    for (const analysis of analysesToCheck) {
+      const effectSizes = analysis.effectSizesByMetric?.get(metricName);
+      if (!effectSizes) continue;
+
+      for (const effectSize of effectSizes) {
+        const { absCI95Lower, absCI95Upper } = effectSize;
+        minLower = minLower === undefined ? absCI95Lower : Math.min(minLower, absCI95Lower);
+        maxUpper = maxUpper === undefined ? absCI95Upper : Math.max(maxUpper, absCI95Upper);
       }
     }
   } else if (analysisStates.length > 0 && analysisStates[0].data?.type === 'bandit') {
@@ -154,7 +184,7 @@ export const computeBoundsForMetric = (
  * @param alpha - The significance threshold (e.g., 0.05 for 95% confidence)
  * @returns Array of effect size data for each arm
  */
-export const generateEffectSizeData = (analysis: MetricAnalysis, alpha: number): EffectSizeData[] => {
+export const generateFreqEffectSizeData = (analysis: MetricAnalysis, alpha: number): EffectSizeData[] => {
   // Extract data for visualization
   const controlArmIndex = analysis.arm_analyses.findIndex((a) => a.is_baseline);
   const controlArmAnalysis = analysis.arm_analyses[controlArmIndex];
