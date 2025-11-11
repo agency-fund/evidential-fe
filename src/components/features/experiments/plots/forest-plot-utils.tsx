@@ -3,6 +3,12 @@ import {
   ExperimentAnalysisResponse,
   FreqExperimentAnalysisResponse,
   BanditExperimentAnalysisResponse,
+  PreassignedFrequentistExperimentSpecOutput,
+  GetExperimentResponse,
+  OnlineFrequentistExperimentSpecOutput,
+  PreassignedFrequentistExperimentSpecInputExperimentType,
+  OnlineFrequentistExperimentSpecInputExperimentType,
+  DesignSpecOutput,
 } from '@/api/methods.schemas';
 import {
   BanditEffectData,
@@ -11,7 +17,7 @@ import {
   ArmDataPoint,
   TimeSeriesDataPoint,
   ArmMetadata,
-  BanditArmDataPoint,
+  Significance,
 } from './forest-plot-models';
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 
@@ -63,16 +69,41 @@ export const isBandit = (
   return analysisData?.type === 'bandit';
 };
 
+export const isFrequentistSpec = (
+  spec: DesignSpecOutput | undefined,
+): spec is OnlineFrequentistExperimentSpecOutput | PreassignedFrequentistExperimentSpecOutput => {
+  if (!spec) return false;
+  return (
+    spec?.experiment_type in PreassignedFrequentistExperimentSpecInputExperimentType ||
+    spec?.experiment_type in OnlineFrequentistExperimentSpecInputExperimentType
+  );
+};
+
+/**
+ * Helper to safely extract alpha and power from frequentist experiment design specs
+ *
+ * @returns obj with alpha & power values from the exp design. Values are undefined if not a frequentist experiment.
+ */
+export const getAlphaAndPower = (
+  experiment: GetExperimentResponse | undefined,
+): { alpha: number | undefined; power: number | undefined } => {
+  if (!isFrequentistSpec(experiment?.design_spec)) return { alpha: undefined, power: undefined };
+  return {
+    alpha: experiment?.design_spec?.alpha,
+    power: experiment?.design_spec?.power,
+  };
+};
+
 /**
  * Pre-computes effect size data for all metrics in a frequentist analysis.
- * Returns undefined for non-frequentist experiments.
+ * Returns undefined for non-frequentist experiments (i.e. not FreqExperimentAnalysisResponse).
  *
- * @param analysisData - The experiment analysis response
+ * @param analysisData - The experiment analysis response.
  * @param alpha - The significance threshold (e.g., 0.05 for 95% confidence)
  * @returns Map of metric names to effect size arrays, or undefined
  */
-export const precomputeEffectSizesByMetric = (
-  analysisData: FreqExperimentAnalysisResponse,
+export const precomputeFreqEffectsByMetric = (
+  analysisData: ExperimentAnalysisResponse,
   alpha: number = 0.05,
 ): Map<string, EffectSizeData[]> | undefined => {
   if (!isFrequentist(analysisData)) return undefined;
@@ -81,17 +112,18 @@ export const precomputeEffectSizesByMetric = (
   for (const metricAnalysis of analysisData.metric_analyses) {
     // TODO: cleanup fallback when metric_name is not nullable in the backend (wasn't supposed to be)
     const metricName = metricAnalysis.metric_name || '';
-    const effectSizes = generateEffectSizeData(metricAnalysis, alpha);
+    const effectSizes = _generateFreqEffectSizeData(metricAnalysis, alpha);
     effectSizesByMetric.set(metricName, effectSizes);
   }
   return effectSizesByMetric;
 };
 
-export const precomputeBanditEffects = (
-  analysisData: BanditExperimentAnalysisResponse,
-): BanditEffectData[] | undefined => {
+/**
+ * @returns undefined for non-bandit experiments (i.e. not BanditExperimentAnalysisResponse).
+ */
+export const precomputeBanditEffects = (analysisData: ExperimentAnalysisResponse): BanditEffectData[] | undefined => {
   if (!isBandit(analysisData)) return undefined;
-  return generateBanditEffectData(analysisData);
+  return _generateBanditEffectData(analysisData);
 };
 
 /**
@@ -116,18 +148,16 @@ export const computeBoundsForMetric = (
 
   // Iterate through all analyses and find min/max
   if (analysisStates.length > 0 && analysisStates[0].data?.type === 'freq') {
-    if (!metricName) {
-      return [undefined, undefined];
-    } else {
-      for (const analysis of analysesToCheck) {
-        const effectSizes = analysis.effectSizesByMetric?.get(metricName);
-        if (!effectSizes) continue;
+    if (!metricName) return [undefined, undefined];
 
-        for (const effectSize of effectSizes) {
-          const { absCI95Lower, absCI95Upper } = effectSize;
-          minLower = minLower === undefined ? absCI95Lower : Math.min(minLower, absCI95Lower);
-          maxUpper = maxUpper === undefined ? absCI95Upper : Math.max(maxUpper, absCI95Upper);
-        }
+    for (const analysis of analysesToCheck) {
+      const effectSizes = analysis.effectSizesByMetric?.get(metricName);
+      if (!effectSizes) continue;
+
+      for (const effectSize of effectSizes) {
+        const { absCI95Lower, absCI95Upper } = effectSize;
+        minLower = minLower === undefined ? absCI95Lower : Math.min(minLower, absCI95Lower);
+        maxUpper = maxUpper === undefined ? absCI95Upper : Math.max(maxUpper, absCI95Upper);
       }
     }
   } else if (analysisStates.length > 0 && analysisStates[0].data?.type === 'bandit') {
@@ -154,7 +184,7 @@ export const computeBoundsForMetric = (
  * @param alpha - The significance threshold (e.g., 0.05 for 95% confidence)
  * @returns Array of effect size data for each arm
  */
-export const generateEffectSizeData = (analysis: MetricAnalysis, alpha: number): EffectSizeData[] => {
+const _generateFreqEffectSizeData = (analysis: MetricAnalysis, alpha: number): EffectSizeData[] => {
   // Extract data for visualization
   const controlArmIndex = analysis.arm_analyses.findIndex((a) => a.is_baseline);
   const controlArmAnalysis = analysis.arm_analyses[controlArmIndex];
@@ -208,7 +238,7 @@ export const generateEffectSizeData = (analysis: MetricAnalysis, alpha: number):
  * @param alpha - The significance threshold (e.g., 0.05 for 95% confidence)
  * @returns Array of effect data for each arm
  */
-export const generateBanditEffectData = (analysis: BanditExperimentAnalysisResponse): BanditEffectData[] => {
+const _generateBanditEffectData = (analysis: BanditExperimentAnalysisResponse): BanditEffectData[] => {
   // Our data structure for visualization
   const postMinMean = Math.min(...analysis.arm_analyses.map((d) => d.post_pred_mean));
   const priorMinMean = Math.min(...analysis.arm_analyses.map((d) => d.prior_pred_mean));
@@ -314,22 +344,33 @@ export const calculateJitterOffset = (armIndex: number, totalArms: number): numb
 };
 
 /**
- * Determines the color for a confidence interval based on significance and effect direction.
+ * Get color for an arm based on its index, baseline status, and selection state.
+ */
+export const getArmColor = (armIndex: number, isBaseline: boolean, isSelected: boolean): string => {
+  if (isBaseline) {
+    return isSelected ? CONTROL_COLOR : INACTIVE_CONTROL_COLOR;
+  }
+
+  const modulus = ARM_COLORS.length;
+  const colorIndex = (((armIndex - 1) % modulus) + modulus) % modulus;
+  return isSelected ? ARM_COLORS[colorIndex] : INACTIVE_ARM_COLORS[colorIndex];
+};
+
+/**
+ * Determines the color for a confidence interval based on significance.
  *
  * @param baseColor - The default color to use when not significant
- * @param isSignificant - Whether the effect is statistically significant
- * @param isPositive - Whether the effect is positive (only relevant when significant)
+ * @param significance - The significance of the arm's mean effect
  * @param isSelected - Whether the arm is selected
  * @returns The color string for the confidence interval
  */
 export const getColorWithSignificance = (
   baseColor: string,
-  isSignificant: boolean,
-  isPositive: boolean,
+  significance: Significance,
   isSelected: boolean,
 ): string => {
-  if (!isSignificant) return baseColor;
-  return isPositive
+  if (significance === Significance.No) return baseColor;
+  return significance === Significance.Positive
     ? isSelected
       ? POSITIVE_COLOR
       : INACTIVE_POSITIVE_COLOR
@@ -390,33 +431,37 @@ export const transformAnalysisForForestTimeseriesPlot = (
 
   // Transform each state into a timeseries data point
   for (const state of validStates) {
-    let armEffects: Map<string, ArmDataPoint | BanditArmDataPoint> = new Map();
+    const armEffects = new Map<string, ArmDataPoint>();
 
     if (isFrequentist(state.data)) {
       const effectSizes = state.effectSizesByMetric?.get(metricName);
       if (!effectSizes) continue;
 
-      armEffects = new Map<string, ArmDataPoint>();
       for (const effectSize of effectSizes) {
+        // Determine significance based on the effect
+        let significance = Significance.No;
+        if (effectSize.significant) {
+          significance = effectSize.effect > 0 ? Significance.Positive : Significance.Negative;
+        }
+
         armEffects.set(effectSize.armId, {
-          estimate: effectSize.effect,
-          absEstimate: effectSize.absEffect,
-          upper: effectSize.absCI95Upper,
-          lower: effectSize.absCI95Lower,
-          significant: effectSize.significant,
+          absMean: effectSize.absEffect,
+          upperCI: effectSize.absCI95Upper,
+          lowerCI: effectSize.absCI95Lower,
+          significance,
         });
       }
     } else if (isBandit(state.data)) {
       const banditEffects = state.banditEffects;
       if (!banditEffects) continue;
 
-      armEffects = new Map<string, BanditArmDataPoint>();
       for (const effect of banditEffects) {
+        // Bandit experiments don't have a baseline comparison, so significance is always 'no'
         armEffects.set(effect.armId, {
-          postPredMean: effect.postPredMean,
-          postPredStd: effect.postPredStd,
-          postPredci95Lower: effect.postPredci95Lower,
-          postPredci95Upper: effect.postPredci95Upper,
+          absMean: effect.postPredMean,
+          upperCI: effect.postPredci95Upper,
+          lowerCI: effect.postPredci95Lower,
+          significance: Significance.No,
         });
       }
     }
@@ -442,7 +487,7 @@ export const transformAnalysisForForestTimeseriesPlot = (
   return { timeseriesData, armMetadata, minDate, maxDate };
 };
 
-// Re-export the interfaces for backward compatibility
+// Re-export the interfaces and types for backward compatibility
 export type {
   EffectSizeData,
   BanditEffectData,
@@ -451,3 +496,4 @@ export type {
   TimeSeriesDataPoint,
   ArmMetadata,
 } from './forest-plot-models';
+export { Significance } from './forest-plot-models';
