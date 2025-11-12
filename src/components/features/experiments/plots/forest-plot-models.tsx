@@ -17,23 +17,54 @@ export interface EffectSizeData {
   significant: boolean;
 }
 
+export interface BanditEffectData {
+  armId: string;
+  armName: string;
+
+  postPredMean: number;
+  postPredStd: number;
+  postPredCI95Lower: number;
+  postPredCI95Upper: number;
+  postPredCI95: number;
+  postPredabsCI95Lower: number;
+  postPredabsCI95Upper: number;
+
+  priorPredMean: number;
+  priorPredStd: number;
+  priorPredCI95Lower: number;
+  priorPredCI95Upper: number;
+  priorPredCI95: number;
+  priorPredabsCI95Lower: number;
+  priorPredabsCI95Upper: number;
+}
+
 export interface AnalysisState {
   key: string;
   data: ExperimentAnalysisResponse | undefined;
   updated_at: Date;
   label: string;
   effectSizesByMetric?: Map<string, EffectSizeData[]>;
+  banditEffects?: BanditEffectData[];
 }
 
 /**
- * Data structures for timeseries visualization
+ * Significance enum for indicating effect direction relative to baseline
+ */
+export enum Significance {
+  No = 'no',
+  Positive = 'pos',
+  Negative = 'neg',
+}
+
+/**
+ * Unified data structure for timeseries visualization
+ * Works for both frequentist and bandit experiments
  */
 export interface ArmDataPoint {
-  estimate: number; // if baseline, this is an absolute estimate
-  absEstimate: number;
-  upper: number;
-  lower: number;
-  significant: boolean;
+  absMean: number;
+  lowerCI: number;
+  upperCI: number;
+  significance: Significance;
 }
 
 export interface TimeSeriesDataPoint {

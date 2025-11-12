@@ -45,9 +45,9 @@ export function ConfidenceInterval({
 
         // Rescale the x and y values to the pixel coordinates
         const x = xAxis.scale(dataPoint.dateTimestampMs) + jitterOffset;
-        const yLower = yAxis.scale(armData.lower);
-        const yUpper = yAxis.scale(armData.upper);
-        const color = getColorWithSignificance(baseColor, armData.significant, armData.estimate > 0, selected);
+        const yLower = yAxis.scale(armData.lowerCI);
+        const yUpper = yAxis.scale(armData.upperCI);
+        const color = getColorWithSignificance(baseColor, armData.significance, selected);
 
         return (
           <g key={`ci-${armId}-${pointIndex}`}>

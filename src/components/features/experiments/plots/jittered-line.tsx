@@ -39,7 +39,7 @@ export function JitteredLine({
         if (!armData) return null;
 
         const x = xAxis.scale(dataPoint.dateTimestampMs) + jitterOffset;
-        const y = yAxis.scale(armData.absEstimate);
+        const y = yAxis.scale(armData.absMean);
 
         return { x, y };
       })
