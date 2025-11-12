@@ -1,11 +1,20 @@
 'use client';
-import { DataList, Flex, HoverCard, Table, Text } from '@radix-ui/themes';
+import { DataList, Flex, HoverCard, Heading, Table} from '@radix-ui/themes';
 import { EventSummary } from '@/api/methods.schemas';
 import Link from 'next/link';
 import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
+import { XSpinner } from '@/components/ui/x-spinner';
+import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
 
-export function EventsTable({ events }: { events: EventSummary[] }) {
+interface EventsTableProps {
+  events: EventSummary[];
+  isLoading: boolean;
+  error?: Error;
+}
+
+export function EventsTable({ events, isLoading, error }: EventsTableProps) {
   const eventDetails = [
     {
       label: 'Event ID',
@@ -25,7 +34,17 @@ export function EventsTable({ events }: { events: EventSummary[] }) {
   ];
 
   return (
-    <Table.Root variant="surface">
+    <Flex direction="column" gap="3">
+      <Heading size="4">Recent Events</Heading>
+
+      {isLoading ? (
+        <XSpinner message="Loading events..." />
+      ) : error ? (
+        <GenericErrorCallout title="Failed to fetch events" error={error as Error} />
+      ) : events.length === 0 ? (
+        <EmptyStateCard title="No events found" description="Events will appear here" />
+      ) : (
+        <Table.Root variant="surface">
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeaderCell>Event Type</Table.ColumnHeaderCell>
@@ -35,14 +54,7 @@ export function EventsTable({ events }: { events: EventSummary[] }) {
         </Table.Row>
       </Table.Header>
       <Table.Body>
-        {events.length === 0 ? (
-          <Table.Row>
-            <Table.Cell colSpan={4}>
-              <Text align="center">No events found</Text>
-            </Table.Cell>
-          </Table.Row>
-        ) : (
-          events.map((event) => (
+        {events.map((event) => (
             <HoverCard.Root key={event.id}>
               <HoverCard.Trigger>
                 <Table.Row style={{ cursor: 'pointer' }}>
@@ -84,9 +96,10 @@ export function EventsTable({ events }: { events: EventSummary[] }) {
                 )}
               </HoverCard.Content>
             </HoverCard.Root>
-          ))
-        )}
+          ))}
       </Table.Body>
-    </Table.Root>
+        </Table.Root>
+      )}
+    </Flex>
   );
 }

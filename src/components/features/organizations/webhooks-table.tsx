@@ -1,5 +1,5 @@
 'use client';
-import { Code, Flex, IconButton, Table, Text, Tooltip } from '@radix-ui/themes';
+import { Code, Flex, Heading, IconButton, Table, Tooltip } from '@radix-ui/themes';
 import { WebhookSummary } from '@/api/methods.schemas';
 import { EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons';
 import { DeleteWebhookDialog } from '@/components/features/organizations/delete-webhook-dialog';
@@ -8,10 +8,25 @@ import { EditWebhookDialog } from '@/components/features/organizations/edit-webh
 import { RegenerateWebhookAuthDialog } from '@/components/features/organizations/regenerate-webhook-auth-dialog';
 import { useState } from 'react';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
+import { XSpinner } from '@/components/ui/x-spinner';
+import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
+import { AddWebhookDialog } from '@/components/features/organizations/add-webhook-dialog';
 
-export function WebhooksTable({ webhooks, organizationId }: { webhooks: WebhookSummary[]; organizationId: string }) {
+interface WebhooksTableProps {
+  webhooks: WebhookSummary[];
+  organizationId: string;
+  isLoading: boolean;
+  error?: Error;
+  webhookCount: number;
+  webhookLimit: number;
+}
+
+export function WebhooksTable({ webhooks, organizationId, isLoading, error, webhookCount, webhookLimit }: WebhooksTableProps) {
   // Track which webhook auth tokens are visible
   const [visibleTokens, setVisibleTokens] = useState<Record<string, boolean>>({});
+
+  const isLimitReached = webhookCount >= webhookLimit;
 
   const toggleTokenVisibility = (webhookId: string) => {
     setVisibleTokens((prev) => ({
@@ -21,7 +36,22 @@ export function WebhooksTable({ webhooks, organizationId }: { webhooks: WebhookS
   };
 
   return (
-    <Table.Root variant="surface">
+    <Flex direction="column" gap="3">
+      <Flex justify="between" align="center">
+        <Heading size="4">Webhooks</Heading>
+        <AddWebhookDialog organizationId={organizationId} disabled={isLimitReached} />
+      </Flex>
+
+      {isLoading ? (
+        <XSpinner message="Loading webhooks..." />
+      ) : error ? (
+        <GenericErrorCallout title="Failed to fetch webhooks" error={error} />
+      ) : webhooks.length === 0 ? (
+        <EmptyStateCard title="No webhooks found" description="Add a webhook to get started">
+          <AddWebhookDialog organizationId={organizationId} disabled={isLimitReached} />
+        </EmptyStateCard>
+      ) : (
+        <Table.Root variant="surface">
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
@@ -32,14 +62,7 @@ export function WebhooksTable({ webhooks, organizationId }: { webhooks: WebhookS
         </Table.Row>
       </Table.Header>
       <Table.Body>
-        {webhooks.length === 0 ? (
-          <Table.Row>
-            <Table.Cell colSpan={5}>
-              <Text align="center">No webhooks found</Text>
-            </Table.Cell>
-          </Table.Row>
-        ) : (
-          webhooks.map((webhook) => (
+        {webhooks.map((webhook) => (
             <Table.Row key={webhook.id}>
               <Table.Cell>{webhook.name}</Table.Cell>
               <Table.Cell>{webhook.type}</Table.Cell>
@@ -76,9 +99,10 @@ export function WebhooksTable({ webhooks, organizationId }: { webhooks: WebhookS
                 </Flex>
               </Table.Cell>
             </Table.Row>
-          ))
-        )}
+          ))}
       </Table.Body>
-    </Table.Root>
+        </Table.Root>
+      )}
+    </Flex>
   );
 }
