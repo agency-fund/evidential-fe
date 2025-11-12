@@ -71,6 +71,18 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
     setOpen(false);
   };
 
+  const handleWarehouseTypeChange = (value: AllowedDwhTypes) => {
+    setDwhType(value);
+
+    const currentPortIsDefault = Object.values(portMap).includes(formData.port);
+    if (currentPortIsDefault && portMap[value]) {
+      setFormData((prev) => ({
+        ...prev,
+        port: portMap[value],
+      }));
+    }
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -163,19 +175,7 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
               <Text as="div" size="2" mb="1" weight="bold">
                 Type
               </Text>
-              <RadioGroup.Root
-                defaultValue="postgres"
-                onValueChange={(value) => {
-                  setDwhType(value as 'postgres' | 'redshift' | 'bigquery');
-
-                  if(formData.port === portMap['postgres'] || formData.port === portMap['redshift']) {
-                    setFormData((prev) => ({
-                      ...prev,
-                      port: value === 'redshift' ? portMap['redshift'] : portMap['postgres'],
-                    }));
-                  }
-                }}
-              >
+              <RadioGroup.Root defaultValue="postgres" onValueChange={handleWarehouseTypeChange}>
                 <Flex gap="2" direction="column">
                   <Text as="label" size="2">
                     <Flex gap="2">
