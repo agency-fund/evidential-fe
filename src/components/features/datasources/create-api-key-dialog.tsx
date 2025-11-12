@@ -4,21 +4,21 @@ import { useState } from 'react';
 import { getListApiKeysKey, useCreateApiKey } from '@/api/admin';
 import { Button, Dialog, Flex } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
-import { PlusIcon } from '@radix-ui/react-icons';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { ApiKeyResultsDialog } from '@/components/features/datasources/api-key-results-dialog';
+import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
+import { API_BASE_URL } from '@/services/constants';
 import { mutate } from 'swr';
 
 export const CreateApiKeyDialog = ({
   datasourceId,
-  onKeyCreated,
+  open,
+  onOpenChange,
 }: {
   datasourceId: string;
-  onKeyCreated?: (key: { key: string }) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) => {
-  const [state, setState] = useState<'presenting-form' | 'presenting-results' | 'presenting-button'>(
-    'presenting-button',
-  );
+  const [showResults, setShowResults] = useState(false);
   const {
     data: createdKey,
     trigger: triggerCreateApiKey,
@@ -31,68 +31,86 @@ export const CreateApiKeyDialog = ({
     },
   });
 
+  const handleCreate = async () => {
+    await triggerCreateApiKey();
+    setShowResults(true);
+  };
+
+  const handleClose = () => {
+    setShowResults(false);
+    reset();
+    onOpenChange(false);
+  };
+
+  const exampleCurlSnippet =
+    createdKey !== undefined
+      ? `curl -H "X-API-Key: ${createdKey.key}" -i -H "Datasource-ID: ${datasourceId}" ${API_BASE_URL}/v1/experiments`
+      : '';
+
   return (
-    <>
-      {state === 'presenting-results' && createdKey !== undefined && !onKeyCreated && (
-        <ApiKeyResultsDialog
-          createdKey={createdKey}
-          datasourceId={datasourceId}
-          isOpen={true}
-          onOpenChange={(open) => setState(open ? 'presenting-results' : 'presenting-button')}
-        />
-      )}
+    <Dialog.Root
+      open={open}
+      onOpenChange={(op) => {
+        if (!op) {
+          handleClose();
+        } else {
+          onOpenChange(op);
+        }
+      }}
+    >
+      <Dialog.Content
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !isMutating) {
+            e.preventDefault();
+            handleCreate();
+          }
+        }}
+      >
+        {isMutating ? (
+          <XSpinner message="Creating API key..." />
+        ) : showResults && createdKey ? (
+          <>
+            <Dialog.Title>Created API key</Dialog.Title>
+            <Dialog.Description size="2" mb="4">
+              The API key has been created. It will only be shown once. You can use it to make API calls.
+            </Dialog.Description>
 
-      {(state === 'presenting-form' || state == 'presenting-button') && (
-        <>
-          <Dialog.Root onOpenChange={(open) => setState(open ? 'presenting-form' : 'presenting-button')}>
-            <Dialog.Trigger>
-              <Button>
-                <PlusIcon /> Create API Key
-              </Button>
-            </Dialog.Trigger>
+            <CodeSnippetCard title="API key" content={createdKey.key} tooltipContent="Copy API key" />
 
-            <Dialog.Content>
-              {isMutating ? (
-                <XSpinner message="Creating API key..." />
-              ) : (
-                <>
-                  <form
-                    onSubmit={async (event) => {
-                      event.preventDefault();
-                      const response = await triggerCreateApiKey();
-                      if (onKeyCreated) {
-                        onKeyCreated({ key: response.key });
-                      }
-                      setState('presenting-results');
-                    }}
-                  >
-                    <Dialog.Title>Create API key</Dialog.Title>
-                    <Dialog.Description size="2" mb="4">
-                      Create a new API key for this datasource.
-                    </Dialog.Description>
+            <CodeSnippetCard title="Example" content={exampleCurlSnippet} tooltipContent="Copy example" />
 
-                    {error && (
-                      <GenericErrorCallout
-                        title={'There was a problem creating the API key. Please try again.'}
-                        error={error}
-                      />
-                    )}
+            <Flex gap="3" mt="4" justify="end">
+              <Dialog.Close>
+                <Button>Close</Button>
+              </Dialog.Close>
+            </Flex>
+          </>
+        ) : (
+          <>
+            <Dialog.Title>Create API key</Dialog.Title>
+            <Dialog.Description size="2" mb="4">
+              Create a new API key for this datasource.
+            </Dialog.Description>
 
-                    <Flex gap="3" mt="4" justify="end">
-                      <Dialog.Close onClick={() => reset()}>
-                        <Button variant="soft" color="gray">
-                          Cancel
-                        </Button>
-                      </Dialog.Close>
-                      <Button type="submit">Create</Button>
-                    </Flex>
-                  </form>
-                </>
-              )}
-            </Dialog.Content>
-          </Dialog.Root>
-        </>
-      )}
-    </>
+            {error && (
+              <GenericErrorCallout
+                title={'There was a problem creating the API key. Please try again.'}
+                error={error}
+              />
+            )}
+
+            <Flex gap="3" mt="4" justify="end">
+              <Dialog.Close>
+                <Button variant="soft" color="gray">
+                  Cancel
+                </Button>
+              </Dialog.Close>
+              <Button onClick={handleCreate}>Create</Button>
+            </Flex>
+          </>
+        )}
+      </Dialog.Content>
+    </Dialog.Root>
   );
 };
+

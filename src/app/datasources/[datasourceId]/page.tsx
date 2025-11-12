@@ -2,7 +2,7 @@
 import { Callout, Flex, Heading, Text } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
-import { ApiKeysSection } from '@/components/features/datasources/api-keys-section';
+import { ApiKeysTable } from '@/components/features/datasources/api-keys-table';
 import { useGetDatasource, useInspectDatasource } from '@/api/admin';
 import { useParams, useRouter } from 'next/navigation';
 import { EditDatasourceDialog } from '@/components/features/datasources/edit-datasource-dialog';
@@ -116,7 +116,7 @@ export default function Page() {
           )}
         </>
       )}
-      <ApiKeysSection datasourceId={datasourceId} />
+      <ApiKeysTable datasourceId={datasourceId} />
     </Flex>
   );
 }
