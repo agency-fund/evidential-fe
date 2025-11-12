@@ -10,6 +10,11 @@ import { mutate } from 'swr';
 import { PostgresSslModes } from '@/services/typehelper';
 import { ApiError } from '@/services/orval-fetch';
 
+const portMap: Record<string, string> = {
+  postgres: '5432',
+  redshift: '5439',
+};
+
 type AllowedDwhTypes = Exclude<DsnInput['type'], ApiOnlyDsn['type']>;
 
 interface FormFields {
@@ -29,7 +34,7 @@ interface FormFields {
 const defaultFormData = (): FormFields => ({
   name: '',
   host: '',
-  port: '5432',
+  port: portMap['postgres'],
   database: '',
   user: '',
   password: '',
@@ -56,6 +61,8 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
       },
     },
   });
+
+  const isDNSError = error instanceof ApiError && error.response.status === 400;
 
   const handleClose = () => {
     setFormData(defaultFormData());
@@ -113,8 +120,6 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
     );
   };
 
-  const isDNSError = error instanceof ApiError && error.response.status === 400;
-
   return (
     <Dialog.Root
       open={open}
@@ -162,6 +167,13 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                 defaultValue="postgres"
                 onValueChange={(value) => {
                   setDwhType(value as 'postgres' | 'redshift' | 'bigquery');
+
+                  if(formData.port === portMap['postgres'] || formData.port === portMap['redshift']) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      port: value === 'redshift' ? portMap['redshift'] : portMap['postgres'],
+                    }));
+                  }
                 }}
               >
                 <Flex gap="2" direction="column">
@@ -215,7 +227,7 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                     Port
                   </Text>
                   {dwhType === 'redshift' && (
-                    <Text size={'1'} mb={'1'}>
+                    <Text size="1" mb="1">
                       Tip: Redshift default port is 5439.
                     </Text>
                   )}
