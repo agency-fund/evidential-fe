@@ -21,26 +21,26 @@ export function UsersTable({
       </Flex>
 
       <Table.Root variant="surface">
-      <Table.Header>
-        <Table.Row>
-          <Table.ColumnHeaderCell>Email</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
-        </Table.Row>
-      </Table.Header>
-      <Table.Body>
-        {users.map((user) => (
-          <Table.Row key={user.id}>
-            <Table.Cell>{user.email}</Table.Cell>
-            <Table.Cell>
-              <Flex gap="2">
-                {auth.isAuthenticated && user.email !== auth.userEmail && (
-                  <DeleteUserDialog organizationId={organizationId} userId={user.id} />
-                )}
-              </Flex>
-            </Table.Cell>
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeaderCell>Email</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
           </Table.Row>
-        ))}
-      </Table.Body>
+        </Table.Header>
+        <Table.Body>
+          {users.map((user) => (
+            <Table.Row key={user.id}>
+              <Table.Cell>{user.email}</Table.Cell>
+              <Table.Cell>
+                <Flex gap="2">
+                  {auth.isAuthenticated && user.email !== auth.userEmail && (
+                    <DeleteUserDialog organizationId={organizationId} userId={user.id} />
+                  )}
+                </Flex>
+              </Table.Cell>
+            </Table.Row>
+          ))}
+        </Table.Body>
       </Table.Root>
     </Flex>
   );

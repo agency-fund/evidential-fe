@@ -30,19 +30,19 @@ export function DatasourcesTable({
         </EmptyStateCard>
       ) : (
         <Table.Root variant="surface">
-      <Table.Header>
-        <Table.Row>
-          <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Participant Types</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Driver</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
-        </Table.Row>
-      </Table.Header>
-      <Table.Body>
-        {datasources.map((datasource) => (
-          <DatasourceRow key={datasource.id} datasource={datasource} organizationId={organizationId} />
-        ))}
-      </Table.Body>
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Participant Types</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Driver</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {datasources.map((datasource) => (
+              <DatasourceRow key={datasource.id} datasource={datasource} organizationId={organizationId} />
+            ))}
+          </Table.Body>
         </Table.Root>
       )}
     </Flex>

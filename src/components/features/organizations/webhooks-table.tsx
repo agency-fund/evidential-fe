@@ -1,7 +1,7 @@
 'use client';
-import { Code, Flex, Heading, IconButton, Table, Tooltip } from '@radix-ui/themes';
+import { Button, Code, Flex, Heading, IconButton, Table, Tooltip } from '@radix-ui/themes';
 import { WebhookSummary } from '@/api/methods.schemas';
-import { EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons';
+import { EyeClosedIcon, EyeOpenIcon, PlusIcon } from '@radix-ui/react-icons';
 import { DeleteWebhookDialog } from '@/components/features/organizations/delete-webhook-dialog';
 import { WebhookInfoDialog } from '@/components/features/organizations/webhook-info-dialog';
 import { EditWebhookDialog } from '@/components/features/organizations/edit-webhook-dialog';
@@ -22,9 +22,16 @@ interface WebhooksTableProps {
   webhookLimit: number;
 }
 
-export function WebhooksTable({ webhooks, organizationId, isLoading, error, webhookCount, webhookLimit }: WebhooksTableProps) {
-  // Track which webhook auth tokens are visible
+export function WebhooksTable({
+  webhooks,
+  organizationId,
+  isLoading,
+  error,
+  webhookCount,
+  webhookLimit,
+}: WebhooksTableProps) {
   const [visibleTokens, setVisibleTokens] = useState<Record<string, boolean>>({});
+  const [addWebhookDialogOpen, setAddWebhookDialogOpen] = useState(false);
 
   const isLimitReached = webhookCount >= webhookLimit;
 
@@ -39,8 +46,17 @@ export function WebhooksTable({ webhooks, organizationId, isLoading, error, webh
     <Flex direction="column" gap="3">
       <Flex justify="between" align="center">
         <Heading size="4">Webhooks</Heading>
-        <AddWebhookDialog organizationId={organizationId} disabled={isLimitReached} />
+        <Button disabled={isLimitReached} onClick={() => setAddWebhookDialogOpen(true)}>
+          <PlusIcon />
+          Add Webhook
+        </Button>
       </Flex>
+
+      <AddWebhookDialog
+        organizationId={organizationId}
+        open={addWebhookDialogOpen}
+        onOpenChange={setAddWebhookDialogOpen}
+      />
 
       {isLoading ? (
         <XSpinner message="Loading webhooks..." />
@@ -48,59 +64,62 @@ export function WebhooksTable({ webhooks, organizationId, isLoading, error, webh
         <GenericErrorCallout title="Failed to fetch webhooks" error={error} />
       ) : webhooks.length === 0 ? (
         <EmptyStateCard title="No webhooks found" description="Add a webhook to get started">
-          <AddWebhookDialog organizationId={organizationId} disabled={isLimitReached} />
+          <Button disabled={isLimitReached} onClick={() => setAddWebhookDialogOpen(true)}>
+            <PlusIcon />
+            Add Webhook
+          </Button>
         </EmptyStateCard>
       ) : (
         <Table.Root variant="surface">
-      <Table.Header>
-        <Table.Row>
-          <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>URL</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Auth Key</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
-        </Table.Row>
-      </Table.Header>
-      <Table.Body>
-        {webhooks.map((webhook) => (
-            <Table.Row key={webhook.id}>
-              <Table.Cell>{webhook.name}</Table.Cell>
-              <Table.Cell>{webhook.type}</Table.Cell>
-              <Table.Cell>{webhook.url}</Table.Cell>
-              <Table.Cell>
-                <Flex align="center" gap="2">
-                  {webhook.auth_token && (
-                    <>
-                      <Code variant={'ghost'}>
-                        {visibleTokens[webhook.id] ? webhook.auth_token : '••••••••••••••••'}
-                      </Code>
-                      <IconButton
-                        size="1"
-                        aria-label={visibleTokens[webhook.id] ? 'Hide auth token' : 'Show auth token'}
-                        color="gray"
-                        variant="ghost"
-                        onClick={() => toggleTokenVisibility(webhook.id)}
-                      >
-                        <Tooltip content={visibleTokens[webhook.id] ? 'Hide auth token' : 'Show auth token'}>
-                          {visibleTokens[webhook.id] ? <EyeOpenIcon /> : <EyeClosedIcon />}
-                        </Tooltip>
-                      </IconButton>
-                      <CopyToClipBoard tooltipContent="Copy auth key" content={webhook.auth_token || ''} />
-                    </>
-                  )}
-                </Flex>
-              </Table.Cell>
-              <Table.Cell>
-                <Flex gap="2">
-                  <WebhookInfoDialog webhook={webhook} />
-                  <EditWebhookDialog organizationId={organizationId} webhook={webhook} />
-                  <RegenerateWebhookAuthDialog organizationId={organizationId} webhookId={webhook.id} />
-                  <DeleteWebhookDialog organizationId={organizationId} webhookId={webhook.id} />
-                </Flex>
-              </Table.Cell>
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>URL</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Auth Key</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
             </Table.Row>
-          ))}
-      </Table.Body>
+          </Table.Header>
+          <Table.Body>
+            {webhooks.map((webhook) => (
+              <Table.Row key={webhook.id}>
+                <Table.Cell>{webhook.name}</Table.Cell>
+                <Table.Cell>{webhook.type}</Table.Cell>
+                <Table.Cell>{webhook.url}</Table.Cell>
+                <Table.Cell>
+                  <Flex align="center" gap="2">
+                    {webhook.auth_token && (
+                      <>
+                        <Code variant="ghost">
+                          {visibleTokens[webhook.id] ? webhook.auth_token : '••••••••••••••••'}
+                        </Code>
+                        <IconButton
+                          size="1"
+                          aria-label={visibleTokens[webhook.id] ? 'Hide auth token' : 'Show auth token'}
+                          color="gray"
+                          variant="ghost"
+                          onClick={() => toggleTokenVisibility(webhook.id)}
+                        >
+                          <Tooltip content={visibleTokens[webhook.id] ? 'Hide auth token' : 'Show auth token'}>
+                            {visibleTokens[webhook.id] ? <EyeOpenIcon /> : <EyeClosedIcon />}
+                          </Tooltip>
+                        </IconButton>
+                        <CopyToClipBoard tooltipContent="Copy auth key" content={webhook.auth_token || ''} />
+                      </>
+                    )}
+                  </Flex>
+                </Table.Cell>
+                <Table.Cell>
+                  <Flex gap="2">
+                    <WebhookInfoDialog webhook={webhook} />
+                    <EditWebhookDialog organizationId={organizationId} webhook={webhook} />
+                    <RegenerateWebhookAuthDialog organizationId={organizationId} webhookId={webhook.id} />
+                    <DeleteWebhookDialog organizationId={organizationId} webhookId={webhook.id} />
+                  </Flex>
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
         </Table.Root>
       )}
     </Flex>
