@@ -1,6 +1,8 @@
 'use client';
-import { Table } from '@radix-ui/themes';
+import { Flex, Heading, Table } from '@radix-ui/themes';
 import DatasourceRow from '@/components/features/datasources/datasources-table-row';
+import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
+import { AddDatasourceDialog } from '@/components/features/datasources/add-datasource-dialog';
 
 export function DatasourcesTable({
   datasources,
@@ -13,8 +15,21 @@ export function DatasourcesTable({
   }[];
   organizationId: string;
 }) {
+  const isEmpty = datasources.length === 0 || (datasources.length === 1 && datasources[0].driver === 'none');
+
   return (
-    <Table.Root variant="surface">
+    <Flex direction="column" gap="3">
+      <Flex justify="between" align="center">
+        <Heading size="4">Datasources</Heading>
+        <AddDatasourceDialog organizationId={organizationId} />
+      </Flex>
+
+      {isEmpty ? (
+        <EmptyStateCard title="No data warehouse found" description="Add a new datasource to get started">
+          <AddDatasourceDialog organizationId={organizationId} />
+        </EmptyStateCard>
+      ) : (
+        <Table.Root variant="surface">
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
@@ -28,6 +43,8 @@ export function DatasourcesTable({
           <DatasourceRow key={datasource.id} datasource={datasource} organizationId={organizationId} />
         ))}
       </Table.Body>
-    </Table.Root>
+        </Table.Root>
+      )}
+    </Flex>
   );
 }

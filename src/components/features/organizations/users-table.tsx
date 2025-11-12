@@ -1,7 +1,8 @@
 'use client';
-import { Flex, Table } from '@radix-ui/themes';
+import { Flex, Heading, Table } from '@radix-ui/themes';
 import { DeleteUserDialog } from '@/components/features/organizations/delete-user-dialog';
 import { useAuth } from '@/providers/auth-provider';
+import { AddUserDialog } from '@/components/features/organizations/add-user-dialog';
 
 export function UsersTable({
   users,
@@ -11,8 +12,15 @@ export function UsersTable({
   organizationId: string;
 }) {
   const auth = useAuth();
+
   return (
-    <Table.Root variant="surface">
+    <Flex direction="column" gap="3">
+      <Flex justify="between" align="center">
+        <Heading size="4">Users</Heading>
+        <AddUserDialog organizationId={organizationId} />
+      </Flex>
+
+      <Table.Root variant="surface">
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeaderCell>Email</Table.ColumnHeaderCell>
@@ -33,6 +41,7 @@ export function UsersTable({
           </Table.Row>
         ))}
       </Table.Body>
-    </Table.Root>
+      </Table.Root>
+    </Flex>
   );
 }
