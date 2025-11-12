@@ -5,8 +5,7 @@ import { getListApiKeysKey, useCreateApiKey } from '@/api/admin';
 import { Button, Dialog, Flex } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
-import { API_BASE_URL } from '@/services/constants';
+import { ApiKeyResultsContent } from './api-key-results-content';
 import { mutate } from 'swr';
 
 export const CreateApiKeyDialog = ({
@@ -42,11 +41,6 @@ export const CreateApiKeyDialog = ({
     onOpenChange(false);
   };
 
-  const exampleCurlSnippet =
-    createdKey !== undefined
-      ? `curl -H "X-API-Key: ${createdKey.key}" -i -H "Datasource-ID: ${datasourceId}" ${API_BASE_URL}/v1/experiments`
-      : '';
-
   return (
     <Dialog.Root
       open={open}
@@ -75,9 +69,7 @@ export const CreateApiKeyDialog = ({
               The API key has been created. It will only be shown once. You can use it to make API calls.
             </Dialog.Description>
 
-            <CodeSnippetCard title="API key" content={createdKey.key} tooltipContent="Copy API key" />
-
-            <CodeSnippetCard title="Example" content={exampleCurlSnippet} tooltipContent="Copy example" />
+            <ApiKeyResultsContent createdKey={createdKey} datasourceId={datasourceId} />
 
             <Flex gap="3" mt="4" justify="end">
               <Dialog.Close>
@@ -113,4 +105,3 @@ export const CreateApiKeyDialog = ({
     </Dialog.Root>
   );
 };
-
