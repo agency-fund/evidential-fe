@@ -21,9 +21,9 @@ export function CreateOrganizationDialog() {
 
   const { trigger, isMutating, error, reset } = useCreateOrganizations({
     swr: {
-      onSuccess: () => {
+      onSuccess: async () => {
         handleClose();
-        mutate(getListOrganizationsKey());
+        await mutate(getListOrganizationsKey());
       },
     },
   });

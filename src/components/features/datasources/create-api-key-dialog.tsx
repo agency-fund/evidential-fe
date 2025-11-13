@@ -53,13 +53,13 @@ export const CreateApiKeyDialog = ({
       }}
     >
       <Dialog.Content
-        onKeyDown={(e) => {
+        onKeyDown={async (e) => {
           if (e.key === 'Enter' && !isMutating) {
             e.preventDefault();
             if (showResults && createdKey) {
               handleClose();
             } else {
-              handleCreate();
+              await handleCreate();
             }
           }
         }}
