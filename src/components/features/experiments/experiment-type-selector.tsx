@@ -108,7 +108,15 @@ export function ExperimentTypeSelector({ selectedType, dsDriver, onTypeSelect }:
       {/* Assignment Type Dialog for Traditional A/B */}
       <Flex direction="column" gap="3">
         <Dialog.Root open={showAssignmentDialog} onOpenChange={setShowAssignmentDialog}>
-          <Dialog.Content style={{ maxWidth: '600px' }}>
+          <Dialog.Content
+            style={{ maxWidth: '600px' }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && tempSelectedAssignment) {
+                e.preventDefault();
+                handleAssignmentConfirm();
+              }
+            }}
+          >
             <Dialog.Title>Choose Assignment Method</Dialog.Title>
             <Dialog.Description size="2" mb="4">
               Select how participants will be assigned to experiment arms for your A/B Test.

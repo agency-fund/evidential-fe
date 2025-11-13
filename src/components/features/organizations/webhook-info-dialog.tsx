@@ -1,8 +1,8 @@
 'use client';
+import { useState } from 'react';
 import { Button, Dialog, Flex, IconButton } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { WebhookSummary } from '@/api/methods.schemas';
-import { useState } from 'react';
 import { WebhookInfoContent } from '@/components/features/organizations/webhook-info-content';
 
 export function WebhookInfoDialog({ webhook }: { webhook: WebhookSummary }) {
@@ -16,7 +16,14 @@ export function WebhookInfoDialog({ webhook }: { webhook: WebhookSummary }) {
         </IconButton>
       </Dialog.Trigger>
 
-      <Dialog.Content>
+      <Dialog.Content
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            setOpen(false);
+          }
+        }}
+      >
         <Dialog.Title>Webhook Information</Dialog.Title>
         <Dialog.Description size="2" mb="2">
           Details about your webhook and how to use it.

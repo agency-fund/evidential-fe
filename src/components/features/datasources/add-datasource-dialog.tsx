@@ -10,6 +10,11 @@ import { mutate } from 'swr';
 import { PostgresSslModes } from '@/services/typehelper';
 import { ApiError } from '@/services/orval-fetch';
 
+const portMap: Record<string, string> = {
+  postgres: '5432',
+  redshift: '5439',
+};
+
 type AllowedDwhTypes = Exclude<DsnInput['type'], ApiOnlyDsn['type']>;
 
 interface FormFields {
@@ -29,7 +34,7 @@ interface FormFields {
 const defaultFormData = (): FormFields => ({
   name: '',
   host: '',
-  port: '5432',
+  port: portMap['postgres'],
   database: '',
   user: '',
   password: '',
@@ -57,11 +62,25 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
     },
   });
 
+  const isDNSError = error instanceof ApiError && error.response.status === 400;
+
   const handleClose = () => {
     setFormData(defaultFormData());
     setDwhType('postgres');
     reset();
     setOpen(false);
+  };
+
+  const handleWarehouseTypeChange = (value: AllowedDwhTypes) => {
+    setDwhType(value);
+
+    const currentPortIsDefault = Object.values(portMap).includes(formData.port);
+    if (currentPortIsDefault && portMap[value]) {
+      setFormData((prev) => ({
+        ...prev,
+        port: portMap[value],
+      }));
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -113,8 +132,6 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
     );
   };
 
-  const isDNSError = error instanceof ApiError && error.response.status === 400;
-
   return (
     <Dialog.Root
       open={open}
@@ -158,12 +175,7 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
               <Text as="div" size="2" mb="1" weight="bold">
                 Type
               </Text>
-              <RadioGroup.Root
-                defaultValue="postgres"
-                onValueChange={(value) => {
-                  setDwhType(value as 'postgres' | 'redshift' | 'bigquery');
-                }}
-              >
+              <RadioGroup.Root defaultValue="postgres" onValueChange={handleWarehouseTypeChange}>
                 <Flex gap="2" direction="column">
                   <Text as="label" size="2">
                     <Flex gap="2">
@@ -215,7 +227,7 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
                     Port
                   </Text>
                   {dwhType === 'redshift' && (
-                    <Text size={'1'} mb={'1'}>
+                    <Text size="1" mb="1">
                       Tip: Redshift default port is 5439.
                     </Text>
                   )}
