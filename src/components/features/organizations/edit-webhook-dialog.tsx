@@ -30,9 +30,9 @@ export function EditWebhookDialog({ organizationId, webhook }: EditWebhookDialog
 
   const { trigger, isMutating, error, reset } = useUpdateOrganizationWebhook(organizationId, webhook.id, {
     swr: {
-      onSuccess: () => {
+      onSuccess: async () => {
         handleClose();
-        mutate(getListOrganizationWebhooksKey(organizationId));
+        await mutate(getListOrganizationWebhooksKey(organizationId));
       },
     },
   });

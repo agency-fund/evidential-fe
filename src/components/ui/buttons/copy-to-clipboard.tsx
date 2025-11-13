@@ -16,8 +16,8 @@ export function CopyToClipBoard({ content, tooltipContent = 'Copy to clipboard',
   const [copied, setCopied] = useState(false);
   const timeoutRef = useRef<number | null>(null);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(content);
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(content);
     setCopied(true);
 
     if (timeoutRef.current) window.clearTimeout(timeoutRef.current);

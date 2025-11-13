@@ -21,9 +21,9 @@ export function AddUserDialog({ organizationId }: { organizationId: string }) {
 
   const { trigger, isMutating, error, reset } = useAddMemberToOrganization(organizationId, {
     swr: {
-      onSuccess: () => {
+      onSuccess: async () => {
         handleClose();
-        mutate(getGetOrganizationKey(organizationId));
+        await mutate(getGetOrganizationKey(organizationId));
       },
     },
   });

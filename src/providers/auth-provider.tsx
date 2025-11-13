@@ -95,7 +95,7 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
         const newToken = tokens.session_token ?? null;
         if (newToken === null) {
           console.log('exchangeCodeForTokens failed to return a usable token');
-          logout();
+          await logout();
           return;
         }
         const response = await checkCallerIdentity(newToken);
@@ -110,15 +110,15 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
         } else if (response.status === 401) {
           console.log('exchangeCodeForTokens succeeded but checkCallerIdentity failed');
           setUserIsMissingInvite(true);
-          logout();
+          await logout();
         } else {
           console.log('checkCallerIdentity failed');
-          logout();
+          await logout();
         }
       } finally {
         setFetching(false);
       }
-    })();
+    })().catch(console.error);
   }, [router, searchParams, setUser, isGoogleLoginRedirect, logout]);
 
   useEffect(() => {
@@ -132,7 +132,7 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
         const response = await checkCallerIdentity(sessionToken);
         if (response.status === 401) {
           console.log('session token has expired.');
-          logout();
+          await logout();
         }
       } catch (error) {
         console.error('Token validation error:', error);
