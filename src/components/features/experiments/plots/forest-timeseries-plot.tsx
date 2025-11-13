@@ -226,6 +226,10 @@ export default function ForestTimeseriesPlot({
                     selected={selected}
                     baseColor={getArmColor(index, armInfo.isBaseline, selected)}
                     jitterOffset={calculateJitterOffset(index, armMetadata.length)}
+                    onClick={(dataPoint) => {
+                      setSelectedArmId(armInfo.id);
+                      onPointClick?.(dataPoint.key);
+                    }}
                   />
                 }
               />

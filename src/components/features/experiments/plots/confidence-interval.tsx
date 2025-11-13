@@ -12,6 +12,7 @@ export interface ConfidenceIntervalProps {
   capWidth?: number; // Width of the horizontal cap lines
   strokeLinecap?: 'round' | 'inherit' | 'butt' | 'square';
   opacity?: number;
+  onClick?: (dataPoint: TimeSeriesDataPoint) => void;
 }
 
 /**
@@ -29,6 +30,7 @@ export function ConfidenceInterval({
   capWidth = 0,
   strokeLinecap = 'round',
   opacity = 1,
+  onClick,
 }: ConfidenceIntervalProps) {
   if (!xAxisMap || !yAxisMap || !chartData.length) return null;
   // These params are special internal params for recharts.
@@ -50,7 +52,11 @@ export function ConfidenceInterval({
         const color = getColorWithSignificance(baseColor, Significance.No, selected);
 
         return (
-          <g key={`ci-${armId}-${pointIndex}`}>
+          <g
+            key={`ci-${armId}-${pointIndex}`}
+            onClick={() => onClick?.(dataPoint)}
+            style={{ cursor: onClick ? 'pointer' : 'default' }}
+          >
             {/* Vertical line from lower to upper CI */}
             <line
               x1={x}
