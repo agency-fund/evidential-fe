@@ -1,4 +1,4 @@
-import { TimeSeriesDataPoint, getColorWithSignificance } from './forest-plot-utils';
+import { Significance, TimeSeriesDataPoint, getColorWithSignificance } from './forest-plot-utils';
 
 export interface ConfidenceIntervalProps {
   xAxisMap?: Record<string, { scale: (value: number) => number }>;
@@ -25,7 +25,7 @@ export function ConfidenceInterval({
   selected,
   baseColor,
   jitterOffset = 0,
-  strokeWidth = 3,
+  strokeWidth = 5,
   capWidth = 0,
   strokeLinecap = 'round',
   opacity = 1,
@@ -47,7 +47,7 @@ export function ConfidenceInterval({
         const x = xAxis.scale(dataPoint.dateTimestampMs) + jitterOffset;
         const yLower = yAxis.scale(armData.lowerCI);
         const yUpper = yAxis.scale(armData.upperCI);
-        const color = getColorWithSignificance(baseColor, armData.significance, selected);
+        const color = getColorWithSignificance(baseColor, Significance.No, selected);
 
         return (
           <g key={`ci-${armId}-${pointIndex}`}>
