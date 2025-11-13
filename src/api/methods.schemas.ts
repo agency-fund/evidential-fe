@@ -104,6 +104,11 @@ export type ArmAnalysisPValue = number | null;
  */
 export type ArmAnalysisTStat = number | null;
 
+/**
+ * The standard error of the treatment effect estimate.
+ */
+export type ArmAnalysisStdError = number | null;
+
 export interface ArmAnalysis {
 	/** ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
 	arm_id?: ArmAnalysisArmId;
@@ -117,8 +122,11 @@ export interface ArmAnalysis {
 	/** The t-statistic from the statistical test. If the value is actually NaN, e.g. due to inability to calculate the standard error, we return None. */
 	t_stat: ArmAnalysisTStat;
 	/** The standard error of the treatment effect estimate. */
-	std_error: number;
-	/** The number of participants assigned to this arm with missing values (NaNs) for this metric. These rows are excluded from the analysis. */
+	std_error: ArmAnalysisStdError;
+	/**
+	 * The number of participants assigned to this arm with missing values (NaNs) for this metric. These rows are excluded from the analysis. -1 indicates arm analysis not available due to all assignments missing outcomes for this metric.
+	 * @minimum -1
+	 */
 	num_missing_values: number;
 	/** Whether this arm is the baseline/control arm for comparison. */
 	is_baseline: boolean;
@@ -1752,16 +1760,12 @@ DEPRECATED: This field is no longer used and will be removed in a future release
 	reward_type?: LikelihoodTypes;
 }
 
-export type MetricAnalysisMetricName = string | null;
-
-export type MetricAnalysisMetric = DesignSpecMetricRequest | null;
-
 /**
  * Describes the change in a single metric for each arm of an experiment.
  */
 export interface MetricAnalysis {
-	metric_name?: MetricAnalysisMetricName;
-	metric?: MetricAnalysisMetric;
+	metric_name: string;
+	metric: DesignSpecMetricRequest;
 	/** The results of the analysis for each arm (coefficient) for this specific metric. */
 	arm_analyses: ArmAnalysis[];
 }

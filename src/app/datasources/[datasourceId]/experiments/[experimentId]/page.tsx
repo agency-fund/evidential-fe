@@ -457,10 +457,8 @@ export default function ExperimentViewPage() {
           {isLoadingLiveAnalysis && <XSpinner message="Loading live analysis..." />}
 
           {liveAnalysisError && (
-            <GenericErrorCallout
-              title="Error loading analysis"
-              message="Analysis may not be available yet or the experiment hasn't collected enough data."
-            />
+            // Analysis may not be available yet or the experiment hasn't collected enough data.
+            <GenericErrorCallout title="Error loading live analysis" error={liveAnalysisError} />
           )}
 
           {analysisHistoryError && (

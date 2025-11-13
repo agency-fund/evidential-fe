@@ -171,19 +171,30 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
   const yLeftAxisWidthPx = maxArmNameLength > 20 ? 180 : 80;
 
   if (effectSizes !== undefined) {
+    // Filter arms with issues and create specific messages for each
+    const armsWithIssues = effectSizes.filter((e) => e.isMissingAllValues || e.invalidStatTest);
     return (
       <Flex direction="column" gap="3">
-        {effectSizes.some((e) => e.invalidStatTest) && (
-          <Callout.Root color="orange" size="1">
+        {armsWithIssues.map((arm) => (
+          <Callout.Root key={arm.armId} color="orange" size="1">
             <Callout.Icon>
               <ExclamationTriangleIcon />
             </Callout.Icon>
             <Callout.Text>
-              Statistical test is invalid for one or more arms. The experiment might not have enough data or no
-              variation in the metric right now.
+              {arm.isMissingAllValues ? (
+                <>
+                  <Text weight="bold">{arm.armName}</Text>: assignments have no valid values for this metric. Please
+                  wait for values to be collected.
+                </>
+              ) : (
+                <>
+                  <Text weight="bold">{arm.armName}</Text>: has invalid statistical results. The experiment might not
+                  have enough data or no variation in the metric right now.
+                </>
+              )}
             </Callout.Text>
           </Callout.Root>
-        )}
+        ))}
 
         <Box height={`${plotHeightPx}px`}>
           <ResponsiveContainer width="100%" height="100%">
@@ -305,7 +316,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                   if (significant && !isBaseline) {
                     strokeColor = effect > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
                   }
-                  return (
+                  return isNaN(ci95) ? null : (
                     <line
                       x1={(centerX || 0) - scaleHalfIntervalToViewport(ci95, xAxisWidth)}
                       y1={centerY}
@@ -328,12 +339,15 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                   // Always return an element even if empty.
                   if (!props.payload) return <g />;
 
-                  const { significant, isBaseline, effect } = props.payload as EffectSizeData;
+                  const { significant, isBaseline, effect, isMissingAllValues } = props.payload as EffectSizeData;
                   const { cx: centerX, cy: centerY } = props;
 
                   let fillColor: string = COLORS.DEFAULT;
                   if (significant && !isBaseline) {
                     fillColor = effect > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
+                  }
+                  if (isMissingAllValues) {
+                    return <g />;
                   }
                   if (isBaseline) {
                     // Mark the control arm with a larger diamond shape
@@ -344,9 +358,8 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                         stroke={COLORS.DEFAULT_CI}
                       />
                     );
-                  } else {
-                    return <circle cx={centerX} cy={centerY} r={5} fill={fillColor} stroke={COLORS.DEFAULT_CI} />;
                   }
+                  return <circle cx={centerX} cy={centerY} r={5} fill={fillColor} stroke={COLORS.DEFAULT_CI} />;
                 }}
               />
 

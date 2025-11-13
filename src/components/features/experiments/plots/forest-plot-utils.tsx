@@ -199,11 +199,13 @@ const _generateFreqEffectSizeData = (analysis: MetricAnalysis, alpha: number): E
     const stdError = armAnalysis.std_error;
     const pValue = armAnalysis.p_value;
     const tStat = armAnalysis.t_stat;
-    const invalidStatTest = pValue === null || pValue === undefined || tStat === null || tStat === undefined;
+    const invalidStatTest =
+      pValue === null || pValue === undefined || tStat === null || tStat === undefined || stdError === null;
+    const isMissingAllValues = armAnalysis.num_missing_values < 0;
 
     // Calculate 95% confidence interval
     // TODO: backend should return CIs; this approximation is for z-tests, and not appropriate for small sample sizes.
-    const ci95 = 1.96 * stdError;
+    const ci95 = stdError === null ? NaN : 1.96 * stdError;
     const ci95Lower = estimate - ci95;
     const ci95Upper = estimate + ci95;
     const absEffect = estimate + (isBaseline ? 0 : controlEstimate);
@@ -214,6 +216,7 @@ const _generateFreqEffectSizeData = (analysis: MetricAnalysis, alpha: number): E
       isBaseline,
       armId,
       armName: armAnalysis.arm_name || `Arm ${index}`,
+      isMissingAllValues,
       baselineEffect: controlEstimate,
       effect: estimate, // relative to baseline effect
       absEffect: absEffect,
