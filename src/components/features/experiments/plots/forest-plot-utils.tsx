@@ -110,10 +110,8 @@ export const precomputeFreqEffectsByMetric = (
 
   const effectSizesByMetric = new Map<string, EffectSizeData[]>();
   for (const metricAnalysis of analysisData.metric_analyses) {
-    // TODO: cleanup fallback when metric_name is not nullable in the backend (wasn't supposed to be)
-    const metricName = metricAnalysis.metric_name || '';
     const effectSizes = _generateFreqEffectSizeData(metricAnalysis, alpha);
-    effectSizesByMetric.set(metricName, effectSizes);
+    effectSizesByMetric.set(metricAnalysis.metric_name, effectSizes);
   }
   return effectSizesByMetric;
 };
@@ -387,7 +385,7 @@ export const getColorWithSignificance = (
  * Processes multiple analysis snapshots and converts them into a format ready for Recharts.
  *
  * @param analysisStates - Array of analysis states (e.g., snapshots and live analysis)
- * @param metricName - The metric field name to extract effect sizes for
+ * @param metricName - The metric field name to extract effect sizes for (frequentist experiments only)
  * @returns Object containing chartData, armMetadata, and date range for rendering
  */
 export const transformAnalysisForForestTimeseriesPlot = (
