@@ -300,23 +300,26 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 data={effectSizes}
                 fill="none"
                 // Draw a custom line for CIs since ErrorBars don't give us enough control
-                shape={(props: CustomShapeProps) => {
+                shape={(props: unknown) => {
+                  const shapeProps = props as CustomShapeProps;
                   // Always return an element even if empty.
-                  if (!props.payload || !props.xAxis?.width) return <g />;
+                  if (!shapeProps.payload || !shapeProps.xAxis?.width) return <g />;
 
-                  const { ci95, significant, effect, isBaseline } = props.payload as EffectSizeData;
+                  const { ci95, significant, effect, isBaseline } = shapeProps.payload as EffectSizeData;
                   const {
                     cx: centerX,
                     cy: centerY,
                     xAxis: { width: xAxisWidth },
-                  } = props;
+                  } = shapeProps;
 
                   // Determine stroke color based on significance and direction
                   let strokeColor: string = COLORS.DEFAULT_CI;
                   if (significant && !isBaseline) {
                     strokeColor = effect > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
                   }
-                  return isNaN(ci95) ? null : (
+                  return isNaN(ci95) ? (
+                    <g />
+                  ) : (
                     <line
                       x1={(centerX || 0) - scaleHalfIntervalToViewport(ci95, xAxisWidth)}
                       y1={centerY}
