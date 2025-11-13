@@ -118,7 +118,7 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
       } finally {
         setFetching(false);
       }
-    })();
+    })().catch(console.error);
   }, [router, searchParams, setUser, isGoogleLoginRedirect, logout]);
 
   useEffect(() => {
