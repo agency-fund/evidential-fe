@@ -56,7 +56,11 @@ export const CreateApiKeyDialog = ({
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !isMutating) {
             e.preventDefault();
-            handleCreate();
+            if (showResults && createdKey) {
+              handleClose();
+            } else {
+              handleCreate();
+            }
           }
         }}
       >
