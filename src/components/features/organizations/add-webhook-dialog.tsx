@@ -67,7 +67,14 @@ export function AddWebhookDialog({ organizationId, open, onOpenChange }: AddWebh
         }
       }}
     >
-      <Dialog.Content>
+      <Dialog.Content
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !isMutating && webhookCreated && webhookResponse) {
+            e.preventDefault();
+            handleClose();
+          }
+        }}
+      >
         {isMutating ? (
           <XSpinner message="Adding webhook..." />
         ) : webhookCreated && webhookResponse ? (
