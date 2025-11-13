@@ -28,7 +28,14 @@ export function DeleteWebhookDialog({ organizationId, webhookId }: DeleteWebhook
           <TrashIcon />
         </IconButton>
       </AlertDialog.Trigger>
-      <AlertDialog.Content>
+      <AlertDialog.Content
+        onKeyDown={async (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            await trigger();
+          }
+        }}
+      >
         <AlertDialog.Title>Delete Webhook</AlertDialog.Title>
         <AlertDialog.Description>
           Are you sure you want to delete this webhook? This action cannot be undone.

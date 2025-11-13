@@ -16,7 +16,14 @@ export function WebhookInfoDialog({ webhook }: { webhook: WebhookSummary }) {
         </IconButton>
       </Dialog.Trigger>
 
-      <Dialog.Content>
+      <Dialog.Content
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            setOpen(false);
+          }
+        }}
+      >
         <Dialog.Title>Webhook Information</Dialog.Title>
         <Dialog.Description size="2" mb="2">
           Details about your webhook and how to use it.

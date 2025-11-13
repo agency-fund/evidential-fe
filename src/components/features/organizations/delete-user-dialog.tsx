@@ -26,7 +26,14 @@ export function DeleteUserDialog({ organizationId, userId }: DeleteUserDialogPro
           <TrashIcon />
         </IconButton>
       </AlertDialog.Trigger>
-      <AlertDialog.Content>
+      <AlertDialog.Content
+        onKeyDown={async (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            await trigger();
+          }
+        }}
+      >
         <AlertDialog.Title>Remove User</AlertDialog.Title>
         <AlertDialog.Description>
           Are you sure you want to remove this user from the organization? This action cannot be undone.
