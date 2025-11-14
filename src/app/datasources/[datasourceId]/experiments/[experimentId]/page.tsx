@@ -448,6 +448,30 @@ export default function ExperimentViewPage() {
                     </Flex>
                   </Badge>
                 </Flex>
+              ) : isBandit(selectedAnalysis.data) ? (
+                <Badge size="2">
+                  <Flex gap="4" align="center">
+                    <Tooltip
+                      content={
+                        <div>
+                          <div>
+                            The leaderboard and timeseries data show the posterior predictive mean: this is not the same
+                            thing as a treatment effect! Instead, this is the estimate of the average outcome with each
+                            arm, after we have observed outcomes, and we have accounted for your beliefs and noise in
+                            the data.
+                          </div>
+                          <br />
+                          <div>
+                            The CI here is a credible interval, which indicates the range within which the true average
+                            outcome for that arm lies with 95% probability.
+                          </div>
+                        </div>
+                      }
+                    >
+                      <InfoCircledIcon />
+                    </Tooltip>
+                  </Flex>
+                </Badge>
               ) : null}
             </Flex>
           }
