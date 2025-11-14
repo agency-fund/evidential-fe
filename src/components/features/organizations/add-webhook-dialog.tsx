@@ -3,7 +3,6 @@ import { getListOrganizationWebhooksKey, useAddWebhookToOrganization } from '@/a
 import { useState } from 'react';
 import { Button, Dialog, Flex, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
-import { PlusIcon } from '@radix-ui/react-icons';
 import { mutate } from 'swr';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { AddWebhookToOrganizationResponse } from '@/api/methods.schemas';
@@ -19,8 +18,13 @@ const defaultFormData = (): FormFields => ({
   url: '',
 });
 
-export function AddWebhookDialog({ organizationId, disabled = false }: { organizationId: string; disabled?: boolean }) {
-  const [open, setOpen] = useState(false);
+interface AddWebhookDialogProps {
+  organizationId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function AddWebhookDialog({ organizationId, open, onOpenChange }: AddWebhookDialogProps) {
   const [formData, setFormData] = useState(defaultFormData());
   const [webhookCreated, setWebhookCreated] = useState(false);
   const [webhookResponse, setWebhookResponse] = useState<AddWebhookToOrganizationResponse | null>(null);
@@ -46,7 +50,7 @@ export function AddWebhookDialog({ organizationId, disabled = false }: { organiz
 
   const handleClose = () => {
     setFormData(defaultFormData());
-    setOpen(false);
+    onOpenChange(false);
     setWebhookCreated(false);
     setWebhookResponse(null);
     reset();
@@ -59,18 +63,18 @@ export function AddWebhookDialog({ organizationId, disabled = false }: { organiz
         if (!op) {
           handleClose();
         } else {
-          setOpen(op);
+          onOpenChange(op);
         }
       }}
     >
-      <Dialog.Trigger>
-        <Button disabled={disabled}>
-          <PlusIcon />
-          Add Webhook
-        </Button>
-      </Dialog.Trigger>
-
-      <Dialog.Content>
+      <Dialog.Content
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !isMutating && webhookCreated && webhookResponse) {
+            e.preventDefault();
+            handleClose();
+          }
+        }}
+      >
         {isMutating ? (
           <XSpinner message="Adding webhook..." />
         ) : webhookCreated && webhookResponse ? (

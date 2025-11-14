@@ -1,16 +1,19 @@
 'use client';
-import { ApiKeySummary } from '@/api/methods.schemas';
 import { useState } from 'react';
-import { getListApiKeysKey, useDeleteApiKey } from '@/api/admin';
-import { AlertDialog, Button, Flex, IconButton, Table, Text, Tooltip } from '@radix-ui/themes';
+import { getListApiKeysKey, useDeleteApiKey, useListApiKeys } from '@/api/admin';
+import { AlertDialog, Button, Flex, Heading, IconButton, Spinner, Table, Text, Tooltip } from '@radix-ui/themes';
 import { mutate } from 'swr';
-import { InfoCircledIcon, TrashIcon } from '@radix-ui/react-icons';
+import { InfoCircledIcon, PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
 import { CreateApiKeyDialog } from '@/components/features/datasources/create-api-key-dialog';
-import { ApiKeyResultsDialog } from '@/components/features/datasources/api-key-results-dialog';
+import { GenericErrorCallout } from '@/components/ui/generic-error';
 
-export function ApiKeysTable({ apiKeys, datasourceId }: { apiKeys: ApiKeySummary[]; datasourceId: string }) {
+export function ApiKeysTable({ datasourceId }: { datasourceId: string }) {
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [confirmingDeleteForKeyId, setConfirmingDeleteForKeyId] = useState<string | null>(null);
+
+  const { data, isLoading, error } = useListApiKeys(datasourceId);
+
   const { trigger } = useDeleteApiKey(
     datasourceId,
     confirmingDeleteForKeyId ?? '',
@@ -20,28 +23,27 @@ export function ApiKeysTable({ apiKeys, datasourceId }: { apiKeys: ApiKeySummary
     },
   );
 
-  const [newlyCreatedKey, setNewlyCreatedKey] = useState<{ key: string } | undefined>(undefined);
+  if (isLoading) {
+    return <Spinner />;
+  }
 
-  const handleKeyCreated = (key: { key: string }) => {
-    setNewlyCreatedKey(key);
-  };
+  if (error || !data) {
+    return <GenericErrorCallout title="Error loading API keys" error={error} />;
+  }
+
+  const filteredApiKeys = data.items.filter((key) => key.datasource_id === datasourceId);
 
   return (
-    <>
-      {newlyCreatedKey && (
-        <ApiKeyResultsDialog
-          createdKey={newlyCreatedKey}
-          datasourceId={datasourceId}
-          isOpen={true}
-          onOpenChange={(open) => {
-            if (!open) {
-              setNewlyCreatedKey(undefined);
-            }
-          }}
-        />
-      )}
+    <Flex direction="column" gap="3">
+      <CreateApiKeyDialog datasourceId={datasourceId} open={createDialogOpen} onOpenChange={setCreateDialogOpen} />
+      <Flex justify="between">
+        <Heading size="4">API Keys</Heading>
+        <Button onClick={() => setCreateDialogOpen(true)}>
+          <PlusIcon /> Create API Key
+        </Button>
+      </Flex>
 
-      {apiKeys.length > 0 ? (
+      {filteredApiKeys.length > 0 ? (
         <Flex direction="column" gap="3">
           <AlertDialog.Root
             open={confirmingDeleteForKeyId !== null}
@@ -98,7 +100,7 @@ export function ApiKeysTable({ apiKeys, datasourceId }: { apiKeys: ApiKeySummary
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {apiKeys.map((item) => {
+              {filteredApiKeys.map((item) => {
                 return (
                   <Table.Row key={item.id}>
                     <Table.Cell>{item.id}</Table.Cell>
@@ -115,9 +117,11 @@ export function ApiKeysTable({ apiKeys, datasourceId }: { apiKeys: ApiKeySummary
         </Flex>
       ) : (
         <EmptyStateCard title="No API keys found" description="Add an API key to get started">
-          <CreateApiKeyDialog datasourceId={datasourceId} onKeyCreated={handleKeyCreated} />
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <PlusIcon /> Create API Key
+          </Button>
         </EmptyStateCard>
       )}
-    </>
+    </Flex>
   );
 }

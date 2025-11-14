@@ -2,7 +2,7 @@
 import { Callout, Flex, Heading, Text } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
-import { ApiKeysSection } from '@/components/features/datasources/api-keys-section';
+import { ApiKeysTable } from '@/components/features/datasources/api-keys-table';
 import { useGetDatasource, useInspectDatasource } from '@/api/admin';
 import { useParams, useRouter } from 'next/navigation';
 import { EditDatasourceDialog } from '@/components/features/datasources/edit-datasource-dialog';
@@ -38,6 +38,11 @@ export default function Page() {
     },
   });
 
+  const isLoading = inspectDatasourceLoading || datasourceDetailsLoading;
+  const datasourceName = datasourceMetadata?.name;
+  const isNoDWH = datasourceMetadata?.dsn.type === 'api_only';
+  const editDatasourceDialogComponent = <EditDatasourceDialog datasourceId={datasourceId!} variant="button" />;
+
   // Redirect if datasource doesn't belong to current organization
   useEffect(() => {
     if (currentOrgId && datasourceMetadata && datasourceMetadata.organization_id !== currentOrgId) {
@@ -45,10 +50,6 @@ export default function Page() {
       router.push('/');
     }
   }, [currentOrgId, datasourceMetadata, router]);
-
-  const isLoading = inspectDatasourceLoading || datasourceDetailsLoading;
-
-  const editDatasourceDialogComponent = <EditDatasourceDialog datasourceId={datasourceId!} variant="button" />;
 
   if (isLoading) {
     return <XSpinner message="Loading datasource details..." />;
@@ -79,10 +80,6 @@ export default function Page() {
   if (!datasourceMetadata || !inspectDatasourceData) {
     return <Text>Error: Missing datasource or table metadata</Text>;
   }
-
-  // We can safely use data properties now that we've handled all error cases
-  const datasourceName = datasourceMetadata.name;
-  const isNoDWH = datasourceMetadata.dsn.type === 'api_only';
 
   return (
     <Flex direction="column" gap="6">
@@ -116,7 +113,7 @@ export default function Page() {
           )}
         </>
       )}
-      <ApiKeysSection datasourceId={datasourceId} />
+      <ApiKeysTable datasourceId={datasourceId} />
     </Flex>
   );
 }

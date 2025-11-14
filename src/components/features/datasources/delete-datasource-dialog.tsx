@@ -28,7 +28,14 @@ export function DeleteDatasourceDialog({ organizationId, datasourceId }: DeleteD
           <TrashIcon />
         </IconButton>
       </AlertDialog.Trigger>
-      <AlertDialog.Content>
+      <AlertDialog.Content
+        onKeyDown={async (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            await trigger();
+          }
+        }}
+      >
         <AlertDialog.Title>Delete Datasource</AlertDialog.Title>
         <AlertDialog.Description>
           Are you sure you want to delete this datasource? This action cannot be undone.

@@ -226,6 +226,10 @@ export default function ForestTimeseriesPlot({
                     selected={selected}
                     baseColor={getArmColor(index, armInfo.isBaseline, selected)}
                     jitterOffset={calculateJitterOffset(index, armMetadata.length)}
+                    onClick={(dataPoint) => {
+                      setSelectedArmId(armInfo.id);
+                      onPointClick?.(dataPoint.key);
+                    }}
                   />
                 }
               />
@@ -250,10 +254,7 @@ export default function ForestTimeseriesPlot({
                 strokeWidth={0} // 0 to avoid drawing this line between dots
                 dot={(props: unknown) => {
                   const { key, ...restProps } = props as JitteredDotProps & { key?: string };
-                  const dataPoint = restProps.payload as TimeSeriesDataPoint;
-                  const armData = dataPoint.armEffects.get(armInfo.id);
-                  const significance = armData ? armData.significance : Significance.No;
-                  const dotColor = getColorWithSignificance(baseDotColor, significance, selected);
+                  const dotColor = getColorWithSignificance(baseDotColor, Significance.No, selected);
 
                   return (
                     <JitteredDot
@@ -270,9 +271,7 @@ export default function ForestTimeseriesPlot({
                 activeDot={(props: unknown) => {
                   const { key, ...restProps } = props as JitteredDotProps & { key?: string };
                   const dataPoint = restProps.payload as TimeSeriesDataPoint;
-                  const armData = dataPoint.armEffects.get(armInfo.id);
-                  const significance = armData ? armData.significance : Significance.No;
-                  const dotColor = getColorWithSignificance(baseDotColor, significance, selected);
+                  const dotColor = getColorWithSignificance(baseDotColor, Significance.No, selected);
 
                   return (
                     <JitteredDot
