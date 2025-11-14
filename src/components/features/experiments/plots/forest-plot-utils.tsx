@@ -225,7 +225,7 @@ const _generateFreqEffectSizeData = (analysis: MetricAnalysis, alpha: number): E
       absCI95Upper,
       pValue,
       invalidStatTest,
-      significant: !isBaseline && !!(pValue && pValue < alpha),
+      significant: !isBaseline && !!(pValue !== null && pValue < alpha),
     };
   });
 
