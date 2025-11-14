@@ -369,14 +369,22 @@ export interface BanditArmAnalysis {
 	mu?: BanditArmAnalysisMu;
 	/** Updated covariance matrix for Normal prior */
 	covariance?: BanditArmAnalysisCovariance;
-	/** Posterior predictive mean for this arm. */
+	/** Prior predictive mean for this arm. */
 	prior_pred_mean: number;
-	/** Posterior predictive standard deviation for this arm. */
+	/** Prior predictive standard deviation for this arm. */
 	prior_pred_stdev: number;
-	/** Posterior predictive mean for this arm. */
+	/** Prior predictive upper bound of 95% confidence interval for this arm. */
+	prior_pred_ci_upper: number;
+	/** Prior predictive lower bound of 95% confidence interval for this arm. */
+	prior_pred_ci_lower: number;
+	/** Prior predictive mean for this arm. */
 	post_pred_mean: number;
-	/** Posterior predictive standard deviation for this arm. */
+	/** Prior predictive standard deviation for this arm. */
 	post_pred_stdev: number;
+	/** Posterior predictive upper bound of 95% confidence interval for this arm. */
+	post_pred_ci_upper: number;
+	/** Posterior predictive lower bound of 95% confidence interval for this arm. */
+	post_pred_ci_lower: number;
 }
 
 export type BanditExperimentAnalysisResponseType =
