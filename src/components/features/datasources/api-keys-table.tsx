@@ -39,7 +39,7 @@ export function ApiKeysTable({ datasourceId }: { datasourceId: string }) {
       <Flex justify="between">
         <Heading size="4">API Keys</Heading>
         <Button onClick={() => setCreateDialogOpen(true)}>
-          <PlusIcon /> Create API Key
+          <PlusIcon /> Add API Key
         </Button>
       </Flex>
 
@@ -118,7 +118,7 @@ export function ApiKeysTable({ datasourceId }: { datasourceId: string }) {
       ) : (
         <EmptyStateCard title="No API keys found" description="Add an API key to get started">
           <Button onClick={() => setCreateDialogOpen(true)}>
-            <PlusIcon /> Create API Key
+            <PlusIcon /> Add API Key
           </Button>
         </EmptyStateCard>
       )}

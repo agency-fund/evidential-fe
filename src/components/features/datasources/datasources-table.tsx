@@ -33,6 +33,7 @@ export function DatasourcesTable({
           <Table.Header>
             <Table.Row>
               <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>API Keys</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Participant Types</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Driver</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
