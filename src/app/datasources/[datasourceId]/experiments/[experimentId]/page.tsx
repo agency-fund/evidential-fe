@@ -444,7 +444,7 @@ export default function ExperimentViewPage() {
                     </Flex>
                   </Badge>
                 </Flex>
-              ) : isBandit(selectedAnalysis.data) ? (
+              ) : isBandit(selectedAnalysisState.data) ? (
                 <Badge size="2">
                   <Flex gap="4" align="center">
                     <Tooltip
