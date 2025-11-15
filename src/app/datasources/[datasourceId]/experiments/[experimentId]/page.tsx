@@ -448,21 +448,7 @@ export default function ExperimentViewPage() {
                 <Badge size="2">
                   <Flex gap="4" align="center">
                     <Tooltip
-                      content={
-                        <div>
-                          <p>
-                            The leaderboard and timeseries data show the posterior predictive mean: this is not the same
-                            thing as a treatment effect! Instead, this is the estimate of the average outcome with each
-                            arm, after we have observed outcomes, and we have accounted for your beliefs and noise in
-                            the data.
-                          </p>
-                          <br />
-                          <p>
-                            The CI here is a credible interval, which indicates the range within which the true average
-                            outcome for that arm lies with 95% probability.
-                          </p>
-                        </div>
-                      }
+                      content={`The leaderboard and timeseries show the posterior predictive mean—the estimated average outcome for each arm after observing data and accounting for prior beliefs and noise. This is not a treatment effect! The CI is a credible interval indicating the range containing the true average outcome with 95% probability.`}
                     >
                       <InfoCircledIcon />
                     </Tooltip>
