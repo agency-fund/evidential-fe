@@ -266,19 +266,39 @@ export const getSnapshotResponse = zod
 													),
 												prior_pred_mean: zod
 													.number()
-													.describe("Posterior predictive mean for this arm."),
+													.describe("Prior predictive mean for this arm."),
 												prior_pred_stdev: zod
 													.number()
 													.describe(
-														"Posterior predictive standard deviation for this arm.",
+														"Prior predictive standard deviation for this arm.",
+													),
+												prior_pred_ci_upper: zod
+													.number()
+													.describe(
+														"Prior predictive upper bound of 95% confidence interval for this arm.",
+													),
+												prior_pred_ci_lower: zod
+													.number()
+													.describe(
+														"Prior predictive lower bound of 95% confidence interval for this arm.",
 													),
 												post_pred_mean: zod
 													.number()
-													.describe("Posterior predictive mean for this arm."),
+													.describe("Prior predictive mean for this arm."),
 												post_pred_stdev: zod
 													.number()
 													.describe(
-														"Posterior predictive standard deviation for this arm.",
+														"Prior predictive standard deviation for this arm.",
+													),
+												post_pred_ci_upper: zod
+													.number()
+													.describe(
+														"Posterior predictive upper bound of 95% confidence interval for this arm.",
+													),
+												post_pred_ci_lower: zod
+													.number()
+													.describe(
+														"Posterior predictive lower bound of 95% confidence interval for this arm.",
 													),
 											})
 											.describe(
@@ -592,19 +612,39 @@ export const listSnapshotsResponse = zod.object({
 												.describe("Updated covariance matrix for Normal prior"),
 											prior_pred_mean: zod
 												.number()
-												.describe("Posterior predictive mean for this arm."),
+												.describe("Prior predictive mean for this arm."),
 											prior_pred_stdev: zod
 												.number()
 												.describe(
-													"Posterior predictive standard deviation for this arm.",
+													"Prior predictive standard deviation for this arm.",
+												),
+											prior_pred_ci_upper: zod
+												.number()
+												.describe(
+													"Prior predictive upper bound of 95% confidence interval for this arm.",
+												),
+											prior_pred_ci_lower: zod
+												.number()
+												.describe(
+													"Prior predictive lower bound of 95% confidence interval for this arm.",
 												),
 											post_pred_mean: zod
 												.number()
-												.describe("Posterior predictive mean for this arm."),
+												.describe("Prior predictive mean for this arm."),
 											post_pred_stdev: zod
 												.number()
 												.describe(
-													"Posterior predictive standard deviation for this arm.",
+													"Prior predictive standard deviation for this arm.",
+												),
+											post_pred_ci_upper: zod
+												.number()
+												.describe(
+													"Posterior predictive upper bound of 95% confidence interval for this arm.",
+												),
+											post_pred_ci_lower: zod
+												.number()
+												.describe(
+													"Posterior predictive lower bound of 95% confidence interval for this arm.",
 												),
 										})
 										.describe(
@@ -4769,19 +4809,39 @@ export const analyzeExperimentResponse = zod
 									.describe("Updated covariance matrix for Normal prior"),
 								prior_pred_mean: zod
 									.number()
-									.describe("Posterior predictive mean for this arm."),
+									.describe("Prior predictive mean for this arm."),
 								prior_pred_stdev: zod
 									.number()
 									.describe(
-										"Posterior predictive standard deviation for this arm.",
+										"Prior predictive standard deviation for this arm.",
+									),
+								prior_pred_ci_upper: zod
+									.number()
+									.describe(
+										"Prior predictive upper bound of 95% confidence interval for this arm.",
+									),
+								prior_pred_ci_lower: zod
+									.number()
+									.describe(
+										"Prior predictive lower bound of 95% confidence interval for this arm.",
 									),
 								post_pred_mean: zod
 									.number()
-									.describe("Posterior predictive mean for this arm."),
+									.describe("Prior predictive mean for this arm."),
 								post_pred_stdev: zod
 									.number()
 									.describe(
-										"Posterior predictive standard deviation for this arm.",
+										"Prior predictive standard deviation for this arm.",
+									),
+								post_pred_ci_upper: zod
+									.number()
+									.describe(
+										"Posterior predictive upper bound of 95% confidence interval for this arm.",
+									),
+								post_pred_ci_lower: zod
+									.number()
+									.describe(
+										"Posterior predictive lower bound of 95% confidence interval for this arm.",
 									),
 							})
 							.describe(
@@ -5042,19 +5102,39 @@ export const analyzeCmabExperimentResponse = zod
 									.describe("Updated covariance matrix for Normal prior"),
 								prior_pred_mean: zod
 									.number()
-									.describe("Posterior predictive mean for this arm."),
+									.describe("Prior predictive mean for this arm."),
 								prior_pred_stdev: zod
 									.number()
 									.describe(
-										"Posterior predictive standard deviation for this arm.",
+										"Prior predictive standard deviation for this arm.",
+									),
+								prior_pred_ci_upper: zod
+									.number()
+									.describe(
+										"Prior predictive upper bound of 95% confidence interval for this arm.",
+									),
+								prior_pred_ci_lower: zod
+									.number()
+									.describe(
+										"Prior predictive lower bound of 95% confidence interval for this arm.",
 									),
 								post_pred_mean: zod
 									.number()
-									.describe("Posterior predictive mean for this arm."),
+									.describe("Prior predictive mean for this arm."),
 								post_pred_stdev: zod
 									.number()
 									.describe(
-										"Posterior predictive standard deviation for this arm.",
+										"Prior predictive standard deviation for this arm.",
+									),
+								post_pred_ci_upper: zod
+									.number()
+									.describe(
+										"Posterior predictive upper bound of 95% confidence interval for this arm.",
+									),
+								post_pred_ci_lower: zod
+									.number()
+									.describe(
+										"Posterior predictive lower bound of 95% confidence interval for this arm.",
 									),
 							})
 							.describe(
