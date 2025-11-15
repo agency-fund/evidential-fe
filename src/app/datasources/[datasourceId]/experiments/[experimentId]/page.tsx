@@ -60,8 +60,9 @@ export default function ExperimentViewPage() {
     banditEffects: undefined,
   });
   // which analysis we're actually displaying (live or a snapshot)
-  const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisState>(liveAnalysis);
+  const [selectedAnalysisState, setSelectedAnalysisState] = useState<AnalysisState>(liveAnalysis);
   const [selectedMetricAnalysis, setSelectedMetricAnalysis] = useState<MetricAnalysis | null>(null);
+  const [selectedMetricName, setSelectedMetricName] = useState<string>('unknown');
 
   // Track the min/max CI bounds across a recent window of snapshots for more stable forest plot display.
   const [ciBounds, setCiBounds] = useState<[number | undefined, number | undefined]>([undefined, undefined]);
@@ -97,7 +98,7 @@ export default function ExperimentViewPage() {
         };
         setLiveAnalysis(analysis);
         // Only update the display if we were previously viewing live data.
-        if (selectedAnalysis.key === 'live') {
+        if (selectedAnalysisState.key === 'live') {
           setSelectedAnalysisAndMetrics(analysis);
         }
       },
@@ -139,7 +140,7 @@ export default function ExperimentViewPage() {
           const filteredSnapshots = Array.from(snapshotsByDate.values());
           filteredSnapshots.sort((a, b) => b.updated_at.localeCompare(a.updated_at));
 
-          const opts: AnalysisState[] = filteredSnapshots.map((s) => {
+          const history: AnalysisState[] = filteredSnapshots.map((s) => {
             const analysisData = s.data as ExperimentAnalysisResponse;
             const date = new Date(s.updated_at);
             return {
@@ -152,14 +153,11 @@ export default function ExperimentViewPage() {
             };
           });
 
-          setAnalysisHistory(opts);
-          const currentMetricName = isFrequentist(opts[0].data)
-            ? selectedMetricAnalysis?.metric?.field_name
-            : undefined;
-          setCiBounds(computeBoundsForMetric(currentMetricName, [liveAnalysis, ...opts]));
+          setAnalysisHistory(history);
+          // No need to recompute CI bounds here since we don't have live analysis data yet and don't allow refreshing.
           // If we're not viewing real data, set the selected analysis to the most recent snapshot
-          if (selectedAnalysis.data === undefined) {
-            setSelectedAnalysisAndMetrics(opts[0]);
+          if (selectedAnalysisState.data === undefined) {
+            setSelectedAnalysisAndMetrics(history[0]);
           }
         },
         onError: async () => {
@@ -178,26 +176,29 @@ export default function ExperimentViewPage() {
     },
   });
 
-  const setSelectedAnalysisAndMetrics = (analysis: AnalysisState) => {
-    setSelectedAnalysis(analysis);
+  const setSelectedAnalysisAndMetrics = (analysis: AnalysisState, forMetricName: string | undefined = undefined) => {
+    setSelectedAnalysisState(analysis);
     if (!isFrequentist(analysis.data)) {
       setSelectedMetricAnalysis(null);
       return;
     }
 
-    const metricAnalyses = analysis.data.metric_analyses;
     // Try to maintain the same metric as before when switching between snapshots.
     // The fallback to the first metric should not actually happen in practice.
-    const oldMetricName = selectedMetricAnalysis?.metric_name || '';
-    const newMetric =
-      metricAnalyses.find((metric) => metric.metric?.field_name === oldMetricName) || metricAnalyses[0] || null;
+    const nameToFind = forMetricName || selectedMetricName;
+    const metricAnalyses = analysis.data.metric_analyses;
+    const newMetric: MetricAnalysis | undefined =
+      metricAnalyses.find((metric) => metric.metric_name === nameToFind) || metricAnalyses[0];
+    const newMetricName = newMetric?.metric_name || 'unknown';
     // Recompute bounds if the metric changed
-    const newMetricName = newMetric?.metric_name || '';
-    if (oldMetricName !== newMetricName) {
+    if (selectedMetricName !== newMetricName) {
+      setSelectedMetricName(newMetricName);
       // check if the selection is 'live' and use it since the state may not have been updated yet.
-      setCiBounds(
-        computeBoundsForMetric(newMetricName, [analysis.key === 'live' ? analysis : liveAnalysis, ...analysisHistory]),
-      );
+      const bounds = computeBoundsForMetric(newMetricName, [
+        analysis.key === 'live' ? analysis : liveAnalysis,
+        ...analysisHistory,
+      ]);
+      setCiBounds(bounds);
     }
     setSelectedMetricAnalysis(newMetric);
   };
@@ -227,10 +228,10 @@ export default function ExperimentViewPage() {
   const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
   const { alpha, power } = getAlphaAndPower(experiment); // undefined for non-frequentist experiments
 
-  const selectedMetricName = selectedMetricAnalysis?.metric?.field_name ?? 'unknown';
-
   const selectedMetricAnalyses =
-    selectedAnalysis.data && 'metric_analyses' in selectedAnalysis.data ? selectedAnalysis.data.metric_analyses : null;
+    selectedAnalysisState.data && 'metric_analyses' in selectedAnalysisState.data
+      ? selectedAnalysisState.data.metric_analyses
+      : null;
 
   // Calculate MDE percentage for the selected metric
   let mdePct: string | null = null;
@@ -336,7 +337,7 @@ export default function ExperimentViewPage() {
           headerLeft={
             <Flex gap="3" align="center" wrap="wrap">
               <Heading size="3">Analysis</Heading>
-              {isFrequentist(selectedAnalysis.data) ? (
+              {isFrequentist(selectedAnalysisState.data) ? (
                 <Flex gap="3" wrap="wrap">
                   <Badge size="2">
                     <Flex gap="2" align="center">
@@ -345,21 +346,16 @@ export default function ExperimentViewPage() {
                         <Select.Root
                           size="1"
                           value={selectedMetricName}
-                          onValueChange={(value) => {
-                            const newMetric =
-                              selectedMetricAnalyses.find((metric) => metric.metric?.field_name === value) || null;
-                            setSelectedMetricAnalysis(newMetric);
-                            const bounds = computeBoundsForMetric(value, [liveAnalysis, ...analysisHistory]);
-                            setCiBounds(bounds);
+                          onValueChange={(metricName) => {
+                            setSelectedAnalysisAndMetrics(selectedAnalysisState, metricName);
                           }}
                         >
                           <Select.Trigger style={{ height: 18 }} />
                           <Select.Content>
                             {selectedMetricAnalyses.map((metric) => {
-                              const metricName = metric.metric?.field_name ?? 'unknown';
                               return (
-                                <Select.Item key={metricName} value={metricName}>
-                                  {metricName}
+                                <Select.Item key={metric.metric_name} value={metric.metric_name}>
+                                  {metric.metric_name}
                                 </Select.Item>
                               );
                             })}
@@ -372,9 +368,9 @@ export default function ExperimentViewPage() {
                   </Badge>
                   <MdeBadge value={mdePct} />
                 </Flex>
-              ) : isBandit(selectedAnalysis.data) &&
-                selectedAnalysis.banditEffects &&
-                selectedAnalysis.banditEffects.length > 1 ? (
+              ) : isBandit(selectedAnalysisState.data) &&
+                selectedAnalysisState.banditEffects &&
+                selectedAnalysisState.banditEffects.length > 1 ? (
                 <>
                   <Badge size="2">
                     <Flex gap="2" align="center">
@@ -401,7 +397,7 @@ export default function ExperimentViewPage() {
                     {analysisHistory.length == 0 ? (
                       <Text>{liveAnalysis.label}</Text>
                     ) : (
-                      <Select.Root size="1" value={selectedAnalysis.key} onValueChange={handleSelectAnalysis}>
+                      <Select.Root size="1" value={selectedAnalysisState.key} onValueChange={handleSelectAnalysis}>
                         <Select.Trigger style={{ height: 18 }} />
                         <Select.Content>
                           <Select.Group>
@@ -423,7 +419,7 @@ export default function ExperimentViewPage() {
                   </Flex>
                 </Badge>
               </Flex>
-              {isFrequentist(selectedAnalysis.data) ? (
+              {isFrequentist(selectedAnalysisState.data) ? (
                 <Flex gap="3" wrap="wrap">
                   <Badge size="2">
                     <Flex gap="4" align="center">
@@ -476,24 +472,6 @@ export default function ExperimentViewPage() {
             </Flex>
           }
         >
-          {isLoadingHistory && <XSpinner message="Loading historical analyses..." />}
-
-          {isLoadingLiveAnalysis && <XSpinner message="Loading live analysis..." />}
-
-          {liveAnalysisError && (
-            <GenericErrorCallout
-              title="Error loading analysis"
-              message="Analysis may not be available yet or the experiment hasn't collected enough data."
-            />
-          )}
-
-          {analysisHistoryError && (
-            <GenericErrorCallout
-              title="Error loading historical analyses"
-              message="Historical analyses may not be available yet."
-            />
-          )}
-
           <Flex direction="column" gap="3">
             <Tabs.Root defaultValue="leaderboard">
               <Tabs.List>
@@ -507,20 +485,40 @@ export default function ExperimentViewPage() {
               <Box px="4">
                 <Tabs.Content value="leaderboard">
                   <Flex direction="column" gap="3" py="3">
-                    <ForestPlot
-                      effectSizes={selectedAnalysis.effectSizesByMetric?.get(selectedMetricName)}
-                      banditEffects={selectedAnalysis.banditEffects}
-                      minX={ciBounds[0]}
-                      maxX={ciBounds[1]}
-                    />
+                    {/* Analysis may not be available yet or the experiment hasn't collected enough data. */}
+                    {liveAnalysisError && (
+                      <GenericErrorCallout title="Error loading live analysis" error={liveAnalysisError} />
+                    )}
 
-                    <ForestTimeseriesPlot
-                      data={timeseriesData}
-                      armMetadata={armMetadata}
-                      minDate={minDate}
-                      maxDate={maxDate}
-                      onPointClick={handleSelectAnalysis}
-                    />
+                    {analysisHistoryError && (
+                      <GenericErrorCallout
+                        title="Error loading historical analyses"
+                        message="Historical analyses may not be available yet."
+                      />
+                    )}
+
+                    {isLoadingLiveAnalysis && <XSpinner message="Loading live analysis..." />}
+
+                    {isLoadingHistory && <XSpinner message="Loading historical analyses..." />}
+
+                    {!isLoadingLiveAnalysis && selectedAnalysisState.data && (
+                      <ForestPlot
+                        effectSizes={selectedAnalysisState.effectSizesByMetric?.get(selectedMetricName)}
+                        banditEffects={selectedAnalysisState.banditEffects}
+                        minX={ciBounds[0]}
+                        maxX={ciBounds[1]}
+                      />
+                    )}
+
+                    {!isLoadingHistory && (
+                      <ForestTimeseriesPlot
+                        data={timeseriesData}
+                        armMetadata={armMetadata}
+                        minDate={minDate}
+                        maxDate={maxDate}
+                        onPointClick={handleSelectAnalysis}
+                      />
+                    )}
                   </Flex>
                 </Tabs.Content>
 
@@ -528,7 +526,7 @@ export default function ExperimentViewPage() {
                   <Flex direction="column" gap="3" py="3">
                     <CodeSnippetCard
                       title="Raw Data"
-                      content={selectedAnalysis.data ? prettyJSON(selectedAnalysis.data) : 'NO DATA'}
+                      content={selectedAnalysisState.data ? prettyJSON(selectedAnalysisState.data) : 'NO DATA'}
                       height="200px"
                       tooltipContent="Copy raw data"
                       variant="ghost"

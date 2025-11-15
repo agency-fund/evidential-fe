@@ -110,10 +110,8 @@ export const precomputeFreqEffectsByMetric = (
 
   const effectSizesByMetric = new Map<string, EffectSizeData[]>();
   for (const metricAnalysis of analysisData.metric_analyses) {
-    // TODO: cleanup fallback when metric_name is not nullable in the backend (wasn't supposed to be)
-    const metricName = metricAnalysis.metric_name || '';
     const effectSizes = _generateFreqEffectSizeData(metricAnalysis, alpha);
-    effectSizesByMetric.set(metricName, effectSizes);
+    effectSizesByMetric.set(metricAnalysis.metric_name, effectSizes);
   }
   return effectSizesByMetric;
 };
@@ -199,11 +197,13 @@ const _generateFreqEffectSizeData = (analysis: MetricAnalysis, alpha: number): E
     const stdError = armAnalysis.std_error;
     const pValue = armAnalysis.p_value;
     const tStat = armAnalysis.t_stat;
-    const invalidStatTest = pValue === null || pValue === undefined || tStat === null || tStat === undefined;
+    const invalidStatTest =
+      pValue === null || pValue === undefined || tStat === null || tStat === undefined || stdError === null;
+    const isMissingAllValues = armAnalysis.num_missing_values < 0;
 
     // Calculate 95% confidence interval
     // TODO: backend should return CIs; this approximation is for z-tests, and not appropriate for small sample sizes.
-    const ci95 = 1.96 * stdError;
+    const ci95 = stdError === null ? NaN : 1.96 * stdError;
     const ci95Lower = estimate - ci95;
     const ci95Upper = estimate + ci95;
     const absEffect = estimate + (isBaseline ? 0 : controlEstimate);
@@ -214,6 +214,7 @@ const _generateFreqEffectSizeData = (analysis: MetricAnalysis, alpha: number): E
       isBaseline,
       armId,
       armName: armAnalysis.arm_name || `Arm ${index}`,
+      isMissingAllValues,
       baselineEffect: controlEstimate,
       effect: estimate, // relative to baseline effect
       absEffect: absEffect,
@@ -224,7 +225,7 @@ const _generateFreqEffectSizeData = (analysis: MetricAnalysis, alpha: number): E
       absCI95Upper,
       pValue,
       invalidStatTest,
-      significant: !isBaseline && !!(pValue && pValue < alpha),
+      significant: !isBaseline && !!(pValue !== null && pValue < alpha),
     };
   });
 
@@ -384,7 +385,7 @@ export const getColorWithSignificance = (
  * Processes multiple analysis snapshots and converts them into a format ready for Recharts.
  *
  * @param analysisStates - Array of analysis states (e.g., snapshots and live analysis)
- * @param metricName - The metric field name to extract effect sizes for
+ * @param metricName - The metric field name to extract effect sizes for (frequentist experiments only)
  * @returns Object containing chartData, armMetadata, and date range for rendering
  */
 export const transformAnalysisForForestTimeseriesPlot = (

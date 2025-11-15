@@ -4,6 +4,7 @@ export interface EffectSizeData {
   isBaseline: boolean;
   armId: string;
   armName: string;
+  isMissingAllValues: boolean;
   baselineEffect: number;
   effect: number;
   absEffect: number;

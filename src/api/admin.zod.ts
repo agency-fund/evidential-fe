@@ -37,6 +37,8 @@ export const getSnapshotResponseSnapshotDataMetricAnalysesItemMetricFieldNameReg
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getSnapshotResponseSnapshotDataMetricAnalysesItemArmAnalysesItemArmNameMax = 100;
 export const getSnapshotResponseSnapshotDataMetricAnalysesItemArmAnalysesItemArmDescriptionMaxOne = 2000;
+export const getSnapshotResponseSnapshotDataMetricAnalysesItemArmAnalysesItemNumMissingValuesMin =
+	-1;
 export const getSnapshotResponseSnapshotDataArmAnalysesItemArmNameMax = 100;
 export const getSnapshotResponseSnapshotDataArmAnalysesItemArmDescriptionMaxOne = 2000;
 
@@ -71,7 +73,7 @@ export const getSnapshotResponse = zod
 							.array(
 								zod
 									.object({
-										metric_name: zod.string().or(zod.null()).optional(),
+										metric_name: zod.string(),
 										metric: zod
 											.object({
 												field_name: zod
@@ -96,9 +98,7 @@ export const getSnapshotResponse = zod
 											})
 											.describe(
 												"Defines a request to look up baseline stats for a metric to measure in an experiment.",
-											)
-											.or(zod.null())
-											.optional(),
+											),
 										arm_analyses: zod
 											.array(
 												zod.object({
@@ -140,13 +140,17 @@ export const getSnapshotResponse = zod
 														),
 													std_error: zod
 														.number()
+														.or(zod.null())
 														.describe(
 															"The standard error of the treatment effect estimate.",
 														),
 													num_missing_values: zod
 														.number()
+														.min(
+															getSnapshotResponseSnapshotDataMetricAnalysesItemArmAnalysesItemNumMissingValuesMin,
+														)
 														.describe(
-															"The number of participants assigned to this arm with missing values (NaNs) for this metric. These rows are excluded from the analysis.",
+															"The number of participants assigned to this arm with missing values (NaNs) for this metric. These rows are excluded from the analysis. -1 indicates arm analysis not available due to all assignments missing outcomes for this metric.",
 														),
 													is_baseline: zod
 														.boolean()
@@ -384,6 +388,8 @@ export const listSnapshotsResponseItemsItemDataMetricAnalysesItemMetricFieldName
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const listSnapshotsResponseItemsItemDataMetricAnalysesItemArmAnalysesItemArmNameMax = 100;
 export const listSnapshotsResponseItemsItemDataMetricAnalysesItemArmAnalysesItemArmDescriptionMaxOne = 2000;
+export const listSnapshotsResponseItemsItemDataMetricAnalysesItemArmAnalysesItemNumMissingValuesMin =
+	-1;
 export const listSnapshotsResponseItemsItemDataArmAnalysesItemArmNameMax = 100;
 export const listSnapshotsResponseItemsItemDataArmAnalysesItemArmDescriptionMaxOne = 2000;
 
@@ -417,7 +423,7 @@ export const listSnapshotsResponse = zod.object({
 						.array(
 							zod
 								.object({
-									metric_name: zod.string().or(zod.null()).optional(),
+									metric_name: zod.string(),
 									metric: zod
 										.object({
 											field_name: zod
@@ -442,9 +448,7 @@ export const listSnapshotsResponse = zod.object({
 										})
 										.describe(
 											"Defines a request to look up baseline stats for a metric to measure in an experiment.",
-										)
-										.or(zod.null())
-										.optional(),
+										),
 									arm_analyses: zod
 										.array(
 											zod.object({
@@ -486,13 +490,17 @@ export const listSnapshotsResponse = zod.object({
 													),
 												std_error: zod
 													.number()
+													.or(zod.null())
 													.describe(
 														"The standard error of the treatment effect estimate.",
 													),
 												num_missing_values: zod
 													.number()
+													.min(
+														listSnapshotsResponseItemsItemDataMetricAnalysesItemArmAnalysesItemNumMissingValuesMin,
+													)
 													.describe(
-														"The number of participants assigned to this arm with missing values (NaNs) for this metric. These rows are excluded from the analysis.",
+														"The number of participants assigned to this arm with missing values (NaNs) for this metric. These rows are excluded from the analysis. -1 indicates arm analysis not available due to all assignments missing outcomes for this metric.",
 													),
 												is_baseline: zod
 													.boolean()
@@ -4605,6 +4613,8 @@ export const analyzeExperimentResponseMetricAnalysesItemMetricFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const analyzeExperimentResponseMetricAnalysesItemArmAnalysesItemArmNameMax = 100;
 export const analyzeExperimentResponseMetricAnalysesItemArmAnalysesItemArmDescriptionMaxOne = 2000;
+export const analyzeExperimentResponseMetricAnalysesItemArmAnalysesItemNumMissingValuesMin =
+	-1;
 export const analyzeExperimentResponseArmAnalysesItemArmNameMax = 100;
 export const analyzeExperimentResponseArmAnalysesItemArmDescriptionMaxOne = 2000;
 
@@ -4616,7 +4626,7 @@ export const analyzeExperimentResponse = zod
 			.array(
 				zod
 					.object({
-						metric_name: zod.string().or(zod.null()).optional(),
+						metric_name: zod.string(),
 						metric: zod
 							.object({
 								field_name: zod
@@ -4641,9 +4651,7 @@ export const analyzeExperimentResponse = zod
 							})
 							.describe(
 								"Defines a request to look up baseline stats for a metric to measure in an experiment.",
-							)
-							.or(zod.null())
-							.optional(),
+							),
 						arm_analyses: zod
 							.array(
 								zod.object({
@@ -4685,13 +4693,17 @@ export const analyzeExperimentResponse = zod
 										),
 									std_error: zod
 										.number()
+										.or(zod.null())
 										.describe(
 											"The standard error of the treatment effect estimate.",
 										),
 									num_missing_values: zod
 										.number()
+										.min(
+											analyzeExperimentResponseMetricAnalysesItemArmAnalysesItemNumMissingValuesMin,
+										)
 										.describe(
-											"The number of participants assigned to this arm with missing values (NaNs) for this metric. These rows are excluded from the analysis.",
+											"The number of participants assigned to this arm with missing values (NaNs) for this metric. These rows are excluded from the analysis. -1 indicates arm analysis not available due to all assignments missing outcomes for this metric.",
 										),
 									is_baseline: zod
 										.boolean()
@@ -4894,6 +4906,8 @@ export const analyzeCmabExperimentResponseMetricAnalysesItemMetricFieldNameRegEx
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const analyzeCmabExperimentResponseMetricAnalysesItemArmAnalysesItemArmNameMax = 100;
 export const analyzeCmabExperimentResponseMetricAnalysesItemArmAnalysesItemArmDescriptionMaxOne = 2000;
+export const analyzeCmabExperimentResponseMetricAnalysesItemArmAnalysesItemNumMissingValuesMin =
+	-1;
 export const analyzeCmabExperimentResponseArmAnalysesItemArmNameMax = 100;
 export const analyzeCmabExperimentResponseArmAnalysesItemArmDescriptionMaxOne = 2000;
 
@@ -4905,7 +4919,7 @@ export const analyzeCmabExperimentResponse = zod
 			.array(
 				zod
 					.object({
-						metric_name: zod.string().or(zod.null()).optional(),
+						metric_name: zod.string(),
 						metric: zod
 							.object({
 								field_name: zod
@@ -4930,9 +4944,7 @@ export const analyzeCmabExperimentResponse = zod
 							})
 							.describe(
 								"Defines a request to look up baseline stats for a metric to measure in an experiment.",
-							)
-							.or(zod.null())
-							.optional(),
+							),
 						arm_analyses: zod
 							.array(
 								zod.object({
@@ -4974,13 +4986,17 @@ export const analyzeCmabExperimentResponse = zod
 										),
 									std_error: zod
 										.number()
+										.or(zod.null())
 										.describe(
 											"The standard error of the treatment effect estimate.",
 										),
 									num_missing_values: zod
 										.number()
+										.min(
+											analyzeCmabExperimentResponseMetricAnalysesItemArmAnalysesItemNumMissingValuesMin,
+										)
 										.describe(
-											"The number of participants assigned to this arm with missing values (NaNs) for this metric. These rows are excluded from the analysis.",
+											"The number of participants assigned to this arm with missing values (NaNs) for this metric. These rows are excluded from the analysis. -1 indicates arm analysis not available due to all assignments missing outcomes for this metric.",
 										),
 									is_baseline: zod
 										.boolean()
