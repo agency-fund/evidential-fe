@@ -1,6 +1,6 @@
 'use client';
-import { Button, Flex, Grid, Heading, TextField } from '@radix-ui/themes';
-import { GearIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
+import { Button, Flex, Grid, Heading, TextField, IconButton, Tooltip } from '@radix-ui/themes';
+import { GearIcon, MagnifyingGlassIcon, ListBulletIcon, DashboardIcon } from '@radix-ui/react-icons';
 import { useListOrganizationDatasources, useListOrganizationExperiments } from '@/api/admin';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -9,10 +9,12 @@ import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
 import { useRouter } from 'next/navigation';
 import { NO_DWH_DRIVER, PRODUCT_NAME } from '@/services/constants';
 import { CreateExperimentButton } from '@/components/features/experiments/create-experiment-button';
-import ExperimentCard from '@/components/features/experiments/experiment-card';
+import { ExperimentCard } from '@/components/features/experiments/experiment-card';
+import { ExperimentsTable } from '@/components/features/experiments/experiments-table';
 import { useState } from 'react';
+import type { ExperimentStatus } from '@/components/features/experiments/experiment-status-badge';
 
-const getExperimentStatus = (startDate: string, endDate: string) => {
+const getExperimentStatus = (startDate: string, endDate: string): ExperimentStatus => {
   const now = new Date();
   const start = new Date(startDate);
   const end = new Date(endDate);
@@ -32,6 +34,7 @@ export default function Page() {
   const currentOrgId = orgContext!.current.id;
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
 
   const {
     data: datasourcesData,
@@ -128,16 +131,39 @@ export default function Page() {
       ) : experimentsData ? (
         <Flex direction="column" gap="4">
           <Flex justify="between" align="center" gap="4">
-            <TextField.Root
-              placeholder="Search experiments..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            >
-              <TextField.Slot>
-                <MagnifyingGlassIcon height="16" width="16" />
-              </TextField.Slot>
-            </TextField.Root>
-
+            <Flex align="center" gap="4">
+              <TextField.Root
+                placeholder="Search experiments..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              >
+                <TextField.Slot>
+                  <MagnifyingGlassIcon height="16" width="16" />
+                </TextField.Slot>
+              </TextField.Root>
+              <Flex gap="2">
+                <Tooltip content="Card View">
+                  <IconButton
+                    variant="soft"
+                    color={viewMode === 'card' ? 'blue' : 'gray'}
+                    size="2"
+                    onClick={() => setViewMode('card')}
+                  >
+                    <DashboardIcon />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip content="Table View">
+                  <IconButton
+                    variant="soft"
+                    color={viewMode === 'table' ? 'blue' : 'gray'}
+                    size="2"
+                    onClick={() => setViewMode('table')}
+                  >
+                    <ListBulletIcon />
+                  </IconButton>
+                </Tooltip>
+              </Flex>
+            </Flex>
             <Flex gap="2">
               {availableFilters.map((status) => (
                 <Button
@@ -160,7 +186,7 @@ export default function Page() {
                   : `There are no ${selectedStatus} experiments to display.`
               }
             />
-          ) : (
+          ) : viewMode === 'card' ? (
             <Grid columns={{ initial: '1', md: '2', lg: '3' }} gap="3">
               {filteredExperiments.map((experiment) => {
                 return (
@@ -177,10 +203,13 @@ export default function Page() {
                     participantType={experiment.design_spec.participant_type}
                     experimentId={experiment.experiment_id}
                     organizationId={currentOrgId}
+                    status={experiment.status}
                   />
                 );
               })}
             </Grid>
+          ) : (
+            <ExperimentsTable experiments={filteredExperiments} organizationId={currentOrgId} />
           )}
         </Flex>
       ) : null}
