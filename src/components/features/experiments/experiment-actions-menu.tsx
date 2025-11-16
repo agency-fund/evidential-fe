@@ -14,7 +14,12 @@ interface ExperimentActionsMenuProps {
   designUrl?: string;
 }
 
-export function ExperimentActionsMenu({ datasourceId, experimentId, organizationId, designUrl }: ExperimentActionsMenuProps) {
+export function ExperimentActionsMenu({
+  datasourceId,
+  experimentId,
+  organizationId,
+  designUrl,
+}: ExperimentActionsMenuProps) {
   const [open, setOpen] = useState(false);
   const { trigger, isMutating } = useDeleteExperiment(
     datasourceId,

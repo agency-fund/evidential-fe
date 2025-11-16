@@ -5,7 +5,10 @@ import { ReadMoreText } from '@/components/ui/read-more-text';
 import { ExperimentActionsMenu } from '@/components/features/experiments/experiment-actions-menu';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
-import { ExperimentStatusBadge, type ExperimentStatus } from '@/components/features/experiments/experiment-status-badge';
+import {
+  ExperimentStatusBadge,
+  type ExperimentStatus,
+} from '@/components/features/experiments/experiment-status-badge';
 import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
 import { DatasourceBadge } from '@/components/features/datasources/datasource-badge';
 import { formatIsoDateLocal } from '@/services/date-utils';
@@ -48,13 +51,7 @@ export function ExperimentCard({
             <Flex minWidth={'0'} align="center" gap="2">
               <LightningBoltIcon width="16" height="16" color="var(--blue-9)" style={{ flexShrink: 0 }} />
               <Tooltip content={title}>
-                <Heading
-                  as="h3"
-                  size="4"
-                  weight="medium"
-                  truncate
-                  asChild
-                >
+                <Heading as="h3" size="4" weight="medium" truncate asChild>
                   <Link
                     href={`/datasources/${datasourceId}/experiments/${experimentId}`}
                     style={{ textDecoration: 'none', color: 'inherit' }}

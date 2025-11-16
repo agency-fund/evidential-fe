@@ -10,7 +10,11 @@ interface DownloadAssignmentsCsvButtonProps {
   children?: React.ReactNode;
 }
 
-export function DownloadAssignmentsCsvButton({ datasourceId, experimentId, children }: DownloadAssignmentsCsvButtonProps) {
+export function DownloadAssignmentsCsvButton({
+  datasourceId,
+  experimentId,
+  children,
+}: DownloadAssignmentsCsvButtonProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [noDataDialog, setNoDataDialog] = useState(false);
 

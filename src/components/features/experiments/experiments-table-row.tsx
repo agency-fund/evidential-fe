@@ -1,6 +1,9 @@
 'use client';
 import { Table, Text, Flex, Tooltip } from '@radix-ui/themes';
-import { ExperimentStatusBadge, type ExperimentStatus } from '@/components/features/experiments/experiment-status-badge';
+import {
+  ExperimentStatusBadge,
+  type ExperimentStatus,
+} from '@/components/features/experiments/experiment-status-badge';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
 import { DatasourceBadge } from '@/components/features/datasources/datasource-badge';
