@@ -9,8 +9,6 @@ import {
   ExperimentStatusBadge,
   type ExperimentStatus,
 } from '@/components/features/experiments/experiment-status-badge';
-import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
-import { DatasourceBadge } from '@/components/features/datasources/datasource-badge';
 import { formatIsoDateLocal } from '@/services/date-utils';
 import Link from 'next/link';
 
@@ -21,10 +19,8 @@ interface ExperimentCardProps {
   startDate: string;
   endDate: string;
   status: ExperimentStatus;
-  datasource: string;
   datasourceId: string;
   designUrl?: string;
-  participantType: string;
   experimentId: string;
   organizationId: string;
 }
@@ -36,10 +32,8 @@ export function ExperimentCard({
   startDate,
   endDate,
   status,
-  datasource,
   datasourceId,
   designUrl,
-  participantType,
   experimentId,
   organizationId,
 }: ExperimentCardProps) {
@@ -81,15 +75,7 @@ export function ExperimentCard({
             </Text>
           </Flex>
 
-          <Flex align="center" gap="2" wrap="wrap">
-            <DatasourceBadge datasourceId={datasourceId} datasourceName={datasource} />
-            <Text size="2" color="gray">
-              •
-            </Text>
-            <ParticipantTypeBadge datasourceId={datasourceId} participantType={participantType} />
-            <Text size="2" color="gray">
-              •
-            </Text>
+          <Flex align="center">
             <ExperimentTypeBadge type={type} />
           </Flex>
 

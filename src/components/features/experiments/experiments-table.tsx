@@ -32,8 +32,6 @@ export function ExperimentsTable({ experiments, organizationId }: ExperimentTabl
           <Table.ColumnHeaderCell>Hypothesis</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>Start Date</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>End Date</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Datasource</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Participant Type</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>Experiment Type</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
         </Table.Row>
@@ -48,11 +46,9 @@ export function ExperimentsTable({ experiments, organizationId }: ExperimentTabl
             status={experiment.status}
             startDate={experiment.design_spec.start_date}
             endDate={experiment.design_spec.end_date}
-            datasource={datasourcesToName.get(experiment.datasource_id) || experiment.datasource_id}
             datasourceId={experiment.datasource_id}
             organizationId={organizationId}
             designUrl={experiment.design_spec.design_url ?? undefined}
-            participantType={experiment.design_spec.participant_type}
             experimentId={experiment.experiment_id}
           />
         ))}

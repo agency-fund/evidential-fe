@@ -197,10 +197,8 @@ export default function Page() {
                     type={experiment.design_spec.experiment_type}
                     startDate={experiment.design_spec.start_date}
                     endDate={experiment.design_spec.end_date}
-                    datasource={datasourcesToName.get(experiment.datasource_id) || ''}
                     datasourceId={experiment.datasource_id}
                     designUrl={experiment.design_spec.design_url || ''}
-                    participantType={experiment.design_spec.participant_type}
                     experimentId={experiment.experiment_id}
                     organizationId={currentOrgId}
                     status={experiment.status}
