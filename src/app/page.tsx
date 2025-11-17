@@ -13,6 +13,7 @@ import { ExperimentCard } from '@/components/features/experiments/experiment-car
 import { ExperimentsTable } from '@/components/features/experiments/experiments-table';
 import { useState } from 'react';
 import type { ExperimentStatus } from '@/components/features/experiments/experiment-status-badge';
+import { view } from 'motion/react-client';
 
 const getExperimentStatus = (startDate: string, endDate: string): ExperimentStatus => {
   const now = new Date();
@@ -144,8 +145,7 @@ export default function Page() {
               <Flex gap="2">
                 <Tooltip content="Card View">
                   <IconButton
-                    variant="soft"
-                    color={viewMode === 'card' ? 'blue' : 'gray'}
+                    variant={viewMode === 'card' ? 'solid' : 'soft'}
                     size="2"
                     onClick={() => setViewMode('card')}
                   >
@@ -154,8 +154,7 @@ export default function Page() {
                 </Tooltip>
                 <Tooltip content="Table View">
                   <IconButton
-                    variant="soft"
-                    color={viewMode === 'table' ? 'blue' : 'gray'}
+                  variant={viewMode === 'table' ? 'solid' : 'soft'}
                     size="2"
                     onClick={() => setViewMode('table')}
                   >

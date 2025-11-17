@@ -1,12 +1,15 @@
 'use client';
-import { Table, Text, Flex, Tooltip } from '@radix-ui/themes';
+import { useState } from 'react';
+import { Table, Text, Flex, Tooltip, IconButton } from '@radix-ui/themes';
 import {
   ExperimentStatusBadge,
   type ExperimentStatus,
 } from '@/components/features/experiments/experiment-status-badge';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
-import { ExperimentActionsMenu } from '@/components/features/experiments/experiment-actions-menu';
+import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
+import { DeleteExperimentDialog } from '@/components/features/experiments/delete-experiment-dialog';
 import { formatIsoDateLocal } from '@/services/date-utils';
+import { EyeOpenIcon, FileTextIcon, TrashIcon } from '@radix-ui/react-icons';
 import Link from 'next/link';
 
 interface ExperimentTableRowProps {
@@ -34,38 +37,71 @@ export function ExperimentsTableRow({
   designUrl,
   experimentId,
 }: ExperimentTableRowProps) {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
   return (
-    <Table.Row>
-      <Table.Cell>
-        <Flex width="150px">
-          <Tooltip content={title}>
-            <Text truncate asChild>
-              <Link href={`/datasources/${datasourceId}/experiments/${experimentId}`}>{title}</Link>
-            </Text>
-          </Tooltip>
-        </Flex>
-      </Table.Cell>
-      <Table.Cell>
-        <ExperimentStatusBadge status={status} />
-      </Table.Cell>
-      <Table.Cell>
-        <Flex width="150px">
-          <Text truncate>{hypothesis}</Text>
-        </Flex>
-      </Table.Cell>
-      <Table.Cell>{formatIsoDateLocal(startDate)}</Table.Cell>
-      <Table.Cell>{formatIsoDateLocal(endDate)}</Table.Cell>
-      <Table.Cell>
-        <ExperimentTypeBadge type={type} />
-      </Table.Cell>
-      <Table.Cell>
-        <ExperimentActionsMenu
-          datasourceId={datasourceId}
-          experimentId={experimentId}
-          organizationId={organizationId}
-          designUrl={designUrl}
-        />
-      </Table.Cell>
-    </Table.Row>
+    <>
+      <Table.Row>
+        <Table.Cell>
+          <Flex width="150px">
+            <Tooltip content={title}>
+              <Text truncate asChild>
+                <Link href={`/datasources/${datasourceId}/experiments/${experimentId}`}>{title}</Link>
+              </Text>
+            </Tooltip>
+          </Flex>
+        </Table.Cell>
+        <Table.Cell>
+          <ExperimentStatusBadge status={status} />
+        </Table.Cell>
+        <Table.Cell>
+          <Flex width="150px">
+            <Text truncate>{hypothesis}</Text>
+          </Flex>
+        </Table.Cell>
+        <Table.Cell>{formatIsoDateLocal(startDate)}</Table.Cell>
+        <Table.Cell>{formatIsoDateLocal(endDate)}</Table.Cell>
+        <Table.Cell>
+          <ExperimentTypeBadge type={type} />
+        </Table.Cell>
+        <Table.Cell>
+          <Flex gap="2" justify="end">
+            {designUrl && (
+                <Tooltip content="View design document">
+              <IconButton variant="soft" color="blue" size="2" asChild>
+                <Link href={designUrl} target="_blank" rel="noopener noreferrer">
+                  <FileTextIcon width="16" height="16" />
+                </Link>
+              </IconButton>
+              </Tooltip>
+            )}
+
+            <Tooltip content="View experiment">
+              <IconButton variant="soft" color="blue" size="2" asChild>
+                <Link href={`/datasources/${datasourceId}/experiments/${experimentId}`}>
+                  <EyeOpenIcon width="16" height="16" />
+                </Link>
+              </IconButton>
+            </Tooltip>
+
+            <DownloadAssignmentsCsvButton datasourceId={datasourceId} experimentId={experimentId} />
+
+            <Tooltip content="Delete experiment">
+              <IconButton variant="soft" color="red" size="2" onClick={() => setDeleteDialogOpen(true)}>
+                <TrashIcon width="16" height="16" />
+              </IconButton>
+            </Tooltip>
+          </Flex>
+        </Table.Cell>
+      </Table.Row>
+
+      <DeleteExperimentDialog
+        datasourceId={datasourceId}
+        experimentId={experimentId}
+        organizationId={organizationId}
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+      />
+    </>
   );
 }
