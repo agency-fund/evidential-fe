@@ -7,7 +7,7 @@ import { DeleteDatasourceDialog } from '@/components/features/datasources/delete
 import { EditDatasourceDialog } from '@/components/features/datasources/edit-datasource-dialog';
 import { CreateApiKeyDialog } from '@/components/features/datasources/create-api-key-dialog';
 import { useListParticipantTypes, useListApiKeys } from '@/api/admin';
-import { PersonIcon, PlusIcon, TokensIcon } from '@radix-ui/react-icons';
+import { PersonIcon, PlusIcon, LockClosedIcon } from '@radix-ui/react-icons';
 
 export default function DatasourceRow({
   datasource,
@@ -94,7 +94,7 @@ export default function DatasourceRow({
           <Flex gap="2">
             <Tooltip content="Add API Key">
               <IconButton variant="soft" color="green" onClick={() => setCreateApiKeyDialogOpen(true)}>
-                <TokensIcon />
+                <LockClosedIcon />
               </IconButton>
             </Tooltip>
             <Tooltip
