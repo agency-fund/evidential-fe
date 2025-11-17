@@ -250,18 +250,18 @@ const _generateBanditEffectData = (analysis: BanditExperimentAnalysisResponse): 
     // Calculate 95% confidence interval for posterior predictive distribution
     const postPredMean = armAnalysis.post_pred_mean;
     const postPredStd = armAnalysis.post_pred_stdev;
-    const postPredCI95 = 1.96 * postPredStd;
-    const postPredCI95Lower = postPredMean - postPredCI95;
-    const postPredCI95Upper = postPredMean + postPredCI95;
+    const postPredCI95Lower = armAnalysis.post_pred_ci_lower;
+    const postPredCI95Upper = armAnalysis.post_pred_ci_upper;
     const postPredabsCI95Lower = postPredCI95Lower + (postPredMean == postMinMean ? 0 : postMinMean);
     const postPredabsCI95Upper = postPredCI95Upper + (postPredMean == postMinMean ? 0 : postMinMean);
+    const postPredCI95 = (postPredCI95Upper - postPredCI95Lower) / 2;
 
     // Calculate 95% confidence interval for prior predictive distribution
     const priorPredMean = armAnalysis.prior_pred_mean;
     const priorPredStd = armAnalysis.prior_pred_stdev;
-    const priorPredCI95 = 1.96 * priorPredStd;
-    const priorPredCI95Lower = priorPredMean - priorPredCI95;
-    const priorPredCI95Upper = priorPredMean + priorPredCI95;
+    const priorPredCI95Lower = armAnalysis.prior_pred_ci_lower;
+    const priorPredCI95Upper = armAnalysis.prior_pred_ci_upper;
+    const priorPredCI95 = (priorPredCI95Upper - priorPredCI95Lower) / 2;
     const priorPredabsCI95Lower = priorPredCI95Lower + (priorPredMean == priorMinMean ? 0 : priorMinMean);
     const priorPredabsCI95Upper = priorPredCI95Upper + (priorPredMean == priorMinMean ? 0 : priorMinMean);
 
