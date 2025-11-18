@@ -1,5 +1,5 @@
 'use client';
-import { Button, Dialog, DropdownMenu, Flex, IconButton } from '@radix-ui/themes';
+import { AlertDialog, Button, DropdownMenu, Flex, IconButton, Text, TextField } from '@radix-ui/themes';
 import { useState } from 'react';
 import { getListOrganizationExperimentsKey, useDeleteExperiment } from '@/api/admin';
 import { mutate } from 'swr';
@@ -13,18 +13,28 @@ interface ExperimentActionsMenuProps {
 
 export function ExperimentActionsMenu({ datasourceId, experimentId, organizationId }: ExperimentActionsMenuProps) {
   const [open, setOpen] = useState(false);
+  const [confirmationText, setConfirmationText] = useState('');
   const { trigger, isMutating } = useDeleteExperiment(
     datasourceId,
     experimentId,
     { allow_missing: true },
     {
-      swr: { onSuccess: () => mutate(getListOrganizationExperimentsKey(organizationId)) },
+      swr: {
+        onSuccess: async () => {
+          await mutate(getListOrganizationExperimentsKey(organizationId));
+          setOpen(false);
+          setConfirmationText('');
+        },
+      },
     },
   );
 
+  const isConfirmed = confirmationText === 'delete';
+
   const handleDelete = async () => {
-    await trigger();
-    setOpen(false);
+    if (isConfirmed) {
+      await trigger();
+    }
   };
 
   return (
@@ -42,25 +52,60 @@ export function ExperimentActionsMenu({ datasourceId, experimentId, organization
         </DropdownMenu.Content>
       </DropdownMenu.Root>
 
-      <Dialog.Root open={open} onOpenChange={setOpen}>
-        <Dialog.Content>
-          <Dialog.Title>Delete Experiment</Dialog.Title>
-          <Dialog.Description size="2" mb="4">
-            Are you sure you want to delete this experiment?
-          </Dialog.Description>
+      <AlertDialog.Root open={open} onOpenChange={setOpen}>
+        <AlertDialog.Content
+          onKeyDown={async (e) => {
+            if (e.key === 'Enter' && isConfirmed) {
+              e.preventDefault();
+              await handleDelete();
+            }
+          }}
+        >
+          <AlertDialog.Title>Delete Experiment</AlertDialog.Title>
+          <AlertDialog.Description>
+            Are you sure you want to delete this experiment? This action cannot be undone.
+          </AlertDialog.Description>
 
-          <Flex gap="3" justify="end">
-            <Dialog.Close>
+          <Flex direction={'column'} mt={'4'}>
+            <Text as="p" mb={'3'}>
+              Deleting an experiment will delete all associated assignments, state, and snapshots.
+            </Text>
+            <Text as="p" mb={'3'}>
+              Please type &apos;delete&apos; in this text box to confirm.
+            </Text>
+            <TextField.Root
+              value={confirmationText}
+              autoFocus={true}
+              onChange={(e) => setConfirmationText(e.target.value)}
+              placeholder="delete"
+            />
+          </Flex>
+
+          <Flex gap="3" mt="4" justify="end">
+            <AlertDialog.Cancel>
               <Button variant="soft" color="gray">
                 Cancel
               </Button>
-            </Dialog.Close>
-            <Button color="red" loading={isMutating} onClick={handleDelete}>
-              Delete
-            </Button>
+            </AlertDialog.Cancel>
+            <AlertDialog.Action>
+              <Button
+                color="red"
+                disabled={!isConfirmed}
+                loading={isMutating}
+                onClick={async (e) => {
+                  if (!isConfirmed) {
+                    e.preventDefault();
+                    return;
+                  }
+                  await handleDelete();
+                }}
+              >
+                Delete
+              </Button>
+            </AlertDialog.Action>
           </Flex>
-        </Dialog.Content>
-      </Dialog.Root>
+        </AlertDialog.Content>
+      </AlertDialog.Root>
     </>
   );
 }
