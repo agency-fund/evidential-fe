@@ -15,12 +15,13 @@ import {
   TextField,
 } from '@radix-ui/themes';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
+import { ArmWeightsDialog } from '@/components/features/experiments/arm-weights-dialog';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 import { useListParticipantTypes } from '@/api/admin';
 import Link from 'next/link';
 import { WebhookSummary } from '@/api/methods.schemas';
-import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
+import { ExperimentFormData, isFreqABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 
 interface InitialFormProps {
   formData: ExperimentFormData;
@@ -40,6 +41,12 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
     },
   );
 
+  const handleWeightsChange = (weights: number[]) => {
+    if (isFreqABFormData(formData)) {
+      onFormDataChange({ ...formData, arm_weights: weights });
+    }
+  };
+
   const addArm = () => {
     const new_arm =
       formData.arms.length == 0
@@ -48,14 +55,23 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
             arm_description: 'Arm 1 will be used as baseline for comparison in analysis.',
           }
         : { arm_name: '', arm_description: '' };
-    onFormDataChange({ ...formData, arms: [...formData.arms, new_arm] });
+    const updatedData = {
+      ...formData,
+      arms: [...formData.arms, new_arm],
+    };
+    // Reset arm_weights when adding an arm (if it exists)
+    if (isFreqABFormData(updatedData)) delete updatedData.arm_weights;
+    onFormDataChange(updatedData);
   };
 
   const removeArm = (index: number) => {
-    onFormDataChange({
+    const updatedData = {
       ...formData,
       arms: formData.arms.filter((_, i) => i !== index),
-    });
+    };
+    // Reset arm_weights when removing an arm (if it exists)
+    if (isFreqABFormData(updatedData)) delete updatedData.arm_weights;
+    onFormDataChange(updatedData);
   };
 
   const updateArm = (index: number, field: 'arm_name' | 'arm_description', value: string) => {
@@ -215,9 +231,19 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
                 <Card key={index}>
                   <Flex direction="column" gap="2">
                     <Flex justify="between" align="center">
-                      <Text size="3" weight="bold">
-                        Arm {index + 1} {0 == index && '(control)'}
-                      </Text>
+                      <Flex direction="row" gap="2" align="baseline">
+                        <Text size="3" weight="bold">
+                          Arm {index + 1} {0 == index && '(control)'}
+                        </Text>
+                        {isFreqABFormData(formData) && (
+                          <ArmWeightsDialog
+                            arms={formData.arms}
+                            currentWeights={formData.arm_weights}
+                            armIndex={index}
+                            onWeightsChange={handleWeightsChange}
+                          />
+                        )}
+                      </Flex>
                       <IconButton size="1" color="red" variant="soft" onClick={() => removeArm(index)}>
                         <TrashIcon />
                       </IconButton>
