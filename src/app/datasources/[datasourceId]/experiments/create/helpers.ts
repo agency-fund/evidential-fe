@@ -69,6 +69,7 @@ function convertFrequentABFormData(formData: FrequentABFormData): CreateExperime
       experiment_name: formData.name,
       experiment_type: formData.experimentType,
       arms: Array.from(formData.arms.map((arm) => ({ ...arm, arm_id: null }))),
+      arm_weights: formData.arm_weights,
       end_date: new Date(Date.parse(formData.endDate)).toISOString(),
       start_date: new Date(Date.parse(formData.startDate)).toISOString(),
       description: formData.hypothesis,
