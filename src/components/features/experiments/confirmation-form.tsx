@@ -112,6 +112,7 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
           <Table.Header>
             <Table.Row>
               <Table.ColumnHeaderCell>ID</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Allocation</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
             </Table.Row>
@@ -124,6 +125,9 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
                     <Text>{arm.arm_id}</Text>
                     <CopyToClipBoard content={arm.arm_id!} />
                   </Flex>
+                </Table.Cell>
+                <Table.Cell>
+                  <Badge>{!formData.arm_weights ? 'balanced' : `${formData.arm_weights[index]?.toFixed(1)}%`}</Badge>
                 </Table.Cell>
                 <Table.Cell>{arm.arm_name}</Table.Cell>
                 <Table.Cell>
