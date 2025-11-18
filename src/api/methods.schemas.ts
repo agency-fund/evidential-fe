@@ -215,6 +215,10 @@ export interface ArmSize {
 }
 
 /**
+ */
+export type ArmWeight = number;
+
+/**
  * Balance test results if available. 'online' experiments do not have balance checks.
  */
 export type AssignSummaryBalanceCheck = BalanceCheck | null;
@@ -1862,6 +1866,11 @@ export const OnlineFrequentistExperimentSpecInputExperimentType = {
 export type OnlineFrequentistExperimentSpecInputDesignUrl = string | null;
 
 /**
+ * Optional weights for unequal arm sizes. Weights must be floats in (0, 100) and sum to 100.
+ */
+export type OnlineFrequentistExperimentSpecInputArmWeights = ArmWeight[] | null;
+
+/**
  * Use this type to randomly assign participants into arms during live experiment execution with
 frequentist A/B experiments.
 
@@ -1900,6 +1909,8 @@ export interface OnlineFrequentistExperimentSpecInput {
 	 * @maxItems 20
 	 */
 	filters: FilterInput[];
+	/** Optional weights for unequal arm sizes. Weights must be floats in (0, 100) and sum to 100. */
+	arm_weights?: OnlineFrequentistExperimentSpecInputArmWeights;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
@@ -1932,6 +1943,13 @@ export const OnlineFrequentistExperimentSpecOutputExperimentType = {
  * Optional URL to a more detailed experiment design doc.
  */
 export type OnlineFrequentistExperimentSpecOutputDesignUrl = string | null;
+
+/**
+ * Optional weights for unequal arm sizes. Weights must be floats in (0, 100) and sum to 100.
+ */
+export type OnlineFrequentistExperimentSpecOutputArmWeights =
+	| ArmWeight[]
+	| null;
 
 /**
  * Use this type to randomly assign participants into arms during live experiment execution with
@@ -1972,6 +1990,8 @@ export interface OnlineFrequentistExperimentSpecOutput {
 	 * @maxItems 20
 	 */
 	filters: FilterOutput[];
+	/** Optional weights for unequal arm sizes. Weights must be floats in (0, 100) and sum to 100. */
+	arm_weights?: OnlineFrequentistExperimentSpecOutputArmWeights;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
@@ -2121,6 +2141,13 @@ export const PreassignedFrequentistExperimentSpecInputExperimentType = {
 export type PreassignedFrequentistExperimentSpecInputDesignUrl = string | null;
 
 /**
+ * Optional weights for unequal arm sizes. Weights must be floats in (0, 100) and sum to 100.
+ */
+export type PreassignedFrequentistExperimentSpecInputArmWeights =
+	| ArmWeight[]
+	| null;
+
+/**
  * Use this type to randomly select and assign from existing participants at design time with
 frequentist A/B experiments.
  */
@@ -2157,6 +2184,8 @@ export interface PreassignedFrequentistExperimentSpecInput {
 	 * @maxItems 20
 	 */
 	filters: FilterInput[];
+	/** Optional weights for unequal arm sizes. Weights must be floats in (0, 100) and sum to 100. */
+	arm_weights?: PreassignedFrequentistExperimentSpecInputArmWeights;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
@@ -2189,6 +2218,13 @@ export const PreassignedFrequentistExperimentSpecOutputExperimentType = {
  * Optional URL to a more detailed experiment design doc.
  */
 export type PreassignedFrequentistExperimentSpecOutputDesignUrl = string | null;
+
+/**
+ * Optional weights for unequal arm sizes. Weights must be floats in (0, 100) and sum to 100.
+ */
+export type PreassignedFrequentistExperimentSpecOutputArmWeights =
+	| ArmWeight[]
+	| null;
 
 /**
  * Use this type to randomly select and assign from existing participants at design time with
@@ -2227,6 +2263,8 @@ export interface PreassignedFrequentistExperimentSpecOutput {
 	 * @maxItems 20
 	 */
 	filters: FilterOutput[];
+	/** Optional weights for unequal arm sizes. Weights must be floats in (0, 100) and sum to 100. */
+	arm_weights?: PreassignedFrequentistExperimentSpecOutputArmWeights;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
