@@ -112,7 +112,7 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
           <Table.Header>
             <Table.Row>
               <Table.ColumnHeaderCell>ID</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Allocation</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Target Allocation</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
             </Table.Row>

@@ -1,16 +1,16 @@
 'use client';
-import { Badge, Button, Dialog, Flex, Grid, Text, TextField } from '@radix-ui/themes';
+import { Button, Dialog, Flex, Grid, Text, TextField } from '@radix-ui/themes';
 import { Fragment, useEffect, useState } from 'react';
 import { Arm } from '@/api/methods.schemas';
+import { Pencil1Icon } from '@radix-ui/react-icons';
 
 interface ArmWeightsDialogProps {
   arms: Omit<Arm, 'arm_id'>[];
   currentWeights?: number[];
-  armIndex: number; // Which arm's badge to show the percentage for
   onWeightsChange: (weights: number[]) => void;
 }
 
-export function ArmWeightsDialog({ arms, currentWeights, armIndex, onWeightsChange }: ArmWeightsDialogProps) {
+export function ArmWeightsDialog({ arms, currentWeights, onWeightsChange }: ArmWeightsDialogProps) {
   const [open, setOpen] = useState(false);
   const [localWeights, setLocalWeights] = useState<string[]>([]);
   const [weightsError, setWeightsError] = useState<string | null>(null);
@@ -40,7 +40,7 @@ export function ArmWeightsDialog({ arms, currentWeights, armIndex, onWeightsChan
     const sum = numWeights.reduce((acc, w) => acc + w, 0);
     if (Math.abs(sum - 100) >= 0.01) {
       // Allow small floating point errors
-      setWeightsError(`Weights must sum to 100% (currently ${sum.toFixed(2)}%)`);
+      setWeightsError(`Weights must sum to 100% (currently ${sum.toFixed(1)}%)`);
       return false;
     }
 
@@ -69,9 +69,10 @@ export function ArmWeightsDialog({ arms, currentWeights, armIndex, onWeightsChan
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger>
-        <Badge style={{ cursor: 'pointer' }}>
-          {!currentWeights ? 'balanced' : `${currentWeights[armIndex]?.toFixed(1)}%`}
-        </Badge>
+        <Button size="1" variant="soft">
+          <Pencil1Icon />
+          Edit Weights
+        </Button>
       </Dialog.Trigger>
       <Dialog.Content
         onKeyDown={(e) => {

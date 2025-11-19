@@ -1,5 +1,6 @@
 'use client';
 import {
+  Badge,
   Box,
   Button,
   Card,
@@ -218,15 +219,23 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
             </Flex>
           </Flex>
         </Card>
-
         <Card>
           <Flex direction="column" gap="2">
-            <Flex direction="column" gap="1">
-              <Heading size="4">Arms</Heading>
-              {showArmsError && (
-                <Text size="1" color="red" mb="2">
-                  At least two arms are required
-                </Text>
+            <Flex justify="between" align="start">
+              <Flex direction="column" gap="1">
+                <Heading size="4">Arms</Heading>
+                {showArmsError && (
+                  <Text size="1" color="red" mb="2">
+                    At least two arms are required
+                  </Text>
+                )}
+              </Flex>
+              {isFreqABFormData(formData) && (
+                <ArmWeightsDialog
+                  arms={formData.arms}
+                  currentWeights={formData.arm_weights}
+                  onWeightsChange={handleWeightsChange}
+                />
               )}
             </Flex>
 
@@ -239,13 +248,8 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
                         <Text size="3" weight="bold">
                           Arm {index + 1} {0 == index && '(control)'}
                         </Text>
-                        {isFreqABFormData(formData) && (
-                          <ArmWeightsDialog
-                            arms={formData.arms}
-                            currentWeights={formData.arm_weights}
-                            armIndex={index}
-                            onWeightsChange={handleWeightsChange}
-                          />
+                        {isFreqABFormData(formData) && formData.arm_weights && (
+                          <Badge>{`${formData.arm_weights[index]?.toFixed(1)}%`}</Badge>
                         )}
                       </Flex>
                       <IconButton size="1" color="red" variant="soft" onClick={() => handleRemoveArm(index)}>
