@@ -47,7 +47,7 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
     }
   };
 
-  const addArm = () => {
+  const handleAddArm = () => {
     const new_arm =
       formData.arms.length == 0
         ? {
@@ -59,22 +59,26 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
       ...formData,
       arms: [...formData.arms, new_arm],
     };
-    // Reset arm_weights when adding an arm (if it exists)
-    if (isFreqABFormData(updatedData)) delete updatedData.arm_weights;
+    // Reset arm_weights when adding an arm. User will have to update new weights.
+    if (isFreqABFormData(updatedData)) {
+      updatedData.arm_weights = undefined;
+    }
     onFormDataChange(updatedData);
   };
 
-  const removeArm = (index: number) => {
+  const handleRemoveArm = (index: number) => {
     const updatedData = {
       ...formData,
       arms: formData.arms.filter((_, i) => i !== index),
     };
-    // Reset arm_weights when removing an arm (if it exists)
-    if (isFreqABFormData(updatedData)) delete updatedData.arm_weights;
+    // Reset arm_weights when removing an arm. User will have to update new weights.
+    if (isFreqABFormData(updatedData)) {
+      updatedData.arm_weights = undefined;
+    }
     onFormDataChange(updatedData);
   };
 
-  const updateArm = (index: number, field: 'arm_name' | 'arm_description', value: string) => {
+  const handleUpdateArm = (index: number, field: 'arm_name' | 'arm_description', value: string) => {
     const newArms = [...formData.arms];
     newArms[index] = { ...newArms[index], [field]: value };
     onFormDataChange({ ...formData, arms: newArms });
@@ -244,7 +248,7 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
                           />
                         )}
                       </Flex>
-                      <IconButton size="1" color="red" variant="soft" onClick={() => removeArm(index)}>
+                      <IconButton size="1" color="red" variant="soft" onClick={() => handleRemoveArm(index)}>
                         <TrashIcon />
                       </IconButton>
                     </Flex>
@@ -257,7 +261,7 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
                         <TextField.Root
                           value={arm.arm_name}
                           placeholder={'Arm Name'}
-                          onChange={(e) => updateArm(index, 'arm_name', e.target.value)}
+                          onChange={(e) => handleUpdateArm(index, 'arm_name', e.target.value)}
                           required
                         />
                       </Box>
@@ -270,14 +274,14 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
                       <TextArea
                         placeholder="Description"
                         value={arm.arm_description || ''}
-                        onChange={(e) => updateArm(index, 'arm_description', e.target.value)}
+                        onChange={(e) => handleUpdateArm(index, 'arm_description', e.target.value)}
                       />
                     </Flex>
                   </Flex>
                 </Card>
               ))}
               <Flex justify="end" mt="4">
-                <Button type="button" onClick={addArm}>
+                <Button type="button" onClick={handleAddArm}>
                   <PlusIcon /> Add Arm
                 </Button>
               </Flex>

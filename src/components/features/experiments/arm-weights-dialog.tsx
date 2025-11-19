@@ -1,6 +1,6 @@
 'use client';
 import { Badge, Button, Dialog, Flex, Grid, Text, TextField } from '@radix-ui/themes';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { Arm } from '@/api/methods.schemas';
 
 interface ArmWeightsDialogProps {
@@ -29,20 +29,28 @@ export function ArmWeightsDialog({ arms, currentWeights, armIndex, onWeightsChan
     }
   }, [open, currentWeights, arms]);
 
-  // Validate weights sum to 100
   const validateWeights = (weights: string[]): boolean => {
     const numWeights = weights.map((w) => parseFloat(w) || 0);
+
+    if (numWeights.some((w) => w <= 0 || w >= 100)) {
+      setWeightsError('Weights must be greater than 0 and less than 100.');
+      return false;
+    }
+
     const sum = numWeights.reduce((acc, w) => acc + w, 0);
-    const isValid = Math.abs(sum - 100) < 0.01; // Allow small floating point errors
+    if (Math.abs(sum - 100) >= 0.01) {
+      // Allow small floating point errors
+      setWeightsError(`Weights must sum to 100% (currently ${sum.toFixed(2)}%)`);
+      return false;
+    }
 
-    setWeightsError(isValid ? null : `Weights must sum to 100% (currently ${sum.toFixed(1)}%)`);
-
-    return isValid;
+    setWeightsError(null);
+    return true;
   };
 
-  const updateLocalWeight = (index: number, value: string) => {
+  const handleWeightChange = (index: number, value: string) => {
     // Allow empty string, numbers, and one decimal point
-    if (value === '' || /^\d*\.?\d{0,1}$/.test(value)) {
+    if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
       const newWeights = [...localWeights];
       newWeights[index] = value;
       setLocalWeights(newWeights);
@@ -80,14 +88,14 @@ export function ArmWeightsDialog({ arms, currentWeights, armIndex, onWeightsChan
         <Flex direction="column" gap="3">
           <Grid columns="2" gap="2" align="center">
             {arms.map((arm, armIndex) => (
-              <>
-                <Text size="2" weight="bold" key={`label-${armIndex}`}>
+              <Fragment key={`arm-${armIndex}`}>
+                <Text size="2" weight="bold">
                   Arm {armIndex + 1}: {arm.arm_name || <em>none</em>}
                 </Text>
-                <Flex align="center" gap="2" key={`input-${armIndex}`}>
+                <Flex align="center" gap="2">
                   <TextField.Root
                     value={localWeights[armIndex] || ''}
-                    onChange={(e) => updateLocalWeight(armIndex, e.target.value)}
+                    onChange={(e) => handleWeightChange(armIndex, e.target.value)}
                     placeholder="0.0"
                     style={{ width: '6ch' }}
                   />
@@ -95,7 +103,7 @@ export function ArmWeightsDialog({ arms, currentWeights, armIndex, onWeightsChan
                     %
                   </Text>
                 </Flex>
-              </>
+              </Fragment>
             ))}
           </Grid>
           <Text size="2" color="red" style={{ minHeight: '1.5em' }}>
@@ -107,7 +115,7 @@ export function ArmWeightsDialog({ arms, currentWeights, armIndex, onWeightsChan
                 Cancel
               </Button>
             </Dialog.Close>
-            <Button type="button" onClick={handleSubmit}>
+            <Button type="button" onClick={handleSubmit} disabled={weightsError !== null}>
               Apply Weights
             </Button>
           </Flex>
