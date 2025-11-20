@@ -64,6 +64,7 @@ export function ExperimentsTableRow({
         </Table.Cell>
         <Table.Cell>
           <Flex gap="2">
+            <DownloadAssignmentsCsvButton datasourceId={datasourceId} experimentId={experimentId} />
             {designUrl && (
                 <Tooltip content="View design document">
               <IconButton variant="soft" color="blue" size="2" asChild>
@@ -73,7 +74,6 @@ export function ExperimentsTableRow({
               </IconButton>
               </Tooltip>
             )}
-            <DownloadAssignmentsCsvButton datasourceId={datasourceId} experimentId={experimentId} />
           </Flex>
         </Table.Cell>
       </Table.Row>

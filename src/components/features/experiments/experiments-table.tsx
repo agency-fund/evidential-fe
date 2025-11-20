@@ -1,8 +1,9 @@
 'use client';
-import { Table } from '@radix-ui/themes';
+import { useState } from 'react';
+import { Flex, Table } from '@radix-ui/themes';
+import { CaretSortIcon, CaretUpIcon, CaretDownIcon } from '@radix-ui/react-icons';
 import { ExperimentConfig } from '@/api/methods.schemas';
 import { ExperimentsTableRow } from '@/components/features/experiments/experiments-table-row';
-import { useListOrganizationDatasources } from '@/api/admin';
 import type { ExperimentStatus } from '@/components/features/experiments/experiment-status-badge';
 
 type ExperimentWithStatus = ExperimentConfig & {
@@ -14,30 +15,163 @@ interface ExperimentTableProps {
   organizationId: string;
 }
 
-export function ExperimentsTable({ experiments, organizationId }: ExperimentTableProps) {
-  const { data: datasourcesData } = useListOrganizationDatasources(organizationId, {
-    swr: {
-      enabled: !!organizationId,
-    },
-  });
+type SortDirection = 'asc' | 'desc';
 
-  const datasourcesToName = new Map(datasourcesData?.items.map((e) => [e.id, e.name]) || []);
+interface SortableColumn {
+  label: string;
+  sortable: true;
+  sortKey: string;
+  sortType: 'string' | 'date';
+  getValue: (experiment: ExperimentWithStatus) => string | undefined;
+}
+
+interface NonSortableColumn {
+  label: string;
+  sortable: false;
+}
+
+type ColumnConfig = SortableColumn | NonSortableColumn;
+
+const COLUMN_CONFIG: ColumnConfig[] = [
+  {
+    label: 'Title',
+    sortable: true,
+    sortKey: 'title',
+    sortType: 'string',
+    getValue: (experiment: ExperimentWithStatus) => experiment.design_spec.experiment_name
+  },
+  {
+    label: 'Status',
+    sortable: true,
+    sortKey: 'status',
+    sortType: 'string',
+    getValue: (experiment: ExperimentWithStatus) => experiment.status
+  },
+  { label: 'Hypothesis', sortable: false },
+  {
+    label: 'Start Date',
+    sortable: true,
+    sortKey: 'startDate',
+    sortType: 'date',
+    getValue: (experiment: ExperimentWithStatus) => experiment.design_spec.start_date
+  },
+  {
+    label: 'End Date',
+    sortable: true,
+    sortKey: 'endDate',
+    sortType: 'date',
+    getValue: (experiment: ExperimentWithStatus) => experiment.design_spec.end_date
+  },
+  {
+    label: 'Experiment Type',
+    sortable: true,
+    sortKey: 'experimentType',
+    sortType: 'string',
+    getValue: (experiment: ExperimentWithStatus) => experiment.design_spec.experiment_type
+  },
+  { label: 'Actions', sortable: false },
+];
+
+const compareStrings = (a: string, b: string): number => {
+  return a.localeCompare(b);
+};
+
+const compareDates = (a: string, b: string): number => {
+  const aDate = new Date(a);
+  const bDate = new Date(b);
+  return aDate.getTime() - bDate.getTime();
+};
+
+export function ExperimentsTable({ experiments, organizationId }: ExperimentTableProps) {
+  const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection | null>(null);
+
+  const handleSort = (sortKey: string) => {
+    if (sortColumn === sortKey) {
+      if (sortDirection === 'asc') {
+        setSortDirection('desc');
+      } else if (sortDirection === 'desc') {
+        setSortColumn(null);
+        setSortDirection(null);
+      }
+    } else {
+      setSortColumn(sortKey);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (columnSortKey: string) => {
+    if (sortColumn !== columnSortKey) {
+      return <CaretSortIcon />;
+    }
+
+    if (sortDirection === 'asc') {
+      return <CaretUpIcon />;
+    }
+
+    if (sortDirection === 'desc') {
+      return <CaretDownIcon />;
+    }
+
+    return <CaretSortIcon />;
+  };
+
+  const getSortedExperiments = () => {
+    if (sortColumn === null) {
+      return experiments;
+    }
+
+    const column = COLUMN_CONFIG.find(col => col.sortable && col.sortKey === sortColumn);
+    if (!column || !('getValue' in column)) {
+      return experiments;
+    }
+
+    const sorted = [...experiments];
+    sorted.sort((a, b) => {
+      const aValue = column.getValue(a);
+      const bValue = column.getValue(b);
+
+      if (aValue === undefined) return 1;
+      if (bValue === undefined) return -1;
+
+      const comparison = column.sortType === 'date'
+        ? compareDates(aValue, bValue)
+        : compareStrings(aValue, bValue);
+
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+
+    return sorted;
+  };
+
+  const sortedExperiments = getSortedExperiments();
 
   return (
     <Table.Root variant="surface">
       <Table.Header>
         <Table.Row>
-          <Table.ColumnHeaderCell>Title</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Hypothesis</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Start Date</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>End Date</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Experiment Type</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
+          {COLUMN_CONFIG.map((column) => (
+            column.sortable ? (
+              <Table.ColumnHeaderCell
+                key={column.label}
+                onClick={() => handleSort(column.sortKey)}
+                className="cursor-pointer"
+              >
+                <Flex align="center" gap="2">
+                  {column.label}
+                  {getSortIcon(column.sortKey)}
+                </Flex>
+              </Table.ColumnHeaderCell>
+            ) : (
+              <Table.ColumnHeaderCell key={column.label}>
+                {column.label}
+              </Table.ColumnHeaderCell>
+            )
+          ))}
         </Table.Row>
       </Table.Header>
       <Table.Body>
-        {experiments.map((experiment) => (
+        {sortedExperiments.map((experiment) => (
           <ExperimentsTableRow
             key={experiment.experiment_id}
             title={experiment.design_spec.experiment_name}
