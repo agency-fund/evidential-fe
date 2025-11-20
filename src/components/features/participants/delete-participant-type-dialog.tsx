@@ -16,8 +16,9 @@ interface DeleteParticipantTypeDialogProps {
 }
 
 export const DeleteParticipantTypeDialog = ({ datasourceId, participantType }: DeleteParticipantTypeDialogProps) => {
-  const [confirmationText, setConfirmationText] = useState('');
-  const [open, setOpen] = useState(false);
+  const [confirmation, setConfirmation] = useState<{ dialog: 'closed' } | { dialog: 'open'; text: string }>({
+    dialog: 'closed',
+  });
 
   const { trigger } = useDeleteParticipant(
     datasourceId,
@@ -31,23 +32,26 @@ export const DeleteParticipantTypeDialog = ({ datasourceId, participantType }: D
             mutate(getInspectParticipantTypesKey(datasourceId, participantType)),
             mutate(getListParticipantTypesKey(datasourceId)),
           ]);
-          setOpen(false);
-          setConfirmationText('');
+          setConfirmation({ dialog: 'closed' });
         },
       },
     },
   );
 
-  const isConfirmed = confirmationText === 'delete';
-
-  const handleDelete = async () => {
-    if (isConfirmed) {
-      await trigger();
-    }
-  };
+  const isOpen = confirmation.dialog === 'open';
+  const isConfirmed = isOpen && confirmation.text === 'delete';
 
   return (
-    <AlertDialog.Root open={open} onOpenChange={setOpen}>
+    <AlertDialog.Root
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (open) {
+          setConfirmation({ dialog: 'open', text: '' });
+        } else {
+          setConfirmation({ dialog: 'closed' });
+        }
+      }}
+    >
       <AlertDialog.Trigger>
         <IconButton color="red" variant="soft">
           <TrashIcon />
@@ -57,7 +61,7 @@ export const DeleteParticipantTypeDialog = ({ datasourceId, participantType }: D
         onKeyDown={async (e) => {
           if (e.key === 'Enter' && isConfirmed) {
             e.preventDefault();
-            await handleDelete();
+            await trigger();
           }
         }}
       >
@@ -74,9 +78,9 @@ export const DeleteParticipantTypeDialog = ({ datasourceId, participantType }: D
             Please type &apos;delete&apos; in this text box to confirm.
           </Text>
           <TextField.Root
-            value={confirmationText}
+            value={isOpen ? confirmation.text : ''}
             autoFocus={true}
-            onChange={(e) => setConfirmationText(e.target.value)}
+            onChange={(e) => setConfirmation({ dialog: 'open', text: e.target.value })}
             placeholder="delete"
           />
         </Flex>
@@ -96,7 +100,7 @@ export const DeleteParticipantTypeDialog = ({ datasourceId, participantType }: D
                   e.preventDefault();
                   return;
                 }
-                await handleDelete();
+                await trigger();
               }}
             >
               Delete

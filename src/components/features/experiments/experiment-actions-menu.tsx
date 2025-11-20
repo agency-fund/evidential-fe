@@ -12,8 +12,10 @@ interface ExperimentActionsMenuProps {
 }
 
 export function ExperimentActionsMenu({ datasourceId, experimentId, organizationId }: ExperimentActionsMenuProps) {
-  const [open, setOpen] = useState(false);
-  const [confirmationText, setConfirmationText] = useState('');
+  const [confirmation, setConfirmation] = useState<{ dialog: 'closed' } | { dialog: 'open'; text: string }>({
+    dialog: 'closed',
+  });
+
   const { trigger, isMutating } = useDeleteExperiment(
     datasourceId,
     experimentId,
@@ -22,20 +24,14 @@ export function ExperimentActionsMenu({ datasourceId, experimentId, organization
       swr: {
         onSuccess: async () => {
           await mutate(getListOrganizationExperimentsKey(organizationId));
-          setOpen(false);
-          setConfirmationText('');
+          setConfirmation({ dialog: 'closed' });
         },
       },
     },
   );
 
-  const isConfirmed = confirmationText === 'delete';
-
-  const handleDelete = async () => {
-    if (isConfirmed) {
-      await trigger();
-    }
-  };
+  const isOpen = confirmation.dialog === 'open';
+  const isConfirmed = isOpen && confirmation.text === 'delete';
 
   return (
     <>
@@ -46,18 +42,27 @@ export function ExperimentActionsMenu({ datasourceId, experimentId, organization
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content align="end" side="bottom">
-          <DropdownMenu.Item color="red" onClick={() => setOpen(true)}>
+          <DropdownMenu.Item color="red" onClick={() => setConfirmation({ dialog: 'open', text: '' })}>
             <TrashIcon /> Delete
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
 
-      <AlertDialog.Root open={open} onOpenChange={setOpen}>
+      <AlertDialog.Root
+        open={isOpen}
+        onOpenChange={(open) => {
+          if (open) {
+            setConfirmation({ dialog: 'open', text: '' });
+          } else {
+            setConfirmation({ dialog: 'closed' });
+          }
+        }}
+      >
         <AlertDialog.Content
           onKeyDown={async (e) => {
             if (e.key === 'Enter' && isConfirmed) {
               e.preventDefault();
-              await handleDelete();
+              await trigger();
             }
           }}
         >
@@ -74,9 +79,9 @@ export function ExperimentActionsMenu({ datasourceId, experimentId, organization
               Please type &apos;delete&apos; in this text box to confirm.
             </Text>
             <TextField.Root
-              value={confirmationText}
+              value={isOpen ? confirmation.text : ''}
               autoFocus={true}
-              onChange={(e) => setConfirmationText(e.target.value)}
+              onChange={(e) => setConfirmation({ dialog: 'open', text: e.target.value })}
               placeholder="delete"
             />
           </Flex>
@@ -97,7 +102,7 @@ export function ExperimentActionsMenu({ datasourceId, experimentId, organization
                     e.preventDefault();
                     return;
                   }
-                  await handleDelete();
+                  await trigger();
                 }}
               >
                 Delete
