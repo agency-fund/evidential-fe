@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Flex, Table } from '@radix-ui/themes';
+import { Flex, Table, Text } from '@radix-ui/themes';
 import { CaretSortIcon, CaretUpIcon, CaretDownIcon } from '@radix-ui/react-icons';
 import { ExperimentConfig } from '@/api/methods.schemas';
 import { ExperimentsTableRow } from '@/components/features/experiments/experiments-table-row';
@@ -155,10 +155,9 @@ export function ExperimentsTable({ experiments, organizationId }: ExperimentTabl
               <Table.ColumnHeaderCell
                 key={column.label}
                 onClick={() => handleSort(column.sortKey)}
-                className="cursor-pointer"
               >
                 <Flex align="center" gap="2">
-                  {column.label}
+                  <Text wrap="nowrap">{column.label}</Text>
                   {getSortIcon(column.sortKey)}
                 </Flex>
               </Table.ColumnHeaderCell>

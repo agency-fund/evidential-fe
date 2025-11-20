@@ -1,5 +1,5 @@
 'use client';
-import { Button, Flex, Grid, Heading, TextField, IconButton, Tooltip } from '@radix-ui/themes';
+import { Flex, Grid, Heading, TextField, IconButton, Tooltip } from '@radix-ui/themes';
 import { GearIcon, MagnifyingGlassIcon, ListBulletIcon, DashboardIcon } from '@radix-ui/react-icons';
 import { useListOrganizationDatasources, useListOrganizationExperiments } from '@/api/admin';
 import { XSpinner } from '@/components/ui/x-spinner';
@@ -11,9 +11,9 @@ import { NO_DWH_DRIVER, PRODUCT_NAME } from '@/services/constants';
 import { CreateExperimentButton } from '@/components/features/experiments/create-experiment-button';
 import { ExperimentCard } from '@/components/features/experiments/experiment-card';
 import { ExperimentsTable } from '@/components/features/experiments/experiments-table';
+import { ExperimentFilters } from '@/components/features/experiments/experiment-filters';
 import { useState } from 'react';
 import type { ExperimentStatus } from '@/components/features/experiments/experiment-status-badge';
-import { view } from 'motion/react-client';
 
 const getExperimentStatus = (startDate: string, endDate: string): ExperimentStatus => {
   const now = new Date();
@@ -33,7 +33,7 @@ export default function Page() {
   const router = useRouter();
   const orgContext = useCurrentOrganization();
   const currentOrgId = orgContext!.current.id;
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
 
@@ -55,9 +55,7 @@ export default function Page() {
     swr: { enabled: !!currentOrgId },
   });
 
-  const datasourcesToName = new Map(datasourcesData?.items.map((e) => [e.id, e.name]) || []);
-
-  const statusOrder = ['all', 'current', 'upcoming', 'finished'] as const;
+  const statusOrder = ['current', 'upcoming', 'finished'] as const;
 
   const committedExperiments = experimentsData?.items.filter((experiment) => experiment.state === 'committed') || [];
 
@@ -66,15 +64,18 @@ export default function Page() {
     status: getExperimentStatus(experiment.design_spec.start_date, experiment.design_spec.end_date),
   }));
 
-  const getCount = (status: string) =>
-    status === 'all'
-      ? experimentsWithStatus.length
-      : experimentsWithStatus.filter((exp) => exp.status === status).length;
+  const getCount = (status: string) => experimentsWithStatus.filter((exp) => exp.status === status).length;
 
-  const availableFilters = statusOrder.filter((status) => getCount(status) > 0);
+  const statusOptions = statusOrder
+    .filter((status) => getCount(status) > 0)
+    .map((status) => ({
+      value: status,
+      label: status.charAt(0).toUpperCase() + status.slice(1),
+      count: getCount(status),
+    }));
 
   const filteredExperiments = experimentsWithStatus.filter((experiment) => {
-    const matchesStatus = selectedStatus === 'all' || experiment.status === selectedStatus;
+    const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(experiment.status);
     const matchesSearch =
       experiment.design_spec.experiment_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       experiment.design_spec.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -163,26 +164,20 @@ export default function Page() {
                 </Tooltip>
               </Flex>
             </Flex>
-            <Flex gap="2">
-              {availableFilters.map((status) => (
-                <Button
-                  key={status}
-                  variant={selectedStatus === status ? 'solid' : 'soft'}
-                  onClick={() => setSelectedStatus(status)}
-                >
-                  {status.charAt(0).toUpperCase() + status.slice(1)} ({getCount(status)})
-                </Button>
-              ))}
-            </Flex>
+
+            <ExperimentFilters
+              statusOptions={statusOptions}
+              onFiltersChange={(filters) => setSelectedStatuses(filters.status)}
+            />
           </Flex>
 
           {filteredExperiments.length === 0 ? (
             <EmptyStateCard
-              title={searchQuery ? 'No experiments found' : `No ${selectedStatus} experiments`}
+              title={searchQuery ? 'No experiments found' : 'No experiments match your filters'}
               description={
                 searchQuery
-                  ? 'Try adjusting your search terms.'
-                  : `There are no ${selectedStatus} experiments to display.`
+                  ? 'Try adjusting your search terms or filters.'
+                  : 'Try adjusting your filters to see more experiments.'
               }
             />
           ) : viewMode === 'card' ? (
