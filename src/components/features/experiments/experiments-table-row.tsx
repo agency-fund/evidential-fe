@@ -7,7 +7,6 @@ import {
 } from '@/components/features/experiments/experiment-status-badge';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
-import { DeleteExperimentDialog } from '@/components/features/experiments/delete-experiment-dialog';
 import { formatIsoDateLocal } from '@/services/date-utils';
 import { EyeOpenIcon, FileTextIcon, TrashIcon } from '@radix-ui/react-icons';
 import Link from 'next/link';
@@ -37,7 +36,6 @@ export function ExperimentsTableRow({
   designUrl,
   experimentId,
 }: ExperimentTableRowProps) {
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   return (
     <>
@@ -65,7 +63,7 @@ export function ExperimentsTableRow({
           <ExperimentTypeBadge type={type} />
         </Table.Cell>
         <Table.Cell>
-          <Flex gap="2" justify="end">
+          <Flex gap="2">
             {designUrl && (
                 <Tooltip content="View design document">
               <IconButton variant="soft" color="blue" size="2" asChild>
@@ -75,33 +73,10 @@ export function ExperimentsTableRow({
               </IconButton>
               </Tooltip>
             )}
-
-            <Tooltip content="View experiment">
-              <IconButton variant="soft" color="blue" size="2" asChild>
-                <Link href={`/datasources/${datasourceId}/experiments/${experimentId}`}>
-                  <EyeOpenIcon width="16" height="16" />
-                </Link>
-              </IconButton>
-            </Tooltip>
-
             <DownloadAssignmentsCsvButton datasourceId={datasourceId} experimentId={experimentId} />
-
-            <Tooltip content="Delete experiment">
-              <IconButton variant="soft" color="red" size="2" onClick={() => setDeleteDialogOpen(true)}>
-                <TrashIcon width="16" height="16" />
-              </IconButton>
-            </Tooltip>
           </Flex>
         </Table.Cell>
       </Table.Row>
-
-      <DeleteExperimentDialog
-        datasourceId={datasourceId}
-        experimentId={experimentId}
-        organizationId={organizationId}
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-      />
     </>
   );
 }
