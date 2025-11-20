@@ -22,7 +22,7 @@ import {
 } from '@/components/features/experiments/plots/forest-plot-utils';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
 import { prettyJSON } from '@/services/json-utils';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
@@ -51,6 +51,7 @@ import Link from 'next/link';
 import { mutate } from 'swr';
 import ForestTimeseriesPlot from '@/components/features/experiments/plots/forest-timeseries-plot';
 import { set } from 'zod';
+import { ContextConfigBox } from '@/components/features/experiments/context-config-box';
 
 export default function ExperimentViewPage() {
   const params = useParams();
@@ -246,6 +247,18 @@ export default function ExperimentViewPage() {
     }
   };
 
+  const handleUpdateCmabContextValue = async (key: string, context_inputs: ContextInput[]) => {
+    if (key === 'live') {
+      setCmabAnalysisRequest((prev) => {
+        const updated = { ...prev, context_inputs: context_inputs };
+        setTimeout(() => analyzeLive(), 0); // Ensures state is updated before calling
+        return updated;
+      });
+    } else {
+      console.warn('Cannot update context values for snapshot analyses.');
+    }
+  };
+
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
   }
@@ -421,6 +434,14 @@ export default function ExperimentViewPage() {
                       <Text>{(experiment.design_spec as MABExperimentSpecOutput).reward_type}</Text>
                     </Flex>
                   </Badge>
+                  {cmabAnalysisRequest.context_inputs.length > 0 && (
+                    <ContextConfigBox
+                      analysisKey={selectedAnalysisState.key}
+                      contexts={(experiment.design_spec as CMABExperimentSpecOutput).contexts || []}
+                      contextValues={cmabAnalysisRequest.context_inputs}
+                      onUpdate={handleUpdateCmabContextValue}
+                    />
+                  )}
                 </>
               ) : null}
             </Flex>
