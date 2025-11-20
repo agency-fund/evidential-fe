@@ -2563,13 +2563,6 @@ export const createExperimentBody = zod.object({
 			participant_type: zod
 				.string()
 				.max(createExperimentBodyDesignSpecParticipantTypeMax),
-			experiment_id: zod
-				.string()
-				.or(zod.null())
-				.optional()
-				.describe(
-					"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-				),
 			experiment_type: zod.enum(["freq_preassigned"]),
 			experiment_name: zod
 				.string()
@@ -2718,13 +2711,6 @@ export const createExperimentBody = zod.object({
 					participant_type: zod
 						.string()
 						.max(createExperimentBodyDesignSpecParticipantTypeMaxOne),
-					experiment_id: zod
-						.string()
-						.or(zod.null())
-						.optional()
-						.describe(
-							"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-						),
 					experiment_type: zod.enum(["freq_online"]),
 					experiment_name: zod
 						.string()
@@ -2878,13 +2864,6 @@ export const createExperimentBody = zod.object({
 					participant_type: zod
 						.string()
 						.max(createExperimentBodyDesignSpecParticipantTypeMaxTwo),
-					experiment_id: zod
-						.string()
-						.or(zod.null())
-						.optional()
-						.describe(
-							"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-						),
 					experiment_type: zod.enum(["mab_online"]),
 					experiment_name: zod
 						.string()
@@ -3027,13 +3006,6 @@ export const createExperimentBody = zod.object({
 					participant_type: zod
 						.string()
 						.max(createExperimentBodyDesignSpecParticipantTypeMaxThree),
-					experiment_id: zod
-						.string()
-						.or(zod.null())
-						.optional()
-						.describe(
-							"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-						),
 					experiment_type: zod.enum(["cmab_online"]),
 					experiment_name: zod
 						.string()
@@ -3176,13 +3148,6 @@ export const createExperimentBody = zod.object({
 					participant_type: zod
 						.string()
 						.max(createExperimentBodyDesignSpecParticipantTypeMaxFour),
-					experiment_id: zod
-						.string()
-						.or(zod.null())
-						.optional()
-						.describe(
-							"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-						),
 					experiment_type: zod.enum(["bayes_ab_online"]),
 					experiment_name: zod
 						.string()
@@ -3592,13 +3557,6 @@ export const createExperimentResponse = zod
 				participant_type: zod
 					.string()
 					.max(createExperimentResponseDesignSpecParticipantTypeMax),
-				experiment_id: zod
-					.string()
-					.or(zod.null())
-					.optional()
-					.describe(
-						"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-					),
 				experiment_type: zod.enum(["freq_preassigned"]),
 				experiment_name: zod
 					.string()
@@ -3751,13 +3709,6 @@ export const createExperimentResponse = zod
 						participant_type: zod
 							.string()
 							.max(createExperimentResponseDesignSpecParticipantTypeMaxOne),
-						experiment_id: zod
-							.string()
-							.or(zod.null())
-							.optional()
-							.describe(
-								"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-							),
 						experiment_type: zod.enum(["freq_online"]),
 						experiment_name: zod
 							.string()
@@ -3915,13 +3866,6 @@ export const createExperimentResponse = zod
 						participant_type: zod
 							.string()
 							.max(createExperimentResponseDesignSpecParticipantTypeMaxTwo),
-						experiment_id: zod
-							.string()
-							.or(zod.null())
-							.optional()
-							.describe(
-								"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-							),
 						experiment_type: zod.enum(["mab_online"]),
 						experiment_name: zod
 							.string()
@@ -4068,13 +4012,6 @@ export const createExperimentResponse = zod
 						participant_type: zod
 							.string()
 							.max(createExperimentResponseDesignSpecParticipantTypeMaxThree),
-						experiment_id: zod
-							.string()
-							.or(zod.null())
-							.optional()
-							.describe(
-								"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-							),
 						experiment_type: zod.enum(["cmab_online"]),
 						experiment_name: zod
 							.string()
@@ -4221,13 +4158,6 @@ export const createExperimentResponse = zod
 						participant_type: zod
 							.string()
 							.max(createExperimentResponseDesignSpecParticipantTypeMaxFour),
-						experiment_id: zod
-							.string()
-							.or(zod.null())
-							.optional()
-							.describe(
-								"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-							),
 						experiment_type: zod.enum(["bayes_ab_online"]),
 						experiment_name: zod
 							.string()
@@ -5324,13 +5254,6 @@ export const listOrganizationExperimentsResponse = zod.object({
 							.max(
 								listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMax,
 							),
-						experiment_id: zod
-							.string()
-							.or(zod.null())
-							.optional()
-							.describe(
-								"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-							),
 						experiment_type: zod.enum(["freq_preassigned"]),
 						experiment_name: zod
 							.string()
@@ -5522,13 +5445,6 @@ export const listOrganizationExperimentsResponse = zod.object({
 									.string()
 									.max(
 										listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxOne,
-									),
-								experiment_id: zod
-									.string()
-									.or(zod.null())
-									.optional()
-									.describe(
-										"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
 									),
 								experiment_type: zod.enum(["freq_online"]),
 								experiment_name: zod
@@ -5727,13 +5643,6 @@ export const listOrganizationExperimentsResponse = zod.object({
 									.max(
 										listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxTwo,
 									),
-								experiment_id: zod
-									.string()
-									.or(zod.null())
-									.optional()
-									.describe(
-										"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-									),
 								experiment_type: zod.enum(["mab_online"]),
 								experiment_name: zod
 									.string()
@@ -5900,13 +5809,6 @@ export const listOrganizationExperimentsResponse = zod.object({
 									.max(
 										listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxThree,
 									),
-								experiment_id: zod
-									.string()
-									.or(zod.null())
-									.optional()
-									.describe(
-										"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-									),
 								experiment_type: zod.enum(["cmab_online"]),
 								experiment_name: zod
 									.string()
@@ -6072,13 +5974,6 @@ export const listOrganizationExperimentsResponse = zod.object({
 									.string()
 									.max(
 										listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxFour,
-									),
-								experiment_id: zod
-									.string()
-									.or(zod.null())
-									.optional()
-									.describe(
-										"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
 									),
 								experiment_type: zod.enum(["bayes_ab_online"]),
 								experiment_name: zod
@@ -6613,13 +6508,6 @@ export const getExperimentForUiResponse = zod
 				participant_type: zod
 					.string()
 					.max(getExperimentForUiResponseDesignSpecParticipantTypeMax),
-				experiment_id: zod
-					.string()
-					.or(zod.null())
-					.optional()
-					.describe(
-						"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-					),
 				experiment_type: zod.enum(["freq_preassigned"]),
 				experiment_name: zod
 					.string()
@@ -6772,13 +6660,6 @@ export const getExperimentForUiResponse = zod
 						participant_type: zod
 							.string()
 							.max(getExperimentForUiResponseDesignSpecParticipantTypeMaxOne),
-						experiment_id: zod
-							.string()
-							.or(zod.null())
-							.optional()
-							.describe(
-								"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-							),
 						experiment_type: zod.enum(["freq_online"]),
 						experiment_name: zod
 							.string()
@@ -6938,13 +6819,6 @@ export const getExperimentForUiResponse = zod
 						participant_type: zod
 							.string()
 							.max(getExperimentForUiResponseDesignSpecParticipantTypeMaxTwo),
-						experiment_id: zod
-							.string()
-							.or(zod.null())
-							.optional()
-							.describe(
-								"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-							),
 						experiment_type: zod.enum(["mab_online"]),
 						experiment_name: zod
 							.string()
@@ -7091,13 +6965,6 @@ export const getExperimentForUiResponse = zod
 						participant_type: zod
 							.string()
 							.max(getExperimentForUiResponseDesignSpecParticipantTypeMaxThree),
-						experiment_id: zod
-							.string()
-							.or(zod.null())
-							.optional()
-							.describe(
-								"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-							),
 						experiment_type: zod.enum(["cmab_online"]),
 						experiment_name: zod
 							.string()
@@ -7244,13 +7111,6 @@ export const getExperimentForUiResponse = zod
 						participant_type: zod
 							.string()
 							.max(getExperimentForUiResponseDesignSpecParticipantTypeMaxFour),
-						experiment_id: zod
-							.string()
-							.or(zod.null())
-							.optional()
-							.describe(
-								"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-							),
 						experiment_type: zod.enum(["bayes_ab_online"]),
 						experiment_name: zod
 							.string()
@@ -8067,13 +7927,6 @@ export const powerCheckBody = zod.object({
 			participant_type: zod
 				.string()
 				.max(powerCheckBodyDesignSpecParticipantTypeMax),
-			experiment_id: zod
-				.string()
-				.or(zod.null())
-				.optional()
-				.describe(
-					"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-				),
 			experiment_type: zod.enum(["freq_preassigned"]),
 			experiment_name: zod
 				.string()
@@ -8216,13 +8069,6 @@ export const powerCheckBody = zod.object({
 					participant_type: zod
 						.string()
 						.max(powerCheckBodyDesignSpecParticipantTypeMaxOne),
-					experiment_id: zod
-						.string()
-						.or(zod.null())
-						.optional()
-						.describe(
-							"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-						),
 					experiment_type: zod.enum(["freq_online"]),
 					experiment_name: zod
 						.string()
@@ -8374,13 +8220,6 @@ export const powerCheckBody = zod.object({
 					participant_type: zod
 						.string()
 						.max(powerCheckBodyDesignSpecParticipantTypeMaxTwo),
-					experiment_id: zod
-						.string()
-						.or(zod.null())
-						.optional()
-						.describe(
-							"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-						),
 					experiment_type: zod.enum(["mab_online"]),
 					experiment_name: zod
 						.string()
@@ -8519,13 +8358,6 @@ export const powerCheckBody = zod.object({
 					participant_type: zod
 						.string()
 						.max(powerCheckBodyDesignSpecParticipantTypeMaxThree),
-					experiment_id: zod
-						.string()
-						.or(zod.null())
-						.optional()
-						.describe(
-							"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-						),
 					experiment_type: zod.enum(["cmab_online"]),
 					experiment_name: zod
 						.string()
@@ -8666,13 +8498,6 @@ export const powerCheckBody = zod.object({
 					participant_type: zod
 						.string()
 						.max(powerCheckBodyDesignSpecParticipantTypeMaxFour),
-					experiment_id: zod
-						.string()
-						.or(zod.null())
-						.optional()
-						.describe(
-							"ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. \nDEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.",
-						),
 					experiment_type: zod.enum(["bayes_ab_online"]),
 					experiment_name: zod
 						.string()
