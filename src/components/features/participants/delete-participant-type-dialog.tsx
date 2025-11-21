@@ -22,13 +22,12 @@ export const DeleteParticipantTypeDialog = ({ datasourceId, participantType }: D
     { allow_missing: true },
     {
       swr: {
-        onSuccess: async () => {
-          await Promise.all([
+        onSuccess: () =>
+          Promise.all([
             mutate(getGetDatasourceKey(datasourceId)),
             mutate(getInspectParticipantTypesKey(datasourceId, participantType)),
             mutate(getListParticipantTypesKey(datasourceId)),
-          ]);
-        },
+          ]),
       },
     },
   );

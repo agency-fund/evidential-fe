@@ -17,9 +17,7 @@ export function DeleteDatasourceDialog({ organizationId, datasourceId }: DeleteD
     { allow_missing: true },
     {
       swr: {
-        onSuccess: async () => {
-          await mutate(getGetOrganizationKey(organizationId));
-        },
+        onSuccess: () => mutate(getGetOrganizationKey(organizationId)),
       },
     },
   );

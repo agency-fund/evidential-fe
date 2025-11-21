@@ -17,9 +17,7 @@ export function DeleteWebhookDialog({ organizationId, webhookId }: DeleteWebhook
     { allow_missing: true },
     {
       swr: {
-        onSuccess: async () => {
-          await mutate(getListOrganizationWebhooksKey(organizationId));
-        },
+        onSuccess: () => mutate(getListOrganizationWebhooksKey(organizationId)),
       },
     },
   );

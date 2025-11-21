@@ -21,9 +21,7 @@ export function ExperimentActionsMenu({ datasourceId, experimentId, organization
     { allow_missing: true },
     {
       swr: {
-        onSuccess: async () => {
-          await mutate(getListOrganizationExperimentsKey(organizationId));
-        },
+        onSuccess: () => mutate(getListOrganizationExperimentsKey(organizationId)),
       },
     },
   );
