@@ -167,8 +167,8 @@ export function DeleteAlertDialog({
               disabled={!isConfirmed}
               loading={loading}
               onClick={async (e) => {
+                e.preventDefault(); // Prevent Radix's handlers from closing the dialog
                 if (!isConfirmed) {
-                  e.preventDefault();
                   return;
                 }
                 await handleConfirm();
