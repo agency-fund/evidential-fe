@@ -807,6 +807,8 @@ export interface CreateExperimentRequest {
 	power_analyses?: CreateExperimentRequestPowerAnalyses;
 	/** List of webhook IDs to associate with this experiment. When the experiment is committed, these webhooks will be triggered with experiment details. Must contain unique values. */
 	webhooks?: string[];
+	decision?: string;
+	impact?: string;
 }
 
 /**
@@ -842,6 +844,8 @@ export interface CreateExperimentResponse {
 	assign_summary: CreateExperimentResponseAssignSummary;
 	/** List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed. */
 	webhooks?: string[];
+	decision?: string;
+	impact?: string;
 }
 
 export interface CreateOrganizationRequest {
@@ -1078,6 +1082,8 @@ export interface ExperimentConfig {
 	assign_summary: ExperimentConfigAssignSummary;
 	/** List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed. */
 	webhooks?: string[];
+	decision?: string;
+	impact?: string;
 }
 
 /**
@@ -1371,6 +1377,8 @@ export interface GetExperimentResponse {
 	assign_summary: GetExperimentResponseAssignSummary;
 	/** List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed. */
 	webhooks?: string[];
+	decision?: string;
+	impact?: string;
 }
 
 /**
@@ -2446,6 +2454,10 @@ export type UpdateExperimentRequestStartDate = string | null;
 
 export type UpdateExperimentRequestEndDate = string | null;
 
+export type UpdateExperimentRequestImpact = string | null;
+
+export type UpdateExperimentRequestDecision = string | null;
+
 /**
  * Defines the subset of fields that can be updated for an experiment after creation.
  */
@@ -2455,6 +2467,8 @@ export interface UpdateExperimentRequest {
 	design_url?: UpdateExperimentRequestDesignUrl;
 	start_date?: UpdateExperimentRequestStartDate;
 	end_date?: UpdateExperimentRequestEndDate;
+	impact?: UpdateExperimentRequestImpact;
+	decision?: UpdateExperimentRequestDecision;
 }
 
 export type UpdateOrganizationRequestName = string | null;
