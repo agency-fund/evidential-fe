@@ -74,6 +74,7 @@ import type {
 
 import { orvalFetch } from "@/services/orval-fetch";
 import type { ErrorType } from "@/services/orval-fetch";
+import { ExperimentType } from "@/app/datasources/[datasourceId]/experiments/create/types";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -3027,27 +3028,46 @@ export const getAnalyzeExperimentUrl = (
 export const analyzeExperiment = async (
 	datasourceId: string,
 	experimentId: string,
+	experimentType: ExperimentType,
+	cmabContextInputRequest?: CMABContextInputRequest,
 	params?: AnalyzeExperimentParams,
 	options?: RequestInit,
 ): Promise<ExperimentAnalysisResponse> => {
-	return orvalFetch<ExperimentAnalysisResponse>(
-		getAnalyzeExperimentUrl(datasourceId, experimentId, params),
-		{
-			...options,
-			method: "GET",
+	if (experimentType !== "cmab_online") {
+		return orvalFetch<ExperimentAnalysisResponse>(
+			getAnalyzeExperimentUrl(datasourceId, experimentId, params),
+			{
+				...options,
+				method: "GET",
 		},
 	);
+	} else {
+		return orvalFetch<ExperimentAnalysisResponse>(
+			`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/analyze_cmab`,
+			{
+				...options,
+				method: "POST",
+				headers: { "Content-Type": "application/json", ...options?.headers },
+				body: JSON.stringify(cmabContextInputRequest),
+			},
+		);
+	}
 };
 
 export const getAnalyzeExperimentKey = (
 	datasourceId: string,
 	experimentId: string,
-	params?: AnalyzeExperimentParams,
+	experimentType: ExperimentType,
+	params?: AnalyzeExperimentParams | CMABContextInputRequest,
 ) =>
-	[
-		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/analyze`,
-		...(params ? [params] : []),
-	] as const;
+	(experimentType !== "cmab_online") ?
+		[
+			`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/analyze`,
+			...(params ? [params] : []),
+		] as const : [
+			`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/analyze_cmab`,
+			...(params? [params] : []),
+		]
 
 export type AnalyzeExperimentQueryResult = NonNullable<
 	Awaited<ReturnType<typeof analyzeExperiment>>
@@ -3064,6 +3084,8 @@ export const useAnalyzeExperiment = <
 >(
 	datasourceId: string,
 	experimentId: string,
+	experimentType: ExperimentType,
+	cmabContextInputRequest?: CMABContextInputRequest,
 	params?: AnalyzeExperimentParams,
 	options?: {
 		swr?: SWRConfiguration<
@@ -3081,10 +3103,10 @@ export const useAnalyzeExperiment = <
 		swrOptions?.swrKey ??
 		(() =>
 			isEnabled
-				? getAnalyzeExperimentKey(datasourceId, experimentId, params)
+				? getAnalyzeExperimentKey(datasourceId, experimentId, experimentType, params)
 				: null);
 	const swrFn = () =>
-		analyzeExperiment(datasourceId, experimentId, params, requestOptions);
+		analyzeExperiment(datasourceId, experimentId, experimentType, cmabContextInputRequest, params, requestOptions);
 
 	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
 		swrKey,

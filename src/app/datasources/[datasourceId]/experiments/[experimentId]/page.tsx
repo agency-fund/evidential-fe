@@ -35,13 +35,23 @@ import { EditableTextArea } from '@/components/ui/inputs/editable-text-area';
 import { ArmsAndAllocationsTable } from '@/components/features/experiments/arms-and-allocations-table';
 import { IntegrationGuideDialog } from '@/components/features/experiments/integration-guide-dialog';
 import { ReadMoreText } from '@/components/ui/read-more-text';
-import { Snapshot, MetricAnalysis, ExperimentAnalysisResponse, MABExperimentSpecOutput } from '@/api/methods.schemas';
+import {
+  Snapshot,
+  MetricAnalysis,
+  ExperimentAnalysisResponse,
+  MABExperimentSpecOutput,
+  CMABExperimentSpecOutput,
+  CMABContextInputRequest,
+  ContextInput,
+} from '@/api/methods.schemas';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date-utils';
 import Link from 'next/link';
 import { mutate } from 'swr';
 import ForestTimeseriesPlot from '@/components/features/experiments/plots/forest-timeseries-plot';
+import { set } from 'zod';
+import { ContextConfigBox } from '@/components/features/experiments/context-config-box';
 
 export default function ExperimentViewPage() {
   const params = useParams();
@@ -63,6 +73,10 @@ export default function ExperimentViewPage() {
   const [selectedAnalysisState, setSelectedAnalysisState] = useState<AnalysisState>(liveAnalysis);
   const [selectedMetricAnalysis, setSelectedMetricAnalysis] = useState<MetricAnalysis | null>(null);
   const [selectedMetricName, setSelectedMetricName] = useState<string>('unknown');
+  const [cmabAnalysisRequest, setCmabAnalysisRequest] = useState<CMABContextInputRequest>({
+    type: 'cmab_assignment',
+    context_inputs: [],
+  });
 
   // Track the min/max CI bounds across a recent window of snapshots for more stable forest plot display.
   const [ciBounds, setCiBounds] = useState<[number | undefined, number | undefined]>([undefined, undefined]);
@@ -72,38 +86,59 @@ export default function ExperimentViewPage() {
     isLoading: isLoadingExperiment,
     error: experimentError,
   } = useGetExperimentForUi(datasourceId, experimentId, {
-    swr: { enabled: !!datasourceId },
+    swr: {
+      enabled: !!datasourceId,
+      onSuccess: (exp) => {
+        if (exp?.design_spec.experiment_type == 'cmab_online') {
+          // Initialize context inputs for CMAB analysis request
+          let contextInputs: ContextInput[] = [];
+          if (exp.design_spec.experiment_type == 'cmab_online' && exp.design_spec.contexts) {
+            contextInputs = exp.design_spec.contexts
+              .filter((ctx) => ctx.context_id !== undefined)
+              .map((ctx) => ({ context_id: ctx.context_id!, context_value: 0.0 }));
+          }
+          setCmabAnalysisRequest({ ...cmabAnalysisRequest, context_inputs: contextInputs });
+        }
+      },
+    },
   });
 
   const {
     mutate: analyzeLive,
     isLoading: isLoadingLiveAnalysis,
     error: liveAnalysisError,
-  } = useAnalyzeExperiment(datasourceId, experimentId, undefined, {
-    swr: {
-      enabled: !!datasourceId && !!experiment,
-      // Disable revalidation to only allow manual triggering of the live analysis
-      revalidateOnMount: false,
-      revalidateOnFocus: false,
-      shouldRetryOnError: false,
-      onSuccess: (analysisData) => {
-        const date = new Date();
-        const analysis = {
-          key: 'live',
-          data: analysisData,
-          updated_at: date,
-          label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
-          effectSizesByMetric: precomputeFreqEffectsByMetric(analysisData, alpha),
-          banditEffects: precomputeBanditEffects(analysisData),
-        };
-        setLiveAnalysis(analysis);
-        // Only update the display if we were previously viewing live data.
-        if (selectedAnalysisState.key === 'live') {
-          setSelectedAnalysisAndMetrics(analysis);
-        }
+  } = useAnalyzeExperiment(
+    datasourceId,
+    experimentId,
+    experiment?.design_spec.experiment_type ?? 'freq_preassigned',
+    cmabAnalysisRequest,
+    undefined,
+    {
+      swr: {
+        enabled: !!datasourceId && !!experiment,
+        // Disable revalidation to only allow manual triggering of the live analysis
+        revalidateOnMount: false,
+        revalidateOnFocus: false,
+        shouldRetryOnError: false,
+        onSuccess: (analysisData) => {
+          const date = new Date();
+          const analysis = {
+            key: 'live',
+            data: analysisData,
+            updated_at: date,
+            label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
+            effectSizesByMetric: precomputeFreqEffectsByMetric(analysisData, alpha),
+            banditEffects: precomputeBanditEffects(analysisData),
+          };
+          setLiveAnalysis(analysis);
+          // Only update the display if we were previously viewing live data.
+          if (selectedAnalysisState.key === 'live') {
+            setSelectedAnalysisAndMetrics(analysis);
+          }
+        },
       },
     },
-  });
+  );
 
   const { isLoading: isLoadingHistory, error: analysisHistoryError } = useListSnapshots(
     organizationId,
@@ -212,6 +247,18 @@ export default function ExperimentViewPage() {
     }
   };
 
+  const handleUpdateCmabContextValue = async (key: string, context_inputs: ContextInput[]) => {
+    if (key === 'live') {
+      setCmabAnalysisRequest((prev) => {
+        const updated = { ...prev, context_inputs: context_inputs };
+        setTimeout(() => analyzeLive(), 0); // Ensures state is updated before calling
+        return updated;
+      });
+    } else {
+      console.warn('Cannot update context values for snapshot analyses.');
+    }
+  };
+
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
   }
@@ -243,6 +290,8 @@ export default function ExperimentViewPage() {
     analysisHistory,
     selectedMetricName,
   );
+  console.log(cmabAnalysisRequest);
+  console.log(selectedAnalysisState);
 
   return (
     <Flex direction="column" gap="6">
@@ -256,6 +305,7 @@ export default function ExperimentViewPage() {
             datasourceId={datasourceId}
             organizationId={organizationId}
             arms={arms}
+            contexts={design_spec.experiment_type == 'cmab_online' ? (design_spec.contexts ?? undefined) : undefined}
           />
         </Flex>
 
@@ -384,6 +434,14 @@ export default function ExperimentViewPage() {
                       <Text>{(experiment.design_spec as MABExperimentSpecOutput).reward_type}</Text>
                     </Flex>
                   </Badge>
+                  {cmabAnalysisRequest.context_inputs.length > 0 && (
+                    <ContextConfigBox
+                      analysisKey={selectedAnalysisState.key}
+                      contexts={(experiment.design_spec as CMABExperimentSpecOutput).contexts || []}
+                      contextValues={cmabAnalysisRequest.context_inputs}
+                      onUpdate={handleUpdateCmabContextValue}
+                    />
+                  )}
                 </>
               ) : null}
             </Flex>
@@ -444,7 +502,7 @@ export default function ExperimentViewPage() {
                     </Flex>
                   </Badge>
                 </Flex>
-              ) : isBandit(selectedAnalysisState.data) ? (
+              ) : (
                 <Badge size="2">
                   <Flex gap="4" align="center">
                     <Tooltip
@@ -454,7 +512,7 @@ export default function ExperimentViewPage() {
                     </Tooltip>
                   </Flex>
                 </Badge>
-              ) : null}
+              )}
             </Flex>
           }
         >
