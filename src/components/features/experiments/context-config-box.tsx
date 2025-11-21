@@ -1,8 +1,7 @@
-import { Badge, Box, Button, Card, Dialog, Flex, Heading, Popover, Text, TextField } from '@radix-ui/themes';
+import { Badge, Button, Dialog, Flex, Heading, Text, TextField } from '@radix-ui/themes';
 import { Pencil1Icon } from '@radix-ui/react-icons';
 import React, { useState } from 'react';
 import { ContextInput, Context } from '@/api/methods.schemas';
-import { s } from 'motion/react-client';
 
 interface ContextConfigDialogProps {
   analysisKey: string;
@@ -11,12 +10,17 @@ interface ContextConfigDialogProps {
   onUpdate: (key: string, context_inputs: ContextInput[]) => void;
 }
 
+interface ContextInputLocal {
+  context_id: string;
+  context_value?: number;
+}
+
 export function ContextConfigBox({ analysisKey, contexts, contextValues, onUpdate }: ContextConfigDialogProps) {
   const [open, setOpen] = useState(false);
   // Sort contexts and contextValues by context_id to ensure consistent ordering
   const sortedContexts = [...contexts].sort((a, b) => (a.context_id ?? '').localeCompare(b.context_id ?? ''));
   const sortedContextValues = [...contextValues].sort((a, b) => (a.context_id ?? '').localeCompare(b.context_id ?? ''));
-  const [newContextValues, setNewContextValues] = useState<ContextInput[]>(sortedContextValues);
+  const [newContextValues, setNewContextValues] = useState<ContextInputLocal[]>(sortedContextValues);
 
   return (
     <Dialog.Root open={analysisKey === 'live' ? open : false} onOpenChange={(isOpen) => setOpen(isOpen)}>
@@ -92,7 +96,7 @@ export function ContextConfigBox({ analysisKey, contexts, contextValues, onUpdat
               </Button>
             </Dialog.Close>
             <Dialog.Close>
-              <Button onClick={() => onUpdate(analysisKey, newContextValues)}>Update</Button>
+              <Button onClick={() => onUpdate(analysisKey, newContextValues as ContextInput[])}>Update</Button>
             </Dialog.Close>
           </Flex>
         </Flex>

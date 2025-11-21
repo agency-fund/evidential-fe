@@ -22,7 +22,7 @@ import {
 } from '@/components/features/experiments/plots/forest-plot-utils';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
 import { prettyJSON } from '@/services/json-utils';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
