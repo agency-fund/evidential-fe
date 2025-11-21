@@ -10,6 +10,7 @@ import { useCurrentOrganization } from '@/providers/organization-provider';
 import { useEffect } from 'react';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
+import { ParticipantTypesSection } from '@/components/features/participants/participant-types-section';
 
 export default function Page() {
   const params = useParams();
@@ -114,6 +115,7 @@ export default function Page() {
         </>
       )}
       <ApiKeysTable datasourceId={datasourceId} />
+      <ParticipantTypesSection datasourceId={datasourceId} />
     </Flex>
   );
 }
