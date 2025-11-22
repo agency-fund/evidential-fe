@@ -2474,6 +2474,7 @@ export const createExperimentBodyDesignSpecMetricsMax = 150;
 export const createExperimentBodyDesignSpecFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyDesignSpecFiltersMax = 20;
+export const createExperimentBodyDesignSpecArmWeightsMaxOne = 10;
 export const createExperimentBodyDesignSpecPowerDefault = 0.8;
 export const createExperimentBodyDesignSpecPowerMin = 0;
 
@@ -2504,6 +2505,7 @@ export const createExperimentBodyDesignSpecMetricsMaxOne = 150;
 export const createExperimentBodyDesignSpecFiltersItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyDesignSpecFiltersMaxOne = 20;
+export const createExperimentBodyDesignSpecArmWeightsMaxFour = 10;
 export const createExperimentBodyDesignSpecPowerDefaultOne = 0.8;
 export const createExperimentBodyDesignSpecPowerMinOne = 0;
 
@@ -2679,6 +2681,14 @@ export const createExperimentBody = zod.object({
 				.describe(
 					"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
 				),
+			arm_weights: zod
+				.array(zod.number())
+				.max(createExperimentBodyDesignSpecArmWeightsMaxOne)
+				.or(zod.null())
+				.optional()
+				.describe(
+					"Optional weights for unequal arm sizes. Weights must be floats in (0, 100) and sum to 100.",
+				),
 			power: zod
 				.number()
 				.min(createExperimentBodyDesignSpecPowerMin)
@@ -2830,6 +2840,14 @@ export const createExperimentBody = zod.object({
 						.max(createExperimentBodyDesignSpecFiltersMaxOne)
 						.describe(
 							"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+						),
+					arm_weights: zod
+						.array(zod.number())
+						.max(createExperimentBodyDesignSpecArmWeightsMaxFour)
+						.or(zod.null())
+						.optional()
+						.describe(
+							"Optional weights for unequal arm sizes. Weights must be floats in (0, 100) and sum to 100.",
 						),
 					power: zod
 						.number()
@@ -3444,6 +3462,7 @@ export const createExperimentResponseDesignSpecMetricsMax = 150;
 export const createExperimentResponseDesignSpecFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentResponseDesignSpecFiltersMax = 20;
+export const createExperimentResponseDesignSpecArmWeightsMaxOne = 10;
 export const createExperimentResponseDesignSpecPowerDefault = 0.8;
 export const createExperimentResponseDesignSpecPowerMin = 0;
 
@@ -3474,6 +3493,7 @@ export const createExperimentResponseDesignSpecMetricsMaxOne = 150;
 export const createExperimentResponseDesignSpecFiltersItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentResponseDesignSpecFiltersMaxOne = 20;
+export const createExperimentResponseDesignSpecArmWeightsMaxFour = 10;
 export const createExperimentResponseDesignSpecPowerDefaultOne = 0.8;
 export const createExperimentResponseDesignSpecPowerMinOne = 0;
 
@@ -3681,6 +3701,14 @@ export const createExperimentResponse = zod
 					.describe(
 						"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
 					),
+				arm_weights: zod
+					.array(zod.number())
+					.max(createExperimentResponseDesignSpecArmWeightsMaxOne)
+					.or(zod.null())
+					.optional()
+					.describe(
+						"Optional weights for unequal arm sizes. Weights must be floats in (0, 100) and sum to 100.",
+					),
 				power: zod
 					.number()
 					.min(createExperimentResponseDesignSpecPowerMin)
@@ -3836,6 +3864,14 @@ export const createExperimentResponse = zod
 							.max(createExperimentResponseDesignSpecFiltersMaxOne)
 							.describe(
 								"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+							),
+						arm_weights: zod
+							.array(zod.number())
+							.max(createExperimentResponseDesignSpecArmWeightsMaxFour)
+							.or(zod.null())
+							.optional()
+							.describe(
+								"Optional weights for unequal arm sizes. Weights must be floats in (0, 100) and sum to 100.",
 							),
 						power: zod
 							.number()
@@ -5141,6 +5177,7 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecMetricsMax = 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const listOrganizationExperimentsResponseItemsItemDesignSpecFiltersMax = 20;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmWeightsMaxOne = 10;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerDefault = 0.8;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerMin = 0;
 
@@ -5171,6 +5208,7 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecMetricsMaxOne
 export const listOrganizationExperimentsResponseItemsItemDesignSpecFiltersItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const listOrganizationExperimentsResponseItemsItemDesignSpecFiltersMaxOne = 20;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmWeightsMaxFour = 10;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerDefaultOne = 0.8;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerMinOne = 0;
 
@@ -5402,6 +5440,16 @@ export const listOrganizationExperimentsResponse = zod.object({
 							.describe(
 								"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
 							),
+						arm_weights: zod
+							.array(zod.number())
+							.max(
+								listOrganizationExperimentsResponseItemsItemDesignSpecArmWeightsMaxOne,
+							)
+							.or(zod.null())
+							.optional()
+							.describe(
+								"Optional weights for unequal arm sizes. Weights must be floats in (0, 100) and sum to 100.",
+							),
 						power: zod
 							.number()
 							.min(
@@ -5597,6 +5645,16 @@ export const listOrganizationExperimentsResponse = zod.object({
 									)
 									.describe(
 										"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+									),
+								arm_weights: zod
+									.array(zod.number())
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecArmWeightsMaxFour,
+									)
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Optional weights for unequal arm sizes. Weights must be floats in (0, 100) and sum to 100.",
 									),
 								power: zod
 									.number()
@@ -6403,6 +6461,7 @@ export const getExperimentForUiResponseDesignSpecMetricsMax = 150;
 export const getExperimentForUiResponseDesignSpecFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentForUiResponseDesignSpecFiltersMax = 20;
+export const getExperimentForUiResponseDesignSpecArmWeightsMaxOne = 10;
 export const getExperimentForUiResponseDesignSpecPowerDefault = 0.8;
 export const getExperimentForUiResponseDesignSpecPowerMin = 0;
 
@@ -6433,6 +6492,7 @@ export const getExperimentForUiResponseDesignSpecMetricsMaxOne = 150;
 export const getExperimentForUiResponseDesignSpecFiltersItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentForUiResponseDesignSpecFiltersMaxOne = 20;
+export const getExperimentForUiResponseDesignSpecArmWeightsMaxFour = 10;
 export const getExperimentForUiResponseDesignSpecPowerDefaultOne = 0.8;
 export const getExperimentForUiResponseDesignSpecPowerMinOne = 0;
 
@@ -6640,6 +6700,14 @@ export const getExperimentForUiResponse = zod
 					.describe(
 						"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
 					),
+				arm_weights: zod
+					.array(zod.number())
+					.max(getExperimentForUiResponseDesignSpecArmWeightsMaxOne)
+					.or(zod.null())
+					.optional()
+					.describe(
+						"Optional weights for unequal arm sizes. Weights must be floats in (0, 100) and sum to 100.",
+					),
 				power: zod
 					.number()
 					.min(getExperimentForUiResponseDesignSpecPowerMin)
@@ -6795,6 +6863,14 @@ export const getExperimentForUiResponse = zod
 							.max(getExperimentForUiResponseDesignSpecFiltersMaxOne)
 							.describe(
 								"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+							),
+						arm_weights: zod
+							.array(zod.number())
+							.max(getExperimentForUiResponseDesignSpecArmWeightsMaxFour)
+							.or(zod.null())
+							.optional()
+							.describe(
+								"Optional weights for unequal arm sizes. Weights must be floats in (0, 100) and sum to 100.",
 							),
 						power: zod
 							.number()
@@ -7857,6 +7933,7 @@ export const powerCheckBodyDesignSpecFiltersItemFieldNameRegExp = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
 export const powerCheckBodyDesignSpecFiltersMax = 20;
+export const powerCheckBodyDesignSpecArmWeightsMaxOne = 10;
 export const powerCheckBodyDesignSpecPowerDefault = 0.8;
 export const powerCheckBodyDesignSpecPowerMin = 0;
 
@@ -7890,6 +7967,7 @@ export const powerCheckBodyDesignSpecFiltersItemFieldNameRegExpOne = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
 export const powerCheckBodyDesignSpecFiltersMaxOne = 20;
+export const powerCheckBodyDesignSpecArmWeightsMaxFour = 10;
 export const powerCheckBodyDesignSpecPowerDefaultOne = 0.8;
 export const powerCheckBodyDesignSpecPowerMinOne = 0;
 
@@ -8053,6 +8131,14 @@ export const powerCheckBody = zod.object({
 				.describe(
 					"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
 				),
+			arm_weights: zod
+				.array(zod.number())
+				.max(powerCheckBodyDesignSpecArmWeightsMaxOne)
+				.or(zod.null())
+				.optional()
+				.describe(
+					"Optional weights for unequal arm sizes. Weights must be floats in (0, 100) and sum to 100.",
+				),
 			power: zod
 				.number()
 				.min(powerCheckBodyDesignSpecPowerMin)
@@ -8202,6 +8288,14 @@ export const powerCheckBody = zod.object({
 						.max(powerCheckBodyDesignSpecFiltersMaxOne)
 						.describe(
 							"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+						),
+					arm_weights: zod
+						.array(zod.number())
+						.max(powerCheckBodyDesignSpecArmWeightsMaxFour)
+						.or(zod.null())
+						.optional()
+						.describe(
+							"Optional weights for unequal arm sizes. Weights must be floats in (0, 100) and sum to 100.",
 						),
 					power: zod
 						.number()
