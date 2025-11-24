@@ -1,8 +1,9 @@
 'use client';
-import { AlertDialog, Button, Flex, IconButton } from '@radix-ui/themes';
+import { IconButton } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
 import { getListOrganizationWebhooksKey, useDeleteWebhookFromOrganization } from '@/api/admin';
 import { mutate } from 'swr';
+import { DeleteAlertDialog } from '@/components/ui/delete-alert-dialog';
 
 interface DeleteWebhookDialogProps {
   organizationId: string;
@@ -10,7 +11,7 @@ interface DeleteWebhookDialogProps {
 }
 
 export function DeleteWebhookDialog({ organizationId, webhookId }: DeleteWebhookDialogProps) {
-  const { trigger } = useDeleteWebhookFromOrganization(
+  const { trigger, isMutating } = useDeleteWebhookFromOrganization(
     organizationId,
     webhookId,
     { allow_missing: true },
@@ -22,43 +23,16 @@ export function DeleteWebhookDialog({ organizationId, webhookId }: DeleteWebhook
   );
 
   return (
-    <AlertDialog.Root>
-      <AlertDialog.Trigger>
+    <DeleteAlertDialog
+      title="Delete Webhook"
+      description="Are you sure you want to delete this webhook?"
+      trigger={trigger}
+      loading={isMutating}
+      renderTrigger={() => (
         <IconButton color="red" variant="soft">
           <TrashIcon />
         </IconButton>
-      </AlertDialog.Trigger>
-      <AlertDialog.Content
-        onKeyDown={async (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            await trigger();
-          }
-        }}
-      >
-        <AlertDialog.Title>Delete Webhook</AlertDialog.Title>
-        <AlertDialog.Description>
-          Are you sure you want to delete this webhook? This action cannot be undone.
-        </AlertDialog.Description>
-        <Flex gap="3" mt="4" justify="end">
-          <AlertDialog.Cancel>
-            <Button variant="soft" color="gray">
-              Cancel
-            </Button>
-          </AlertDialog.Cancel>
-          <AlertDialog.Action>
-            <Button
-              variant="solid"
-              color="red"
-              onClick={async () => {
-                await trigger();
-              }}
-            >
-              Delete
-            </Button>
-          </AlertDialog.Action>
-        </Flex>
-      </AlertDialog.Content>
-    </AlertDialog.Root>
+      )}
+    />
   );
 }

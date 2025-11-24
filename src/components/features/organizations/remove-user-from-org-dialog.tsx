@@ -4,12 +4,12 @@ import { TrashIcon } from '@radix-ui/react-icons';
 import { getGetOrganizationKey, useRemoveMemberFromOrganization } from '@/api/admin';
 import { mutate } from 'swr';
 
-interface DeleteUserDialogProps {
+interface RemoveUserFromOrgDialogProps {
   organizationId: string;
   userId: string;
 }
 
-export function DeleteUserDialog({ organizationId, userId }: DeleteUserDialogProps) {
+export function RemoveUserFromOrgDialog({ organizationId, userId }: RemoveUserFromOrgDialogProps) {
   const { trigger } = useRemoveMemberFromOrganization(
     organizationId,
     userId,
