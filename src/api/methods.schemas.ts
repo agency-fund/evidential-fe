@@ -77,6 +77,11 @@ export type ArmArmId = string | null;
 export type ArmArmDescription = string | null;
 
 /**
+ * Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.
+ */
+export type ArmArmWeight = ArmWeight | null;
+
+/**
  * Describes an experiment treatment arm.
  */
 export interface Arm {
@@ -85,6 +90,8 @@ export interface Arm {
 	/** @maxLength 100 */
 	arm_name: string;
 	arm_description?: ArmArmDescription;
+	/** Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100. */
+	arm_weight?: ArmArmWeight;
 }
 
 /**
@@ -93,6 +100,11 @@ export interface Arm {
 export type ArmAnalysisArmId = string | null;
 
 export type ArmAnalysisArmDescription = string | null;
+
+/**
+ * Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.
+ */
+export type ArmAnalysisArmWeight = ArmWeight | null;
 
 /**
  * The p-value indicating statistical significance of the treatment effect. Value may be None if the t-stat is not available, e.g. due to inability to calculate the standard error.
@@ -115,6 +127,8 @@ export interface ArmAnalysis {
 	/** @maxLength 100 */
 	arm_name: string;
 	arm_description?: ArmAnalysisArmDescription;
+	/** Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100. */
+	arm_weight?: ArmAnalysisArmWeight;
 	/** The estimated treatment effect relative to the baseline arm. */
 	estimate: number;
 	/** The p-value indicating statistical significance of the treatment effect. Value may be None if the t-stat is not available, e.g. due to inability to calculate the standard error. */
@@ -138,6 +152,11 @@ export interface ArmAnalysis {
 export type ArmBanditArmId = string | null;
 
 export type ArmBanditArmDescription = string | null;
+
+/**
+ * Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.
+ */
+export type ArmBanditArmWeight = ArmWeight | null;
 
 /**
  * Initial alpha parameter for Beta prior
@@ -188,6 +207,8 @@ export interface ArmBandit {
 	/** @maxLength 100 */
 	arm_name: string;
 	arm_description?: ArmBanditArmDescription;
+	/** Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100. */
+	arm_weight?: ArmBanditArmWeight;
 	/** Initial alpha parameter for Beta prior */
 	alpha_init?: ArmBanditAlphaInit;
 	/** Initial beta parameter for Beta prior */
@@ -213,6 +234,10 @@ export interface ArmSize {
 	arm: Arm;
 	size?: number;
 }
+
+/**
+ */
+export type ArmWeight = number;
 
 /**
  * Balance test results if available. 'online' experiments do not have balance checks.
@@ -313,6 +338,11 @@ export type BanditArmAnalysisArmId = string | null;
 export type BanditArmAnalysisArmDescription = string | null;
 
 /**
+ * Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.
+ */
+export type BanditArmAnalysisArmWeight = ArmWeight | null;
+
+/**
  * Initial alpha parameter for Beta prior
  */
 export type BanditArmAnalysisAlphaInit = number | null;
@@ -361,6 +391,8 @@ export interface BanditArmAnalysis {
 	/** @maxLength 100 */
 	arm_name: string;
 	arm_description?: BanditArmAnalysisArmDescription;
+	/** Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100. */
+	arm_weight?: BanditArmAnalysisArmWeight;
 	/** Initial alpha parameter for Beta prior */
 	alpha_init?: BanditArmAnalysisAlphaInit;
 	/** Initial beta parameter for Beta prior */
@@ -844,7 +876,9 @@ export interface CreateExperimentResponse {
 	assign_summary: CreateExperimentResponseAssignSummary;
 	/** List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed. */
 	webhooks?: string[];
+	/** Record any decision(s) made because of this experiment. Will you launch it, and if so when? Regardless of positive or negative results, how do any learnings inform next steps or future hypotheses? */
 	decision?: string;
+	/** Given the results across your tracked metrics and any other observed effects seen elsewhere, record an overall summary here. Do they agree or reject your hypotheses? Beyond the metrics tracked, did variations affect scalability, cost, feedback, or other aspects? */
 	impact?: string;
 }
 
@@ -1082,7 +1116,9 @@ export interface ExperimentConfig {
 	assign_summary: ExperimentConfigAssignSummary;
 	/** List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed. */
 	webhooks?: string[];
+	/** Record any decision(s) made because of this experiment. Will you launch it, and if so when? Regardless of positive or negative results, how do any learnings inform next steps or future hypotheses? */
 	decision?: string;
+	/** Given the results across your tracked metrics and any other observed effects seen elsewhere, record an overall summary here. Do they agree or reject your hypotheses? Beyond the metrics tracked, did variations affect scalability, cost, feedback, or other aspects? */
 	impact?: string;
 }
 
@@ -1377,7 +1413,9 @@ export interface GetExperimentResponse {
 	assign_summary: GetExperimentResponseAssignSummary;
 	/** List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed. */
 	webhooks?: string[];
+	/** Record any decision(s) made because of this experiment. Will you launch it, and if so when? Regardless of positive or negative results, how do any learnings inform next steps or future hypotheses? */
 	decision?: string;
+	/** Given the results across your tracked metrics and any other observed effects seen elsewhere, record an overall summary here. Do they agree or reject your hypotheses? Beyond the metrics tracked, did variations affect scalability, cost, feedback, or other aspects? */
 	impact?: string;
 }
 

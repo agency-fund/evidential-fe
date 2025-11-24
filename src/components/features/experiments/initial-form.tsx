@@ -1,5 +1,6 @@
 'use client';
 import {
+  Badge,
   Box,
   Button,
   Card,
@@ -15,12 +16,13 @@ import {
   TextField,
 } from '@radix-ui/themes';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
+import { ArmWeightsDialog } from '@/components/features/experiments/arm-weights-dialog';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 import { useListParticipantTypes } from '@/api/admin';
 import Link from 'next/link';
 import { WebhookSummary } from '@/api/methods.schemas';
-import { ExperimentFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
+import { ExperimentFormData, isFreqABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 
 interface InitialFormProps {
   formData: ExperimentFormData;
@@ -40,7 +42,17 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
     },
   );
 
-  const addArm = () => {
+  const handleWeightsChange = (weights: number[]) => {
+    if (isFreqABFormData(formData)) {
+      const newArms = formData.arms.map((arm, i) => ({
+        ...arm,
+        arm_weight: weights[i],
+      }));
+      onFormDataChange({ ...formData, arms: newArms });
+    }
+  };
+
+  const handleAddArm = () => {
     const new_arm =
       formData.arms.length == 0
         ? {
@@ -48,17 +60,30 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
             arm_description: 'Arm 1 will be used as baseline for comparison in analysis.',
           }
         : { arm_name: '', arm_description: '' };
-    onFormDataChange({ ...formData, arms: [...formData.arms, new_arm] });
+    const updatedData = {
+      ...formData,
+      arms: [...formData.arms, new_arm],
+    };
+    // Reset arm weights when adding an arm. User will have to update new weights.
+    if (isFreqABFormData(updatedData)) {
+      updatedData.arms = updatedData.arms.map((a) => ({ ...a, arm_weight: undefined }));
+    }
+    onFormDataChange(updatedData);
   };
 
-  const removeArm = (index: number) => {
-    onFormDataChange({
+  const handleRemoveArm = (index: number) => {
+    const updatedData = {
       ...formData,
       arms: formData.arms.filter((_, i) => i !== index),
-    });
+    };
+    // Reset arm weights when removing an arm. User will have to update new weights.
+    if (isFreqABFormData(updatedData)) {
+      updatedData.arms = updatedData.arms.map((a) => ({ ...a, arm_weight: undefined }));
+    }
+    onFormDataChange(updatedData);
   };
 
-  const updateArm = (index: number, field: 'arm_name' | 'arm_description', value: string) => {
+  const handleUpdateArm = (index: number, field: 'arm_name' | 'arm_description', value: string) => {
     const newArms = [...formData.arms];
     newArms[index] = { ...newArms[index], [field]: value };
     onFormDataChange({ ...formData, arms: newArms });
@@ -198,15 +223,19 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
             </Flex>
           </Flex>
         </Card>
-
         <Card>
           <Flex direction="column" gap="2">
-            <Flex direction="column" gap="1">
-              <Heading size="4">Arms</Heading>
-              {showArmsError && (
-                <Text size="1" color="red" mb="2">
-                  At least two arms are required
-                </Text>
+            <Flex justify="between" align="start">
+              <Flex direction="column" gap="1">
+                <Heading size="4">Arms</Heading>
+                {showArmsError && (
+                  <Text size="1" color="red" mb="2">
+                    At least two arms are required
+                  </Text>
+                )}
+              </Flex>
+              {isFreqABFormData(formData) && (
+                <ArmWeightsDialog arms={formData.arms} onWeightsChange={handleWeightsChange} />
               )}
             </Flex>
 
@@ -215,10 +244,15 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
                 <Card key={index}>
                   <Flex direction="column" gap="2">
                     <Flex justify="between" align="center">
-                      <Text size="3" weight="bold">
-                        Arm {index + 1} {0 == index && '(control)'}
-                      </Text>
-                      <IconButton size="1" color="red" variant="soft" onClick={() => removeArm(index)}>
+                      <Flex direction="row" gap="2" align="baseline">
+                        <Text size="3" weight="bold">
+                          Arm {index + 1} {0 == index && '(control)'}
+                        </Text>
+                        {isFreqABFormData(formData) && arm.arm_weight != null && (
+                          <Badge>{`${arm.arm_weight.toFixed(1)}%`}</Badge>
+                        )}
+                      </Flex>
+                      <IconButton size="1" color="red" variant="soft" onClick={() => handleRemoveArm(index)}>
                         <TrashIcon />
                       </IconButton>
                     </Flex>
@@ -231,7 +265,7 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
                         <TextField.Root
                           value={arm.arm_name}
                           placeholder={'Arm Name'}
-                          onChange={(e) => updateArm(index, 'arm_name', e.target.value)}
+                          onChange={(e) => handleUpdateArm(index, 'arm_name', e.target.value)}
                           required
                         />
                       </Box>
@@ -244,14 +278,14 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
                       <TextArea
                         placeholder="Description"
                         value={arm.arm_description || ''}
-                        onChange={(e) => updateArm(index, 'arm_description', e.target.value)}
+                        onChange={(e) => handleUpdateArm(index, 'arm_description', e.target.value)}
                       />
                     </Flex>
                   </Flex>
                 </Card>
               ))}
               <Flex justify="end" mt="4">
-                <Button type="button" onClick={addArm}>
+                <Button type="button" onClick={handleAddArm}>
                   <PlusIcon /> Add Arm
                 </Button>
               </Flex>

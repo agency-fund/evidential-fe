@@ -3,7 +3,7 @@ import { Button, Callout, Flex, Grid, Table, Text, Badge } from '@radix-ui/theme
 import { FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { InfoCircledIcon } from '@radix-ui/react-icons';
+import { InfoCircledIcon, PersonIcon } from '@radix-ui/react-icons';
 import { useAbandonExperiment, useCommitExperiment } from '@/api/admin';
 import { ParametersSummaryTable } from '@/components/features/experiments/parameters-summary-table';
 import { StatisticsSummaryTable } from '@/components/features/experiments/statistics-summary-table';
@@ -112,25 +112,40 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
           <Table.Header>
             <Table.Row>
               <Table.ColumnHeaderCell>ID</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Target Allocation</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {formData.createExperimentResponse?.design_spec.arms.map((arm, index) => (
-              <Table.Row key={index}>
-                <Table.Cell>
-                  <Flex gap="2" align="center">
-                    <Text>{arm.arm_id}</Text>
-                    <CopyToClipBoard content={arm.arm_id!} />
-                  </Flex>
-                </Table.Cell>
-                <Table.Cell>{arm.arm_name}</Table.Cell>
-                <Table.Cell>
-                  <ReadMoreText text={arm.arm_description || '-'} />
-                </Table.Cell>
-              </Table.Row>
-            ))}
+            {formData.createExperimentResponse?.design_spec.arms.map((arm, index) => {
+              const armSize = formData.createExperimentResponse?.assign_summary?.arm_sizes?.[index]?.size || 0;
+              return (
+                <Table.Row key={index}>
+                  <Table.Cell>
+                    <Flex gap="2" align="center">
+                      <Text>{arm.arm_id}</Text>
+                      <CopyToClipBoard content={arm.arm_id!} />
+                    </Flex>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Flex direction="column" gap="2" align="start">
+                      {armSize > 0 && (
+                        <Badge>
+                          <PersonIcon />
+                          <Text>{armSize.toLocaleString()} participants</Text>
+                        </Badge>
+                      )}
+                      <Badge>{arm.arm_weight == null ? 'balanced' : `${arm.arm_weight.toFixed(1)}%`}</Badge>
+                    </Flex>
+                  </Table.Cell>
+                  <Table.Cell>{arm.arm_name}</Table.Cell>
+                  <Table.Cell>
+                    <ReadMoreText text={arm.arm_description || '-'} />
+                  </Table.Cell>
+                </Table.Row>
+              );
+            })}
           </Table.Body>
         </Table.Root>
       </SectionCard>
