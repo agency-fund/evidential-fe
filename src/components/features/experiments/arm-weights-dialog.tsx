@@ -6,11 +6,10 @@ import { Pencil1Icon } from '@radix-ui/react-icons';
 
 interface ArmWeightsDialogProps {
   arms: Omit<Arm, 'arm_id'>[];
-  currentWeights?: number[];
   onWeightsChange: (weights: number[]) => void;
 }
 
-export function ArmWeightsDialog({ arms, currentWeights, onWeightsChange }: ArmWeightsDialogProps) {
+export function ArmWeightsDialog({ arms, onWeightsChange }: ArmWeightsDialogProps) {
   const [open, setOpen] = useState(false);
   const [localWeights, setLocalWeights] = useState<string[]>([]);
   const [weightsError, setWeightsError] = useState<string | null>(null);
@@ -18,8 +17,9 @@ export function ArmWeightsDialog({ arms, currentWeights, onWeightsChange }: ArmW
   // Initialize local weights when dialog opens
   useEffect(() => {
     if (open) {
-      if (currentWeights) {
-        setLocalWeights(currentWeights.map((w) => w.toFixed(1)));
+      const hasWeights = arms.some((a) => a.arm_weight != null);
+      if (hasWeights) {
+        setLocalWeights(arms.map((a) => (a.arm_weight ?? 0).toFixed(1)));
       } else {
         // Initialize with balanced allocation
         const balancedWeight = (100 / arms.length).toFixed(1);
@@ -27,7 +27,7 @@ export function ArmWeightsDialog({ arms, currentWeights, onWeightsChange }: ArmW
       }
       setWeightsError(null);
     }
-  }, [open, currentWeights, arms]);
+  }, [open, arms]);
 
   const validateWeights = (weights: string[]): boolean => {
     const numWeights = weights.map((w) => parseFloat(w) || 0);

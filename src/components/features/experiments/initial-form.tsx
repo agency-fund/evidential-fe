@@ -44,7 +44,11 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
 
   const handleWeightsChange = (weights: number[]) => {
     if (isFreqABFormData(formData)) {
-      onFormDataChange({ ...formData, arm_weights: weights });
+      const newArms = formData.arms.map((arm, i) => ({
+        ...arm,
+        arm_weight: weights[i],
+      }));
+      onFormDataChange({ ...formData, arms: newArms });
     }
   };
 
@@ -60,9 +64,9 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
       ...formData,
       arms: [...formData.arms, new_arm],
     };
-    // Reset arm_weights when adding an arm. User will have to update new weights.
+    // Reset arm weights when adding an arm. User will have to update new weights.
     if (isFreqABFormData(updatedData)) {
-      updatedData.arm_weights = undefined;
+      updatedData.arms = updatedData.arms.map((a) => ({ ...a, arm_weight: undefined }));
     }
     onFormDataChange(updatedData);
   };
@@ -72,9 +76,9 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
       ...formData,
       arms: formData.arms.filter((_, i) => i !== index),
     };
-    // Reset arm_weights when removing an arm. User will have to update new weights.
+    // Reset arm weights when removing an arm. User will have to update new weights.
     if (isFreqABFormData(updatedData)) {
-      updatedData.arm_weights = undefined;
+      updatedData.arms = updatedData.arms.map((a) => ({ ...a, arm_weight: undefined }));
     }
     onFormDataChange(updatedData);
   };
@@ -231,11 +235,7 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
                 )}
               </Flex>
               {isFreqABFormData(formData) && (
-                <ArmWeightsDialog
-                  arms={formData.arms}
-                  currentWeights={formData.arm_weights}
-                  onWeightsChange={handleWeightsChange}
-                />
+                <ArmWeightsDialog arms={formData.arms} onWeightsChange={handleWeightsChange} />
               )}
             </Flex>
 
@@ -248,8 +248,8 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
                         <Text size="3" weight="bold">
                           Arm {index + 1} {0 == index && '(control)'}
                         </Text>
-                        {isFreqABFormData(formData) && formData.arm_weights && (
-                          <Badge>{`${formData.arm_weights[index]?.toFixed(1)}%`}</Badge>
+                        {isFreqABFormData(formData) && arm.arm_weight != null && (
+                          <Badge>{`${arm.arm_weight.toFixed(1)}%`}</Badge>
                         )}
                       </Flex>
                       <IconButton size="1" color="red" variant="soft" onClick={() => handleRemoveArm(index)}>

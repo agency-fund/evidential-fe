@@ -136,9 +136,7 @@ export function ConfirmationForm({ formData, onBack, onFormDataChange }: Confirm
                           <Text>{armSize.toLocaleString()} participants</Text>
                         </Badge>
                       )}
-                      <Badge>
-                        {!formData.arm_weights ? 'balanced' : `${formData.arm_weights[index]?.toFixed(1)}%`}
-                      </Badge>
+                      <Badge>{arm.arm_weight == null ? 'balanced' : `${arm.arm_weight.toFixed(1)}%`}</Badge>
                     </Flex>
                   </Table.Cell>
                   <Table.Cell>{arm.arm_name}</Table.Cell>

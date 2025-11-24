@@ -76,7 +76,6 @@ export type FrequentABFormData = BaseExperimentFormData & {
     | PreassignedFrequentistExperimentSpecInputExperimentType
     | OnlineFrequentistExperimentSpecInputExperimentType;
   arms: Omit<Arm, 'arm_id'>[];
-  arm_weights?: number[]; // undefined means balanced allocation, otherwise percentages (0-100)
   primaryMetric?: MetricWithMDE;
   secondaryMetrics: MetricWithMDE[];
   filters: FilterInput[];
