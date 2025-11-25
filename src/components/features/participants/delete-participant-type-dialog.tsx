@@ -1,5 +1,5 @@
 'use client';
-import { AlertDialog, Button, Flex, IconButton } from '@radix-ui/themes';
+import { IconButton } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
 import {
   getGetDatasourceKey,
@@ -8,6 +8,7 @@ import {
   useDeleteParticipant,
 } from '@/api/admin';
 import { mutate } from 'swr';
+import { DeleteAlertDialog } from '@/components/ui/delete-alert-dialog';
 
 interface DeleteParticipantTypeDialogProps {
   datasourceId: string;
@@ -15,14 +16,14 @@ interface DeleteParticipantTypeDialogProps {
 }
 
 export const DeleteParticipantTypeDialog = ({ datasourceId, participantType }: DeleteParticipantTypeDialogProps) => {
-  const { trigger } = useDeleteParticipant(
+  const { trigger, isMutating } = useDeleteParticipant(
     datasourceId,
     participantType,
     { allow_missing: true },
     {
       swr: {
-        onSuccess: async () =>
-          await Promise.all([
+        onSuccess: () =>
+          Promise.all([
             mutate(getGetDatasourceKey(datasourceId)),
             mutate(getInspectParticipantTypesKey(datasourceId, participantType)),
             mutate(getListParticipantTypesKey(datasourceId)),
@@ -32,36 +33,18 @@ export const DeleteParticipantTypeDialog = ({ datasourceId, participantType }: D
   );
 
   return (
-    <AlertDialog.Root>
-      <AlertDialog.Trigger>
+    <DeleteAlertDialog
+      title="Delete Participant Type"
+      description="Are you sure you want to delete this participant type? This action cannot be undone."
+      trigger={trigger}
+      loading={isMutating}
+      renderTrigger={() => (
         <IconButton color="red" variant="soft">
           <TrashIcon />
         </IconButton>
-      </AlertDialog.Trigger>
-      <AlertDialog.Content>
-        <AlertDialog.Title>Delete Participant Type</AlertDialog.Title>
-        <AlertDialog.Description>
-          Are you sure you want to delete this participant type? This action cannot be undone.
-        </AlertDialog.Description>
-        <Flex gap="3" mt="4" justify="end">
-          <AlertDialog.Cancel>
-            <Button variant="soft" color="gray">
-              Cancel
-            </Button>
-          </AlertDialog.Cancel>
-          <AlertDialog.Action>
-            <Button
-              variant="solid"
-              color="red"
-              onClick={async () => {
-                await trigger();
-              }}
-            >
-              Delete
-            </Button>
-          </AlertDialog.Action>
-        </Flex>
-      </AlertDialog.Content>
-    </AlertDialog.Root>
+      )}
+    >
+      Deleting a participant type will remove notes and may invalidate active or future experiments.
+    </DeleteAlertDialog>
   );
 };

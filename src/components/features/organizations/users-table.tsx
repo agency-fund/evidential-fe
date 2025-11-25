@@ -1,6 +1,6 @@
 'use client';
 import { Flex, Heading, Table } from '@radix-ui/themes';
-import { DeleteUserDialog } from '@/components/features/organizations/delete-user-dialog';
+import { RemoveUserFromOrgDialog } from '@/components/features/organizations/remove-user-from-org-dialog';
 import { useAuth } from '@/providers/auth-provider';
 import { AddUserDialog } from '@/components/features/organizations/add-user-dialog';
 
@@ -34,7 +34,7 @@ export function UsersTable({
               <Table.Cell>
                 <Flex gap="2">
                   {auth.isAuthenticated && user.email !== auth.userEmail && (
-                    <DeleteUserDialog organizationId={organizationId} userId={user.id} />
+                    <RemoveUserFromOrgDialog organizationId={organizationId} userId={user.id} />
                   )}
                 </Flex>
               </Table.Cell>

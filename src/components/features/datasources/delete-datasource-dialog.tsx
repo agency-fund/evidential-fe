@@ -1,8 +1,9 @@
 'use client';
-import { AlertDialog, Button, Flex, IconButton } from '@radix-ui/themes';
-import { TrashIcon } from '@radix-ui/react-icons';
+import { IconButton } from '@radix-ui/themes';
 import { getGetOrganizationKey, useDeleteDatasource } from '@/api/admin';
 import { mutate } from 'swr';
+import { TrashIcon } from '@radix-ui/react-icons';
+import { DeleteAlertDialog } from '@/components/ui/delete-alert-dialog';
 
 interface DeleteDatasourceDialogProps {
   organizationId: string;
@@ -10,7 +11,7 @@ interface DeleteDatasourceDialogProps {
 }
 
 export function DeleteDatasourceDialog({ organizationId, datasourceId }: DeleteDatasourceDialogProps) {
-  const { trigger } = useDeleteDatasource(
+  const { trigger, isMutating } = useDeleteDatasource(
     organizationId,
     datasourceId,
     { allow_missing: true },
@@ -22,43 +23,19 @@ export function DeleteDatasourceDialog({ organizationId, datasourceId }: DeleteD
   );
 
   return (
-    <AlertDialog.Root>
-      <AlertDialog.Trigger>
+    <DeleteAlertDialog
+      title="Delete Datasource"
+      description="Are you sure you want to delete this datasource? This action cannot be undone."
+      trigger={trigger}
+      loading={isMutating}
+      renderTrigger={() => (
         <IconButton color="red" variant="soft">
           <TrashIcon />
         </IconButton>
-      </AlertDialog.Trigger>
-      <AlertDialog.Content
-        onKeyDown={async (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            await trigger();
-          }
-        }}
-      >
-        <AlertDialog.Title>Delete Datasource</AlertDialog.Title>
-        <AlertDialog.Description>
-          Are you sure you want to delete this datasource? This action cannot be undone.
-        </AlertDialog.Description>
-        <Flex gap="3" mt="4" justify="end">
-          <AlertDialog.Cancel>
-            <Button variant="soft" color="gray">
-              Cancel
-            </Button>
-          </AlertDialog.Cancel>
-          <AlertDialog.Action>
-            <Button
-              variant="solid"
-              color="red"
-              onClick={async () => {
-                await trigger();
-              }}
-            >
-              Delete
-            </Button>
-          </AlertDialog.Action>
-        </Flex>
-      </AlertDialog.Content>
-    </AlertDialog.Root>
+      )}
+    >
+      Deleting a datasource will delete all associated experiments, their arm assignments, draws, contexts, snapshots,
+      and API keys.
+    </DeleteAlertDialog>
   );
 }

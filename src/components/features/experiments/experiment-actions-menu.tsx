@@ -1,8 +1,10 @@
 'use client';
-import { useState } from 'react';
 import { DropdownMenu, IconButton } from '@radix-ui/themes';
+import { useState } from 'react';
+import { getListOrganizationExperimentsKey, useDeleteExperiment } from '@/api/admin';
+import { mutate } from 'swr';
 import { DotsVerticalIcon, TrashIcon } from '@radix-ui/react-icons';
-import { DeleteExperimentDialog } from '@/components/features/experiments/delete-experiment-dialog';
+import { DeleteAlertDialog } from '@/components/ui/delete-alert-dialog';
 
 interface ExperimentActionsMenuProps {
   organizationId: string;
@@ -10,16 +12,23 @@ interface ExperimentActionsMenuProps {
   experimentId: string;
 }
 
-export function ExperimentActionsMenu({
-  datasourceId,
-  experimentId,
-  organizationId,
-}: ExperimentActionsMenuProps) {
+export function ExperimentActionsMenu({ datasourceId, experimentId, organizationId }: ExperimentActionsMenuProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  const { trigger, isMutating } = useDeleteExperiment(
+    datasourceId,
+    experimentId,
+    { allow_missing: true },
+    {
+      swr: {
+        onSuccess: () => mutate(getListOrganizationExperimentsKey(organizationId)),
+      },
+    },
+  );
 
   return (
     <>
-      <DropdownMenu.Root>
+      <DropdownMenu.Root modal={false}>
         <DropdownMenu.Trigger>
           <IconButton variant="ghost" color="gray" size="1">
             <DotsVerticalIcon width="16" height="16" />
@@ -32,13 +41,16 @@ export function ExperimentActionsMenu({
         </DropdownMenu.Content>
       </DropdownMenu.Root>
 
-      <DeleteExperimentDialog
-        datasourceId={datasourceId}
-        experimentId={experimentId}
-        organizationId={organizationId}
+      <DeleteAlertDialog
+        title="Delete Experiment"
+        description="Are you sure you want to delete this experiment? This action cannot be undone."
+        trigger={trigger}
+        loading={isMutating}
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-      />
+      >
+        Deleting an experiment will delete all associated assignments, state, and snapshots.
+      </DeleteAlertDialog>
     </>
   );
 }

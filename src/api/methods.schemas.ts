@@ -77,6 +77,11 @@ export type ArmArmId = string | null;
 export type ArmArmDescription = string | null;
 
 /**
+ * Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.
+ */
+export type ArmArmWeight = ArmWeight | null;
+
+/**
  * Describes an experiment treatment arm.
  */
 export interface Arm {
@@ -85,6 +90,8 @@ export interface Arm {
 	/** @maxLength 100 */
 	arm_name: string;
 	arm_description?: ArmArmDescription;
+	/** Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100. */
+	arm_weight?: ArmArmWeight;
 }
 
 /**
@@ -93,6 +100,11 @@ export interface Arm {
 export type ArmAnalysisArmId = string | null;
 
 export type ArmAnalysisArmDescription = string | null;
+
+/**
+ * Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.
+ */
+export type ArmAnalysisArmWeight = ArmWeight | null;
 
 /**
  * The p-value indicating statistical significance of the treatment effect. Value may be None if the t-stat is not available, e.g. due to inability to calculate the standard error.
@@ -115,6 +127,8 @@ export interface ArmAnalysis {
 	/** @maxLength 100 */
 	arm_name: string;
 	arm_description?: ArmAnalysisArmDescription;
+	/** Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100. */
+	arm_weight?: ArmAnalysisArmWeight;
 	/** The estimated treatment effect relative to the baseline arm. */
 	estimate: number;
 	/** The p-value indicating statistical significance of the treatment effect. Value may be None if the t-stat is not available, e.g. due to inability to calculate the standard error. */
@@ -138,6 +152,11 @@ export interface ArmAnalysis {
 export type ArmBanditArmId = string | null;
 
 export type ArmBanditArmDescription = string | null;
+
+/**
+ * Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.
+ */
+export type ArmBanditArmWeight = ArmWeight | null;
 
 /**
  * Initial alpha parameter for Beta prior
@@ -188,6 +207,8 @@ export interface ArmBandit {
 	/** @maxLength 100 */
 	arm_name: string;
 	arm_description?: ArmBanditArmDescription;
+	/** Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100. */
+	arm_weight?: ArmBanditArmWeight;
 	/** Initial alpha parameter for Beta prior */
 	alpha_init?: ArmBanditAlphaInit;
 	/** Initial beta parameter for Beta prior */
@@ -213,6 +234,10 @@ export interface ArmSize {
 	arm: Arm;
 	size?: number;
 }
+
+/**
+ */
+export type ArmWeight = number;
 
 /**
  * Balance test results if available. 'online' experiments do not have balance checks.
@@ -313,6 +338,11 @@ export type BanditArmAnalysisArmId = string | null;
 export type BanditArmAnalysisArmDescription = string | null;
 
 /**
+ * Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.
+ */
+export type BanditArmAnalysisArmWeight = ArmWeight | null;
+
+/**
  * Initial alpha parameter for Beta prior
  */
 export type BanditArmAnalysisAlphaInit = number | null;
@@ -361,6 +391,8 @@ export interface BanditArmAnalysis {
 	/** @maxLength 100 */
 	arm_name: string;
 	arm_description?: BanditArmAnalysisArmDescription;
+	/** Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100. */
+	arm_weight?: BanditArmAnalysisArmWeight;
 	/** Initial alpha parameter for Beta prior */
 	alpha_init?: BanditArmAnalysisAlphaInit;
 	/** Initial beta parameter for Beta prior */
@@ -425,13 +457,6 @@ export interface BanditExperimentAnalysisResponse {
 	contexts?: BanditExperimentAnalysisResponseContexts;
 }
 
-/**
- * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
-DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
- * @deprecated
- */
-export type BayesABExperimentSpecInputExperimentId = string | null;
-
 export type BayesABExperimentSpecInputExperimentType =
 	(typeof BayesABExperimentSpecInputExperimentType)[keyof typeof BayesABExperimentSpecInputExperimentType];
 
@@ -459,12 +484,6 @@ For example, you may wish to experiment on new users. Assignments are issued via
 export interface BayesABExperimentSpecInput {
 	/** @maxLength 100 */
 	participant_type: string;
-	/**
-   * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
-DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
-   * @deprecated
-   */
-	experiment_id?: BayesABExperimentSpecInputExperimentId;
 	experiment_type: BayesABExperimentSpecInputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
@@ -486,13 +505,6 @@ DEPRECATED: This field is no longer used and will be removed in a future release
 	/** The type of reward we observe from the experiment. */
 	reward_type?: LikelihoodTypes;
 }
-
-/**
- * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
-DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
- * @deprecated
- */
-export type BayesABExperimentSpecOutputExperimentId = string | null;
 
 export type BayesABExperimentSpecOutputExperimentType =
 	(typeof BayesABExperimentSpecOutputExperimentType)[keyof typeof BayesABExperimentSpecOutputExperimentType];
@@ -521,12 +533,6 @@ For example, you may wish to experiment on new users. Assignments are issued via
 export interface BayesABExperimentSpecOutput {
 	/** @maxLength 100 */
 	participant_type: string;
-	/**
-   * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
-DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
-   * @deprecated
-   */
-	experiment_id?: BayesABExperimentSpecOutputExperimentId;
 	experiment_type: BayesABExperimentSpecOutputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
@@ -647,13 +653,6 @@ export interface CMABContextInputRequest {
 	context_inputs: ContextInput[];
 }
 
-/**
- * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
-DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
- * @deprecated
- */
-export type CMABExperimentSpecInputExperimentId = string | null;
-
 export type CMABExperimentSpecInputExperimentType =
 	(typeof CMABExperimentSpecInputExperimentType)[keyof typeof CMABExperimentSpecInputExperimentType];
 
@@ -681,12 +680,6 @@ For example, you may wish to experiment on new users. Assignments are issued via
 export interface CMABExperimentSpecInput {
 	/** @maxLength 100 */
 	participant_type: string;
-	/**
-   * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
-DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
-   * @deprecated
-   */
-	experiment_id?: CMABExperimentSpecInputExperimentId;
 	experiment_type: CMABExperimentSpecInputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
@@ -708,13 +701,6 @@ DEPRECATED: This field is no longer used and will be removed in a future release
 	/** The type of reward we observe from the experiment. */
 	reward_type?: LikelihoodTypes;
 }
-
-/**
- * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
-DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
- * @deprecated
- */
-export type CMABExperimentSpecOutputExperimentId = string | null;
 
 export type CMABExperimentSpecOutputExperimentType =
 	(typeof CMABExperimentSpecOutputExperimentType)[keyof typeof CMABExperimentSpecOutputExperimentType];
@@ -743,12 +729,6 @@ For example, you may wish to experiment on new users. Assignments are issued via
 export interface CMABExperimentSpecOutput {
 	/** @maxLength 100 */
 	participant_type: string;
-	/**
-   * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
-DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
-   * @deprecated
-   */
-	experiment_id?: CMABExperimentSpecOutputExperimentId;
 	experiment_type: CMABExperimentSpecOutputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
@@ -859,6 +839,8 @@ export interface CreateExperimentRequest {
 	power_analyses?: CreateExperimentRequestPowerAnalyses;
 	/** List of webhook IDs to associate with this experiment. When the experiment is committed, these webhooks will be triggered with experiment details. Must contain unique values. */
 	webhooks?: string[];
+	decision?: string;
+	impact?: string;
 }
 
 /**
@@ -894,6 +876,10 @@ export interface CreateExperimentResponse {
 	assign_summary: CreateExperimentResponseAssignSummary;
 	/** List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed. */
 	webhooks?: string[];
+	/** Record any decision(s) made because of this experiment. Will you launch it, and if so when? Regardless of positive or negative results, how do any learnings inform next steps or future hypotheses? */
+	decision?: string;
+	/** Given the results across your tracked metrics and any other observed effects seen elsewhere, record an overall summary here. Do they agree or reject your hypotheses? Beyond the metrics tracked, did variations affect scalability, cost, feedback, or other aspects? */
+	impact?: string;
 }
 
 export interface CreateOrganizationRequest {
@@ -1130,6 +1116,10 @@ export interface ExperimentConfig {
 	assign_summary: ExperimentConfigAssignSummary;
 	/** List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed. */
 	webhooks?: string[];
+	/** Record any decision(s) made because of this experiment. Will you launch it, and if so when? Regardless of positive or negative results, how do any learnings inform next steps or future hypotheses? */
+	decision?: string;
+	/** Given the results across your tracked metrics and any other observed effects seen elsewhere, record an overall summary here. Do they agree or reject your hypotheses? Beyond the metrics tracked, did variations affect scalability, cost, feedback, or other aspects? */
+	impact?: string;
 }
 
 /**
@@ -1423,6 +1413,10 @@ export interface GetExperimentResponse {
 	assign_summary: GetExperimentResponseAssignSummary;
 	/** List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed. */
 	webhooks?: string[];
+	/** Record any decision(s) made because of this experiment. Will you launch it, and if so when? Regardless of positive or negative results, how do any learnings inform next steps or future hypotheses? */
+	decision?: string;
+	/** Given the results across your tracked metrics and any other observed effects seen elsewhere, record an overall summary here. Do they agree or reject your hypotheses? Beyond the metrics tracked, did variations affect scalability, cost, feedback, or other aspects? */
+	impact?: string;
 }
 
 /**
@@ -1646,13 +1640,6 @@ export interface ListWebhooksResponse {
 	items: WebhookSummary[];
 }
 
-/**
- * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
-DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
- * @deprecated
- */
-export type MABExperimentSpecInputExperimentId = string | null;
-
 export type MABExperimentSpecInputExperimentType =
 	(typeof MABExperimentSpecInputExperimentType)[keyof typeof MABExperimentSpecInputExperimentType];
 
@@ -1679,12 +1666,6 @@ For example, you may wish to experiment on new users. Assignments are issued via
 export interface MABExperimentSpecInput {
 	/** @maxLength 100 */
 	participant_type: string;
-	/**
-   * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
-DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
-   * @deprecated
-   */
-	experiment_id?: MABExperimentSpecInputExperimentId;
 	experiment_type: MABExperimentSpecInputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
@@ -1706,13 +1687,6 @@ DEPRECATED: This field is no longer used and will be removed in a future release
 	/** The type of reward we observe from the experiment. */
 	reward_type?: LikelihoodTypes;
 }
-
-/**
- * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
-DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
- * @deprecated
- */
-export type MABExperimentSpecOutputExperimentId = string | null;
 
 export type MABExperimentSpecOutputExperimentType =
 	(typeof MABExperimentSpecOutputExperimentType)[keyof typeof MABExperimentSpecOutputExperimentType];
@@ -1740,12 +1714,6 @@ For example, you may wish to experiment on new users. Assignments are issued via
 export interface MABExperimentSpecOutput {
 	/** @maxLength 100 */
 	participant_type: string;
-	/**
-   * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
-DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
-   * @deprecated
-   */
-	experiment_id?: MABExperimentSpecOutputExperimentId;
 	experiment_type: MABExperimentSpecOutputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
@@ -1926,13 +1894,6 @@ export interface OnlineAssignmentWithFiltersRequest {
 	properties: ParticipantProperty[];
 }
 
-/**
- * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
-DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
- * @deprecated
- */
-export type OnlineFrequentistExperimentSpecInputExperimentId = string | null;
-
 export type OnlineFrequentistExperimentSpecInputExperimentType =
 	(typeof OnlineFrequentistExperimentSpecInputExperimentType)[keyof typeof OnlineFrequentistExperimentSpecInputExperimentType];
 
@@ -1955,12 +1916,6 @@ For example, you may wish to experiment on new users. Assignments are issued via
 export interface OnlineFrequentistExperimentSpecInput {
 	/** @maxLength 100 */
 	participant_type: string;
-	/**
-   * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
-DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
-   * @deprecated
-   */
-	experiment_id?: OnlineFrequentistExperimentSpecInputExperimentId;
 	experiment_type: OnlineFrequentistExperimentSpecInputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
@@ -2011,13 +1966,6 @@ DEPRECATED: This field is no longer used and will be removed in a future release
 	fstat_thresh?: number;
 }
 
-/**
- * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
-DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
- * @deprecated
- */
-export type OnlineFrequentistExperimentSpecOutputExperimentId = string | null;
-
 export type OnlineFrequentistExperimentSpecOutputExperimentType =
 	(typeof OnlineFrequentistExperimentSpecOutputExperimentType)[keyof typeof OnlineFrequentistExperimentSpecOutputExperimentType];
 
@@ -2040,12 +1988,6 @@ For example, you may wish to experiment on new users. Assignments are issued via
 export interface OnlineFrequentistExperimentSpecOutput {
 	/** @maxLength 100 */
 	participant_type: string;
-	/**
-   * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
-DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
-   * @deprecated
-   */
-	experiment_id?: OnlineFrequentistExperimentSpecOutputExperimentId;
 	experiment_type: OnlineFrequentistExperimentSpecOutputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
@@ -2211,15 +2153,6 @@ export interface PowerResponseOutput {
 	analyses: MetricPowerAnalysisOutput[];
 }
 
-/**
- * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
-DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
- * @deprecated
- */
-export type PreassignedFrequentistExperimentSpecInputExperimentId =
-	| string
-	| null;
-
 export type PreassignedFrequentistExperimentSpecInputExperimentType =
 	(typeof PreassignedFrequentistExperimentSpecInputExperimentType)[keyof typeof PreassignedFrequentistExperimentSpecInputExperimentType];
 
@@ -2240,12 +2173,6 @@ frequentist A/B experiments.
 export interface PreassignedFrequentistExperimentSpecInput {
 	/** @maxLength 100 */
 	participant_type: string;
-	/**
-   * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
-DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
-   * @deprecated
-   */
-	experiment_id?: PreassignedFrequentistExperimentSpecInputExperimentId;
 	experiment_type: PreassignedFrequentistExperimentSpecInputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
@@ -2296,15 +2223,6 @@ DEPRECATED: This field is no longer used and will be removed in a future release
 	fstat_thresh?: number;
 }
 
-/**
- * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
-DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
- * @deprecated
- */
-export type PreassignedFrequentistExperimentSpecOutputExperimentId =
-	| string
-	| null;
-
 export type PreassignedFrequentistExperimentSpecOutputExperimentType =
 	(typeof PreassignedFrequentistExperimentSpecOutputExperimentType)[keyof typeof PreassignedFrequentistExperimentSpecOutputExperimentType];
 
@@ -2325,12 +2243,6 @@ frequentist A/B experiments.
 export interface PreassignedFrequentistExperimentSpecOutput {
 	/** @maxLength 100 */
 	participant_type: string;
-	/**
-   * ID of the experiment. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. 
-DEPRECATED: This field is no longer used and will be removed in a future release. Use the Create/GetExperimentResponse field directly.
-   * @deprecated
-   */
-	experiment_id?: PreassignedFrequentistExperimentSpecOutputExperimentId;
 	experiment_type: PreassignedFrequentistExperimentSpecOutputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
@@ -2580,6 +2492,10 @@ export type UpdateExperimentRequestStartDate = string | null;
 
 export type UpdateExperimentRequestEndDate = string | null;
 
+export type UpdateExperimentRequestImpact = string | null;
+
+export type UpdateExperimentRequestDecision = string | null;
+
 /**
  * Defines the subset of fields that can be updated for an experiment after creation.
  */
@@ -2589,6 +2505,8 @@ export interface UpdateExperimentRequest {
 	design_url?: UpdateExperimentRequestDesignUrl;
 	start_date?: UpdateExperimentRequestStartDate;
 	end_date?: UpdateExperimentRequestEndDate;
+	impact?: UpdateExperimentRequestImpact;
+	decision?: UpdateExperimentRequestDecision;
 }
 
 export type UpdateOrganizationRequestName = string | null;
