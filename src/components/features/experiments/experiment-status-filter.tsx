@@ -21,10 +21,7 @@ export function ExperimentStatusFilter({ statusOptions, value, onChange }: Exper
 
   const displayLabel =
     value.length === 0
-      ? 'Status'
-      : value.length === 1
-        ? value[0].charAt(0).toUpperCase() + value[0].slice(1)
-        : `Status (${value.length})`;
+      ? 'Status' : `Status (${value.length})`;
 
   return (
     <DropdownMenu.Root>

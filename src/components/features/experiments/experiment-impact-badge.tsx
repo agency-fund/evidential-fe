@@ -5,11 +5,11 @@ interface ExperimentImpactBadgeProps {
   impact?: ExperimentImpact | string;
 }
 
-const impactConfig: Record<ExperimentImpact, { label: string; tooltipLabel: string; color: 'red' | 'yellow' | 'green' | 'amber' | 'gray' }> = {
+const impactConfig: Record<ExperimentImpact, { label: string; tooltipLabel: string; color: 'red' | 'yellow' | 'green' | 'orange' | 'gray' }> = {
   high: { label: 'High', tooltipLabel: 'High Impact', color: 'red' },
   medium: { label: 'Medium', tooltipLabel: 'Medium Impact', color: 'yellow' },
   low: { label: 'Low', tooltipLabel: 'Low Impact', color: 'green' },
-  unclear: { label: 'Unclear', tooltipLabel: 'Unclear Impact', color: 'amber' },
+  unclear: { label: 'Unclear', tooltipLabel: 'Unclear Impact', color: 'orange' },
   unknown: { label: 'Unknown', tooltipLabel: 'Unknown Impact', color: 'gray' },
 };
 

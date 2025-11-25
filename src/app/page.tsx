@@ -71,7 +71,7 @@ export default function Page() {
 
   const matchesImpactFilter = (experiment: ExperimentWithStatus): boolean => {
     if (selectedImpacts.length === 0) return true;
-    const experimentImpact = (experiment.impact ?? 'unknown') as ExperimentImpact;
+    const experimentImpact = (experiment.impact || 'unknown') as ExperimentImpact;
     return selectedImpacts.includes(experimentImpact);
   };
 
