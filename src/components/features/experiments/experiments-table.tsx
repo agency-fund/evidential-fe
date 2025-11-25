@@ -2,13 +2,8 @@
 import { useState } from 'react';
 import { Flex, Table, Text } from '@radix-ui/themes';
 import { CaretSortIcon, CaretUpIcon, CaretDownIcon } from '@radix-ui/react-icons';
-import { ExperimentConfig } from '@/api/methods.schemas';
 import { ExperimentsTableRow } from '@/components/features/experiments/experiments-table-row';
-import type { ExperimentStatus } from '@/components/features/experiments/experiment-status-badge';
-
-type ExperimentWithStatus = ExperimentConfig & {
-  status: ExperimentStatus;
-};
+import type { ExperimentWithStatus } from '@/components/features/experiments/types';
 
 interface ExperimentTableProps {
   experiments: ExperimentWithStatus[];
@@ -46,6 +41,13 @@ const COLUMN_CONFIG: ColumnConfig[] = [
     sortKey: 'status',
     sortType: 'string',
     getValue: (experiment: ExperimentWithStatus) => experiment.status
+  },
+  {
+    label: 'Impact',
+    sortable: true,
+    sortKey: 'impact',
+    sortType: 'string',
+    getValue: (experiment: ExperimentWithStatus) => experiment.impact
   },
   { label: 'Hypothesis', sortable: false },
   {
@@ -177,6 +179,7 @@ export function ExperimentsTable({ experiments, organizationId }: ExperimentTabl
             hypothesis={experiment.design_spec.description}
             type={experiment.design_spec.experiment_type}
             status={experiment.status}
+            impact={experiment.impact}
             startDate={experiment.design_spec.start_date}
             endDate={experiment.design_spec.end_date}
             datasourceId={experiment.datasource_id}

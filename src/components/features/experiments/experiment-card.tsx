@@ -5,12 +5,12 @@ import { ReadMoreText } from '@/components/ui/read-more-text';
 import { ExperimentActionsMenu } from '@/components/features/experiments/experiment-actions-menu';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
-import {
-  ExperimentStatusBadge,
-  type ExperimentStatus,
-} from '@/components/features/experiments/experiment-status-badge';
+import { ExperimentStatusBadge } from '@/components/features/experiments/experiment-status-badge';
+import { ExperimentImpactBadge } from '@/components/features/experiments/experiment-impact-badge';
+import type { ExperimentStatus, ExperimentImpact } from '@/components/features/experiments/types';
 import { formatIsoDateLocal } from '@/services/date-utils';
 import Link from 'next/link';
+
 
 interface ExperimentCardProps {
   title: string;
@@ -19,6 +19,7 @@ interface ExperimentCardProps {
   startDate: string;
   endDate: string;
   status: ExperimentStatus;
+  impact?: ExperimentImpact | string;
   datasourceId: string;
   designUrl?: string;
   experimentId: string;
@@ -32,6 +33,7 @@ export function ExperimentCard({
   startDate,
   endDate,
   status,
+  impact,
   datasourceId,
   designUrl,
   experimentId,
@@ -58,7 +60,6 @@ export function ExperimentCard({
 
             <Flex align="center" gap="3" flexShrink={'0'}>
               <ExperimentStatusBadge status={status} />
-
               <ExperimentActionsMenu
                 organizationId={organizationId}
                 datasourceId={datasourceId}
@@ -74,8 +75,10 @@ export function ExperimentCard({
             </Text>
           </Flex>
 
-          <Flex align="center">
+          <Flex align="center" gap='2'>
             <ExperimentTypeBadge type={type} />
+            <Separator orientation='vertical'/>
+                 <ExperimentImpactBadge impact={impact} />
           </Flex>
 
           <Separator size="4" />

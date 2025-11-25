@@ -1,5 +1,6 @@
 'use client';
-import { Flex, Grid, Heading, TextField, IconButton, Tooltip, Button, Separator} from '@radix-ui/themes';
+import { useState } from 'react';
+import { Flex, Grid, Heading, TextField, IconButton, Tooltip } from '@radix-ui/themes';
 import { GearIcon, MagnifyingGlassIcon, ListBulletIcon, DashboardIcon, ReloadIcon } from '@radix-ui/react-icons';
 import { useListOrganizationDatasources, useListOrganizationExperiments } from '@/api/admin';
 import { XSpinner } from '@/components/ui/x-spinner';
@@ -12,8 +13,8 @@ import { CreateExperimentButton } from '@/components/features/experiments/create
 import { ExperimentCard } from '@/components/features/experiments/experiment-card';
 import { ExperimentsTable } from '@/components/features/experiments/experiments-table';
 import { ExperimentStatusFilter } from '@/components/features/experiments/experiment-status-filter';
-import { useState } from 'react';
-import type { ExperimentStatus } from '@/components/features/experiments/experiment-status-badge';
+import { ExperimentImpactFilter } from '@/components/features/experiments/experiment-impact-filter';
+import type { ExperimentStatus, ExperimentImpact, ExperimentWithStatus } from '@/components/features/experiments/types';
 
 const getExperimentStatus = (startDate: string, endDate: string): ExperimentStatus => {
   const now = new Date();
@@ -34,7 +35,7 @@ export default function Page() {
   const orgContext = useCurrentOrganization();
   const currentOrgId = orgContext!.current.id;
   const [selectedStatuses, setSelectedStatuses] = useState<ExperimentStatus[]>([]);
-  const [selectedImpacts, setSelectedImpacts] = useState<string[]>([]);
+  const [selectedImpacts, setSelectedImpacts] = useState<ExperimentImpact[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
 
@@ -56,8 +57,6 @@ export default function Page() {
     swr: { enabled: !!currentOrgId },
   });
 
-  const statusOrder = ['current', 'upcoming', 'finished'] as const;
-
   const committedExperiments = experimentsData?.items.filter((experiment) => experiment.state === 'committed') || [];
 
   const experimentsWithStatus = committedExperiments.map((experiment) => ({
@@ -65,29 +64,42 @@ export default function Page() {
     status: getExperimentStatus(experiment.design_spec.start_date, experiment.design_spec.end_date),
   }));
 
-  const getCount = (status: string) => experimentsWithStatus.filter((exp) => exp.status === status).length;
+  const matchesStatusFilter = (experiment: ExperimentWithStatus): boolean => {
+    if (selectedStatuses.length === 0) return true;
+    return selectedStatuses.includes(experiment.status);
+  };
 
-  const statusOptions = statusOrder
-    .filter((status) => getCount(status) > 0)
-    .map((status) => ({
-      status,
-    }));
+  const matchesImpactFilter = (experiment: ExperimentWithStatus): boolean => {
+    if (selectedImpacts.length === 0) return true;
+    const experimentImpact = (experiment.impact ?? 'unknown') as ExperimentImpact;
+    return selectedImpacts.includes(experimentImpact);
+  };
 
-  const impactOptions = [
-    { value: 'positive', label: 'Positive Impact', count: 4 },
-    { value: 'neutral', label: 'Neutral Impact', count: 1 },
-    { value: 'negative', label: 'Negative Impact', count: 5 },
-  ];
+  const matchesSearchQuery = (experiment: ExperimentWithStatus): boolean => {
+    if (searchQuery === '') return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      experiment.design_spec.experiment_name.toLowerCase().includes(query) ||
+      experiment.design_spec.description.toLowerCase().includes(query)
+    );
+  };
 
-  const filteredExperiments = experimentsWithStatus.filter((experiment) => {
-    const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(experiment.status);
-    const matchesImpact = selectedImpacts.length === 0 || true;
-    const matchesSearch =
-      experiment.design_spec.experiment_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      experiment.design_spec.description.toLowerCase().includes(searchQuery.toLowerCase());
+  const resetFilters = () => {
+    setSelectedStatuses([]);
+    setSelectedImpacts([]);
+    setSearchQuery('');
+  };
 
-    return matchesStatus && matchesImpact && matchesSearch;
-  });
+  const statusOptions = ['current', 'upcoming', 'finished'].map((status) => ({ status: status as ExperimentStatus }));
+
+  const impactOptions = ['high', 'medium', 'low', 'unclear', 'unknown'].map((impact) => ({ impact: impact as ExperimentImpact }));
+
+  const filteredExperiments = experimentsWithStatus.filter(
+    (experiment) =>
+      matchesStatusFilter(experiment) && matchesImpactFilter(experiment) && matchesSearchQuery(experiment),
+  );
+
+  const filtersActive = selectedStatuses.length > 0 || selectedImpacts.length > 0 || searchQuery !== '';
 
   if (datasourcesError) {
     return <GenericErrorCallout title={'Error with experiments list'} error={datasourcesError} />;
@@ -149,46 +161,48 @@ export default function Page() {
                   <MagnifyingGlassIcon height="16" width="16" />
                 </TextField.Slot>
               </TextField.Root>
-             
+
               <ExperimentStatusFilter
                 statusOptions={statusOptions}
                 value={selectedStatuses}
                 onChange={setSelectedStatuses}
               />
-               {(selectedStatuses.length > 0 || searchQuery !== '') && (
-              <Tooltip content="Reset Filters">
-              <IconButton variant="soft" onClick={() => {
-                setSelectedStatuses([]);
-                setSearchQuery('');
-              }}>
-                <ReloadIcon />
-              </IconButton>
-              </Tooltip>
-            )}
+
+              <ExperimentImpactFilter
+                impactOptions={impactOptions}
+                value={selectedImpacts}
+                onChange={setSelectedImpacts}
+              />
+              {filtersActive && (
+                <Tooltip content="Reset Filters">
+                  <IconButton variant="soft" onClick={resetFilters}>
+                    <ReloadIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
             </Flex>
-          
-             <Flex gap="2">
-                <Tooltip content="Card View">
-                  <IconButton
-                    variant={viewMode === 'card' ? 'solid' : 'soft'}
-                    size="2"
-                    onClick={() => setViewMode('card')}
-                  >
-                    <DashboardIcon />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip content="Table View">
-                  <IconButton
-                    variant={viewMode === 'table' ? 'solid' : 'soft'}
-                    size="2"
-                    onClick={() => setViewMode('table')}
-                  >
-                    <ListBulletIcon />
-                  </IconButton>
-                </Tooltip>
-              </Flex>
-              </Flex>
-     
+
+            <Flex gap="2">
+              <Tooltip content="Card View">
+                <IconButton
+                  variant={viewMode === 'card' ? 'solid' : 'soft'}
+                  size="2"
+                  onClick={() => setViewMode('card')}
+                >
+                  <DashboardIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip content="Table View">
+                <IconButton
+                  variant={viewMode === 'table' ? 'solid' : 'soft'}
+                  size="2"
+                  onClick={() => setViewMode('table')}
+                >
+                  <ListBulletIcon />
+                </IconButton>
+              </Tooltip>
+            </Flex>
+          </Flex>
 
           {filteredExperiments.length === 0 ? (
             <EmptyStateCard

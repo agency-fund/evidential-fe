@@ -1,6 +1,5 @@
 import { Badge } from '@radix-ui/themes';
-
-export type ExperimentStatus = 'current' | 'upcoming' | 'finished';
+import type { ExperimentStatus } from '@/components/features/experiments/types';
 
 interface ExperimentStatusBadgeProps {
   status: ExperimentStatus;

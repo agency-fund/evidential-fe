@@ -1,7 +1,8 @@
 'use client';
 
 import { CheckboxGroup, DropdownMenu, Button, Flex } from '@radix-ui/themes';
-import { ExperimentStatusBadge, type ExperimentStatus } from './experiment-status-badge';
+import { ExperimentStatusBadge } from '@/components/features/experiments/experiment-status-badge';
+import type { ExperimentStatus } from '@/components/features/experiments/types';
 
 interface StatusOption {
   status: ExperimentStatus;
@@ -15,8 +16,7 @@ interface ExperimentStatusFilterProps {
 
 export function ExperimentStatusFilter({ statusOptions, value, onChange }: ExperimentStatusFilterProps) {
   const handleValueChange = (values: string[]) => {
-    const statuses = values as ExperimentStatus[];
-    onChange(statuses);
+    onChange(values as ExperimentStatus[]);
   };
 
   const displayLabel =
