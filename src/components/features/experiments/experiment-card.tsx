@@ -92,21 +92,17 @@ export function ExperimentCard({
               <Text size="2" weight="bold">
                 Hypothesis
               </Text>
-              <Tooltip content={hypothesis}>
                 <Text size="2" truncate>
                   {hypothesis}
                 </Text>
-              </Tooltip>
             </Flex>
             <Flex direction="column" gap="1">
               <Text size="2" weight="bold">
                 Decision
               </Text>
-              <Tooltip content={decision || 'N/A'}>
                 <Text size="2" truncate color={decision ? undefined : 'gray'}>
                   {decision || 'N/A'}
                 </Text>
-              </Tooltip>
             </Flex>
           </Flex>
         </Flex>
