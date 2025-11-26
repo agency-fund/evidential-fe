@@ -36,7 +36,7 @@ export function EditableSelect({ value, options, onSubmit, children, size = '2',
   };
 
   const normalizedOptions = options.map((option) =>
-    typeof option === 'string' ? { label: option.charAt(0).toUpperCase() + option.slice(1), value: option } : option
+    typeof option === 'string' ? { label: option.charAt(0).toUpperCase() + option.slice(1), value: option } : option,
   );
 
   return (
@@ -60,7 +60,7 @@ export function EditableSelect({ value, options, onSubmit, children, size = '2',
                     color={error ? 'red' : undefined}
                     placeholder={placeholder}
                   />
-                  <Select.Content position='popper'>
+                  <Select.Content position="popper">
                     {normalizedOptions.map((option) => (
                       <Select.Item key={option.value} value={option.value}>
                         {option.label}

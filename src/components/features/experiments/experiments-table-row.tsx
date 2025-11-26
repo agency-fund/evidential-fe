@@ -53,7 +53,9 @@ export function ExperimentsTableRow({
         <Table.Cell>
           <ExperimentStatusBadge status={status} />
         </Table.Cell>
-        <Table.Cell>{impact ? <ExperimentImpactBadge impact={impact as ExperimentImpact} /> : <Text color="gray">N/A</Text>}</Table.Cell>
+        <Table.Cell>
+          {impact ? <ExperimentImpactBadge impact={impact as ExperimentImpact} /> : <Text color="gray">N/A</Text>}
+        </Table.Cell>
         <Table.Cell>
           <Flex width="150px">
             <Text truncate>{hypothesis}</Text>

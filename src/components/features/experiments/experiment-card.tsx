@@ -92,17 +92,17 @@ export function ExperimentCard({
               <Text size="2" weight="bold">
                 Hypothesis
               </Text>
-                <Text size="2" truncate>
-                  {hypothesis}
-                </Text>
+              <Text size="2" truncate>
+                {hypothesis}
+              </Text>
             </Flex>
             <Flex direction="column" gap="1">
               <Text size="2" weight="bold">
                 Decision
               </Text>
-                <Text size="2" truncate color={decision ? undefined : 'gray'}>
-                  {decision || 'N/A'}
-                </Text>
+              <Text size="2" truncate color={decision ? undefined : 'gray'}>
+                {decision || 'N/A'}
+              </Text>
             </Flex>
           </Flex>
         </Flex>
