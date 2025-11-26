@@ -16,8 +16,8 @@ export function ExperimentImpactBadge({ impact }: ExperimentImpactBadgeProps) {
   const config = impactConfig[impact];
 
   return (
-        <Badge color={config.color} variant="soft" style={{ cursor: 'default' }}>
-          {config.label}
-        </Badge>
+    <Badge color={config.color} variant="soft" style={{ cursor: 'default' }}>
+      {config.label}
+    </Badge>
   );
 }

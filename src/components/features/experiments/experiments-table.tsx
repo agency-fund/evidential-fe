@@ -33,21 +33,21 @@ const COLUMN_CONFIG: ColumnConfig[] = [
     sortable: true,
     sortKey: 'title',
     sortType: 'string',
-    getValue: (experiment: ExperimentWithStatus) => experiment.design_spec.experiment_name
+    getValue: (experiment: ExperimentWithStatus) => experiment.design_spec.experiment_name,
   },
   {
     label: 'Status',
     sortable: true,
     sortKey: 'status',
     sortType: 'string',
-    getValue: (experiment: ExperimentWithStatus) => experiment.status
+    getValue: (experiment: ExperimentWithStatus) => experiment.status,
   },
   {
     label: 'Impact',
     sortable: true,
     sortKey: 'impact',
     sortType: 'string',
-    getValue: (experiment: ExperimentWithStatus) => experiment.impact
+    getValue: (experiment: ExperimentWithStatus) => experiment.impact,
   },
   { label: 'Hypothesis', sortable: false },
   {
@@ -55,21 +55,21 @@ const COLUMN_CONFIG: ColumnConfig[] = [
     sortable: true,
     sortKey: 'startDate',
     sortType: 'date',
-    getValue: (experiment: ExperimentWithStatus) => experiment.design_spec.start_date
+    getValue: (experiment: ExperimentWithStatus) => experiment.design_spec.start_date,
   },
   {
     label: 'End Date',
     sortable: true,
     sortKey: 'endDate',
     sortType: 'date',
-    getValue: (experiment: ExperimentWithStatus) => experiment.design_spec.end_date
+    getValue: (experiment: ExperimentWithStatus) => experiment.design_spec.end_date,
   },
   {
     label: 'Experiment Type',
     sortable: true,
     sortKey: 'experimentType',
     sortType: 'string',
-    getValue: (experiment: ExperimentWithStatus) => experiment.design_spec.experiment_type
+    getValue: (experiment: ExperimentWithStatus) => experiment.design_spec.experiment_type,
   },
   { label: 'Actions', sortable: false },
 ];
@@ -123,7 +123,7 @@ export function ExperimentsTable({ experiments, organizationId }: ExperimentTabl
       return experiments;
     }
 
-    const column = COLUMN_CONFIG.find(col => col.sortable && col.sortKey === sortColumn);
+    const column = COLUMN_CONFIG.find((col) => col.sortable && col.sortKey === sortColumn);
     if (!column || !('getValue' in column)) {
       return experiments;
     }
@@ -136,9 +136,7 @@ export function ExperimentsTable({ experiments, organizationId }: ExperimentTabl
       if (aValue === undefined) return 1;
       if (bValue === undefined) return -1;
 
-      const comparison = column.sortType === 'date'
-        ? compareDates(aValue, bValue)
-        : compareStrings(aValue, bValue);
+      const comparison = column.sortType === 'date' ? compareDates(aValue, bValue) : compareStrings(aValue, bValue);
 
       return sortDirection === 'asc' ? comparison : -comparison;
     });
@@ -152,23 +150,18 @@ export function ExperimentsTable({ experiments, organizationId }: ExperimentTabl
     <Table.Root variant="surface">
       <Table.Header>
         <Table.Row>
-          {COLUMN_CONFIG.map((column) => (
+          {COLUMN_CONFIG.map((column) =>
             column.sortable ? (
-              <Table.ColumnHeaderCell
-                key={column.label}
-                onClick={() => handleSort(column.sortKey)}
-              >
+              <Table.ColumnHeaderCell key={column.label} onClick={() => handleSort(column.sortKey)}>
                 <Flex align="center" gap="2">
                   <Text wrap="nowrap">{column.label}</Text>
                   {getSortIcon(column.sortKey)}
                 </Flex>
               </Table.ColumnHeaderCell>
             ) : (
-              <Table.ColumnHeaderCell key={column.label}>
-                {column.label}
-              </Table.ColumnHeaderCell>
-            )
-          ))}
+              <Table.ColumnHeaderCell key={column.label}>{column.label}</Table.ColumnHeaderCell>
+            ),
+          )}
         </Table.Row>
       </Table.Header>
       <Table.Body>

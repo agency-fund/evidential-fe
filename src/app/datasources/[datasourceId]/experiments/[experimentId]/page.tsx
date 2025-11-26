@@ -308,7 +308,7 @@ export default function ExperimentViewPage() {
           </Callout.Root>
         )}
 
-          {shouldShowDecisionReminder && (
+        {shouldShowDecisionReminder && (
           <Callout.Root color="orange" style={{ width: '100%' }}>
             <Callout.Icon>
               <InfoCircledIcon />
@@ -330,14 +330,9 @@ export default function ExperimentViewPage() {
           </Flex>
           <Separator orientation="vertical" />
           <ExperimentStatusBadge status={getExperimentStatus(start_date, end_date)} />
-         
-              <Separator orientation="vertical" />
-              <EditExperimentImpact
-                value={impact}
-                onSubmit={(value) => updateExperiment({ impact: value })}
-                size="1"
-              />
-          
+
+          <Separator orientation="vertical" />
+          <EditExperimentImpact value={impact} onSubmit={(value) => updateExperiment({ impact: value })} size="1" />
         </Flex>
         <Flex gap="4" align="center">
           <ExperimentTypeBadge type={design_spec.experiment_type} />
@@ -593,10 +588,13 @@ export default function ExperimentViewPage() {
             </Tabs.Root>
           </Flex>
         </SectionCard>
-      
-         <SectionCard title="Decision">
+
+        <SectionCard title="Decision">
           <EditableTextArea value={decision || ''} onSubmit={(value) => updateExperiment({ decision: value })} size="2">
-            <ReadMoreText text={decision || 'Briefly describe the key takeaway and decision take from this experiment'} maxWords={30} />
+            <ReadMoreText
+              text={decision || 'Briefly describe the key takeaway and decision take from this experiment'}
+              maxWords={30}
+            />
           </EditableTextArea>
         </SectionCard>
       </Flex>

@@ -16,9 +16,7 @@ export function ExperimentStatusFilter({ value, onChange }: ExperimentStatusFilt
     onChange(values as ExperimentStatus[]);
   };
 
-  const displayLabel =
-    value.length === 0
-      ? 'Status' : `Status (${value.length})`;
+  const displayLabel = value.length === 0 ? 'Status' : `Status (${value.length})`;
 
   return (
     <DropdownMenu.Root>

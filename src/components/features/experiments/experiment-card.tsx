@@ -1,7 +1,6 @@
 'use client';
 import { Card, Flex, Heading, IconButton, Separator, Text, Tooltip } from '@radix-ui/themes';
 import { CalendarIcon, EyeOpenIcon, LightningBoltIcon, FileTextIcon } from '@radix-ui/react-icons';
-import { ReadMoreText } from '@/components/ui/read-more-text';
 import { ExperimentActionsMenu } from '@/components/features/experiments/experiment-actions-menu';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
@@ -11,7 +10,6 @@ import type { ExperimentStatus, ExperimentImpact } from '@/components/features/e
 import { formatIsoDateLocal } from '@/services/date-utils';
 import Link from 'next/link';
 
-
 interface ExperimentCardProps {
   title: string;
   hypothesis: string;
@@ -20,6 +18,7 @@ interface ExperimentCardProps {
   endDate: string;
   status: ExperimentStatus;
   impact?: ExperimentImpact | string;
+  decision?: string;
   datasourceId: string;
   designUrl?: string;
   experimentId: string;
@@ -34,6 +33,7 @@ export function ExperimentCard({
   endDate,
   status,
   impact,
+  decision,
   datasourceId,
   designUrl,
   experimentId,
@@ -75,11 +75,11 @@ export function ExperimentCard({
             </Text>
           </Flex>
 
-          <Flex align="center" gap='2'>
+          <Flex align="center" gap="2">
             <ExperimentTypeBadge type={type} />
             {impact && (
               <>
-                <Separator orientation='vertical'/>
+                <Separator orientation="vertical" />
                 <ExperimentImpactBadge impact={impact as ExperimentImpact} />
               </>
             )}
@@ -88,10 +88,26 @@ export function ExperimentCard({
           <Separator size="4" />
 
           <Flex direction="column" gap="3">
-            <Text size="2" weight="bold">
-              Hypothesis
-            </Text>
-            <ReadMoreText text={hypothesis} maxWords={30} />
+            <Flex direction="column" gap="1">
+              <Text size="2" weight="bold">
+                Hypothesis
+              </Text>
+              <Tooltip content={hypothesis}>
+                <Text size="2" truncate>
+                  {hypothesis}
+                </Text>
+              </Tooltip>
+            </Flex>
+            <Flex direction="column" gap="1">
+              <Text size="2" weight="bold">
+                Decision
+              </Text>
+              <Tooltip content={decision || 'N/A'}>
+                <Text size="2" truncate color={decision ? undefined : 'gray'}>
+                  {decision || 'N/A'}
+                </Text>
+              </Tooltip>
+            </Flex>
           </Flex>
         </Flex>
 

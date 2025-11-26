@@ -10,7 +10,7 @@ import {
   EditableCancelTrigger,
 } from '@/components/radix-custom/editable';
 
-interface EditableDropdownProps {
+interface EditableSelectProps {
   value: string;
   options: string[] | { label: string; value: string }[];
   onSubmit: (value: string) => Promise<void> | void;
@@ -19,7 +19,7 @@ interface EditableDropdownProps {
   placeholder?: string;
 }
 
-export function EditableDropdown({ value, options, onSubmit, children, size = '2', placeholder }: EditableDropdownProps) {
+export function EditableSelect({ value, options, onSubmit, children, size = '2', placeholder }: EditableSelectProps) {
   const [error, setError] = useState<boolean>();
 
   const handleSubmit = async (value: string) => {

@@ -7,7 +7,7 @@ import type { ExperimentStatus, ExperimentImpact } from '@/components/features/e
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { formatIsoDateLocal } from '@/services/date-utils';
-import { FileTextIcon} from '@radix-ui/react-icons';
+import { FileTextIcon } from '@radix-ui/react-icons';
 import Link from 'next/link';
 
 interface ExperimentTableRowProps {
@@ -36,7 +36,6 @@ export function ExperimentsTableRow({
   designUrl,
   experimentId,
 }: ExperimentTableRowProps) {
-
   return (
     <>
       <Table.Row>
@@ -52,9 +51,7 @@ export function ExperimentsTableRow({
         <Table.Cell>
           <ExperimentStatusBadge status={status} />
         </Table.Cell>
-        <Table.Cell>
-          {impact && <ExperimentImpactBadge impact={impact as ExperimentImpact} />}
-        </Table.Cell>
+        <Table.Cell>{impact && <ExperimentImpactBadge impact={impact as ExperimentImpact} />}</Table.Cell>
         <Table.Cell>
           <Flex width="150px">
             <Text truncate>{hypothesis}</Text>
@@ -69,12 +66,12 @@ export function ExperimentsTableRow({
           <Flex gap="2">
             <DownloadAssignmentsCsvButton datasourceId={datasourceId} experimentId={experimentId} />
             {designUrl && (
-                <Tooltip content="View design document">
-              <IconButton variant="soft" color="blue" size="2" asChild>
-                <Link href={designUrl} target="_blank" rel="noopener noreferrer">
-                  <FileTextIcon width="16" height="16" />
-                </Link>
-              </IconButton>
+              <Tooltip content="View design document">
+                <IconButton variant="soft" color="blue" size="2" asChild>
+                  <Link href={designUrl} target="_blank" rel="noopener noreferrer">
+                    <FileTextIcon width="16" height="16" />
+                  </Link>
+                </IconButton>
               </Tooltip>
             )}
           </Flex>

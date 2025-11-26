@@ -145,15 +145,9 @@ export default function Page() {
                 </TextField.Slot>
               </TextField.Root>
 
-              <ExperimentStatusFilter
-                value={selectedStatuses}
-                onChange={setSelectedStatuses}
-              />
+              <ExperimentStatusFilter value={selectedStatuses} onChange={setSelectedStatuses} />
 
-              <ExperimentImpactFilter
-                value={selectedImpacts}
-                onChange={setSelectedImpacts}
-              />
+              <ExperimentImpactFilter value={selectedImpacts} onChange={setSelectedImpacts} />
               {filtersActive && (
                 <Tooltip content="Reset Filters">
                   <IconButton variant="soft" onClick={resetFilters}>
@@ -211,6 +205,7 @@ export default function Page() {
                     organizationId={currentOrgId}
                     status={experiment.status}
                     impact={experiment.impact}
+                    decision={experiment.decision}
                   />
                 );
               })}

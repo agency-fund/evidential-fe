@@ -16,9 +16,7 @@ export function ExperimentImpactFilter({ value, onChange }: ExperimentImpactFilt
     onChange(values as ExperimentImpact[]);
   };
 
-  const displayLabel =
-    value.length === 0
-      ? 'Impact' : `Impact (${value.length})`;
+  const displayLabel = value.length === 0 ? 'Impact' : `Impact (${value.length})`;
 
   return (
     <DropdownMenu.Root>

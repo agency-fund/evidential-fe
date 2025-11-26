@@ -17,7 +17,7 @@ export const ExperimentTypeBadge = ({ type }: { type: string }) => {
     name: type,
     tooltipName: type,
     color: 'red' as const,
-    variant: 'outline' as const
+    variant: 'outline' as const,
   };
 
   return (

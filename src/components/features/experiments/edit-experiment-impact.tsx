@@ -1,6 +1,6 @@
 import { ExperimentImpactBadge } from '@/components/features/experiments/experiment-impact-badge';
 import type { ExperimentImpact } from '@/components/features/experiments/types';
-import { EditableDropdown } from '@/components/ui/inputs/editable-dropdown';
+import { EditableSelect } from '@/components/ui/inputs/editable-select';
 import { Flex, Text } from '@radix-ui/themes';
 
 const IMPACT_OPTIONS: { label: string; value: ExperimentImpact }[] = [
@@ -20,7 +20,13 @@ export function EditExperimentImpact({ value, onSubmit, size = '2' }: EditExperi
   const normalizedValue = value || '';
 
   return (
-    <EditableDropdown value={normalizedValue} options={IMPACT_OPTIONS} onSubmit={onSubmit} size={size} placeholder="Choose impact">
+    <EditableSelect
+      value={normalizedValue}
+      options={IMPACT_OPTIONS}
+      onSubmit={onSubmit}
+      size={size}
+      placeholder="Choose impact"
+    >
       <Flex align="center">
         {value ? (
           <ExperimentImpactBadge impact={value as ExperimentImpact} />
@@ -30,6 +36,6 @@ export function EditExperimentImpact({ value, onSubmit, size = '2' }: EditExperi
           </Text>
         )}
       </Flex>
-    </EditableDropdown>
+    </EditableSelect>
   );
 }
