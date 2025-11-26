@@ -77,8 +77,12 @@ export function ExperimentCard({
 
           <Flex align="center" gap='2'>
             <ExperimentTypeBadge type={type} />
-            <Separator orientation='vertical'/>
-                 <ExperimentImpactBadge impact={impact} />
+            {impact && (
+              <>
+                <Separator orientation='vertical'/>
+                <ExperimentImpactBadge impact={impact as ExperimentImpact} />
+              </>
+            )}
           </Flex>
 
           <Separator size="4" />

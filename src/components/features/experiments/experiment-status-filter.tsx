@@ -4,17 +4,14 @@ import { CheckboxGroup, DropdownMenu, Button, Flex } from '@radix-ui/themes';
 import { ExperimentStatusBadge } from '@/components/features/experiments/experiment-status-badge';
 import type { ExperimentStatus } from '@/components/features/experiments/types';
 
-interface StatusOption {
-  status: ExperimentStatus;
-}
+const STATUS_OPTIONS: ExperimentStatus[] = ['current', 'upcoming', 'finished'];
 
 interface ExperimentStatusFilterProps {
-  statusOptions: StatusOption[];
   value: ExperimentStatus[];
   onChange: (selectedStatuses: ExperimentStatus[]) => void;
 }
 
-export function ExperimentStatusFilter({ statusOptions, value, onChange }: ExperimentStatusFilterProps) {
+export function ExperimentStatusFilter({ value, onChange }: ExperimentStatusFilterProps) {
   const handleValueChange = (values: string[]) => {
     onChange(values as ExperimentStatus[]);
   };
@@ -34,10 +31,10 @@ export function ExperimentStatusFilter({ statusOptions, value, onChange }: Exper
       <DropdownMenu.Content>
         <CheckboxGroup.Root value={value} onValueChange={handleValueChange}>
           <Flex direction="column" gap="3" px="1" py="2">
-            {statusOptions.map((option) => (
-              <CheckboxGroup.Item key={option.status} value={option.status}>
+            {STATUS_OPTIONS.map((status) => (
+              <CheckboxGroup.Item key={status} value={status}>
                 <Flex gap="2" align="center">
-                  <ExperimentStatusBadge status={option.status} />
+                  <ExperimentStatusBadge status={status} />
                 </Flex>
               </CheckboxGroup.Item>
             ))}

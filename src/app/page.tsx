@@ -15,20 +15,7 @@ import { ExperimentsTable } from '@/components/features/experiments/experiments-
 import { ExperimentStatusFilter } from '@/components/features/experiments/experiment-status-filter';
 import { ExperimentImpactFilter } from '@/components/features/experiments/experiment-impact-filter';
 import type { ExperimentStatus, ExperimentImpact, ExperimentWithStatus } from '@/components/features/experiments/types';
-
-const getExperimentStatus = (startDate: string, endDate: string): ExperimentStatus => {
-  const now = new Date();
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-
-  if (now < start) {
-    return 'upcoming';
-  } else if (now > end) {
-    return 'finished';
-  } else {
-    return 'current';
-  }
-};
+import { getExperimentStatus } from '@/services/experiment-utils';
 
 export default function Page() {
   const router = useRouter();
@@ -71,8 +58,8 @@ export default function Page() {
 
   const matchesImpactFilter = (experiment: ExperimentWithStatus): boolean => {
     if (selectedImpacts.length === 0) return true;
-    const experimentImpact = (experiment.impact || 'unknown') as ExperimentImpact;
-    return selectedImpacts.includes(experimentImpact);
+    if (!experiment.impact) return false;
+    return selectedImpacts.includes(experiment.impact as ExperimentImpact);
   };
 
   const matchesSearchQuery = (experiment: ExperimentWithStatus): boolean => {
@@ -89,10 +76,6 @@ export default function Page() {
     setSelectedImpacts([]);
     setSearchQuery('');
   };
-
-  const statusOptions = ['current', 'upcoming', 'finished'].map((status) => ({ status: status as ExperimentStatus }));
-
-  const impactOptions = ['high', 'medium', 'low', 'unclear', 'unknown'].map((impact) => ({ impact: impact as ExperimentImpact }));
 
   const filteredExperiments = experimentsWithStatus.filter(
     (experiment) =>
@@ -163,13 +146,11 @@ export default function Page() {
               </TextField.Root>
 
               <ExperimentStatusFilter
-                statusOptions={statusOptions}
                 value={selectedStatuses}
                 onChange={setSelectedStatuses}
               />
 
               <ExperimentImpactFilter
-                impactOptions={impactOptions}
                 value={selectedImpacts}
                 onChange={setSelectedImpacts}
               />
@@ -229,6 +210,7 @@ export default function Page() {
                     experimentId={experiment.experiment_id}
                     organizationId={currentOrgId}
                     status={experiment.status}
+                    impact={experiment.impact}
                   />
                 );
               })}

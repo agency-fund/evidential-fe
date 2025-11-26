@@ -53,7 +53,7 @@ export function ExperimentsTableRow({
           <ExperimentStatusBadge status={status} />
         </Table.Cell>
         <Table.Cell>
-          <ExperimentImpactBadge impact={impact} />
+          {impact && <ExperimentImpactBadge impact={impact as ExperimentImpact} />}
         </Table.Cell>
         <Table.Cell>
           <Flex width="150px">

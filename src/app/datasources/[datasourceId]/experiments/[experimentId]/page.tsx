@@ -1,5 +1,5 @@
 'use client';
-import { Badge, Box, Flex, Heading, Separator, Tabs, Text, Tooltip, Select } from '@radix-ui/themes';
+import { Badge, Box, Flex, Heading, Separator, Tabs, Text, Tooltip, Select, Callout } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
 import { CalendarIcon, CodeIcon, InfoCircledIcon, PersonIcon, FileTextIcon } from '@radix-ui/react-icons';
 import {
@@ -26,12 +26,15 @@ import { useState } from 'react';
 import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
 import { prettyJSON } from '@/services/json-utils';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
+import { ExperimentStatusBadge } from '@/components/features/experiments/experiment-status-badge';
 import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
+import { getExperimentStatus } from '@/services/experiment-utils';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { MdeBadge } from '@/components/features/experiments/mde-badge';
 import { EditableTextField } from '@/components/ui/inputs/editable-text-field';
 import { EditableDateField } from '@/components/ui/inputs/editable-date-field';
 import { EditableTextArea } from '@/components/ui/inputs/editable-text-area';
+import { EditExperimentImpact } from '@/components/features/experiments/edit-experiment-impact';
 import { ArmsAndAllocationsTable } from '@/components/features/experiments/arms-and-allocations-table';
 import { IntegrationGuideDialog } from '@/components/features/experiments/integration-guide-dialog';
 import { ReadMoreText } from '@/components/ui/read-more-text';
@@ -224,7 +227,7 @@ export default function ExperimentViewPage() {
     return <Text>No experiment data found</Text>;
   }
 
-  const { design_spec, assign_summary } = experiment;
+  const { design_spec, assign_summary, decision, impact } = experiment;
   const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
   const { alpha, power } = getAlphaAndPower(experiment); // undefined for non-frequentist experiments
 
@@ -244,6 +247,43 @@ export default function ExperimentViewPage() {
     selectedMetricName,
   );
 
+  // Determine if we should show impact reminder callout
+  const now = new Date();
+  now.setHours(0, 0, 0, 0); // Start of today in local timezone
+
+  const [year, month, day] = end_date.split('T')[0].split('-').map(Number);
+  const endDateTime = new Date(year, month - 1, day); // Create date in local timezone
+
+  const daysUntilEnd = Math.ceil((endDateTime.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  const isFinished = daysUntilEnd < 0;
+  const isEndingToday = daysUntilEnd === 0;
+  const isFinishingSoon = daysUntilEnd > 0 && daysUntilEnd <= 3;
+
+  const shouldShowImpactReminder = !impact && (isFinished || isEndingToday || isFinishingSoon);
+  const shouldShowDecisionReminder = !decision && (isFinished || isEndingToday || isFinishingSoon);
+
+  let impactReminderMessage = '';
+  if (shouldShowImpactReminder) {
+    if (isFinished) {
+      impactReminderMessage = 'This experiment has concluded. Please choose an impact level below.';
+    } else if (isEndingToday) {
+      impactReminderMessage = 'This experiment ends today. Please choose an impact level below.';
+    } else if (isFinishingSoon) {
+      impactReminderMessage = `This experiment ends in ${daysUntilEnd} ${daysUntilEnd === 1 ? 'day' : 'days'}. Please choose an impact level below`;
+    }
+  }
+
+  let decisionReminderMessage = '';
+  if (shouldShowDecisionReminder) {
+    if (isFinished) {
+      decisionReminderMessage = 'This experiment has concluded. Please document your decision below.';
+    } else if (isEndingToday) {
+      decisionReminderMessage = 'This experiment ends today. Please document your decision below.';
+    } else if (isFinishingSoon) {
+      decisionReminderMessage = `This experiment ends in ${daysUntilEnd} ${daysUntilEnd === 1 ? 'day' : 'days'}. Please document your decision below.`;
+    }
+  }
+
   return (
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
@@ -259,14 +299,25 @@ export default function ExperimentViewPage() {
           />
         </Flex>
 
+        {shouldShowImpactReminder && (
+          <Callout.Root color="orange" style={{ width: '100%' }}>
+            <Callout.Icon>
+              <InfoCircledIcon />
+            </Callout.Icon>
+            <Callout.Text>{impactReminderMessage}</Callout.Text>
+          </Callout.Root>
+        )}
+
+          {shouldShowDecisionReminder && (
+          <Callout.Root color="orange" style={{ width: '100%' }}>
+            <Callout.Icon>
+              <InfoCircledIcon />
+            </Callout.Icon>
+            <Callout.Text>{decisionReminderMessage}</Callout.Text>
+          </Callout.Root>
+        )}
+
         <Flex gap="4" align="center">
-          <ExperimentTypeBadge type={design_spec.experiment_type} />
-          <Separator orientation="vertical" />
-          <ParticipantTypeBadge
-            datasourceId={experiment.datasource_id}
-            participantType={experiment.design_spec.participant_type}
-          />
-          <Separator orientation="vertical" />
           <Flex align="center" gap="2">
             <CalendarIcon />
             <EditableDateField
@@ -278,6 +329,24 @@ export default function ExperimentViewPage() {
             <EditableDateField value={end_date} onSubmit={(value) => updateExperiment({ end_date: value })} size="1" />
           </Flex>
           <Separator orientation="vertical" />
+          <ExperimentStatusBadge status={getExperimentStatus(start_date, end_date)} />
+         
+              <Separator orientation="vertical" />
+              <EditExperimentImpact
+                value={impact}
+                onSubmit={(value) => updateExperiment({ impact: value })}
+                size="1"
+              />
+          
+        </Flex>
+        <Flex gap="4" align="center">
+          <ExperimentTypeBadge type={design_spec.experiment_type} />
+          <Separator orientation="vertical" />
+          <ParticipantTypeBadge
+            datasourceId={experiment.datasource_id}
+            participantType={experiment.design_spec.participant_type}
+          />
+          <Separator orientation="vertical" />
           <Flex align="center" gap="2">
             <FileTextIcon />
             <EditableTextField
@@ -288,7 +357,8 @@ export default function ExperimentViewPage() {
               {design_url ? (
                 <Link href={design_url} target="_blank" rel="noopener noreferrer">
                   <Text color="blue" style={{ textDecoration: 'underline' }}>
-                    {design_url}
+                    {design_url.slice(0, 30)}
+                    {design_url.length > 30 ? '...' : ''}
                   </Text>
                 </Link>
               ) : (
@@ -522,6 +592,12 @@ export default function ExperimentViewPage() {
               </Box>
             </Tabs.Root>
           </Flex>
+        </SectionCard>
+      
+         <SectionCard title="Decision">
+          <EditableTextArea value={decision || ''} onSubmit={(value) => updateExperiment({ decision: value })} size="2">
+            <ReadMoreText text={decision || 'Briefly describe the key takeaway and decision take from this experiment'} maxWords={30} />
+          </EditableTextArea>
         </SectionCard>
       </Flex>
     </Flex>
