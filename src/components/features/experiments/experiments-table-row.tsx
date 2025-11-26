@@ -13,6 +13,7 @@ import Link from 'next/link';
 interface ExperimentTableRowProps {
   title: string;
   hypothesis: string;
+  decision?: string;
   type: string;
   status: ExperimentStatus;
   impact?: ExperimentImpact | string;
@@ -27,6 +28,7 @@ interface ExperimentTableRowProps {
 export function ExperimentsTableRow({
   title,
   hypothesis,
+  decision,
   type,
   status,
   impact,
@@ -51,10 +53,17 @@ export function ExperimentsTableRow({
         <Table.Cell>
           <ExperimentStatusBadge status={status} />
         </Table.Cell>
-        <Table.Cell>{impact && <ExperimentImpactBadge impact={impact as ExperimentImpact} />}</Table.Cell>
+        <Table.Cell>{impact ? <ExperimentImpactBadge impact={impact as ExperimentImpact} /> : <Text color="gray">N/A</Text>}</Table.Cell>
         <Table.Cell>
           <Flex width="150px">
             <Text truncate>{hypothesis}</Text>
+          </Flex>
+        </Table.Cell>
+        <Table.Cell>
+          <Flex width="150px">
+            <Text truncate color={decision ? undefined : 'gray'}>
+              {decision || 'N/A'}
+            </Text>
           </Flex>
         </Table.Cell>
         <Table.Cell>{formatIsoDateLocal(startDate)}</Table.Cell>

@@ -50,6 +50,7 @@ const COLUMN_CONFIG: ColumnConfig[] = [
     getValue: (experiment: ExperimentWithStatus) => experiment.impact,
   },
   { label: 'Hypothesis', sortable: false },
+  { label: 'Decision', sortable: false },
   {
     label: 'Start Date',
     sortable: true,
@@ -170,6 +171,7 @@ export function ExperimentsTable({ experiments, organizationId }: ExperimentTabl
             key={experiment.experiment_id}
             title={experiment.design_spec.experiment_name}
             hypothesis={experiment.design_spec.description}
+            decision={experiment.decision}
             type={experiment.design_spec.experiment_type}
             status={experiment.status}
             impact={experiment.impact}
