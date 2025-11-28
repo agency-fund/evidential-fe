@@ -154,10 +154,9 @@ export default function ExperimentViewPage() {
           });
 
           setAnalysisHistory(history);
-          // No need to recompute CI bounds here since we don't have live analysis data yet and don't allow refreshing.
           // If we're not viewing real data, set the selected analysis to the most recent snapshot
           if (selectedAnalysisState.data === undefined) {
-            setSelectedAnalysisAndMetrics(history[0]);
+            setSelectedAnalysisAndMetrics(history[0], selectedMetricName, history);
           }
         },
         onError: async () => {
@@ -176,7 +175,11 @@ export default function ExperimentViewPage() {
     },
   });
 
-  const setSelectedAnalysisAndMetrics = (analysis: AnalysisState, forMetricName: string | undefined = undefined) => {
+  const setSelectedAnalysisAndMetrics = (
+    analysis: AnalysisState,
+    forMetricName: string | undefined = undefined,
+    historyOverride: AnalysisState[] | undefined = undefined,
+  ) => {
     setSelectedAnalysisState(analysis);
     if (!isFrequentist(analysis.data)) {
       setSelectedMetricAnalysis(null);
@@ -193,11 +196,16 @@ export default function ExperimentViewPage() {
     // Recompute bounds if the metric changed
     if (selectedMetricName !== newMetricName) {
       setSelectedMetricName(newMetricName);
-      // check if the selection is 'live' and use it since the state may not have been updated yet.
-      const bounds = computeBoundsForMetric(newMetricName, [
-        analysis.key === 'live' ? analysis : liveAnalysis,
-        ...analysisHistory,
-      ]);
+
+      // First make a copy since we may mutate contents by adding live data.
+      const snapshotsToUse = [...(historyOverride || analysisHistory)];
+      // Include the live analysis if it has data.
+      if (analysis.key === 'live' && analysis.data) {
+        snapshotsToUse.push(analysis);
+      } else if (liveAnalysis.data) {
+        snapshotsToUse.push(liveAnalysis);
+      }
+      const bounds = computeBoundsForMetric(newMetricName, snapshotsToUse);
       setCiBounds(bounds);
     }
     setSelectedMetricAnalysis(newMetric);
@@ -483,9 +491,17 @@ export default function ExperimentViewPage() {
                       />
                     )}
 
-                    {isLoadingLiveAnalysis && <XSpinner message="Loading live analysis..." />}
+                    {isLoadingLiveAnalysis && (
+                      <Flex justify="center">
+                        <XSpinner message="Loading live analysis..." />
+                      </Flex>
+                    )}
 
-                    {isLoadingHistory && <XSpinner message="Loading historical analyses..." />}
+                    {isLoadingHistory && (
+                      <Flex justify="center">
+                        <XSpinner message="Loading historical analyses..." />
+                      </Flex>
+                    )}
 
                     {!isLoadingLiveAnalysis && selectedAnalysisState.data && (
                       <ForestPlot

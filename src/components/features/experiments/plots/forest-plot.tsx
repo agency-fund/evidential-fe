@@ -1,6 +1,6 @@
 'use client';
 import { ExclamationTriangleIcon, InfoCircledIcon } from '@radix-ui/react-icons';
-import { Box, Callout, Card, Flex, Text } from '@radix-ui/themes';
+import { Box, Callout, Card, Flex, Heading, Text } from '@radix-ui/themes';
 import {
   CartesianGrid,
   ResponsiveContainer,
@@ -22,6 +22,8 @@ import {
   DEFAULT_POINT_COLOR,
   POSITIVE_COLOR,
   NEGATIVE_COLOR,
+  POSITIVE_LIGHT_COLOR,
+  NEGATIVE_LIGHT_COLOR,
 } from './forest-plot-utils';
 
 // Color constants
@@ -29,8 +31,10 @@ const COLORS = {
   DEFAULT: DEFAULT_POINT_COLOR,
   DEFAULT_CI: CONTROL_COLOR,
   BASELINE: BASELINE_INDICATOR_COLOR,
-  POSITIVE: POSITIVE_COLOR,
-  NEGATIVE: NEGATIVE_COLOR,
+  POSITIVE_DIFF: POSITIVE_LIGHT_COLOR,
+  POSITIVE_CI: POSITIVE_COLOR,
+  NEGATIVE_DIFF: NEGATIVE_LIGHT_COLOR,
+  NEGATIVE_CI: NEGATIVE_COLOR,
 } as const;
 
 interface ForestPlotProps {
@@ -81,16 +85,24 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   if (!active || !payload || !payload.length) return null;
   const data = payload[0].payload;
   if (isFrequentistPayload(data)) {
-    const percentChange = (((data.absEffect - data.baselineEffect) / data.baselineEffect) * 100).toFixed(1);
     return (
       <Card style={{ padding: '8px' }}>
-        <Flex direction="column" gap="2">
-          <Text weight="bold">{data.armName}</Text>
-          <Text>Effect: {data.absEffect.toFixed(2)}</Text>
-          {data.isBaseline ? null : <Text>vs baseline: {percentChange}%</Text>}
-          <Text>
-            95% CI: [{data.absCI95Lower.toFixed(2)}, {data.absCI95Upper.toFixed(2)}]
-          </Text>
+        <Text weight="bold">{data.armName}</Text>
+        <Flex direction="row" gap="2">
+          <Flex direction="column" gap="2" align="end">
+            <Text>Mean: </Text>
+            <Text>Difference: </Text>
+            <Text>95% CI: </Text>
+          </Flex>
+          <Flex direction="column" gap="2">
+            <Text>{data.absEffect.toFixed(2)}</Text>
+            <Text>
+              {data.absDifference.toFixed(2)} {data.isBaseline ? null : `(${data.relEffectPct.toFixed(1)}%)`}
+            </Text>
+            <Text>
+              [{data.ci95Lower.toFixed(2)}, {data.ci95Upper.toFixed(2)}]
+            </Text>
+          </Flex>
         </Flex>
       </Card>
     );
@@ -126,12 +138,13 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
   // Flatten effect sizes into array of CI bounds for axis calculation
   const xAxisValues =
     effectSizes !== undefined
-      ? effectSizes.flatMap((d) => [d.absCI95Lower, d.absCI95Upper])
+      ? effectSizes.flatMap((d) => [d.ci95Lower, d.ci95Upper])
       : banditEffects!.flatMap((d) => [
           Math.min(d.postPredabsCI95Lower, d.priorPredabsCI95Lower),
           Math.max(d.postPredabsCI95Upper, d.priorPredabsCI95Upper),
         ]);
   const [minX, maxX] = computeAxisBounds(xAxisValues, minXProp, maxXProp);
+
   // Space 3 ticks evenly across the domain, but filter out duplicates,
   // which can occur when the effect is 0.
   const xGridPoints = [0, 1, 2, 3, 4]
@@ -197,13 +210,16 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
         ))}
 
         <Box height={`${plotHeightPx}px`}>
+          <Heading size="2" align="center">
+            Difference from {effectSizes[0].armName}
+          </Heading>
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-              {/* Supply our own coordinates generator since default rendering is off for ratio metrics */}
+              {/* Supply our own coordinates generator since default rendering is off for proportion metrics */}
               <CartesianGrid strokeDasharray="3 3" verticalCoordinatesGenerator={scaleXGridPoints} />
               <XAxis
                 type="number"
-                dataKey="absEffect"
+                dataKey="absDifference"
                 interval="preserveStartEnd"
                 scale="linear"
                 domain={[minX, maxX]}
@@ -218,38 +234,36 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                       : value.toFixed(2)
                 }
               />
+              {/* Use the left y-axis to display arm names */}
               <YAxis
                 type="category"
                 domain={effectSizes.map((e, i) => i)}
-                // hide={true} - use ticks for arm names
                 width={yLeftAxisWidthPx}
                 style={commonAxisStyle}
                 tickFormatter={(index) => {
                   const name = index >= 0 && index < effectSizes.length ? effectSizes[index].armName : '';
                   return truncateLabel(name);
                 }}
-                allowDataOverflow={true} // bit of a hack since the ErrorBar is internally messing with the y-axis domain
+                allowDataOverflow={true}
               />
+              {/* Use the right y-axis to display differences from the baseline and p-values */}
               <YAxis
                 yAxisId="stats"
                 type="category"
                 orientation="right"
-                // work with an index into our different effect sizes
                 domain={effectSizes.map((e, i) => i)}
                 width={yRightAxisWidthPx}
-                tick={(e) => {
+                tick={(props) => {
                   const {
-                    payload: { value },
-                  } = e;
-                  const armData = effectSizes[value];
+                    payload: { value: effectSizesIndex },
+                  } = props;
+                  const armData = effectSizes[effectSizesIndex];
 
                   let percentChangeText = '';
                   if (!armData.isBaseline) {
-                    const rawPercentChange =
-                      ((armData.absEffect - armData.baselineEffect) / armData.baselineEffect) * 100;
                     // Handle cases where baselineEffect is 0 or very small to avoid Infinity or NaN
-                    if (isFinite(rawPercentChange)) {
-                      percentChangeText = `Δ = ${rawPercentChange.toFixed(1)}%`;
+                    if (isFinite(armData.absDifference)) {
+                      percentChangeText = `Δ = ${armData.absDifference.toFixed(1)}`;
                     } else {
                       percentChangeText = 'change: N/A';
                     }
@@ -258,8 +272,8 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                   const pValueText = `p = ${armData.pValue !== null ? armData.pValue.toFixed(3) : 'N/A'}`;
 
                   const commonRightAxisTextProps = {
-                    x: e.x,
-                    textAnchor: e.textAnchor,
+                    x: props.x,
+                    textAnchor: props.textAnchor,
                     // Only bold/black if significant AND not baseline arm
                     fill: armData.significant && !armData.isBaseline ? 'black' : undefined,
                     fontWeight: armData.significant && !armData.isBaseline ? 'bold' : undefined,
@@ -270,7 +284,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                       <text
                         {...commonRightAxisTextProps}
                         style={commonAxisStyle}
-                        y={e.y}
+                        y={props.y}
                         // dy shift here and below to align the two lines of text around the tick mark better
                         dy={!armData.isBaseline ? '-8px' : '0'}
                         dominantBaseline="middle"
@@ -281,7 +295,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                         {...commonRightAxisTextProps}
                         // Purposely smaller font size for the p-value
                         style={{ ...commonAxisStyle, fontSize: '12px' }}
-                        y={e.y}
+                        y={props.y}
                         dy={!armData.isBaseline ? '8px' : '0'}
                         dominantBaseline="middle"
                       >
@@ -295,78 +309,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
 
               <Tooltip content={<CustomTooltip />} />
 
-              {/* Confidence intervals - place under points */}
-              <Scatter
-                data={effectSizes}
-                fill="none"
-                // Draw a custom line for CIs since ErrorBars don't give us enough control
-                shape={(props: unknown) => {
-                  const shapeProps = props as CustomShapeProps;
-                  // Always return an element even if empty.
-                  if (!shapeProps.payload || !shapeProps.xAxis?.width) return <g />;
-
-                  const { ci95, significant, effect, isBaseline } = shapeProps.payload as EffectSizeData;
-                  const {
-                    cx: centerX,
-                    cy: centerY,
-                    xAxis: { width: xAxisWidth },
-                  } = shapeProps;
-
-                  // Determine stroke color based on significance and direction
-                  let strokeColor: string = COLORS.DEFAULT_CI;
-                  if (significant && !isBaseline) {
-                    strokeColor = effect > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
-                  }
-                  return isNaN(ci95) ? (
-                    <g />
-                  ) : (
-                    <line
-                      x1={(centerX || 0) - scaleHalfIntervalToViewport(ci95, xAxisWidth)}
-                      y1={centerY}
-                      x2={(centerX || 0) + scaleHalfIntervalToViewport(ci95, xAxisWidth)}
-                      y2={centerY}
-                      stroke={strokeColor}
-                      strokeWidth={5}
-                      strokeLinecap="round"
-                    />
-                  );
-                }}
-              >
-                {/* <ErrorBar dataKey="ci95" width={0} strokeWidth={10} stroke={"red"} opacity={0.2} direction="x"/> */}
-              </Scatter>
-
-              {/* All arms */}
-              <Scatter
-                data={effectSizes}
-                shape={(props: CustomShapeProps) => {
-                  // Always return an element even if empty.
-                  if (!props.payload) return <g />;
-
-                  const { significant, isBaseline, effect, isMissingAllValues } = props.payload as EffectSizeData;
-                  const { cx: centerX, cy: centerY } = props;
-
-                  let fillColor: string = COLORS.DEFAULT;
-                  if (significant && !isBaseline) {
-                    fillColor = effect > 0 ? COLORS.POSITIVE : COLORS.NEGATIVE;
-                  }
-                  if (isMissingAllValues) {
-                    return <g />;
-                  }
-                  if (isBaseline) {
-                    // Mark the control arm with a larger diamond shape
-                    return (
-                      <polygon
-                        points={createDiamondShape(centerX, centerY, 8)}
-                        fill={COLORS.DEFAULT}
-                        stroke={COLORS.DEFAULT_CI}
-                      />
-                    );
-                  }
-                  return <circle cx={centerX} cy={centerY} r={5} fill={fillColor} stroke={COLORS.DEFAULT_CI} />;
-                }}
-              />
-
-              {/* Control arm mean - vertical marker */}
+              {/* Control arm mean - vertical marker below points and CIs */}
               <Scatter
                 data={effectSizes}
                 fill="none"
@@ -385,10 +328,80 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                       y2={(yAxis?.height || 0) + 20} // where's the extra 20 from? Margins?
                       stroke={COLORS.BASELINE}
                       strokeWidth={5}
-                      strokeDasharray="1 1"
+                      strokeDasharray="2 1"
                       opacity={0.2}
                     />
                   );
+                }}
+              />
+
+              {/* Confidence intervals - place under points */}
+              <Scatter
+                data={effectSizes}
+                fill="none"
+                // Draw a custom line for CIs since ErrorBars don't give us enough control
+                shape={(props: unknown) => {
+                  const shapeProps = props as CustomShapeProps;
+                  // Always return an element even if empty.
+                  if (!shapeProps.payload || !shapeProps.xAxis?.width) return <g />;
+
+                  const { isBaseline, ci95, absDifference, significant } = shapeProps.payload as EffectSizeData;
+                  const {
+                    cx: centerX,
+                    cy: centerY,
+                    xAxis: { width: xAxisWidth },
+                  } = shapeProps;
+
+                  // Determine stroke color based on significance and direction
+                  let strokeColor: string = COLORS.DEFAULT_CI;
+                  if (significant && !isBaseline) {
+                    strokeColor = absDifference > 0 ? COLORS.POSITIVE_CI : COLORS.NEGATIVE_CI;
+                  }
+                  return isNaN(ci95) ? (
+                    <g />
+                  ) : (
+                    <line
+                      x1={(centerX || 0) - scaleHalfIntervalToViewport(ci95, xAxisWidth)}
+                      y1={centerY}
+                      x2={(centerX || 0) + scaleHalfIntervalToViewport(ci95, xAxisWidth)}
+                      y2={centerY}
+                      stroke={strokeColor}
+                      strokeWidth={12}
+                      strokeLinecap="round"
+                    />
+                  );
+                }}
+              ></Scatter>
+
+              {/* Arm mean differences from the baseline - points */}
+              <Scatter
+                data={effectSizes}
+                shape={(props: CustomShapeProps) => {
+                  // Always return an element even if empty.
+                  if (!props.payload) return <g />;
+
+                  const { significant, isBaseline, absDifference, isMissingAllValues } =
+                    props.payload as EffectSizeData;
+                  const { cx: centerX, cy: centerY } = props;
+
+                  let fillColor: string = COLORS.DEFAULT;
+                  if (significant && !isBaseline) {
+                    fillColor = absDifference > 0 ? POSITIVE_LIGHT_COLOR : COLORS.NEGATIVE_DIFF;
+                  }
+                  if (isMissingAllValues) {
+                    return <g />;
+                  }
+                  if (isBaseline) {
+                    // Mark the control arm with a larger diamond shape
+                    return (
+                      <polygon
+                        points={createDiamondShape(centerX, centerY, 8)}
+                        fill={COLORS.DEFAULT}
+                        stroke={COLORS.DEFAULT_CI}
+                      />
+                    );
+                  }
+                  return <circle cx={centerX} cy={centerY} r={6} fill={fillColor} stroke={COLORS.DEFAULT_CI} />;
                 }}
               />
             </ScatterChart>
@@ -465,9 +478,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                     />
                   );
                 }}
-              >
-                {/* <ErrorBar dataKey="ci95" width={0} strokeWidth={10} stroke={"red"} opacity={0.2} direction="x"/> */}
-              </Scatter>
+              ></Scatter>
 
               {/* All arms */}
               <Scatter
