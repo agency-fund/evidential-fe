@@ -90,18 +90,25 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
         <Text weight="bold">{data.armName}</Text>
         <Flex direction="row" gap="2">
           <Flex direction="column" gap="2" align="end">
-            <Text>Mean: </Text>
             <Text>Difference: </Text>
             <Text>95% CI: </Text>
+            <Text>p-value: </Text>
+            <Text>Abs. mean: </Text>
           </Flex>
           <Flex direction="column" gap="2">
-            <Text>{data.absEffect.toFixed(2)}</Text>
             <Text>
-              {data.absDifference.toFixed(2)} {data.isBaseline ? null : `(${data.relEffectPct.toFixed(1)}%)`}
+              {data.absDifference.toFixed(2)}
+              {
+                !data.isBaseline && (isFinite(data.relEffectPct) ? ` (${data.relEffectPct.toFixed(1)}%)` : ' (--%)') // Can't calculate a % change if the baseline is 0
+              }
             </Text>
             <Text>
               [{data.ci95Lower.toFixed(2)}, {data.ci95Upper.toFixed(2)}]
             </Text>
+            <Text weight={data.significant ? 'bold' : undefined}>
+              {data.pValue !== null ? data.pValue.toFixed(3) : '--'}
+            </Text>
+            <Text>{data.absEffect.toFixed(2)}</Text>
           </Flex>
         </Flex>
       </Card>
@@ -259,17 +266,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                   } = props;
                   const armData = effectSizes[effectSizesIndex];
 
-                  let percentChangeText = '';
-                  if (!armData.isBaseline) {
-                    // Handle cases where baselineEffect is 0 or very small to avoid Infinity or NaN
-                    if (isFinite(armData.absDifference)) {
-                      percentChangeText = `Δ = ${armData.absDifference.toFixed(1)}`;
-                    } else {
-                      percentChangeText = 'change: N/A';
-                    }
-                  }
-
-                  const pValueText = `p = ${armData.pValue !== null ? armData.pValue.toFixed(3) : 'N/A'}`;
+                  const absoluteDiffText = !armData.isBaseline ? `Δ = ${armData.absDifference.toFixed(1)}` : '';
 
                   const commonRightAxisTextProps = {
                     x: props.x,
@@ -281,25 +278,8 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
 
                   return (
                     <g>
-                      <text
-                        {...commonRightAxisTextProps}
-                        style={commonAxisStyle}
-                        y={props.y}
-                        // dy shift here and below to align the two lines of text around the tick mark better
-                        dy={!armData.isBaseline ? '-8px' : '0'}
-                        dominantBaseline="middle"
-                      >
-                        {percentChangeText}
-                      </text>
-                      <text
-                        {...commonRightAxisTextProps}
-                        // Purposely smaller font size for the p-value
-                        style={{ ...commonAxisStyle, fontSize: '12px' }}
-                        y={props.y}
-                        dy={!armData.isBaseline ? '8px' : '0'}
-                        dominantBaseline="middle"
-                      >
-                        {pValueText}
+                      <text {...commonRightAxisTextProps} style={commonAxisStyle} y={props.y} dominantBaseline="middle">
+                        {absoluteDiffText}
                       </text>
                     </g>
                   );
@@ -329,7 +309,6 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                       stroke={COLORS.BASELINE}
                       strokeWidth={5}
                       strokeDasharray="2 1"
-                      opacity={0.2}
                     />
                   );
                 }}
@@ -371,7 +350,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                     />
                   );
                 }}
-              ></Scatter>
+              />
 
               {/* Arm mean differences from the baseline - points */}
               <Scatter
