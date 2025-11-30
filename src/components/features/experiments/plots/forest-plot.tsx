@@ -293,7 +293,6 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
               <Scatter
                 data={effectSizes}
                 fill="none"
-                // Draw a custom SVG line for CIs since ErrorBars don't give us enough control
                 shape={(props: CustomShapeProps) => {
                   // Always return an element even if empty.
                   if (!(props.payload as EffectSizeData)?.isBaseline) return <g />;
@@ -319,17 +318,17 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 data={effectSizes}
                 fill="none"
                 // Draw a custom line for CIs since ErrorBars don't give us enough control
-                shape={(props: unknown) => {
-                  const shapeProps = props as CustomShapeProps;
+                shape={(props: CustomShapeProps) => {
+                  // const shapeProps = props as CustomShapeProps;
                   // Always return an element even if empty.
-                  if (!shapeProps.payload || !shapeProps.xAxis?.width) return <g />;
+                  if (!props.payload || !props.xAxis?.width) return <g />;
 
-                  const { isBaseline, ci95, absDifference, significant } = shapeProps.payload as EffectSizeData;
+                  const { isBaseline, ci95, absDifference, significant } = props.payload as EffectSizeData;
                   const {
                     cx: centerX,
                     cy: centerY,
                     xAxis: { width: xAxisWidth },
-                  } = shapeProps;
+                  } = props;
 
                   // Determine stroke color based on significance and direction
                   let strokeColor: string = COLORS.DEFAULT_CI;
@@ -358,17 +357,14 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 shape={(props: CustomShapeProps) => {
                   // Always return an element even if empty.
                   if (!props.payload) return <g />;
-
                   const { significant, isBaseline, absDifference, isMissingAllValues } =
                     props.payload as EffectSizeData;
-                  const { cx: centerX, cy: centerY } = props;
+                  if (isMissingAllValues) return <g />;
 
+                  const { cx: centerX, cy: centerY } = props;
                   let fillColor: string = COLORS.DEFAULT;
                   if (significant && !isBaseline) {
                     fillColor = absDifference > 0 ? POSITIVE_LIGHT_COLOR : COLORS.NEGATIVE_DIFF;
-                  }
-                  if (isMissingAllValues) {
-                    return <g />;
                   }
                   if (isBaseline) {
                     // Mark the control arm with a larger diamond shape
@@ -394,7 +390,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
         <Box height={`${plotHeightPx}px`}>
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-              {/* Supply our own coordinates generator since default rendering is off for ratio metrics */}
+              {/* Supply our own coordinates generator since default rendering is off for proportion metrics */}
               <CartesianGrid strokeDasharray="3 3" verticalCoordinatesGenerator={scaleXGridPoints} />
               <XAxis
                 type="number"
@@ -416,16 +412,38 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
               <YAxis
                 type="category"
                 domain={banditEffects.map((e, i) => i)}
-                // hide={true} - use ticks for arm names
                 width={yLeftAxisWidthPx}
                 style={commonAxisStyle}
                 tickFormatter={(index) => {
                   const name = index >= 0 && index < banditEffects.length ? banditEffects[index].armName : '';
                   return truncateLabel(name);
                 }}
-                allowDataOverflow={true} // bit of a hack since the ErrorBar is internally messing with the y-axis domain
+                allowDataOverflow={true}
               />
+
               <Tooltip content={<CustomTooltip />} />
+
+              {/* Control arm mean - vertical marker below points and CIs */}
+              <Scatter
+                data={banditEffects}
+                fill="none"
+                shape={(props: CustomShapeProps) => {
+                  // Always return an element even if empty.
+                  const { cx: centerX, yAxis } = props;
+
+                  return (
+                    <line
+                      x1={centerX}
+                      y1={0}
+                      x2={centerX}
+                      y2={(yAxis?.height || 0) + 20} // where's the extra 20 from? Margins?
+                      stroke={COLORS.BASELINE}
+                      strokeWidth={5}
+                      strokeDasharray="2 1"
+                    />
+                  );
+                }}
+              />
 
               {/* Confidence intervals - place under points */}
               <Scatter
@@ -452,12 +470,12 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                       x2={(centerX || 0) + scaleHalfIntervalToViewport(postPredCI95, xAxisWidth)}
                       y2={centerY}
                       stroke={strokeColor}
-                      strokeWidth={5}
+                      strokeWidth={12}
                       strokeLinecap="round"
                     />
                   );
                 }}
-              ></Scatter>
+              />
 
               {/* All arms */}
               <Scatter
@@ -469,31 +487,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                   const { cx: centerX, cy: centerY } = props;
                   const fillColor: string = COLORS.DEFAULT;
 
-                  return <circle cx={centerX} cy={centerY} r={5} fill={fillColor} stroke={COLORS.DEFAULT} />;
-                }}
-              />
-
-              {/* Control arm mean - vertical marker */}
-              <Scatter
-                data={banditEffects}
-                fill="none"
-                // Draw a custom SVG line for CIs since ErrorBars don't give us enough control
-                shape={(props: CustomShapeProps) => {
-                  // Always return an element even if empty.
-                  const { cx: centerX, yAxis } = props;
-
-                  return (
-                    <line
-                      x1={centerX}
-                      y1={0}
-                      x2={centerX}
-                      y2={(yAxis?.height || 0) + 20} // where's the extra 20 from? Margins?
-                      stroke={COLORS.BASELINE}
-                      strokeWidth={5}
-                      strokeDasharray="1 1"
-                      opacity={0.2}
-                    />
-                  );
+                  return <circle cx={centerX} cy={centerY} r={6} fill={fillColor} stroke={COLORS.DEFAULT_CI} />;
                 }}
               />
             </ScatterChart>
