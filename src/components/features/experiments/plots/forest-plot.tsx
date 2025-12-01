@@ -25,6 +25,7 @@ import {
   POSITIVE_LIGHT_COLOR,
   NEGATIVE_LIGHT_COLOR,
 } from './forest-plot-utils';
+import { useState } from 'react';
 
 // Color constants
 const COLORS = {
@@ -90,25 +91,23 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
         <Text weight="bold">{data.armName}</Text>
         <Flex direction="row" gap="2">
           <Flex direction="column" gap="2" align="end">
+            <Text>Mean: </Text>
             <Text>Difference: </Text>
             <Text>95% CI: </Text>
+            <Text>Std. dev: </Text>
             <Text>p-value: </Text>
-            <Text>Abs. mean: </Text>
           </Flex>
           <Flex direction="column" gap="2">
-            <Text>
+            <Text>{data.absEffect.toFixed(2)}</Text>
+            <Text weight={data.significant ? 'bold' : undefined}>
               {data.absDifference.toFixed(2)}
-              {
-                !data.isBaseline && (isFinite(data.relEffectPct) ? ` (${data.relEffectPct.toFixed(1)}%)` : ' (--%)') // Can't calculate a % change if the baseline is 0
-              }
+              {!data.isBaseline && isFinite(data.relEffectPct) ? ` (${data.relEffectPct.toFixed(1)}%)` : ' (--%)'}
             </Text>
             <Text>
               [{data.ci95Lower.toFixed(2)}, {data.ci95Upper.toFixed(2)}]
             </Text>
-            <Text weight={data.significant ? 'bold' : undefined}>
-              {data.pValue !== null ? data.pValue.toFixed(3) : '--'}
-            </Text>
-            <Text>{data.absEffect.toFixed(2)}</Text>
+            <Text>{data.stdError?.toFixed(2) ?? '--'}</Text>
+            <Text>{data.pValue?.toFixed(3) ?? '--'}</Text>
           </Flex>
         </Flex>
       </Card>
@@ -130,6 +129,11 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
 }
 
 export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: maxXProp }: ForestPlotProps) {
+  const [isTooltipActive, setIsTooltipActive] = useState(false);
+
+  const handleShowTooltip = () => setIsTooltipActive(true);
+  const handleHideTooltip = () => setIsTooltipActive(false);
+
   // Only render if we have data
   if ((!effectSizes && !banditEffects) || (effectSizes?.length === 0 && banditEffects?.length === 0)) {
     return (
@@ -181,7 +185,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
 
   // Adjust plot height based on the number of arms.
   const lenEffects = effectSizes !== undefined ? effectSizes.length : banditEffects!.length;
-  const plotHeightPx = Math.max(160, 64 * lenEffects);
+  const plotHeightPx = Math.max(220, 64 * lenEffects);
   // Coarse adjustment of the width of the left Y-axis based on the length of the arm names.
   const maxArmNameLength =
     effectSizes !== undefined
@@ -221,9 +225,13 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
             Difference from {effectSizes[0].armName}
           </Heading>
           <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+            <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }} onMouseLeave={handleHideTooltip}>
+              {/* Handle explicit display of the tooltip to allow selecting and copying values. */}
+              <Tooltip active={isTooltipActive} wrapperStyle={{ pointerEvents: 'auto' }} content={<CustomTooltip />} />
+
               {/* Supply our own coordinates generator since default rendering is off for proportion metrics */}
               <CartesianGrid strokeDasharray="3 3" verticalCoordinatesGenerator={scaleXGridPoints} />
+
               <XAxis
                 type="number"
                 dataKey="absDifference"
@@ -287,10 +295,10 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 allowDataOverflow={true}
               />
 
-              <Tooltip content={<CustomTooltip />} />
-
               {/* Control arm mean - vertical marker below points and CIs */}
               <Scatter
+                onMouseEnter={handleShowTooltip}
+                onMouseLeave={handleHideTooltip}
                 data={effectSizes}
                 fill="none"
                 shape={(props: CustomShapeProps) => {
@@ -315,6 +323,8 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
 
               {/* Confidence intervals - place under points */}
               <Scatter
+                onMouseEnter={handleShowTooltip}
+                onMouseLeave={handleHideTooltip}
                 data={effectSizes}
                 fill="none"
                 // Draw a custom line for CIs since ErrorBars don't give us enough control
@@ -351,8 +361,10 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 }}
               />
 
-              {/* Arm mean differences from the baseline - points */}
+              {/* Points showing the arm mean differences from the baseline & baseline */}
               <Scatter
+                onMouseEnter={handleShowTooltip}
+                onMouseLeave={handleHideTooltip}
                 data={effectSizes}
                 shape={(props: CustomShapeProps) => {
                   // Always return an element even if empty.
@@ -390,8 +402,12 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
         <Box height={`${plotHeightPx}px`}>
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+              {/* Handle explicit display of the tooltip to allow selecting and copying values. */}
+              <Tooltip active={isTooltipActive} wrapperStyle={{ pointerEvents: 'auto' }} content={<CustomTooltip />} />
+
               {/* Supply our own coordinates generator since default rendering is off for proportion metrics */}
               <CartesianGrid strokeDasharray="3 3" verticalCoordinatesGenerator={scaleXGridPoints} />
+
               <XAxis
                 type="number"
                 dataKey="postPredMean"
@@ -421,10 +437,10 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 allowDataOverflow={true}
               />
 
-              <Tooltip content={<CustomTooltip />} />
-
               {/* Control arm mean - vertical marker below points and CIs */}
               <Scatter
+                onMouseEnter={handleShowTooltip}
+                onMouseLeave={handleHideTooltip}
                 data={banditEffects}
                 fill="none"
                 shape={(props: CustomShapeProps) => {
@@ -447,6 +463,8 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
 
               {/* Confidence intervals - place under points */}
               <Scatter
+                onMouseEnter={handleShowTooltip}
+                onMouseLeave={handleHideTooltip}
                 data={banditEffects}
                 fill="none"
                 // Draw a custom line for CIs since ErrorBars don't give us enough control
@@ -477,8 +495,10 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 }}
               />
 
-              {/* All arms */}
+              {/* Points showing the arm mean outcomes. */}
               <Scatter
+                onMouseEnter={handleShowTooltip}
+                onMouseLeave={handleHideTooltip}
                 data={banditEffects}
                 shape={(props: CustomShapeProps) => {
                   // Always return an element even if empty.

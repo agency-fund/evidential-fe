@@ -224,6 +224,7 @@ const _generateFreqEffectSizeData = (analysis: MetricAnalysis, alpha: number): E
       absDifference,
       absEffect,
       relEffectPct,
+      stdError,
       ci95,
       ci95Lower,
       ci95Upper,

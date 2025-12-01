@@ -8,6 +8,7 @@ export interface EffectSizeData {
   absDifference: number; // absolute difference from baseline effect, or 0 if it's the baseline itself
   absEffect: number;
   relEffectPct: number; // change as a % of the baseline
+  stdError: number | null;
   ci95: number; // for symmetric ErrorBars
   ci95Lower: number;
   ci95Upper: number;
