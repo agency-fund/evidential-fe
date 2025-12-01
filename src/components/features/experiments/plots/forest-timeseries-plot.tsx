@@ -151,9 +151,9 @@ export default function ForestTimeseriesPlot({
             style={commonAxisStyle}
             padding={{ left: 12, right: 0 }}
             interval="preserveStartEnd"
-            angle={-45}
+            angle={-30}
             textAnchor="end"
-            height={60}
+            height={40}
             tickFormatter={(timestamp) => {
               const date = new Date(timestamp);
               return formatDateUtcYYYYMMDD(date);
