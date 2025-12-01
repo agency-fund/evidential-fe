@@ -90,8 +90,13 @@ export default function ExperimentViewPage() {
     swr: {
       enabled: !!datasourceId,
       onSuccess: (exp) => {
-        if (isBanditSpec(exp.design_spec) && exp.design_spec.contexts) {
-          // Initialize context inputs for CMAB analysis request
+        // Only initialize context input ids for CMAB experiments if they are not already set.
+        // Should only need to set this once for an experiment, as they are fixed at design time.
+        if (
+          isBanditSpec(exp.design_spec) &&
+          exp.design_spec.contexts &&
+          cmabAnalysisRequest.context_inputs.length === 0
+        ) {
           const contextInputs = exp.design_spec.contexts
             .filter((ctx) => ctx.context_id !== undefined)
             .map((ctx) => ({ context_id: ctx.context_id!, context_value: 0.0 }));
@@ -228,8 +233,9 @@ export default function ExperimentViewPage() {
   });
 
   // Wrapper around the live analysis functions for CMAB and non-CMAB experiments.
-  const triggerLiveAnalysis = async () => {
-    return isCmabExperiment(experiment) ? await analyzeLiveCmab(cmabAnalysisRequest) : await analyzeLive();
+  const triggerLiveAnalysis = async (requestOverride?: CMABContextInputRequest) => {
+    const request = requestOverride ?? cmabAnalysisRequest;
+    return isCmabExperiment(experiment) ? await analyzeLiveCmab(request) : await analyzeLive();
   };
 
   const setSelectedAnalysisAndMetrics = (analysis: AnalysisState, forMetricName: string | undefined = undefined) => {
@@ -270,11 +276,9 @@ export default function ExperimentViewPage() {
 
   const handleUpdateCmabContextValue = async (key: string, context_inputs: ContextInput[]) => {
     if (key === 'live') {
-      setCmabAnalysisRequest((prev) => {
-        const updated = { ...prev, context_inputs: context_inputs };
-        setTimeout(() => triggerLiveAnalysis(), 0); // Ensures state is updated before calling
-        return updated;
-      });
+      const updatedRequest = { ...cmabAnalysisRequest, context_inputs: context_inputs };
+      setCmabAnalysisRequest(updatedRequest);
+      await triggerLiveAnalysis(updatedRequest);
     } else {
       console.warn('Cannot update context values for snapshot analyses.');
     }
