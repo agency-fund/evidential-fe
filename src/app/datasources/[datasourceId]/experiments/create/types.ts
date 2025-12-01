@@ -11,6 +11,14 @@ import {
   MABExperimentSpecInputExperimentType,
   GetMetricsResponseElement,
   GetFiltersResponseElement,
+  CMABExperimentSpecInputExperimentType,
+  BayesABExperimentSpecInputExperimentType,
+  DesignSpecOutput,
+  CMABExperimentSpecOutput,
+  MABExperimentSpecOutput,
+  BayesABExperimentSpecOutput,
+  OnlineFrequentistExperimentSpecOutput,
+  PreassignedFrequentistExperimentSpecOutput,
 } from '@/api/methods.schemas';
 
 export type ExperimentType = DesignSpecInput['experiment_type'];
@@ -22,6 +30,24 @@ export function isFreqExperimentType(type: string): boolean {
     type in OnlineFrequentistExperimentSpecInputExperimentType
   );
 }
+
+export function isBanditExperimentType(type: string): boolean {
+  return (
+    type in MABExperimentSpecInputExperimentType ||
+    type in CMABExperimentSpecInputExperimentType ||
+    type in BayesABExperimentSpecInputExperimentType
+  );
+}
+
+export const isFrequentistSpec = (
+  spec: DesignSpecOutput | undefined,
+): spec is OnlineFrequentistExperimentSpecOutput | PreassignedFrequentistExperimentSpecOutput =>
+  !!spec && isFreqExperimentType(spec.experiment_type);
+
+export const isBanditSpec = (
+  spec: DesignSpecOutput | undefined,
+): spec is MABExperimentSpecOutput | CMABExperimentSpecOutput | BayesABExperimentSpecOutput =>
+  !!spec && isBanditExperimentType(spec.experiment_type);
 
 export type AssignmentType = 'preassigned' | 'online';
 export type PriorType = MABExperimentSpecInput['prior_type'];

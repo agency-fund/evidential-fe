@@ -50,8 +50,8 @@ import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date
 import Link from 'next/link';
 import { mutate } from 'swr';
 import ForestTimeseriesPlot from '@/components/features/experiments/plots/forest-timeseries-plot';
-import { set } from 'zod';
 import { ContextConfigBox } from '@/components/features/experiments/context-config-box';
+import { isBanditSpec } from '../create/types';
 
 export default function ExperimentViewPage() {
   const params = useParams();
@@ -89,14 +89,11 @@ export default function ExperimentViewPage() {
     swr: {
       enabled: !!datasourceId,
       onSuccess: (exp) => {
-        if (exp?.design_spec.experiment_type == 'cmab_online') {
+        if (isBanditSpec(exp.design_spec) && exp.design_spec.contexts) {
           // Initialize context inputs for CMAB analysis request
-          let contextInputs: ContextInput[] = [];
-          if (exp.design_spec.experiment_type == 'cmab_online' && exp.design_spec.contexts) {
-            contextInputs = exp.design_spec.contexts
-              .filter((ctx) => ctx.context_id !== undefined)
-              .map((ctx) => ({ context_id: ctx.context_id!, context_value: 0.0 }));
-          }
+          const contextInputs = exp.design_spec.contexts
+            .filter((ctx) => ctx.context_id !== undefined)
+            .map((ctx) => ({ context_id: ctx.context_id!, context_value: 0.0 }));
           setCmabAnalysisRequest({ ...cmabAnalysisRequest, context_inputs: contextInputs });
         }
       },
@@ -290,8 +287,6 @@ export default function ExperimentViewPage() {
     analysisHistory,
     selectedMetricName,
   );
-  console.log(cmabAnalysisRequest);
-  console.log(selectedAnalysisState);
 
   return (
     <Flex direction="column" gap="6">
@@ -305,7 +300,7 @@ export default function ExperimentViewPage() {
             datasourceId={datasourceId}
             organizationId={organizationId}
             arms={arms}
-            contexts={design_spec.experiment_type == 'cmab_online' ? (design_spec.contexts ?? undefined) : undefined}
+            contexts={isBanditSpec(design_spec) ? design_spec.contexts : undefined}
           />
         </Flex>
 

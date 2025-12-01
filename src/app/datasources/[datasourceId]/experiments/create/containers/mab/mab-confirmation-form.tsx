@@ -4,7 +4,11 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Flex, Table, Text, Callout } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
-import { CMABFormData, MABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
+import {
+  CMABFormData,
+  isBanditExperimentType,
+  MABFormData,
+} from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { ReadMoreText } from '@/components/ui/read-more-text';
@@ -124,7 +128,7 @@ export function MABConfirmationForm({ formData, onBack, onFormDataChange }: MABC
       </SectionCard>
 
       {/* Contexts */}
-      {formData.experimentType === 'cmab_online' && (
+      {isBanditExperimentType(formData.experimentType) && (
         <SectionCard title="Contexts">
           <Table.Root>
             <Table.Header>
