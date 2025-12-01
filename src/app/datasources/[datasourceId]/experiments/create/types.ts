@@ -19,6 +19,7 @@ import {
   BayesABExperimentSpecOutput,
   OnlineFrequentistExperimentSpecOutput,
   PreassignedFrequentistExperimentSpecOutput,
+  GetExperimentResponse,
 } from '@/api/methods.schemas';
 
 export type ExperimentType = DesignSpecInput['experiment_type'];
@@ -48,6 +49,9 @@ export const isBanditSpec = (
   spec: DesignSpecOutput | undefined,
 ): spec is MABExperimentSpecOutput | CMABExperimentSpecOutput | BayesABExperimentSpecOutput =>
   !!spec && isBanditExperimentType(spec.experiment_type);
+
+export const isCmabExperiment = (experiment: GetExperimentResponse | undefined): boolean =>
+  !!experiment && experiment.design_spec.experiment_type === CMABExperimentSpecInputExperimentType.cmab_online;
 
 export type AssignmentType = 'preassigned' | 'online';
 export type PriorType = MABExperimentSpecInput['prior_type'];

@@ -8,6 +8,7 @@ import {
   useListSnapshots,
   useUpdateExperiment,
   getGetExperimentForUiKey,
+  useAnalyzeCmabExperiment,
 } from '@/api/admin';
 import { ForestPlot } from '@/components/features/experiments/plots/forest-plot';
 import {
@@ -51,7 +52,7 @@ import Link from 'next/link';
 import { mutate } from 'swr';
 import ForestTimeseriesPlot from '@/components/features/experiments/plots/forest-timeseries-plot';
 import { ContextConfigBox } from '@/components/features/experiments/context-config-box';
-import { isBanditSpec } from '../create/types';
+import { isBanditSpec, isCmabExperiment } from '../create/types';
 
 export default function ExperimentViewPage() {
   const params = useParams();
@@ -104,38 +105,56 @@ export default function ExperimentViewPage() {
     mutate: analyzeLive,
     isLoading: isLoadingLiveAnalysis,
     error: liveAnalysisError,
-  } = useAnalyzeExperiment(
-    datasourceId,
-    experimentId,
-    experiment?.design_spec.experiment_type ?? 'freq_preassigned',
-    cmabAnalysisRequest,
-    undefined,
-    {
-      swr: {
-        enabled: !!datasourceId && !!experiment,
-        // Disable revalidation to only allow manual triggering of the live analysis
-        revalidateOnMount: false,
-        revalidateOnFocus: false,
-        shouldRetryOnError: false,
-        onSuccess: (analysisData) => {
-          const date = new Date();
-          const analysis = {
-            key: 'live',
-            data: analysisData,
-            updated_at: date,
-            label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
-            effectSizesByMetric: precomputeFreqEffectsByMetric(analysisData, alpha),
-            banditEffects: precomputeBanditEffects(analysisData),
-          };
-          setLiveAnalysis(analysis);
-          // Only update the display if we were previously viewing live data.
-          if (selectedAnalysisState.key === 'live') {
-            setSelectedAnalysisAndMetrics(analysis);
-          }
-        },
+  } = useAnalyzeExperiment(datasourceId, experimentId, undefined, {
+    swr: {
+      enabled: !!datasourceId && !!experiment && !isCmabExperiment(experiment),
+      // Disable revalidation to only allow manual triggering of the live analysis
+      revalidateOnMount: false,
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+      onSuccess: (analysisData) => {
+        const date = new Date();
+        const analysis = {
+          key: 'live',
+          data: analysisData,
+          updated_at: date,
+          label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
+          effectSizesByMetric: precomputeFreqEffectsByMetric(analysisData, alpha),
+          banditEffects: precomputeBanditEffects(analysisData),
+        };
+        setLiveAnalysis(analysis);
+        // Only update the display if we were previously viewing live data.
+        if (selectedAnalysisState.key === 'live') {
+          setSelectedAnalysisAndMetrics(analysis);
+        }
       },
     },
-  );
+  });
+
+  const {
+    trigger: analyzeLiveCmab,
+    isMutating: isLoadingLiveCmabAnalysis,
+    error: liveCmabAnalysisError,
+  } = useAnalyzeCmabExperiment(datasourceId, experimentId, {
+    swr: {
+      onSuccess: (analysisData) => {
+        const date = new Date();
+        const analysis = {
+          key: 'live',
+          data: analysisData,
+          updated_at: date,
+          label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
+          effectSizesByMetric: precomputeFreqEffectsByMetric(analysisData, alpha),
+          banditEffects: precomputeBanditEffects(analysisData),
+        };
+        setLiveAnalysis(analysis);
+        // Only update the display if we were previously viewing live data.
+        if (selectedAnalysisState.key === 'live') {
+          setSelectedAnalysisAndMetrics(analysis);
+        }
+      },
+    },
+  });
 
   const { isLoading: isLoadingHistory, error: analysisHistoryError } = useListSnapshots(
     organizationId,
@@ -153,7 +172,7 @@ export default function ExperimentViewPage() {
 
           // Do live analysis if there are no snapshots
           if (data.items.length === 0) {
-            await analyzeLive();
+            await triggerLiveAnalysis();
             return;
           }
 
@@ -194,7 +213,7 @@ export default function ExperimentViewPage() {
         },
         onError: async () => {
           // Trigger live analysis if snapshot loading fails
-          await analyzeLive();
+          await triggerLiveAnalysis();
         },
       },
     },
@@ -207,6 +226,11 @@ export default function ExperimentViewPage() {
       },
     },
   });
+
+  // Wrapper around the live analysis functions for CMAB and non-CMAB experiments.
+  const triggerLiveAnalysis = async () => {
+    return isCmabExperiment(experiment) ? await analyzeLiveCmab(cmabAnalysisRequest) : await analyzeLive();
+  };
 
   const setSelectedAnalysisAndMetrics = (analysis: AnalysisState, forMetricName: string | undefined = undefined) => {
     setSelectedAnalysisState(analysis);
@@ -240,7 +264,7 @@ export default function ExperimentViewPage() {
     setSelectedAnalysisAndMetrics(analysis || liveAnalysis);
     // If we haven't fetched it yet, trigger a live analysis.
     if (key == 'live' && liveAnalysis.data === undefined) {
-      await analyzeLive();
+      await triggerLiveAnalysis();
     }
   };
 
@@ -248,7 +272,7 @@ export default function ExperimentViewPage() {
     if (key === 'live') {
       setCmabAnalysisRequest((prev) => {
         const updated = { ...prev, context_inputs: context_inputs };
-        setTimeout(() => analyzeLive(), 0); // Ensures state is updated before calling
+        setTimeout(() => triggerLiveAnalysis(), 0); // Ensures state is updated before calling
         return updated;
       });
     } else {
@@ -525,8 +549,11 @@ export default function ExperimentViewPage() {
                 <Tabs.Content value="leaderboard">
                   <Flex direction="column" gap="3" py="3">
                     {/* Analysis may not be available yet or the experiment hasn't collected enough data. */}
-                    {liveAnalysisError && (
-                      <GenericErrorCallout title="Error loading live analysis" error={liveAnalysisError} />
+                    {(liveAnalysisError || liveCmabAnalysisError) && (
+                      <GenericErrorCallout
+                        title="Error loading live analysis"
+                        error={liveAnalysisError ?? liveCmabAnalysisError}
+                      />
                     )}
 
                     {analysisHistoryError && (
@@ -536,11 +563,13 @@ export default function ExperimentViewPage() {
                       />
                     )}
 
-                    {isLoadingLiveAnalysis && <XSpinner message="Loading live analysis..." />}
+                    {(isLoadingLiveCmabAnalysis || isLoadingLiveAnalysis) && (
+                      <XSpinner message="Loading live analysis..." />
+                    )}
 
                     {isLoadingHistory && <XSpinner message="Loading historical analyses..." />}
 
-                    {!isLoadingLiveAnalysis && selectedAnalysisState.data && (
+                    {!isLoadingLiveCmabAnalysis && !isLoadingLiveAnalysis && selectedAnalysisState.data && (
                       <ForestPlot
                         effectSizes={selectedAnalysisState.effectSizesByMetric?.get(selectedMetricName)}
                         banditEffects={selectedAnalysisState.banditEffects}
