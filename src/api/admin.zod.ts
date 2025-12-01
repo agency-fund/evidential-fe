@@ -121,6 +121,13 @@ export const getSnapshotResponse = zod
 														)
 														.or(zod.null())
 														.optional(),
+													arm_weight: zod
+														.number()
+														.or(zod.null())
+														.optional()
+														.describe(
+															"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+														),
 													estimate: zod
 														.number()
 														.describe(
@@ -220,6 +227,13 @@ export const getSnapshotResponse = zod
 													)
 													.or(zod.null())
 													.optional(),
+												arm_weight: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+													),
 												alpha_init: zod
 													.number()
 													.or(zod.null())
@@ -471,6 +485,13 @@ export const listSnapshotsResponse = zod.object({
 													)
 													.or(zod.null())
 													.optional(),
+												arm_weight: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+													),
 												estimate: zod
 													.number()
 													.describe(
@@ -568,6 +589,13 @@ export const listSnapshotsResponse = zod.object({
 												)
 												.or(zod.null())
 												.optional(),
+											arm_weight: zod
+												.number()
+												.or(zod.null())
+												.optional()
+												.describe(
+													"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+												),
 											alpha_init: zod
 												.number()
 												.or(zod.null())
@@ -2556,6 +2584,8 @@ export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameReg
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyPowerAnalysesAnalysesMax = 150;
 export const createExperimentBodyWebhooksDefault = [];
+export const createExperimentBodyDecisionDefault = "";
+export const createExperimentBodyImpactDefault = "";
 
 export const createExperimentBody = zod.object({
 	design_spec: zod
@@ -2599,6 +2629,13 @@ export const createExperimentBody = zod.object({
 								.max(createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOne)
 								.or(zod.null())
 								.optional(),
+							arm_weight: zod
+								.number()
+								.or(zod.null())
+								.optional()
+								.describe(
+									"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+								),
 						})
 						.describe("Describes an experiment treatment arm."),
 				)
@@ -2749,6 +2786,13 @@ export const createExperimentBody = zod.object({
 										)
 										.or(zod.null())
 										.optional(),
+									arm_weight: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+										),
 								})
 								.describe("Describes an experiment treatment arm."),
 						)
@@ -2902,6 +2946,13 @@ export const createExperimentBody = zod.object({
 										)
 										.or(zod.null())
 										.optional(),
+									arm_weight: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+										),
 									alpha_init: zod
 										.number()
 										.or(zod.null())
@@ -3044,6 +3095,13 @@ export const createExperimentBody = zod.object({
 										)
 										.or(zod.null())
 										.optional(),
+									arm_weight: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+										),
 									alpha_init: zod
 										.number()
 										.or(zod.null())
@@ -3186,6 +3244,13 @@ export const createExperimentBody = zod.object({
 										)
 										.or(zod.null())
 										.optional(),
+									arm_weight: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+										),
 									alpha_init: zod
 										.number()
 										.or(zod.null())
@@ -3420,6 +3485,8 @@ export const createExperimentBody = zod.object({
 		.describe(
 			"List of webhook IDs to associate with this experiment. When the experiment is committed, these webhooks will be triggered with experiment details. Must contain unique values.",
 		),
+	decision: zod.string().optional(),
+	impact: zod.string().optional(),
 });
 
 export const createExperimentResponseDesignSpecParticipantTypeMax = 100;
@@ -3526,6 +3593,8 @@ export const createExperimentResponseAssignSummaryArmSizesItemArmArmDescriptionM
 export const createExperimentResponseAssignSummaryArmSizesItemSizeDefault = 0;
 export const createExperimentResponseAssignSummaryArmSizesMaxOne = 10;
 export const createExperimentResponseWebhooksDefault = [];
+export const createExperimentResponseDecisionDefault = "";
+export const createExperimentResponseImpactDefault = "";
 
 export const createExperimentResponse = zod
 	.object({
@@ -3595,6 +3664,13 @@ export const createExperimentResponse = zod
 									)
 									.or(zod.null())
 									.optional(),
+								arm_weight: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+									),
 							})
 							.describe("Describes an experiment treatment arm."),
 					)
@@ -3751,6 +3827,13 @@ export const createExperimentResponse = zod
 											)
 											.or(zod.null())
 											.optional(),
+										arm_weight: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+											),
 									})
 									.describe("Describes an experiment treatment arm."),
 							)
@@ -3908,6 +3991,13 @@ export const createExperimentResponse = zod
 											)
 											.or(zod.null())
 											.optional(),
+										arm_weight: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+											),
 										alpha_init: zod
 											.number()
 											.or(zod.null())
@@ -4054,6 +4144,13 @@ export const createExperimentResponse = zod
 											)
 											.or(zod.null())
 											.optional(),
+										arm_weight: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+											),
 										alpha_init: zod
 											.number()
 											.or(zod.null())
@@ -4200,6 +4297,13 @@ export const createExperimentResponse = zod
 											)
 											.or(zod.null())
 											.optional(),
+										arm_weight: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+											),
 										alpha_init: zod
 											.number()
 											.or(zod.null())
@@ -4493,6 +4597,13 @@ export const createExperimentResponse = zod
 											)
 											.or(zod.null())
 											.optional(),
+										arm_weight: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+											),
 									})
 									.describe("Describes an experiment treatment arm."),
 								size: zod.number().optional(),
@@ -4513,6 +4624,18 @@ export const createExperimentResponse = zod
 			.default(createExperimentResponseWebhooksDefault)
 			.describe(
 				"List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed.",
+			),
+		decision: zod
+			.string()
+			.optional()
+			.describe(
+				"Record any decision(s) made because of this experiment. Will you launch it, and if so when? Regardless of positive or negative results, how do any learnings inform next steps or future hypotheses?",
+			),
+		impact: zod
+			.string()
+			.optional()
+			.describe(
+				"Given the results across your tracked metrics and any other observed effects seen elsewhere, record an overall summary here. Do they agree or reject your hypotheses? Beyond the metrics tracked, did variations affect scalability, cost, feedback, or other aspects?",
 			),
 	})
 	.describe(
@@ -4604,6 +4727,13 @@ export const analyzeExperimentResponse = zod
 										)
 										.or(zod.null())
 										.optional(),
+									arm_weight: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+										),
 									estimate: zod
 										.number()
 										.describe(
@@ -4695,6 +4825,13 @@ export const analyzeExperimentResponse = zod
 									)
 									.or(zod.null())
 									.optional(),
+								arm_weight: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+									),
 								alpha_init: zod
 									.number()
 									.or(zod.null())
@@ -4897,6 +5034,13 @@ export const analyzeCmabExperimentResponse = zod
 										)
 										.or(zod.null())
 										.optional(),
+									arm_weight: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+										),
 									estimate: zod
 										.number()
 										.describe(
@@ -4988,6 +5132,13 @@ export const analyzeCmabExperimentResponse = zod
 									)
 									.or(zod.null())
 									.optional(),
+								arm_weight: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+									),
 								alpha_init: zod
 									.number()
 									.or(zod.null())
@@ -5219,6 +5370,8 @@ export const listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesIt
 export const listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesItemSizeDefault = 0;
 export const listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesMaxOne = 10;
 export const listOrganizationExperimentsResponseItemsItemWebhooksDefault = [];
+export const listOrganizationExperimentsResponseItemsItemDecisionDefault = "";
+export const listOrganizationExperimentsResponseItemsItemImpactDefault = "";
 
 export const listOrganizationExperimentsResponse = zod.object({
 	items: zod.array(
@@ -5302,6 +5455,13 @@ export const listOrganizationExperimentsResponse = zod.object({
 											)
 											.or(zod.null())
 											.optional(),
+										arm_weight: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+											),
 									})
 									.describe("Describes an experiment treatment arm."),
 							)
@@ -5494,6 +5654,13 @@ export const listOrganizationExperimentsResponse = zod.object({
 													)
 													.or(zod.null())
 													.optional(),
+												arm_weight: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+													),
 											})
 											.describe("Describes an experiment treatment arm."),
 									)
@@ -5691,6 +5858,13 @@ export const listOrganizationExperimentsResponse = zod.object({
 													)
 													.or(zod.null())
 													.optional(),
+												arm_weight: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+													),
 												alpha_init: zod
 													.number()
 													.or(zod.null())
@@ -5857,6 +6031,13 @@ export const listOrganizationExperimentsResponse = zod.object({
 													)
 													.or(zod.null())
 													.optional(),
+												arm_weight: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+													),
 												alpha_init: zod
 													.number()
 													.or(zod.null())
@@ -6023,6 +6204,13 @@ export const listOrganizationExperimentsResponse = zod.object({
 													)
 													.or(zod.null())
 													.optional(),
+												arm_weight: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+													),
 												alpha_init: zod
 													.number()
 													.or(zod.null())
@@ -6336,6 +6524,13 @@ export const listOrganizationExperimentsResponse = zod.object({
 													)
 													.or(zod.null())
 													.optional(),
+												arm_weight: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+													),
 											})
 											.describe("Describes an experiment treatment arm."),
 										size: zod.number().optional(),
@@ -6358,6 +6553,18 @@ export const listOrganizationExperimentsResponse = zod.object({
 					.default(listOrganizationExperimentsResponseItemsItemWebhooksDefault)
 					.describe(
 						"List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed.",
+					),
+				decision: zod
+					.string()
+					.optional()
+					.describe(
+						"Record any decision(s) made because of this experiment. Will you launch it, and if so when? Regardless of positive or negative results, how do any learnings inform next steps or future hypotheses?",
+					),
+				impact: zod
+					.string()
+					.optional()
+					.describe(
+						"Given the results across your tracked metrics and any other observed effects seen elsewhere, record an overall summary here. Do they agree or reject your hypotheses? Beyond the metrics tracked, did variations affect scalability, cost, feedback, or other aspects?",
 					),
 			})
 			.describe("Representation of our stored Experiment information."),
@@ -6477,6 +6684,8 @@ export const getExperimentForUiResponseAssignSummaryArmSizesItemArmArmDescriptio
 export const getExperimentForUiResponseAssignSummaryArmSizesItemSizeDefault = 0;
 export const getExperimentForUiResponseAssignSummaryArmSizesMaxOne = 10;
 export const getExperimentForUiResponseWebhooksDefault = [];
+export const getExperimentForUiResponseDecisionDefault = "";
+export const getExperimentForUiResponseImpactDefault = "";
 
 export const getExperimentForUiResponse = zod
 	.object({
@@ -6546,6 +6755,13 @@ export const getExperimentForUiResponse = zod
 									)
 									.or(zod.null())
 									.optional(),
+								arm_weight: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+									),
 							})
 							.describe("Describes an experiment treatment arm."),
 					)
@@ -6702,6 +6918,13 @@ export const getExperimentForUiResponse = zod
 											)
 											.or(zod.null())
 											.optional(),
+										arm_weight: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+											),
 									})
 									.describe("Describes an experiment treatment arm."),
 							)
@@ -6861,6 +7084,13 @@ export const getExperimentForUiResponse = zod
 											)
 											.or(zod.null())
 											.optional(),
+										arm_weight: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+											),
 										alpha_init: zod
 											.number()
 											.or(zod.null())
@@ -7007,6 +7237,13 @@ export const getExperimentForUiResponse = zod
 											)
 											.or(zod.null())
 											.optional(),
+										arm_weight: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+											),
 										alpha_init: zod
 											.number()
 											.or(zod.null())
@@ -7153,6 +7390,13 @@ export const getExperimentForUiResponse = zod
 											)
 											.or(zod.null())
 											.optional(),
+										arm_weight: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+											),
 										alpha_init: zod
 											.number()
 											.or(zod.null())
@@ -7446,6 +7690,13 @@ export const getExperimentForUiResponse = zod
 											)
 											.or(zod.null())
 											.optional(),
+										arm_weight: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+											),
 									})
 									.describe("Describes an experiment treatment arm."),
 								size: zod.number().optional(),
@@ -7466,6 +7717,18 @@ export const getExperimentForUiResponse = zod
 			.default(getExperimentForUiResponseWebhooksDefault)
 			.describe(
 				"List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed.",
+			),
+		decision: zod
+			.string()
+			.optional()
+			.describe(
+				"Record any decision(s) made because of this experiment. Will you launch it, and if so when? Regardless of positive or negative results, how do any learnings inform next steps or future hypotheses?",
+			),
+		impact: zod
+			.string()
+			.optional()
+			.describe(
+				"Given the results across your tracked metrics and any other observed effects seen elsewhere, record an overall summary here. Do they agree or reject your hypotheses? Beyond the metrics tracked, did variations affect scalability, cost, feedback, or other aspects?",
 			),
 	})
 	.describe(
@@ -7503,6 +7766,8 @@ export const updateExperimentBody = zod
 			.optional(),
 		start_date: zod.string().datetime({}).or(zod.null()).optional(),
 		end_date: zod.string().datetime({}).or(zod.null()).optional(),
+		impact: zod.string().or(zod.null()).optional(),
+		decision: zod.string().or(zod.null()).optional(),
 	})
 	.describe(
 		"Defines the subset of fields that can be updated for an experiment after creation.",
@@ -7961,6 +8226,13 @@ export const powerCheckBody = zod.object({
 								.max(powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOne)
 								.or(zod.null())
 								.optional(),
+							arm_weight: zod
+								.number()
+								.or(zod.null())
+								.optional()
+								.describe(
+									"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+								),
 						})
 						.describe("Describes an experiment treatment arm."),
 				)
@@ -8105,6 +8377,13 @@ export const powerCheckBody = zod.object({
 										.max(powerCheckBodyDesignSpecArmsItemArmDescriptionMaxFour)
 										.or(zod.null())
 										.optional(),
+									arm_weight: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+										),
 								})
 								.describe("Describes an experiment treatment arm."),
 						)
@@ -8256,6 +8535,13 @@ export const powerCheckBody = zod.object({
 										.max(powerCheckBodyDesignSpecArmsItemArmDescriptionMaxSeven)
 										.or(zod.null())
 										.optional(),
+									arm_weight: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+										),
 									alpha_init: zod
 										.number()
 										.or(zod.null())
@@ -8396,6 +8682,13 @@ export const powerCheckBody = zod.object({
 										)
 										.or(zod.null())
 										.optional(),
+									arm_weight: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+										),
 									alpha_init: zod
 										.number()
 										.or(zod.null())
@@ -8536,6 +8829,13 @@ export const powerCheckBody = zod.object({
 										)
 										.or(zod.null())
 										.optional(),
+									arm_weight: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+										),
 									alpha_init: zod
 										.number()
 										.or(zod.null())
