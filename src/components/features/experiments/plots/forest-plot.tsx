@@ -252,7 +252,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
               {/* Use the left y-axis to display arm names */}
               <YAxis
                 type="category"
-                domain={effectSizes.map((e, i) => i)}
+                domain={effectSizes.map((_, i) => i)}
                 width={yLeftAxisWidthPx}
                 style={commonAxisStyle}
                 tickFormatter={(index) => {
@@ -427,7 +427,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
               />
               <YAxis
                 type="category"
-                domain={banditEffects.map((e, i) => i)}
+                domain={banditEffects.map((_, i) => i)}
                 width={yLeftAxisWidthPx}
                 style={commonAxisStyle}
                 tickFormatter={(index) => {
