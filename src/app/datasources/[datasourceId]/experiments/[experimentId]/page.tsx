@@ -117,22 +117,7 @@ export default function ExperimentViewPage() {
       revalidateOnMount: false,
       revalidateOnFocus: false,
       shouldRetryOnError: false,
-      onSuccess: (analysisData) => {
-        const date = new Date();
-        const analysis = {
-          key: 'live',
-          data: analysisData,
-          updated_at: date,
-          label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
-          effectSizesByMetric: precomputeFreqEffectsByMetric(analysisData, alpha),
-          banditEffects: precomputeBanditEffects(analysisData),
-        };
-        setLiveAnalysis(analysis);
-        // Only update the display if we were previously viewing live data.
-        if (selectedAnalysisState.key === 'live') {
-          setSelectedAnalysisAndMetrics(analysis);
-        }
-      },
+      onSuccess: (analysisData) => handleLiveAnalysisSuccess(analysisData),
     },
   });
 
@@ -142,22 +127,7 @@ export default function ExperimentViewPage() {
     error: liveCmabAnalysisError,
   } = useAnalyzeCmabExperiment(datasourceId, experimentId, {
     swr: {
-      onSuccess: (analysisData) => {
-        const date = new Date();
-        const analysis = {
-          key: 'live',
-          data: analysisData,
-          updated_at: date,
-          label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
-          effectSizesByMetric: precomputeFreqEffectsByMetric(analysisData, alpha),
-          banditEffects: precomputeBanditEffects(analysisData),
-        };
-        setLiveAnalysis(analysis);
-        // Only update the display if we were previously viewing live data.
-        if (selectedAnalysisState.key === 'live') {
-          setSelectedAnalysisAndMetrics(analysis);
-        }
-      },
+      onSuccess: (analysisData) => handleLiveAnalysisSuccess(analysisData),
     },
   });
 
@@ -232,12 +202,6 @@ export default function ExperimentViewPage() {
     },
   });
 
-  // Wrapper around the live analysis functions for CMAB and non-CMAB experiments.
-  const triggerLiveAnalysis = async (requestOverride?: CMABContextInputRequest) => {
-    const request = requestOverride ?? cmabAnalysisRequest;
-    return isCmabExperiment(experiment) ? await analyzeLiveCmab(request) : await analyzeLive();
-  };
-
   const setSelectedAnalysisAndMetrics = (analysis: AnalysisState, forMetricName: string | undefined = undefined) => {
     setSelectedAnalysisState(analysis);
     if (!isFrequentist(analysis.data)) {
@@ -263,6 +227,29 @@ export default function ExperimentViewPage() {
       setCiBounds(bounds);
     }
     setSelectedMetricAnalysis(newMetric);
+  };
+
+  // Wrapper around the live analysis functions for CMAB and non-CMAB experiments.
+  const triggerLiveAnalysis = async (requestOverride?: CMABContextInputRequest) => {
+    const request = requestOverride ?? cmabAnalysisRequest;
+    return isCmabExperiment(experiment) ? await analyzeLiveCmab(request) : await analyzeLive();
+  };
+
+  const handleLiveAnalysisSuccess = (analysisData: ExperimentAnalysisResponse) => {
+    const date = new Date();
+    const analysis: AnalysisState = {
+      key: 'live',
+      data: analysisData,
+      updated_at: date,
+      label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
+      effectSizesByMetric: precomputeFreqEffectsByMetric(analysisData, alpha),
+      banditEffects: precomputeBanditEffects(analysisData),
+    };
+    setLiveAnalysis(analysis);
+    // Only update the display if we were previously viewing live data.
+    if (selectedAnalysisState.key === 'live') {
+      setSelectedAnalysisAndMetrics(analysis);
+    }
   };
 
   const handleSelectAnalysis = async (key: string) => {
