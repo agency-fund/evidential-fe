@@ -16,7 +16,6 @@ import {
   AnalysisState,
   precomputeFreqEffectsByMetric,
   precomputeBanditEffects,
-  isFrequentist,
   isBandit,
   transformAnalysisForForestTimeseriesPlot,
   getAlphaAndPower,
@@ -52,7 +51,7 @@ import Link from 'next/link';
 import { mutate } from 'swr';
 import ForestTimeseriesPlot from '@/components/features/experiments/plots/forest-timeseries-plot';
 import { ContextConfigBox } from '@/components/features/experiments/context-config-box';
-import { isBanditSpec, isCmabExperiment } from '../create/types';
+import { isBanditSpec, isCmabExperiment, isFrequentistSpec } from '../create/types';
 
 export default function ExperimentViewPage() {
   const params = useParams();
@@ -204,7 +203,7 @@ export default function ExperimentViewPage() {
 
   const setSelectedAnalysisAndMetrics = (analysis: AnalysisState, forMetricName: string | undefined = undefined) => {
     setSelectedAnalysisState(analysis);
-    if (!isFrequentist(analysis.data)) {
+    if (!analysis.data || !isFrequentistExperiment) {
       setSelectedMetricAnalysis(null);
       return;
     }
@@ -284,6 +283,7 @@ export default function ExperimentViewPage() {
   }
 
   const { design_spec, assign_summary } = experiment;
+  const isFrequentistExperiment = isFrequentistSpec(design_spec);
   const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
   const { alpha, power } = getAlphaAndPower(experiment); // undefined for non-frequentist experiments
 
@@ -406,7 +406,7 @@ export default function ExperimentViewPage() {
           headerLeft={
             <Flex gap="3" align="center" wrap="wrap">
               <Heading size="3">Analysis</Heading>
-              {isFrequentist(selectedAnalysisState.data) ? (
+              {isFrequentistExperiment ? (
                 <Flex gap="3" wrap="wrap">
                   <Badge size="2">
                     <Flex gap="2" align="center">
@@ -496,7 +496,7 @@ export default function ExperimentViewPage() {
                   </Flex>
                 </Badge>
               </Flex>
-              {isFrequentist(selectedAnalysisState.data) ? (
+              {isFrequentistExperiment ? (
                 <Flex gap="3" wrap="wrap">
                   <Badge size="2">
                     <Flex gap="4" align="center">
