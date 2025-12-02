@@ -303,6 +303,15 @@ export default function ExperimentViewPage() {
     selectedMetricName,
   );
 
+  const loadingMessage =
+    (isLoadingLiveCmabAnalysis || isLoadingLiveAnalysis) && isLoadingHistory
+      ? 'Loading live and historical analysis...'
+      : isLoadingLiveCmabAnalysis || isLoadingLiveAnalysis
+        ? 'Loading live analysis...'
+        : isLoadingHistory
+          ? 'Loading historical analysis...'
+          : undefined;
+
   return (
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
@@ -535,6 +544,13 @@ export default function ExperimentViewPage() {
                     Raw Data <CodeIcon />
                   </Flex>
                 </Tabs.Trigger>
+                {loadingMessage && (
+                  <Tabs.Trigger value="loading" disabled={true}>
+                    <Flex gap="2" align="center">
+                      <XSpinner message={loadingMessage} />
+                    </Flex>
+                  </Tabs.Trigger>
+                )}
               </Tabs.List>
               <Box px="4">
                 <Tabs.Content value="leaderboard">
@@ -547,25 +563,19 @@ export default function ExperimentViewPage() {
                       />
                     )}
 
-                    {analysisHistoryError && (
-                      <GenericErrorCallout
-                        title="Error loading historical analyses"
-                        message="Historical analyses may not be available yet."
-                      />
-                    )}
-
-                    {(isLoadingLiveCmabAnalysis || isLoadingLiveAnalysis) && (
-                      <XSpinner message="Loading live analysis..." />
-                    )}
-
-                    {isLoadingHistory && <XSpinner message="Loading historical analyses..." />}
-
-                    {!isLoadingLiveCmabAnalysis && !isLoadingLiveAnalysis && selectedAnalysisState.data && (
+                    {selectedAnalysisState.data && (
                       <ForestPlot
                         effectSizes={selectedAnalysisState.effectSizesByMetric?.get(selectedMetricName)}
                         banditEffects={selectedAnalysisState.banditEffects}
                         minX={ciBounds[0]}
                         maxX={ciBounds[1]}
+                      />
+                    )}
+
+                    {analysisHistoryError && (
+                      <GenericErrorCallout
+                        title="Error loading historical analyses"
+                        message="Historical analyses may not be available yet."
                       />
                     )}
 
