@@ -47,6 +47,9 @@ export function ContextConfigBox({ analysisKey, contexts, contextValues, onUpdat
       <Dialog.Content size="3" width="fit-content" onOpenAutoFocus={(e) => e.preventDefault()}>
         <Flex direction="column" gap="5">
           <Dialog.Title size="2">Context Value Configuration</Dialog.Title>
+          <Text size="2" color="gray">
+            See the estimated average outcomes for your given context values.
+          </Text>
           <Flex direction="column" gap="4" mt="4">
             {sortedContexts.map((context, index) => (
               <React.Fragment key={context.context_id}>

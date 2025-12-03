@@ -8,6 +8,7 @@ import {
   useListSnapshots,
   useUpdateExperiment,
   getGetExperimentForUiKey,
+  useAnalyzeCmabExperiment,
 } from '@/api/admin';
 import { ForestPlot } from '@/components/features/experiments/plots/forest-plot';
 import {
@@ -15,7 +16,6 @@ import {
   AnalysisState,
   precomputeFreqEffectsByMetric,
   precomputeBanditEffects,
-  isFrequentist,
   isBandit,
   transformAnalysisForForestTimeseriesPlot,
   getAlphaAndPower,
@@ -50,8 +50,8 @@ import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date
 import Link from 'next/link';
 import { mutate } from 'swr';
 import ForestTimeseriesPlot from '@/components/features/experiments/plots/forest-timeseries-plot';
-import { set } from 'zod';
 import { ContextConfigBox } from '@/components/features/experiments/context-config-box';
+import { isBanditSpec, isCmabExperiment, isFrequentistSpec } from '../create/types';
 
 export default function ExperimentViewPage() {
   const params = useParams();
@@ -89,14 +89,16 @@ export default function ExperimentViewPage() {
     swr: {
       enabled: !!datasourceId,
       onSuccess: (exp) => {
-        if (exp?.design_spec.experiment_type == 'cmab_online') {
-          // Initialize context inputs for CMAB analysis request
-          let contextInputs: ContextInput[] = [];
-          if (exp.design_spec.experiment_type == 'cmab_online' && exp.design_spec.contexts) {
-            contextInputs = exp.design_spec.contexts
-              .filter((ctx) => ctx.context_id !== undefined)
-              .map((ctx) => ({ context_id: ctx.context_id!, context_value: 0.0 }));
-          }
+        // Only initialize context input ids for CMAB experiments if they are not already set.
+        // Should only need to set this once for an experiment, as they are fixed at design time.
+        if (
+          isBanditSpec(exp.design_spec) &&
+          exp.design_spec.contexts &&
+          cmabAnalysisRequest.context_inputs.length === 0
+        ) {
+          const contextInputs = exp.design_spec.contexts
+            .filter((ctx) => ctx.context_id !== undefined)
+            .map((ctx) => ({ context_id: ctx.context_id!, context_value: 0.0 }));
           setCmabAnalysisRequest({ ...cmabAnalysisRequest, context_inputs: contextInputs });
         }
       },
@@ -107,38 +109,26 @@ export default function ExperimentViewPage() {
     mutate: analyzeLive,
     isLoading: isLoadingLiveAnalysis,
     error: liveAnalysisError,
-  } = useAnalyzeExperiment(
-    datasourceId,
-    experimentId,
-    experiment?.design_spec.experiment_type ?? 'freq_preassigned',
-    cmabAnalysisRequest,
-    undefined,
-    {
-      swr: {
-        enabled: !!datasourceId && !!experiment,
-        // Disable revalidation to only allow manual triggering of the live analysis
-        revalidateOnMount: false,
-        revalidateOnFocus: false,
-        shouldRetryOnError: false,
-        onSuccess: (analysisData) => {
-          const date = new Date();
-          const analysis = {
-            key: 'live',
-            data: analysisData,
-            updated_at: date,
-            label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
-            effectSizesByMetric: precomputeFreqEffectsByMetric(analysisData, alpha),
-            banditEffects: precomputeBanditEffects(analysisData),
-          };
-          setLiveAnalysis(analysis);
-          // Only update the display if we were previously viewing live data.
-          if (selectedAnalysisState.key === 'live') {
-            setSelectedAnalysisAndMetrics(analysis);
-          }
-        },
-      },
+  } = useAnalyzeExperiment(datasourceId, experimentId, undefined, {
+    swr: {
+      enabled: !!datasourceId && !!experiment && !isCmabExperiment(experiment),
+      // Disable revalidation to only allow manual triggering of the live analysis
+      revalidateOnMount: false,
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+      onSuccess: (analysisData) => handleLiveAnalysisSuccess(analysisData),
     },
-  );
+  });
+
+  const {
+    trigger: analyzeLiveCmab,
+    isMutating: isLoadingLiveCmabAnalysis,
+    error: liveCmabAnalysisError,
+  } = useAnalyzeCmabExperiment(datasourceId, experimentId, {
+    swr: {
+      onSuccess: (analysisData) => handleLiveAnalysisSuccess(analysisData),
+    },
+  });
 
   const { isLoading: isLoadingHistory, error: analysisHistoryError } = useListSnapshots(
     organizationId,
@@ -156,7 +146,7 @@ export default function ExperimentViewPage() {
 
           // Do live analysis if there are no snapshots
           if (data.items.length === 0) {
-            await analyzeLive();
+            await triggerLiveAnalysis();
             return;
           }
 
@@ -197,7 +187,7 @@ export default function ExperimentViewPage() {
         },
         onError: async () => {
           // Trigger live analysis if snapshot loading fails
-          await analyzeLive();
+          await triggerLiveAnalysis();
         },
       },
     },
@@ -213,7 +203,7 @@ export default function ExperimentViewPage() {
 
   const setSelectedAnalysisAndMetrics = (analysis: AnalysisState, forMetricName: string | undefined = undefined) => {
     setSelectedAnalysisState(analysis);
-    if (!isFrequentist(analysis.data)) {
+    if (!analysis.data || !isFrequentistExperiment) {
       setSelectedMetricAnalysis(null);
       return;
     }
@@ -238,22 +228,43 @@ export default function ExperimentViewPage() {
     setSelectedMetricAnalysis(newMetric);
   };
 
+  // Wrapper around the live analysis functions for CMAB and non-CMAB experiments.
+  const triggerLiveAnalysis = async (requestOverride?: CMABContextInputRequest) => {
+    const request = requestOverride ?? cmabAnalysisRequest;
+    return isCmabExperiment(experiment) ? await analyzeLiveCmab(request) : await analyzeLive();
+  };
+
+  const handleLiveAnalysisSuccess = (analysisData: ExperimentAnalysisResponse) => {
+    const date = new Date();
+    const analysis: AnalysisState = {
+      key: 'live',
+      data: analysisData,
+      updated_at: date,
+      label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
+      effectSizesByMetric: precomputeFreqEffectsByMetric(analysisData, alpha),
+      banditEffects: precomputeBanditEffects(analysisData),
+    };
+    setLiveAnalysis(analysis);
+    // Only update the display if we were previously viewing live data.
+    if (selectedAnalysisState.key === 'live') {
+      setSelectedAnalysisAndMetrics(analysis);
+    }
+  };
+
   const handleSelectAnalysis = async (key: string) => {
     const analysis = key === 'live' ? liveAnalysis : analysisHistory.find((opt) => opt.key === key);
     setSelectedAnalysisAndMetrics(analysis || liveAnalysis);
     // If we haven't fetched it yet, trigger a live analysis.
     if (key == 'live' && liveAnalysis.data === undefined) {
-      await analyzeLive();
+      await triggerLiveAnalysis();
     }
   };
 
   const handleUpdateCmabContextValue = async (key: string, context_inputs: ContextInput[]) => {
     if (key === 'live') {
-      setCmabAnalysisRequest((prev) => {
-        const updated = { ...prev, context_inputs: context_inputs };
-        setTimeout(() => analyzeLive(), 0); // Ensures state is updated before calling
-        return updated;
-      });
+      const updatedRequest = { ...cmabAnalysisRequest, context_inputs: context_inputs };
+      setCmabAnalysisRequest(updatedRequest);
+      await triggerLiveAnalysis(updatedRequest);
     } else {
       console.warn('Cannot update context values for snapshot analyses.');
     }
@@ -272,6 +283,7 @@ export default function ExperimentViewPage() {
   }
 
   const { design_spec, assign_summary } = experiment;
+  const isFrequentistExperiment = isFrequentistSpec(design_spec);
   const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
   const { alpha, power } = getAlphaAndPower(experiment); // undefined for non-frequentist experiments
 
@@ -290,8 +302,15 @@ export default function ExperimentViewPage() {
     analysisHistory,
     selectedMetricName,
   );
-  console.log(cmabAnalysisRequest);
-  console.log(selectedAnalysisState);
+
+  const loadingMessage =
+    (isLoadingLiveCmabAnalysis || isLoadingLiveAnalysis) && isLoadingHistory
+      ? 'Loading live and historical analysis...'
+      : isLoadingLiveCmabAnalysis || isLoadingLiveAnalysis
+        ? 'Loading live analysis...'
+        : isLoadingHistory
+          ? 'Loading historical analysis...'
+          : undefined;
 
   return (
     <Flex direction="column" gap="6">
@@ -305,7 +324,7 @@ export default function ExperimentViewPage() {
             datasourceId={datasourceId}
             organizationId={organizationId}
             arms={arms}
-            contexts={design_spec.experiment_type == 'cmab_online' ? (design_spec.contexts ?? undefined) : undefined}
+            contexts={isBanditSpec(design_spec) ? design_spec.contexts : undefined}
           />
         </Flex>
 
@@ -387,7 +406,7 @@ export default function ExperimentViewPage() {
           headerLeft={
             <Flex gap="3" align="center" wrap="wrap">
               <Heading size="3">Analysis</Heading>
-              {isFrequentist(selectedAnalysisState.data) ? (
+              {isFrequentistExperiment ? (
                 <Flex gap="3" wrap="wrap">
                   <Badge size="2">
                     <Flex gap="2" align="center">
@@ -477,7 +496,7 @@ export default function ExperimentViewPage() {
                   </Flex>
                 </Badge>
               </Flex>
-              {isFrequentist(selectedAnalysisState.data) ? (
+              {isFrequentistExperiment ? (
                 <Flex gap="3" wrap="wrap">
                   <Badge size="2">
                     <Flex gap="4" align="center">
@@ -525,32 +544,38 @@ export default function ExperimentViewPage() {
                     Raw Data <CodeIcon />
                   </Flex>
                 </Tabs.Trigger>
+                {loadingMessage && (
+                  <Tabs.Trigger value="loading" disabled={true}>
+                    <Flex gap="2" align="center">
+                      <XSpinner message={loadingMessage} />
+                    </Flex>
+                  </Tabs.Trigger>
+                )}
               </Tabs.List>
               <Box px="4">
                 <Tabs.Content value="leaderboard">
                   <Flex direction="column" gap="3" py="3">
                     {/* Analysis may not be available yet or the experiment hasn't collected enough data. */}
-                    {liveAnalysisError && (
-                      <GenericErrorCallout title="Error loading live analysis" error={liveAnalysisError} />
+                    {(liveAnalysisError || liveCmabAnalysisError) && (
+                      <GenericErrorCallout
+                        title="Error loading live analysis"
+                        error={liveAnalysisError ?? liveCmabAnalysisError}
+                      />
+                    )}
+
+                    {selectedAnalysisState.data && (
+                      <ForestPlot
+                        effectSizes={selectedAnalysisState.effectSizesByMetric?.get(selectedMetricName)}
+                        banditEffects={selectedAnalysisState.banditEffects}
+                        minX={ciBounds[0]}
+                        maxX={ciBounds[1]}
+                      />
                     )}
 
                     {analysisHistoryError && (
                       <GenericErrorCallout
                         title="Error loading historical analyses"
                         message="Historical analyses may not be available yet."
-                      />
-                    )}
-
-                    {isLoadingLiveAnalysis && <XSpinner message="Loading live analysis..." />}
-
-                    {isLoadingHistory && <XSpinner message="Loading historical analyses..." />}
-
-                    {!isLoadingLiveAnalysis && selectedAnalysisState.data && (
-                      <ForestPlot
-                        effectSizes={selectedAnalysisState.effectSizesByMetric?.get(selectedMetricName)}
-                        banditEffects={selectedAnalysisState.banditEffects}
-                        minX={ciBounds[0]}
-                        maxX={ciBounds[1]}
                       />
                     )}
 

@@ -3,12 +3,7 @@ import {
   ExperimentAnalysisResponse,
   FreqExperimentAnalysisResponse,
   BanditExperimentAnalysisResponse,
-  PreassignedFrequentistExperimentSpecOutput,
   GetExperimentResponse,
-  OnlineFrequentistExperimentSpecOutput,
-  PreassignedFrequentistExperimentSpecInputExperimentType,
-  OnlineFrequentistExperimentSpecInputExperimentType,
-  DesignSpecOutput,
 } from '@/api/methods.schemas';
 import {
   BanditEffectData,
@@ -20,6 +15,7 @@ import {
   Significance,
 } from './forest-plot-models';
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
+import { isFrequentistSpec } from '@/app/datasources/[datasourceId]/experiments/create/types';
 
 // Aiming for reasonably visually distinct colors for different arm line plots.
 export const ARM_COLORS = [
@@ -67,16 +63,6 @@ export const isBandit = (
   analysisData: ExperimentAnalysisResponse | undefined,
 ): analysisData is BanditExperimentAnalysisResponse => {
   return analysisData?.type === 'bandit';
-};
-
-export const isFrequentistSpec = (
-  spec: DesignSpecOutput | undefined,
-): spec is OnlineFrequentistExperimentSpecOutput | PreassignedFrequentistExperimentSpecOutput => {
-  if (!spec) return false;
-  return (
-    spec?.experiment_type in PreassignedFrequentistExperimentSpecInputExperimentType ||
-    spec?.experiment_type in OnlineFrequentistExperimentSpecInputExperimentType
-  );
 };
 
 /**
