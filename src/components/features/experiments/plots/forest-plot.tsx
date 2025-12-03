@@ -167,10 +167,10 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
         ]);
   const [minX, maxX] = computeAxisBounds(xAxisValues, minXProp, maxXProp);
 
-  // Space 3 ticks evenly across the domain, but filter out duplicates,
+  // Space ticks evenly across the domain, including 0, but filter out duplicates,
   // which can occur when the effect is 0.
-  const xGridPoints = [0, 1, 2, 3, 4]
-    .map((i) => minX + (i * (maxX - minX)) / 4)
+  const xGridPoints = [0, ...[0, 1, 2, 3, 4].map((i) => minX + (i * (maxX - minX)) / 4)]
+    .sort((a, b) => a - b)
     .filter((value, index, self) => self.indexOf(value) === index);
 
   // Scale xGridPoints to viewport units for use in drawing grid lines
@@ -246,7 +246,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
               <XAxis
                 type="number"
                 dataKey="absDifference"
-                interval="preserveStartEnd"
+                interval={0} // always show our ticks, to ensure the 0-point is always visible
                 scale="linear"
                 domain={[minX, maxX]}
                 style={commonAxisStyle}
