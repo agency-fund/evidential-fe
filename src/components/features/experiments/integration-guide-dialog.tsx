@@ -10,7 +10,7 @@ interface IntegrationGuideDialogProps {
   experimentId: string;
   datasourceId: string;
   arms: Arm[];
-  contexts?: Context[] | null;
+  contexts: Context[];
 }
 
 export function IntegrationGuideDialog({

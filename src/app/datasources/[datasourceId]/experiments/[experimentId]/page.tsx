@@ -292,9 +292,10 @@ export default function ExperimentViewPage() {
   }
 
   const { design_spec, assign_summary } = experiment;
-  const isFrequentistExperiment = isFrequentistSpec(design_spec);
-  const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
   const { alpha, power } = getAlphaAndPower(experiment); // undefined for non-frequentist experiments
+  const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
+  const isFrequentistExperiment = isFrequentistSpec(design_spec);
+  const contexts = isBanditSpec(design_spec) ? (design_spec.contexts ?? []) : [];
 
   const selectedMetricAnalyses =
     selectedAnalysisState.data && 'metric_analyses' in selectedAnalysisState.data
@@ -312,15 +313,6 @@ export default function ExperimentViewPage() {
     selectedMetricName,
   );
 
-  const loadingMessage =
-    (isLoadingLiveCmabAnalysis || isLoadingLiveAnalysis) && isLoadingHistory
-      ? 'Loading live and historical analysis...'
-      : isLoadingLiveCmabAnalysis || isLoadingLiveAnalysis
-        ? 'Loading live analysis...'
-        : isLoadingHistory
-          ? 'Loading historical analysis...'
-          : undefined;
-
   return (
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
@@ -333,7 +325,7 @@ export default function ExperimentViewPage() {
             datasourceId={datasourceId}
             organizationId={organizationId}
             arms={arms}
-            contexts={isBanditSpec(design_spec) ? design_spec.contexts : undefined}
+            contexts={contexts}
           />
         </Flex>
 
@@ -553,10 +545,10 @@ export default function ExperimentViewPage() {
                     Raw Data <CodeIcon />
                   </Flex>
                 </Tabs.Trigger>
-                {loadingMessage && (
+                {(isLoadingLiveCmabAnalysis || isLoadingLiveAnalysis || isLoadingHistory) && (
                   <Tabs.Trigger value="loading" disabled={true}>
                     <Flex gap="2" align="center">
-                      <XSpinner message={loadingMessage} />
+                      <XSpinner message="Loading analyses..." />
                     </Flex>
                   </Tabs.Trigger>
                 )}
