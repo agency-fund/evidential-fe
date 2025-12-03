@@ -82,6 +82,15 @@ const truncateLabel = (label: string, maxChars: number = 42): string => {
   return label.length > maxChars ? label.slice(0, maxChars) + '…' : label;
 };
 
+const formatValue = (value: number): string => {
+  // Show <= 2 decimal places only for values < 100
+  return Math.abs(value) >= 100 || value === 0
+    ? value.toFixed()
+    : Math.abs(value) >= 1
+      ? value.toFixed(1)
+      : value.toFixed(2);
+};
+
 function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
   if (!active || !payload || !payload.length) return null;
   const data = payload[0].payload;
@@ -91,23 +100,25 @@ function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
         <Text weight="bold">{data.armName}</Text>
         <Flex direction="row" gap="2">
           <Flex direction="column" gap="2" align="end">
-            <Text>Mean: </Text>
-            <Text>Difference: </Text>
-            <Text>95% CI: </Text>
-            <Text>Std. dev: </Text>
-            <Text>p-value: </Text>
+            <Text>Arm Mean: </Text>
+            {!data.isBaseline && <Text>Difference: </Text>}
+            <Text>{data.isBaseline ? 'Mean 95% CI: ' : 'Diff 95% CI: '}</Text>
+            <Text>Std. error: </Text>
+            {!data.isBaseline && <Text>p-value: </Text>}
           </Flex>
           <Flex direction="column" gap="2">
-            <Text>{data.absEffect.toFixed(2)}</Text>
-            <Text weight={data.significant ? 'bold' : undefined}>
-              {data.absDifference.toFixed(2)}
-              {!data.isBaseline && isFinite(data.relEffectPct) ? ` (${data.relEffectPct.toFixed(1)}%)` : ' (--%)'}
-            </Text>
+            <Text>{formatValue(data.absEffect)}</Text>
+            {!data.isBaseline && (
+              <Text weight={data.significant ? 'bold' : undefined}>
+                {formatValue(data.absDifference)}
+                {isFinite(data.relEffectPct) ? ` (${formatValue(data.relEffectPct)}%)` : ' (--%)'}
+              </Text>
+            )}
             <Text>
               [{data.ci95Lower.toFixed(2)}, {data.ci95Upper.toFixed(2)}]
             </Text>
-            <Text>{data.stdError?.toFixed(2) ?? '--'}</Text>
-            <Text>{data.pValue?.toFixed(3) ?? '--'}</Text>
+            <Text>{data.stdError ? formatValue(data.stdError) : '--'}</Text>
+            {!data.isBaseline && <Text>{data.pValue?.toFixed(3) ?? '--'}</Text>}
           </Flex>
         </Flex>
       </Card>
@@ -240,14 +251,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 domain={[minX, maxX]}
                 style={commonAxisStyle}
                 ticks={xGridPoints} // use our own ticks due to auto rendering issues
-                tickFormatter={(value) =>
-                  // Show <= 2 decimal places only for values < 10
-                  Math.abs(value) >= 10 || value === 0
-                    ? value.toFixed()
-                    : Math.abs(value) >= 1
-                      ? value.toFixed(1)
-                      : value.toFixed(2)
-                }
+                tickFormatter={formatValue}
               />
               {/* Use the left y-axis to display arm names */}
               <YAxis
@@ -274,7 +278,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                   } = props;
                   const armData = effectSizes[effectSizesIndex];
 
-                  const absoluteDiffText = !armData.isBaseline ? `Δ = ${armData.absDifference.toFixed(1)}` : '';
+                  const absoluteDiffText = !armData.isBaseline ? `Δ = ${formatValue(armData.absDifference)}` : '';
 
                   const commonRightAxisTextProps = {
                     x: props.x,
@@ -345,7 +349,9 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                   if (significant && !isBaseline) {
                     strokeColor = absDifference > 0 ? COLORS.POSITIVE_CI : COLORS.NEGATIVE_CI;
                   }
-                  return isNaN(ci95) ? (
+
+                  // Don't draw CIs for baseline arms as well since we're highlighting *differences* from the baseline.
+                  return isBaseline || isNaN(ci95) ? (
                     <g />
                   ) : (
                     <line
@@ -361,7 +367,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 }}
               />
 
-              {/* Points showing the arm mean differences from the baseline & baseline */}
+              {/* Points showing the arm mean differences from the baseline, and the baseline reference mean */}
               <Scatter
                 onMouseEnter={handleShowTooltip}
                 onMouseLeave={handleHideTooltip}
@@ -382,7 +388,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                     // Mark the control arm with a larger diamond shape
                     return (
                       <polygon
-                        points={createDiamondShape(centerX, centerY, 8)}
+                        points={createDiamondShape(centerX, centerY, 9)}
                         fill={COLORS.DEFAULT}
                         stroke={COLORS.DEFAULT_CI}
                       />
@@ -416,14 +422,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 domain={[minX, maxX]}
                 style={commonAxisStyle}
                 ticks={xGridPoints} // use our own ticks due to auto rendering issues
-                tickFormatter={(value) =>
-                  // Show <= 2 decimal places only for values < 10
-                  Math.abs(value) >= 10 || value === 0
-                    ? value.toFixed()
-                    : Math.abs(value) >= 1
-                      ? value.toFixed(1)
-                      : value.toFixed(2)
-                }
+                tickFormatter={formatValue}
               />
               <YAxis
                 type="category"

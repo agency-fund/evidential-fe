@@ -42,7 +42,7 @@ export const INACTIVE_ARM_COLORS = [
   'var(--violet-a5)',
   'var(--purple-a5)',
 ] as const;
-export const BASELINE_INDICATOR_COLOR = 'var(--blue-a4)';
+export const BASELINE_INDICATOR_COLOR = 'var(--blue-a5)';
 export const DEFAULT_POINT_COLOR = 'var(--gray-6)';
 export const CONTROL_COLOR = 'var(--gray-10)';
 export const INACTIVE_CONTROL_COLOR = 'var(--gray-a7)';
