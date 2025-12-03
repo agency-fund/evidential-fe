@@ -113,8 +113,8 @@ export const precomputeBanditEffects = (analysisData: ExperimentAnalysisResponse
 };
 
 /**
- * Computes min/max CI bounds for a given metric from a subset of analysis states.
- * This is useful for creating stable plot axes.
+ * Computes min/max CI bounds for a given metric from a subset of analysis states. Bounds should
+ * always be finite or undefined.  This is useful for creating stable plot axes.
  *
  * @param metricName - The metric field name to compute bounds for
  * @param analysisStates - Array of analysis states (e.g., snapshots and live analysis)
