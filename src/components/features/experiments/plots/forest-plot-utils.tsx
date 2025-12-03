@@ -3,12 +3,7 @@ import {
   ExperimentAnalysisResponse,
   FreqExperimentAnalysisResponse,
   BanditExperimentAnalysisResponse,
-  PreassignedFrequentistExperimentSpecOutput,
   GetExperimentResponse,
-  OnlineFrequentistExperimentSpecOutput,
-  PreassignedFrequentistExperimentSpecInputExperimentType,
-  OnlineFrequentistExperimentSpecInputExperimentType,
-  DesignSpecOutput,
 } from '@/api/methods.schemas';
 import {
   BanditEffectData,
@@ -20,6 +15,7 @@ import {
   Significance,
 } from './forest-plot-models';
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
+import { isFrequentistSpec } from '@/app/datasources/[datasourceId]/experiments/create/types';
 
 // Aiming for reasonably visually distinct colors for different arm line plots.
 export const ARM_COLORS = [
@@ -59,26 +55,16 @@ export const INACTIVE_NEGATIVE_COLOR = 'var(--ruby-a8)';
  * @param analysisData - The experiment analysis response to check
  * @returns True if the analysis is for a frequentist experiment
  */
-export const isFrequentist = (
+export const isFrequentistAnalysis = (
   analysisData: ExperimentAnalysisResponse | undefined,
 ): analysisData is FreqExperimentAnalysisResponse => {
   return analysisData?.type === 'freq';
 };
 
-export const isBandit = (
+export const isBanditAnalysis = (
   analysisData: ExperimentAnalysisResponse | undefined,
 ): analysisData is BanditExperimentAnalysisResponse => {
   return analysisData?.type === 'bandit';
-};
-
-export const isFrequentistSpec = (
-  spec: DesignSpecOutput | undefined,
-): spec is OnlineFrequentistExperimentSpecOutput | PreassignedFrequentistExperimentSpecOutput => {
-  if (!spec) return false;
-  return (
-    spec?.experiment_type in PreassignedFrequentistExperimentSpecInputExperimentType ||
-    spec?.experiment_type in OnlineFrequentistExperimentSpecInputExperimentType
-  );
 };
 
 /**
@@ -108,7 +94,7 @@ export const precomputeFreqEffectsByMetric = (
   analysisData: ExperimentAnalysisResponse,
   alpha: number = 0.05,
 ): Map<string, EffectSizeData[]> | undefined => {
-  if (!isFrequentist(analysisData)) return undefined;
+  if (!isFrequentistAnalysis(analysisData)) return undefined;
 
   const effectSizesByMetric = new Map<string, EffectSizeData[]>();
   for (const metricAnalysis of analysisData.metric_analyses) {
@@ -122,13 +108,13 @@ export const precomputeFreqEffectsByMetric = (
  * @returns undefined for non-bandit experiments (i.e. not BanditExperimentAnalysisResponse).
  */
 export const precomputeBanditEffects = (analysisData: ExperimentAnalysisResponse): BanditEffectData[] | undefined => {
-  if (!isBandit(analysisData)) return undefined;
+  if (!isBanditAnalysis(analysisData)) return undefined;
   return _generateBanditEffectData(analysisData);
 };
 
 /**
- * Computes min/max CI bounds for a given metric from a subset of analysis states.
- * This is useful for creating stable plot axes.
+ * Computes min/max CI bounds for a given metric from a subset of analysis states. Bounds should
+ * always be finite or undefined.  This is useful for creating stable plot axes.
  *
  * @param metricName - The metric field name to compute bounds for
  * @param analysisStates - Array of analysis states (e.g., snapshots and live analysis)
@@ -412,9 +398,9 @@ export const transformAnalysisForForestTimeseriesPlot = (
 
   // Filter out states that don't have effect sizes for this metric
   let validStates: AnalysisState[] = [];
-  if (isFrequentist(sortedStates[0]?.data)) {
+  if (isFrequentistAnalysis(sortedStates[0]?.data)) {
     validStates = sortedStates.filter((state) => state.effectSizesByMetric?.has(metricName));
-  } else if (isBandit(sortedStates[0]?.data)) {
+  } else if (isBanditAnalysis(sortedStates[0]?.data)) {
     validStates = sortedStates.filter((state) => state.banditEffects !== undefined);
   }
 
@@ -425,7 +411,7 @@ export const transformAnalysisForForestTimeseriesPlot = (
 
   // Extract arm metadata from the first valid data point
   const armMetadata: ArmMetadata[] = [];
-  const firstState = isFrequentist(validStates[0].data)
+  const firstState = isFrequentistAnalysis(validStates[0].data)
     ? validStates[0].effectSizesByMetric?.get(metricName)
     : validStates[0].banditEffects;
   if (firstState) {
@@ -442,7 +428,7 @@ export const transformAnalysisForForestTimeseriesPlot = (
   for (const state of validStates) {
     const armEffects = new Map<string, ArmDataPoint>();
 
-    if (isFrequentist(state.data)) {
+    if (isFrequentistAnalysis(state.data)) {
       const effectSizes = state.effectSizesByMetric?.get(metricName);
       if (!effectSizes) continue;
 
@@ -460,7 +446,7 @@ export const transformAnalysisForForestTimeseriesPlot = (
           significance,
         });
       }
-    } else if (isBandit(state.data)) {
+    } else if (isBanditAnalysis(state.data)) {
       const banditEffects = state.banditEffects;
       if (!banditEffects) continue;
 

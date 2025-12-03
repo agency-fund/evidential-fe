@@ -2,7 +2,7 @@
 import { IconButton, DropdownMenu, Dialog, DataList, Flex, Button } from '@radix-ui/themes';
 import { DotsVerticalIcon, FileIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
-import { Arm } from '@/api/methods.schemas';
+import { Arm, Context } from '@/api/methods.schemas';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
 
 interface IntegrationGuideDialogProps {
@@ -10,6 +10,7 @@ interface IntegrationGuideDialogProps {
   experimentId: string;
   datasourceId: string;
   arms: Arm[];
+  contexts: Context[];
 }
 
 export function IntegrationGuideDialog({
@@ -17,6 +18,7 @@ export function IntegrationGuideDialog({
   experimentId,
   datasourceId,
   arms,
+  contexts,
 }: IntegrationGuideDialogProps) {
   const [open, setOpen] = useState(false);
 
@@ -96,6 +98,30 @@ export function IntegrationGuideDialog({
                 ))}
               </DataList.Root>
             </Flex>
+
+            {contexts && contexts.length > 0 && (
+              <Flex direction="column" gap="3">
+                <Dialog.Description size="3" weight="bold">
+                  Contexts
+                </Dialog.Description>
+                <DataList.Root>
+                  {contexts.map((context) => (
+                    <DataList.Item key={context.context_id}>
+                      <DataList.Label>{context.context_name}</DataList.Label>
+                      <DataList.Value>
+                        <Flex align="center" gap="2" justify="between" width="100%">
+                          {context.context_id}
+                          <CopyToClipBoard
+                            content={context.context_id ?? ''}
+                            tooltipContent={`Copy ${context.context_name} ID`}
+                          />
+                        </Flex>
+                      </DataList.Value>
+                    </DataList.Item>
+                  ))}
+                </DataList.Root>
+              </Flex>
+            )}
 
             <Flex gap="3" justify="end">
               <Dialog.Close>
