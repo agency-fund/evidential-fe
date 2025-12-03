@@ -16,9 +16,10 @@ import {
   AnalysisState,
   precomputeFreqEffectsByMetric,
   precomputeBanditEffects,
-  isBandit,
+  isBanditAnalysis,
   transformAnalysisForForestTimeseriesPlot,
   getAlphaAndPower,
+  isFrequentistAnalysis,
 } from '@/components/features/experiments/plots/forest-plot-utils';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -206,7 +207,7 @@ export default function ExperimentViewPage() {
     historyOverride: AnalysisState[] | undefined = undefined,
   ) => {
     setSelectedAnalysisState(analysis);
-    if (!analysis.data || !isFrequentistExperiment) {
+    if (!isFrequentistAnalysis(analysis.data)) {
       setSelectedMetricAnalysis(null);
       return;
     }
@@ -215,8 +216,8 @@ export default function ExperimentViewPage() {
     // The fallback to the first metric should not actually happen in practice.
     const nameToFind = forMetricName || selectedMetricName;
     const metricAnalyses = analysis.data.metric_analyses;
-    const newMetric: MetricAnalysis | undefined =
-      metricAnalyses.find((metric) => metric.metric_name === nameToFind) || metricAnalyses[0];
+    const newMetric: MetricAnalysis | null =
+      metricAnalyses.find((metric) => metric.metric_name === nameToFind) || metricAnalyses[0] || null;
     const newMetricName = newMetric?.metric_name || 'unknown';
     // Recompute bounds if the metric changed
     if (selectedMetricName !== newMetricName) {
@@ -445,7 +446,7 @@ export default function ExperimentViewPage() {
                   </Badge>
                   <MdeBadge value={mdePct} />
                 </Flex>
-              ) : isBandit(selectedAnalysisState.data) &&
+              ) : isBanditAnalysis(selectedAnalysisState.data) &&
                 selectedAnalysisState.banditEffects &&
                 selectedAnalysisState.banditEffects.length > 1 ? (
                 <>
