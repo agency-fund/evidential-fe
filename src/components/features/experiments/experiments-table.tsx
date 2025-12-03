@@ -42,15 +42,7 @@ const COLUMN_CONFIG: ColumnConfig[] = [
     sortType: 'string',
     getValue: (experiment: ExperimentWithStatus) => experiment.status,
   },
-  {
-    label: 'Impact',
-    sortable: true,
-    sortKey: 'impact',
-    sortType: 'string',
-    getValue: (experiment: ExperimentWithStatus) => experiment.impact,
-  },
   { label: 'Hypothesis', sortable: false },
-  { label: 'Decision', sortable: false },
   {
     label: 'Start Date',
     sortable: true,
@@ -65,6 +57,14 @@ const COLUMN_CONFIG: ColumnConfig[] = [
     sortType: 'date',
     getValue: (experiment: ExperimentWithStatus) => experiment.design_spec.end_date,
   },
+  {
+    label: 'Impact',
+    sortable: true,
+    sortKey: 'impact',
+    sortType: 'string',
+    getValue: (experiment: ExperimentWithStatus) => experiment.impact,
+  },
+  { label: 'Decision', sortable: false },
   {
     label: 'Experiment Type',
     sortable: true,

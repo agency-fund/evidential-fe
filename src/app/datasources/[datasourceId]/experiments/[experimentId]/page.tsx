@@ -34,7 +34,6 @@ import { MdeBadge } from '@/components/features/experiments/mde-badge';
 import { EditableTextField } from '@/components/ui/inputs/editable-text-field';
 import { EditableDateField } from '@/components/ui/inputs/editable-date-field';
 import { EditableTextArea } from '@/components/ui/inputs/editable-text-area';
-import { EditExperimentImpact } from '@/components/features/experiments/edit-experiment-impact';
 import { ArmsAndAllocationsTable } from '@/components/features/experiments/arms-and-allocations-table';
 import { IntegrationGuideDialog } from '@/components/features/experiments/integration-guide-dialog';
 import { ReadMoreText } from '@/components/ui/read-more-text';
@@ -45,6 +44,7 @@ import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date
 import Link from 'next/link';
 import { mutate } from 'swr';
 import ForestTimeseriesPlot from '@/components/features/experiments/plots/forest-timeseries-plot';
+import { DecisionAndImpactSection } from '@/components/features/experiments/decision-and-impact-section';
 
 export default function ExperimentViewPage() {
   const params = useParams();
@@ -330,9 +330,6 @@ export default function ExperimentViewPage() {
           </Flex>
           <Separator orientation="vertical" />
           <ExperimentStatusBadge status={getExperimentStatus(start_date, end_date)} />
-
-          <Separator orientation="vertical" />
-          <EditExperimentImpact value={impact} onSubmit={(value) => updateExperiment({ impact: value })} size="1" />
         </Flex>
         <Flex gap="4" align="center">
           <ExperimentTypeBadge type={design_spec.experiment_type} />
@@ -589,14 +586,11 @@ export default function ExperimentViewPage() {
           </Flex>
         </SectionCard>
 
-        <SectionCard title="Decision">
-          <EditableTextArea value={decision || ''} onSubmit={(value) => updateExperiment({ decision: value })} size="2">
-            <ReadMoreText
-              text={decision || 'Briefly describe the key takeaway and decision take from this experiment'}
-              maxWords={30}
-            />
-          </EditableTextArea>
-        </SectionCard>
+        <DecisionAndImpactSection
+          impact={impact}
+          decision={decision}
+          onUpdate={(updates) => updateExperiment(updates)}
+        />
       </Flex>
     </Flex>
   );

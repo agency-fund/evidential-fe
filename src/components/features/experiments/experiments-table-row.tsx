@@ -54,12 +54,14 @@ export function ExperimentsTableRow({
           <ExperimentStatusBadge status={status} />
         </Table.Cell>
         <Table.Cell>
-          {impact ? <ExperimentImpactBadge impact={impact as ExperimentImpact} /> : <Text color="gray">N/A</Text>}
-        </Table.Cell>
-        <Table.Cell>
           <Flex width="150px">
             <Text truncate>{hypothesis}</Text>
           </Flex>
+        </Table.Cell>
+        <Table.Cell>{formatIsoDateLocal(startDate)}</Table.Cell>
+        <Table.Cell>{formatIsoDateLocal(endDate)}</Table.Cell>
+        <Table.Cell>
+          {impact ? <ExperimentImpactBadge impact={impact as ExperimentImpact} /> : <Text color="gray">N/A</Text>}
         </Table.Cell>
         <Table.Cell>
           <Flex width="150px">
@@ -68,8 +70,6 @@ export function ExperimentsTableRow({
             </Text>
           </Flex>
         </Table.Cell>
-        <Table.Cell>{formatIsoDateLocal(startDate)}</Table.Cell>
-        <Table.Cell>{formatIsoDateLocal(endDate)}</Table.Cell>
         <Table.Cell>
           <ExperimentTypeBadge type={type} />
         </Table.Cell>

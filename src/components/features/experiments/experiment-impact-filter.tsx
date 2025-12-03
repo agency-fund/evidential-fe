@@ -4,7 +4,7 @@ import { CheckboxGroup, DropdownMenu, Button, Flex } from '@radix-ui/themes';
 import { ExperimentImpactBadge } from '@/components/features/experiments/experiment-impact-badge';
 import type { ExperimentImpact } from '@/components/features/experiments/types';
 
-const IMPACT_OPTIONS: ExperimentImpact[] = ['high', 'medium', 'low', 'unclear'];
+const IMPACT_OPTIONS: ExperimentImpact[] = ['high', 'medium', 'low', 'negative', 'unclear'];
 
 interface ExperimentImpactFilterProps {
   value: ExperimentImpact[];

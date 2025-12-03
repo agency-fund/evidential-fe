@@ -7,6 +7,7 @@ const IMPACT_OPTIONS: { label: string; value: ExperimentImpact }[] = [
   { label: 'High Impact', value: 'high' },
   { label: 'Medium Impact', value: 'medium' },
   { label: 'Low Impact', value: 'low' },
+  { label: 'Negative Impact', value: 'negative' },
   { label: 'Unclear Impact', value: 'unclear' },
 ];
 
@@ -29,7 +30,7 @@ export function EditExperimentImpact({ value, onSubmit, size = '2' }: EditExperi
     >
       <Flex align="center">
         {value ? (
-          <ExperimentImpactBadge impact={value as ExperimentImpact} />
+          <ExperimentImpactBadge impact={value as ExperimentImpact} size={size}/>
         ) : (
           <Text size={size} color="gray">
             Choose impact
