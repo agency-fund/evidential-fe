@@ -4,18 +4,20 @@ export interface EffectSizeData {
   isBaseline: boolean;
   armId: string;
   armName: string;
-  isMissingAllValues: boolean;
   baselineEffect: number;
-  effect: number;
+  absDifference: number; // absolute difference from baseline effect, or 0 if it's the baseline itself
   absEffect: number;
+  relEffectPct: number; // change as a % of the baseline
+  stdError: number | null;
+  ci95: number; // for symmetric ErrorBars
   ci95Lower: number;
   ci95Upper: number;
-  ci95: number;
   absCI95Lower: number;
   absCI95Upper: number;
   pValue: number | null;
+  significant: boolean; // whether this non-baseline arm's effect is statistically significant
   invalidStatTest: boolean;
-  significant: boolean;
+  isMissingAllValues: boolean;
 }
 
 export interface BanditEffectData {

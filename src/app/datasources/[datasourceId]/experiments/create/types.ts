@@ -53,6 +53,11 @@ export const isBanditSpec = (
 export const isCmabExperiment = (experiment: GetExperimentResponse | undefined): boolean =>
   !!experiment && experiment.design_spec.experiment_type === CMABExperimentSpecInputExperimentType.cmab_online;
 
+// Type guard to check if formData is FrequentABFormData
+export function isFreqABFormData(data: ExperimentFormData): data is FrequentABFormData {
+  return isFreqExperimentType(data.experimentType);
+}
+
 export type AssignmentType = 'preassigned' | 'online';
 export type PriorType = MABExperimentSpecInput['prior_type'];
 export type OutcomeType = MABExperimentSpecInput['reward_type'];
