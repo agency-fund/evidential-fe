@@ -38,7 +38,7 @@ export const INACTIVE_ARM_COLORS = [
   'var(--violet-a5)',
   'var(--purple-a5)',
 ] as const;
-export const BASELINE_INDICATOR_COLOR = 'var(--blue-a4)';
+export const BASELINE_INDICATOR_COLOR = 'var(--blue-a5)';
 export const DEFAULT_POINT_COLOR = 'var(--gray-6)';
 export const CONTROL_COLOR = 'var(--gray-10)';
 export const INACTIVE_CONTROL_COLOR = 'var(--gray-a7)';
@@ -314,10 +314,14 @@ export const computeAxisBounds = (
   min = min - range * padding;
   max = max + range * padding;
 
-  // Round to nice numbers if values are large
-  if (Math.abs(min) > 1 && Math.abs(max) > 1) {
-    min = Math.floor(min);
-    max = Math.ceil(max);
+  // Round to nicer whole numbers depending on the magnitude of the range.
+  const paddedRange = range * (1 + 2 * padding);
+  if (paddedRange >= 0.1 && padding >= 0.02) {
+    const exp = Math.log10(paddedRange);
+    const x = exp >= 0 ? Math.floor(exp) : Math.ceil(exp);
+    const unit = Math.pow(10, x - 1);
+    min = Math.floor(min / unit) * unit;
+    max = Math.ceil(max / unit) * unit;
   }
 
   // If the domain appears to be essentially a singular value, make it larger to avoid a 0-width.
