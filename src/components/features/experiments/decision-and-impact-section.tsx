@@ -4,8 +4,8 @@ import { EditExperimentImpact } from '@/components/features/experiments/edit-exp
 import { ExperimentImpactBadge } from '@/components/features/experiments/experiment-impact-badge';
 import { EditableTextArea } from '@/components/ui/inputs/editable-text-area';
 import { ReadMoreText } from '@/components/ui/read-more-text';
-import { useState, useEffect } from 'react';
-import { Text, Flex, RadioCards, Button, TextArea } from '@radix-ui/themes';
+import { useEffect, useState } from 'react';
+import { Button, Flex, RadioCards, Text, TextArea } from '@radix-ui/themes';
 
 const impactOptions = [
   { value: 'unclear', label: 'Unclear Impact', description: 'Not enough data to determine impact' },
@@ -61,9 +61,9 @@ export function DecisionAndImpactSection({ impact, decision, onUpdate }: Decisio
     >
       {!impact ? (
         <form
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
-            handleSave();
+            await handleSave();
           }}
         >
           <Flex direction="column" gap="4">
