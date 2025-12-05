@@ -3,12 +3,7 @@ import {
   ExperimentAnalysisResponse,
   FreqExperimentAnalysisResponse,
   BanditExperimentAnalysisResponse,
-  PreassignedFrequentistExperimentSpecOutput,
   GetExperimentResponse,
-  OnlineFrequentistExperimentSpecOutput,
-  PreassignedFrequentistExperimentSpecInputExperimentType,
-  OnlineFrequentistExperimentSpecInputExperimentType,
-  DesignSpecOutput,
 } from '@/api/methods.schemas';
 import {
   BanditEffectData,
@@ -20,6 +15,7 @@ import {
   Significance,
 } from './forest-plot-models';
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
+import { isFrequentistSpec } from '@/app/datasources/[datasourceId]/experiments/create/types';
 
 // Aiming for reasonably visually distinct colors for different arm line plots.
 export const ARM_COLORS = [
@@ -33,22 +29,24 @@ export const ARM_COLORS = [
   'var(--purple-10)',
 ] as const;
 export const INACTIVE_ARM_COLORS = [
-  'var(--blue-a6)',
-  'var(--iris-a6)',
-  'var(--plum-a6)',
-  'var(--brown-a6)',
-  'var(--cyan-a6)',
-  'var(--indigo-a6)',
-  'var(--violet-a6)',
-  'var(--purple-a6)',
+  'var(--blue-a5)',
+  'var(--iris-a5)',
+  'var(--plum-a5)',
+  'var(--brown-a5)',
+  'var(--cyan-a5)',
+  'var(--indigo-a5)',
+  'var(--violet-a5)',
+  'var(--purple-a5)',
 ] as const;
-export const BASELINE_INDICATOR_COLOR = 'var(--indigo-8)';
-export const DEFAULT_POINT_COLOR = 'var(--gray-9)';
+export const BASELINE_INDICATOR_COLOR = 'var(--blue-a4)';
+export const DEFAULT_POINT_COLOR = 'var(--gray-6)';
 export const CONTROL_COLOR = 'var(--gray-10)';
-export const INACTIVE_CONTROL_COLOR = 'var(--gray-a8)';
+export const INACTIVE_CONTROL_COLOR = 'var(--gray-a7)';
 export const POSITIVE_COLOR = 'var(--jade-10)';
-export const NEGATIVE_COLOR = 'var(--ruby-10)';
+export const POSITIVE_LIGHT_COLOR = 'var(--jade-6)';
 export const INACTIVE_POSITIVE_COLOR = 'var(--jade-a8)';
+export const NEGATIVE_COLOR = 'var(--ruby-10)';
+export const NEGATIVE_LIGHT_COLOR = 'var(--ruby-6)';
 export const INACTIVE_NEGATIVE_COLOR = 'var(--ruby-a8)';
 
 /**
@@ -57,26 +55,16 @@ export const INACTIVE_NEGATIVE_COLOR = 'var(--ruby-a8)';
  * @param analysisData - The experiment analysis response to check
  * @returns True if the analysis is for a frequentist experiment
  */
-export const isFrequentist = (
+export const isFrequentistAnalysis = (
   analysisData: ExperimentAnalysisResponse | undefined,
 ): analysisData is FreqExperimentAnalysisResponse => {
   return analysisData?.type === 'freq';
 };
 
-export const isBandit = (
+export const isBanditAnalysis = (
   analysisData: ExperimentAnalysisResponse | undefined,
 ): analysisData is BanditExperimentAnalysisResponse => {
   return analysisData?.type === 'bandit';
-};
-
-export const isFrequentistSpec = (
-  spec: DesignSpecOutput | undefined,
-): spec is OnlineFrequentistExperimentSpecOutput | PreassignedFrequentistExperimentSpecOutput => {
-  if (!spec) return false;
-  return (
-    spec?.experiment_type in PreassignedFrequentistExperimentSpecInputExperimentType ||
-    spec?.experiment_type in OnlineFrequentistExperimentSpecInputExperimentType
-  );
 };
 
 /**
@@ -106,7 +94,7 @@ export const precomputeFreqEffectsByMetric = (
   analysisData: ExperimentAnalysisResponse,
   alpha: number = 0.05,
 ): Map<string, EffectSizeData[]> | undefined => {
-  if (!isFrequentist(analysisData)) return undefined;
+  if (!isFrequentistAnalysis(analysisData)) return undefined;
 
   const effectSizesByMetric = new Map<string, EffectSizeData[]>();
   for (const metricAnalysis of analysisData.metric_analyses) {
@@ -120,13 +108,13 @@ export const precomputeFreqEffectsByMetric = (
  * @returns undefined for non-bandit experiments (i.e. not BanditExperimentAnalysisResponse).
  */
 export const precomputeBanditEffects = (analysisData: ExperimentAnalysisResponse): BanditEffectData[] | undefined => {
-  if (!isBandit(analysisData)) return undefined;
+  if (!isBanditAnalysis(analysisData)) return undefined;
   return _generateBanditEffectData(analysisData);
 };
 
 /**
- * Computes min/max CI bounds for a given metric from a subset of analysis states.
- * This is useful for creating stable plot axes.
+ * Computes min/max CI bounds for a given metric from a subset of analysis states. Bounds should
+ * always be finite or undefined.  This is useful for creating stable plot axes.
  *
  * @param metricName - The metric field name to compute bounds for
  * @param analysisStates - Array of analysis states (e.g., snapshots and live analysis)
@@ -142,7 +130,7 @@ export const computeBoundsForMetric = (
   let maxUpper: number | undefined = undefined;
 
   // Include up to numSnapshots most recent analyses
-  const analysesToCheck = analysisStates.slice(0, numSnapshots);
+  const analysesToCheck = analysisStates.slice(0, numSnapshots).filter((s) => s.data !== undefined);
 
   // Iterate through all analyses and find min/max
   if (analysisStates.length > 0 && analysisStates[0].data?.type === 'freq') {
@@ -153,9 +141,9 @@ export const computeBoundsForMetric = (
       if (!effectSizes) continue;
 
       for (const effectSize of effectSizes) {
-        const { absCI95Lower, absCI95Upper } = effectSize;
-        minLower = minLower === undefined ? absCI95Lower : Math.min(minLower, absCI95Lower);
-        maxUpper = maxUpper === undefined ? absCI95Upper : Math.max(maxUpper, absCI95Upper);
+        const { ci95Lower, ci95Upper } = effectSize;
+        minLower = minLower === undefined ? ci95Lower : Math.min(minLower, ci95Lower);
+        maxUpper = maxUpper === undefined ? ci95Upper : Math.max(maxUpper, ci95Upper);
       }
     }
   } else if (analysisStates.length > 0 && analysisStates[0].data?.type === 'bandit') {
@@ -192,40 +180,46 @@ const _generateFreqEffectSizeData = (analysis: MetricAnalysis, alpha: number): E
   const effectSizes: EffectSizeData[] = analysis.arm_analyses.map((armAnalysis, index) => {
     const isBaseline = armAnalysis.is_baseline;
     const armId = armAnalysis.arm_id || 'MISSING_ARM_ID'; // should be impossible
+    const armName = armAnalysis.arm_name || `Arm ${index}`;
 
     const estimate = armAnalysis.estimate; // regression coefficient
     const stdError = armAnalysis.std_error;
     const pValue = armAnalysis.p_value;
     const tStat = armAnalysis.t_stat;
+    const significant = !isBaseline && !!(pValue !== null && pValue < alpha);
     const invalidStatTest =
       pValue === null || pValue === undefined || tStat === null || tStat === undefined || stdError === null;
     const isMissingAllValues = armAnalysis.num_missing_values < 0;
 
+    const absDifference = isBaseline ? 0 : estimate;
+    const absEffect = absDifference + controlEstimate;
+    const relEffectPct = ((absEffect - controlEstimate) / controlEstimate) * 100;
     // Calculate 95% confidence interval
     // TODO: backend should return CIs; this approximation is for z-tests, and not appropriate for small sample sizes.
     const ci95 = stdError === null ? NaN : 1.96 * stdError;
-    const ci95Lower = estimate - ci95;
-    const ci95Upper = estimate + ci95;
-    const absEffect = estimate + (isBaseline ? 0 : controlEstimate);
-    const absCI95Lower = ci95Lower + (isBaseline ? 0 : controlEstimate);
-    const absCI95Upper = ci95Upper + (isBaseline ? 0 : controlEstimate);
+    const ci95Lower = absDifference - ci95;
+    const ci95Upper = absDifference + ci95;
+    const absCI95Lower = absEffect - ci95;
+    const absCI95Upper = absEffect + ci95;
 
     return {
       isBaseline,
       armId,
-      armName: armAnalysis.arm_name || `Arm ${index}`,
-      isMissingAllValues,
+      armName,
       baselineEffect: controlEstimate,
-      effect: estimate, // relative to baseline effect
-      absEffect: absEffect,
+      absDifference,
+      absEffect,
+      relEffectPct,
+      stdError,
+      ci95,
       ci95Lower,
       ci95Upper,
-      ci95: ci95, // for symmetric ErrorBars
       absCI95Lower,
       absCI95Upper,
       pValue,
+      significant,
       invalidStatTest,
-      significant: !isBaseline && !!(pValue !== null && pValue < alpha),
+      isMissingAllValues,
     };
   });
 
@@ -404,9 +398,9 @@ export const transformAnalysisForForestTimeseriesPlot = (
 
   // Filter out states that don't have effect sizes for this metric
   let validStates: AnalysisState[] = [];
-  if (isFrequentist(sortedStates[0]?.data)) {
+  if (isFrequentistAnalysis(sortedStates[0]?.data)) {
     validStates = sortedStates.filter((state) => state.effectSizesByMetric?.has(metricName));
-  } else if (isBandit(sortedStates[0]?.data)) {
+  } else if (isBanditAnalysis(sortedStates[0]?.data)) {
     validStates = sortedStates.filter((state) => state.banditEffects !== undefined);
   }
 
@@ -417,7 +411,7 @@ export const transformAnalysisForForestTimeseriesPlot = (
 
   // Extract arm metadata from the first valid data point
   const armMetadata: ArmMetadata[] = [];
-  const firstState = isFrequentist(validStates[0].data)
+  const firstState = isFrequentistAnalysis(validStates[0].data)
     ? validStates[0].effectSizesByMetric?.get(metricName)
     : validStates[0].banditEffects;
   if (firstState) {
@@ -434,7 +428,7 @@ export const transformAnalysisForForestTimeseriesPlot = (
   for (const state of validStates) {
     const armEffects = new Map<string, ArmDataPoint>();
 
-    if (isFrequentist(state.data)) {
+    if (isFrequentistAnalysis(state.data)) {
       const effectSizes = state.effectSizesByMetric?.get(metricName);
       if (!effectSizes) continue;
 
@@ -442,7 +436,7 @@ export const transformAnalysisForForestTimeseriesPlot = (
         // Determine significance based on the effect
         let significance = Significance.No;
         if (effectSize.significant) {
-          significance = effectSize.effect > 0 ? Significance.Positive : Significance.Negative;
+          significance = effectSize.absDifference > 0 ? Significance.Positive : Significance.Negative;
         }
 
         armEffects.set(effectSize.armId, {
@@ -452,7 +446,7 @@ export const transformAnalysisForForestTimeseriesPlot = (
           significance,
         });
       }
-    } else if (isBandit(state.data)) {
+    } else if (isBanditAnalysis(state.data)) {
       const banditEffects = state.banditEffects;
       if (!banditEffects) continue;
 
