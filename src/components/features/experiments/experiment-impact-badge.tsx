@@ -1,12 +1,11 @@
 import { Badge, Flex } from '@radix-ui/themes';
-import type { ExperimentImpact } from '@/components/features/experiments/types';
 
 interface ExperimentImpactBadgeProps {
-  impact: ExperimentImpact;
+  impact: string;
   size?: '1' | '2' | '3';
 }
 
-const impactConfig: Record<ExperimentImpact, { label: string; color: 'red' | 'yellow' | 'green' | 'blue' | 'gray' }> = {
+const impactConfig: Record<string, { label: string; color: 'red' | 'yellow' | 'green' | 'blue' | 'gray' }> = {
   high: { label: 'High Impact', color: 'green' },
   medium: { label: 'Medium Impact', color: 'blue' },
   low: { label: 'Low Impact', color: 'yellow' },
@@ -20,7 +19,7 @@ export function ExperimentImpactBadge({ impact, size = '1' }: ExperimentImpactBa
   return (
     <Badge color={config.color} variant="soft" size={size} style={{ cursor: 'default' }}>
       <Flex width="100%" justify="center">
-      {config.label}
+        {config.label}
       </Flex>
     </Badge>
   );

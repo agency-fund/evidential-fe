@@ -1,9 +1,8 @@
 import { ExperimentImpactBadge } from '@/components/features/experiments/experiment-impact-badge';
-import type { ExperimentImpact } from '@/components/features/experiments/types';
 import { EditableSelect } from '@/components/ui/inputs/editable-select';
 import { Flex, Text } from '@radix-ui/themes';
 
-const IMPACT_OPTIONS: { label: string; value: ExperimentImpact }[] = [
+const IMPACT_OPTIONS: { label: string; value: string }[] = [
   { label: 'High Impact', value: 'high' },
   { label: 'Medium Impact', value: 'medium' },
   { label: 'Low Impact', value: 'low' },
@@ -12,7 +11,7 @@ const IMPACT_OPTIONS: { label: string; value: ExperimentImpact }[] = [
 ];
 
 interface EditExperimentImpactProps {
-  value?: ExperimentImpact | string | null;
+  value?: string | null;
   onSubmit: (value: string) => Promise<void> | void;
   size?: '1' | '2' | '3';
 }
@@ -30,7 +29,7 @@ export function EditExperimentImpact({ value, onSubmit, size = '2' }: EditExperi
     >
       <Flex align="center">
         {value ? (
-          <ExperimentImpactBadge impact={value as ExperimentImpact} size={size}/>
+          <ExperimentImpactBadge impact={value} size={size} />
         ) : (
           <Text size={size} color="gray">
             Choose impact

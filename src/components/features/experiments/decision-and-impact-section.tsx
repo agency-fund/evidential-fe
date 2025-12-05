@@ -6,15 +6,19 @@ import { EditableTextArea } from '@/components/ui/inputs/editable-text-area';
 import { ReadMoreText } from '@/components/ui/read-more-text';
 import { useState, useEffect } from 'react';
 import { Text, Flex, RadioCards, Button, TextArea } from '@radix-ui/themes';
-import type { ExperimentImpact } from '@/components/features/experiments/types';
 
-const impactOptions: { value: ExperimentImpact; label: string; description: string }[] = [
+const impactOptions = [
   { value: 'unclear', label: 'Unclear Impact', description: 'Not enough data to determine impact' },
   { value: 'negative', label: 'Negative Impact', description: 'Significant adverse effects observed' },
   { value: 'low', label: 'Low Impact', description: 'Minor positive effects observed' },
   { value: 'medium', label: 'Medium Impact', description: 'Moderate positive effects observed' },
   { value: 'high', label: 'High Impact', description: 'Significant positive effects observed' },
 ];
+
+const IMPACT_HELP_TEXT =
+  'Has the experiment unlocked key insights or triggered major decisions that have positively affected the program? Please do not confuse this with the treatment effect—inconclusive experiments can have big impact for organizations in terms of learning.';
+
+const DECISION_HELP_TEXT = 'Briefly describe the key takeaways and decisions taken from this experiment';
 
 interface DecisionAndImpactSectionProps {
   impact: string | null | undefined;
@@ -32,31 +36,28 @@ const defaultFormData = (impact: string | null | undefined, decision: string | n
   decision: decision ?? '',
 });
 
-export function DecisionAndImpactSection({
-  impact,
-  decision,
-  onUpdate,
-}: DecisionAndImpactSectionProps) {
+export function DecisionAndImpactSection({ impact, decision, onUpdate }: DecisionAndImpactSectionProps) {
   const [formData, setFormData] = useState<FormData>(defaultFormData(impact, decision));
 
   useEffect(() => {
     setFormData(defaultFormData(impact, decision));
   }, [impact, decision]);
 
-  const handleSave = async () => {
-    const updates: { impact?: string; decision?: string } = {};
-    if (formData.impact) updates.impact = formData.impact;
-    if (formData.decision) updates.decision = formData.decision;
-
-    await onUpdate(updates);
-  };
-
   const canSave = formData.impact || formData.decision;
+
+  const handleSave = async () => {
+    await onUpdate({
+      impact: formData.impact,
+      decision: formData.decision,
+    });
+  };
 
   return (
     <SectionCard
       title="Decision and Impact"
-      headerRight={impact && <EditExperimentImpact value={impact} onSubmit={(value) => onUpdate({ impact: value })} size="2" />}
+      headerRight={
+        impact && <EditExperimentImpact value={impact} onSubmit={(value) => onUpdate({ impact: value })} size="1" />
+      }
     >
       {!impact ? (
         <form
@@ -72,7 +73,7 @@ export function DecisionAndImpactSection({
                   Impact
                 </Text>
                 <Text as="p" size="1" color="gray">
-                  Here you can set the impact of the decision made based on the experiment results.
+                  {IMPACT_HELP_TEXT}
                 </Text>
               </Flex>
               <RadioCards.Root
@@ -99,7 +100,7 @@ export function DecisionAndImpactSection({
                   Decision
                 </Text>
                 <Text size="1" color="gray">
-                  Briefly describe the key takeaway and decision taken from this experiment
+                  {DECISION_HELP_TEXT}
                 </Text>
               </Flex>
               <TextArea
@@ -118,7 +119,7 @@ export function DecisionAndImpactSection({
         </form>
       ) : (
         <EditableTextArea value={decision || ''} onSubmit={(value) => onUpdate({ decision: value })} size="2">
-          <ReadMoreText text={decision || 'Briefly describe the key takeaway and decision taken from this experiment'} maxWords={30} />
+          <ReadMoreText text={decision || DECISION_HELP_TEXT} maxWords={30} />
         </EditableTextArea>
       )}
     </SectionCard>

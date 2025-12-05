@@ -1,14 +1,14 @@
 'use client';
 
+import Link from 'next/link';
 import { Table, Text, Flex, Tooltip, IconButton } from '@radix-ui/themes';
+import { FileTextIcon } from '@radix-ui/react-icons';
 import { ExperimentStatusBadge } from '@/components/features/experiments/experiment-status-badge';
 import { ExperimentImpactBadge } from '@/components/features/experiments/experiment-impact-badge';
-import type { ExperimentStatus, ExperimentImpact } from '@/components/features/experiments/types';
+import type { ExperimentStatus } from '@/components/features/experiments/types';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { formatIsoDateLocal } from '@/services/date-utils';
-import { FileTextIcon } from '@radix-ui/react-icons';
-import Link from 'next/link';
 
 interface ExperimentTableRowProps {
   title: string;
@@ -16,7 +16,7 @@ interface ExperimentTableRowProps {
   decision?: string;
   type: string;
   status: ExperimentStatus;
-  impact?: ExperimentImpact | string;
+  impact?: string;
   startDate: string;
   endDate: string;
   datasourceId: string;
@@ -61,12 +61,12 @@ export function ExperimentsTableRow({
         <Table.Cell>{formatIsoDateLocal(startDate)}</Table.Cell>
         <Table.Cell>{formatIsoDateLocal(endDate)}</Table.Cell>
         <Table.Cell>
-          {impact ? <ExperimentImpactBadge impact={impact as ExperimentImpact} /> : <Text color="gray">N/A</Text>}
+          {impact ? <ExperimentImpactBadge impact={impact} /> : <Text color="gray">Ongoing</Text>}
         </Table.Cell>
         <Table.Cell>
           <Flex width="150px">
             <Text truncate color={decision ? undefined : 'gray'}>
-              {decision || 'N/A'}
+              {decision || 'Ongoing'}
             </Text>
           </Flex>
         </Table.Cell>

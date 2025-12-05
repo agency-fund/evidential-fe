@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useLocalStorage } from '@/providers/use-local-storage';
 import { Flex, Grid, Heading, TextField, IconButton, Tooltip } from '@radix-ui/themes';
 import { GearIcon, MagnifyingGlassIcon, ListBulletIcon, DashboardIcon, ReloadIcon } from '@radix-ui/react-icons';
 import { useListOrganizationDatasources, useListOrganizationExperiments } from '@/api/admin';
@@ -14,7 +15,7 @@ import { ExperimentCard } from '@/components/features/experiments/experiment-car
 import { ExperimentsTable } from '@/components/features/experiments/experiments-table';
 import { ExperimentStatusFilter } from '@/components/features/experiments/experiment-status-filter';
 import { ExperimentImpactFilter } from '@/components/features/experiments/experiment-impact-filter';
-import type { ExperimentStatus, ExperimentImpact, ExperimentWithStatus } from '@/components/features/experiments/types';
+import type { ExperimentStatus, ExperimentWithStatus } from '@/components/features/experiments/types';
 import { getExperimentStatus } from '@/services/experiment-utils';
 
 export default function Page() {
@@ -22,9 +23,11 @@ export default function Page() {
   const orgContext = useCurrentOrganization();
   const currentOrgId = orgContext!.current.id;
   const [selectedStatuses, setSelectedStatuses] = useState<ExperimentStatus[]>([]);
-  const [selectedImpacts, setSelectedImpacts] = useState<ExperimentImpact[]>([]);
+  const [selectedImpacts, setSelectedImpacts] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
+  const [viewMode, setViewMode] = useLocalStorage<'card' | 'table'>('exp-view-mode');
+
+  const isCardView = viewMode === null || viewMode === 'card';
 
   const {
     data: datasourcesData,
@@ -58,8 +61,17 @@ export default function Page() {
 
   const matchesImpactFilter = (experiment: ExperimentWithStatus): boolean => {
     if (selectedImpacts.length === 0) return true;
-    if (!experiment.impact) return false;
-    return selectedImpacts.includes(experiment.impact as ExperimentImpact);
+
+    const hasNotSpecifiedFilter = selectedImpacts.includes('__not_specified__');
+    const isNotSpecified = !experiment.impact || experiment.impact === '';
+
+    // If experiment has no impact set
+    if (isNotSpecified) {
+      return hasNotSpecifiedFilter;
+    }
+
+    // If experiment has impact set, check if it's in selected filters
+    return selectedImpacts.includes(experiment.impact!);
   };
 
   const matchesSearchQuery = (experiment: ExperimentWithStatus): boolean => {
@@ -159,20 +171,12 @@ export default function Page() {
 
             <Flex gap="2">
               <Tooltip content="Card View">
-                <IconButton
-                  variant={viewMode === 'card' ? 'solid' : 'soft'}
-                  size="2"
-                  onClick={() => setViewMode('card')}
-                >
+                <IconButton variant={isCardView ? 'solid' : 'soft'} size="2" onClick={() => setViewMode('card')}>
                   <DashboardIcon />
                 </IconButton>
               </Tooltip>
               <Tooltip content="Table View">
-                <IconButton
-                  variant={viewMode === 'table' ? 'solid' : 'soft'}
-                  size="2"
-                  onClick={() => setViewMode('table')}
-                >
+                <IconButton variant={!isCardView ? 'solid' : 'soft'} size="2" onClick={() => setViewMode('table')}>
                   <ListBulletIcon />
                 </IconButton>
               </Tooltip>
@@ -188,7 +192,7 @@ export default function Page() {
                   : 'Try adjusting your filters to see more experiments.'
               }
             />
-          ) : viewMode === 'card' ? (
+          ) : isCardView ? (
             <Grid columns={{ initial: '1', md: '2', lg: '3' }} gap="3">
               {filteredExperiments.map((experiment) => {
                 return (

@@ -6,7 +6,7 @@ import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import { ExperimentStatusBadge } from '@/components/features/experiments/experiment-status-badge';
 import { ExperimentImpactBadge } from '@/components/features/experiments/experiment-impact-badge';
-import type { ExperimentStatus, ExperimentImpact } from '@/components/features/experiments/types';
+import type { ExperimentStatus } from '@/components/features/experiments/types';
 import { formatIsoDateLocal } from '@/services/date-utils';
 import Link from 'next/link';
 
@@ -17,7 +17,7 @@ interface ExperimentCardProps {
   startDate: string;
   endDate: string;
   status: ExperimentStatus;
-  impact?: ExperimentImpact | string;
+  impact?: string;
   decision?: string;
   datasourceId: string;
   designUrl?: string;
@@ -77,11 +77,13 @@ export function ExperimentCard({
 
           <Flex align="center" gap="2">
             <ExperimentTypeBadge type={type} />
-            {impact && (
-              <>
-                <Separator orientation="vertical" />
-                <ExperimentImpactBadge impact={impact as ExperimentImpact} />
-              </>
+            <Separator orientation="vertical" />
+            {impact ? (
+              <ExperimentImpactBadge impact={impact} />
+            ) : (
+              <Text size="2" color="gray">
+                Ongoing
+              </Text>
             )}
           </Flex>
 
@@ -101,7 +103,7 @@ export function ExperimentCard({
                 Decision
               </Text>
               <Text size="2" truncate color={decision ? undefined : 'gray'}>
-                {decision || 'N/A'}
+                {decision || 'Ongoing'}
               </Text>
             </Flex>
           </Flex>
