@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Table, Text, Flex, Tooltip, IconButton } from '@radix-ui/themes';
+import { Flex, IconButton, Table, Text, Tooltip } from '@radix-ui/themes';
 import { FileTextIcon } from '@radix-ui/react-icons';
 import { ExperimentStatusBadge } from '@/components/features/experiments/experiment-status-badge';
 import { ExperimentImpactBadge } from '@/components/features/experiments/experiment-impact-badge';
@@ -61,7 +61,7 @@ export function ExperimentsTableRow({
         <Table.Cell>{formatIsoDateLocal(startDate)}</Table.Cell>
         <Table.Cell>{formatIsoDateLocal(endDate)}</Table.Cell>
         <Table.Cell>
-          {impact ? <ExperimentImpactBadge impact={impact} /> : <Text color="gray">Ongoing</Text>}
+          {impact ? <ExperimentImpactBadge impact={impact} short={true} /> : <Text color="gray">Ongoing</Text>}
         </Table.Cell>
         <Table.Cell>
           <Flex width="150px">
