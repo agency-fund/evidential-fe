@@ -129,11 +129,11 @@ export function ExperimentsTable({ experiments, organizationId }: ExperimentTabl
       return experiments;
     }
 
-    const sorted = [...experiments];
-    sorted.sort((a, b) => {
+    return experiments.toSorted((a, b) => {
       const aValue = column.getSortValue(a);
       const bValue = column.getSortValue(b);
 
+      if (aValue === undefined && bValue === undefined) return 0;
       if (aValue === undefined) return 1;
       if (bValue === undefined) return -1;
 
@@ -141,8 +141,6 @@ export function ExperimentsTable({ experiments, organizationId }: ExperimentTabl
 
       return sortDirection === 'asc' ? comparison : -comparison;
     });
-
-    return sorted;
   };
 
   const sortedExperiments = getSortedExperiments();
