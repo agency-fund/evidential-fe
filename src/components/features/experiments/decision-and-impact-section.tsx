@@ -119,7 +119,7 @@ export function DecisionAndImpactSection({ impact, decision, onUpdate }: Decisio
         </form>
       ) : (
         <EditableTextArea value={decision || ''} onSubmit={(value) => onUpdate({ decision: value })} size="2">
-          <ReadMoreText text={decision || DECISION_HELP_TEXT} maxWords={30} />
+          {decision ? <ReadMoreText text={decision} maxWords={30} /> : <Text color={'gray'}>{DECISION_HELP_TEXT}</Text>}
         </EditableTextArea>
       )}
     </SectionCard>
