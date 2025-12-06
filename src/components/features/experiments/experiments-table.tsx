@@ -5,6 +5,8 @@ import { CaretDownIcon, CaretSortIcon, CaretUpIcon } from '@radix-ui/react-icons
 import { ExperimentsTableRow } from '@/components/features/experiments/experiments-table-row';
 import type { ExperimentWithStatus } from '@/components/features/experiments/types';
 
+const IMPACT_ORDERING = ['high', 'medium', 'low', 'negative', 'unclear'];
+
 interface ExperimentTableProps {
   experiments: ExperimentWithStatus[];
   organizationId: string;
@@ -62,7 +64,16 @@ const COLUMN_CONFIG: ColumnConfig[] = [
     sortable: true,
     sortKey: 'impact',
     sortType: 'string',
-    getSortValue: (experiment: ExperimentWithStatus) => experiment.impact,
+    getSortValue: (experiment: ExperimentWithStatus) => {
+      if (experiment.impact === undefined) {
+        return undefined;
+      }
+      const pos = IMPACT_ORDERING.indexOf(experiment.impact || '');
+      if (pos === -1) {
+        return 'a' + experiment.impact; // unrecognized impacts
+      }
+      return String.fromCharCode('b'.charCodeAt(0) + pos); // standard impacts
+    },
   },
   { label: 'Decision', sortable: false },
   {
