@@ -75,7 +75,18 @@ const COLUMN_CONFIG: ColumnConfig[] = [
       return String.fromCharCode('b'.charCodeAt(0) + pos); // standard impacts
     },
   },
-  { label: 'Decision', sortable: false },
+  {
+    label: 'Decision',
+    sortable: true,
+    sortKey: 'decision',
+    sortType: 'string',
+    getSortValue: (experiment: ExperimentWithStatus) => {
+      if (experiment.decision === undefined || experiment.decision.trim().length === 0) {
+        return undefined;
+      }
+      return experiment.decision;
+    },
+  },
   {
     label: 'Experiment Type',
     sortable: true,
