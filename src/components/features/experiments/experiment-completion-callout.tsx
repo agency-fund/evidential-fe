@@ -1,5 +1,6 @@
 import { Callout } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
+import Link from 'next/link';
 
 interface ExperimentCompletionCalloutProps {
   endDate: string;
@@ -50,7 +51,7 @@ export function ExperimentCompletionCallout({ endDate, hasImpact, hasDecision }:
         <InfoCircledIcon />
       </Callout.Icon>
       <Callout.Text>
-        {message} <a href="#decision-and-impact">Summarize the impact</a>.
+        {message} <Link href="#decision-and-impact">Summarize the impact</Link>.
       </Callout.Text>
     </Callout.Root>
   );
