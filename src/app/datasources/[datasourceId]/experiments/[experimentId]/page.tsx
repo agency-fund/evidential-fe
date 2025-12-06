@@ -1,6 +1,9 @@
 'use client';
-import { Badge, Box, Flex, Heading, Separator, Tabs, Text, Tooltip, Select } from '@radix-ui/themes';
+import { useState } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
+import { mutate } from 'swr';
+import { Badge, Box, Flex, Heading, Separator, Tabs, Text, Tooltip, Select } from '@radix-ui/themes';
 import { CalendarIcon, CodeIcon, InfoCircledIcon, PersonIcon, FileTextIcon } from '@radix-ui/react-icons';
 import {
   useAnalyzeExperiment,
@@ -10,6 +13,15 @@ import {
   getGetExperimentForUiKey,
   useAnalyzeCmabExperiment,
 } from '@/api/admin';
+import {
+  Snapshot,
+  MetricAnalysis,
+  ExperimentAnalysisResponse,
+  MABExperimentSpecOutput,
+  CMABExperimentSpecOutput,
+  CMABContextInputRequest,
+  ContextInput,
+} from '@/api/methods.schemas';
 import { ForestPlot } from '@/components/features/experiments/plots/forest-plot';
 import {
   computeBoundsForMetric,
@@ -21,36 +33,28 @@ import {
   getAlphaAndPower,
   isFrequentistAnalysis,
 } from '@/components/features/experiments/plots/forest-plot-utils';
+import ForestTimeseriesPlot from '@/components/features/experiments/plots/forest-timeseries-plot';
+import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
+import { ExperimentStatusBadge } from '@/components/features/experiments/experiment-status-badge';
+import { MdeBadge } from '@/components/features/experiments/mde-badge';
+import { ArmsAndAllocationsTable } from '@/components/features/experiments/arms-and-allocations-table';
+import { IntegrationGuideDialog } from '@/components/features/experiments/integration-guide-dialog';
+import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
+import { DecisionAndImpactSection } from '@/components/features/experiments/decision-and-impact-section';
+import { ExperimentCompletionCallout } from '@/components/features/experiments/experiment-completion-callout';
+import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { useState } from 'react';
 import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
-import { prettyJSON } from '@/services/json-utils';
-import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
-import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
 import { SectionCard } from '@/components/ui/cards/section-card';
-import { MdeBadge } from '@/components/features/experiments/mde-badge';
 import { EditableTextField } from '@/components/ui/inputs/editable-text-field';
 import { EditableDateField } from '@/components/ui/inputs/editable-date-field';
 import { EditableTextArea } from '@/components/ui/inputs/editable-text-area';
-import { ArmsAndAllocationsTable } from '@/components/features/experiments/arms-and-allocations-table';
-import { IntegrationGuideDialog } from '@/components/features/experiments/integration-guide-dialog';
 import { ReadMoreText } from '@/components/ui/read-more-text';
-import {
-  Snapshot,
-  MetricAnalysis,
-  ExperimentAnalysisResponse,
-  MABExperimentSpecOutput,
-  CMABExperimentSpecOutput,
-  CMABContextInputRequest,
-  ContextInput,
-} from '@/api/methods.schemas';
-import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { useCurrentOrganization } from '@/providers/organization-provider';
+import { prettyJSON } from '@/services/json-utils';
+import { getExperimentStatus } from '@/services/experiment-utils';
 import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date-utils';
-import Link from 'next/link';
-import { mutate } from 'swr';
-import ForestTimeseriesPlot from '@/components/features/experiments/plots/forest-timeseries-plot';
 import { ContextConfigBox } from '@/components/features/experiments/context-config-box';
 import { isBanditSpec, isCmabExperiment, isFrequentistSpec } from '../create/types';
 
@@ -291,7 +295,7 @@ export default function ExperimentViewPage() {
     return <Text>No experiment data found</Text>;
   }
 
-  const { design_spec, assign_summary } = experiment;
+  const { design_spec, assign_summary, decision, impact } = experiment;
   const { alpha, power } = getAlphaAndPower(experiment); // undefined for non-frequentist experiments
   const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
   const isFrequentistExperiment = isFrequentistSpec(design_spec);
@@ -315,8 +319,8 @@ export default function ExperimentViewPage() {
 
   return (
     <Flex direction="column" gap="6">
-      <Flex align="start" direction="column" gap="3">
-        <Flex direction="row" justify="between" gap="2" align="center" width="100%">
+      <Flex direction="column" gap="3">
+        <Flex direction="row" justify="between" gap="2" align="center">
           <EditableTextField value={experiment_name} onSubmit={(value) => updateExperiment({ name: value })} size="2">
             <Heading size="8">{experiment_name}</Heading>
           </EditableTextField>
@@ -329,14 +333,9 @@ export default function ExperimentViewPage() {
           />
         </Flex>
 
+        <ExperimentCompletionCallout endDate={end_date} hasImpact={!!impact} hasDecision={!!decision} />
+
         <Flex gap="4" align="center">
-          <ExperimentTypeBadge type={design_spec.experiment_type} />
-          <Separator orientation="vertical" />
-          <ParticipantTypeBadge
-            datasourceId={experiment.datasource_id}
-            participantType={experiment.design_spec.participant_type}
-          />
-          <Separator orientation="vertical" />
           <Flex align="center" gap="2">
             <CalendarIcon />
             <EditableDateField
@@ -348,6 +347,16 @@ export default function ExperimentViewPage() {
             <EditableDateField value={end_date} onSubmit={(value) => updateExperiment({ end_date: value })} size="1" />
           </Flex>
           <Separator orientation="vertical" />
+          <ExperimentStatusBadge status={getExperimentStatus(start_date, end_date)} />
+        </Flex>
+        <Flex gap="4" align="center">
+          <ExperimentTypeBadge type={design_spec.experiment_type} />
+          <Separator orientation="vertical" />
+          <ParticipantTypeBadge
+            datasourceId={experiment.datasource_id}
+            participantType={experiment.design_spec.participant_type}
+          />
+          <Separator orientation="vertical" />
           <Flex align="center" gap="2">
             <FileTextIcon />
             <EditableTextField
@@ -358,7 +367,8 @@ export default function ExperimentViewPage() {
               {design_url ? (
                 <Link href={design_url} target="_blank" rel="noopener noreferrer">
                   <Text color="blue" style={{ textDecoration: 'underline' }}>
-                    {design_url}
+                    {design_url.slice(0, 30)}
+                    {design_url.length > 30 ? '...' : ''}
                   </Text>
                 </Link>
               ) : (
@@ -607,6 +617,13 @@ export default function ExperimentViewPage() {
             </Tabs.Root>
           </Flex>
         </SectionCard>
+
+        <div id="decision-and-impact" />
+        <DecisionAndImpactSection
+          impact={impact}
+          decision={decision}
+          onUpdate={(updates) => updateExperiment(updates)}
+        />
       </Flex>
     </Flex>
   );

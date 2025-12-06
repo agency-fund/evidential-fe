@@ -7,9 +7,14 @@ import { DownloadIcon } from '@radix-ui/react-icons';
 interface DownloadAssignmentsCsvButtonProps {
   datasourceId: string;
   experimentId: string;
+  children?: React.ReactNode;
 }
 
-export function DownloadAssignmentsCsvButton({ datasourceId, experimentId }: DownloadAssignmentsCsvButtonProps) {
+export function DownloadAssignmentsCsvButton({
+  datasourceId,
+  experimentId,
+  children,
+}: DownloadAssignmentsCsvButtonProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [noDataDialog, setNoDataDialog] = useState(false);
 
@@ -41,11 +46,15 @@ export function DownloadAssignmentsCsvButton({ datasourceId, experimentId }: Dow
 
   return (
     <>
-      <Tooltip content="Download CSV of participant arm assignments">
-        <IconButton variant="soft" color="gray" size="2" onClick={handleDownload} loading={isDownloading}>
-          <DownloadIcon width="16" height="16" />
-        </IconButton>
-      </Tooltip>
+      {children ? (
+        <span onClick={handleDownload}>{children}</span>
+      ) : (
+        <Tooltip content="Download CSV of participant arm assignments">
+          <IconButton variant="soft" color="gray" size="2" onClick={handleDownload} loading={isDownloading}>
+            <DownloadIcon />
+          </IconButton>
+        </Tooltip>
+      )}
 
       <Dialog.Root open={noDataDialog} onOpenChange={setNoDataDialog}>
         <Dialog.Content>

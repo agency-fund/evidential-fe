@@ -1,6 +1,8 @@
 'use client';
-import { Button, Flex, Grid, Heading, TextField } from '@radix-ui/themes';
-import { GearIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
+import { useState } from 'react';
+import { useLocalStorage } from '@/providers/use-local-storage';
+import { Flex, Grid, Heading, TextField, IconButton, Tooltip } from '@radix-ui/themes';
+import { GearIcon, MagnifyingGlassIcon, ListBulletIcon, DashboardIcon, ReloadIcon } from '@radix-ui/react-icons';
 import { useListOrganizationDatasources, useListOrganizationExperiments } from '@/api/admin';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -9,29 +11,23 @@ import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
 import { useRouter } from 'next/navigation';
 import { NO_DWH_DRIVER, PRODUCT_NAME } from '@/services/constants';
 import { CreateExperimentButton } from '@/components/features/experiments/create-experiment-button';
-import ExperimentCard from '@/components/features/experiments/experiment-card';
-import { useState } from 'react';
-
-const getExperimentStatus = (startDate: string, endDate: string) => {
-  const now = new Date();
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-
-  if (now < start) {
-    return 'upcoming';
-  } else if (now > end) {
-    return 'finished';
-  } else {
-    return 'current';
-  }
-};
+import { ExperimentCard } from '@/components/features/experiments/experiment-card';
+import { ExperimentsTable } from '@/components/features/experiments/experiments-table';
+import { ExperimentStatusFilter } from '@/components/features/experiments/experiment-status-filter';
+import { ExperimentImpactFilter } from '@/components/features/experiments/experiment-impact-filter';
+import type { ExperimentStatus, ExperimentWithStatus } from '@/components/features/experiments/types';
+import { getExperimentStatus } from '@/services/experiment-utils';
 
 export default function Page() {
   const router = useRouter();
   const orgContext = useCurrentOrganization();
   const currentOrgId = orgContext!.current.id;
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [selectedStatuses, setSelectedStatuses] = useState<ExperimentStatus[]>([]);
+  const [selectedImpacts, setSelectedImpacts] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useLocalStorage<'card' | 'table'>('exp-view-mode');
+
+  const isCardView = viewMode === null || viewMode === 'card';
 
   const {
     data: datasourcesData,
@@ -51,10 +47,6 @@ export default function Page() {
     swr: { enabled: !!currentOrgId },
   });
 
-  const datasourcesToName = new Map(datasourcesData?.items.map((e) => [e.id, e.name]) || []);
-
-  const statusOrder = ['all', 'current', 'upcoming', 'finished'] as const;
-
   const committedExperiments = experimentsData?.items.filter((experiment) => experiment.state === 'committed') || [];
 
   const experimentsWithStatus = committedExperiments.map((experiment) => ({
@@ -62,21 +54,47 @@ export default function Page() {
     status: getExperimentStatus(experiment.design_spec.start_date, experiment.design_spec.end_date),
   }));
 
-  const getCount = (status: string) =>
-    status === 'all'
-      ? experimentsWithStatus.length
-      : experimentsWithStatus.filter((exp) => exp.status === status).length;
+  const matchesStatusFilter = (experiment: ExperimentWithStatus): boolean => {
+    if (selectedStatuses.length === 0) return true;
+    return selectedStatuses.includes(experiment.status);
+  };
 
-  const availableFilters = statusOrder.filter((status) => getCount(status) > 0);
+  const matchesImpactFilter = (experiment: ExperimentWithStatus): boolean => {
+    if (selectedImpacts.length === 0) return true;
 
-  const filteredExperiments = experimentsWithStatus.filter((experiment) => {
-    const matchesStatus = selectedStatus === 'all' || experiment.status === selectedStatus;
-    const matchesSearch =
-      experiment.design_spec.experiment_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      experiment.design_spec.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const hasNotSpecifiedFilter = selectedImpacts.includes('__not_specified__');
+    const isNotSpecified = !experiment.impact || experiment.impact === '';
 
-    return matchesStatus && matchesSearch;
-  });
+    // If experiment has no impact set
+    if (isNotSpecified) {
+      return hasNotSpecifiedFilter;
+    }
+
+    // If experiment has impact set, check if it's in selected filters
+    return selectedImpacts.includes(experiment.impact!);
+  };
+
+  const matchesSearchQuery = (experiment: ExperimentWithStatus): boolean => {
+    if (searchQuery === '') return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      experiment.design_spec.experiment_name.toLowerCase().includes(query) ||
+      experiment.design_spec.description.toLowerCase().includes(query)
+    );
+  };
+
+  const resetFilters = () => {
+    setSelectedStatuses([]);
+    setSelectedImpacts([]);
+    setSearchQuery('');
+  };
+
+  const filteredExperiments = experimentsWithStatus.filter(
+    (experiment) =>
+      matchesStatusFilter(experiment) && matchesImpactFilter(experiment) && matchesSearchQuery(experiment),
+  );
+
+  const filtersActive = selectedStatuses.length > 0 || selectedImpacts.length > 0 || searchQuery !== '';
 
   if (datasourcesError) {
     return <GenericErrorCallout title={'Error with experiments list'} error={datasourcesError} />;
@@ -128,39 +146,53 @@ export default function Page() {
       ) : experimentsData ? (
         <Flex direction="column" gap="4">
           <Flex justify="between" align="center" gap="4">
-            <TextField.Root
-              placeholder="Search experiments..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            >
-              <TextField.Slot>
-                <MagnifyingGlassIcon height="16" width="16" />
-              </TextField.Slot>
-            </TextField.Root>
+            <Flex align="center" gap="4">
+              <TextField.Root
+                placeholder="Search experiments..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              >
+                <TextField.Slot>
+                  <MagnifyingGlassIcon height="16" width="16" />
+                </TextField.Slot>
+              </TextField.Root>
+
+              <ExperimentStatusFilter value={selectedStatuses} onChange={setSelectedStatuses} />
+
+              <ExperimentImpactFilter value={selectedImpacts} onChange={setSelectedImpacts} />
+              {filtersActive && (
+                <Tooltip content="Reset Filters">
+                  <IconButton variant="soft" onClick={resetFilters}>
+                    <ReloadIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Flex>
 
             <Flex gap="2">
-              {availableFilters.map((status) => (
-                <Button
-                  key={status}
-                  variant={selectedStatus === status ? 'solid' : 'soft'}
-                  onClick={() => setSelectedStatus(status)}
-                >
-                  {status.charAt(0).toUpperCase() + status.slice(1)} ({getCount(status)})
-                </Button>
-              ))}
+              <Tooltip content="Card View">
+                <IconButton variant={isCardView ? 'solid' : 'soft'} size="2" onClick={() => setViewMode('card')}>
+                  <DashboardIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip content="Table View">
+                <IconButton variant={!isCardView ? 'solid' : 'soft'} size="2" onClick={() => setViewMode('table')}>
+                  <ListBulletIcon />
+                </IconButton>
+              </Tooltip>
             </Flex>
           </Flex>
 
           {filteredExperiments.length === 0 ? (
             <EmptyStateCard
-              title={searchQuery ? 'No experiments found' : `No ${selectedStatus} experiments`}
+              title={searchQuery ? 'No experiments found' : 'No experiments match your filters'}
               description={
                 searchQuery
-                  ? 'Try adjusting your search terms.'
-                  : `There are no ${selectedStatus} experiments to display.`
+                  ? 'Try adjusting your search terms or filters.'
+                  : 'Try adjusting your filters to see more experiments.'
               }
             />
-          ) : (
+          ) : isCardView ? (
             <Grid columns={{ initial: '1', md: '2', lg: '3' }} gap="3">
               {filteredExperiments.map((experiment) => {
                 return (
@@ -171,16 +203,19 @@ export default function Page() {
                     type={experiment.design_spec.experiment_type}
                     startDate={experiment.design_spec.start_date}
                     endDate={experiment.design_spec.end_date}
-                    datasource={datasourcesToName.get(experiment.datasource_id) || ''}
                     datasourceId={experiment.datasource_id}
                     designUrl={experiment.design_spec.design_url || ''}
-                    participantType={experiment.design_spec.participant_type}
                     experimentId={experiment.experiment_id}
                     organizationId={currentOrgId}
+                    status={experiment.status}
+                    impact={experiment.impact}
+                    decision={experiment.decision}
                   />
                 );
               })}
             </Grid>
+          ) : (
+            <ExperimentsTable experiments={filteredExperiments} organizationId={currentOrgId} />
           )}
         </Flex>
       ) : null}

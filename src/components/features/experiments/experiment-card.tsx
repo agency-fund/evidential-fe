@@ -1,11 +1,12 @@
 'use client';
-import { Badge, Card, Flex, Heading, IconButton, Separator, Text, Tooltip } from '@radix-ui/themes';
-import { CalendarIcon, EyeOpenIcon, LightningBoltIcon, TableIcon, FileTextIcon } from '@radix-ui/react-icons';
-import { ReadMoreText } from '@/components/ui/read-more-text';
+import { Card, Flex, Heading, IconButton, Separator, Text, Tooltip } from '@radix-ui/themes';
+import { CalendarIcon, EyeOpenIcon, LightningBoltIcon, FileTextIcon } from '@radix-ui/react-icons';
 import { ExperimentActionsMenu } from '@/components/features/experiments/experiment-actions-menu';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
-import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
+import { ExperimentStatusBadge } from '@/components/features/experiments/experiment-status-badge';
+import { ExperimentImpactBadge } from '@/components/features/experiments/experiment-impact-badge';
+import type { ExperimentStatus } from '@/components/features/experiments/types';
 import { formatIsoDateLocal } from '@/services/date-utils';
 import Link from 'next/link';
 
@@ -15,78 +16,38 @@ interface ExperimentCardProps {
   type: string;
   startDate: string;
   endDate: string;
-  datasource: string;
+  status: ExperimentStatus;
+  impact?: string;
+  decision?: string;
   datasourceId: string;
   designUrl?: string;
-  participantType: string;
   experimentId: string;
   organizationId: string;
 }
 
-const getExperimentStatus = (startDate: string, endDate: string) => {
-  const now = new Date();
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-
-  if (now < start) {
-    return 'Upcoming';
-  } else if (now > end) {
-    return 'Finished';
-  } else {
-    return 'Current';
-  }
-};
-
-const getStatusBadgeColor = (status: string) => {
-  switch (status) {
-    case 'Current':
-      return 'green';
-    case 'Upcoming':
-      return 'gray';
-    case 'Finished':
-      return 'blue';
-    default:
-      return 'gray';
-  }
-};
-
-export default function ExperimentCard({
+export function ExperimentCard({
   title,
   hypothesis,
   type,
   startDate,
   endDate,
-  datasource,
+  status,
+  impact,
+  decision,
   datasourceId,
   designUrl,
-  participantType,
   experimentId,
   organizationId,
 }: ExperimentCardProps) {
-  const status = getExperimentStatus(startDate, endDate);
-  const statusBadgeColor = getStatusBadgeColor(status);
   return (
     <Card size="3">
       <Flex height={'100%'} direction="column">
-        {/* Content area that grows to fill space */}
         <Flex direction="column" gap="4">
-          {/* Header with title, status, and dots menu */}
           <Flex justify="between" align="center">
             <Flex minWidth={'0'} align="center" gap="2">
               <LightningBoltIcon width="16" height="16" color="var(--blue-9)" style={{ flexShrink: 0 }} />
               <Tooltip content={title}>
-                <Heading
-                  as="h3"
-                  size="4"
-                  weight="medium"
-                  style={{
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    minWidth: 0,
-                  }}
-                  asChild
-                >
+                <Heading as="h3" size="4" weight="medium" truncate asChild>
                   <Link
                     href={`/datasources/${datasourceId}/experiments/${experimentId}`}
                     style={{ textDecoration: 'none', color: 'inherit' }}
@@ -97,12 +58,8 @@ export default function ExperimentCard({
               </Tooltip>
             </Flex>
 
-            {/* Right side: Status badge and actions menu */}
             <Flex align="center" gap="3" flexShrink={'0'}>
-              <Badge color={statusBadgeColor} variant="soft">
-                {status}
-              </Badge>
-
+              <ExperimentStatusBadge status={status} />
               <ExperimentActionsMenu
                 organizationId={organizationId}
                 datasourceId={datasourceId}
@@ -111,7 +68,6 @@ export default function ExperimentCard({
             </Flex>
           </Flex>
 
-          {/* Date range - moved to top */}
           <Flex align="center" gap="2">
             <CalendarIcon width="14" height="14" color="var(--gray-9)" />
             <Text size="2" color="gray">
@@ -119,36 +75,40 @@ export default function ExperimentCard({
             </Text>
           </Flex>
 
-          {/* Metadata badges with separators */}
-          <Flex align="center" gap="2" wrap="wrap">
-            <Badge variant="soft" color="gray" size="1" asChild>
-              <Link href={`/datasources/${datasourceId}`}>
-                <TableIcon width="12" height="12" />
-                {datasource}
-              </Link>
-            </Badge>
-            <Text size="2" color="gray">
-              •
-            </Text>
-            <ParticipantTypeBadge datasourceId={datasourceId} participantType={participantType} />
-            <Text size="2" color="gray">
-              •
-            </Text>
+          <Flex align="center" gap="2">
             <ExperimentTypeBadge type={type} />
+            <Separator orientation="vertical" />
+            {impact ? (
+              <ExperimentImpactBadge impact={impact} />
+            ) : (
+              <Text size="2" color="gray">
+                Ongoing
+              </Text>
+            )}
           </Flex>
 
           <Separator size="4" />
 
-          {/* Hypothesis section - Hero content */}
           <Flex direction="column" gap="3">
-            <Text size="2" weight="bold">
-              Hypothesis
-            </Text>
-            <ReadMoreText text={hypothesis} maxWords={30} />
+            <Flex direction="column" gap="1">
+              <Text size="2" weight="bold">
+                Hypothesis
+              </Text>
+              <Text size="2" truncate>
+                {hypothesis}
+              </Text>
+            </Flex>
+            <Flex direction="column" gap="1">
+              <Text size="2" weight="bold">
+                Decision
+              </Text>
+              <Text size="2" truncate color={decision ? undefined : 'gray'}>
+                {decision || 'Ongoing'}
+              </Text>
+            </Flex>
           </Flex>
         </Flex>
 
-        {/* Bottom action buttons - always at bottom right */}
         <Flex justify="end" gap="2" pt="4">
           {designUrl && (
             <Tooltip content="View design document">

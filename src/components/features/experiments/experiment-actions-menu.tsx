@@ -1,9 +1,9 @@
 'use client';
-import { DropdownMenu, IconButton } from '@radix-ui/themes';
 import { useState } from 'react';
-import { getListOrganizationExperimentsKey, useDeleteExperiment } from '@/api/admin';
 import { mutate } from 'swr';
+import { DropdownMenu, IconButton } from '@radix-ui/themes';
 import { DotsVerticalIcon, TrashIcon } from '@radix-ui/react-icons';
+import { getListOrganizationExperimentsKey, useDeleteExperiment } from '@/api/admin';
 import { DeleteAlertDialog } from '@/components/ui/delete-alert-dialog';
 
 interface ExperimentActionsMenuProps {
