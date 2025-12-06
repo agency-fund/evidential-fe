@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { Flex, Table, Text } from '@radix-ui/themes';
-import { CaretSortIcon, CaretUpIcon, CaretDownIcon } from '@radix-ui/react-icons';
+import { CaretDownIcon, CaretSortIcon, CaretUpIcon } from '@radix-ui/react-icons';
 import { ExperimentsTableRow } from '@/components/features/experiments/experiments-table-row';
 import type { ExperimentWithStatus } from '@/components/features/experiments/types';
 
@@ -17,7 +17,7 @@ interface SortableColumn {
   sortable: true;
   sortKey: string;
   sortType: 'string' | 'date';
-  getValue: (experiment: ExperimentWithStatus) => string | undefined;
+  getSortValue: (experiment: ExperimentWithStatus) => string | undefined;
 }
 
 interface NonSortableColumn {
@@ -33,14 +33,14 @@ const COLUMN_CONFIG: ColumnConfig[] = [
     sortable: true,
     sortKey: 'title',
     sortType: 'string',
-    getValue: (experiment: ExperimentWithStatus) => experiment.design_spec.experiment_name,
+    getSortValue: (experiment: ExperimentWithStatus) => experiment.design_spec.experiment_name,
   },
   {
     label: 'Status',
     sortable: true,
     sortKey: 'status',
     sortType: 'string',
-    getValue: (experiment: ExperimentWithStatus) => experiment.status,
+    getSortValue: (experiment: ExperimentWithStatus) => experiment.status,
   },
   { label: 'Hypothesis', sortable: false },
   {
@@ -48,21 +48,21 @@ const COLUMN_CONFIG: ColumnConfig[] = [
     sortable: true,
     sortKey: 'startDate',
     sortType: 'date',
-    getValue: (experiment: ExperimentWithStatus) => experiment.design_spec.start_date,
+    getSortValue: (experiment: ExperimentWithStatus) => experiment.design_spec.start_date,
   },
   {
     label: 'End Date',
     sortable: true,
     sortKey: 'endDate',
     sortType: 'date',
-    getValue: (experiment: ExperimentWithStatus) => experiment.design_spec.end_date,
+    getSortValue: (experiment: ExperimentWithStatus) => experiment.design_spec.end_date,
   },
   {
     label: 'Impact',
     sortable: true,
     sortKey: 'impact',
     sortType: 'string',
-    getValue: (experiment: ExperimentWithStatus) => experiment.impact,
+    getSortValue: (experiment: ExperimentWithStatus) => experiment.impact,
   },
   { label: 'Decision', sortable: false },
   {
@@ -70,7 +70,7 @@ const COLUMN_CONFIG: ColumnConfig[] = [
     sortable: true,
     sortKey: 'experimentType',
     sortType: 'string',
-    getValue: (experiment: ExperimentWithStatus) => experiment.design_spec.experiment_type,
+    getSortValue: (experiment: ExperimentWithStatus) => experiment.design_spec.experiment_type,
   },
   { label: 'Actions', sortable: false },
 ];
@@ -125,14 +125,14 @@ export function ExperimentsTable({ experiments, organizationId }: ExperimentTabl
     }
 
     const column = COLUMN_CONFIG.find((col) => col.sortable && col.sortKey === sortColumn);
-    if (!column || !('getValue' in column)) {
+    if (!column || !('getSortValue' in column)) {
       return experiments;
     }
 
     const sorted = [...experiments];
     sorted.sort((a, b) => {
-      const aValue = column.getValue(a);
-      const bValue = column.getValue(b);
+      const aValue = column.getSortValue(a);
+      const bValue = column.getSortValue(b);
 
       if (aValue === undefined) return 1;
       if (bValue === undefined) return -1;
