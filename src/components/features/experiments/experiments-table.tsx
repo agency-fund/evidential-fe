@@ -44,7 +44,6 @@ const COLUMN_CONFIG: ColumnConfig[] = [
     sortType: 'string',
     getSortValue: (experiment: ExperimentWithStatus) => experiment.status,
   },
-  { label: 'Hypothesis', sortable: false },
   {
     label: 'Start Date',
     sortable: true,

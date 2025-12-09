@@ -20,7 +20,7 @@ export function ExperimentsTableRow({ experiment }: ExperimentTableRowProps) {
     <>
       <Table.Row>
         <Table.Cell>
-          <Flex width="150px">
+          <Flex width="200px">
             <Tooltip content={design_spec.experiment_name}>
               <Text truncate asChild>
                 <Link href={`/datasources/${datasourceId}/experiments/${experimentId}`}>
@@ -32,11 +32,6 @@ export function ExperimentsTableRow({ experiment }: ExperimentTableRowProps) {
         </Table.Cell>
         <Table.Cell>
           <ExperimentStatusBadge status={experiment.status} />
-        </Table.Cell>
-        <Table.Cell>
-          <Flex width="150px">
-            <Text truncate>{design_spec.description}</Text>
-          </Flex>
         </Table.Cell>
         <Table.Cell>{formatIsoDateLocal(design_spec.start_date)}</Table.Cell>
         <Table.Cell>{formatIsoDateLocal(design_spec.end_date)}</Table.Cell>
