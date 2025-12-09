@@ -5,81 +5,65 @@ import { Flex, IconButton, Table, Text, Tooltip } from '@radix-ui/themes';
 import { FileTextIcon } from '@radix-ui/react-icons';
 import { ExperimentStatusBadge } from '@/components/features/experiments/experiment-status-badge';
 import { ExperimentImpactBadge } from '@/components/features/experiments/experiment-impact-badge';
-import type { ExperimentStatus } from '@/components/features/experiments/types';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { formatIsoDateLocal } from '@/services/date-utils';
+import { ExperimentWithStatus } from '@/components/features/experiments/types';
 
 interface ExperimentTableRowProps {
-  title: string;
-  hypothesis: string;
-  decision?: string;
-  type: string;
-  status: ExperimentStatus;
-  impact?: string;
-  startDate: string;
-  endDate: string;
-  datasourceId: string;
-  organizationId: string;
-  designUrl?: string;
-  experimentId: string;
+  experiment: ExperimentWithStatus;
 }
 
-export function ExperimentsTableRow({
-  title,
-  hypothesis,
-  decision,
-  type,
-  status,
-  impact,
-  startDate,
-  endDate,
-  datasourceId,
-  designUrl,
-  experimentId,
-}: ExperimentTableRowProps) {
+export function ExperimentsTableRow({ experiment }: ExperimentTableRowProps) {
+  const { experiment_id: experimentId, datasource_id: datasourceId, design_spec } = experiment;
   return (
     <>
       <Table.Row>
         <Table.Cell>
           <Flex width="150px">
-            <Tooltip content={title}>
+            <Tooltip content={design_spec.experiment_name}>
               <Text truncate asChild>
-                <Link href={`/datasources/${datasourceId}/experiments/${experimentId}`}>{title}</Link>
+                <Link href={`/datasources/${datasourceId}/experiments/${experimentId}`}>
+                  {design_spec.experiment_name}
+                </Link>
               </Text>
             </Tooltip>
           </Flex>
         </Table.Cell>
         <Table.Cell>
-          <ExperimentStatusBadge status={status} />
+          <ExperimentStatusBadge status={experiment.status} />
         </Table.Cell>
         <Table.Cell>
           <Flex width="150px">
-            <Text truncate>{hypothesis}</Text>
+            <Text truncate>{design_spec.description}</Text>
           </Flex>
         </Table.Cell>
-        <Table.Cell>{formatIsoDateLocal(startDate)}</Table.Cell>
-        <Table.Cell>{formatIsoDateLocal(endDate)}</Table.Cell>
+        <Table.Cell>{formatIsoDateLocal(design_spec.start_date)}</Table.Cell>
+        <Table.Cell>{formatIsoDateLocal(design_spec.end_date)}</Table.Cell>
         <Table.Cell>
-          {impact ? <ExperimentImpactBadge impact={impact} short={true} /> : <Text color="gray">Ongoing</Text>}
+          {experiment.impact ? (
+            <ExperimentImpactBadge impact={experiment.impact} short={true} />
+          ) : (
+            <Text color="gray">Ongoing</Text>
+          )}
         </Table.Cell>
         <Table.Cell>
           <Flex width="150px">
-            <Text truncate color={decision ? undefined : 'gray'}>
-              {decision || 'Ongoing'}
+            <Text truncate color={experiment.decision ? undefined : 'gray'}>
+              {experiment.decision || 'Ongoing'}
             </Text>
           </Flex>
         </Table.Cell>
         <Table.Cell>
-          <ExperimentTypeBadge type={type} />
+          <ExperimentTypeBadge type={design_spec.experiment_type} />
         </Table.Cell>
         <Table.Cell>
           <Flex gap="2">
             <DownloadAssignmentsCsvButton datasourceId={datasourceId} experimentId={experimentId} />
-            {designUrl && (
+            {design_spec.design_url && (
               <Tooltip content="View design document">
                 <IconButton variant="soft" color="blue" size="2" asChild>
-                  <Link href={designUrl} target="_blank" rel="noopener noreferrer">
+                  <Link href={design_spec.design_url} target="_blank" rel="noopener noreferrer">
                     <FileTextIcon width="16" height="16" />
                   </Link>
                 </IconButton>
