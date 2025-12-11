@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
 import { useLocalStorage } from '@/providers/use-local-storage';
-import { Flex, Grid, Heading, TextField, IconButton, Tooltip } from '@radix-ui/themes';
-import { GearIcon, MagnifyingGlassIcon, ListBulletIcon, DashboardIcon, ReloadIcon } from '@radix-ui/react-icons';
+import { Flex, Grid, Heading, IconButton, TextField, Tooltip } from '@radix-ui/themes';
+import { DashboardIcon, GearIcon, ListBulletIcon, MagnifyingGlassIcon, ReloadIcon } from '@radix-ui/react-icons';
 import { useListOrganizationDatasources, useListOrganizationExperiments } from '@/api/admin';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -63,7 +63,7 @@ export default function Page() {
     if (selectedImpacts.length === 0) return true;
 
     const hasNotSpecifiedFilter = selectedImpacts.includes('__not_specified__');
-    const isNotSpecified = !experiment.impact || experiment.impact === '';
+    const isNotSpecified = experiment.impact === undefined || experiment.impact === '';
 
     // If experiment has no impact set
     if (isNotSpecified) {

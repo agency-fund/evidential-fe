@@ -37,7 +37,7 @@ export function ExperimentsTableRow({ experiment }: ExperimentTableRowProps) {
         <Table.Cell>{formatIsoDateLocal(design_spec.end_date)}</Table.Cell>
         <Table.Cell>
           {experiment.impact ? (
-            <ExperimentImpactBadge impact={experiment.impact} short={true} />
+            <ExperimentImpactBadge impact={experiment.impact} useShortLabel={true} />
           ) : (
             <Text color="gray">Ongoing</Text>
           )}

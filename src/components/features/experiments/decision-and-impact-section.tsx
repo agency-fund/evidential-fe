@@ -6,14 +6,8 @@ import { EditableTextArea } from '@/components/ui/inputs/editable-text-area';
 import { ReadMoreText } from '@/components/ui/read-more-text';
 import { useEffect, useState } from 'react';
 import { Button, Flex, RadioCards, Text, TextArea } from '@radix-ui/themes';
-
-const impactOptions = [
-  { value: 'unclear', label: 'Unclear Impact', description: 'Not enough data to determine impact' },
-  { value: 'negative', label: 'Negative Impact', description: 'Significant adverse effects observed' },
-  { value: 'low', label: 'Low Impact', description: 'Minor positive effects observed' },
-  { value: 'medium', label: 'Medium Impact', description: 'Moderate positive effects observed' },
-  { value: 'high', label: 'High Impact', description: 'Significant positive effects observed' },
-];
+import { Impact } from '@/api/methods.schemas';
+import { IMPACT_LIST } from '@/services/impact-constants';
 
 const IMPACT_HELP_TEXT =
   'Has the experiment unlocked key insights or triggered major decisions that have positively affected the program? Please do not confuse this with the treatment effect—inconclusive experiments can have big impact for organizations in terms of learning.';
@@ -21,17 +15,17 @@ const IMPACT_HELP_TEXT =
 const DECISION_HELP_TEXT = 'Briefly describe the key takeaways and decisions taken from this experiment';
 
 interface DecisionAndImpactSectionProps {
-  impact: string | null | undefined;
+  impact: Impact | null | undefined;
   decision: string | null | undefined;
-  onUpdate: (updates: { impact?: string; decision?: string }) => Promise<void> | void;
+  onUpdate: (updates: { impact?: Impact; decision?: string }) => Promise<void> | void;
 }
 
 interface FormData {
-  impact: string;
+  impact: Impact;
   decision: string;
 }
 
-const defaultFormData = (impact: string | null | undefined, decision: string | null | undefined): FormData => ({
+const defaultFormData = (impact: Impact | null | undefined, decision: string | null | undefined): FormData => ({
   impact: impact ?? '',
   decision: decision ?? '',
 });
@@ -79,9 +73,9 @@ export function DecisionAndImpactSection({ impact, decision, onUpdate }: Decisio
               <RadioCards.Root
                 columns={{ initial: '1', sm: '5' }}
                 value={formData.impact}
-                onValueChange={(val) => setFormData((prev) => ({ ...prev, impact: val }))}
+                onValueChange={(val) => setFormData((prev) => ({ ...prev, impact: val as Impact }))}
               >
-                {impactOptions.map((option) => (
+                {IMPACT_LIST.map((option) => (
                   <RadioCards.Item key={option.value} value={option.value}>
                     <Flex direction="column" gap="2">
                       <ExperimentImpactBadge impact={option.value} size="3" />

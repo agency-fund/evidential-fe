@@ -1,20 +1,17 @@
 import { ExperimentImpactBadge } from '@/components/features/experiments/experiment-impact-badge';
 import { EditableSelect } from '@/components/ui/inputs/editable-select';
 import { Flex, Text } from '@radix-ui/themes';
+import { Impact } from '@/api/methods.schemas';
 
-const IMPACT_OPTIONS: { label: string; value: string }[] = [
-  { label: 'High Impact', value: 'high' },
-  { label: 'Medium Impact', value: 'medium' },
-  { label: 'Low Impact', value: 'low' },
-  { label: 'Negative Impact', value: 'negative' },
-  { label: 'Unclear Impact', value: 'unclear' },
-];
+import { IMPACT_LIST } from '@/services/impact-constants';
 
 interface EditExperimentImpactProps {
-  value?: string | null;
-  onSubmit: (value: string) => Promise<void> | void;
+  value?: Impact | null;
+  onSubmit: (value: Impact) => Promise<void> | void;
   size?: '1' | '2' | '3';
 }
+
+const IMPACT_OPTIONS = IMPACT_LIST.map((c) => ({ label: c.label, value: c.value }));
 
 export function EditExperimentImpact({ value, onSubmit, size = '2' }: EditExperimentImpactProps) {
   const normalizedValue = value || '';
@@ -23,7 +20,7 @@ export function EditExperimentImpact({ value, onSubmit, size = '2' }: EditExperi
     <EditableSelect
       value={normalizedValue}
       options={IMPACT_OPTIONS}
-      onSubmit={onSubmit}
+      onSubmit={(v) => onSubmit(v as Impact)}
       size={size}
       placeholder="Choose impact"
     >
