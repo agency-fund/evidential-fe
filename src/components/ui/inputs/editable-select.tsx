@@ -1,18 +1,18 @@
 import { ReactNode, useState } from 'react';
-import { Select, Flex } from '@radix-ui/themes';
+import { Flex, Select } from '@radix-ui/themes';
 import {
-  EditableRoot,
   EditableArea,
-  EditablePreview,
-  EditableInput,
-  EditableEditTrigger,
-  EditableSubmitTrigger,
   EditableCancelTrigger,
+  EditableEditTrigger,
+  EditableInput,
+  EditablePreview,
+  EditableRoot,
+  EditableSubmitTrigger,
 } from '@/components/radix-custom/editable';
 
 interface EditableSelectProps {
   value: string;
-  options: string[] | { label: string; value: string }[];
+  options: readonly string[] | readonly { label: string; value: string }[];
   onSubmit: (value: string) => Promise<void> | void;
   children: ReactNode;
   size?: '1' | '2' | '3';

@@ -839,8 +839,6 @@ export interface CreateExperimentRequest {
 	power_analyses?: CreateExperimentRequestPowerAnalyses;
 	/** List of webhook IDs to associate with this experiment. When the experiment is committed, these webhooks will be triggered with experiment details. Must contain unique values. */
 	webhooks?: string[];
-	decision?: string;
-	impact?: string;
 }
 
 /**
@@ -879,7 +877,7 @@ export interface CreateExperimentResponse {
 	/** Record any decision(s) made because of this experiment. Will you launch it, and if so when? Regardless of positive or negative results, how do any learnings inform next steps or future hypotheses? */
 	decision?: string;
 	/** Given the results across your tracked metrics and any other observed effects seen elsewhere, record an overall summary here. Do they agree or reject your hypotheses? Beyond the metrics tracked, did variations affect scalability, cost, feedback, or other aspects? */
-	impact?: string;
+	impact?: Impact;
 }
 
 export interface CreateOrganizationRequest {
@@ -1119,7 +1117,7 @@ export interface ExperimentConfig {
 	/** Record any decision(s) made because of this experiment. Will you launch it, and if so when? Regardless of positive or negative results, how do any learnings inform next steps or future hypotheses? */
 	decision?: string;
 	/** Given the results across your tracked metrics and any other observed effects seen elsewhere, record an overall summary here. Do they agree or reject your hypotheses? Beyond the metrics tracked, did variations affect scalability, cost, feedback, or other aspects? */
-	impact?: string;
+	impact?: Impact;
 }
 
 /**
@@ -1416,7 +1414,7 @@ export interface GetExperimentResponse {
 	/** Record any decision(s) made because of this experiment. Will you launch it, and if so when? Regardless of positive or negative results, how do any learnings inform next steps or future hypotheses? */
 	decision?: string;
 	/** Given the results across your tracked metrics and any other observed effects seen elsewhere, record an overall summary here. Do they agree or reject your hypotheses? Beyond the metrics tracked, did variations affect scalability, cost, feedback, or other aspects? */
-	impact?: string;
+	impact?: Impact;
 }
 
 /**
@@ -1572,6 +1570,18 @@ export const HiddenValue = {
 	type: "hidden",
 } as const;
 export type Hidden = typeof HiddenValue;
+
+export type Impact = (typeof Impact)[keyof typeof Impact];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const Impact = {
+	high: "high",
+	medium: "medium",
+	low: "low",
+	negative: "negative",
+	unclear: "unclear",
+	"": "",
+} as const;
 
 export interface InspectDatasourceResponse {
 	tables: string[];
@@ -2492,7 +2502,7 @@ export type UpdateExperimentRequestStartDate = string | null;
 
 export type UpdateExperimentRequestEndDate = string | null;
 
-export type UpdateExperimentRequestImpact = string | null;
+export type UpdateExperimentRequestImpact = Impact | null;
 
 export type UpdateExperimentRequestDecision = string | null;
 

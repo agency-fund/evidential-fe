@@ -2584,8 +2584,6 @@ export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameReg
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyPowerAnalysesAnalysesMax = 150;
 export const createExperimentBodyWebhooksDefault = [];
-export const createExperimentBodyDecisionDefault = "";
-export const createExperimentBodyImpactDefault = "";
 
 export const createExperimentBody = zod.object({
 	design_spec: zod
@@ -3485,8 +3483,6 @@ export const createExperimentBody = zod.object({
 		.describe(
 			"List of webhook IDs to associate with this experiment. When the experiment is committed, these webhooks will be triggered with experiment details. Must contain unique values.",
 		),
-	decision: zod.string().optional(),
-	impact: zod.string().optional(),
 });
 
 export const createExperimentResponseDesignSpecParticipantTypeMax = 100;
@@ -3594,7 +3590,6 @@ export const createExperimentResponseAssignSummaryArmSizesItemSizeDefault = 0;
 export const createExperimentResponseAssignSummaryArmSizesMaxOne = 10;
 export const createExperimentResponseWebhooksDefault = [];
 export const createExperimentResponseDecisionDefault = "";
-export const createExperimentResponseImpactDefault = "";
 
 export const createExperimentResponse = zod
 	.object({
@@ -4632,11 +4627,8 @@ export const createExperimentResponse = zod
 				"Record any decision(s) made because of this experiment. Will you launch it, and if so when? Regardless of positive or negative results, how do any learnings inform next steps or future hypotheses?",
 			),
 		impact: zod
-			.string()
-			.optional()
-			.describe(
-				"Given the results across your tracked metrics and any other observed effects seen elsewhere, record an overall summary here. Do they agree or reject your hypotheses? Beyond the metrics tracked, did variations affect scalability, cost, feedback, or other aspects?",
-			),
+			.enum(["high", "medium", "low", "negative", "unclear", ""])
+			.optional(),
 	})
 	.describe(
 		"Same as the request but with ids filled for the experiment and arms, and summary info on the assignment.",
@@ -5371,7 +5363,6 @@ export const listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesIt
 export const listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesMaxOne = 10;
 export const listOrganizationExperimentsResponseItemsItemWebhooksDefault = [];
 export const listOrganizationExperimentsResponseItemsItemDecisionDefault = "";
-export const listOrganizationExperimentsResponseItemsItemImpactDefault = "";
 
 export const listOrganizationExperimentsResponse = zod.object({
 	items: zod.array(
@@ -6561,11 +6552,8 @@ export const listOrganizationExperimentsResponse = zod.object({
 						"Record any decision(s) made because of this experiment. Will you launch it, and if so when? Regardless of positive or negative results, how do any learnings inform next steps or future hypotheses?",
 					),
 				impact: zod
-					.string()
-					.optional()
-					.describe(
-						"Given the results across your tracked metrics and any other observed effects seen elsewhere, record an overall summary here. Do they agree or reject your hypotheses? Beyond the metrics tracked, did variations affect scalability, cost, feedback, or other aspects?",
-					),
+					.enum(["high", "medium", "low", "negative", "unclear", ""])
+					.optional(),
 			})
 			.describe("Representation of our stored Experiment information."),
 	),
@@ -6685,7 +6673,6 @@ export const getExperimentForUiResponseAssignSummaryArmSizesItemSizeDefault = 0;
 export const getExperimentForUiResponseAssignSummaryArmSizesMaxOne = 10;
 export const getExperimentForUiResponseWebhooksDefault = [];
 export const getExperimentForUiResponseDecisionDefault = "";
-export const getExperimentForUiResponseImpactDefault = "";
 
 export const getExperimentForUiResponse = zod
 	.object({
@@ -7725,11 +7712,8 @@ export const getExperimentForUiResponse = zod
 				"Record any decision(s) made because of this experiment. Will you launch it, and if so when? Regardless of positive or negative results, how do any learnings inform next steps or future hypotheses?",
 			),
 		impact: zod
-			.string()
-			.optional()
-			.describe(
-				"Given the results across your tracked metrics and any other observed effects seen elsewhere, record an overall summary here. Do they agree or reject your hypotheses? Beyond the metrics tracked, did variations affect scalability, cost, feedback, or other aspects?",
-			),
+			.enum(["high", "medium", "low", "negative", "unclear", ""])
+			.optional(),
 	})
 	.describe(
 		"An experiment configuration capturing all info at design time when assignment was made.",
@@ -7766,7 +7750,10 @@ export const updateExperimentBody = zod
 			.optional(),
 		start_date: zod.string().datetime({}).or(zod.null()).optional(),
 		end_date: zod.string().datetime({}).or(zod.null()).optional(),
-		impact: zod.string().or(zod.null()).optional(),
+		impact: zod
+			.enum(["high", "medium", "low", "negative", "unclear", ""])
+			.or(zod.null())
+			.optional(),
 		decision: zod.string().or(zod.null()).optional(),
 	})
 	.describe(

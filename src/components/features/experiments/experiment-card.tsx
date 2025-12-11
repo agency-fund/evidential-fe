@@ -1,6 +1,6 @@
 'use client';
 import { Card, Flex, Heading, IconButton, Separator, Text, Tooltip } from '@radix-ui/themes';
-import { CalendarIcon, EyeOpenIcon, LightningBoltIcon, FileTextIcon } from '@radix-ui/react-icons';
+import { CalendarIcon, EyeOpenIcon, FileTextIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import { ExperimentActionsMenu } from '@/components/features/experiments/experiment-actions-menu';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
@@ -9,6 +9,7 @@ import { ExperimentImpactBadge } from '@/components/features/experiments/experim
 import type { ExperimentStatus } from '@/components/features/experiments/types';
 import { formatIsoDateLocal } from '@/services/date-utils';
 import Link from 'next/link';
+import { Impact } from '@/api/methods.schemas';
 
 interface ExperimentCardProps {
   title: string;
@@ -17,7 +18,7 @@ interface ExperimentCardProps {
   startDate: string;
   endDate: string;
   status: ExperimentStatus;
-  impact?: string;
+  impact?: Impact;
   decision?: string;
   datasourceId: string;
   designUrl?: string;
