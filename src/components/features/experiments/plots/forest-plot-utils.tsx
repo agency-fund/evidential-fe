@@ -39,7 +39,7 @@ export const INACTIVE_ARM_COLORS = [
   'var(--purple-a5)',
 ] as const;
 export const BASELINE_INDICATOR_COLOR = 'var(--blue-a5)';
-export const DEFAULT_POINT_COLOR = 'var(--gray-6)';
+export const DEFAULT_POINT_COLOR = 'var(--gray-5)';
 export const CONTROL_COLOR = 'var(--gray-10)';
 export const INACTIVE_CONTROL_COLOR = 'var(--gray-a7)';
 export const POSITIVE_COLOR = 'var(--jade-10)';
@@ -368,7 +368,9 @@ export const getColorWithSignificance = (
   significance: Significance,
   isSelected: boolean,
 ): string => {
-  if (significance === Significance.No) return baseColor;
+  if (significance === Significance.No) {
+    return isSelected ? DEFAULT_POINT_COLOR : baseColor;
+  }
   return significance === Significance.Positive
     ? isSelected
       ? POSITIVE_COLOR
