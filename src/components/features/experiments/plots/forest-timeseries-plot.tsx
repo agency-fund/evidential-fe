@@ -3,13 +3,12 @@ import { useState } from 'react';
 import { Box, Callout, Card, Flex, Text } from '@radix-ui/themes';
 import {
   CartesianGrid,
-  Customized,
   Legend,
   Line,
   LineChart,
   ResponsiveContainer,
   Tooltip,
-  TooltipProps,
+  TooltipContentProps,
   XAxis,
   YAxis,
 } from 'recharts';
@@ -40,7 +39,7 @@ interface ForestTimeseriesPlotProps {
 }
 
 // Custom tooltip for the timeseries
-interface CustomTimeseriesTooltipProps extends TooltipProps<ValueType, NameType> {
+interface CustomTimeseriesTooltipProps extends TooltipContentProps<ValueType, NameType> {
   armMetadata: ArmMetadata[];
   selectedArmId: string | null;
 }
@@ -149,7 +148,9 @@ export default function ForestTimeseriesPlot({
             domain={[allDateTicks[0], allDateTicks[allDateTicks.length - 1]]}
             ticks={allDateTicks}
             style={commonAxisStyle}
-            padding={{ left: 12, right: 0 }}
+            // WARNING: If we offset the axis with padding, we need to also factor in the reduced
+            // plot width in the lines and CIs! Arguably a bug in recharts' useOffset hook?
+            padding={{ left: 0, right: 0 }}
             interval="preserveStartEnd"
             angle={-30}
             textAnchor="end"
@@ -171,7 +172,11 @@ export default function ForestTimeseriesPlot({
                   : value.toFixed(2)
             }
           />
-          <Tooltip content={<CustomTimeseriesTooltip armMetadata={armMetadata} selectedArmId={selectedArmId} />} />
+          <Tooltip
+            content={(props) => (
+              <CustomTimeseriesTooltip {...props} armMetadata={armMetadata} selectedArmId={selectedArmId} />
+            )}
+          />
           <Legend
             wrapperStyle={{
               position: 'fixed', // 1. Break it out of the chart's flow
@@ -202,16 +207,14 @@ export default function ForestTimeseriesPlot({
           {/* Render jittered line segments for each arm. Separate loop to keep as direct children of the LineChart. */}
           {armMetadata.map((armInfo, index) => {
             return (
-              <Customized
+              <JitteredLine
                 key={`line_${armInfo.id}`}
-                component={
-                  <JitteredLine
-                    chartData={chartData}
-                    armId={armInfo.id}
-                    color={getArmColor(index, armInfo.isBaseline, selectedArmId === armInfo.id)}
-                    jitterOffset={calculateJitterOffset(index, armMetadata.length)}
-                  />
-                }
+                chartData={chartData}
+                armId={armInfo.id}
+                color={getArmColor(index, armInfo.isBaseline, selectedArmId === armInfo.id)}
+                xDomain={[allDateTicks[0], allDateTicks[allDateTicks.length - 1]]}
+                yDomain={[minY, maxY]}
+                jitterOffset={calculateJitterOffset(index, armMetadata.length)}
               />
             );
           })}
@@ -220,21 +223,17 @@ export default function ForestTimeseriesPlot({
           {armMetadata.map((armInfo, index) => {
             const selected = selectedArmId === armInfo.id;
             return (
-              <Customized
+              <ConfidenceInterval
                 key={`ci_${armInfo.id}`}
-                component={
-                  <ConfidenceInterval
-                    chartData={chartData}
-                    armId={armInfo.id}
-                    selected={selected}
-                    baseColor={getArmColor(index, armInfo.isBaseline, selected)}
-                    jitterOffset={calculateJitterOffset(index, armMetadata.length)}
-                    onClick={(dataPoint) => {
-                      setSelectedArmId(armInfo.id);
-                      onPointClick?.(dataPoint.key);
-                    }}
-                  />
-                }
+                chartData={chartData}
+                armId={armInfo.id}
+                selected={selected}
+                baseColor={getArmColor(index, armInfo.isBaseline, selected)}
+                jitterOffset={calculateJitterOffset(index, armMetadata.length)}
+                onClick={(dataPoint) => {
+                  setSelectedArmId(armInfo.id);
+                  onPointClick?.(dataPoint.key);
+                }}
               />
             );
           })}
@@ -257,14 +256,13 @@ export default function ForestTimeseriesPlot({
                 strokeWidth={0} // 0 to avoid drawing this line between dots
                 dot={(props: unknown) => {
                   const { key, ...restProps } = props as JitteredDotProps & { key?: string };
-                  const dotColor = getColorWithSignificance(baseDotColor, Significance.No, selected);
-
+                  const fillDotColor = getColorWithSignificance(baseDotColor, Significance.No, selected);
                   return (
                     <JitteredDot
                       key={key}
                       {...restProps}
-                      fill={baseDotColor}
-                      stroke={dotColor}
+                      fill={fillDotColor}
+                      stroke={baseDotColor}
                       r={3}
                       strokeWidth={1}
                       jitterOffset={calculateJitterOffset(index, armMetadata.length)}
@@ -274,14 +272,14 @@ export default function ForestTimeseriesPlot({
                 activeDot={(props: unknown) => {
                   const { key, ...restProps } = props as JitteredDotProps & { key?: string };
                   const dataPoint = restProps.payload as TimeSeriesDataPoint;
-                  const dotColor = getColorWithSignificance(baseDotColor, Significance.No, selected);
+                  const fillDotColor = getColorWithSignificance(baseDotColor, Significance.No, selected);
 
                   return (
                     <JitteredDot
                       key={key}
                       {...restProps}
-                      fill={baseDotColor}
-                      stroke={dotColor}
+                      fill={fillDotColor}
+                      stroke={baseDotColor}
                       r={5}
                       strokeWidth={2}
                       jitterOffset={calculateJitterOffset(index, armMetadata.length)}
