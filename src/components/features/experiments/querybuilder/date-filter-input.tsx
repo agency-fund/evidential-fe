@@ -114,13 +114,16 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
       case 'after':
         return (
           <Flex direction="column" gap="1">
-            <TextField.Root
-              type="date"
-              value={filter.value[0] as string}
-              onChange={(e) => {
-                onChange({ ...filter, value: [e.target.value, null, ...includesNullValue] });
-              }}
-            />
+            <Flex gap="1" align="center">
+              <TextField.Root
+                type="date"
+                value={filter.value[0] as string}
+                onChange={(e) => {
+                  onChange({ ...filter, value: [e.target.value, null, ...includesNullValue] });
+                }}
+              />
+              {dataType.includes('timestamp') && <Text size="2">00:00:00 UTC</Text>}
+            </Flex>
             <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="145px" />
           </Flex>
         );
@@ -128,13 +131,16 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
       case 'before':
         return (
           <Flex direction="column" gap="1">
-            <TextField.Root
-              type="date"
-              value={filter.value[1] as string}
-              onChange={(e) => {
-                onChange({ ...filter, value: [null, e.target.value, ...includesNullValue] });
-              }}
-            />
+            <Flex gap="1" align="center">
+              <TextField.Root
+                type="date"
+                value={filter.value[1] as string}
+                onChange={(e) => {
+                  onChange({ ...filter, value: [null, e.target.value, ...includesNullValue] });
+                }}
+              />
+              {dataType.includes('timestamp') && <Text size="2">00:00:00 UTC</Text>}
+            </Flex>
             <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="145px" />
           </Flex>
         );
@@ -210,8 +216,8 @@ export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputP
         <Select.Content>
           <Select.Item value="in-list">Is one of</Select.Item>
           <Select.Item value="not-in-list">is not one of</Select.Item>
-          <Select.Item value="before">Before</Select.Item>
-          <Select.Item value="after">After</Select.Item>
+          <Select.Item value="before">On or Before</Select.Item>
+          <Select.Item value="after">On or After</Select.Item>
           <Select.Item value="between">Between</Select.Item>
         </Select.Content>
       </Select.Root>
