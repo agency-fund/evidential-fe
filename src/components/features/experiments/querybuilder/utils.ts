@@ -1,7 +1,7 @@
 import { DataType, FilterInput, FilterValueTypes } from '@/api/methods.schemas';
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 
-export const BETWEEN_BASED_OPS = new Set(['greater-than', 'less-than', 'between', 'after', 'before']);
+export const BETWEEN_BASED_OPS = new Set(['gte', 'lte', 'between', 'after', 'before']);
 
 // For between-based operators, the value array has length 3 when NULL is included:
 // [lowerBound, upperBound, null]
@@ -69,8 +69,8 @@ export function operatorToRelation(operator: string): 'includes' | 'excludes' | 
     case 'not-in-list':
       return 'excludes';
 
-    case 'greater-than':
-    case 'less-than':
+    case 'gte':
+    case 'lte':
     case 'before':
     case 'after':
     case 'between':
@@ -95,7 +95,7 @@ export function createDefaultValueForOperator(operator: string, dataType: DataTy
       }
       return [''];
 
-    case 'greater-than':
+    case 'gte':
     case 'after':
       if (dataType === 'integer' || dataType === 'bigint') return [0, null];
       if (dataType === 'double precision' || dataType === 'numeric') return [0.0, null];
@@ -104,7 +104,7 @@ export function createDefaultValueForOperator(operator: string, dataType: DataTy
       }
       return ['', null];
 
-    case 'less-than':
+    case 'lte':
     case 'before':
       if (dataType === 'integer' || dataType === 'bigint') return [null, 0];
       if (dataType === 'double precision' || dataType === 'numeric') return [null, 0.0];
