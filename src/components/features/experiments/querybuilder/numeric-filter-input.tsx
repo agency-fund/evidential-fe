@@ -24,8 +24,8 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
   // Initialize operator state based on filter configuration
   const [operator, setOperator] = useState(() => {
     if (filter.relation === 'between') {
-      if (filter.value[0] !== null && filter.value[1] === null) return 'greater-than';
-      if (filter.value[0] === null && filter.value[1] !== null) return 'less-than';
+      if (filter.value[0] !== null && filter.value[1] === null) return 'gte';
+      if (filter.value[0] === null && filter.value[1] !== null) return 'lte';
       return 'between';
     }
     if (filter.relation === 'excludes') {
@@ -50,9 +50,9 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
 
   // Update string states when filter changes externally
   useEffect(() => {
-    if (operator === 'greater-than') {
+    if (operator === 'gte') {
       setGreaterThanValue(filter.value[0] !== null ? String(filter.value[0]) : '');
-    } else if (operator === 'less-than') {
+    } else if (operator === 'lte') {
       setLessThanValue(filter.value[1] !== null ? String(filter.value[1]) : '');
     } else if (operator === 'between') {
       setBetweenMinValue(filter.value[0] !== null ? String(filter.value[0]) : '');
@@ -185,7 +185,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
 
   const renderValueInputs = () => {
     switch (operator) {
-      case 'greater-than':
+      case 'gte':
         return (
           <Flex direction="column" gap="1">
             <TextField.Root
@@ -216,7 +216,7 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
           </Flex>
         );
 
-      case 'less-than':
+      case 'lte':
         return (
           <Flex direction="column" gap="1">
             <TextField.Root
@@ -365,8 +365,8 @@ export function NumericFilterInput({ filter, onChange, dataType }: NumericFilter
         <Select.Content>
           <Select.Item value="in-list">Is one of</Select.Item>
           <Select.Item value="not-in-list">is not one of</Select.Item>
-          <Select.Item value="greater-than">Greater than</Select.Item>
-          <Select.Item value="less-than">Less than</Select.Item>
+          <Select.Item value="gte">&#x2265;</Select.Item>
+          <Select.Item value="lte">&#x2264;</Select.Item>
           <Select.Item value="between">Between</Select.Item>
         </Select.Content>
       </Select.Root>
