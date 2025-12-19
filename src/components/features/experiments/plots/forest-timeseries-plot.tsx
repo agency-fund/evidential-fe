@@ -3,13 +3,12 @@ import { useState } from 'react';
 import { Box, Callout, Card, Flex, Text } from '@radix-ui/themes';
 import {
   CartesianGrid,
-  Customized,
   Legend,
   Line,
   LineChart,
   ResponsiveContainer,
   Tooltip,
-  TooltipProps,
+  TooltipContentProps,
   XAxis,
   YAxis,
 } from 'recharts';
@@ -40,7 +39,7 @@ interface ForestTimeseriesPlotProps {
 }
 
 // Custom tooltip for the timeseries
-interface CustomTimeseriesTooltipProps extends TooltipProps<ValueType, NameType> {
+interface CustomTimeseriesTooltipProps extends TooltipContentProps<ValueType, NameType> {
   armMetadata: ArmMetadata[];
   selectedArmId: string | null;
 }
@@ -171,7 +170,11 @@ export default function ForestTimeseriesPlot({
                   : value.toFixed(2)
             }
           />
-          <Tooltip content={<CustomTimeseriesTooltip armMetadata={armMetadata} selectedArmId={selectedArmId} />} />
+          <Tooltip
+            content={(props) => (
+              <CustomTimeseriesTooltip {...props} armMetadata={armMetadata} selectedArmId={selectedArmId} />
+            )}
+          />
           <Legend
             wrapperStyle={{
               position: 'fixed', // 1. Break it out of the chart's flow
@@ -202,16 +205,14 @@ export default function ForestTimeseriesPlot({
           {/* Render jittered line segments for each arm. Separate loop to keep as direct children of the LineChart. */}
           {armMetadata.map((armInfo, index) => {
             return (
-              <Customized
+              <JitteredLine
                 key={`line_${armInfo.id}`}
-                component={
-                  <JitteredLine
-                    chartData={chartData}
-                    armId={armInfo.id}
-                    color={getArmColor(index, armInfo.isBaseline, selectedArmId === armInfo.id)}
-                    jitterOffset={calculateJitterOffset(index, armMetadata.length)}
-                  />
-                }
+                chartData={chartData}
+                armId={armInfo.id}
+                color={getArmColor(index, armInfo.isBaseline, selectedArmId === armInfo.id)}
+                xDomain={[allDateTicks[0], allDateTicks[allDateTicks.length - 1]]}
+                yDomain={[minY, maxY]}
+                jitterOffset={calculateJitterOffset(index, armMetadata.length)}
               />
             );
           })}
@@ -220,21 +221,19 @@ export default function ForestTimeseriesPlot({
           {armMetadata.map((armInfo, index) => {
             const selected = selectedArmId === armInfo.id;
             return (
-              <Customized
+              <ConfidenceInterval
                 key={`ci_${armInfo.id}`}
-                component={
-                  <ConfidenceInterval
-                    chartData={chartData}
-                    armId={armInfo.id}
-                    selected={selected}
-                    baseColor={getArmColor(index, armInfo.isBaseline, selected)}
-                    jitterOffset={calculateJitterOffset(index, armMetadata.length)}
-                    onClick={(dataPoint) => {
-                      setSelectedArmId(armInfo.id);
-                      onPointClick?.(dataPoint.key);
-                    }}
-                  />
-                }
+                chartData={chartData}
+                armId={armInfo.id}
+                selected={selected}
+                baseColor={getArmColor(index, armInfo.isBaseline, selected)}
+                xDomain={[allDateTicks[0], allDateTicks[allDateTicks.length - 1]]}
+                yDomain={[minY, maxY]}
+                jitterOffset={calculateJitterOffset(index, armMetadata.length)}
+                onClick={(dataPoint) => {
+                  setSelectedArmId(armInfo.id);
+                  onPointClick?.(dataPoint.key);
+                }}
               />
             );
           })}

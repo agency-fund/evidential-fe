@@ -1,12 +1,13 @@
+import { useChartHeight, useChartWidth, useOffset } from 'recharts';
 import { Significance, TimeSeriesDataPoint, getColorWithSignificance } from './forest-plot-utils';
 
 export interface ConfidenceIntervalProps {
-  xAxisMap?: Record<string, { scale: (value: number) => number }>;
-  yAxisMap?: Record<string, { scale: (value: number) => number }>;
   chartData: TimeSeriesDataPoint[];
   armId: string;
   selected: boolean;
   baseColor: string;
+  xDomain: [number, number];
+  yDomain: [number, number];
   jitterOffset?: number; // jitter to prevent overlapping CIs in pixels
   strokeWidth?: number;
   capWidth?: number; // Width of the horizontal cap lines
@@ -19,12 +20,12 @@ export interface ConfidenceIntervalProps {
  * Custom component to render confidence intervals for a single arm
  */
 export function ConfidenceInterval({
-  xAxisMap,
-  yAxisMap,
   chartData,
   armId,
   selected,
   baseColor,
+  xDomain,
+  yDomain,
   jitterOffset = 0,
   strokeWidth = 5,
   capWidth = 0,
@@ -32,11 +33,24 @@ export function ConfidenceInterval({
   opacity = 1,
   onClick,
 }: ConfidenceIntervalProps) {
-  if (!xAxisMap || !yAxisMap || !chartData.length) return null;
-  // These params are special internal params for recharts.
-  // TODO: update to recharts 3+ API to replace magic with hooks.
-  const xAxis = Object.values(xAxisMap)[0];
-  const yAxis = Object.values(yAxisMap)[0];
+  const offset = useOffset();
+  const chartWidth = useChartWidth();
+  const chartHeight = useChartHeight();
+
+  if (!offset || !chartWidth || !chartHeight || !chartData.length) return null;
+
+  const [xMin, xMax] = xDomain;
+  const [yMin, yMax] = yDomain;
+  if (xMax - xMin === 0 || yMax - yMin === 0) return null;
+
+  const plotLeft = offset.left ?? 0;
+  const plotTop = offset.top ?? 0;
+  const plotWidth = chartWidth - plotLeft - (offset.right ?? 0);
+  const plotHeight = chartHeight - plotTop - (offset.bottom ?? 0);
+  if (plotWidth <= 0 || plotHeight <= 0) return null;
+
+  const scaleX = (x: number) => plotLeft + ((x - xMin) / (xMax - xMin)) * plotWidth + jitterOffset;
+  const scaleY = (y: number) => plotTop + plotHeight - ((y - yMin) / (yMax - yMin)) * plotHeight;
 
   // Render confidence intervals for this arm at each data point
   return (
@@ -46,9 +60,9 @@ export function ConfidenceInterval({
         if (!armData) return null;
 
         // Rescale the x and y values to the pixel coordinates
-        const x = xAxis.scale(dataPoint.dateTimestampMs) + jitterOffset;
-        const yLower = yAxis.scale(armData.lowerCI);
-        const yUpper = yAxis.scale(armData.upperCI);
+        const x = scaleX(dataPoint.dateTimestampMs);
+        const yLower = scaleY(armData.lowerCI);
+        const yUpper = scaleY(armData.upperCI);
         const color = getColorWithSignificance(baseColor, Significance.No, selected);
 
         return (
