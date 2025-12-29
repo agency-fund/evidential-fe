@@ -37,7 +37,7 @@ COPY public ./public
 RUN npm run build
 
 # Defines a next server that delivers the compiled output of the build step.
-FROM docker.io/node:22.14-bookworm
+FROM docker.io/node:22.21-bookworm
 ENV HOSTNAME="0.0.0.0"
 ENV NODE_ENV=production
 ENV PORT=3000
