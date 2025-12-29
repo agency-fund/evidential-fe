@@ -1141,7 +1141,7 @@ export const ExperimentState = {
 export type FieldDescriptorExtraAnyOf = { [key: string]: string };
 
 /**
- * Additional field metadata
+ * @deprecated
  */
 export type FieldDescriptorExtra = FieldDescriptorExtraAnyOf | null;
 
@@ -1160,7 +1160,7 @@ export interface FieldDescriptor {
 	is_filter?: boolean;
 	/** Whether this field can be used as a metric */
 	is_metric?: boolean;
-	/** Additional field metadata */
+	/** @deprecated */
 	extra?: FieldDescriptorExtra;
 }
 
@@ -1538,11 +1538,6 @@ export interface GetSnapshotResponse {
 	snapshot: GetSnapshotResponseSnapshot;
 }
 
-export type GetStrataResponseElementExtraAnyOf = { [key: string]: string };
-
-export type GetStrataResponseElementExtra =
-	GetStrataResponseElementExtraAnyOf | null;
-
 /**
  * Describes a stratification variable.
  */
@@ -1552,7 +1547,6 @@ export interface GetStrataResponseElement {
 	field_name: string;
 	/** @maxLength 2000 */
 	description: string;
-	extra?: GetStrataResponseElementExtra;
 }
 
 export interface HTTPExceptionError {
