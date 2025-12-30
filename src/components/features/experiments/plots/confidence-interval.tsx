@@ -6,8 +6,6 @@ export interface ConfidenceIntervalProps {
   armId: string;
   selected: boolean;
   baseColor: string;
-  xDomain: [number, number];
-  yDomain: [number, number];
   jitterOffset?: number; // jitter to prevent overlapping CIs in pixels
   strokeWidth?: number;
   capWidth?: number; // Width of the horizontal cap lines
@@ -24,8 +22,6 @@ export function ConfidenceInterval({
   armId,
   selected,
   baseColor,
-  xDomain,
-  yDomain,
   jitterOffset = 0,
   strokeWidth = 5,
   capWidth = 0,
@@ -45,15 +41,10 @@ export function ConfidenceInterval({
   const yAxisDomain = useYAxisDomain();
   if (!offset || !chartWidth || !chartHeight || !xAxisDomain || !yAxisDomain || !chartData.length) return null;
 
-  console.log('X Axis Domain:', xAxisDomain, ' vs ', xDomain);
-  console.log('Y Axis Domain:', yAxisDomain, ' vs ', yDomain);
-
-  const xMin = xDomain[0];
-  const xMax = xDomain[xDomain.length - 1];
-  const yMin = yDomain[0];
-  const yMax = yDomain[yDomain.length - 1];
-  // If there's a degenerate effect size domain, return null.
-  if (yMax - yMin === 0) return null;
+  const xMin = xAxisDomain[0];
+  const xMax = xAxisDomain[xAxisDomain.length - 1];
+  const yMin = yAxisDomain[0];
+  const yMax = yAxisDomain[yAxisDomain.length - 1];
 
   const [plotLeft, plotRight] = [offset.left ?? 0, offset.right ?? 0];
   const [plotTop, plotBottom] = [offset.top ?? 0, offset.bottom ?? 0];
@@ -62,10 +53,12 @@ export function ConfidenceInterval({
   if (plotWidth <= 0 || plotHeight <= 0) return null;
 
   const scaleX = (x: number) => {
+    if (typeof xMin !== 'number' || typeof xMax !== 'number') return NaN;
     if (xMin === xMax) return plotLeft + plotWidth / 2; // one point only so plot in the middle
     return plotLeft + ((x - xMin) / (xMax - xMin)) * plotWidth;
   };
   const scaleY = (y: number) => {
+    if (typeof yMin !== 'number' || typeof yMax !== 'number') return NaN;
     // Plotting from the top left of the chart:
     if (yMin === yMax) return plotTop + plotHeight / 2;
     return plotTop + ((yMax - y) / (yMax - yMin)) * plotHeight;
@@ -77,7 +70,6 @@ export function ConfidenceInterval({
       {chartData.map((dataPoint, pointIndex) => {
         const armData = dataPoint.armEffects.get(armId);
         if (!armData) return null;
-        console.log('X: ', dataPoint.dateTimestampMs, 'Scale X:', scaleX(dataPoint.dateTimestampMs));
 
         // Rescale the x and y values to the pixel coordinates
         const x = scaleX(dataPoint.dateTimestampMs) + jitterOffset;
