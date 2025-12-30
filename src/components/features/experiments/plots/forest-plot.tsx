@@ -26,7 +26,8 @@ import {
   NEGATIVE_LIGHT_COLOR,
 } from './forest-plot-utils';
 import { useState } from 'react';
-import { ScatterCustomizedShape, ScatterPointItem } from 'recharts/types/cartesian/Scatter';
+
+import { HorizontalConfidenceInterval } from './horizontal-confidence-interval';
 
 // Color constants
 const COLORS = {
@@ -92,9 +93,25 @@ const formatValue = (value: number): string => {
       : value.toFixed(2);
 };
 
-function CustomTooltip({ active, payload }: TooltipContentProps<ValueType, NameType>) {
-  if (!active || !payload || !payload.length) return null;
-  const data = payload[0].payload;
+type TooltipState = {
+  active: boolean;
+  payload: EffectSizeData | BanditEffectData | null;
+};
+
+// Custom tooltip content is normally passed TooltipContentProps. We also want to pass in our custom
+// TooltipState to allow overriding the payload (if the user mouseover's a CI) that would otherwise
+// be associated with the scatterchart data's activeIndex.
+type CustomTooltipProps = TooltipContentProps<ValueType, NameType> & Partial<{ state: TooltipState }>;
+
+function CustomTooltip({ active, payload, state }: CustomTooltipProps) {
+  // If our custom state is overriding things, it must be active.
+  if (state && !state.active) return null;
+  // Else if we're using default props, it must be active.
+  if (!state && (!active || !payload || !payload.length)) return null;
+
+  // Use the payload from our state if it exists, otherwise the default props payload.
+  const data = state?.payload ?? payload[0].payload;
+
   if (isFrequentistPayload(data)) {
     return (
       <Card style={{ padding: '8px' }}>
@@ -141,10 +158,14 @@ function CustomTooltip({ active, payload }: TooltipContentProps<ValueType, NameT
 }
 
 export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: maxXProp }: ForestPlotProps) {
-  const [isTooltipActive, setIsTooltipActive] = useState(false);
+  // Our custom state gives us more control over the data to use in the tooltip vs the default props.
+  const [tooltipState, setTooltipState] = useState<TooltipState>({ active: false, payload: null });
 
-  const handleShowTooltip = () => setIsTooltipActive(true);
-  const handleHideTooltip = () => setIsTooltipActive(false);
+  const handleShowTooltip = (payload: EffectSizeData | BanditEffectData | null) => {
+    console.log('handleShowTooltip for ', payload);
+    setTooltipState({ active: true, payload });
+  };
+  const handleHideTooltip = () => setTooltipState({ active: false, payload: null });
 
   // Only render if we have data
   if ((!effectSizes && !banditEffects) || (effectSizes?.length === 0 && banditEffects?.length === 0)) {
@@ -228,13 +249,13 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
             Difference from {effectSizes[0].armName}
           </Heading>
           <ResponsiveContainer width="100%" height="100%">
-            {/* <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }} onMouseLeave={handleHideTooltip}> */}
             <ScatterChart onMouseLeave={handleHideTooltip}>
               {/* Handle explicit display of the tooltip to allow selecting and copying values. */}
               <Tooltip
-                active={isTooltipActive}
+                active={tooltipState.active}
+                defaultIndex={0} // need a default to still show content if we first mouseover a CI instead of data point
                 wrapperStyle={{ pointerEvents: 'auto' }}
-                content={(props) => <CustomTooltip {...props} />}
+                content={(props) => <CustomTooltip {...props} state={tooltipState} />}
               />
 
               <CartesianGrid strokeDasharray="3 3" />
@@ -277,46 +298,21 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
               <ReferenceLine x={0} yAxisId="left" stroke={COLORS.BASELINE} strokeWidth={6} strokeDasharray="2 1" />
 
               {/* Confidence intervals - place under points */}
-              {/* <Scatter
-                onMouseEnter={handleShowTooltip}
-                onMouseLeave={handleHideTooltip}
-                data={effectSizes}
-                fill="none"
-                // Draw a custom line for CIs since ErrorBars don't give us enough control
-                shape={(props: CustomShapeProps) => {
-                  // const shapeProps = props as CustomShapeProps;
-                  // Always return an element even if empty.
-                  if (!props.payload || !props.xAxis?.width) return <g />;
-
-                  const { isBaseline, ci95, absDifference, significant } = props.payload as EffectSizeData;
-                  const {
-                    cx: centerX,
-                    cy: centerY,
-                    xAxis: { width: xAxisWidth },
-                  } = props;
-
-                  // Determine stroke color based on significance and direction
-                  let strokeColor: string = COLORS.DEFAULT_CI;
-                  if (significant && !isBaseline) {
-                    strokeColor = absDifference > 0 ? COLORS.POSITIVE_CI : COLORS.NEGATIVE_CI;
-                  }
-
-                  // Don't draw CIs for baseline arms as well since we're highlighting *differences* from the baseline.
-                  return isBaseline || isNaN(ci95) ? (
-                    <g />
-                  ) : (
-                    <line
-                      x1={(centerX || 0) - scaleHalfIntervalToViewport(ci95, xAxisWidth)}
-                      y1={centerY}
-                      x2={(centerX || 0) + scaleHalfIntervalToViewport(ci95, xAxisWidth)}
-                      y2={centerY}
-                      stroke={strokeColor}
-                      strokeWidth={12}
-                      strokeLinecap="round"
-                    />
-                  );
-                }}
-              /> */}
+              {effectSizes.map((d) => {
+                // Skip rendering if missing data or is baseline, since we're highlighting *differences* from the baseline.
+                if (isNaN(d.ci95) || d.isBaseline) return null;
+                return (
+                  <HorizontalConfidenceInterval
+                    key={d.armId}
+                    data={d}
+                    onMouseEnter={() => handleShowTooltip(d)}
+                    defaultColor={COLORS.DEFAULT_CI}
+                    positiveColor={COLORS.POSITIVE_CI}
+                    negativeColor={COLORS.NEGATIVE_CI}
+                    yAxisId="left"
+                  />
+                );
+              })}
 
               {/* Points showing the arm mean differences from the baseline, and the baseline reference mean */}
               <Scatter
@@ -371,7 +367,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
             <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
               {/* Handle explicit display of the tooltip to allow selecting and copying values. */}
               <Tooltip
-                active={isTooltipActive}
+                active={tooltipState.active}
                 wrapperStyle={{ pointerEvents: 'auto' }}
                 content={(props) => <CustomTooltip {...props} />}
               />
