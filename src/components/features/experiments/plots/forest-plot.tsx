@@ -3,16 +3,16 @@ import { ExclamationTriangleIcon, InfoCircledIcon } from '@radix-ui/react-icons'
 import { Box, Callout, Card, Flex, Heading, Text } from '@radix-ui/themes';
 import {
   CartesianGrid,
+  ReferenceLine,
   ResponsiveContainer,
   Scatter,
   ScatterChart,
   Tooltip,
-  TooltipProps,
+  TooltipContentProps,
   XAxis,
   YAxis,
 } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
-import { ChartOffset } from 'recharts/types/util/types';
 import {
   BanditEffectData,
   EffectSizeData,
@@ -26,6 +26,7 @@ import {
   NEGATIVE_LIGHT_COLOR,
 } from './forest-plot-utils';
 import { useState } from 'react';
+import { ScatterCustomizedShape, ScatterPointItem } from 'recharts/types/cartesian/Scatter';
 
 // Color constants
 const COLORS = {
@@ -91,7 +92,7 @@ const formatValue = (value: number): string => {
       : value.toFixed(2);
 };
 
-function CustomTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
+function CustomTooltip({ active, payload }: TooltipContentProps<ValueType, NameType>) {
   if (!active || !payload || !payload.length) return null;
   const data = payload[0].payload;
   if (isFrequentistPayload(data)) {
@@ -173,15 +174,6 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
     .sort((a, b) => a - b)
     .filter((value, index, self) => self.indexOf(value) === index);
 
-  // Scale xGridPoints to viewport units for use in drawing grid lines
-  const scaleXGridPoints = (props: { xAxis: unknown; width: number; height: number; offset: ChartOffset }) => {
-    const { width, offset } = props;
-    if (maxX - minX === 0) return []; // zero effect size so no grid lines
-    return xGridPoints.map((x) =>
-      Math.round((offset.left || 0) + ((x - minX) / (maxX - minX)) * (offset.width || width)),
-    );
-  };
-
   // Scale a half-confidence interval to a width in viewport units to be used for drawing the error bars
   const scaleHalfIntervalToViewport = (x: number, width: number | undefined) => {
     if (!width) return 0;
@@ -236,12 +228,16 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
             Difference from {effectSizes[0].armName}
           </Heading>
           <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }} onMouseLeave={handleHideTooltip}>
+            {/* <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }} onMouseLeave={handleHideTooltip}> */}
+            <ScatterChart onMouseLeave={handleHideTooltip}>
               {/* Handle explicit display of the tooltip to allow selecting and copying values. */}
-              <Tooltip active={isTooltipActive} wrapperStyle={{ pointerEvents: 'auto' }} content={<CustomTooltip />} />
+              <Tooltip
+                active={isTooltipActive}
+                wrapperStyle={{ pointerEvents: 'auto' }}
+                content={(props) => <CustomTooltip {...props} />}
+              />
 
-              {/* Supply our own coordinates generator since default rendering is off for proportion metrics */}
-              <CartesianGrid strokeDasharray="3 3" verticalCoordinatesGenerator={scaleXGridPoints} />
+              <CartesianGrid strokeDasharray="3 3" />
 
               <XAxis
                 type="number"
@@ -253,80 +249,35 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 ticks={xGridPoints} // use our own ticks due to auto rendering issues
                 tickFormatter={formatValue}
               />
+
               {/* Use the left y-axis to display arm names */}
               <YAxis
                 type="category"
-                domain={effectSizes.map((_, i) => i)}
+                yAxisId="left"
+                orientation="left"
                 width={yLeftAxisWidthPx}
                 style={commonAxisStyle}
-                tickFormatter={(index) => {
-                  const name = index >= 0 && index < effectSizes.length ? effectSizes[index].armName : '';
-                  return truncateLabel(name);
-                }}
-                allowDataOverflow={true}
+                dataKey={(dataPoint: EffectSizeData) => dataPoint.armName}
               />
-              {/* Use the right y-axis to display differences from the baseline and p-values */}
+
+              {/* Use the right y-axis to display differences from the baseline */}
               <YAxis
-                yAxisId="stats"
                 type="category"
+                yAxisId="right"
                 orientation="right"
-                domain={effectSizes.map((e, i) => i)}
                 width={yRightAxisWidthPx}
-                tick={(props) => {
-                  const {
-                    payload: { value: effectSizesIndex },
-                  } = props;
-                  const armData = effectSizes[effectSizesIndex];
-
-                  const absoluteDiffText = !armData.isBaseline ? `Δ = ${formatValue(armData.absDifference)}` : '';
-
-                  const commonRightAxisTextProps = {
-                    x: props.x,
-                    textAnchor: props.textAnchor,
-                    // Only bold/black if significant AND not baseline arm
-                    fill: armData.significant && !armData.isBaseline ? 'black' : undefined,
-                    fontWeight: armData.significant && !armData.isBaseline ? 'bold' : undefined,
-                  };
-
-                  return (
-                    <g>
-                      <text {...commonRightAxisTextProps} style={commonAxisStyle} y={props.y} dominantBaseline="middle">
-                        {absoluteDiffText}
-                      </text>
-                    </g>
-                  );
-                }} // end tickFormatter, whew
-                allowDataOverflow={true}
+                style={commonAxisStyle}
+                // ticks={effectSizes.map((_, i) => `${i}`)}
+                dataKey={(dataPoint: EffectSizeData) => {
+                  return dataPoint.isBaseline ? '' : `Δ = ${formatValue(dataPoint.absDifference)}`;
+                }}
               />
 
               {/* Control arm mean - vertical marker below points and CIs */}
-              <Scatter
-                onMouseEnter={handleShowTooltip}
-                onMouseLeave={handleHideTooltip}
-                data={effectSizes}
-                fill="none"
-                shape={(props: CustomShapeProps) => {
-                  // Always return an element even if empty.
-                  if (!(props.payload as EffectSizeData)?.isBaseline) return <g />;
-
-                  const { cx: centerX, yAxis } = props;
-
-                  return (
-                    <line
-                      x1={centerX}
-                      y1={0}
-                      x2={centerX}
-                      y2={(yAxis?.height || 0) + 20} // where's the extra 20 from? Margins?
-                      stroke={COLORS.BASELINE}
-                      strokeWidth={5}
-                      strokeDasharray="2 1"
-                    />
-                  );
-                }}
-              />
+              <ReferenceLine x={0} yAxisId="left" stroke={COLORS.BASELINE} strokeWidth={6} strokeDasharray="2 1" />
 
               {/* Confidence intervals - place under points */}
-              <Scatter
+              {/* <Scatter
                 onMouseEnter={handleShowTooltip}
                 onMouseLeave={handleHideTooltip}
                 data={effectSizes}
@@ -365,13 +316,15 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                     />
                   );
                 }}
-              />
+              /> */}
 
               {/* Points showing the arm mean differences from the baseline, and the baseline reference mean */}
               <Scatter
                 onMouseEnter={handleShowTooltip}
-                onMouseLeave={handleHideTooltip}
+                // onMouseLeave={handleHideTooltip}
                 data={effectSizes}
+                dataKey={(dataPoint: EffectSizeData) => dataPoint.absDifference}
+                yAxisId="left"
                 shape={(props: CustomShapeProps) => {
                   // Always return an element even if empty.
                   if (!props.payload) return <g />;
@@ -397,6 +350,14 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                   return <circle cx={centerX} cy={centerY} r={6} fill={fillColor} stroke={COLORS.DEFAULT_CI} />;
                 }}
               />
+
+              {/* "hidden" points backing the right y-axis for deltas */}
+              <Scatter
+                data={effectSizes}
+                dataKey={(dataPoint: EffectSizeData) => dataPoint.absDifference}
+                yAxisId="right"
+                fill="none"
+              />
             </ScatterChart>
           </ResponsiveContainer>
         </Box>
@@ -409,10 +370,13 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
               {/* Handle explicit display of the tooltip to allow selecting and copying values. */}
-              <Tooltip active={isTooltipActive} wrapperStyle={{ pointerEvents: 'auto' }} content={<CustomTooltip />} />
+              <Tooltip
+                active={isTooltipActive}
+                wrapperStyle={{ pointerEvents: 'auto' }}
+                content={(props) => <CustomTooltip {...props} />}
+              />
 
-              {/* Supply our own coordinates generator since default rendering is off for proportion metrics */}
-              <CartesianGrid strokeDasharray="3 3" verticalCoordinatesGenerator={scaleXGridPoints} />
+              <CartesianGrid strokeDasharray="3 3" />
 
               <XAxis
                 type="number"
