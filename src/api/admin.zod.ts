@@ -1752,8 +1752,7 @@ export const listParticipantTypesResponse = zod.object({
 						extra: zod
 							.record(zod.string(), zod.string())
 							.or(zod.null())
-							.optional()
-							.describe("Additional field metadata"),
+							.optional(),
 					}),
 				)
 				.describe("List of fields available in this table"),
@@ -1839,8 +1838,7 @@ export const createParticipantTypeBody = zod.object({
 						extra: zod
 							.record(zod.string(), zod.string())
 							.or(zod.null())
-							.optional()
-							.describe("Additional field metadata"),
+							.optional(),
 					}),
 				)
 				.describe("List of fields available in this table"),
@@ -1915,8 +1913,7 @@ export const createParticipantTypeResponse = zod.object({
 						extra: zod
 							.record(zod.string(), zod.string())
 							.or(zod.null())
-							.optional()
-							.describe("Additional field metadata"),
+							.optional(),
 					}),
 				)
 				.describe("List of fields available in this table"),
@@ -2126,10 +2123,6 @@ export const inspectParticipantTypesResponse = zod
 					description: zod
 						.string()
 						.max(inspectParticipantTypesResponseStrataItemDescriptionMax),
-					extra: zod
-						.record(zod.string(), zod.string())
-						.or(zod.null())
-						.optional(),
 				})
 				.describe("Describes a stratification variable."),
 		),
@@ -2199,11 +2192,7 @@ export const getParticipantTypesResponse = zod.object({
 					.boolean()
 					.optional()
 					.describe("Whether this field can be used as a metric"),
-				extra: zod
-					.record(zod.string(), zod.string())
-					.or(zod.null())
-					.optional()
-					.describe("Additional field metadata"),
+				extra: zod.record(zod.string(), zod.string()).or(zod.null()).optional(),
 			}),
 		)
 		.describe("List of fields available in this table"),
@@ -2290,11 +2279,7 @@ export const updateParticipantTypeBody = zod.object({
 					.boolean()
 					.optional()
 					.describe("Whether this field can be used as a metric"),
-				extra: zod
-					.record(zod.string(), zod.string())
-					.or(zod.null())
-					.optional()
-					.describe("Additional field metadata"),
+				extra: zod.record(zod.string(), zod.string()).or(zod.null()).optional(),
 			}),
 		)
 		.max(updateParticipantTypeBodyFieldsMaxOne)
@@ -2367,11 +2352,7 @@ export const updateParticipantTypeResponse = zod.object({
 					.boolean()
 					.optional()
 					.describe("Whether this field can be used as a metric"),
-				extra: zod
-					.record(zod.string(), zod.string())
-					.or(zod.null())
-					.optional()
-					.describe("Additional field metadata"),
+				extra: zod.record(zod.string(), zod.string()).or(zod.null()).optional(),
 			}),
 		)
 		.max(updateParticipantTypeResponseFieldsMaxOne)
