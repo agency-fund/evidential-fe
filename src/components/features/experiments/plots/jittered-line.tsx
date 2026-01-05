@@ -1,13 +1,16 @@
 import { useMemo } from 'react';
 import { Line } from 'recharts';
-import { TimeSeriesDataPoint } from './forest-plot-utils';
 import { useRechartScales } from './use-chart-scales';
-import { NumberDomain } from 'recharts/types/util/types';
+
+export interface Point {
+  x: number;
+  y: number;
+}
 
 export interface JitteredLineProps {
-  chartData: TimeSeriesDataPoint[];
-  armId: string;
+  points: Point[];
   color: string;
+  dataKey: string;
   // No need for yDomain since the Line component will scale for us automatically based on dataKey
   xDomain: [number, number];
   jitterOffset?: number; // in plot area pixels
@@ -16,13 +19,14 @@ export interface JitteredLineProps {
 }
 
 /**
- * Custom component to render a jittered line for a single arm
- * Uses Recharts Line component with transformed data to achieve pixel-based jitter in a time-based axis
+ * Renders a jittered line for a single arm using the Recharts Line component.
+ * Transforms the data to achieve pixel-based jitter in the units of the XAxis.
+ * Must use the same dataKey as the chart's XAxis.
  */
 export function JitteredLine({
-  chartData,
-  armId,
+  points,
   color,
+  dataKey,
   xDomain,
   jitterOffset = 0,
   strokeWidth = 2,
@@ -32,39 +36,33 @@ export function JitteredLine({
 
   // Build jittered path data - use useMemo since it's derived from props
   const lineData = useMemo(() => {
-    if (!isValid || !plotWidth || !chartData.length) return [];
+    if (!isValid || !plotWidth || !points.length) return [];
 
     // Avoid division by zero
     if (plotWidth <= 0) return [];
 
-    // Calculate milliseconds per pixel to convert pixel jitter to jitter in time units
+    // Calculate XAxis units per pixel to convert pixel jitter to the x-domain.
     const [minTime, maxTime] = xDomain;
-    const msPerPixel = (maxTime - minTime) / plotWidth;
-    const jitterMs = jitterOffset * msPerPixel;
+    const unitsPerPixel = (maxTime - minTime) / plotWidth;
+    const jitterAmount = jitterOffset * unitsPerPixel;
 
-    // Construct the new jittered x values. Must retain the same dataKey used by the chart's XAxis.
-    return chartData
-      .map((dataPoint) => {
-        const armData = dataPoint.armEffects.get(armId);
-        if (!armData) return null;
-
+    // Construct the new jittered x values.
+    return points
+      .map((point) => {
         return {
-          dateTimestampMs: dataPoint.dateTimestampMs + jitterMs,
-          value: armData.absMean,
+          [dataKey]: point.x + jitterAmount,
+          y: point.y,
         };
       })
-      .filter(
-        (p): p is { dateTimestampMs: number; value: number } =>
-          p !== null && !isNaN(p.value) && !isNaN(p.dateTimestampMs),
-      );
-  }, [isValid, plotWidth, chartData, armId, xDomain, jitterOffset]);
+      .filter((p): p is { [dataKey: string]: number; y: number } => !isNaN(p.y) && !isNaN(p[dataKey]));
+  }, [isValid, plotWidth, points, dataKey, xDomain, jitterOffset]);
 
   if (!lineData.length) return null;
 
   return (
     <Line
       data={lineData}
-      dataKey="value"
+      dataKey="y"
       type="monotone"
       stroke={color}
       strokeWidth={strokeWidth}
