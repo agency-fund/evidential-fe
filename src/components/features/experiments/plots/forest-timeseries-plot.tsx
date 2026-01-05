@@ -48,7 +48,8 @@ function CustomTimeseriesTooltip({ active, payload, armMetadata, selectedArmId }
   if (!active || !payload || payload.length === 0) return null;
 
   const dataPoint = payload[0]?.payload as TimeSeriesDataPoint | undefined;
-  if (!dataPoint) return null;
+  // Guard against other data elements using the same axis that don't have armEffects.
+  if (!dataPoint || !dataPoint.armEffects) return null;
 
   return (
     <Card size="1" variant="surface">
@@ -213,7 +214,6 @@ export default function ForestTimeseriesPlot({
                 armId={armInfo.id}
                 color={getArmColor(index, armInfo.isBaseline, selectedArmId === armInfo.id)}
                 xDomain={[allDateTicks[0], allDateTicks[allDateTicks.length - 1]]}
-                yDomain={[minY, maxY]}
                 jitterOffset={calculateJitterOffset(index, armMetadata.length)}
               />
             );
@@ -247,6 +247,10 @@ export default function ForestTimeseriesPlot({
               <Line
                 key={`${armInfo.id}_effect`}
                 dataKey={(point: TimeSeriesDataPoint) => {
+                  // Guard against other data elements using the same axis that don't have armEffects.
+                  // (Recharts might pass data points from other Lines sharing the axis)
+                  if (!point || !point.armEffects) return null;
+
                   const armPoint = point.armEffects.get(armInfo.id);
                   if (!armPoint) return null;
                   return armPoint.absMean;
