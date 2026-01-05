@@ -24,7 +24,7 @@ import {
   getArmColor,
 } from './forest-plot-utils';
 import { JitteredDot, JitteredDotProps } from './jittered-dot';
-import { JitteredLine } from './jittered-line';
+import { JitteredLine, Point } from './jittered-line';
 import { ConfidenceInterval } from './confidence-interval';
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
@@ -114,6 +114,19 @@ export default function ForestTimeseriesPlot({
       </Callout.Root>
     );
   }
+
+  // Pre-calculate points for each arm for JitteredLine.
+  const armPointsMap = new Map<string, Point[]>();
+  armMetadata.forEach((arm) => {
+    const points = chartData
+      .map((d) => {
+        const armData = d.armEffects.get(arm.id);
+        if (!armData) return null;
+        return { x: d.dateTimestampMs, y: armData.absMean };
+      })
+      .filter((p): p is Point => p !== null);
+    armPointsMap.set(arm.id, points);
+  });
 
   const yAxisValues: number[] = [];
   chartData.forEach((point) => point.armEffects.forEach((arm) => yAxisValues.push(arm.lowerCI, arm.upperCI)));
@@ -210,9 +223,9 @@ export default function ForestTimeseriesPlot({
             return (
               <JitteredLine
                 key={`line_${armInfo.id}`}
-                chartData={chartData}
-                armId={armInfo.id}
+                points={armPointsMap.get(armInfo.id) || []}
                 color={getArmColor(index, armInfo.isBaseline, selectedArmId === armInfo.id)}
+                dataKey="dateTimestampMs"
                 xDomain={[allDateTicks[0], allDateTicks[allDateTicks.length - 1]]}
                 jitterOffset={calculateJitterOffset(index, armMetadata.length)}
               />
