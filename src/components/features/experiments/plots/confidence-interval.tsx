@@ -1,4 +1,4 @@
-import { Significance, TimeSeriesDataPoint } from './forest-plot-utils';
+import { TimeSeriesDataPoint } from './forest-plot-utils';
 import { useRechartScales } from './use-chart-scales';
 
 export interface ConfidenceIntervalProps {
