@@ -28,6 +28,7 @@ import {
 import { useState } from 'react';
 
 import { HorizontalConfidenceInterval } from './horizontal-confidence-interval';
+import { ScatterPointItem } from 'recharts/types/cartesian/Scatter';
 
 // Color constants
 const COLORS = {
@@ -48,22 +49,6 @@ interface ForestPlotProps {
   minX?: number;
   maxX?: number;
 }
-
-// Define a type for the shape props that matches what we need; leverages the fact that
-// type ScatterCustomizedShape accepts an ActiveShape, which allows for the signature:
-//     ((props: unknown) => React.JSX.Element)
-// Just list out what we need, inferred from inspecting props to this shape function.
-type CustomShapeProps = {
-  cx?: number;
-  cy?: number;
-  payload?: EffectSizeData | BanditEffectData;
-  xAxis?: {
-    width?: number;
-  };
-  yAxis?: {
-    height?: number;
-  };
-};
 
 const isFrequentistPayload = (payload: EffectSizeData | BanditEffectData): payload is EffectSizeData => {
   return 'isBaseline' in payload;
@@ -93,17 +78,20 @@ const formatValue = (value: number): string => {
       : value.toFixed(2);
 };
 
+// Custom tooltip content is normally passed TooltipContentProps. We also want to pass in our custom
+// TooltipState to allow overriding the payload (if the user mouseover's a CI) that would otherwise
+// be associated with the scatterchart data's activeIndex.
 type TooltipState = {
   active: boolean;
   payload: EffectSizeData | BanditEffectData | null;
 };
+type ExtraTooltipProps = {
+  state: TooltipState;
+  onMouseLeave: () => void; // to hide the tooltip when cursor hovers over then leaves the card
+};
+type CustomTooltipProps = TooltipContentProps<ValueType, NameType> & Partial<ExtraTooltipProps>;
 
-// Custom tooltip content is normally passed TooltipContentProps. We also want to pass in our custom
-// TooltipState to allow overriding the payload (if the user mouseover's a CI) that would otherwise
-// be associated with the scatterchart data's activeIndex.
-type CustomTooltipProps = TooltipContentProps<ValueType, NameType> & Partial<{ state: TooltipState }>;
-
-function CustomTooltip({ active, payload, state }: CustomTooltipProps) {
+function CustomTooltip({ active, payload, state, onMouseLeave }: CustomTooltipProps) {
   // If our custom state is overriding things, it must be active.
   if (state && !state.active) return null;
   // Else if we're using default props, it must be active.
@@ -114,7 +102,7 @@ function CustomTooltip({ active, payload, state }: CustomTooltipProps) {
 
   if (isFrequentistPayload(data)) {
     return (
-      <Card style={{ padding: '8px' }}>
+      <Card onMouseLeave={onMouseLeave} style={{ padding: '8px' }}>
         <Text weight="bold">{data.armName}</Text>
         <Flex direction="row" gap="2">
           <Flex direction="column" gap="2" align="end">
@@ -143,7 +131,7 @@ function CustomTooltip({ active, payload, state }: CustomTooltipProps) {
     );
   } else if (isBanditPayload(data)) {
     return (
-      <Card style={{ padding: '8px' }}>
+      <Card onMouseLeave={onMouseLeave} style={{ padding: '8px' }}>
         <Flex direction="column" gap="2">
           <Text weight="bold">{data.armName}</Text>
           <Text>Mean outcome value: {data.postPredMean.toFixed(2)}</Text>
@@ -162,7 +150,6 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
   const [tooltipState, setTooltipState] = useState<TooltipState>({ active: false, payload: null });
 
   const handleShowTooltip = (payload: EffectSizeData | BanditEffectData | null) => {
-    console.log('handleShowTooltip for ', payload);
     setTooltipState({ active: true, payload });
   };
   const handleHideTooltip = () => setTooltipState({ active: false, payload: null });
@@ -189,18 +176,12 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
         ]);
   const [minX, maxX] = computeAxisBounds(xAxisValues, minXProp, maxXProp);
 
-  // Space ticks evenly across the domain, including 0, but filter out duplicates,
-  // which can occur when the effect is 0.
-  const xGridPoints = [0, ...[0, 1, 2, 3, 4].map((i) => minX + (i * (maxX - minX)) / 4)]
+  // Space ticks evenly across the domain. For frequentist plots also include 0,
+  // but filter out duplicates, which can occur when the effect is 0.
+  const basePoints = effectSizes !== undefined ? [0] : [];
+  const xGridPoints = [...basePoints, ...[0, 1, 2, 3, 4].map((i) => minX + (i * (maxX - minX)) / 4)]
     .sort((a, b) => a - b)
     .filter((value, index, self) => self.indexOf(value) === index);
-
-  // Scale a half-confidence interval to a width in viewport units to be used for drawing the error bars
-  const scaleHalfIntervalToViewport = (x: number, width: number | undefined) => {
-    if (!width) return 0;
-    if (maxX - minX === 0) return 0;
-    return (x / (maxX - minX)) * width;
-  };
 
   const commonAxisStyle = {
     fontSize: '16px',
@@ -255,7 +236,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 active={tooltipState.active}
                 defaultIndex={0} // need a default to still show content if we first mouseover a CI instead of data point
                 wrapperStyle={{ pointerEvents: 'auto' }}
-                content={(props) => <CustomTooltip {...props} state={tooltipState} />}
+                content={(props) => <CustomTooltip {...props} state={tooltipState} onMouseLeave={handleHideTooltip} />}
               />
 
               <CartesianGrid strokeDasharray="3 3" />
@@ -279,6 +260,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 width={yLeftAxisWidthPx}
                 style={commonAxisStyle}
                 dataKey={(dataPoint: EffectSizeData) => dataPoint.armName}
+                tickFormatter={(value) => truncateLabel(value)}
               />
 
               {/* Use the right y-axis to display differences from the baseline */}
@@ -288,14 +270,20 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 orientation="right"
                 width={yRightAxisWidthPx}
                 style={commonAxisStyle}
-                // ticks={effectSizes.map((_, i) => `${i}`)}
                 dataKey={(dataPoint: EffectSizeData) => {
                   return dataPoint.isBaseline ? '' : `Δ = ${formatValue(dataPoint.absDifference)}`;
                 }}
               />
 
               {/* Control arm mean - vertical marker below points and CIs */}
-              <ReferenceLine x={0} yAxisId="left" stroke={COLORS.BASELINE} strokeWidth={6} strokeDasharray="2 1" />
+              <ReferenceLine
+                x={0}
+                yAxisId="left"
+                stroke={COLORS.BASELINE}
+                strokeWidth={6}
+                strokeDasharray="2 1"
+                onMouseEnter={() => handleShowTooltip(effectSizes[0])}
+              />
 
               {/* Confidence intervals - place under points */}
               {effectSizes.map((d) => {
@@ -308,9 +296,9 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 return (
                   <HorizontalConfidenceInterval
                     key={d.armId}
+                    armName={d.armName}
                     lower={d.ci95Lower}
                     upper={d.ci95Upper}
-                    armName={d.armName}
                     strokeColor={strokeColor}
                     onMouseEnter={() => handleShowTooltip(d)}
                     yAxisId="left"
@@ -321,11 +309,10 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
               {/* Points showing the arm mean differences from the baseline, and the baseline reference mean */}
               <Scatter
                 onMouseEnter={handleShowTooltip}
-                // onMouseLeave={handleHideTooltip}
                 data={effectSizes}
                 dataKey={(dataPoint: EffectSizeData) => dataPoint.absDifference}
                 yAxisId="left"
-                shape={(props: CustomShapeProps) => {
+                shape={(props: ScatterPointItem) => {
                   // Always return an element even if empty.
                   if (!props.payload) return <g />;
                   const { significant, isBaseline, absDifference, isMissingAllValues } =
@@ -368,12 +355,13 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
       <Flex direction="column" gap="3">
         <Box height={`${plotHeightPx}px`}>
           <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+            <ScatterChart onMouseLeave={handleHideTooltip}>
               {/* Handle explicit display of the tooltip to allow selecting and copying values. */}
               <Tooltip
                 active={tooltipState.active}
+                defaultIndex={0} // need a default to still show content if we first mouseover a CI instead of data point
                 wrapperStyle={{ pointerEvents: 'auto' }}
-                content={(props) => <CustomTooltip {...props} />}
+                content={(props) => <CustomTooltip {...props} state={tooltipState} onMouseLeave={handleHideTooltip} />}
               />
 
               <CartesianGrid strokeDasharray="3 3" />
@@ -390,80 +378,49 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
               />
               <YAxis
                 type="category"
-                domain={banditEffects.map((_, i) => i)}
+                yAxisId="left"
+                orientation="left"
                 width={yLeftAxisWidthPx}
                 style={commonAxisStyle}
-                tickFormatter={(index) => {
-                  const name = index >= 0 && index < banditEffects.length ? banditEffects[index].armName : '';
-                  return truncateLabel(name);
-                }}
-                allowDataOverflow={true}
+                dataKey={(dataPoint: BanditEffectData) => dataPoint.armName}
+                tickFormatter={(value) => truncateLabel(value)}
               />
 
-              {/* Control arm mean - vertical marker below points and CIs */}
-              <Scatter
-                onMouseEnter={handleShowTooltip}
-                onMouseLeave={handleHideTooltip}
-                data={banditEffects}
-                fill="none"
-                shape={(props: CustomShapeProps) => {
-                  // Always return an element even if empty.
-                  const { cx: centerX, yAxis } = props;
-
-                  return (
-                    <line
-                      x1={centerX}
-                      y1={0}
-                      x2={centerX}
-                      y2={(yAxis?.height || 0) + 20} // where's the extra 20 from? Margins?
-                      stroke={COLORS.BASELINE}
-                      strokeWidth={5}
-                      strokeDasharray="2 1"
-                    />
-                  );
-                }}
-              />
+              {/* arm mean markers - vertical marker below points and CIs */}
+              {banditEffects.map((e) => (
+                <ReferenceLine
+                  key={e.armId}
+                  x={e.postPredMean}
+                  yAxisId="left"
+                  stroke={COLORS.BASELINE}
+                  strokeWidth={6}
+                  strokeDasharray="2 1"
+                />
+              ))}
 
               {/* Confidence intervals - place under points */}
-              <Scatter
-                onMouseEnter={handleShowTooltip}
-                onMouseLeave={handleHideTooltip}
-                data={banditEffects}
-                fill="none"
-                // Draw a custom line for CIs since ErrorBars don't give us enough control
-                shape={(props: CustomShapeProps) => {
-                  // Always return an element even if empty.
-                  if (!props.payload || !props.xAxis?.width) return <g />;
-
-                  const { postPredCI95 } = props.payload as BanditEffectData;
-                  const {
-                    cx: centerX,
-                    cy: centerY,
-                    xAxis: { width: xAxisWidth },
-                  } = props;
-
-                  // Determine stroke color based on significance and direction
-                  const strokeColor: string = COLORS.DEFAULT_CI;
-                  return (
-                    <line
-                      x1={(centerX || 0) - scaleHalfIntervalToViewport(postPredCI95, xAxisWidth)}
-                      y1={centerY}
-                      x2={(centerX || 0) + scaleHalfIntervalToViewport(postPredCI95, xAxisWidth)}
-                      y2={centerY}
-                      stroke={strokeColor}
-                      strokeWidth={12}
-                      strokeLinecap="round"
-                    />
-                  );
-                }}
-              />
+              {banditEffects.map((e) => {
+                const strokeColor: string = COLORS.DEFAULT_CI;
+                return (
+                  <HorizontalConfidenceInterval
+                    key={e.armId}
+                    armName={e.armName}
+                    lower={e.postPredCI95Lower}
+                    upper={e.postPredCI95Upper}
+                    strokeColor={strokeColor}
+                    onMouseEnter={() => handleShowTooltip(e)}
+                    yAxisId="left"
+                  />
+                );
+              })}
 
               {/* Points showing the arm mean outcomes. */}
               <Scatter
                 onMouseEnter={handleShowTooltip}
-                onMouseLeave={handleHideTooltip}
                 data={banditEffects}
-                shape={(props: CustomShapeProps) => {
+                dataKey={(dataPoint: BanditEffectData) => dataPoint.postPredMean}
+                yAxisId="left"
+                shape={(props: ScatterPointItem) => {
                   // Always return an element even if empty.
                   if (!props.payload) return <g />;
 
