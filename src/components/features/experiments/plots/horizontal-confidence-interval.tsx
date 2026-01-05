@@ -1,11 +1,10 @@
 import { useChartHeight, useChartWidth, useOffset, useXAxisDomain, useYAxisDomain } from 'recharts';
-import { CONTROL_COLOR, EffectSizeData, NEGATIVE_COLOR, POSITIVE_COLOR } from './forest-plot-utils';
 
 export interface HorizontalConfidenceIntervalProps {
-  data: EffectSizeData;
-  defaultColor?: string;
-  positiveColor?: string;
-  negativeColor?: string;
+  lower: number;
+  upper: number;
+  armName: string;
+  strokeColor: string;
   strokeWidth?: number;
   capHeight?: number; // Height of the vertical cap lines
   opacity?: number;
@@ -20,10 +19,10 @@ export interface HorizontalConfidenceIntervalProps {
  * Assumes the Y axis is categorical and the X axis is numeric.
  */
 export function HorizontalConfidenceInterval({
-  data,
-  defaultColor = CONTROL_COLOR,
-  positiveColor = POSITIVE_COLOR,
-  negativeColor = NEGATIVE_COLOR,
+  lower,
+  upper,
+  armName,
+  strokeColor,
   strokeWidth = 12,
   capHeight = 0,
   opacity = 1,
@@ -75,17 +74,11 @@ export function HorizontalConfidenceInterval({
     return plotTop + plotHeight - index * bandSize - bandSize / 2;
   };
 
-  const xLower = scaleX(data.ci95Lower);
-  const xUpper = scaleX(data.ci95Upper);
-  const y = scaleCategoricalY(data.armName);
+  const xLower = scaleX(lower);
+  const xUpper = scaleX(upper);
+  const y = scaleCategoricalY(armName);
 
   if (isNaN(xLower) || isNaN(xUpper) || isNaN(y)) return null;
-
-  // Determine stroke color
-  let strokeColor = defaultColor;
-  if (data.significant && !data.isBaseline) {
-    strokeColor = data.absDifference > 0 ? positiveColor : negativeColor;
-  }
 
   return (
     <g onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>

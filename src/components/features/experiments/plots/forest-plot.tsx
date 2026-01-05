@@ -301,14 +301,18 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
               {effectSizes.map((d) => {
                 // Skip rendering if missing data or is baseline, since we're highlighting *differences* from the baseline.
                 if (isNaN(d.ci95) || d.isBaseline) return null;
+                let strokeColor: string = COLORS.DEFAULT_CI;
+                if (d.significant && !d.isBaseline) {
+                  strokeColor = d.absDifference > 0 ? COLORS.POSITIVE_CI : COLORS.NEGATIVE_CI;
+                }
                 return (
                   <HorizontalConfidenceInterval
                     key={d.armId}
-                    data={d}
+                    lower={d.ci95Lower}
+                    upper={d.ci95Upper}
+                    armName={d.armName}
+                    strokeColor={strokeColor}
                     onMouseEnter={() => handleShowTooltip(d)}
-                    defaultColor={COLORS.DEFAULT_CI}
-                    positiveColor={COLORS.POSITIVE_CI}
-                    negativeColor={COLORS.NEGATIVE_CI}
                     yAxisId="left"
                   />
                 );
