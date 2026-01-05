@@ -95,6 +95,12 @@ export default function ForestTimeseriesPlot({
 }: ForestTimeseriesPlotProps) {
   const [selectedArmId, setSelectedArmId] = useState<string | null>(null);
 
+  // Updates the plot and tooltip, and notifies parent of what snapshot was clicked.
+  const handlePointClick = (armId: string, snapshotKey: string) => {
+    setSelectedArmId(armId);
+    onPointClick?.(snapshotKey);
+  };
+
   // Default selected arm to the baseline if there is one, else fallback to the first arm.
   if (!selectedArmId && armMetadata.length > 0) {
     const baselineArm = armMetadata.find((arm) => arm.isBaseline);
@@ -114,7 +120,6 @@ export default function ForestTimeseriesPlot({
       </Callout.Root>
     );
   }
-
   // Pre-calculate points for each arm for JitteredLine.
   const armPointsMap = new Map<string, Point[]>();
   armMetadata.forEach((arm) => {
@@ -243,10 +248,7 @@ export default function ForestTimeseriesPlot({
                 selected={selected}
                 baseColor={getArmColor(index, armInfo.isBaseline, selected)}
                 jitterOffset={calculateJitterOffset(index, armMetadata.length)}
-                onClick={(dataPoint) => {
-                  setSelectedArmId(armInfo.id);
-                  onPointClick?.(dataPoint.key);
-                }}
+                onClick={(dataPoint) => handlePointClick(armInfo.id, dataPoint.key)}
               />
             );
           })}
@@ -273,6 +275,7 @@ export default function ForestTimeseriesPlot({
                 strokeWidth={0} // 0 to avoid drawing this line between dots
                 dot={(props: unknown) => {
                   const { key, ...restProps } = props as JitteredDotProps & { key?: string };
+                  const dataPoint = restProps.payload as TimeSeriesDataPoint;
                   const fillDotColor = getColorWithSignificance(baseDotColor, Significance.No, selected);
                   return (
                     <JitteredDot
@@ -283,6 +286,7 @@ export default function ForestTimeseriesPlot({
                       r={3}
                       strokeWidth={1}
                       jitterOffset={calculateJitterOffset(index, armMetadata.length)}
+                      onClick={() => handlePointClick(armInfo.id, dataPoint.key)}
                     />
                   );
                 }}
@@ -300,11 +304,7 @@ export default function ForestTimeseriesPlot({
                       r={5}
                       strokeWidth={2}
                       jitterOffset={calculateJitterOffset(index, armMetadata.length)}
-                      onClick={() => {
-                        // Updates the plot and tooltip, and notifies parent of what snapshot was clicked.
-                        setSelectedArmId(armInfo.id);
-                        onPointClick?.(dataPoint.key);
-                      }}
+                      onClick={() => handlePointClick(armInfo.id, dataPoint.key)}
                     />
                   );
                 }}
