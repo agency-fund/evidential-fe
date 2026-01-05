@@ -9,11 +9,11 @@ export interface Point {
 
 export interface JitteredLineProps {
   points: Point[];
-  color: string;
   dataKey: string;
   // No need for yDomain since the Line component will scale for us automatically based on dataKey
   xDomain: [number, number];
   jitterOffset?: number; // in plot area pixels
+  color: string;
   strokeWidth?: number;
   opacity?: number;
 }
