@@ -1,10 +1,9 @@
-import { Significance, TimeSeriesDataPoint, getColorWithSignificance } from './forest-plot-utils';
+import { Significance, TimeSeriesDataPoint } from './forest-plot-utils';
 import { useRechartScales } from './use-chart-scales';
 
 export interface ConfidenceIntervalProps {
   chartData: TimeSeriesDataPoint[];
   armId: string;
-  selected: boolean;
   baseColor: string;
   jitterOffset?: number; // jitter to prevent overlapping CIs in pixels
   strokeWidth?: number;
@@ -16,6 +15,8 @@ export interface ConfidenceIntervalProps {
 
 /**
  * Custom component to render confidence intervals for a single arm
+ * Purposely does NOT consider statsig of data point when rendering the CI.
+ * Color if selected should also be handled by the parent.
  */
 export function ConfidenceInterval({
   chartData,
@@ -43,7 +44,6 @@ export function ConfidenceInterval({
         const x = scaleX(dataPoint.dateTimestampMs) + jitterOffset;
         const yLower = scaleY(armData.lowerCI);
         const yUpper = scaleY(armData.upperCI);
-        const color = getColorWithSignificance(baseColor, Significance.No, false);
 
         if (isNaN(x) || isNaN(yLower) || isNaN(yUpper)) return null;
 
@@ -59,7 +59,7 @@ export function ConfidenceInterval({
               y1={yLower}
               x2={x}
               y2={yUpper}
-              stroke={color}
+              stroke={baseColor}
               strokeWidth={strokeWidth}
               opacity={opacity}
               strokeLinecap={strokeLinecap}
@@ -71,7 +71,7 @@ export function ConfidenceInterval({
                 y1={yUpper}
                 x2={x + capWidth / 2}
                 y2={yUpper}
-                stroke={color}
+                stroke={baseColor}
                 strokeWidth={strokeWidth}
                 opacity={opacity}
                 strokeLinecap={strokeLinecap}
@@ -84,7 +84,7 @@ export function ConfidenceInterval({
                 y1={yLower}
                 x2={x + capWidth / 2}
                 y2={yLower}
-                stroke={color}
+                stroke={baseColor}
                 strokeWidth={strokeWidth}
                 opacity={opacity}
                 strokeLinecap={strokeLinecap}

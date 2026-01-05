@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, Callout, Card, Flex, Text } from '@radix-ui/themes';
 import {
   CartesianGrid,
@@ -95,19 +95,22 @@ export default function ForestTimeseriesPlot({
 }: ForestTimeseriesPlotProps) {
   const [selectedArmId, setSelectedArmId] = useState<string | null>(null);
 
+  // Default selected arm to the baseline if there is one, else fallback to the first arm.
+  // useEffect to avoid state update during render phase.
+  useEffect(() => {
+    if (!selectedArmId && armMetadata.length > 0) {
+      const baselineArm = armMetadata.find((arm) => arm.isBaseline);
+      setSelectedArmId(baselineArm?.id ?? armMetadata[0]?.id ?? null);
+    }
+  }, [selectedArmId, armMetadata]);
+
+  const selectedArmName = armMetadata.find((arm) => arm.id === selectedArmId)?.name || null;
+
   // Updates the plot and tooltip, and notifies parent of what snapshot was clicked.
   const handlePointClick = (armId: string, snapshotKey: string) => {
     setSelectedArmId(armId);
     onPointClick?.(snapshotKey);
   };
-
-  // Default selected arm to the baseline if there is one, else fallback to the first arm.
-  if (!selectedArmId && armMetadata.length > 0) {
-    const baselineArm = armMetadata.find((arm) => arm.isBaseline);
-    setSelectedArmId(baselineArm?.id || armMetadata[0]?.id || null);
-  }
-
-  const selectedArmName = armMetadata.find((arm) => arm.id === selectedArmId)?.name || null;
 
   // Early return if no data
   if (!chartData || chartData.length === 0) {
@@ -229,10 +232,10 @@ export default function ForestTimeseriesPlot({
               <JitteredLine
                 key={`line_${armInfo.id}`}
                 points={armPointsMap.get(armInfo.id) || []}
-                color={getArmColor(index, armInfo.isBaseline, selectedArmId === armInfo.id)}
                 dataKey="dateTimestampMs"
                 xDomain={[allDateTicks[0], allDateTicks[allDateTicks.length - 1]]}
                 jitterOffset={calculateJitterOffset(index, armMetadata.length)}
+                color={getArmColor(index, armInfo.isBaseline, selectedArmId === armInfo.id)}
               />
             );
           })}
@@ -245,7 +248,6 @@ export default function ForestTimeseriesPlot({
                 key={`ci_${armInfo.id}`}
                 chartData={chartData}
                 armId={armInfo.id}
-                selected={selected}
                 baseColor={getArmColor(index, armInfo.isBaseline, selected)}
                 jitterOffset={calculateJitterOffset(index, armMetadata.length)}
                 onClick={(dataPoint) => handlePointClick(armInfo.id, dataPoint.key)}

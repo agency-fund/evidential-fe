@@ -9,11 +9,11 @@ export interface Point {
 
 export interface JitteredLineProps {
   points: Point[];
-  color: string;
   dataKey: string;
   // No need for yDomain since the Line component will scale for us automatically based on dataKey
   xDomain: [number, number];
   jitterOffset?: number; // in plot area pixels
+  color: string;
   strokeWidth?: number;
   opacity?: number;
 }
@@ -36,10 +36,7 @@ export function JitteredLine({
 
   // Build jittered path data - use useMemo since it's derived from props
   const lineData = useMemo(() => {
-    if (!isValid || !plotWidth || !points.length) return [];
-
-    // Avoid division by zero
-    if (plotWidth <= 0) return [];
+    if (!isValid || !points.length) return [];
 
     // Calculate XAxis units per pixel to convert pixel jitter to the x-domain.
     const [minTime, maxTime] = xDomain;
