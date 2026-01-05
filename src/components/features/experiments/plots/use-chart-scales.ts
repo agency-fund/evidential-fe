@@ -33,6 +33,8 @@ export function useRechartScales(options: UseRehartScalesOptions = {}) {
       isValid: false,
       plotWidth: 0,
       plotHeight: 0,
+      xAxisDomain: [],
+      yAxisDomain: [],
     };
 
     // Verify that all data from recharts is valid
@@ -102,6 +104,8 @@ export function useRechartScales(options: UseRehartScalesOptions = {}) {
       plotWidth,
       plotHeight,
       offset,
+      xAxisDomain,
+      yAxisDomain,
     };
   }, [offset, chartWidth, chartHeight, xAxisDomain, yAxisDomain]);
 }

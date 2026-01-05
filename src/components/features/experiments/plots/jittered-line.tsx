@@ -1,67 +1,80 @@
 import { useMemo } from 'react';
+import { Line } from 'recharts';
 import { TimeSeriesDataPoint } from './forest-plot-utils';
 import { useRechartScales } from './use-chart-scales';
+import { NumberDomain } from 'recharts/types/util/types';
 
 export interface JitteredLineProps {
   chartData: TimeSeriesDataPoint[];
   armId: string;
   color: string;
+  // No need for yDomain since the Line component will scale for us automatically based on dataKey
   xDomain: [number, number];
-  yDomain: [number, number];
-  jitterOffset?: number;
+  jitterOffset?: number; // in plot area pixels
   strokeWidth?: number;
   opacity?: number;
 }
 
 /**
  * Custom component to render a jittered line for a single arm
+ * Uses Recharts Line component with transformed data to achieve pixel-based jitter in a time-based axis
  */
 export function JitteredLine({
   chartData,
   armId,
   color,
+  xDomain,
   jitterOffset = 0,
   strokeWidth = 2,
   opacity = 1,
 }: JitteredLineProps) {
-  const { scaleX, scaleY, isValid } = useRechartScales();
+  const { plotWidth, isValid } = useRechartScales();
 
-  // Build path data - use useMemo since it's derived from props
-  const pathData = useMemo(() => {
-    if (!isValid || !chartData.length) return '';
+  // Build jittered path data - use useMemo since it's derived from props
+  const lineData = useMemo(() => {
+    if (!isValid || !plotWidth || !chartData.length) return [];
 
-    // Build path from points with jitter applied
-    const validPoints = chartData
+    // Avoid division by zero
+    if (plotWidth <= 0) return [];
+
+    // Calculate milliseconds per pixel to convert pixel jitter to jitter in time units
+    const [minTime, maxTime] = xDomain;
+    const msPerPixel = (maxTime - minTime) / plotWidth;
+    const jitterMs = jitterOffset * msPerPixel;
+
+    // Construct the new jittered x values. Must retain the same dataKey used by the chart's XAxis.
+    return chartData
       .map((dataPoint) => {
         const armData = dataPoint.armEffects.get(armId);
         if (!armData) return null;
 
-        const x = scaleX(dataPoint.dateTimestampMs) + jitterOffset;
-        const y = scaleY(armData.absMean);
-
-        return { x, y };
+        return {
+          dateTimestampMs: dataPoint.dateTimestampMs + jitterMs,
+          value: armData.absMean,
+        };
       })
-      .filter((p): p is { x: number; y: number } => p !== null && !isNaN(p.x) && !isNaN(p.y));
+      .filter(
+        (p): p is { dateTimestampMs: number; value: number } =>
+          p !== null && !isNaN(p.value) && !isNaN(p.dateTimestampMs),
+      );
+  }, [isValid, plotWidth, chartData, armId, xDomain, jitterOffset]);
 
-    if (validPoints.length < 2) return '';
-
-    return validPoints
-      .map((point, index) => (index === 0 ? `M ${point.x} ${point.y}` : `L ${point.x} ${point.y}`))
-      .join(' ');
-  }, [isValid, chartData, armId, jitterOffset, scaleX, scaleY]);
-
-  if (!pathData) return null;
+  if (!lineData.length) return null;
 
   return (
-    <path
-      d={pathData}
+    <Line
+      data={lineData}
+      dataKey="value"
+      type="monotone"
       stroke={color}
       strokeWidth={strokeWidth}
-      fill="none"
-      pathLength={1}
-      strokeDasharray="1"
-      strokeDashoffset={0}
       opacity={opacity}
+      dot={false}
+      activeDot={false}
+      isAnimationActive={false}
+      tooltipType="none"
+      legendType="none"
+      connectNulls={false}
     />
   );
 }
