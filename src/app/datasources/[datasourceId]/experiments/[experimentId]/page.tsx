@@ -536,7 +536,7 @@ export default function ExperimentViewPage() {
                 <Badge size="2">
                   <Flex gap="4" align="center">
                     <Tooltip
-                      content={`The leaderboard and timeseries show the posterior predictive mean—the estimated average outcome for each arm after observing data and accounting for prior beliefs and noise. This is not a treatment effect! The CI is a credible interval indicating the range containing the true average outcome with 95% probability.`}
+                      content={`The leaderboard and timeseries show the posterior predictive mean—the estimated average outcome for each arm after observing data and accounting for prior beliefs and noise. This is not a treatment effect! The CI is a confidence interval indicating the interval that contains the true average outcome with 95% probability.`}
                     >
                       <InfoCircledIcon />
                     </Tooltip>

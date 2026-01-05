@@ -78,6 +78,7 @@ export default function CreateParticipantTypePage() {
     isLoading: loadingDatasource,
     isValidating: validatingDatasource,
     mutate: mutateInspectDatasource,
+    error: datasourceError,
   } = useInspectDatasource(datasourceId!, { refresh });
 
   const { trigger, isMutating, error, reset } = useCreateParticipantType(datasourceId, {
@@ -191,9 +192,8 @@ export default function CreateParticipantTypePage() {
   if (loadingDatasource) {
     return <XSpinner message="Loading datasource details..." />;
   }
-
   if (!datasourceData) {
-    return <GenericErrorCallout title="Failed to load datasource" message="Could not load datasource details" />;
+    return <GenericErrorCallout title="Failed to load datasource" error={datasourceError} />;
   }
 
   return (
