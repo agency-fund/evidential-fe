@@ -1,4 +1,4 @@
-import { useChartHeight, useChartWidth, useOffset, useXAxisDomain, useYAxisDomain } from 'recharts';
+import { useRechartScales } from './use-chart-scales';
 
 export interface HorizontalConfidenceIntervalProps {
   lower: number;
@@ -31,48 +31,9 @@ export function HorizontalConfidenceInterval({
   yAxisId,
   xAxisId,
 }: HorizontalConfidenceIntervalProps) {
-  // Get information from recharts in order to scale plots appropriately:
-  const offset = useOffset();
-  const chartWidth = useChartWidth();
-  const chartHeight = useChartHeight();
-  const xAxisDomain = useXAxisDomain(xAxisId);
-  const yAxisDomain = useYAxisDomain(yAxisId);
+  const { scaleX, scaleCategoricalY, isValid } = useRechartScales({ xAxisId, yAxisId });
 
-  if (!offset || !chartWidth || !chartHeight || !xAxisDomain || !yAxisDomain) {
-    return null;
-  }
-
-  const xMin = xAxisDomain[0];
-  const xMax = xAxisDomain[xAxisDomain.length - 1];
-
-  const [plotLeft, plotRight] = [offset.left ?? 0, offset.right ?? 0];
-  const [plotTop, plotBottom] = [offset.top ?? 0, offset.bottom ?? 0];
-  const plotWidth = chartWidth - plotLeft - plotRight;
-  const plotHeight = chartHeight - plotTop - plotBottom;
-
-  if (plotWidth <= 0 || plotHeight <= 0) return null;
-
-  // Scale function for numeric X axis
-  const scaleX = (x: number) => {
-    if (typeof xMin !== 'number' || typeof xMax !== 'number') return NaN;
-    if (xMin === xMax) return plotLeft + plotWidth / 2;
-    return plotLeft + ((x - xMin) / (xMax - xMin)) * plotWidth;
-  };
-
-  // Scale function for categorical Y axis
-  // Assumes yAxisDomain contains the category strings
-  const scaleCategoricalY = (armName: string) => {
-    // Determine the interval width for each category
-    const bandSize = plotHeight / yAxisDomain.length;
-    // Find the index of the arm in the domain
-    const index = (yAxisDomain as string[]).indexOf(armName);
-
-    if (index === -1) return NaN;
-
-    // Calculate Y position such that it is placed in the middle of the appropriate band.
-    // Recharts plots categorical Y axes from bottom to top by default.
-    return plotTop + plotHeight - index * bandSize - bandSize / 2;
-  };
+  if (!isValid) return null;
 
   const xLower = scaleX(lower);
   const xUpper = scaleX(upper);
