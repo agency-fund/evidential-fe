@@ -140,15 +140,30 @@ export default function ForestTimeseriesPlot({
   chartData.forEach((point) => point.armEffects.forEach((arm) => yAxisValues.push(arm.lowerCI, arm.upperCI)));
   const [minY, maxY] = computeAxisBounds(yAxisValues);
 
-  // Generate all date ticks between minDate and maxDate for x-axis
+  // Generate date ticks between minDate and maxDate for x-axis
+  // If the range is large, we limit the number of ticks to improve performance (~30 ticks max)
   const allDateTicks: number[] = [];
   const currentDate = new Date(minDate);
   currentDate.setUTCHours(0, 0, 0, 0);
   const endDate = new Date(maxDate);
   endDate.setUTCHours(0, 0, 0, 0);
+
+  const oneDayMs = 24 * 60 * 60 * 1000;
+  const totalDays = Math.ceil((endDate.getTime() - currentDate.getTime()) / oneDayMs) + 1;
+  const stride = Math.max(1, Math.ceil(totalDays / 30));
+
+  let dayIndex = 0;
   while (currentDate <= endDate) {
-    allDateTicks.push(currentDate.getTime());
+    if (dayIndex === 0 || dayIndex % stride === 0) {
+      allDateTicks.push(currentDate.getTime());
+    }
     currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+    dayIndex++;
+  }
+
+  // Ensure the last date is included
+  if (allDateTicks[allDateTicks.length - 1] !== endDate.getTime()) {
+    allDateTicks.push(endDate.getTime());
   }
 
   const commonAxisStyle = {
@@ -158,7 +173,9 @@ export default function ForestTimeseriesPlot({
 
   // Grow the plot height to accommodate the tooltip
   const height = Math.max(400, armMetadata.length * 60);
-  const minWidth = allDateTicks.length * armMetadata.length * 8;
+  // Maintain a minimum width based on total days so points aren't too squeezed,
+  // even if we show fewer ticks.
+  const minWidth = totalDays * armMetadata.length * 8;
   return (
     <Box height={`${height}px`} overflowY="clip" overflowX="auto">
       <ResponsiveContainer height="100%" minWidth={`${minWidth}px`}>
