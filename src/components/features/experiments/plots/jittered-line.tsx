@@ -44,6 +44,7 @@ export interface JitteredLineProps {
 /**
  * Renders a jittered line for a single arm using the Recharts Line component.
  * Transforms the data to achieve pixel-based jitter in the units of the XAxis.
+ * If the xDomain width is 0 (a single point), no jitter is applied.
  * Must provide the same dataKey as used by the parent chart's XAxis.
  *
  * When dots are enabled, they are automatically positioned at jittered coordinates
@@ -70,14 +71,17 @@ export function JitteredLine({
   const lineData = useMemo(() => {
     if (!points.length) return [];
 
-    // Calculate jitter amount only when chart dimensions are valid
+    // Calculate jitter amount only when chart dimensions are valid and x-range is non-zero.
+    // When xRange=0 (single data point), do not apply offset.
     let jitterAmount = 0;
     if (isValid && plotWidth > 0) {
       const [minTime, maxTime] = xDomain;
-      const unitsPerPixel = (maxTime - minTime) / plotWidth;
-      jitterAmount = jitterOffset * unitsPerPixel;
+      const xRange = maxTime - minTime;
+      if (xRange > 0) {
+        const unitsPerPixel = xRange / plotWidth;
+        jitterAmount = jitterOffset * unitsPerPixel;
+      }
     }
-
     // Construct the jittered x values, preserving point id for click handlers.
     return points
       .map((point): InternalProcessedPoint | null => {
