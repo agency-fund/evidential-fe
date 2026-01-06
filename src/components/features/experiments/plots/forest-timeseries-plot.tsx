@@ -157,6 +157,13 @@ export default function ForestTimeseriesPlot({
   // Grow the plot height to accommodate the tooltip
   const height = Math.max(400, armMetadata.length * 60);
   const minWidth = allDateTicks.length * armMetadata.length * 8;
+  // Normally the x-axis domain spans the set of date ticks, but in the edge case of a single data
+  // point, we artificially expand the domain so that we can accommodate jittered arm data points.
+  const domainXAxis: [number, number] =
+    allDateTicks.length > 1
+      ? [allDateTicks[0], allDateTicks[allDateTicks.length - 1]]
+      : [allDateTicks[0] - minWidth / 2, allDateTicks[0] + minWidth / 2];
+
   return (
     <Box height={`${height}px`} overflowY="clip" overflowX="auto">
       <ResponsiveContainer height="100%" minWidth={`${minWidth}px`}>
@@ -165,7 +172,7 @@ export default function ForestTimeseriesPlot({
           <XAxis
             dataKey="dateTimestampMs"
             type="number"
-            domain={[allDateTicks[0], allDateTicks[allDateTicks.length - 1]]}
+            domain={domainXAxis}
             ticks={allDateTicks}
             style={commonAxisStyle}
             // WARNING: If we offset the axis with padding, we need to also factor in the reduced
@@ -237,7 +244,7 @@ export default function ForestTimeseriesPlot({
                 key={`line_${armInfo.id}`}
                 points={armPointsMap.get(armInfo.id) || []}
                 dataKey="dateTimestampMs"
-                xDomain={[allDateTicks[0], allDateTicks[allDateTicks.length - 1]]}
+                xDomain={domainXAxis}
                 jitterOffset={calculateJitterOffset(index, armMetadata.length)}
                 color={getArmColor(index, armInfo.isBaseline, selected)}
                 name={armInfo.id}
