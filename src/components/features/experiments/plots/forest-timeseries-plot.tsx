@@ -1,15 +1,14 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, Callout, Card, Flex, Text } from '@radix-ui/themes';
 import {
   CartesianGrid,
-  Customized,
   Legend,
   Line,
   LineChart,
   ResponsiveContainer,
   Tooltip,
-  TooltipProps,
+  TooltipContentProps,
   XAxis,
   YAxis,
 } from 'recharts';
@@ -25,7 +24,7 @@ import {
   getArmColor,
 } from './forest-plot-utils';
 import { JitteredDot, JitteredDotProps } from './jittered-dot';
-import { JitteredLine } from './jittered-line';
+import { JitteredLine, Point } from './jittered-line';
 import { ConfidenceInterval } from './confidence-interval';
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
@@ -40,7 +39,7 @@ interface ForestTimeseriesPlotProps {
 }
 
 // Custom tooltip for the timeseries
-interface CustomTimeseriesTooltipProps extends TooltipProps<ValueType, NameType> {
+interface CustomTimeseriesTooltipProps extends TooltipContentProps<ValueType, NameType> {
   armMetadata: ArmMetadata[];
   selectedArmId: string | null;
 }
@@ -49,7 +48,8 @@ function CustomTimeseriesTooltip({ active, payload, armMetadata, selectedArmId }
   if (!active || !payload || payload.length === 0) return null;
 
   const dataPoint = payload[0]?.payload as TimeSeriesDataPoint | undefined;
-  if (!dataPoint) return null;
+  // Guard against other data elements using the same axis that don't have armEffects.
+  if (!dataPoint || !dataPoint.armEffects) return null;
 
   return (
     <Card size="1" variant="surface">
@@ -96,12 +96,21 @@ export default function ForestTimeseriesPlot({
   const [selectedArmId, setSelectedArmId] = useState<string | null>(null);
 
   // Default selected arm to the baseline if there is one, else fallback to the first arm.
-  if (!selectedArmId && armMetadata.length > 0) {
-    const baselineArm = armMetadata.find((arm) => arm.isBaseline);
-    setSelectedArmId(baselineArm?.id || armMetadata[0]?.id || null);
-  }
+  // useEffect to avoid state update during render phase.
+  useEffect(() => {
+    if (!selectedArmId && armMetadata.length > 0) {
+      const baselineArm = armMetadata.find((arm) => arm.isBaseline);
+      setSelectedArmId(baselineArm?.id ?? armMetadata[0]?.id ?? null);
+    }
+  }, [selectedArmId, armMetadata]);
 
   const selectedArmName = armMetadata.find((arm) => arm.id === selectedArmId)?.name || null;
+
+  // Updates the plot and tooltip, and notifies parent of what snapshot was clicked.
+  const handlePointClick = (armId: string, snapshotKey: string) => {
+    setSelectedArmId(armId);
+    onPointClick?.(snapshotKey);
+  };
 
   // Early return if no data
   if (!chartData || chartData.length === 0) {
@@ -114,6 +123,18 @@ export default function ForestTimeseriesPlot({
       </Callout.Root>
     );
   }
+  // Pre-calculate points for each arm for JitteredLine.
+  const armPointsMap = new Map<string, Point[]>();
+  armMetadata.forEach((arm) => {
+    const points = chartData
+      .map((d) => {
+        const armData = d.armEffects.get(arm.id);
+        if (!armData) return null;
+        return { x: d.dateTimestampMs, y: armData.absMean };
+      })
+      .filter((p): p is Point => p !== null);
+    armPointsMap.set(arm.id, points);
+  });
 
   const yAxisValues: number[] = [];
   chartData.forEach((point) => point.armEffects.forEach((arm) => yAxisValues.push(arm.lowerCI, arm.upperCI)));
@@ -149,7 +170,9 @@ export default function ForestTimeseriesPlot({
             domain={[allDateTicks[0], allDateTicks[allDateTicks.length - 1]]}
             ticks={allDateTicks}
             style={commonAxisStyle}
-            padding={{ left: 12, right: 0 }}
+            // WARNING: If we offset the axis with padding, we need to also factor in the reduced
+            // plot width in the lines and CIs! Arguably a bug in recharts' useOffset hook?
+            padding={{ left: 0, right: 0 }}
             interval="preserveStartEnd"
             angle={-30}
             textAnchor="end"
@@ -171,7 +194,11 @@ export default function ForestTimeseriesPlot({
                   : value.toFixed(2)
             }
           />
-          <Tooltip content={<CustomTimeseriesTooltip armMetadata={armMetadata} selectedArmId={selectedArmId} />} />
+          <Tooltip
+            content={(props) => (
+              <CustomTimeseriesTooltip {...props} armMetadata={armMetadata} selectedArmId={selectedArmId} />
+            )}
+          />
           <Legend
             wrapperStyle={{
               position: 'fixed', // 1. Break it out of the chart's flow
@@ -202,16 +229,13 @@ export default function ForestTimeseriesPlot({
           {/* Render jittered line segments for each arm. Separate loop to keep as direct children of the LineChart. */}
           {armMetadata.map((armInfo, index) => {
             return (
-              <Customized
+              <JitteredLine
                 key={`line_${armInfo.id}`}
-                component={
-                  <JitteredLine
-                    chartData={chartData}
-                    armId={armInfo.id}
-                    color={getArmColor(index, armInfo.isBaseline, selectedArmId === armInfo.id)}
-                    jitterOffset={calculateJitterOffset(index, armMetadata.length)}
-                  />
-                }
+                points={armPointsMap.get(armInfo.id) || []}
+                dataKey="dateTimestampMs"
+                xDomain={[allDateTicks[0], allDateTicks[allDateTicks.length - 1]]}
+                jitterOffset={calculateJitterOffset(index, armMetadata.length)}
+                color={getArmColor(index, armInfo.isBaseline, selectedArmId === armInfo.id)}
               />
             );
           })}
@@ -220,21 +244,13 @@ export default function ForestTimeseriesPlot({
           {armMetadata.map((armInfo, index) => {
             const selected = selectedArmId === armInfo.id;
             return (
-              <Customized
+              <ConfidenceInterval
                 key={`ci_${armInfo.id}`}
-                component={
-                  <ConfidenceInterval
-                    chartData={chartData}
-                    armId={armInfo.id}
-                    selected={selected}
-                    baseColor={getArmColor(index, armInfo.isBaseline, selected)}
-                    jitterOffset={calculateJitterOffset(index, armMetadata.length)}
-                    onClick={(dataPoint) => {
-                      setSelectedArmId(armInfo.id);
-                      onPointClick?.(dataPoint.key);
-                    }}
-                  />
-                }
+                chartData={chartData}
+                armId={armInfo.id}
+                baseColor={getArmColor(index, armInfo.isBaseline, selected)}
+                jitterOffset={calculateJitterOffset(index, armMetadata.length)}
+                onClick={(dataPoint) => handlePointClick(armInfo.id, dataPoint.key)}
               />
             );
           })}
@@ -248,6 +264,10 @@ export default function ForestTimeseriesPlot({
               <Line
                 key={`${armInfo.id}_effect`}
                 dataKey={(point: TimeSeriesDataPoint) => {
+                  // Guard against other data elements using the same axis that don't have armEffects.
+                  // (Recharts might pass data points from other Lines sharing the axis)
+                  if (!point || !point.armEffects) return null;
+
                   const armPoint = point.armEffects.get(armInfo.id);
                   if (!armPoint) return null;
                   return armPoint.absMean;
@@ -257,39 +277,36 @@ export default function ForestTimeseriesPlot({
                 strokeWidth={0} // 0 to avoid drawing this line between dots
                 dot={(props: unknown) => {
                   const { key, ...restProps } = props as JitteredDotProps & { key?: string };
-                  const dotColor = getColorWithSignificance(baseDotColor, Significance.No, selected);
-
+                  const dataPoint = restProps.payload as TimeSeriesDataPoint;
+                  const fillDotColor = getColorWithSignificance(baseDotColor, Significance.No, selected);
                   return (
                     <JitteredDot
                       key={key}
                       {...restProps}
-                      fill={baseDotColor}
-                      stroke={dotColor}
+                      fill={fillDotColor}
+                      stroke={baseDotColor}
                       r={3}
                       strokeWidth={1}
                       jitterOffset={calculateJitterOffset(index, armMetadata.length)}
+                      onClick={() => handlePointClick(armInfo.id, dataPoint.key)}
                     />
                   );
                 }}
                 activeDot={(props: unknown) => {
                   const { key, ...restProps } = props as JitteredDotProps & { key?: string };
                   const dataPoint = restProps.payload as TimeSeriesDataPoint;
-                  const dotColor = getColorWithSignificance(baseDotColor, Significance.No, selected);
+                  const fillDotColor = getColorWithSignificance(baseDotColor, Significance.No, selected);
 
                   return (
                     <JitteredDot
                       key={key}
                       {...restProps}
-                      fill={baseDotColor}
-                      stroke={dotColor}
+                      fill={fillDotColor}
+                      stroke={baseDotColor}
                       r={5}
                       strokeWidth={2}
                       jitterOffset={calculateJitterOffset(index, armMetadata.length)}
-                      onClick={() => {
-                        // Updates the plot and tooltip, and notifies parent of what snapshot was clicked.
-                        setSelectedArmId(armInfo.id);
-                        onPointClick?.(dataPoint.key);
-                      }}
+                      onClick={() => handlePointClick(armInfo.id, dataPoint.key)}
                     />
                   );
                 }}

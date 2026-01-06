@@ -1,11 +1,9 @@
-import { Significance, TimeSeriesDataPoint, getColorWithSignificance } from './forest-plot-utils';
+import { TimeSeriesDataPoint } from './forest-plot-utils';
+import { useRechartScales } from './use-chart-scales';
 
 export interface ConfidenceIntervalProps {
-  xAxisMap?: Record<string, { scale: (value: number) => number }>;
-  yAxisMap?: Record<string, { scale: (value: number) => number }>;
   chartData: TimeSeriesDataPoint[];
   armId: string;
-  selected: boolean;
   baseColor: string;
   jitterOffset?: number; // jitter to prevent overlapping CIs in pixels
   strokeWidth?: number;
@@ -17,13 +15,12 @@ export interface ConfidenceIntervalProps {
 
 /**
  * Custom component to render confidence intervals for a single arm
+ * Purposely does NOT consider statsig of data point when rendering the CI.
+ * Color if selected should also be handled by the parent.
  */
 export function ConfidenceInterval({
-  xAxisMap,
-  yAxisMap,
   chartData,
   armId,
-  selected,
   baseColor,
   jitterOffset = 0,
   strokeWidth = 5,
@@ -32,11 +29,9 @@ export function ConfidenceInterval({
   opacity = 1,
   onClick,
 }: ConfidenceIntervalProps) {
-  if (!xAxisMap || !yAxisMap || !chartData.length) return null;
-  // These params are special internal params for recharts.
-  // TODO: update to recharts 3+ API to replace magic with hooks.
-  const xAxis = Object.values(xAxisMap)[0];
-  const yAxis = Object.values(yAxisMap)[0];
+  const { scaleX, scaleY, isValid } = useRechartScales();
+
+  if (!isValid || !chartData.length) return null;
 
   // Render confidence intervals for this arm at each data point
   return (
@@ -46,10 +41,11 @@ export function ConfidenceInterval({
         if (!armData) return null;
 
         // Rescale the x and y values to the pixel coordinates
-        const x = xAxis.scale(dataPoint.dateTimestampMs) + jitterOffset;
-        const yLower = yAxis.scale(armData.lowerCI);
-        const yUpper = yAxis.scale(armData.upperCI);
-        const color = getColorWithSignificance(baseColor, Significance.No, selected);
+        const x = scaleX(dataPoint.dateTimestampMs) + jitterOffset;
+        const yLower = scaleY(armData.lowerCI);
+        const yUpper = scaleY(armData.upperCI);
+
+        if (isNaN(x) || isNaN(yLower) || isNaN(yUpper)) return null;
 
         return (
           <g
@@ -63,7 +59,7 @@ export function ConfidenceInterval({
               y1={yLower}
               x2={x}
               y2={yUpper}
-              stroke={color}
+              stroke={baseColor}
               strokeWidth={strokeWidth}
               opacity={opacity}
               strokeLinecap={strokeLinecap}
@@ -75,7 +71,7 @@ export function ConfidenceInterval({
                 y1={yUpper}
                 x2={x + capWidth / 2}
                 y2={yUpper}
-                stroke={color}
+                stroke={baseColor}
                 strokeWidth={strokeWidth}
                 opacity={opacity}
                 strokeLinecap={strokeLinecap}
@@ -88,7 +84,7 @@ export function ConfidenceInterval({
                 y1={yLower}
                 x2={x + capWidth / 2}
                 y2={yLower}
-                stroke={color}
+                stroke={baseColor}
                 strokeWidth={strokeWidth}
                 opacity={opacity}
                 strokeLinecap={strokeLinecap}
