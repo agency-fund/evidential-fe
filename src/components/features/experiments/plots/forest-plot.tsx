@@ -80,7 +80,7 @@ const formatPct = (value: number): string => {
 // Unfortunately Recharts doesn't have an explicit type for the props it passes to a tick function.
 // So just spread these on our custom tick component, specifying just the fields we use from Rechart,
 // then any extra props we want to pass to our component.
-interface CustomYAxisTickProps {
+interface CustomFreqYAxisTickProps {
   // {x,y} are pixel coordinates for the start of the tick for this row
   x?: number;
   y?: number;
@@ -111,7 +111,7 @@ const TOTAL_BANDIT_YTICK_WIDTH = BANDIT_COL_WIDTHS.name + BANDIT_COL_WIDTHS.mean
 const ROW_HEIGHT = 64;
 const HEADER_HEIGHT = 26;
 
-function CustomYAxisTick({ x = 0, y = 0, payload, effectSizes, isTopmost }: CustomYAxisTickProps) {
+function CustomFreqYAxisTick({ x = 0, y = 0, payload, effectSizes, isTopmost }: CustomFreqYAxisTickProps) {
   const armName = payload?.value ?? '';
   const armData = effectSizes.find((e) => e.armName === armName);
 
@@ -455,7 +455,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 tick={(props: { x?: number; y?: number; payload?: { value: string }; index?: number }) => {
                   // The topmost tick is the last one in the effectSizes array (highest y position = lowest index in render order)
                   const isTopmost = props.index === effectSizes.length - 1;
-                  return <CustomYAxisTick {...props} effectSizes={effectSizes} isTopmost={isTopmost} />;
+                  return <CustomFreqYAxisTick {...props} effectSizes={effectSizes} isTopmost={isTopmost} />;
                 }}
               />
 
