@@ -313,13 +313,20 @@ function CustomTooltip({ active, payload, state, onMouseLeave }: CustomTooltipPr
   } else if (isBanditPayload(data)) {
     return (
       <Card onMouseLeave={onMouseLeave} style={{ padding: '8px' }}>
-        <Flex direction="column" gap="2">
-          <Text weight="bold">{data.armName}</Text>
-          <Text>Mean outcome value: {data.postPredMean.toFixed(2)}</Text>
-          <Text>Std. dev: {data.postPredStd.toFixed(2)}</Text>
-          <Text>
-            95% CI: [{data.postPredCI95Lower.toFixed(2)}, {data.postPredCI95Upper.toFixed(2)}]
-          </Text>
+        <Text weight="bold">{data.armName}</Text>
+        <Flex direction="row" gap="2">
+          <Flex direction="column" gap="2" align="end">
+            <Text>Mean outcome: </Text>
+            <Text>95% CI: </Text>
+            <Text>Std. deviation: </Text>
+          </Flex>
+          <Flex direction="column" gap="2">
+            <Text>{data.postPredMean.toFixed(2)}</Text>
+            <Text>
+              [{data.postPredCI95Lower.toFixed(2)}, {data.postPredCI95Upper.toFixed(2)}]
+            </Text>
+            <Text>{data.postPredStd.toFixed(2)}</Text>
+          </Flex>
         </Flex>
       </Card>
     );
@@ -531,6 +538,9 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
     return (
       <Flex direction="column" gap="3">
         <Box height={`${chartHeightPx}px`}>
+          <Heading size="2" align="center">
+            Estimated Average Outcomes Given Observations So Far
+          </Heading>
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart onMouseLeave={handleHideTooltip} margin={{ top: HEADER_HEIGHT, right: 32 }}>
               {/* Handle explicit display of the tooltip to allow selecting and copying values. */}
