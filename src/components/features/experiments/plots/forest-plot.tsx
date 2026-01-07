@@ -1,6 +1,6 @@
 'use client';
 import { ExclamationTriangleIcon, InfoCircledIcon } from '@radix-ui/react-icons';
-import { Box, Callout, Card, Flex, Heading, Text } from '@radix-ui/themes';
+import { Box, Callout, Card, Flex, Heading, Separator, Text } from '@radix-ui/themes';
 import {
   CartesianGrid,
   ReferenceLine,
@@ -68,6 +68,107 @@ const truncateLabel = (label: string, maxChars: number = 42): string => {
   if (!label) return '';
   return label.length > maxChars ? label.slice(0, maxChars) + '…' : label;
 };
+
+const formatPct = (value: number): string => {
+  if (!isFinite(value)) return '--';
+  return `${formatValue(value)}%`;
+};
+
+// Unfortunately Recharts doesn't have an explicit type for the props it passes to a tick function.
+// So just spread these on our custom tick component, specifying just the fields we use from Rechart,
+// then any extra props we want to pass to our component.
+interface CustomYAxisTickProps {
+  // {x,y} are pixel coordinates for the start of the tick for this row
+  x?: number;
+  y?: number;
+  // The payload specified by the YAxis dataKey, i.e. the arm name.
+  payload?: { value: string };
+  // Other props we want to pass along:
+  effectSizes: EffectSizeData[];
+  isTopmost: boolean;
+}
+
+// Column widths for the custom tick table to align each tick's data since we can't use a grid.
+const COL_WIDTHS = {
+  name: 128,
+  mean: 72,
+  diff: 72,
+  pct: 56,
+} as const;
+const TOTAL_YTICK_WIDTH = COL_WIDTHS.name + COL_WIDTHS.mean + COL_WIDTHS.diff + COL_WIDTHS.pct;
+const ROW_HEIGHT = 64;
+const HEADER_HEIGHT = 26;
+
+function CustomYAxisTick({ x = 0, y = 0, payload, effectSizes, isTopmost }: CustomYAxisTickProps) {
+  const armName = payload?.value ?? '';
+  const armData = effectSizes.find((e) => e.armName === armName);
+
+  if (!armData) return null;
+
+  const startX = x - TOTAL_YTICK_WIDTH;
+
+  return (
+    <g>
+      {isTopmost && (
+        // Position header row by specifying the top-left corner of the svg container and its size.
+        <foreignObject
+          x={startX}
+          y={y - HEADER_HEIGHT - ROW_HEIGHT / 2}
+          width={TOTAL_YTICK_WIDTH}
+          height={HEADER_HEIGHT}
+        >
+          <Box>
+            <Flex align="center" justify="between" height="100%" gap="1">
+              <Box width={`${COL_WIDTHS.name}px`}>
+                <Text size="2" weight="bold">
+                  Arm
+                </Text>
+              </Box>
+              <Box width={`${COL_WIDTHS.mean}px`}>
+                <Text size="2" weight="bold">
+                  Mean
+                </Text>
+              </Box>
+              <Box width={`${COL_WIDTHS.diff}px`}>
+                <Text size="2" weight="bold">
+                  Diff
+                </Text>
+              </Box>
+              <Box width={`${COL_WIDTHS.pct}px`}>
+                <Text size="2" weight="bold">
+                  Diff %
+                </Text>
+              </Box>
+            </Flex>
+            <Separator size="4" style={{ height: '2px', backgroundColor: 'var(--gray-10)' }} />
+          </Box>
+        </foreignObject>
+      )}
+
+      <foreignObject x={startX} y={y - ROW_HEIGHT / 2} width={TOTAL_YTICK_WIDTH} height={ROW_HEIGHT}>
+        <Separator size="4" />
+        <Flex align="center" height="100%" gap="1">
+          {/* Text truncate was not working nested under Box, so use a fix-width Flex */}
+          <Flex width={`${COL_WIDTHS.name}px`}>
+            <Text size="3" title={armName} truncate>
+              {armName}
+            </Text>
+          </Flex>
+          <Separator size="4" orientation="vertical" />
+          <Box width={`${COL_WIDTHS.mean}px`} pl="1">
+            <Text size="3">{formatValue(armData.absEffect)}</Text>
+          </Box>
+          <Box width={`${COL_WIDTHS.diff}px`}>
+            <Text size="3">{armData.isBaseline ? '--' : formatValue(armData.absDifference)}</Text>
+          </Box>
+          <Box width={`${COL_WIDTHS.pct}px`}>
+            <Text size="3">{armData.isBaseline ? '--' : formatPct(armData.relEffectPct)}</Text>
+          </Box>
+        </Flex>
+      </foreignObject>
+    </g>
+  );
+}
 
 const formatValue = (value: number): string => {
   // Show <= 2 decimal places only for values < 100
@@ -190,14 +291,14 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
 
   // Adjust plot height based on the number of arms.
   const lenEffects = effectSizes !== undefined ? effectSizes.length : banditEffects!.length;
-  const plotHeightPx = Math.max(220, 64 * lenEffects);
+  const chartHeightPx = ROW_HEIGHT * lenEffects + HEADER_HEIGHT + 28; // 28 for the XAxis height
   // Coarse adjustment of the width of the left Y-axis based on the length of the arm names.
   const maxArmNameLength =
     effectSizes !== undefined
       ? effectSizes.reduce((max, e) => Math.max(max, e.armName.length), 0)
       : banditEffects!.reduce((max, e) => Math.max(max, e.armName.length), 0);
-  const yRightAxisWidthPx = 80;
-  const yLeftAxisWidthPx = maxArmNameLength > 20 ? 180 : 80;
+  // For frequentist plots, use wider axis to accommodate the table display
+  const yLeftAxisWidthPx = effectSizes !== undefined ? TOTAL_YTICK_WIDTH + 10 : maxArmNameLength > 20 ? 180 : 80;
 
   if (effectSizes !== undefined) {
     // Filter arms with issues and create specific messages for each
@@ -225,12 +326,12 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
           </Callout.Root>
         ))}
 
-        <Box height={`${plotHeightPx}px`}>
+        <Box height={`${chartHeightPx}px`}>
           <Heading size="2" align="center">
             Difference from {effectSizes[0].armName}
           </Heading>
           <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart onMouseLeave={handleHideTooltip}>
+            <ScatterChart onMouseLeave={handleHideTooltip} margin={{ top: HEADER_HEIGHT }}>
               {/* Handle explicit display of the tooltip to allow selecting and copying values. */}
               <Tooltip
                 active={tooltipState.active}
@@ -252,7 +353,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 tickFormatter={formatValue}
               />
 
-              {/* Use the left y-axis to display arm names */}
+              {/* Use the left y-axis to display arm names with stats table */}
               <YAxis
                 type="category"
                 yAxisId="left"
@@ -260,18 +361,10 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 width={yLeftAxisWidthPx}
                 style={commonAxisStyle}
                 dataKey={(dataPoint: EffectSizeData) => dataPoint.armName}
-                tickFormatter={(value) => truncateLabel(value)}
-              />
-
-              {/* Use the right y-axis to display differences from the baseline */}
-              <YAxis
-                type="category"
-                yAxisId="right"
-                orientation="right"
-                width={yRightAxisWidthPx}
-                style={commonAxisStyle}
-                dataKey={(dataPoint: EffectSizeData) => {
-                  return dataPoint.isBaseline ? '' : `Δ = ${formatValue(dataPoint.absDifference)}`;
+                tick={(props: { x?: number; y?: number; payload?: { value: string }; index?: number }) => {
+                  // The topmost tick is the last one in the effectSizes array (highest y position = lowest index in render order)
+                  const isTopmost = props.index === effectSizes.length - 1;
+                  return <CustomYAxisTick {...props} effectSizes={effectSizes} isTopmost={isTopmost} />;
                 }}
               />
 
@@ -353,7 +446,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
   } else if (banditEffects !== undefined) {
     return (
       <Flex direction="column" gap="3">
-        <Box height={`${plotHeightPx}px`}>
+        <Box height={`${chartHeightPx}px`}>
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart onMouseLeave={handleHideTooltip}>
               {/* Handle explicit display of the tooltip to allow selecting and copying values. */}
