@@ -274,19 +274,21 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
     );
   }
 
+  const isFrequentist = effectSizes !== undefined;
+  const isBandit = banditEffects !== undefined;
+
   // Flatten effect sizes into array of CI bounds for axis calculation
-  const xAxisValues =
-    effectSizes !== undefined
-      ? effectSizes.flatMap((d) => [d.ci95Lower, d.ci95Upper])
-      : banditEffects!.flatMap((d) => [
-          Math.min(d.postPredabsCI95Lower, d.priorPredabsCI95Lower),
-          Math.max(d.postPredabsCI95Upper, d.priorPredabsCI95Upper),
-        ]);
+  const xAxisValues = isFrequentist
+    ? effectSizes.flatMap((d) => [d.ci95Lower, d.ci95Upper])
+    : banditEffects!.flatMap((d) => [
+        Math.min(d.postPredabsCI95Lower, d.priorPredabsCI95Lower),
+        Math.max(d.postPredabsCI95Upper, d.priorPredabsCI95Upper),
+      ]);
   const [minX, maxX] = computeAxisBounds(xAxisValues, minXProp, maxXProp);
 
   // Space ticks evenly across the domain. For frequentist plots also include 0,
   // but filter out duplicates, which can occur when the effect is 0.
-  const basePoints = effectSizes !== undefined ? [0] : [];
+  const basePoints = isFrequentist ? [0] : [];
   const xGridPoints = [...basePoints, ...[0, 1, 2, 3, 4].map((i) => minX + (i * (maxX - minX)) / 4)]
     .sort((a, b) => a - b)
     .filter((value, index, self) => self.indexOf(value) === index);
@@ -297,17 +299,16 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
   };
 
   // Adjust plot height based on the number of arms.
-  const lenEffects = effectSizes !== undefined ? effectSizes.length : banditEffects!.length;
+  const lenEffects = isFrequentist ? effectSizes.length : banditEffects!.length;
   const chartHeightPx = ROW_HEIGHT * lenEffects + HEADER_HEIGHT + 28; // 28 for the XAxis height
   // Coarse adjustment of the width of the left Y-axis based on the length of the arm names.
-  const maxArmNameLength =
-    effectSizes !== undefined
-      ? effectSizes.reduce((max, e) => Math.max(max, e.armName.length), 0)
-      : banditEffects!.reduce((max, e) => Math.max(max, e.armName.length), 0);
+  const maxArmNameLength = isFrequentist
+    ? effectSizes.reduce((max, e) => Math.max(max, e.armName.length), 0)
+    : banditEffects!.reduce((max, e) => Math.max(max, e.armName.length), 0);
   // For frequentist plots, use wider axis to accommodate the table display
-  const yLeftAxisWidthPx = effectSizes !== undefined ? TOTAL_YTICK_WIDTH + 10 : maxArmNameLength > 20 ? 180 : 80;
+  const yLeftAxisWidthPx = isFrequentist ? TOTAL_YTICK_WIDTH + 10 : maxArmNameLength > 20 ? 180 : 80;
 
-  if (effectSizes !== undefined) {
+  if (isFrequentist) {
     // Filter arms with issues and create specific messages for each
     const armsWithIssues = effectSizes.filter((e) => e.isMissingAllValues || e.invalidStatTest);
     return (
@@ -450,7 +451,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
         </Box>
       </Flex>
     );
-  } else if (banditEffects !== undefined) {
+  } else if (isBandit) {
     return (
       <Flex direction="column" gap="3">
         <Box height={`${chartHeightPx}px`}>
