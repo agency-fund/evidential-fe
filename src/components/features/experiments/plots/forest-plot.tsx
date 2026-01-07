@@ -89,35 +89,55 @@ interface CustomFreqYAxisTickProps {
   // Other props we want to pass along:
   effectSizes: EffectSizeData[];
   isTopmost: boolean;
+  // Override the width of the arm name column if desired.
+  nameWidthPxOverride?: number;
 }
 
 // Column widths for the custom tick table to align each tick's data since we can't use a grid.
-const COL_WIDTHS = {
-  name: 128,
+const FREQ_COL_WIDTHS = {
+  name: 88,
   mean: 72,
   diff: 72,
   pct: 64,
 } as const;
-const TOTAL_YTICK_WIDTH = COL_WIDTHS.name + COL_WIDTHS.mean + COL_WIDTHS.diff + COL_WIDTHS.pct;
 
 // Column widths for bandit tick table (simpler: name, mean, std)
 const BANDIT_COL_WIDTHS = {
-  name: 128,
+  name: 88,
   mean: 72,
   std: 72,
 } as const;
-const TOTAL_BANDIT_YTICK_WIDTH = BANDIT_COL_WIDTHS.name + BANDIT_COL_WIDTHS.mean + BANDIT_COL_WIDTHS.std;
 
+// Height of each row in the custom tick table.
 const ROW_HEIGHT = 64;
+// Height of the header attached to the topmost (last) row in the custom tick table.
 const HEADER_HEIGHT = 26;
 
-function CustomFreqYAxisTick({ x = 0, y = 0, payload, effectSizes, isTopmost }: CustomFreqYAxisTickProps) {
+// Calculate the total width of the tick table acconting for the override if provided.
+function getTotalYAxisWidthPx(isFrequentist: boolean, nameWidthPxOverride?: number) {
+  const nameWidth = nameWidthPxOverride ?? (isFrequentist ? FREQ_COL_WIDTHS.name : BANDIT_COL_WIDTHS.name);
+  if (isFrequentist) {
+    return FREQ_COL_WIDTHS.mean + FREQ_COL_WIDTHS.diff + FREQ_COL_WIDTHS.pct + nameWidth;
+  }
+  return BANDIT_COL_WIDTHS.mean + BANDIT_COL_WIDTHS.std + nameWidth;
+}
+
+function CustomFreqYAxisTick({
+  x = 0,
+  y = 0,
+  payload,
+  effectSizes,
+  isTopmost,
+  nameWidthPxOverride,
+}: CustomFreqYAxisTickProps) {
   const armName = payload?.value ?? '';
   const armData = effectSizes.find((e) => e.armName === armName);
 
   if (!armData) return null;
 
-  const startX = x - TOTAL_YTICK_WIDTH;
+  const nameWidthPx = nameWidthPxOverride ?? FREQ_COL_WIDTHS.name;
+  const totalWidthPx = getTotalYAxisWidthPx(true, nameWidthPx);
+  const startX = x - totalWidthPx;
 
   const isSignificantVariant = !armData.isBaseline && armData.significant;
   const significanceStyle = isSignificantVariant
@@ -128,30 +148,25 @@ function CustomFreqYAxisTick({ x = 0, y = 0, payload, effectSizes, isTopmost }: 
     <g>
       {isTopmost && (
         // Position header row by specifying the top-left corner of the svg container and its size.
-        <foreignObject
-          x={startX}
-          y={y - HEADER_HEIGHT - ROW_HEIGHT / 2}
-          width={TOTAL_YTICK_WIDTH}
-          height={HEADER_HEIGHT}
-        >
+        <foreignObject x={startX} y={y - HEADER_HEIGHT - ROW_HEIGHT / 2} width={totalWidthPx} height={HEADER_HEIGHT}>
           <Box>
             <Flex align="center" justify="between" height="100%">
-              <Box width={`${COL_WIDTHS.name}px`}>
+              <Box width={`${nameWidthPx}px`}>
                 <Text size="2" weight="bold">
                   Arm
                 </Text>
               </Box>
-              <Box width={`${COL_WIDTHS.mean}px`} pl="2">
+              <Box width={`${FREQ_COL_WIDTHS.mean}px`} pl="2">
                 <Text size="2" weight="bold">
                   Mean
                 </Text>
               </Box>
-              <Box width={`${COL_WIDTHS.diff}px`}>
+              <Box width={`${FREQ_COL_WIDTHS.diff}px`}>
                 <Text size="2" weight="bold">
                   Diff
                 </Text>
               </Box>
-              <Box width={`${COL_WIDTHS.pct}px`}>
+              <Box width={`${FREQ_COL_WIDTHS.pct}px`}>
                 <Text size="2" weight="bold">
                   Diff %
                 </Text>
@@ -162,23 +177,23 @@ function CustomFreqYAxisTick({ x = 0, y = 0, payload, effectSizes, isTopmost }: 
         </foreignObject>
       )}
 
-      <foreignObject x={startX} y={y - ROW_HEIGHT / 2} width={TOTAL_YTICK_WIDTH} height={ROW_HEIGHT}>
+      <foreignObject x={startX} y={y - ROW_HEIGHT / 2} width={totalWidthPx} height={ROW_HEIGHT}>
         <Separator size="4" />
         <Flex align="center" height="100%">
           {/* Text truncate was not working nested under Box, so use a fix-width Flex */}
-          <Flex width={`${COL_WIDTHS.name}px`}>
+          <Flex width={`${nameWidthPx}px`}>
             <Text size="3" title={armName} truncate>
               {armName}
             </Text>
           </Flex>
           <Separator size="4" orientation="vertical" />
-          <Box width={`${COL_WIDTHS.mean}px`} pl="1">
+          <Box width={`${FREQ_COL_WIDTHS.mean}px`} pl="1">
             <Text size="3">{formatValue(armData.absEffect)}</Text>
           </Box>
-          <Box width={`${COL_WIDTHS.diff}px`}>
+          <Box width={`${FREQ_COL_WIDTHS.diff}px`}>
             <Text size="3">{armData.isBaseline ? '--' : formatValue(armData.absDifference)}</Text>
           </Box>
-          <Box width={`${COL_WIDTHS.pct}px`}>
+          <Box width={`${FREQ_COL_WIDTHS.pct}px`}>
             <Text size="3" weight={isSignificantVariant ? 'bold' : undefined} style={significanceStyle}>
               {armData.isBaseline ? '--' : formatPct(armData.relEffectPct)}
             </Text>
@@ -196,25 +211,30 @@ interface CustomBanditYAxisTickProps {
   payload?: { value: string };
   banditEffects: BanditEffectData[];
   isTopmost: boolean;
+  nameWidthPxOverride?: number;
 }
 
-function CustomBanditYAxisTick({ x = 0, y = 0, payload, banditEffects, isTopmost }: CustomBanditYAxisTickProps) {
+function CustomBanditYAxisTick({
+  x = 0,
+  y = 0,
+  payload,
+  banditEffects,
+  isTopmost,
+  nameWidthPxOverride,
+}: CustomBanditYAxisTickProps) {
   const armName = payload?.value ?? '';
   const armData = banditEffects.find((e) => e.armName === armName);
 
   if (!armData) return null;
 
-  const startX = x - TOTAL_BANDIT_YTICK_WIDTH;
+  const nameWidthPx = nameWidthPxOverride ?? BANDIT_COL_WIDTHS.name;
+  const totalWidthPx = getTotalYAxisWidthPx(false, nameWidthPx);
+  const startX = x - totalWidthPx;
 
   return (
     <g>
       {isTopmost && (
-        <foreignObject
-          x={startX}
-          y={y - HEADER_HEIGHT - ROW_HEIGHT / 2}
-          width={TOTAL_BANDIT_YTICK_WIDTH}
-          height={HEADER_HEIGHT}
-        >
+        <foreignObject x={startX} y={y - HEADER_HEIGHT - ROW_HEIGHT / 2} width={totalWidthPx} height={HEADER_HEIGHT}>
           <Box>
             <Flex align="center" justify="between" height="100%">
               <Box width={`${BANDIT_COL_WIDTHS.name}px`}>
@@ -238,10 +258,10 @@ function CustomBanditYAxisTick({ x = 0, y = 0, payload, banditEffects, isTopmost
         </foreignObject>
       )}
 
-      <foreignObject x={startX} y={y - ROW_HEIGHT / 2} width={TOTAL_BANDIT_YTICK_WIDTH} height={ROW_HEIGHT}>
+      <foreignObject x={startX} y={y - ROW_HEIGHT / 2} width={totalWidthPx} height={ROW_HEIGHT}>
         <Separator size="4" />
         <Flex align="center" height="100%">
-          <Flex width={`${BANDIT_COL_WIDTHS.name}px`}>
+          <Flex width={`${nameWidthPx}px`}>
             <Text size="3" title={armName} truncate>
               {armName}
             </Text>
@@ -386,10 +406,9 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
   const maxArmNameLength = isFrequentist
     ? effectSizes.reduce((max, e) => Math.max(max, e.armName.length), 0)
     : banditEffects!.reduce((max, e) => Math.max(max, e.armName.length), 0);
-  const maxNamePx = maxArmNameLength > 20 ? 180 : 80;
-
-  // Use wider axis to accommodate the table display
-  const yLeftAxisWidthPx = isFrequentist ? TOTAL_YTICK_WIDTH + 10 : TOTAL_BANDIT_YTICK_WIDTH + 10;
+  const maxNamePx = maxArmNameLength > 20 ? 180 : undefined;
+  // Use wider axis to accommodate the table display, with extra padding for the actual tick.
+  const yLeftAxisWidthPx = 10 + getTotalYAxisWidthPx(isFrequentist, maxNamePx);
 
   if (isFrequentist) {
     // Filter arms with issues and create specific messages for each
@@ -455,7 +474,14 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 tick={(props: { x?: number; y?: number; payload?: { value: string }; index?: number }) => {
                   // The topmost tick is the last one in the effectSizes array (highest y position = lowest index in render order)
                   const isTopmost = props.index === effectSizes.length - 1;
-                  return <CustomFreqYAxisTick {...props} effectSizes={effectSizes} isTopmost={isTopmost} />;
+                  return (
+                    <CustomFreqYAxisTick
+                      {...props}
+                      effectSizes={effectSizes}
+                      isTopmost={isTopmost}
+                      nameWidthPxOverride={maxNamePx}
+                    />
+                  );
                 }}
               />
 
@@ -572,7 +598,14 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 dataKey={(dataPoint: BanditEffectData) => dataPoint.armName}
                 tick={(props: { x?: number; y?: number; payload?: { value: string }; index?: number }) => {
                   const isTopmost = props.index === banditEffects.length - 1;
-                  return <CustomBanditYAxisTick {...props} banditEffects={banditEffects} isTopmost={isTopmost} />;
+                  return (
+                    <CustomBanditYAxisTick
+                      {...props}
+                      banditEffects={banditEffects}
+                      isTopmost={isTopmost}
+                      nameWidthPxOverride={maxNamePx}
+                    />
+                  );
                 }}
               />
 
