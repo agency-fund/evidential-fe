@@ -63,10 +63,13 @@ const createDiamondShape = (cx: number = 0, cy: number = 0, size: number = 6) =>
   return `${cx},${cy - size} ${cx + size},${cy} ${cx},${cy + size} ${cx - size},${cy}`;
 };
 
-// Simple truncation of long labels with an ellipsis for readability. ~42 roughly keeps the labels to 2 lines.
-const truncateLabel = (label: string, maxChars: number = 42): string => {
-  if (!label) return '';
-  return label.length > maxChars ? label.slice(0, maxChars) + '…' : label;
+const formatValue = (value: number): string => {
+  // Show <= 2 decimal places only for values < 100
+  return Math.abs(value) >= 100 || value === 0
+    ? value.toFixed()
+    : Math.abs(value) >= 1
+      ? value.toFixed(1)
+      : value.toFixed(2);
 };
 
 const formatPct = (value: number): string => {
@@ -96,6 +99,15 @@ const COL_WIDTHS = {
   pct: 64,
 } as const;
 const TOTAL_YTICK_WIDTH = COL_WIDTHS.name + COL_WIDTHS.mean + COL_WIDTHS.diff + COL_WIDTHS.pct;
+
+// Column widths for bandit tick table (simpler: name, mean, std)
+const BANDIT_COL_WIDTHS = {
+  name: 128,
+  mean: 72,
+  std: 72,
+} as const;
+const TOTAL_BANDIT_YTICK_WIDTH = BANDIT_COL_WIDTHS.name + BANDIT_COL_WIDTHS.mean + BANDIT_COL_WIDTHS.std;
+
 const ROW_HEIGHT = 64;
 const HEADER_HEIGHT = 26;
 
@@ -177,14 +189,75 @@ function CustomYAxisTick({ x = 0, y = 0, payload, effectSizes, isTopmost }: Cust
   );
 }
 
-const formatValue = (value: number): string => {
-  // Show <= 2 decimal places only for values < 100
-  return Math.abs(value) >= 100 || value === 0
-    ? value.toFixed()
-    : Math.abs(value) >= 1
-      ? value.toFixed(1)
-      : value.toFixed(2);
-};
+// Custom Y-axis tick for bandit plots
+interface CustomBanditYAxisTickProps {
+  x?: number;
+  y?: number;
+  payload?: { value: string };
+  banditEffects: BanditEffectData[];
+  isTopmost: boolean;
+}
+
+function CustomBanditYAxisTick({ x = 0, y = 0, payload, banditEffects, isTopmost }: CustomBanditYAxisTickProps) {
+  const armName = payload?.value ?? '';
+  const armData = banditEffects.find((e) => e.armName === armName);
+
+  if (!armData) return null;
+
+  const startX = x - TOTAL_BANDIT_YTICK_WIDTH;
+
+  return (
+    <g>
+      {isTopmost && (
+        <foreignObject
+          x={startX}
+          y={y - HEADER_HEIGHT - ROW_HEIGHT / 2}
+          width={TOTAL_BANDIT_YTICK_WIDTH}
+          height={HEADER_HEIGHT}
+        >
+          <Box>
+            <Flex align="center" justify="between" height="100%">
+              <Box width={`${BANDIT_COL_WIDTHS.name}px`}>
+                <Text size="2" weight="bold">
+                  Arm
+                </Text>
+              </Box>
+              <Box width={`${BANDIT_COL_WIDTHS.mean}px`} pl="2">
+                <Text size="2" weight="bold">
+                  Mean
+                </Text>
+              </Box>
+              <Box width={`${BANDIT_COL_WIDTHS.std}px`}>
+                <Text size="2" weight="bold">
+                  StdDev
+                </Text>
+              </Box>
+            </Flex>
+            <Separator size="4" style={{ height: '2px', backgroundColor: 'var(--gray-10)' }} />
+          </Box>
+        </foreignObject>
+      )}
+
+      <foreignObject x={startX} y={y - ROW_HEIGHT / 2} width={TOTAL_BANDIT_YTICK_WIDTH} height={ROW_HEIGHT}>
+        <Separator size="4" />
+        <Flex align="center" height="100%">
+          <Flex width={`${BANDIT_COL_WIDTHS.name}px`}>
+            <Text size="3" title={armName} truncate>
+              {armName}
+            </Text>
+          </Flex>
+          <Separator size="4" orientation="vertical" />
+          <Box width={`${BANDIT_COL_WIDTHS.mean}px`} pl="1">
+            <Text size="3">{formatValue(armData.postPredMean)}</Text>
+          </Box>
+          <Box width={`${BANDIT_COL_WIDTHS.std}px`}>
+            <Text size="3">{formatValue(armData.postPredStd)}</Text>
+          </Box>
+        </Flex>
+      </foreignObject>
+    </g>
+  );
+}
 
 // Custom tooltip content is normally passed TooltipContentProps. We also want to pass in our custom
 // TooltipState to allow overriding the payload (if the user mouseover's a CI) that would otherwise
@@ -301,12 +374,15 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
   // Adjust plot height based on the number of arms.
   const lenEffects = isFrequentist ? effectSizes.length : banditEffects!.length;
   const chartHeightPx = ROW_HEIGHT * lenEffects + HEADER_HEIGHT + 28; // 28 for the XAxis height
+
   // Coarse adjustment of the width of the left Y-axis based on the length of the arm names.
   const maxArmNameLength = isFrequentist
     ? effectSizes.reduce((max, e) => Math.max(max, e.armName.length), 0)
     : banditEffects!.reduce((max, e) => Math.max(max, e.armName.length), 0);
-  // For frequentist plots, use wider axis to accommodate the table display
-  const yLeftAxisWidthPx = isFrequentist ? TOTAL_YTICK_WIDTH + 10 : maxArmNameLength > 20 ? 180 : 80;
+  const maxNamePx = maxArmNameLength > 20 ? 180 : 80;
+
+  // Use wider axis to accommodate the table display
+  const yLeftAxisWidthPx = isFrequentist ? TOTAL_YTICK_WIDTH + 10 : TOTAL_BANDIT_YTICK_WIDTH + 10;
 
   if (isFrequentist) {
     // Filter arms with issues and create specific messages for each
@@ -339,7 +415,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
             Difference from {effectSizes[0].armName}
           </Heading>
           <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart onMouseLeave={handleHideTooltip} margin={{ top: HEADER_HEIGHT, right: 48 }}>
+            <ScatterChart onMouseLeave={handleHideTooltip} margin={{ top: HEADER_HEIGHT, right: 32 }}>
               {/* Handle explicit display of the tooltip to allow selecting and copying values. */}
               <Tooltip
                 active={tooltipState.active}
@@ -456,7 +532,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
       <Flex direction="column" gap="3">
         <Box height={`${chartHeightPx}px`}>
           <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart onMouseLeave={handleHideTooltip}>
+            <ScatterChart onMouseLeave={handleHideTooltip} margin={{ top: HEADER_HEIGHT, right: 32 }}>
               {/* Handle explicit display of the tooltip to allow selecting and copying values. */}
               <Tooltip
                 active={tooltipState.active}
@@ -484,7 +560,10 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 width={yLeftAxisWidthPx}
                 style={commonAxisStyle}
                 dataKey={(dataPoint: BanditEffectData) => dataPoint.armName}
-                tickFormatter={(value) => truncateLabel(value)}
+                tick={(props: { x?: number; y?: number; payload?: { value: string }; index?: number }) => {
+                  const isTopmost = props.index === banditEffects.length - 1;
+                  return <CustomBanditYAxisTick {...props} banditEffects={banditEffects} isTopmost={isTopmost} />;
+                }}
               />
 
               {/* arm mean markers - vertical marker below points and CIs */}
