@@ -77,22 +77,6 @@ const formatPct = (value: number): string => {
   return `${formatValue(value)}%`;
 };
 
-// Unfortunately Recharts doesn't have an explicit type for the props it passes to a tick function.
-// So just spread these on our custom tick component, specifying just the fields we use from Rechart,
-// then any extra props we want to pass to our component.
-interface CustomFreqYAxisTickProps {
-  // {x,y} are pixel coordinates for the start of the tick for this row
-  x?: number;
-  y?: number;
-  // The payload specified by the YAxis dataKey, i.e. the arm name.
-  payload?: { value: string };
-  // Other props we want to pass along:
-  effectSizes: EffectSizeData[];
-  isTopmost: boolean;
-  // Override the width of the arm name column if desired.
-  nameWidthPxOverride?: number;
-}
-
 // Column widths for the custom tick table to align each tick's data since we can't use a grid.
 const FREQ_COL_WIDTHS = {
   name: 88,
@@ -122,6 +106,26 @@ function getTotalYAxisWidthPx(isFrequentist: boolean, nameWidthPxOverride?: numb
   return BANDIT_COL_WIDTHS.mean + BANDIT_COL_WIDTHS.std + nameWidth;
 }
 
+// Unfortunately Recharts doesn't have an explicit type for the props it passes to a tick function.
+// So just spread these on our custom tick component, by composing just the fields we use from
+// Rechart, with extra props we want to pass to our component.
+interface NeededTickProps {
+  // {x,y} are pixel coordinates for the start of the tick for this row
+  x?: number;
+  y?: number;
+  // The payload specified by the YAxis dataKey, i.e. the arm name.
+  payload?: { value: string };
+  // The index of the tick in the YAxis ticks array.
+  index?: number;
+}
+interface CustomFreqYAxisTickProps extends NeededTickProps {
+  // Other props we want to pass along:
+  effectSizes: EffectSizeData[];
+  isTopmost: boolean;
+  // Override the width of the arm name column if desired.
+  nameWidthPxOverride?: number;
+}
+
 function CustomFreqYAxisTick({
   x = 0,
   y = 0,
@@ -132,17 +136,16 @@ function CustomFreqYAxisTick({
 }: CustomFreqYAxisTickProps) {
   const armName = payload?.value ?? '';
   const armData = effectSizes.find((e) => e.armName === armName);
-
   if (!armData) return null;
-
-  const nameWidthPx = nameWidthPxOverride ?? FREQ_COL_WIDTHS.name;
-  const totalWidthPx = getTotalYAxisWidthPx(true, nameWidthPx);
-  const startX = x - totalWidthPx;
 
   const isSignificantVariant = !armData.isBaseline && armData.significant;
   const significanceStyle = isSignificantVariant
     ? { color: armData.absDifference > 0 ? COLORS.POSITIVE_CI : COLORS.NEGATIVE_CI }
     : undefined;
+
+  const nameWidthPx = nameWidthPxOverride ?? FREQ_COL_WIDTHS.name;
+  const totalWidthPx = getTotalYAxisWidthPx(true, nameWidthPx);
+  const startX = x - totalWidthPx;
 
   return (
     <g>
@@ -205,10 +208,7 @@ function CustomFreqYAxisTick({
 }
 
 // Custom Y-axis tick for bandit plots
-interface CustomBanditYAxisTickProps {
-  x?: number;
-  y?: number;
-  payload?: { value: string };
+interface CustomBanditYAxisTickProps extends NeededTickProps {
   banditEffects: BanditEffectData[];
   isTopmost: boolean;
   nameWidthPxOverride?: number;
@@ -224,7 +224,6 @@ function CustomBanditYAxisTick({
 }: CustomBanditYAxisTickProps) {
   const armName = payload?.value ?? '';
   const armData = banditEffects.find((e) => e.armName === armName);
-
   if (!armData) return null;
 
   const nameWidthPx = nameWidthPxOverride ?? BANDIT_COL_WIDTHS.name;
@@ -471,7 +470,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 width={yLeftAxisWidthPx}
                 style={commonAxisStyle}
                 dataKey={(dataPoint: EffectSizeData) => dataPoint.armName}
-                tick={(props: { x?: number; y?: number; payload?: { value: string }; index?: number }) => {
+                tick={(props: NeededTickProps) => {
                   // The topmost tick is the last one in the effectSizes array (highest y position = lowest index in render order)
                   const isTopmost = props.index === effectSizes.length - 1;
                   return (
@@ -596,7 +595,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 width={yLeftAxisWidthPx}
                 style={commonAxisStyle}
                 dataKey={(dataPoint: BanditEffectData) => dataPoint.armName}
-                tick={(props: { x?: number; y?: number; payload?: { value: string }; index?: number }) => {
+                tick={(props: NeededTickProps) => {
                   const isTopmost = props.index === banditEffects.length - 1;
                   return (
                     <CustomBanditYAxisTick
