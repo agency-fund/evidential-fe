@@ -93,7 +93,7 @@ const COL_WIDTHS = {
   name: 128,
   mean: 72,
   diff: 72,
-  pct: 56,
+  pct: 64,
 } as const;
 const TOTAL_YTICK_WIDTH = COL_WIDTHS.name + COL_WIDTHS.mean + COL_WIDTHS.diff + COL_WIDTHS.pct;
 const ROW_HEIGHT = 64;
@@ -107,6 +107,11 @@ function CustomYAxisTick({ x = 0, y = 0, payload, effectSizes, isTopmost }: Cust
 
   const startX = x - TOTAL_YTICK_WIDTH;
 
+  const isSignificantVariant = !armData.isBaseline && armData.significant;
+  const significanceStyle = isSignificantVariant
+    ? { color: armData.absDifference > 0 ? COLORS.POSITIVE_CI : COLORS.NEGATIVE_CI }
+    : undefined;
+
   return (
     <g>
       {isTopmost && (
@@ -118,13 +123,13 @@ function CustomYAxisTick({ x = 0, y = 0, payload, effectSizes, isTopmost }: Cust
           height={HEADER_HEIGHT}
         >
           <Box>
-            <Flex align="center" justify="between" height="100%" gap="1">
+            <Flex align="center" justify="between" height="100%">
               <Box width={`${COL_WIDTHS.name}px`}>
                 <Text size="2" weight="bold">
                   Arm
                 </Text>
               </Box>
-              <Box width={`${COL_WIDTHS.mean}px`}>
+              <Box width={`${COL_WIDTHS.mean}px`} pl="2">
                 <Text size="2" weight="bold">
                   Mean
                 </Text>
@@ -147,7 +152,7 @@ function CustomYAxisTick({ x = 0, y = 0, payload, effectSizes, isTopmost }: Cust
 
       <foreignObject x={startX} y={y - ROW_HEIGHT / 2} width={TOTAL_YTICK_WIDTH} height={ROW_HEIGHT}>
         <Separator size="4" />
-        <Flex align="center" height="100%" gap="1">
+        <Flex align="center" height="100%">
           {/* Text truncate was not working nested under Box, so use a fix-width Flex */}
           <Flex width={`${COL_WIDTHS.name}px`}>
             <Text size="3" title={armName} truncate>
@@ -162,7 +167,9 @@ function CustomYAxisTick({ x = 0, y = 0, payload, effectSizes, isTopmost }: Cust
             <Text size="3">{armData.isBaseline ? '--' : formatValue(armData.absDifference)}</Text>
           </Box>
           <Box width={`${COL_WIDTHS.pct}px`}>
-            <Text size="3">{armData.isBaseline ? '--' : formatPct(armData.relEffectPct)}</Text>
+            <Text size="3" weight={isSignificantVariant ? 'bold' : undefined} style={significanceStyle}>
+              {armData.isBaseline ? '--' : formatPct(armData.relEffectPct)}
+            </Text>
           </Box>
         </Flex>
       </foreignObject>
@@ -331,7 +338,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
             Difference from {effectSizes[0].armName}
           </Heading>
           <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart onMouseLeave={handleHideTooltip} margin={{ top: HEADER_HEIGHT }}>
+            <ScatterChart onMouseLeave={handleHideTooltip} margin={{ top: HEADER_HEIGHT, right: 48 }}>
               {/* Handle explicit display of the tooltip to allow selecting and copying values. */}
               <Tooltip
                 active={tooltipState.active}
