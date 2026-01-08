@@ -197,7 +197,7 @@ function CustomFreqYAxisTick({
         <Separator size="4" />
         <Flex align="center" height="100%">
           {/* Text truncate was not working nested under Box, so use a fix-width Flex */}
-          <Flex width={`${nameWidthPx}px`}>
+          <Flex width={`${nameWidthPx}px`} minWidth="0">
             <Text size="3" title={armName} truncate>
               {armName}
             </Text>
@@ -266,7 +266,7 @@ function CustomBanditYAxisTick({
       <foreignObject x={startX} y={y - ROW_HEIGHT / 2} width={totalWidthPx} height={ROW_HEIGHT}>
         <Separator size="4" />
         <Flex align="center" height="100%">
-          <Flex width={`${nameWidthPx}px`}>
+          <Flex width={`${nameWidthPx}px`} minWidth="0">
             <Text size="3" title={armName} truncate>
               {armName}
             </Text>
