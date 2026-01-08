@@ -215,7 +215,7 @@ export default function ForestTimeseriesPlot({
               paddingBottom: '20px',
             }}
             formatter={(value) => {
-              // value is the name passed to the line, ie. the arm id
+              // value is the name passed to the line, i.e. the arm id
               const index = armMetadata.findIndex((arm) => arm.id === value);
               const arm = armMetadata[index];
               const baseDotColor = getArmColor(index, arm.isBaseline, true);
