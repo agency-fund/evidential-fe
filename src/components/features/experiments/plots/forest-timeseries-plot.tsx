@@ -20,6 +20,7 @@ import {
   getColorWithSignificance,
   Significance,
   getArmColor,
+  getArmColorEnumForText,
 } from './forest-plot-utils';
 import { JitteredLine, JitteredLineInputData, JitteredLinePayloadData } from './jittered-line';
 import { ConfidenceInterval } from './confidence-interval';
@@ -60,13 +61,13 @@ function CustomTimeseriesTooltip({ active, payload, armMetadata, selectedArmId }
           const armData = tsDataPoint.armEffects.get(armInfo.id);
           if (!armData) return null;
 
-          const baseDotColor = getArmColor(index, armInfo.isBaseline, true);
+          const textColorEnum = getArmColorEnumForText(index, armInfo.isBaseline);
           const isSelected = selectedArmId === armInfo.id;
 
           return (
             <Flex key={armInfo.id} direction="column" gap="1">
               <Flex direction="row" gap="1" align="center">
-                <Text size={isSelected ? '4' : '2'} weight="bold" style={{ color: baseDotColor }}>
+                <Text size={isSelected ? '4' : '2'} weight="bold" color={textColorEnum}>
                   {armInfo.name || armInfo.id}:
                 </Text>
                 <Text size="2"> {armData.absMean.toFixed(2)}</Text>
@@ -218,10 +219,10 @@ export default function ForestTimeseriesPlot({
               // value is the name passed to the line, i.e. the arm id
               const index = armMetadata.findIndex((arm) => arm.id === value);
               const arm = armMetadata[index];
-              const baseDotColor = getArmColor(index, arm.isBaseline, true);
+              const textColorEnum = getArmColorEnumForText(index, arm.isBaseline);
               const selected = arm.name === selectedArmName;
               return (
-                <Text size="3" weight={selected ? 'bold' : 'regular'} style={{ color: baseDotColor }} key={arm.id}>
+                <Text size="3" weight={selected ? 'bold' : 'regular'} color={textColorEnum} key={arm.id}>
                   {arm.name}
                 </Text>
               );

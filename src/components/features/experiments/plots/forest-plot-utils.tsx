@@ -17,7 +17,11 @@ import {
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 import { isFrequentistSpec } from '@/app/datasources/[datasourceId]/experiments/create/types';
 
+// Base Radix colors for use as color props.
+// NOTE: keep in sync with ARM_COLORS used for plotting.
+export const ARM_COLORS_FOR_TEXT = ['blue', 'iris', 'plum', 'brown', 'cyan', 'indigo', 'violet', 'purple'] as const;
 // Aiming for reasonably visually distinct colors for different arm line plots.
+// NOTE: keep in sync with ARM_COLORS_FOR_TEXT used with Text.
 export const ARM_COLORS = [
   'var(--blue-10)',
   'var(--iris-10)',
@@ -355,6 +359,19 @@ export const getArmColor = (armIndex: number, isBaseline: boolean, isSelected: b
   return isSelected ? ARM_COLORS[colorIndex] : INACTIVE_ARM_COLORS[colorIndex];
 };
 
+/**
+ * Get color for an arm based on its index and baseline status.
+ *
+ * Returns a color string enum usable with Text color props.
+ */
+export const getArmColorEnumForText = (armIndex: number, isBaseline: boolean) => {
+  if (isBaseline) {
+    return 'gray';
+  }
+  const modulus = ARM_COLORS_FOR_TEXT.length;
+  const colorIndex = (((armIndex - 1) % modulus) + modulus) % modulus;
+  return ARM_COLORS_FOR_TEXT[colorIndex];
+};
 /**
  * Determines the color for a confidence interval based on significance.
  *
