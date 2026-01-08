@@ -96,8 +96,10 @@ const BANDIT_COL_WIDTHS = {
 const ROW_HEIGHT = 64;
 // Height of the header attached to the topmost (last) row in the custom tick table.
 const HEADER_HEIGHT = 26;
+// Height of the XAxis for use in the total chart height calculation.
+const X_AXIS_HEIGHT = 28;
 
-// Calculate the total width of the tick table acconting for the override if provided.
+// Calculate the total width of the tick table accounting for the override if provided.
 function getTotalYAxisWidthPx(isFrequentist: boolean, nameWidthPxOverride?: number) {
   const nameWidth = nameWidthPxOverride ?? (isFrequentist ? FREQ_COL_WIDTHS.name : BANDIT_COL_WIDTHS.name);
   if (isFrequentist) {
@@ -108,8 +110,8 @@ function getTotalYAxisWidthPx(isFrequentist: boolean, nameWidthPxOverride?: numb
 
 // Unfortunately Recharts doesn't have an explicit type for the props it passes to a tick function.
 // So just spread these on our custom tick component, by composing just the fields we use from
-// Rechart, with extra props we want to pass to our component.
-interface NeededTickProps {
+// Recharts, with extra props we want to pass to our component.
+interface RechartsTickPropsWeUse {
   // {x,y} are pixel coordinates for the start of the tick for this row
   x?: number;
   y?: number;
@@ -118,14 +120,15 @@ interface NeededTickProps {
   // The index of the tick in the YAxis ticks array.
   index?: number;
 }
-interface CustomFreqYAxisTickProps extends NeededTickProps {
-  // Other props we want to pass along:
+// Additional props we want to pass along to CustomFreqYAxisTick
+interface CustomFreqYAxisTickProps extends RechartsTickPropsWeUse {
   effectSizes: EffectSizeData[];
   isTopmost: boolean;
   // Override the width of the arm name column if desired.
   nameWidthPxOverride?: number;
 }
 
+// Custom Y-axis tick for frequentist plots that renders additional stats per arm in a tabular format.
 function CustomFreqYAxisTick({
   x = 0,
   y = 0,
@@ -207,13 +210,13 @@ function CustomFreqYAxisTick({
   );
 }
 
-// Custom Y-axis tick for bandit plots
-interface CustomBanditYAxisTickProps extends NeededTickProps {
+interface CustomBanditYAxisTickProps extends RechartsTickPropsWeUse {
   banditEffects: BanditEffectData[];
   isTopmost: boolean;
   nameWidthPxOverride?: number;
 }
 
+// Custom Y-axis tick for bandit plots that renders additional stats per arm in a tabular format.
 function CustomBanditYAxisTick({
   x = 0,
   y = 0,
@@ -399,7 +402,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
 
   // Adjust plot height based on the number of arms.
   const lenEffects = isFrequentist ? effectSizes.length : banditEffects!.length;
-  const chartHeightPx = ROW_HEIGHT * lenEffects + HEADER_HEIGHT + 28; // 28 for the XAxis height
+  const chartHeightPx = ROW_HEIGHT * lenEffects + HEADER_HEIGHT + X_AXIS_HEIGHT;
 
   // Coarse adjustment of the width of the left Y-axis based on the length of the arm names.
   const maxArmNameLength = isFrequentist
@@ -470,7 +473,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 width={yLeftAxisWidthPx}
                 style={commonAxisStyle}
                 dataKey={(dataPoint: EffectSizeData) => dataPoint.armName}
-                tick={(props: NeededTickProps) => {
+                tick={(props: RechartsTickPropsWeUse) => {
                   // The topmost tick is the last one in the effectSizes array (highest y position = lowest index in render order)
                   const isTopmost = props.index === effectSizes.length - 1;
                   return (
@@ -595,7 +598,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 width={yLeftAxisWidthPx}
                 style={commonAxisStyle}
                 dataKey={(dataPoint: BanditEffectData) => dataPoint.armName}
-                tick={(props: NeededTickProps) => {
+                tick={(props: RechartsTickPropsWeUse) => {
                   const isTopmost = props.index === banditEffects.length - 1;
                   return (
                     <CustomBanditYAxisTick
