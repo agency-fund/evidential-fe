@@ -3,14 +3,18 @@ import { useCallback, useMemo } from 'react';
 import { ActiveDotProps, DotItemDotProps, Line } from 'recharts';
 import { useRechartScales } from './use-chart-scales';
 
-export interface JitteredLineData {
+export interface JitteredLineInputData {
   x: number;
   y: number;
   id: string; // Unique identifier to pass back in onPointClick
 }
 
-// Internal processed point with jitter applied and the same x-axis dataKey
-interface InternalProcessedPoint {
+/**
+ * Processed input data point with jitter applied, using JitteredLineProps.dataKey for the x key.
+ * This is used by the Recharts Line component that we wrap, and therefore can show up as e.g. the
+ * payload in a Tooltip.
+ */
+export interface JitteredLinePayloadData {
   [key: string]: number | string;
   y: number;
   id: string;
@@ -24,7 +28,7 @@ export interface DotConfig {
 }
 
 export interface JitteredLineProps {
-  points: JitteredLineData[];
+  data: JitteredLineInputData[];
   dataKey: string;
   xDomain: [number, number];
   jitterOffset?: number; // in plot area pixels
@@ -42,20 +46,20 @@ export interface JitteredLineProps {
 }
 
 /**
- * Renders a jittered line for a single arm using the Recharts Line component.
- * Transforms the data to achieve pixel-based jitter in the units of the XAxis.
- * If the xDomain width is 0 (a single point), no jitter is applied.
+ * Generic Recharts component that renders a jittered line for a single data series, wrapping a
+ * Recharts Line component. Transforms the data to achieve pixel-based jitter in the units of the
+ * XAxis. If the xDomain width is 0 (a single point), no jitter is applied.
  * Must provide the same dataKey as used by the parent chart's XAxis.
  *
  * When dots are enabled, they are automatically positioned at jittered coordinates
  * since the data itself is jittered - no additional offset needed for dots.
  */
 export function JitteredLine({
-  points,
-  color,
+  data: inputDataPoints,
   dataKey,
   xDomain,
   jitterOffset = 0,
+  color,
   strokeWidth = 2,
   opacity = 1,
   name,
@@ -69,7 +73,7 @@ export function JitteredLine({
   // Build line data with jitter applied when chart dimensions are available.
   // If chart dimensions aren't ready (isValid=false), render without jitter to avoid blank chart.
   const lineData = useMemo(() => {
-    if (!points.length) return [];
+    if (!inputDataPoints.length) return [];
 
     // Calculate jitter amount only when chart dimensions are valid and x-range is non-zero.
     // When xRange=0 (single data point), do not apply offset.
@@ -83,8 +87,8 @@ export function JitteredLine({
       }
     }
     // Construct the jittered x values, preserving point id for click handlers.
-    return points
-      .map((point): InternalProcessedPoint | null => {
+    return inputDataPoints
+      .map((point): JitteredLinePayloadData | null => {
         const jitteredX = point.x + jitterAmount;
         if (isNaN(point.y) || isNaN(jitteredX)) return null;
 
@@ -94,8 +98,8 @@ export function JitteredLine({
           id: point.id,
         };
       })
-      .filter((p): p is InternalProcessedPoint => p !== null);
-  }, [isValid, plotWidth, points, dataKey, xDomain, jitterOffset]);
+      .filter((p): p is JitteredLinePayloadData => p !== null);
+  }, [isValid, plotWidth, inputDataPoints, dataKey, xDomain, jitterOffset]);
 
   // Shared dot rendering logic. Returns null or a circle element.
   const renderDot = useCallback(
@@ -105,7 +109,7 @@ export function JitteredLine({
       defaults: { r: number; strokeWidth: number },
     ) => {
       if (!showDots) return null;
-      const { cx, cy, payload } = props as ActiveDotProps & { payload: InternalProcessedPoint };
+      const { cx, cy, payload } = props as ActiveDotProps & { payload: JitteredLinePayloadData };
       if (!payload || cx === undefined || cy === undefined) return null;
 
       return (
@@ -150,7 +154,6 @@ export function JitteredLine({
       dot={showDots ? dotElement : false}
       activeDot={showDots ? activeDotElement : false}
       isAnimationActive={false}
-      tooltipType="none"
       legendType={name ? 'line' : 'none'}
       connectNulls={false}
     />
