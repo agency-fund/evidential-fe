@@ -549,14 +549,6 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                   return <circle cx={centerX} cy={centerY} r={6} fill={fillColor} stroke={COLORS.DEFAULT_CI} />;
                 }}
               />
-
-              {/* "hidden" points backing the right y-axis for deltas */}
-              <Scatter
-                data={effectSizes}
-                dataKey={(dataPoint: EffectSizeData) => dataPoint.absDifference}
-                yAxisId="right"
-                fill="none"
-              />
             </ScatterChart>
           </ResponsiveContainer>
         </Box>
