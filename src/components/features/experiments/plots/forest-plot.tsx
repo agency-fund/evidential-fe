@@ -109,6 +109,16 @@ function getYAxisCustomContentWidthPx(isFrequentist: boolean, nameWidthPxOverrid
   return BANDIT_COL_WIDTHS.mean + BANDIT_COL_WIDTHS.std + nameWidth;
 }
 
+// Used to coarsely adjust the width of the left Y-axis based on the length of the arm names.
+function getYAxisNameWidthPx(freqEffects?: EffectSizeData[], banditEffects?: BanditEffectData[]) {
+  const longerNameWidth = 180;
+  const defaultWidth = freqEffects ? FREQ_COL_WIDTHS.name : BANDIT_COL_WIDTHS.name;
+  const allArmEffects = freqEffects ?? banditEffects ?? [];
+  if (allArmEffects.length === 0) return defaultWidth;
+  const maxArmNameLength = allArmEffects.reduce((max, e) => Math.max(max, e.armName.length), 0);
+  return maxArmNameLength > 20 ? longerNameWidth : defaultWidth;
+}
+
 // Unfortunately Recharts doesn't have an explicit type for the props it passes to a tick function.
 // So just spread these on our custom tick component, by composing just the fields we use from
 // Recharts, with extra props we want to pass to our component.
@@ -392,11 +402,8 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
   const lenEffects = isFrequentist ? effectSizes.length : banditEffects!.length;
   const chartHeightPx = ROW_HEIGHT * lenEffects + HEADER_HEIGHT + X_AXIS_HEIGHT;
 
-  // Coarse adjustment of the width of the left Y-axis based on the length of the arm names.
-  const maxArmNameLength = isFrequentist
-    ? effectSizes.reduce((max, e) => Math.max(max, e.armName.length), 0)
-    : banditEffects!.reduce((max, e) => Math.max(max, e.armName.length), 0);
-  const nameWidthPx = maxArmNameLength > 20 ? 180 : isFrequentist ? FREQ_COL_WIDTHS.name : BANDIT_COL_WIDTHS.name;
+  // Calculate various dimensions for sizing the Y-axis and its contents.
+  const nameWidthPx = getYAxisNameWidthPx(effectSizes, banditEffects);
   const totalWidthPx = getYAxisCustomContentWidthPx(isFrequentist, nameWidthPx);
   // Use wider axis to accommodate the table display, with extra padding for the actual tick mark.
   const yLeftAxisWidthPx = 10 + totalWidthPx;
