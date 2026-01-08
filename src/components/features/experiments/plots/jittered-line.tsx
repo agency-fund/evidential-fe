@@ -3,21 +3,23 @@ import { useCallback, useMemo } from 'react';
 import { ActiveDotProps, DotItemDotProps, Line } from 'recharts';
 import { useRechartScales } from './use-chart-scales';
 
-export interface JitteredLineInputData {
+export interface JitteredLineInputData<T> {
   x: number;
   y: number;
-  id: string; // Unique identifier to pass back in onPointClick
+  userPayload: T; // arbitrary data to pass back in onPointClick
 }
 
 /**
  * Processed input data point with jitter applied, using JitteredLineProps.dataKey for the x key.
  * This is used by the Recharts Line component that we wrap, and therefore can show up as e.g. the
  * payload in a Tooltip.
+ *
+ * NOTE: the dynamic x-axis key (from dataKey prop) is added at runtime.
  */
-export interface JitteredLinePayloadData {
-  [key: string]: number | string;
+export interface JitteredLinePayloadData<T> {
+  [key: string]: number | T;
   y: number;
-  id: string;
+  userPayload: T;
 }
 
 export interface DotConfig {
@@ -27,8 +29,8 @@ export interface DotConfig {
   strokeWidth?: number;
 }
 
-export interface JitteredLineProps {
-  data: JitteredLineInputData[];
+export interface JitteredLineProps<T> {
+  data: JitteredLineInputData<T>[];
   dataKey: string;
   xDomain: [number, number];
   jitterOffset?: number; // in plot area pixels
@@ -41,8 +43,8 @@ export interface JitteredLineProps {
   showDots?: boolean;
   dotConfig?: DotConfig;
   activeDotConfig?: DotConfig;
-  // Click handler receives the point id
-  onPointClick?: (pointId: string) => void;
+  // Click handler receives the userPayload
+  onPointClick?: (userPayload: T) => void;
 }
 
 /**
@@ -54,7 +56,7 @@ export interface JitteredLineProps {
  * When dots are enabled, they are automatically positioned at jittered coordinates
  * since the data itself is jittered - no additional offset needed for dots.
  */
-export function JitteredLine({
+export function JitteredLine<T>({
   data: inputDataPoints,
   dataKey,
   xDomain,
@@ -67,7 +69,7 @@ export function JitteredLine({
   dotConfig,
   activeDotConfig,
   onPointClick,
-}: JitteredLineProps) {
+}: JitteredLineProps<T>) {
   const { plotWidth, isValid } = useRechartScales();
 
   // Build line data with jitter applied when chart dimensions are available.
@@ -88,28 +90,26 @@ export function JitteredLine({
     }
     // Construct the jittered x values, preserving point id for click handlers.
     return inputDataPoints
-      .map((point): JitteredLinePayloadData | null => {
+      .map((point): JitteredLinePayloadData<T> | null => {
         const jitteredX = point.x + jitterAmount;
         if (isNaN(point.y) || isNaN(jitteredX)) return null;
 
         return {
           [dataKey]: jitteredX,
           y: point.y,
-          id: point.id,
-        };
+          userPayload: point.userPayload,
+        } as JitteredLinePayloadData<T>;
       })
-      .filter((p): p is JitteredLinePayloadData => p !== null);
+      .filter((p): p is JitteredLinePayloadData<T> => p !== null);
   }, [isValid, plotWidth, inputDataPoints, dataKey, xDomain, jitterOffset]);
 
   // Shared dot rendering logic. Returns null or a circle element.
+  type DotProps = DotItemDotProps | ActiveDotProps;
   const renderDot = useCallback(
-    (
-      props: DotItemDotProps | ActiveDotProps,
-      config: DotConfig | undefined,
-      defaults: { r: number; strokeWidth: number },
-    ) => {
+    (props: DotProps, config: DotConfig | undefined, defaults: { r: number; strokeWidth: number }) => {
       if (!showDots) return null;
-      const { cx, cy, payload } = props as ActiveDotProps & { payload: JitteredLinePayloadData };
+      // Omit<> just to narrow it's any type to what we know it should be.
+      const { cx, cy, payload } = props as Omit<DotProps, 'payload'> & { payload: JitteredLinePayloadData<T> };
       if (!payload || cx === undefined || cy === undefined) return null;
 
       return (
@@ -122,7 +122,7 @@ export function JitteredLine({
           strokeWidth={config?.strokeWidth ?? defaults.strokeWidth}
           opacity={opacity}
           style={{ cursor: onPointClick ? 'pointer' : undefined }}
-          onClick={() => onPointClick?.(payload.id)}
+          onClick={() => onPointClick?.(payload.userPayload)}
         />
       );
     },

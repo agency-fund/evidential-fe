@@ -37,28 +37,17 @@ interface ForestTimeseriesPlotProps {
 
 // Custom tooltip for the timeseries
 interface CustomTimeseriesTooltipProps extends TooltipContentProps<ValueType, NameType> {
-  chartData: TimeSeriesDataPoint[]; // needed to lookup the full data for the tooltip
   armMetadata: ArmMetadata[];
   selectedArmId: string | null;
 }
 
-function CustomTimeseriesTooltip({
-  active,
-  payload,
-  chartData,
-  armMetadata,
-  selectedArmId,
-}: CustomTimeseriesTooltipProps) {
+function CustomTimeseriesTooltip({ active, payload, armMetadata, selectedArmId }: CustomTimeseriesTooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
 
   // The payload we're expecting comes from JitteredLine, which uses the JitteredLinePayloadData
-  // interface.  We use its `id` (we used the original TimeSeriesDataPoint's snapshot key) to look
-  // up the full original data to render the tooltip with all the info from that snapshot.
-  const typedPayload = payload[0]?.payload as JitteredLinePayloadData | undefined;
-  const payloadId = typedPayload?.id as string | undefined;
-  if (!payloadId) return null;
-
-  const tsDataPoint = chartData.find((d) => d.key === payloadId);
+  // interface.  We use its `userPayload` (the original TimeSeriesDataPoint) to render the tooltip.
+  const jitteredLinePayload = payload[0]?.payload as JitteredLinePayloadData<TimeSeriesDataPoint> | undefined;
+  const tsDataPoint = jitteredLinePayload?.userPayload as TimeSeriesDataPoint | undefined;
   if (!tsDataPoint) return null;
 
   return (
@@ -131,13 +120,13 @@ export default function ForestTimeseriesPlot({
     );
   }
   // Pre-calculate each arm's timeseries points for JitteredLine.
-  const armPointsMap = new Map<string, JitteredLineInputData[]>();
+  const armPointsMap = new Map<string, JitteredLineInputData<TimeSeriesDataPoint>[]>();
   armMetadata.forEach((arm) => {
-    const points: JitteredLineInputData[] = [];
+    const points: JitteredLineInputData<TimeSeriesDataPoint>[] = [];
     chartData.forEach((d) => {
       const armData = d.armEffects.get(arm.id);
       if (armData) {
-        points.push({ x: d.dateTimestampMs, y: armData.absMean, id: d.key });
+        points.push({ x: d.dateTimestampMs, y: armData.absMean, userPayload: d });
       }
     });
     armPointsMap.set(arm.id, points);
@@ -210,12 +199,7 @@ export default function ForestTimeseriesPlot({
           />
           <Tooltip
             content={(props) => (
-              <CustomTimeseriesTooltip
-                {...props}
-                chartData={chartData}
-                armMetadata={armMetadata}
-                selectedArmId={selectedArmId}
-              />
+              <CustomTimeseriesTooltip {...props} armMetadata={armMetadata} selectedArmId={selectedArmId} />
             )}
           />
           <Legend
@@ -265,7 +249,7 @@ export default function ForestTimeseriesPlot({
                 showDots
                 dotConfig={{ fill: fillDotColor, stroke: baseDotColor }}
                 activeDotConfig={{ fill: fillDotColor, stroke: baseDotColor }}
-                onPointClick={(snapshotKey) => handlePointClick(armInfo.id, snapshotKey)}
+                onPointClick={(tsDataPoint) => handlePointClick(armInfo.id, tsDataPoint.key)}
               />
             );
           })}
@@ -280,7 +264,7 @@ export default function ForestTimeseriesPlot({
                 armId={armInfo.id}
                 baseColor={getArmColor(index, armInfo.isBaseline, selected)}
                 jitterOffset={calculateJitterOffset(index, armMetadata.length)}
-                onClick={(dataPoint) => handlePointClick(armInfo.id, dataPoint.key)}
+                onClick={(tsDataPoint) => handlePointClick(armInfo.id, tsDataPoint.key)}
               />
             );
           })}
