@@ -49,6 +49,12 @@ export const NEGATIVE_COLOR = 'var(--ruby-10)';
 export const NEGATIVE_LIGHT_COLOR = 'var(--ruby-6)';
 export const INACTIVE_NEGATIVE_COLOR = 'var(--ruby-a8)';
 
+// Common axis style for Recharts plots using Radix Themes var with fallback.
+export const COMMON_AXIS_STYLE = {
+  fontSize: '16px',
+  fontFamily: 'var(--default-font-family), sans-serif',
+} as const;
+
 /**
  * Type guard to check if an analysis response is a frequentist experiment.
  *
