@@ -100,8 +100,8 @@ const HEADER_HEIGHT = 26;
 // Height of the XAxis for use in the total chart height calculation.
 const X_AXIS_HEIGHT = 28;
 
-// Calculate the total width of the tick table accounting for the override if provided.
-function getTotalYAxisWidthPx(isFrequentist: boolean, nameWidthPxOverride?: number) {
+// Calculate the total width of the stats table info we'll render alongside each arm tick.
+function getYAxisCustomContentWidthPx(isFrequentist: boolean, nameWidthPxOverride?: number) {
   const nameWidth = nameWidthPxOverride ?? (isFrequentist ? FREQ_COL_WIDTHS.name : BANDIT_COL_WIDTHS.name);
   if (isFrequentist) {
     return FREQ_COL_WIDTHS.mean + FREQ_COL_WIDTHS.diff + FREQ_COL_WIDTHS.pct + nameWidth;
@@ -123,10 +123,10 @@ interface RechartsTickPropsWeUse {
 }
 // Additional props we want to pass along to CustomFreqYAxisTick
 interface CustomFreqYAxisTickProps extends RechartsTickPropsWeUse {
-  effectSizes: EffectSizeData[];
+  allArmEffects: EffectSizeData[];
   isTopmost: boolean;
-  // Override the width of the arm name column if desired.
-  nameWidthPxOverride?: number;
+  nameWidthPx: number; // to allow dynamic sizing of the name column
+  totalWidthPx: number; // to properly position and size the svg container for each row
 }
 
 // Custom Y-axis tick for frequentist plots that renders additional stats per arm in a tabular format.
@@ -134,12 +134,13 @@ function CustomFreqYAxisTick({
   x = 0,
   y = 0,
   payload,
-  effectSizes,
+  allArmEffects,
   isTopmost,
-  nameWidthPxOverride,
+  nameWidthPx,
+  totalWidthPx,
 }: CustomFreqYAxisTickProps) {
   const armName = payload?.value ?? '';
-  const armData = effectSizes.find((e) => e.armName === armName);
+  const armData = allArmEffects.find((e) => e.armName === armName);
   if (!armData) return null;
 
   const isSignificantVariant = !armData.isBaseline && armData.significant;
@@ -147,8 +148,6 @@ function CustomFreqYAxisTick({
     ? { color: armData.absDifference > 0 ? COLORS.POSITIVE_CI : COLORS.NEGATIVE_CI }
     : undefined;
 
-  const nameWidthPx = nameWidthPxOverride ?? FREQ_COL_WIDTHS.name;
-  const totalWidthPx = getTotalYAxisWidthPx(true, nameWidthPx);
   const startX = x - totalWidthPx;
 
   return (
@@ -212,9 +211,10 @@ function CustomFreqYAxisTick({
 }
 
 interface CustomBanditYAxisTickProps extends RechartsTickPropsWeUse {
-  banditEffects: BanditEffectData[];
+  allArmEffects: BanditEffectData[];
   isTopmost: boolean;
-  nameWidthPxOverride?: number;
+  nameWidthPx: number;
+  totalWidthPx: number;
 }
 
 // Custom Y-axis tick for bandit plots that renders additional stats per arm in a tabular format.
@@ -222,16 +222,15 @@ function CustomBanditYAxisTick({
   x = 0,
   y = 0,
   payload,
-  banditEffects,
+  allArmEffects,
   isTopmost,
-  nameWidthPxOverride,
+  nameWidthPx,
+  totalWidthPx,
 }: CustomBanditYAxisTickProps) {
   const armName = payload?.value ?? '';
-  const armData = banditEffects.find((e) => e.armName === armName);
+  const armData = allArmEffects.find((e) => e.armName === armName);
   if (!armData) return null;
 
-  const nameWidthPx = nameWidthPxOverride ?? BANDIT_COL_WIDTHS.name;
-  const totalWidthPx = getTotalYAxisWidthPx(false, nameWidthPx);
   const startX = x - totalWidthPx;
 
   return (
@@ -404,9 +403,10 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
   const maxArmNameLength = isFrequentist
     ? effectSizes.reduce((max, e) => Math.max(max, e.armName.length), 0)
     : banditEffects!.reduce((max, e) => Math.max(max, e.armName.length), 0);
-  const maxNamePx = maxArmNameLength > 20 ? 180 : undefined;
-  // Use wider axis to accommodate the table display, with extra padding for the actual tick.
-  const yLeftAxisWidthPx = 10 + getTotalYAxisWidthPx(isFrequentist, maxNamePx);
+  const nameWidthPx = maxArmNameLength > 20 ? 180 : isFrequentist ? FREQ_COL_WIDTHS.name : BANDIT_COL_WIDTHS.name;
+  const totalWidthPx = getYAxisCustomContentWidthPx(isFrequentist, nameWidthPx);
+  // Use wider axis to accommodate the table display, with extra padding for the actual tick mark.
+  const yLeftAxisWidthPx = 10 + totalWidthPx;
 
   if (isFrequentist) {
     // Filter arms with issues and create specific messages for each
@@ -475,9 +475,10 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                   return (
                     <CustomFreqYAxisTick
                       {...props}
-                      effectSizes={effectSizes}
+                      allArmEffects={effectSizes}
                       isTopmost={isTopmost}
-                      nameWidthPxOverride={maxNamePx}
+                      nameWidthPx={nameWidthPx}
+                      totalWidthPx={totalWidthPx}
                     />
                   );
                 }}
@@ -591,9 +592,10 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                   return (
                     <CustomBanditYAxisTick
                       {...props}
-                      banditEffects={banditEffects}
+                      allArmEffects={banditEffects}
                       isTopmost={isTopmost}
-                      nameWidthPxOverride={maxNamePx}
+                      nameWidthPx={nameWidthPx}
+                      totalWidthPx={totalWidthPx}
                     />
                   );
                 }}
