@@ -122,8 +122,8 @@ interface RechartsTickPropsWeUse {
   index?: number;
 }
 // Additional props we want to pass along to CustomFreqYAxisTick
-interface CustomFreqYAxisTickProps extends RechartsTickPropsWeUse {
-  allArmEffects: EffectSizeData[];
+interface CustomYAxisTickProps<T extends EffectSizeData | BanditEffectData> extends RechartsTickPropsWeUse {
+  allArmEffects: T[];
   isTopmost: boolean;
   nameWidthPx: number; // to allow dynamic sizing of the name column
   totalWidthPx: number; // to properly position and size the svg container for each row
@@ -138,7 +138,7 @@ function CustomFreqYAxisTick({
   isTopmost,
   nameWidthPx,
   totalWidthPx,
-}: CustomFreqYAxisTickProps) {
+}: CustomYAxisTickProps<EffectSizeData>) {
   const armName = payload?.value ?? '';
   const armData = allArmEffects.find((e) => e.armName === armName);
   if (!armData) return null;
@@ -210,13 +210,6 @@ function CustomFreqYAxisTick({
   );
 }
 
-interface CustomBanditYAxisTickProps extends RechartsTickPropsWeUse {
-  allArmEffects: BanditEffectData[];
-  isTopmost: boolean;
-  nameWidthPx: number;
-  totalWidthPx: number;
-}
-
 // Custom Y-axis tick for bandit plots that renders additional stats per arm in a tabular format.
 function CustomBanditYAxisTick({
   x = 0,
@@ -226,7 +219,7 @@ function CustomBanditYAxisTick({
   isTopmost,
   nameWidthPx,
   totalWidthPx,
-}: CustomBanditYAxisTickProps) {
+}: CustomYAxisTickProps<BanditEffectData>) {
   const armName = payload?.value ?? '';
   const armData = allArmEffects.find((e) => e.armName === armName);
   if (!armData) return null;
