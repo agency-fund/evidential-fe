@@ -24,6 +24,7 @@ import {
   NEGATIVE_COLOR,
   POSITIVE_LIGHT_COLOR,
   NEGATIVE_LIGHT_COLOR,
+  COMMON_AXIS_STYLE,
 } from './forest-plot-utils';
 import { useState } from 'react';
 
@@ -395,11 +396,6 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
     .sort((a, b) => a - b)
     .filter((value, index, self) => self.indexOf(value) === index);
 
-  const commonAxisStyle = {
-    fontSize: '16px',
-    fontFamily: 'Arial, sans-serif',
-  };
-
   // Adjust plot height based on the number of arms.
   const lenEffects = isFrequentist ? effectSizes.length : banditEffects!.length;
   const chartHeightPx = ROW_HEIGHT * lenEffects + HEADER_HEIGHT + X_AXIS_HEIGHT;
@@ -460,7 +456,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 interval={0} // always show our ticks, to ensure the 0-point is always visible
                 scale="linear"
                 domain={[minX, maxX]}
-                style={commonAxisStyle}
+                style={COMMON_AXIS_STYLE}
                 ticks={xGridPoints} // use our own ticks due to auto rendering issues
                 tickFormatter={formatValue}
               />
@@ -471,7 +467,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 yAxisId="left"
                 orientation="left"
                 width={yLeftAxisWidthPx}
-                style={commonAxisStyle}
+                style={COMMON_AXIS_STYLE}
                 dataKey={(dataPoint: EffectSizeData) => dataPoint.armName}
                 tick={(props: RechartsTickPropsWeUse) => {
                   // The topmost tick is the last one in the effectSizes array (highest y position = lowest index in render order)
@@ -579,7 +575,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 interval="preserveStartEnd"
                 scale="linear"
                 domain={[minX, maxX]}
-                style={commonAxisStyle}
+                style={COMMON_AXIS_STYLE}
                 ticks={xGridPoints} // use our own ticks due to auto rendering issues
                 tickFormatter={formatValue}
               />
@@ -588,7 +584,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 yAxisId="left"
                 orientation="left"
                 width={yLeftAxisWidthPx}
-                style={commonAxisStyle}
+                style={COMMON_AXIS_STYLE}
                 dataKey={(dataPoint: BanditEffectData) => dataPoint.armName}
                 tick={(props: RechartsTickPropsWeUse) => {
                   const isTopmost = props.index === banditEffects.length - 1;
