@@ -240,7 +240,7 @@ function CustomBanditYAxisTick({
         <foreignObject x={startX} y={y - HEADER_HEIGHT - ROW_HEIGHT / 2} width={totalWidthPx} height={HEADER_HEIGHT}>
           <Box>
             <Flex align="center" justify="between" height="100%">
-              <Box width={`${BANDIT_COL_WIDTHS.name}px`}>
+              <Box width={`${nameWidthPx}px`}>
                 <Text size="2" weight="bold">
                   Arm
                 </Text>
