@@ -33,6 +33,7 @@ export function useRechartScales(options: UseRehartScalesOptions = {}) {
       isValid: false,
       plotWidth: 0,
       plotHeight: 0,
+      offset: { left: 0, right: 0, top: 0, bottom: 0 },
       xAxisDomain: [],
       yAxisDomain: [],
     };
@@ -51,15 +52,14 @@ export function useRechartScales(options: UseRehartScalesOptions = {}) {
       return invalidChart;
     }
 
-    // Helper for numeric domains
-    const getNumericDomain = (domain: NumberDomain) => {
+    const _getNumericMinMax = (domain: NumberDomain) => {
       const min = domain[0];
       const max = domain[domain.length - 1];
       return { min, max };
     };
 
     const scaleX = (x: number) => {
-      const { min: xMin, max: xMax } = getNumericDomain(xAxisDomain as NumberDomain);
+      const { min: xMin, max: xMax } = _getNumericMinMax(xAxisDomain as NumberDomain);
       if (typeof xMin !== 'number' || typeof xMax !== 'number') return NaN;
       // one point only so plot in the middle of the axis
       if (xMin === xMax) return plotLeft + plotWidth / 2;
@@ -67,7 +67,7 @@ export function useRechartScales(options: UseRehartScalesOptions = {}) {
     };
 
     const scaleY = (y: number) => {
-      const { min: yMin, max: yMax } = getNumericDomain(yAxisDomain as NumberDomain);
+      const { min: yMin, max: yMax } = _getNumericMinMax(yAxisDomain as NumberDomain);
       if (typeof yMin !== 'number' || typeof yMax !== 'number') return NaN;
       // one point only so plot in the middle of the axis
       if (yMin === yMax) return plotTop + plotHeight / 2;
