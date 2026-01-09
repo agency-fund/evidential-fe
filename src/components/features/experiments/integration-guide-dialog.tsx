@@ -1,9 +1,11 @@
 'use client';
-import { IconButton, DropdownMenu, Dialog, DataList, Flex, Button } from '@radix-ui/themes';
-import { DotsVerticalIcon, FileIcon } from '@radix-ui/react-icons';
+import { Button, DataList, Dialog, DropdownMenu, Flex, IconButton } from '@radix-ui/themes';
+import { DotsVerticalIcon, FileIcon, PlusIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 import { Arm, Context } from '@/api/methods.schemas';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
+import { useCreateApiKey } from '@/api/admin';
+import Link from 'next/link';
 
 interface IntegrationGuideDialogProps {
   organizationId: string;
@@ -21,6 +23,11 @@ export function IntegrationGuideDialog({
   contexts,
 }: IntegrationGuideDialogProps) {
   const [open, setOpen] = useState(false);
+  const {
+    data: createdKey,
+    trigger: triggerCreateApiKey,
+    isMutating: isCreatingApiKey,
+  } = useCreateApiKey(datasourceId);
 
   return (
     <>
@@ -39,7 +46,7 @@ export function IntegrationGuideDialog({
       </DropdownMenu.Root>
 
       <Dialog.Root open={open} onOpenChange={setOpen}>
-        <Dialog.Content size="3" width="fit-content" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <Dialog.Content size="3" width={'500'} onOpenAutoFocus={(e) => e.preventDefault()}>
           <Flex direction="column" gap="5">
             <Dialog.Title size="6">Integration Guide</Dialog.Title>
 
@@ -51,7 +58,7 @@ export function IntegrationGuideDialog({
                 <DataList.Item>
                   <DataList.Label>Organization ID</DataList.Label>
                   <DataList.Value>
-                    <Flex align="center" gap="2" justify="between" width="100%">
+                    <Flex justify="between" width="100%">
                       {organizationId}
                       <CopyToClipBoard content={organizationId} tooltipContent="Copy Organization ID" />
                     </Flex>
@@ -61,7 +68,7 @@ export function IntegrationGuideDialog({
                 <DataList.Item>
                   <DataList.Label>Datasource ID</DataList.Label>
                   <DataList.Value>
-                    <Flex align="center" gap="2" justify="between" width="100%">
+                    <Flex justify="between" width="100%">
                       {datasourceId}
                       <CopyToClipBoard content={datasourceId} tooltipContent="Copy Datasource ID" />
                     </Flex>
@@ -71,9 +78,41 @@ export function IntegrationGuideDialog({
                 <DataList.Item>
                   <DataList.Label>Experiment ID</DataList.Label>
                   <DataList.Value>
-                    <Flex align="center" gap="2" justify="between" width="100%">
+                    <Flex justify="between" width="100%">
                       {experimentId}
                       <CopyToClipBoard content={experimentId} tooltipContent="Copy Experiment ID" />
+                    </Flex>
+                  </DataList.Value>
+                </DataList.Item>
+              </DataList.Root>
+            </Flex>
+
+            <Flex direction="column" gap="3">
+              <Dialog.Description size="3" weight="bold">
+                API Key
+              </Dialog.Description>
+              <DataList.Root>
+                <DataList.Item>
+                  <DataList.Label>Datasource API Key</DataList.Label>
+                  <DataList.Value>
+                    <Flex direction={'column'} width={'100%'}>
+                      <Flex justify="between" width="100%" height={'32px'}>
+                        {!createdKey ? (
+                          <Button
+                            variant="soft"
+                            onClick={async () => await triggerCreateApiKey()}
+                            loading={isCreatingApiKey}
+                          >
+                            <PlusIcon /> Add API Key
+                          </Button>
+                        ) : (
+                          <>
+                            {createdKey.key}
+                            <CopyToClipBoard content={createdKey.key} tooltipContent="Copy API Key" />
+                          </>
+                        )}
+                      </Flex>
+                      <Link href={`/datasources/${datasourceId}`}>Manage API Keys</Link>
                     </Flex>
                   </DataList.Value>
                 </DataList.Item>
@@ -89,7 +128,7 @@ export function IntegrationGuideDialog({
                   <DataList.Item key={arm.arm_id}>
                     <DataList.Label>{arm.arm_name}</DataList.Label>
                     <DataList.Value>
-                      <Flex align="center" gap="2" justify="between" width="100%">
+                      <Flex justify="between" width="100%">
                         {arm.arm_id}
                         <CopyToClipBoard content={arm.arm_id ?? ''} tooltipContent={`Copy ${arm.arm_name} ID`} />
                       </Flex>
@@ -109,7 +148,7 @@ export function IntegrationGuideDialog({
                     <DataList.Item key={context.context_id}>
                       <DataList.Label>{context.context_name}</DataList.Label>
                       <DataList.Value>
-                        <Flex align="center" gap="2" justify="between" width="100%">
+                        <Flex justify="between" width="100%">
                           {context.context_id}
                           <CopyToClipBoard
                             content={context.context_id ?? ''}
@@ -125,9 +164,7 @@ export function IntegrationGuideDialog({
 
             <Flex gap="3" justify="end">
               <Dialog.Close>
-                <Button variant="soft" color="gray">
-                  Close
-                </Button>
+                <Button>Close</Button>
               </Dialog.Close>
             </Flex>
           </Flex>
