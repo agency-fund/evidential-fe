@@ -1,6 +1,6 @@
 'use client';
 import { ExclamationTriangleIcon, InfoCircledIcon } from '@radix-ui/react-icons';
-import { Box, Callout, Card, Flex, Heading, Text } from '@radix-ui/themes';
+import { Box, Callout, Card, Flex, Heading, Separator, Text } from '@radix-ui/themes';
 import {
   CartesianGrid,
   ReferenceLine,
@@ -24,6 +24,7 @@ import {
   NEGATIVE_COLOR,
   POSITIVE_LIGHT_COLOR,
   NEGATIVE_LIGHT_COLOR,
+  COMMON_AXIS_STYLE,
 } from './forest-plot-utils';
 import { useState } from 'react';
 
@@ -63,12 +64,6 @@ const createDiamondShape = (cx: number = 0, cy: number = 0, size: number = 6) =>
   return `${cx},${cy - size} ${cx + size},${cy} ${cx},${cy + size} ${cx - size},${cy}`;
 };
 
-// Simple truncation of long labels with an ellipsis for readability. ~42 roughly keeps the labels to 2 lines.
-const truncateLabel = (label: string, maxChars: number = 42): string => {
-  if (!label) return '';
-  return label.length > maxChars ? label.slice(0, maxChars) + '…' : label;
-};
-
 const formatValue = (value: number): string => {
   // Show <= 2 decimal places only for values < 100
   return Math.abs(value) >= 100 || value === 0
@@ -77,6 +72,217 @@ const formatValue = (value: number): string => {
       ? value.toFixed(1)
       : value.toFixed(2);
 };
+
+const formatPct = (value: number): string => {
+  if (!isFinite(value)) return '--';
+  return `${formatValue(value)}%`;
+};
+
+// Column widths for the custom tick table to align each tick's data since we can't use a grid.
+const FREQ_COL_WIDTHS = {
+  name: 88,
+  mean: 72,
+  diff: 72,
+  pct: 64,
+} as const;
+
+// Column widths for bandit tick table (simpler: name, mean, std)
+const BANDIT_COL_WIDTHS = {
+  name: 88,
+  mean: 72,
+  std: 72,
+} as const;
+
+// Height of each row in the custom tick table.
+const ROW_HEIGHT = 64;
+// Height of the header attached to the topmost (last) row in the custom tick table.
+const HEADER_HEIGHT = 26;
+// Height of the XAxis for use in the total chart height calculation.
+const X_AXIS_HEIGHT = 28;
+
+// Calculate the total width of the stats table info we'll render alongside each arm tick.
+function getYAxisCustomContentWidthPx(isFrequentist: boolean, nameWidthPxOverride?: number) {
+  const nameWidth = nameWidthPxOverride ?? (isFrequentist ? FREQ_COL_WIDTHS.name : BANDIT_COL_WIDTHS.name);
+  if (isFrequentist) {
+    return FREQ_COL_WIDTHS.mean + FREQ_COL_WIDTHS.diff + FREQ_COL_WIDTHS.pct + nameWidth;
+  }
+  return BANDIT_COL_WIDTHS.mean + BANDIT_COL_WIDTHS.std + nameWidth;
+}
+
+// Used to coarsely adjust the width of the left Y-axis based on the length of the arm names.
+function getYAxisNameWidthPx(freqEffects?: EffectSizeData[], banditEffects?: BanditEffectData[]) {
+  const longerNameWidth = 180;
+  const defaultWidth = freqEffects ? FREQ_COL_WIDTHS.name : BANDIT_COL_WIDTHS.name;
+  const allArmEffects = freqEffects ?? banditEffects ?? [];
+  if (allArmEffects.length === 0) return defaultWidth;
+  const maxArmNameLength = allArmEffects.reduce((max, e) => Math.max(max, e.armName.length), 0);
+  return maxArmNameLength > 20 ? longerNameWidth : defaultWidth;
+}
+
+// Unfortunately Recharts doesn't have an explicit type for the props it passes to a tick function.
+// So just spread these on our custom tick component, by composing just the fields we use from
+// Recharts, with extra props we want to pass to our component.
+interface RechartsTickPropsWeUse {
+  // {x,y} are pixel coordinates for the start of the tick for this row
+  x?: number;
+  y?: number;
+  // The payload specified by the YAxis dataKey, i.e. the arm name.
+  payload?: { value: string };
+  // The index of the tick in the YAxis ticks array.
+  index?: number;
+}
+// Additional props we want to pass along to CustomFreqYAxisTick
+interface CustomYAxisTickProps<T extends EffectSizeData | BanditEffectData> extends RechartsTickPropsWeUse {
+  allArmEffects: T[];
+  isTopmost: boolean;
+  nameWidthPx: number; // to allow dynamic sizing of the name column
+  totalWidthPx: number; // to properly position and size the svg container for each row
+}
+
+// Custom Y-axis tick for frequentist plots that renders additional stats per arm in a tabular format.
+function CustomFreqYAxisTick({
+  x = 0,
+  y = 0,
+  payload,
+  allArmEffects,
+  isTopmost,
+  nameWidthPx,
+  totalWidthPx,
+}: CustomYAxisTickProps<EffectSizeData>) {
+  const armName = payload?.value ?? '';
+  const armData = allArmEffects.find((e) => e.armName === armName);
+  if (!armData) return null;
+
+  const isSignificantVariant = !armData.isBaseline && armData.significant;
+  const significanceStyle = isSignificantVariant
+    ? { color: armData.absDifference > 0 ? COLORS.POSITIVE_CI : COLORS.NEGATIVE_CI }
+    : undefined;
+
+  const startX = x - totalWidthPx;
+
+  return (
+    <g>
+      {isTopmost && (
+        // Position header row by specifying the top-left corner of the svg container and its size.
+        <foreignObject x={startX} y={y - HEADER_HEIGHT - ROW_HEIGHT / 2} width={totalWidthPx} height={HEADER_HEIGHT}>
+          <Box>
+            <Flex align="center" justify="between" height="100%">
+              <Box width={`${nameWidthPx}px`}>
+                <Text size="2" weight="bold">
+                  Arm
+                </Text>
+              </Box>
+              <Box width={`${FREQ_COL_WIDTHS.mean}px`} pl="2">
+                <Text size="2" weight="bold">
+                  Mean
+                </Text>
+              </Box>
+              <Box width={`${FREQ_COL_WIDTHS.diff}px`}>
+                <Text size="2" weight="bold">
+                  Diff
+                </Text>
+              </Box>
+              <Box width={`${FREQ_COL_WIDTHS.pct}px`}>
+                <Text size="2" weight="bold">
+                  Diff %
+                </Text>
+              </Box>
+            </Flex>
+            <Separator size="4" style={{ height: '2px', backgroundColor: 'var(--gray-10)' }} />
+          </Box>
+        </foreignObject>
+      )}
+
+      <foreignObject x={startX} y={y - ROW_HEIGHT / 2} width={totalWidthPx} height={ROW_HEIGHT}>
+        <Separator size="4" />
+        <Flex align="center" height="100%">
+          {/* Text truncate was not working nested under Box, so use a fix-width Flex */}
+          <Flex width={`${nameWidthPx}px`} minWidth="0">
+            <Text size="3" title={armName} truncate>
+              {armName}
+            </Text>
+          </Flex>
+          <Separator size="4" orientation="vertical" />
+          <Box width={`${FREQ_COL_WIDTHS.mean}px`} pl="1">
+            <Text size="3">{formatValue(armData.absEffect)}</Text>
+          </Box>
+          <Box width={`${FREQ_COL_WIDTHS.diff}px`}>
+            <Text size="3">{armData.isBaseline ? '--' : formatValue(armData.absDifference)}</Text>
+          </Box>
+          <Box width={`${FREQ_COL_WIDTHS.pct}px`}>
+            <Text size="3" weight={isSignificantVariant ? 'bold' : undefined} style={significanceStyle}>
+              {armData.isBaseline ? '--' : formatPct(armData.relEffectPct)}
+            </Text>
+          </Box>
+        </Flex>
+      </foreignObject>
+    </g>
+  );
+}
+
+// Custom Y-axis tick for bandit plots that renders additional stats per arm in a tabular format.
+function CustomBanditYAxisTick({
+  x = 0,
+  y = 0,
+  payload,
+  allArmEffects,
+  isTopmost,
+  nameWidthPx,
+  totalWidthPx,
+}: CustomYAxisTickProps<BanditEffectData>) {
+  const armName = payload?.value ?? '';
+  const armData = allArmEffects.find((e) => e.armName === armName);
+  if (!armData) return null;
+
+  const startX = x - totalWidthPx;
+
+  return (
+    <g>
+      {isTopmost && (
+        <foreignObject x={startX} y={y - HEADER_HEIGHT - ROW_HEIGHT / 2} width={totalWidthPx} height={HEADER_HEIGHT}>
+          <Box>
+            <Flex align="center" justify="between" height="100%">
+              <Box width={`${nameWidthPx}px`}>
+                <Text size="2" weight="bold">
+                  Arm
+                </Text>
+              </Box>
+              <Box width={`${BANDIT_COL_WIDTHS.mean}px`} pl="2">
+                <Text size="2" weight="bold">
+                  Mean
+                </Text>
+              </Box>
+              <Box width={`${BANDIT_COL_WIDTHS.std}px`}>
+                <Text size="2" weight="bold">
+                  StdDev
+                </Text>
+              </Box>
+            </Flex>
+            <Separator size="4" style={{ height: '2px', backgroundColor: 'var(--gray-10)' }} />
+          </Box>
+        </foreignObject>
+      )}
+
+      <foreignObject x={startX} y={y - ROW_HEIGHT / 2} width={totalWidthPx} height={ROW_HEIGHT}>
+        <Separator size="4" />
+        <Flex align="center" height="100%">
+          <Flex width={`${nameWidthPx}px`} minWidth="0">
+            <Text size="3" title={armName} truncate>
+              {armName}
+            </Text>
+          </Flex>
+          <Separator size="4" orientation="vertical" />
+          <Box width={`${BANDIT_COL_WIDTHS.mean}px`} pl="1">
+            <Text size="3">{formatValue(armData.postPredMean)}</Text>
+          </Box>
+          <Box width={`${BANDIT_COL_WIDTHS.std}px`}>
+            <Text size="3">{formatValue(armData.postPredStd)}</Text>
+          </Box>
+        </Flex>
+      </foreignObject>
+    </g>
+  );
+}
 
 // Custom tooltip content is normally passed TooltipContentProps. We also want to pass in our custom
 // TooltipState to allow overriding the payload (if the user mouseover's a CI) that would otherwise
@@ -132,13 +338,20 @@ function CustomTooltip({ active, payload, state, onMouseLeave }: CustomTooltipPr
   } else if (isBanditPayload(data)) {
     return (
       <Card onMouseLeave={onMouseLeave} style={{ padding: '8px' }}>
-        <Flex direction="column" gap="2">
-          <Text weight="bold">{data.armName}</Text>
-          <Text>Mean outcome value: {data.postPredMean.toFixed(2)}</Text>
-          <Text>Std. dev: {data.postPredStd.toFixed(2)}</Text>
-          <Text>
-            95% CI: [{data.postPredCI95Lower.toFixed(2)}, {data.postPredCI95Upper.toFixed(2)}]
-          </Text>
+        <Text weight="bold">{data.armName}</Text>
+        <Flex direction="row" gap="2">
+          <Flex direction="column" gap="2" align="end">
+            <Text>Mean outcome: </Text>
+            <Text>95% CI: </Text>
+            <Text>Std. deviation: </Text>
+          </Flex>
+          <Flex direction="column" gap="2">
+            <Text>{data.postPredMean.toFixed(2)}</Text>
+            <Text>
+              [{data.postPredCI95Lower.toFixed(2)}, {data.postPredCI95Upper.toFixed(2)}]
+            </Text>
+            <Text>{data.postPredStd.toFixed(2)}</Text>
+          </Flex>
         </Flex>
       </Card>
     );
@@ -166,40 +379,36 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
     );
   }
 
+  const isFrequentist = effectSizes !== undefined;
+  const isBandit = banditEffects !== undefined;
+
   // Flatten effect sizes into array of CI bounds for axis calculation
-  const xAxisValues =
-    effectSizes !== undefined
-      ? effectSizes.flatMap((d) => [d.ci95Lower, d.ci95Upper])
-      : banditEffects!.flatMap((d) => [
-          Math.min(d.postPredabsCI95Lower, d.priorPredabsCI95Lower),
-          Math.max(d.postPredabsCI95Upper, d.priorPredabsCI95Upper),
-        ]);
+  const xAxisValues = isFrequentist
+    ? effectSizes.flatMap((d) => [d.ci95Lower, d.ci95Upper])
+    : banditEffects!.flatMap((d) => [
+        Math.min(d.postPredabsCI95Lower, d.priorPredabsCI95Lower),
+        Math.max(d.postPredabsCI95Upper, d.priorPredabsCI95Upper),
+      ]);
   const [minX, maxX] = computeAxisBounds(xAxisValues, minXProp, maxXProp);
 
   // Space ticks evenly across the domain. For frequentist plots also include 0,
   // but filter out duplicates, which can occur when the effect is 0.
-  const basePoints = effectSizes !== undefined ? [0] : [];
+  const basePoints = isFrequentist ? [0] : [];
   const xGridPoints = [...basePoints, ...[0, 1, 2, 3, 4].map((i) => minX + (i * (maxX - minX)) / 4)]
     .sort((a, b) => a - b)
     .filter((value, index, self) => self.indexOf(value) === index);
 
-  const commonAxisStyle = {
-    fontSize: '16px',
-    fontFamily: 'Arial, sans-serif',
-  };
-
   // Adjust plot height based on the number of arms.
-  const lenEffects = effectSizes !== undefined ? effectSizes.length : banditEffects!.length;
-  const plotHeightPx = Math.max(220, 64 * lenEffects);
-  // Coarse adjustment of the width of the left Y-axis based on the length of the arm names.
-  const maxArmNameLength =
-    effectSizes !== undefined
-      ? effectSizes.reduce((max, e) => Math.max(max, e.armName.length), 0)
-      : banditEffects!.reduce((max, e) => Math.max(max, e.armName.length), 0);
-  const yRightAxisWidthPx = 80;
-  const yLeftAxisWidthPx = maxArmNameLength > 20 ? 180 : 80;
+  const lenEffects = isFrequentist ? effectSizes.length : banditEffects!.length;
+  const chartHeightPx = ROW_HEIGHT * lenEffects + HEADER_HEIGHT + X_AXIS_HEIGHT;
 
-  if (effectSizes !== undefined) {
+  // Calculate various dimensions for sizing the Y-axis and its contents.
+  const nameWidthPx = getYAxisNameWidthPx(effectSizes, banditEffects);
+  const totalWidthPx = getYAxisCustomContentWidthPx(isFrequentist, nameWidthPx);
+  // Use wider axis to accommodate the table display, with extra padding for the actual tick mark.
+  const yLeftAxisWidthPx = 10 + totalWidthPx;
+
+  if (isFrequentist) {
     // Filter arms with issues and create specific messages for each
     const armsWithIssues = effectSizes.filter((e) => e.isMissingAllValues || e.invalidStatTest);
     return (
@@ -225,12 +434,12 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
           </Callout.Root>
         ))}
 
-        <Box height={`${plotHeightPx}px`}>
+        <Box height={`${chartHeightPx}px`}>
           <Heading size="2" align="center">
             Difference from {effectSizes[0].armName}
           </Heading>
           <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart onMouseLeave={handleHideTooltip}>
+            <ScatterChart onMouseLeave={handleHideTooltip} margin={{ top: HEADER_HEIGHT, right: 32 }}>
               {/* Handle explicit display of the tooltip to allow selecting and copying values. */}
               <Tooltip
                 active={tooltipState.active}
@@ -247,31 +456,31 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 interval={0} // always show our ticks, to ensure the 0-point is always visible
                 scale="linear"
                 domain={[minX, maxX]}
-                style={commonAxisStyle}
+                style={COMMON_AXIS_STYLE}
                 ticks={xGridPoints} // use our own ticks due to auto rendering issues
                 tickFormatter={formatValue}
               />
 
-              {/* Use the left y-axis to display arm names */}
+              {/* Use the left y-axis to display arm names with stats table */}
               <YAxis
                 type="category"
                 yAxisId="left"
                 orientation="left"
                 width={yLeftAxisWidthPx}
-                style={commonAxisStyle}
+                style={COMMON_AXIS_STYLE}
                 dataKey={(dataPoint: EffectSizeData) => dataPoint.armName}
-                tickFormatter={(value) => truncateLabel(value)}
-              />
-
-              {/* Use the right y-axis to display differences from the baseline */}
-              <YAxis
-                type="category"
-                yAxisId="right"
-                orientation="right"
-                width={yRightAxisWidthPx}
-                style={commonAxisStyle}
-                dataKey={(dataPoint: EffectSizeData) => {
-                  return dataPoint.isBaseline ? '' : `Δ = ${formatValue(dataPoint.absDifference)}`;
+                tick={(props: RechartsTickPropsWeUse) => {
+                  // The topmost tick is the last one in the effectSizes array (highest y position = lowest index in render order)
+                  const isTopmost = props.index === effectSizes.length - 1;
+                  return (
+                    <CustomFreqYAxisTick
+                      {...props}
+                      allArmEffects={effectSizes}
+                      isTopmost={isTopmost}
+                      nameWidthPx={nameWidthPx}
+                      totalWidthPx={totalWidthPx}
+                    />
+                  );
                 }}
               />
 
@@ -337,25 +546,20 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                   return <circle cx={centerX} cy={centerY} r={6} fill={fillColor} stroke={COLORS.DEFAULT_CI} />;
                 }}
               />
-
-              {/* "hidden" points backing the right y-axis for deltas */}
-              <Scatter
-                data={effectSizes}
-                dataKey={(dataPoint: EffectSizeData) => dataPoint.absDifference}
-                yAxisId="right"
-                fill="none"
-              />
             </ScatterChart>
           </ResponsiveContainer>
         </Box>
       </Flex>
     );
-  } else if (banditEffects !== undefined) {
+  } else if (isBandit) {
     return (
       <Flex direction="column" gap="3">
-        <Box height={`${plotHeightPx}px`}>
+        <Box height={`${chartHeightPx}px`}>
+          <Heading size="2" align="center">
+            Estimated Average Outcomes Given Observations So Far
+          </Heading>
           <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart onMouseLeave={handleHideTooltip}>
+            <ScatterChart onMouseLeave={handleHideTooltip} margin={{ top: HEADER_HEIGHT, right: 32 }}>
               {/* Handle explicit display of the tooltip to allow selecting and copying values. */}
               <Tooltip
                 active={tooltipState.active}
@@ -372,7 +576,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 interval="preserveStartEnd"
                 scale="linear"
                 domain={[minX, maxX]}
-                style={commonAxisStyle}
+                style={COMMON_AXIS_STYLE}
                 ticks={xGridPoints} // use our own ticks due to auto rendering issues
                 tickFormatter={formatValue}
               />
@@ -381,9 +585,20 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 yAxisId="left"
                 orientation="left"
                 width={yLeftAxisWidthPx}
-                style={commonAxisStyle}
+                style={COMMON_AXIS_STYLE}
                 dataKey={(dataPoint: BanditEffectData) => dataPoint.armName}
-                tickFormatter={(value) => truncateLabel(value)}
+                tick={(props: RechartsTickPropsWeUse) => {
+                  const isTopmost = props.index === banditEffects.length - 1;
+                  return (
+                    <CustomBanditYAxisTick
+                      {...props}
+                      allArmEffects={banditEffects}
+                      isTopmost={isTopmost}
+                      nameWidthPx={nameWidthPx}
+                      totalWidthPx={totalWidthPx}
+                    />
+                  );
+                }}
               />
 
               {/* arm mean markers - vertical marker below points and CIs */}

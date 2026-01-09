@@ -21,6 +21,7 @@ import {
   Significance,
   getArmColor,
   getArmColorEnumForText,
+  COMMON_AXIS_STYLE,
 } from './forest-plot-utils';
 import { JitteredLine, JitteredLineInputData, JitteredLinePayloadData } from './jittered-line';
 import { ConfidenceInterval } from './confidence-interval';
@@ -148,11 +149,6 @@ export default function ForestTimeseriesPlot({
     currentDate.setUTCDate(currentDate.getUTCDate() + 1);
   }
 
-  const commonAxisStyle = {
-    fontSize: '14px',
-    fontFamily: 'Arial, sans-serif',
-  };
-
   // Grow the plot height to accommodate the tooltip
   const height = Math.max(400, armMetadata.length * 60);
   const minWidth = allDateTicks.length * armMetadata.length * 8;
@@ -173,7 +169,7 @@ export default function ForestTimeseriesPlot({
             type="number"
             domain={domainXAxis}
             ticks={allDateTicks}
-            style={commonAxisStyle}
+            style={COMMON_AXIS_STYLE}
             // WARNING: If we offset the axis with padding, we need to also factor in the reduced
             // plot width in the lines and CIs! Arguably a bug in recharts' useOffset hook?
             padding={{ left: 0, right: 0 }}
@@ -188,7 +184,7 @@ export default function ForestTimeseriesPlot({
           />
           <YAxis
             domain={[minY, maxY]}
-            style={commonAxisStyle}
+            style={COMMON_AXIS_STYLE}
             tickFormatter={(value) =>
               // Show <= 2 decimal places only for values < 10
               Math.abs(value) >= 10 || value === 0
