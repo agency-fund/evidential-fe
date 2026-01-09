@@ -74,6 +74,9 @@ export function JitteredLine<T>({
 
   // Build line data with jitter applied when chart dimensions are available.
   // If chart dimensions aren't ready (isValid=false), render without jitter to avoid blank chart.
+  // useMemo to prevent an infinite render loop (Maximum update depth exceeded).
+  // useRechartScales()'s hooks use Recharts context, so a new lineData ref passed to Line causes
+  // Recharts to update internal state => context update => re-render of JitteredLine.
   const lineData = useMemo(() => {
     if (!inputDataPoints.length) return [];
 
