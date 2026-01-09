@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Arm, Context } from '@/api/methods.schemas';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
 import { useCreateApiKey } from '@/api/admin';
+import Link from 'next/link';
 
 interface IntegrationGuideDialogProps {
   organizationId: string;
@@ -92,23 +93,26 @@ export function IntegrationGuideDialog({
               </Dialog.Description>
               <DataList.Root>
                 <DataList.Item>
-                  <DataList.Label>API Key</DataList.Label>
+                  <DataList.Label>Datasource API Key</DataList.Label>
                   <DataList.Value>
-                    <Flex justify="between" width="100%" height={'32px'}>
-                      {!createdKey ? (
-                        <Button
-                          variant="soft"
-                          onClick={async () => await triggerCreateApiKey()}
-                          loading={isCreatingApiKey}
-                        >
-                          <PlusIcon /> Add API Key
-                        </Button>
-                      ) : (
-                        <>
-                          {createdKey.key}
-                          <CopyToClipBoard content={createdKey.key} tooltipContent="Copy API Key" />
-                        </>
-                      )}
+                    <Flex direction={'column'} width={'100%'}>
+                      <Flex justify="between" width="100%" height={'32px'}>
+                        {!createdKey ? (
+                          <Button
+                            variant="soft"
+                            onClick={async () => await triggerCreateApiKey()}
+                            loading={isCreatingApiKey}
+                          >
+                            <PlusIcon /> Add API Key
+                          </Button>
+                        ) : (
+                          <>
+                            {createdKey.key}
+                            <CopyToClipBoard content={createdKey.key} tooltipContent="Copy API Key" />
+                          </>
+                        )}
+                      </Flex>
+                      <Link href={`/datasources/${datasourceId}`}>Manage API Keys</Link>
                     </Flex>
                   </DataList.Value>
                 </DataList.Item>
