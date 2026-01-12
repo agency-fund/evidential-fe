@@ -1,4 +1,4 @@
-import { Table, Flex, Heading, Badge, Text } from '@radix-ui/themes';
+import { Table, Heading, Badge, Text } from '@radix-ui/themes';
 import { PersonIcon } from '@radix-ui/react-icons';
 import { useUpdateArm, getGetExperimentForUiKey } from '@/api/admin';
 import { Arm } from '@/api/methods.schemas';
@@ -33,9 +33,9 @@ export function ArmsAndAllocationsTableRow({
   return (
     <Table.Row>
       <Table.Cell width="20%">
-          <EditableTextField value={arm.arm_name} onSubmit={(value) => updateArm({ name: value })} size="1">
-            <Heading size="2">{arm.arm_name}</Heading>
-          </EditableTextField>
+        <EditableTextField value={arm.arm_name} onSubmit={(value) => updateArm({ name: value })} size="1">
+          <Heading size="2">{arm.arm_name}</Heading>
+        </EditableTextField>
       </Table.Cell>
       <Table.Cell>
         <Badge>
