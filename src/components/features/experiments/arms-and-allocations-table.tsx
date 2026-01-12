@@ -25,8 +25,10 @@ export function ArmsAndAllocationsTable({
     <Table.Root>
       <Table.Header>
         <Table.Row>
-          <Table.ColumnHeaderCell width="30%">Name</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="70%">Description</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell>Participants</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell>Split</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
         </Table.Row>
       </Table.Header>
       <Table.Body>

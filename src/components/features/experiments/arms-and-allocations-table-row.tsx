@@ -33,22 +33,22 @@ export function ArmsAndAllocationsTableRow({
   return (
     <Table.Row>
       <Table.Cell width="20%">
-        <Flex direction="column" gap="4" align="start">
-          <Flex gap="2" align="center">
-            <EditableTextField value={arm.arm_name} onSubmit={(value) => updateArm({ name: value })} size="1">
-              <Heading size="2">{arm.arm_name}</Heading>
-            </EditableTextField>
-          </Flex>
-          <Flex direction="column" gap="3" align="start">
-            <Badge>
-              <PersonIcon />
-              <Text>{armSize.toLocaleString()} participants</Text>
-            </Badge>
-            <Badge>{percentage.toFixed(1)}%</Badge>
-          </Flex>
-        </Flex>
+          <EditableTextField value={arm.arm_name} onSubmit={(value) => updateArm({ name: value })} size="1">
+            <Heading size="2">{arm.arm_name}</Heading>
+          </EditableTextField>
       </Table.Cell>
-      <Table.Cell width="80%">
+      <Table.Cell>
+        <Badge>
+          <PersonIcon />
+          <Text>{armSize.toLocaleString()}</Text>
+        </Badge>
+      </Table.Cell>
+      <Table.Cell>
+        <Badge>
+          <Text>{percentage.toFixed(2)}%</Text>
+        </Badge>
+      </Table.Cell>
+      <Table.Cell>
         <EditableTextArea
           value={arm.arm_description || 'No description'}
           onSubmit={(value) => updateArm({ description: value })}
