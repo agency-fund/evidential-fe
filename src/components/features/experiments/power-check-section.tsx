@@ -25,7 +25,7 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
   const [powerCheckTarget, setPowerCheckTarget] = useState<number | undefined>(undefined);
   const [nonNullSamples, setNonNullSamples] = useState<number | undefined>(undefined);
   const [allSamples, setAllSamples] = useState<number | undefined>(undefined);
-  const [selectedSampleOption, setSelectedSampleOption] = useState<string>('use_power_check');
+  const [selectedSampleOption, setSelectedSampleOption] = useState<string>('');
 
   const handlePowerCheck = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
