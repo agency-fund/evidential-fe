@@ -172,61 +172,81 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
             ))}
         </Flex>
       </SectionCard>
-      <SectionCard title="Select Target Sample Size">
-        <Flex direction="column" gap="3" align="start">
-          <Text>Select target sample size to distribute across all arms:</Text>
-          <Flex direction="column" gap="2" align="center">
-            <RadioGroup.Root
-              value={selectedSampleOption}
-              onValueChange={(value) => {
-                setSelectedSampleOption(value);
+      {formData.powerCheckResponse !== undefined && !validationError && (
+        <SectionCard title="Select Target Sample Size">
+          <Flex direction="column" gap="3" align="start">
+            <Text>Select target sample size to distribute across all arms:</Text>
+            <Flex direction="column" gap="2" align="start">
+              {!formData.powerCheckResponse.analyses.map((a) => a.sufficient_n).every((sufficient) => sufficient) && (
+                <Callout.Root color="orange">
+                  <Callout.Icon>
+                    <CrossCircledIcon />
+                  </Callout.Icon>
+                  <Callout.Text>
+                    You don&apos;t have sufficient samples for one or more metrics. You can still proceed with a custom
+                    sample size, but consider adjusting your experiment design.
+                  </Callout.Text>
+                </Callout.Root>
+              )}
+              <RadioGroup.Root
+                value={selectedSampleOption}
+                onValueChange={(value) => {
+                  setSelectedSampleOption(value);
 
-                if (value === 'use_power_check') {
-                  onFormDataChange({
-                    ...formData,
-                    chosenN: powerCheckTarget,
-                  });
-                } else if (value === 'use_all_non_null_samples') {
-                  onFormDataChange({
-                    ...formData,
-                    chosenN: nonNullSamples,
-                  });
-                } else if (value === 'enter_own') {
-                  onFormDataChange({ ...formData, chosenN: undefined });
-                }
-              }}
-            >
-              <RadioGroup.Item value="use_power_check" disabled={powerCheckTarget === undefined}>
-                Use power check result: {powerCheckTarget ?? 'N/A'}
-              </RadioGroup.Item>
-              <RadioGroup.Item value="use_all_non_null_samples" disabled={nonNullSamples === undefined}>
-                Use all available non-null samples: {nonNullSamples}
-              </RadioGroup.Item>
-              <RadioGroup.Item value="enter_own" disabled={allSamples === undefined}>
-                <Flex align="start" direction={'row'} gap="2">
-                  Use custom sample size:
-                  <TextField.Root
-                    style={{
-                      minWidth: '10%',
-                      textAlign: 'start',
-                    }}
-                    size="2"
-                    type="number"
-                    max={allSamples ?? undefined}
-                    onChange={(e) =>
-                      onFormDataChange({
-                        ...formData,
-                        chosenN: e.target.value === '' ? undefined : Number(e.target.value),
-                      })
-                    }
-                    placeholder="Type your own desired #."
-                  />
-                </Flex>
-              </RadioGroup.Item>
-            </RadioGroup.Root>
+                  if (value === 'use_power_check') {
+                    onFormDataChange({
+                      ...formData,
+                      chosenN: powerCheckTarget,
+                    });
+                  } else if (value === 'use_all_non_null_samples') {
+                    onFormDataChange({
+                      ...formData,
+                      chosenN: nonNullSamples,
+                    });
+                  } else if (value === 'enter_own') {
+                    onFormDataChange({ ...formData, chosenN: undefined });
+                  }
+                }}
+              >
+                <RadioGroup.Item
+                  value="use_power_check"
+                  disabled={powerCheckTarget === undefined || powerCheckTarget === 0}
+                >
+                  Use power check result: {powerCheckTarget ?? 'N/A'}
+                </RadioGroup.Item>
+                <RadioGroup.Item
+                  value="use_all_non_null_samples"
+                  disabled={nonNullSamples === undefined || nonNullSamples === 0}
+                >
+                  Use all available non-null samples: {nonNullSamples}
+                </RadioGroup.Item>
+                <RadioGroup.Item value="enter_own" disabled={allSamples === undefined || allSamples === 0}>
+                  <Flex align="start" direction={'row'} gap="2">
+                    Use custom sample size:
+                    <TextField.Root
+                      style={{
+                        // minWidth: '10%',
+                        textAlign: 'start',
+                        width: '250px',
+                      }}
+                      size="2"
+                      type="number"
+                      max={allSamples ?? undefined}
+                      onChange={(e) =>
+                        onFormDataChange({
+                          ...formData,
+                          chosenN: e.target.value === '' ? undefined : Number(e.target.value),
+                        })
+                      }
+                      placeholder="Type your own desired #."
+                    />
+                  </Flex>
+                </RadioGroup.Item>
+              </RadioGroup.Root>
+            </Flex>
           </Flex>
-        </Flex>
-      </SectionCard>
+        </SectionCard>
+      )}
     </Flex>
   );
 }
