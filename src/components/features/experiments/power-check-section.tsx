@@ -212,7 +212,7 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
                   value="use_power_check"
                   disabled={powerCheckTarget === undefined || powerCheckTarget === 0}
                 >
-                  Use power check result: {powerCheckTarget ?? 'N/A'}
+                  Use minimum sample required: {powerCheckTarget ?? 'N/A'}
                 </RadioGroup.Item>
                 <RadioGroup.Item
                   value="use_all_non_null_samples"
