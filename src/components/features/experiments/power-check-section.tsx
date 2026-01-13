@@ -1,12 +1,12 @@
 'use client';
 
-import { Button, Callout, Card, Flex, Spinner, Table, Text, TextField, RadioGroup } from '@radix-ui/themes';
+import { Button, Callout, Card, Flex, Spinner, Table, Text, TextField, RadioCards } from '@radix-ui/themes';
 import { CheckCircledIcon, CrossCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import { FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { usePowerCheck } from '@/api/admin';
 import { convertFormDataToCreateExperimentRequest } from '@/app/datasources/[datasourceId]/experiments/create/helpers';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { set, ZodError } from 'zod';
+import { ZodError } from 'zod';
 import { useState } from 'react';
 import { prettyJSON } from '@/services/json-utils';
 import { SectionCard } from '@/components/ui/cards/section-card';
@@ -14,6 +14,13 @@ import { SectionCard } from '@/components/ui/cards/section-card';
 interface PowerCheckSectionProps {
   formData: FrequentABFormData;
   onFormDataChange: (data: FrequentABFormData) => void;
+}
+
+enum PowerCheckOption {
+  USE_POWER_CHECK = 'use_power_check',
+  USE_ALL_NON_NULL_SAMPLES = 'use_all_non_null_samples',
+  ENTER_OWN = 'enter_own',
+  NONE = '',
 }
 
 export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSectionProps) {
@@ -25,7 +32,7 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
   const [powerCheckTarget, setPowerCheckTarget] = useState<number | undefined>(undefined);
   const [nonNullSamples, setNonNullSamples] = useState<number | undefined>(undefined);
   const [allSamples, setAllSamples] = useState<number | undefined>(undefined);
-  const [selectedSampleOption, setSelectedSampleOption] = useState<string>('');
+  const [selectedSampleOption, setSelectedSampleOption] = useState<PowerCheckOption>(PowerCheckOption.NONE);
 
   const handlePowerCheck = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -34,26 +41,15 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
     try {
       const { design_spec } = convertFormDataToCreateExperimentRequest(formData);
       const response = await trigger({ design_spec });
-
-      setPowerCheckTarget(response.analyses[0].target_n ?? undefined);
-      const samples =
-        response.analyses
-          .map((a) =>
-            a.metric_spec.field_name == formData.primaryMetric?.metric.field_name
-              ? (a.metric_spec.available_nonnull_n ?? 0)
-              : 0,
-          )
-          .reduce((a, b) => a + b, 0) ?? null;
-      setNonNullSamples(samples);
-      setAllSamples(
-        response.analyses
-          .map((a) =>
-            a.metric_spec.field_name == formData.primaryMetric?.metric.field_name
-              ? (a.metric_spec.available_n ?? 0)
-              : 0,
-          )
-          .reduce((a, b) => a + b, 0) ?? null,
+      const primary = response.analyses.find(
+        (a) => a.metric_spec.field_name === formData.primaryMetric?.metric.field_name,
       );
+
+      setPowerCheckTarget(primary?.target_n ?? undefined);
+
+      setNonNullSamples(primary?.metric_spec.available_nonnull_n ?? 0);
+      setAllSamples(primary?.metric_spec.available_n ?? 0);
+      setSelectedSampleOption(PowerCheckOption.NONE);
 
       onFormDataChange({
         ...formData,
@@ -176,7 +172,7 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
         <SectionCard title="Select Target Sample Size">
           <Flex direction="column" gap="3" align="start">
             <Text>Select target sample size to distribute across all arms:</Text>
-            <Flex direction="column" gap="2" align="start">
+            <Flex direction="column" gap="2" align="center">
               {!formData.powerCheckResponse.analyses.map((a) => a.sufficient_n).every((sufficient) => sufficient) && (
                 <Callout.Root color="orange">
                   <Callout.Icon>
@@ -188,61 +184,71 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
                   </Callout.Text>
                 </Callout.Root>
               )}
-              <RadioGroup.Root
+              <RadioCards.Root
+                columns="1"
                 value={selectedSampleOption}
-                onValueChange={(value) => {
+                onValueChange={(value: PowerCheckOption) => {
                   setSelectedSampleOption(value);
-
-                  if (value === 'use_power_check') {
-                    onFormDataChange({
-                      ...formData,
-                      chosenN: powerCheckTarget,
-                    });
-                  } else if (value === 'use_all_non_null_samples') {
-                    onFormDataChange({
-                      ...formData,
-                      chosenN: nonNullSamples,
-                    });
-                  } else if (value === 'enter_own') {
-                    onFormDataChange({ ...formData, chosenN: undefined });
+                  switch (value) {
+                    case PowerCheckOption.USE_POWER_CHECK:
+                      onFormDataChange({
+                        ...formData,
+                        chosenN: powerCheckTarget,
+                      });
+                      break;
+                    case PowerCheckOption.USE_ALL_NON_NULL_SAMPLES:
+                      onFormDataChange({
+                        ...formData,
+                        chosenN: nonNullSamples,
+                      });
+                      break;
+                    case PowerCheckOption.ENTER_OWN:
+                    case PowerCheckOption.NONE:
+                      onFormDataChange({ ...formData, chosenN: undefined });
+                      break;
                   }
                 }}
               >
-                <RadioGroup.Item
-                  value="use_power_check"
+                <RadioCards.Item
+                  value={PowerCheckOption.USE_POWER_CHECK}
                   disabled={powerCheckTarget === undefined || powerCheckTarget === 0}
                 >
                   Use minimum sample required: {powerCheckTarget ?? 'N/A'}
-                </RadioGroup.Item>
-                <RadioGroup.Item
-                  value="use_all_non_null_samples"
+                </RadioCards.Item>
+                <RadioCards.Item
+                  value={PowerCheckOption.USE_ALL_NON_NULL_SAMPLES}
                   disabled={nonNullSamples === undefined || nonNullSamples === 0}
                 >
                   Use all available non-null samples: {nonNullSamples}
-                </RadioGroup.Item>
-                <RadioGroup.Item value="enter_own" disabled={allSamples === undefined || allSamples === 0}>
-                  <Flex align="start" direction={'row'} gap="2">
-                    Use custom sample size:
-                    <TextField.Root
-                      style={{
-                        // minWidth: '10%',
-                        textAlign: 'start',
-                        width: '250px',
-                      }}
-                      size="2"
-                      type="number"
-                      max={allSamples ?? undefined}
-                      onChange={(e) =>
-                        onFormDataChange({
-                          ...formData,
-                          chosenN: e.target.value === '' ? undefined : Number(e.target.value),
-                        })
-                      }
-                      placeholder="Type your own desired #."
-                    />
+                </RadioCards.Item>
+                <RadioCards.Item
+                  value={PowerCheckOption.ENTER_OWN}
+                  disabled={allSamples === undefined || allSamples === 0}
+                >
+                  <Flex align="center" direction={'row'} gap="2">
+                    <span>Use custom sample size:</span>
+                    <div style={{ pointerEvents: 'auto' }}>
+                      <TextField.Root
+                        style={{
+                          // minWidth: '10%',
+                          textAlign: 'start',
+                          width: '250px',
+                        }}
+                        size="2"
+                        type="number"
+                        max={allSamples ?? undefined}
+                        onChange={(e) =>
+                          onFormDataChange({
+                            ...formData,
+                            chosenN: e.target.value === '' ? undefined : Number(e.target.value),
+                          })
+                        }
+                        placeholder="Type your own desired #."
+                      />
+                    </div>
                   </Flex>
-                </RadioGroup.Item>
-              </RadioGroup.Root>
+                </RadioCards.Item>
+              </RadioCards.Root>
             </Flex>
           </Flex>
         </SectionCard>
