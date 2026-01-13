@@ -95,6 +95,9 @@ export default function ExperimentViewPage() {
   // which analysis we're actually displaying (live or a snapshot)
   const [selectedAnalysisState, setSelectedAnalysisState] = useState<AnalysisState>(liveAnalysis);
   const [selectedMetricAnalysis, setSelectedMetricAnalysis] = useState<MetricAnalysis | null>(null);
+  const [selectedMetricPowerAnalysis, setSelectedMetricPowerAnalysis] = useState<MetricPowerAnalysisOutput | null>(
+    null,
+  );
   const [selectedMetricName, setSelectedMetricName] = useState<string>('unknown');
   const [cmabAnalysisRequest, setCmabAnalysisRequest] = useState<CMABContextInputRequest>({
     type: 'cmab_assignment',
@@ -231,6 +234,7 @@ export default function ExperimentViewPage() {
     setSelectedAnalysisState(analysis);
     if (!isFrequentistAnalysis(analysis.data)) {
       setSelectedMetricAnalysis(null);
+      setSelectedMetricPowerAnalysis(null);
       return;
     }
 
@@ -240,6 +244,10 @@ export default function ExperimentViewPage() {
     const metricAnalyses = analysis.data.metric_analyses;
     const newMetric: MetricAnalysis | null =
       metricAnalyses.find((metric) => metric.metric_name === nameToFind) || metricAnalyses[0] || null;
+    const newPowerAnalysis: MetricPowerAnalysisOutput | null =
+      power_analyses?.analyses.find(
+        (powerAnalysis) => powerAnalysis.metric_spec.field_name === (newMetric?.metric_name || ''),
+      ) || null;
     const newMetricName = newMetric?.metric_name || 'unknown';
     // Recompute bounds if the metric changed
     if (selectedMetricName !== newMetricName) {
@@ -257,6 +265,7 @@ export default function ExperimentViewPage() {
       setCiBounds(bounds);
     }
     setSelectedMetricAnalysis(newMetric);
+    setSelectedMetricPowerAnalysis(newPowerAnalysis);
   };
 
   // Wrapper around the live analysis functions for CMAB and non-CMAB experiments.
@@ -328,6 +337,14 @@ export default function ExperimentViewPage() {
   let mdePct: string | null = null;
   if (selectedMetricAnalysis?.metric?.metric_pct_change) {
     mdePct = (selectedMetricAnalysis.metric.metric_pct_change * 100).toFixed(1);
+  }
+
+  // Calculate observable MDE percentage for selected metric
+  let observableMdePct: string | null = null;
+  let chosenN: number | null = null;
+  if (selectedMetricPowerAnalysis?.pct_change_with_chosen_n) {
+    observableMdePct = (selectedMetricPowerAnalysis.pct_change_with_chosen_n * 100).toFixed(1);
+    chosenN = selectedMetricPowerAnalysis.chosen_n || null;
   }
 
   const { timeseriesData, armMetadata, minDate, maxDate } = transformAnalysisForForestTimeseriesPlot(
@@ -491,7 +508,21 @@ export default function ExperimentViewPage() {
                       )}
                     </Flex>
                   </Badge>
-                  <MdeBadge value={mdePct} />
+                  <MdeBadge
+                    value={mdePct}
+                    content="This metric's required minimum detectable effect as defined in the experiment's design."
+                  />
+                  {observableMdePct !== null && (
+                    <MdeBadge
+                      value={observableMdePct}
+                      content={
+                        chosenN
+                          ? `The minimum detectable effect given the chosen sample size of ${chosenN}, confidence and power.`
+                          : 'The minimum detectable effect given the chosen sample size, confidence and power.'
+                      }
+                      heading="Observable MDE"
+                    />
+                  )}
                 </Flex>
               ) : isBanditAnalysis(selectedAnalysisState.data) &&
                 selectedAnalysisState.banditEffects &&
