@@ -1,5 +1,5 @@
 'use client';
-import { Button, DataList, Dialog, Flex} from '@radix-ui/themes';
+import { Button, DataList, Dialog, Flex } from '@radix-ui/themes';
 import { FileIcon, PlusIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 import { Arm, Context } from '@/api/methods.schemas';
@@ -33,7 +33,7 @@ export function IntegrationGuideDialog({
     <>
       <Button onClick={() => setOpen(true)}>
         <FileIcon />
-            Integration Guide
+        Integration Guide
       </Button>
 
       <Dialog.Root open={open} onOpenChange={setOpen}>
