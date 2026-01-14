@@ -13,6 +13,13 @@ interface ImpactConfig {
 // Ordered list of Impacts and associated strings.
 export const IMPACT_LIST = [
   {
+    value: '',
+    label: 'Unspecified Impact',
+    shortLabel: 'Unspecified',
+    description: 'No impact specified',
+    color: 'gray',
+  },
+  {
     value: 'unclear',
     label: 'Unclear Impact',
     shortLabel: 'Unclear',
@@ -48,6 +55,8 @@ export const IMPACT_LIST = [
     color: 'green',
   },
 ] as const satisfies readonly ImpactConfig[];
+
+export const IMPACT_OPTIONS = IMPACT_LIST.map((c) => c.value) as readonly Impact[];
 
 export const IMPACT_CONFIG: Record<Impact, ImpactConfig> = Object.fromEntries(
   IMPACT_LIST.map((config) => [config.value, config]),

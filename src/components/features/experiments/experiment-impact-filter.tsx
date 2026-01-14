@@ -1,10 +1,8 @@
 'use client';
 
-import { CheckboxGroup, DropdownMenu, Button, Flex, Badge } from '@radix-ui/themes';
+import { CheckboxGroup, DropdownMenu, Button, Flex } from '@radix-ui/themes';
 import { ExperimentImpactBadge } from '@/components/features/experiments/experiment-impact-badge';
-
-const IMPACT_OPTIONS = ['high', 'medium', 'low', 'negative', 'unclear'] as const;
-const NOT_SPECIFIED_FILTER = '__not_specified__';
+import { IMPACT_OPTIONS } from '@/services/impact-constants';
 
 interface ExperimentImpactFilterProps {
   value: string[];
@@ -36,13 +34,6 @@ export function ExperimentImpactFilter({ value, onChange }: ExperimentImpactFilt
                 </Flex>
               </CheckboxGroup.Item>
             ))}
-            <CheckboxGroup.Item key={NOT_SPECIFIED_FILTER} value={NOT_SPECIFIED_FILTER}>
-              <Flex gap="2" align="center">
-                <Badge color="gray" variant="soft">
-                  Not specified
-                </Badge>
-              </Flex>
-            </CheckboxGroup.Item>
           </Flex>
         </CheckboxGroup.Root>
       </DropdownMenu.Content>
