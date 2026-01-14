@@ -1,6 +1,6 @@
 'use client';
-import { Button, DataList, Dialog, DropdownMenu, Flex, IconButton } from '@radix-ui/themes';
-import { DotsVerticalIcon, FileIcon, PlusIcon } from '@radix-ui/react-icons';
+import { Button, DataList, Dialog, Flex} from '@radix-ui/themes';
+import { FileIcon, PlusIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 import { Arm, Context } from '@/api/methods.schemas';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
@@ -31,19 +31,10 @@ export function IntegrationGuideDialog({
 
   return (
     <>
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger>
-          <IconButton variant="ghost" size="3" color="gray">
-            <DotsVerticalIcon />
-          </IconButton>
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Content align="end" side="bottom">
-          <DropdownMenu.Item onClick={() => setOpen(true)}>
-            <FileIcon />
+      <Button onClick={() => setOpen(true)}>
+        <FileIcon />
             Integration Guide
-          </DropdownMenu.Item>
-        </DropdownMenu.Content>
-      </DropdownMenu.Root>
+      </Button>
 
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Content size="3" width={'500'} onOpenAutoFocus={(e) => e.preventDefault()}>
