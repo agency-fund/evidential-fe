@@ -41,7 +41,7 @@ export function ExperimentsTableRow({ experiment }: ExperimentTableRowProps) {
         <Table.Cell>
           <Flex width="150px">
             <Text truncate color={experiment.decision ? undefined : 'gray'}>
-              {experiment.decision || 'Ongoing'}
+              {experiment.decision || 'Undecided'}
             </Text>
           </Flex>
         </Table.Cell>

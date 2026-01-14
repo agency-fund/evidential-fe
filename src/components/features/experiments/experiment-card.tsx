@@ -98,7 +98,7 @@ export function ExperimentCard({
                 Decision
               </Text>
               <Text size="2" truncate color={decision ? undefined : 'gray'}>
-                {decision || 'Ongoing'}
+                {decision || 'Undecided'}
               </Text>
             </Flex>
           </Flex>
