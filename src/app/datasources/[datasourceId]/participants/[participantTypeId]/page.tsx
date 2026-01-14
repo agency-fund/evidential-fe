@@ -47,11 +47,12 @@ export default function Page() {
     }
     return a.is_unique_id ? -1 : 1;
   });
+
   return (
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
         <Flex justify="between" align="end" width="100%">
-          <Heading size="8">Participant Type: {participantType}</Heading>
+          <Heading size="8">Participant Type: {data.participant_type}</Heading>
           <Link href={`/datasources/${datasourceId}/participants/${participantType}/edit`}>
             <Button>
               <Pencil2Icon /> Edit Participant Type

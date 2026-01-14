@@ -94,7 +94,7 @@ export default function EditParticipantTypePage() {
   return (
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
-        <Heading size="8">Edit Participant Type: {participantType}</Heading>
+        <Heading size="8">Edit Participant Type: {participantConfig.participant_type}</Heading>
       </Flex>
 
       {isMutating ? (
