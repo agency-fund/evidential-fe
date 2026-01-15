@@ -7,6 +7,7 @@ import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ApiKeyResultsContent } from './api-key-results-content';
 import { mutate } from 'swr';
+import { ApiKeySnippetsContent } from '@/components/features/datasources/api-key-snippets-content';
 
 export const CreateApiKeyDialog = ({
   datasourceId,
@@ -70,11 +71,12 @@ export const CreateApiKeyDialog = ({
           <>
             <Dialog.Title>Created API key</Dialog.Title>
             <Dialog.Description size="2" mb="4">
-              The API key has been created. It will only be shown once. You can use it to make API calls.
+              The API key has been created. You can use it to make API calls.
             </Dialog.Description>
-
-            <ApiKeyResultsContent createdKey={createdKey} datasourceId={datasourceId} />
-
+            <Flex gap="3" direction={'column'}>
+              <ApiKeyResultsContent createdKey={createdKey} />
+              <ApiKeySnippetsContent createdKey={createdKey} datasourceId={datasourceId} />
+            </Flex>
             <Flex gap="3" mt="4" justify="end">
               <Dialog.Close>
                 <Button>Close</Button>
