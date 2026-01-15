@@ -1,5 +1,5 @@
 'use client';
-import { Button, Callout, Flex, Spinner, Text, TextField } from '@radix-ui/themes';
+import { Button, Callout, Flex, Spinner, Text, TextField, Tooltip } from '@radix-ui/themes';
 import { FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useCreateExperiment, useInspectParticipantTypes } from '@/api/admin';
@@ -76,6 +76,29 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
       console.error('Failed to create experiment:', error);
       throw new Error('failed to create experiment');
     }
+  };
+
+  const nextButton = (
+    <Button type="submit" disabled={isNextButtonDisabled}>
+      {isMutating && <Spinner size="1" />}
+      Next
+    </Button>
+  );
+
+  const getValidationMessage = () => {
+    if (!formData.primaryMetric?.metric.field_name) {
+      return 'Please select a primary metric.';
+    }
+    if (!formData.primaryMetric?.mde) {
+      return 'Please specify the minimum detectable effect for the primary metric.';
+    }
+    if (supportsPowerCheck && formData.powerCheckResponse === undefined) {
+      return 'Please complete the power check before proceeding.';
+    }
+    if (!formData.chosenN) {
+      return 'Please select a sample size before proceeding.';
+    }
+    return '';
   };
 
   return (
@@ -167,10 +190,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
           <Button type="button" variant="soft" onClick={onBack}>
             Back
           </Button>
-          <Button type="submit" disabled={isNextButtonDisabled}>
-            {isMutating && <Spinner size="1" />}
-            Next
-          </Button>
+          {isNextButtonDisabled ? <Tooltip content={getValidationMessage()}>{nextButton}</Tooltip> : nextButton}
         </Flex>
       </Flex>
     </form>
