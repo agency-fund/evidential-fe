@@ -22,6 +22,7 @@ export default function Page() {
     data: inspectData,
     isLoading: inspectLoading,
     isValidating: inspectValidating,
+    error: inspectError,
   } = useInspectParticipantTypes(datasourceId!, participantType!, undefined, {
     swr: {
       enabled: datasourceId !== null && participantType !== null,
@@ -35,7 +36,10 @@ export default function Page() {
     return <XSpinner message="Loading participant type details..." />;
   }
   if (error) {
-    return <GenericErrorCallout title={'Failed to fetch participant type details'} error={error} />;
+    return <GenericErrorCallout title={'Failed to fetch participant type'} error={error} />;
+  }
+  if (inspectError) {
+    return <GenericErrorCallout title={'Failed to fetch participant type details'} error={inspectError} />;
   }
   if (!data) {
     return <GenericErrorCallout title={'Failed to fetch participant type details'} message={'data is missing'} />;
