@@ -249,6 +249,37 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
     return basicValid && armsValid;
   };
 
+  const getValidationMessage = () => {
+    if (!formData.name.trim()) {
+      return 'Experiment name is required.';
+    }
+    if (!formData.hypothesis.trim()) {
+      return 'Hypothesis is required.';
+    }
+    if (!formData.priorType) {
+      return 'Please select a prior distribution type.';
+    }
+    if (!formData.outcomeType) {
+      return 'Please select an outcome type.';
+    }
+    if (formData.arms.length < 2) {
+      return 'At least 2 arms are required.';
+    }
+    if (formData.experimentType === 'cmab_online' && formData.contexts.length < 1) {
+      return 'At least 1 context variable is required.';
+    }
+    for (let i = 0; i < formData.arms.length; i++) {
+      const arm = formData.arms[i];
+      if (!arm.arm_name.trim()) {
+        return `Arm ${i + 1} name is required.`;
+      }
+      if (!isPriorParamValid(arm)) {
+        return `Arm ${i + 1} has invalid prior parameters.`;
+      }
+    }
+    return '';
+  };
+
   return (
     <Flex direction="column" gap="4">
       {/* Basic Information */}
@@ -454,7 +485,13 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
         <GenericErrorCallout title="Failed to create experiment" error={createExperimentError} />
       )}
 
-      <NavigationButtons onBack={onBack} onNext={handleSaveExperiment} nextLabel="Next" nextDisabled={!isFormValid()} />
+      <NavigationButtons
+        onBack={onBack}
+        onNext={handleSaveExperiment}
+        nextLabel="Next"
+        nextDisabled={!isFormValid()}
+        tooltipMessage={getValidationMessage()}
+      />
     </Flex>
   );
 }
