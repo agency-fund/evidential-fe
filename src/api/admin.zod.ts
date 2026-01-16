@@ -44,170 +44,63 @@ export const getSnapshotResponseSnapshotDataArmAnalysesItemArmDescriptionMaxOne 
 
 export const getSnapshotResponse = zod
 	.object({
-		snapshot: zod
-			.object({
-				experiment_id: zod
-					.string()
-					.describe("The experiment that this snapshot was captured for."),
-				id: zod.string().describe("The unique ID of the snapshot."),
-				status: zod
-					.enum(["success", "running", "failed"])
-					.describe("Describes the status of a snapshot."),
-				details: zod
-					.record(zod.string(), zod.any())
-					.or(zod.null())
-					.describe("Additional data about this snapshot."),
-				created_at: zod
-					.string()
-					.datetime({})
-					.describe("The time the snapshot was requested."),
-				updated_at: zod
-					.string()
-					.datetime({})
-					.describe("The time the snapshot was acquired."),
-				data: zod
-					.object({
-						type: zod.enum(["freq"]),
-						experiment_id: zod.string().describe("ID of the experiment."),
-						metric_analyses: zod
-							.array(
-								zod
-									.object({
-										metric_name: zod.string(),
-										metric: zod
-											.object({
-												field_name: zod
-													.string()
-													.regex(
-														getSnapshotResponseSnapshotDataMetricAnalysesItemMetricFieldNameRegExp,
-													),
-												metric_pct_change: zod
-													.number()
-													.or(zod.null())
-													.optional()
-													.describe(
-														"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
-													),
-												metric_target: zod
-													.number()
-													.or(zod.null())
-													.optional()
-													.describe(
-														"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
-													),
-											})
-											.describe(
-												"Defines a request to look up baseline stats for a metric to measure in an experiment.",
-											),
-										arm_analyses: zod
-											.array(
-												zod.object({
-													arm_id: zod
-														.string()
-														.or(zod.null())
-														.optional()
-														.describe(
-															"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-														),
-													arm_name: zod
-														.string()
-														.max(
-															getSnapshotResponseSnapshotDataMetricAnalysesItemArmAnalysesItemArmNameMax,
-														),
-													arm_description: zod
-														.string()
-														.max(
-															getSnapshotResponseSnapshotDataMetricAnalysesItemArmAnalysesItemArmDescriptionMaxOne,
-														)
-														.or(zod.null())
-														.optional(),
-													arm_weight: zod
-														.number()
-														.or(zod.null())
-														.optional()
-														.describe(
-															"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-														),
-													estimate: zod
-														.number()
-														.describe(
-															"The estimated treatment effect relative to the baseline arm.",
-														),
-													p_value: zod
-														.number()
-														.or(zod.null())
-														.describe(
-															"The p-value indicating statistical significance of the treatment effect. Value may be None if the t-stat is not available, e.g. due to inability to calculate the standard error.",
-														),
-													t_stat: zod
-														.number()
-														.or(zod.null())
-														.describe(
-															"The t-statistic from the statistical test. If the value is actually NaN, e.g. due to inability to calculate the standard error, we return None.",
-														),
-													std_error: zod
-														.number()
-														.or(zod.null())
-														.describe(
-															"The standard error of the treatment effect estimate.",
-														),
-													num_missing_values: zod
-														.number()
-														.min(
-															getSnapshotResponseSnapshotDataMetricAnalysesItemArmAnalysesItemNumMissingValuesMin,
-														)
-														.describe(
-															"The number of participants assigned to this arm with missing values (NaNs) for this metric. These rows are excluded from the analysis. -1 indicates arm analysis not available due to all assignments missing outcomes for this metric.",
-														),
-													is_baseline: zod
-														.boolean()
-														.describe(
-															"Whether this arm is the baseline/control arm for comparison.",
-														),
-												}),
-											)
-											.describe(
-												"The results of the analysis for each arm (coefficient) for this specific metric.",
-											),
-									})
-									.describe(
-										"Describes the change in a single metric for each arm of an experiment.",
-									),
-							)
-							.describe(
-								"Contains one analysis per metric targeted by the experiment.",
-							),
-						num_participants: zod
-							.number()
-							.describe(
-								"The number of participants assigned to the experiment pulled from the dwh across all arms. Metric outcomes are not guaranteed to be present for all participants.",
-							),
-						num_missing_participants: zod
-							.number()
-							.or(zod.null())
-							.optional()
-							.describe(
-								"The number of participants assigned to the experiment across all arms that are not found in the data warehouse when pulling metrics.",
-							),
-						created_at: zod
-							.string()
-							.datetime({})
-							.describe(
-								"The date and time the experiment analysis was created.",
-							),
-					})
-					.describe(
-						"Describes the change if any in metrics targeted by an experiment.",
-					)
-					.or(
-						zod
-							.object({
-								type: zod.enum(["bandit"]),
-								experiment_id: zod.string().describe("ID of the experiment."),
-								arm_analyses: zod
-									.array(
-										zod
-											.object({
+		snapshot: zod.object({
+			experiment_id: zod
+				.string()
+				.describe("The experiment that this snapshot was captured for."),
+			id: zod.string().describe("The unique ID of the snapshot."),
+			status: zod
+				.enum(["success", "running", "failed"])
+				.describe("Describes the status of a snapshot."),
+			details: zod
+				.record(zod.string(), zod.any())
+				.or(zod.null())
+				.describe("Additional data about this snapshot."),
+			created_at: zod
+				.string()
+				.datetime({})
+				.describe("The time the snapshot was requested."),
+			updated_at: zod
+				.string()
+				.datetime({})
+				.describe("The time the snapshot was acquired."),
+			data: zod
+				.object({
+					type: zod.enum(["freq"]),
+					experiment_id: zod.string().describe("ID of the experiment."),
+					metric_analyses: zod
+						.array(
+							zod
+								.object({
+									metric_name: zod.string(),
+									metric: zod
+										.object({
+											field_name: zod
+												.string()
+												.regex(
+													getSnapshotResponseSnapshotDataMetricAnalysesItemMetricFieldNameRegExp,
+												),
+											metric_pct_change: zod
+												.number()
+												.or(zod.null())
+												.optional()
+												.describe(
+													"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+												),
+											metric_target: zod
+												.number()
+												.or(zod.null())
+												.optional()
+												.describe(
+													"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+												),
+										})
+										.describe(
+											"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+										),
+									arm_analyses: zod
+										.array(
+											zod.object({
 												arm_id: zod
 													.string()
 													.or(zod.null())
@@ -218,12 +111,12 @@ export const getSnapshotResponse = zod
 												arm_name: zod
 													.string()
 													.max(
-														getSnapshotResponseSnapshotDataArmAnalysesItemArmNameMax,
+														getSnapshotResponseSnapshotDataMetricAnalysesItemArmAnalysesItemArmNameMax,
 													),
 												arm_description: zod
 													.string()
 													.max(
-														getSnapshotResponseSnapshotDataArmAnalysesItemArmDescriptionMaxOne,
+														getSnapshotResponseSnapshotDataMetricAnalysesItemArmAnalysesItemArmDescriptionMaxOne,
 													)
 													.or(zod.null())
 													.optional(),
@@ -234,121 +127,249 @@ export const getSnapshotResponse = zod
 													.describe(
 														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
 													),
-												alpha_init: zod
+												estimate: zod
+													.number()
+													.describe(
+														"The estimated treatment effect relative to the baseline arm.",
+													),
+												p_value: zod
+													.number()
+													.or(zod.null())
+													.describe(
+														"The p-value indicating statistical significance of the treatment effect. Value may be None if the t-stat is not available, e.g. due to inability to calculate the standard error.",
+													),
+												t_stat: zod
+													.number()
+													.or(zod.null())
+													.describe(
+														"The t-statistic from the statistical test. If the value is actually NaN, e.g. due to inability to calculate the standard error, we return None.",
+													),
+												std_error: zod
+													.number()
+													.or(zod.null())
+													.describe(
+														"The standard error of the treatment effect estimate.",
+													),
+												ci_lower: zod
 													.number()
 													.or(zod.null())
 													.optional()
-													.describe("Initial alpha parameter for Beta prior"),
-												beta_init: zod
+													.describe(
+														"Confidence interval lower bound for the regression coefficient estimate.",
+													),
+												ci_upper: zod
 													.number()
 													.or(zod.null())
 													.optional()
-													.describe("Initial beta parameter for Beta prior"),
-												mu_init: zod
-													.number()
-													.or(zod.null())
-													.optional()
-													.describe("Initial mean parameter for Normal prior"),
-												sigma_init: zod
+													.describe(
+														"Confidence interval upper bound for the regression coefficient estimate.",
+													),
+												mean_ci_lower: zod
 													.number()
 													.or(zod.null())
 													.optional()
 													.describe(
-														"Initial standard deviation parameter for Normal prior",
+														"Confidence interval lower bound for the arm's mean.",
 													),
-												alpha: zod
+												mean_ci_upper: zod
 													.number()
 													.or(zod.null())
 													.optional()
-													.describe("Updated alpha parameter for Beta prior"),
-												beta: zod
-													.number()
-													.or(zod.null())
-													.optional()
-													.describe("Updated beta parameter for Beta prior"),
-												mu: zod
-													.array(zod.number())
-													.or(zod.null())
-													.optional()
-													.describe("Updated mean vector for Normal prior"),
-												covariance: zod
-													.array(zod.array(zod.number()))
-													.or(zod.null())
-													.optional()
 													.describe(
-														"Updated covariance matrix for Normal prior",
+														"Confidence interval upper bound for the arm's mean.",
 													),
-												prior_pred_mean: zod
+												num_missing_values: zod
 													.number()
-													.describe("Prior predictive mean for this arm."),
-												prior_pred_stdev: zod
-													.number()
+													.min(
+														getSnapshotResponseSnapshotDataMetricAnalysesItemArmAnalysesItemNumMissingValuesMin,
+													)
 													.describe(
-														"Prior predictive standard deviation for this arm.",
+														"The number of participants assigned to this arm with missing values (NaNs) for this metric. These rows are excluded from the analysis. -1 indicates arm analysis not available due to all assignments missing outcomes for this metric.",
 													),
-												prior_pred_ci_upper: zod
-													.number()
+												is_baseline: zod
+													.boolean()
 													.describe(
-														"Prior predictive upper bound of 95% confidence interval for this arm.",
+														"Whether this arm is the baseline/control arm for comparison.",
 													),
-												prior_pred_ci_lower: zod
-													.number()
-													.describe(
-														"Prior predictive lower bound of 95% confidence interval for this arm.",
-													),
-												post_pred_mean: zod
-													.number()
-													.describe("Prior predictive mean for this arm."),
-												post_pred_stdev: zod
-													.number()
-													.describe(
-														"Prior predictive standard deviation for this arm.",
-													),
-												post_pred_ci_upper: zod
-													.number()
-													.describe(
-														"Posterior predictive upper bound of 95% confidence interval for this arm.",
-													),
-												post_pred_ci_lower: zod
-													.number()
-													.describe(
-														"Posterior predictive lower bound of 95% confidence interval for this arm.",
-													),
-											})
-											.describe(
-												"Describes an experiment arm analysis for bandit experiments.",
-											),
-									)
-									.describe(
-										"Contains one analysis per metric targeted by the experiment.",
-									),
-								n_outcomes: zod
-									.number()
-									.describe(
-										"The number of outcomes observed for this experiment.",
-									),
-								created_at: zod
-									.string()
-									.datetime({})
-									.describe(
-										"The date and time the experiment analysis was created.",
-									),
-								contexts: zod
-									.array(zod.number())
-									.or(zod.null())
-									.optional()
-									.describe(
-										"The context values used for the analysis, if applicable.",
-									),
-							})
-							.describe("Describes changes in arms for a bandit experiment"),
-					)
-					.describe("The type of experiment analysis response.")
-					.or(zod.null())
-					.describe("Analysis results as of the updated_at time."),
-			})
-			.or(zod.null())
-			.describe("The completed snapshot."),
+											}),
+										)
+										.describe(
+											"The results of the analysis for each arm (coefficient) for this specific metric.",
+										),
+								})
+								.describe(
+									"Describes the change in a single metric for each arm of an experiment.",
+								),
+						)
+						.describe(
+							"Contains one analysis per metric targeted by the experiment.",
+						),
+					num_participants: zod
+						.number()
+						.describe(
+							"The number of participants assigned to the experiment pulled from the dwh across all arms. Metric outcomes are not guaranteed to be present for all participants.",
+						),
+					num_missing_participants: zod
+						.number()
+						.or(zod.null())
+						.optional()
+						.describe(
+							"The number of participants assigned to the experiment across all arms that are not found in the data warehouse when pulling metrics.",
+						),
+					created_at: zod
+						.string()
+						.datetime({})
+						.describe("The date and time the experiment analysis was created."),
+				})
+				.describe(
+					"Describes the change if any in metrics targeted by an experiment.",
+				)
+				.or(
+					zod
+						.object({
+							type: zod.enum(["bandit"]),
+							experiment_id: zod.string().describe("ID of the experiment."),
+							arm_analyses: zod
+								.array(
+									zod
+										.object({
+											arm_id: zod
+												.string()
+												.or(zod.null())
+												.optional()
+												.describe(
+													"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+												),
+											arm_name: zod
+												.string()
+												.max(
+													getSnapshotResponseSnapshotDataArmAnalysesItemArmNameMax,
+												),
+											arm_description: zod
+												.string()
+												.max(
+													getSnapshotResponseSnapshotDataArmAnalysesItemArmDescriptionMaxOne,
+												)
+												.or(zod.null())
+												.optional(),
+											arm_weight: zod
+												.number()
+												.or(zod.null())
+												.optional()
+												.describe(
+													"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+												),
+											alpha_init: zod
+												.number()
+												.or(zod.null())
+												.optional()
+												.describe("Initial alpha parameter for Beta prior"),
+											beta_init: zod
+												.number()
+												.or(zod.null())
+												.optional()
+												.describe("Initial beta parameter for Beta prior"),
+											mu_init: zod
+												.number()
+												.or(zod.null())
+												.optional()
+												.describe("Initial mean parameter for Normal prior"),
+											sigma_init: zod
+												.number()
+												.or(zod.null())
+												.optional()
+												.describe(
+													"Initial standard deviation parameter for Normal prior",
+												),
+											alpha: zod
+												.number()
+												.or(zod.null())
+												.optional()
+												.describe("Updated alpha parameter for Beta prior"),
+											beta: zod
+												.number()
+												.or(zod.null())
+												.optional()
+												.describe("Updated beta parameter for Beta prior"),
+											mu: zod
+												.array(zod.number())
+												.or(zod.null())
+												.optional()
+												.describe("Updated mean vector for Normal prior"),
+											covariance: zod
+												.array(zod.array(zod.number()))
+												.or(zod.null())
+												.optional()
+												.describe("Updated covariance matrix for Normal prior"),
+											prior_pred_mean: zod
+												.number()
+												.describe("Prior predictive mean for this arm."),
+											prior_pred_stdev: zod
+												.number()
+												.describe(
+													"Prior predictive standard deviation for this arm.",
+												),
+											prior_pred_ci_upper: zod
+												.number()
+												.describe(
+													"Prior predictive upper bound of 95% confidence interval for this arm.",
+												),
+											prior_pred_ci_lower: zod
+												.number()
+												.describe(
+													"Prior predictive lower bound of 95% confidence interval for this arm.",
+												),
+											post_pred_mean: zod
+												.number()
+												.describe("Prior predictive mean for this arm."),
+											post_pred_stdev: zod
+												.number()
+												.describe(
+													"Prior predictive standard deviation for this arm.",
+												),
+											post_pred_ci_upper: zod
+												.number()
+												.describe(
+													"Posterior predictive upper bound of 95% confidence interval for this arm.",
+												),
+											post_pred_ci_lower: zod
+												.number()
+												.describe(
+													"Posterior predictive lower bound of 95% confidence interval for this arm.",
+												),
+										})
+										.describe(
+											"Describes an experiment arm analysis for bandit experiments.",
+										),
+								)
+								.describe(
+									"Contains one analysis per metric targeted by the experiment.",
+								),
+							n_outcomes: zod
+								.number()
+								.describe(
+									"The number of outcomes observed for this experiment.",
+								),
+							created_at: zod
+								.string()
+								.datetime({})
+								.describe(
+									"The date and time the experiment analysis was created.",
+								),
+							contexts: zod
+								.array(zod.number())
+								.or(zod.null())
+								.optional()
+								.describe(
+									"The context values used for the analysis, if applicable.",
+								),
+						})
+						.describe("Describes changes in arms for a bandit experiment"),
+				)
+				.describe("The type of experiment analysis response.")
+				.or(zod.null())
+				.describe("Analysis results as of the updated_at time."),
+		}),
 	})
 	.describe("Describes the status and content of a snapshot.");
 
@@ -514,6 +535,34 @@ export const listSnapshotsResponse = zod.object({
 													.or(zod.null())
 													.describe(
 														"The standard error of the treatment effect estimate.",
+													),
+												ci_lower: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Confidence interval lower bound for the regression coefficient estimate.",
+													),
+												ci_upper: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Confidence interval upper bound for the regression coefficient estimate.",
+													),
+												mean_ci_lower: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Confidence interval lower bound for the arm's mean.",
+													),
+												mean_ci_upper: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Confidence interval upper bound for the arm's mean.",
 													),
 												num_missing_values: zod
 													.number()
@@ -708,6 +757,13 @@ export const listSnapshotsResponse = zod.object({
 				.describe("Analysis results as of the updated_at time."),
 		}),
 	),
+	latest_failure: zod
+		.string()
+		.datetime({})
+		.or(zod.null())
+		.describe(
+			"The timestamp of the latest snapshot that failed, or null if there have been no snapshot failures.",
+		),
 });
 
 /**
@@ -2451,11 +2507,13 @@ export const createExperimentParams = zod.object({
 	datasource_id: zod.string(),
 });
 
+export const createExperimentQueryChosenNMinOne = 0;
 export const createExperimentQueryStratifyOnMetricsDefault = true;
 
 export const createExperimentQueryParams = zod.object({
 	chosen_n: zod
 		.number()
+		.min(createExperimentQueryChosenNMinOne)
 		.or(zod.null())
 		.optional()
 		.describe("Number of participants to assign."),
@@ -4730,6 +4788,34 @@ export const analyzeExperimentResponse = zod
 										.describe(
 											"The standard error of the treatment effect estimate.",
 										),
+									ci_lower: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Confidence interval lower bound for the regression coefficient estimate.",
+										),
+									ci_upper: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Confidence interval upper bound for the regression coefficient estimate.",
+										),
+									mean_ci_lower: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Confidence interval lower bound for the arm's mean.",
+										),
+									mean_ci_upper: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Confidence interval upper bound for the arm's mean.",
+										),
 									num_missing_values: zod
 										.number()
 										.min(
@@ -5036,6 +5122,34 @@ export const analyzeCmabExperimentResponse = zod
 										.or(zod.null())
 										.describe(
 											"The standard error of the treatment effect estimate.",
+										),
+									ci_lower: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Confidence interval lower bound for the regression coefficient estimate.",
+										),
+									ci_upper: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Confidence interval upper bound for the regression coefficient estimate.",
+										),
+									mean_ci_lower: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Confidence interval lower bound for the arm's mean.",
+										),
+									mean_ci_upper: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Confidence interval upper bound for the arm's mean.",
 										),
 									num_missing_values: zod
 										.number()

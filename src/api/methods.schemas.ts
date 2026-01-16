@@ -121,6 +121,26 @@ export type ArmAnalysisTStat = number | null;
  */
 export type ArmAnalysisStdError = number | null;
 
+/**
+ * Confidence interval lower bound for the regression coefficient estimate.
+ */
+export type ArmAnalysisCiLower = number | null;
+
+/**
+ * Confidence interval upper bound for the regression coefficient estimate.
+ */
+export type ArmAnalysisCiUpper = number | null;
+
+/**
+ * Confidence interval lower bound for the arm's mean.
+ */
+export type ArmAnalysisMeanCiLower = number | null;
+
+/**
+ * Confidence interval upper bound for the arm's mean.
+ */
+export type ArmAnalysisMeanCiUpper = number | null;
+
 export interface ArmAnalysis {
 	/** ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
 	arm_id?: ArmAnalysisArmId;
@@ -137,6 +157,14 @@ export interface ArmAnalysis {
 	t_stat: ArmAnalysisTStat;
 	/** The standard error of the treatment effect estimate. */
 	std_error: ArmAnalysisStdError;
+	/** Confidence interval lower bound for the regression coefficient estimate. */
+	ci_lower?: ArmAnalysisCiLower;
+	/** Confidence interval upper bound for the regression coefficient estimate. */
+	ci_upper?: ArmAnalysisCiUpper;
+	/** Confidence interval lower bound for the arm's mean. */
+	mean_ci_lower?: ArmAnalysisMeanCiLower;
+	/** Confidence interval upper bound for the arm's mean. */
+	mean_ci_upper?: ArmAnalysisMeanCiUpper;
 	/**
 	 * The number of participants assigned to this arm with missing values (NaNs) for this metric. These rows are excluded from the analysis. -1 indicates arm analysis not available due to all assignments missing outcomes for this metric.
 	 * @minimum -1
@@ -1526,16 +1554,11 @@ export interface GetParticipantAssignmentResponse {
 }
 
 /**
- * The completed snapshot.
- */
-export type GetSnapshotResponseSnapshot = Snapshot | null;
-
-/**
  * Describes the status and content of a snapshot.
  */
 export interface GetSnapshotResponse {
-	/** The completed snapshot. */
-	snapshot: GetSnapshotResponseSnapshot;
+	/** The snapshot. */
+	snapshot: Snapshot;
 }
 
 /**
@@ -1636,8 +1659,15 @@ export interface ListParticipantsTypeResponse {
 	items: ParticipantsConfig[];
 }
 
+/**
+ * The timestamp of the latest snapshot that failed, or null if there have been no snapshot failures.
+ */
+export type ListSnapshotsResponseLatestFailure = string | null;
+
 export interface ListSnapshotsResponse {
 	items: Snapshot[];
+	/** The timestamp of the latest snapshot that failed, or null if there have been no snapshot failures. */
+	latest_failure: ListSnapshotsResponseLatestFailure;
 }
 
 export interface ListWebhooksResponse {

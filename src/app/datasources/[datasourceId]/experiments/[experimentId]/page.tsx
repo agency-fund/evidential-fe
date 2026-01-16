@@ -3,35 +3,43 @@ import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { mutate } from 'swr';
-import { Badge, Box, Flex, Heading, Separator, Tabs, Text, Tooltip, Select } from '@radix-ui/themes';
-import { CalendarIcon, CodeIcon, InfoCircledIcon, PersonIcon, FileTextIcon } from '@radix-ui/react-icons';
+import { Badge, Box, Flex, Heading, Select, Separator, Tabs, Text, Tooltip } from '@radix-ui/themes';
 import {
+  ActivityLogIcon,
+  CalendarIcon,
+  CodeIcon,
+  ExclamationTriangleIcon,
+  FileTextIcon,
+  InfoCircledIcon,
+  PersonIcon,
+} from '@radix-ui/react-icons';
+import {
+  getGetExperimentForUiKey,
+  useAnalyzeCmabExperiment,
   useAnalyzeExperiment,
   useGetExperimentForUi,
   useListSnapshots,
   useUpdateExperiment,
-  getGetExperimentForUiKey,
-  useAnalyzeCmabExperiment,
 } from '@/api/admin';
 import {
-  Snapshot,
-  MetricAnalysis,
+  CMABContextInputRequest,
+  CMABExperimentSpecOutput,
+  ContextInput,
   ExperimentAnalysisResponse,
   MABExperimentSpecOutput,
-  CMABExperimentSpecOutput,
-  CMABContextInputRequest,
-  ContextInput,
+  MetricAnalysis,
+  Snapshot,
 } from '@/api/methods.schemas';
 import { ForestPlot } from '@/components/features/experiments/plots/forest-plot';
 import {
-  computeBoundsForMetric,
   AnalysisState,
-  precomputeFreqEffectsByMetric,
-  precomputeBanditEffects,
-  isBanditAnalysis,
-  transformAnalysisForForestTimeseriesPlot,
+  computeBoundsForMetric,
   getAlphaAndPower,
+  isBanditAnalysis,
   isFrequentistAnalysis,
+  precomputeBanditEffects,
+  precomputeFreqEffectsByMetric,
+  transformAnalysisForForestTimeseriesPlot,
 } from '@/components/features/experiments/plots/forest-plot-utils';
 import ForestTimeseriesPlot from '@/components/features/experiments/plots/forest-timeseries-plot';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
@@ -58,12 +66,15 @@ import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date
 import { ContextConfigBox } from '@/components/features/experiments/context-config-box';
 import { isBanditSpec, isCmabExperiment, isFrequentistSpec } from '../create/types';
 
+const SNAPSHOT_ERROR_ALERT_THRESHOLD_MS = 8 * 60 * 60 * 1000;
+
 export default function ExperimentViewPage() {
   const params = useParams();
   const orgCtx = useCurrentOrganization();
   const organizationId = orgCtx?.current.id || '';
   const datasourceId = (params.datasourceId as string) || '';
   const experimentId = (params.experimentId as string) || '';
+  const [lastErrorTimestamp, setLastErrorTimestamp] = useState<null | Date>(null);
 
   const [analysisHistory, setAnalysisHistory] = useState<AnalysisState[]>([]);
   const [liveAnalysis, setLiveAnalysis] = useState<AnalysisState>({
@@ -143,7 +154,6 @@ export default function ExperimentViewPage() {
     {
       swr: {
         enabled: !!organizationId && !!datasourceId && !!experimentId && !!experiment,
-        revalidateOnFocus: false,
         shouldRetryOnError: false,
         onSuccess: async (data) => {
           // Make human-readable labels for the dropdown, showing UTC down to the minute.
@@ -166,11 +176,10 @@ export default function ExperimentViewPage() {
             }
           }
 
-          // Convert to array and sort by date descending (most recent first)
+          // Convert to array
           const filteredSnapshots = Array.from(snapshotsByDate.values());
-          filteredSnapshots.sort((a, b) => b.updated_at.localeCompare(a.updated_at));
-
           const history: AnalysisState[] = filteredSnapshots.map((s) => {
+            // The results are guaranteed to be non-null because of the status filter.
             const analysisData = s.data as ExperimentAnalysisResponse;
             const date = new Date(s.updated_at);
             return {
@@ -183,6 +192,7 @@ export default function ExperimentViewPage() {
             };
           });
 
+          setLastErrorTimestamp(data.latest_failure === null ? null : new Date(data.latest_failure));
           setAnalysisHistory(history);
           // If we're not viewing real data, set the selected analysis to the most recent snapshot
           if (selectedAnalysisState.data === undefined) {
@@ -316,6 +326,9 @@ export default function ExperimentViewPage() {
     analysisHistory,
     selectedMetricName,
   );
+
+  const isLastSnapshotErrorRelevant =
+    lastErrorTimestamp !== null && Date.now() - lastErrorTimestamp.getTime() <= SNAPSHOT_ERROR_ALERT_THRESHOLD_MS;
 
   return (
     <Flex direction="column" gap="6">
@@ -479,30 +492,45 @@ export default function ExperimentViewPage() {
           headerRight={
             <Flex gap="3" wrap="wrap">
               <Flex gap="3" wrap="wrap" align="center" justify="between">
-                <Badge size="2">
+                <Badge size="2" style={{ height: '26px' }}>
                   <Flex gap="2" align="center">
                     <Heading size="2">Viewing:</Heading>
                     {analysisHistory.length == 0 ? (
                       <Text>{liveAnalysis.label}</Text>
                     ) : (
-                      <Select.Root size="1" value={selectedAnalysisState.key} onValueChange={handleSelectAnalysis}>
-                        <Select.Trigger style={{ height: 18 }} />
-                        <Select.Content>
-                          <Select.Group>
-                            <Select.Item key="live" value="live">
-                              <Box minWidth="136px">{liveAnalysis.label}</Box>
-                            </Select.Item>
-                          </Select.Group>
-                          <Select.Separator />
-                          <Select.Group>
-                            {analysisHistory.map((opt) => (
-                              <Select.Item key={opt.key} value={opt.key}>
-                                <Box minWidth="136px">{opt.label}</Box>
+                      <>
+                        <Select.Root size="1" value={selectedAnalysisState.key} onValueChange={handleSelectAnalysis}>
+                          <Select.Trigger style={{ height: 18 }} />
+                          <Select.Content>
+                            <Select.Group>
+                              <Select.Item key="live" value="live">
+                                <Box minWidth="136px">{liveAnalysis.label}</Box>
                               </Select.Item>
-                            ))}
-                          </Select.Group>
-                        </Select.Content>
-                      </Select.Root>
+                            </Select.Group>
+                            <Select.Separator />
+                            <Select.Group>
+                              {analysisHistory.map((opt) => (
+                                <Select.Item key={opt.key} value={opt.key}>
+                                  <Box minWidth="136px">{opt.label}</Box>
+                                </Select.Item>
+                              ))}
+                            </Select.Group>
+                          </Select.Content>
+                        </Select.Root>
+                        {isLastSnapshotErrorRelevant ? (
+                          <Tooltip content={'Last snapshot error: ' + lastErrorTimestamp?.toLocaleTimeString()}>
+                            <Link href={`/datasources/${datasourceId}/experiments/${experimentId}/snapshots`}>
+                              <ExclamationTriangleIcon color={'red'} />
+                            </Link>
+                          </Tooltip>
+                        ) : (
+                          <Tooltip content={'View snapshot log'}>
+                            <Link href={`/datasources/${datasourceId}/experiments/${experimentId}/snapshots`}>
+                              <ActivityLogIcon />
+                            </Link>
+                          </Tooltip>
+                        )}
+                      </>
                     )}
                   </Flex>
                 </Badge>
