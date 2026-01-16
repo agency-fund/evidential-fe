@@ -10,6 +10,7 @@ import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { XSpinner } from '@/components/ui/x-spinner';
 import Link from 'next/link';
 import { useCurrentOrganization } from '@/providers/organization-provider';
+import { Preformatted } from '@/components/ui/preformatted';
 
 const formatDuration = (createdAt: string, updatedAt: string): string => {
   const created = new Date(createdAt);
@@ -142,15 +143,7 @@ export default function SnapshotsPage() {
                     <Badge color={getStatusColor(snapshot.status)}>{snapshot.status}</Badge>
                   </Table.Cell>
                   <Table.Cell>
-                    {snapshot.details ? (
-                      <Code size="1">
-                        <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
-                          {JSON.stringify(snapshot.details, null, 2)}
-                        </pre>
-                      </Code>
-                    ) : (
-                      <Text color="gray">-</Text>
-                    )}
+                    {snapshot.details ? <Preformatted content={snapshot.details} /> : <Text color="gray">-</Text>}
                   </Table.Cell>
                 </Table.Row>
               ))}
