@@ -79,12 +79,13 @@ const CONTEXT_TYPE_OPTIONS: ContextTypeOption[] = [
 ];
 
 export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, onBack }: MABMetadataFormProps) {
-  const { trigger: triggerCreateExperiment, error: createExperimentError } = useCreateExperiment(
-    formData.datasourceId!,
-    {
-      chosen_n: formData.chosenN!,
-    },
-  );
+  const {
+    trigger: triggerCreateExperiment,
+    isMutating,
+    error: createExperimentError,
+  } = useCreateExperiment(formData.datasourceId!, {
+    chosen_n: formData.chosenN!,
+  });
 
   const handleSaveExperiment = async () => {
     try {
@@ -236,19 +237,6 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
     return false;
   };
 
-  const isFormValid = () => {
-    const basicValid =
-      formData.name.trim() &&
-      formData.hypothesis.trim() &&
-      formData.priorType &&
-      formData.outcomeType &&
-      formData.arms.length >= 2 &&
-      (formData.experimentType === 'cmab_online' ? formData.contexts.length >= 1 : true);
-    const armsValid = formData.arms.every((arm) => arm.arm_name.trim() && isPriorParamValid(arm));
-
-    return basicValid && armsValid;
-  };
-
   const getValidationMessage = () => {
     if (!formData.name.trim()) {
       return 'Experiment name is required.';
@@ -279,6 +267,8 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
     }
     return '';
   };
+
+  const isFormValid = getValidationMessage() === '';
 
   return (
     <Flex direction="column" gap="4">
@@ -489,7 +479,8 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
         onBack={onBack}
         onNext={handleSaveExperiment}
         nextLabel="Next"
-        nextDisabled={!isFormValid()}
+        nextDisabled={!isFormValid}
+        nextLoading={isMutating}
         tooltipMessage={getValidationMessage()}
       />
     </Flex>

@@ -45,11 +45,6 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
     participantTypesData !== undefined ? participantTypesData.filters : [];
   const strataFields = participantTypesData?.strata || [];
   const supportsPowerCheck = formData.experimentType === 'freq_preassigned';
-  const isNextButtonDisabled =
-    !formData.primaryMetric?.metric.field_name ||
-    !formData.primaryMetric?.mde ||
-    !formData.chosenN ||
-    (supportsPowerCheck && (formData.powerCheckResponse === undefined || isMutating));
 
   const handleMetricChange = (newData: FrequentABFormData) => {
     onFormDataChange({
@@ -78,13 +73,6 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
     }
   };
 
-  const nextButton = (
-    <Button type="submit" disabled={isNextButtonDisabled}>
-      {isMutating && <Spinner size="1" />}
-      Next
-    </Button>
-  );
-
   const getValidationMessage = () => {
     if (!formData.primaryMetric?.metric.field_name) {
       return 'Please select a primary metric.';
@@ -100,6 +88,14 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
     }
     return '';
   };
+
+  const isFormValid = getValidationMessage() === '';
+
+  const nextButton = (
+    <Button type="submit" disabled={!isFormValid} loading={isMutating}>
+      Next
+    </Button>
+  );
 
   return (
     <form onSubmit={handleSubmit}>
@@ -190,7 +186,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
           <Button type="button" variant="soft" onClick={onBack}>
             Back
           </Button>
-          {isNextButtonDisabled ? <Tooltip content={getValidationMessage()}>{nextButton}</Tooltip> : nextButton}
+          {isFormValid ? nextButton : <Tooltip content={getValidationMessage()}>{nextButton}</Tooltip>}
         </Flex>
       </Flex>
     </form>
