@@ -151,6 +151,34 @@ export const getSnapshotResponse = zod
 														.describe(
 															"The standard error of the treatment effect estimate.",
 														),
+													ci_lower: zod
+														.number()
+														.or(zod.null())
+														.optional()
+														.describe(
+															"Confidence interval lower bound for the regression coefficient estimate.",
+														),
+													ci_upper: zod
+														.number()
+														.or(zod.null())
+														.optional()
+														.describe(
+															"Confidence interval upper bound for the regression coefficient estimate.",
+														),
+													mean_ci_lower: zod
+														.number()
+														.or(zod.null())
+														.optional()
+														.describe(
+															"Confidence interval lower bound for the arm's mean.",
+														),
+													mean_ci_upper: zod
+														.number()
+														.or(zod.null())
+														.optional()
+														.describe(
+															"Confidence interval upper bound for the arm's mean.",
+														),
 													num_missing_values: zod
 														.number()
 														.min(
@@ -514,6 +542,34 @@ export const listSnapshotsResponse = zod.object({
 													.or(zod.null())
 													.describe(
 														"The standard error of the treatment effect estimate.",
+													),
+												ci_lower: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Confidence interval lower bound for the regression coefficient estimate.",
+													),
+												ci_upper: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Confidence interval upper bound for the regression coefficient estimate.",
+													),
+												mean_ci_lower: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Confidence interval lower bound for the arm's mean.",
+													),
+												mean_ci_upper: zod
+													.number()
+													.or(zod.null())
+													.optional()
+													.describe(
+														"Confidence interval upper bound for the arm's mean.",
 													),
 												num_missing_values: zod
 													.number()
@@ -2451,11 +2507,13 @@ export const createExperimentParams = zod.object({
 	datasource_id: zod.string(),
 });
 
+export const createExperimentQueryChosenNMinOne = 0;
 export const createExperimentQueryStratifyOnMetricsDefault = true;
 
 export const createExperimentQueryParams = zod.object({
 	chosen_n: zod
 		.number()
+		.min(createExperimentQueryChosenNMinOne)
 		.or(zod.null())
 		.optional()
 		.describe("Number of participants to assign."),
@@ -3451,6 +3509,20 @@ export const createExperimentBody = zod.object({
 								.or(zod.null())
 								.optional()
 								.describe("Human friendly message about the above results."),
+							chosen_n: zod
+								.number()
+								.or(zod.null())
+								.optional()
+								.describe(
+									"If the user provided a chosen sample size to evaluate for pre-assigned experiments, this is that value. Otherwise, it is None.",
+								),
+							pct_change_with_chosen_n: zod
+								.number()
+								.or(zod.null())
+								.optional()
+								.describe(
+									"Given a chosen sample size, what is the minimum detectable percent change for this metric. This is None because it is only calculated when a chosen sample size is provided.",
+								),
 						})
 						.describe("Describes analysis results of a single metric."),
 				)
@@ -4503,6 +4575,20 @@ export const createExperimentResponse = zod
 									.or(zod.null())
 									.optional()
 									.describe("Human friendly message about the above results."),
+								chosen_n: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"If the user provided a chosen sample size to evaluate for pre-assigned experiments, this is that value. Otherwise, it is None.",
+									),
+								pct_change_with_chosen_n: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Given a chosen sample size, what is the minimum detectable percent change for this metric. This is None because it is only calculated when a chosen sample size is provided.",
+									),
 							})
 							.describe("Describes analysis results of a single metric."),
 					)
@@ -4729,6 +4815,34 @@ export const analyzeExperimentResponse = zod
 										.or(zod.null())
 										.describe(
 											"The standard error of the treatment effect estimate.",
+										),
+									ci_lower: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Confidence interval lower bound for the regression coefficient estimate.",
+										),
+									ci_upper: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Confidence interval upper bound for the regression coefficient estimate.",
+										),
+									mean_ci_lower: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Confidence interval lower bound for the arm's mean.",
+										),
+									mean_ci_upper: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Confidence interval upper bound for the arm's mean.",
 										),
 									num_missing_values: zod
 										.number()
@@ -5036,6 +5150,34 @@ export const analyzeCmabExperimentResponse = zod
 										.or(zod.null())
 										.describe(
 											"The standard error of the treatment effect estimate.",
+										),
+									ci_lower: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Confidence interval lower bound for the regression coefficient estimate.",
+										),
+									ci_upper: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Confidence interval upper bound for the regression coefficient estimate.",
+										),
+									mean_ci_lower: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Confidence interval lower bound for the arm's mean.",
+										),
+									mean_ci_upper: zod
+										.number()
+										.or(zod.null())
+										.optional()
+										.describe(
+											"Confidence interval upper bound for the arm's mean.",
 										),
 									num_missing_values: zod
 										.number()
@@ -6422,6 +6564,20 @@ export const listOrganizationExperimentsResponse = zod.object({
 											.describe(
 												"Human friendly message about the above results.",
 											),
+										chosen_n: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"If the user provided a chosen sample size to evaluate for pre-assigned experiments, this is that value. Otherwise, it is None.",
+											),
+										pct_change_with_chosen_n: zod
+											.number()
+											.or(zod.null())
+											.optional()
+											.describe(
+												"Given a chosen sample size, what is the minimum detectable percent change for this metric. This is None because it is only calculated when a chosen sample size is provided.",
+											),
 									})
 									.describe("Describes analysis results of a single metric."),
 							)
@@ -7588,6 +7744,20 @@ export const getExperimentForUiResponse = zod
 									.or(zod.null())
 									.optional()
 									.describe("Human friendly message about the above results."),
+								chosen_n: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"If the user provided a chosen sample size to evaluate for pre-assigned experiments, this is that value. Otherwise, it is None.",
+									),
+								pct_change_with_chosen_n: zod
+									.number()
+									.or(zod.null())
+									.optional()
+									.describe(
+										"Given a chosen sample size, what is the minimum detectable percent change for this metric. This is None because it is only calculated when a chosen sample size is provided.",
+									),
 							})
 							.describe("Describes analysis results of a single metric."),
 					)
@@ -9024,6 +9194,20 @@ export const powerCheckResponse = zod.object({
 						.or(zod.null())
 						.optional()
 						.describe("Human friendly message about the above results."),
+					chosen_n: zod
+						.number()
+						.or(zod.null())
+						.optional()
+						.describe(
+							"If the user provided a chosen sample size to evaluate for pre-assigned experiments, this is that value. Otherwise, it is None.",
+						),
+					pct_change_with_chosen_n: zod
+						.number()
+						.or(zod.null())
+						.optional()
+						.describe(
+							"Given a chosen sample size, what is the minimum detectable percent change for this metric. This is None because it is only calculated when a chosen sample size is provided.",
+						),
 				})
 				.describe("Describes analysis results of a single metric."),
 		)

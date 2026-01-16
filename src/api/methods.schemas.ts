@@ -121,6 +121,26 @@ export type ArmAnalysisTStat = number | null;
  */
 export type ArmAnalysisStdError = number | null;
 
+/**
+ * Confidence interval lower bound for the regression coefficient estimate.
+ */
+export type ArmAnalysisCiLower = number | null;
+
+/**
+ * Confidence interval upper bound for the regression coefficient estimate.
+ */
+export type ArmAnalysisCiUpper = number | null;
+
+/**
+ * Confidence interval lower bound for the arm's mean.
+ */
+export type ArmAnalysisMeanCiLower = number | null;
+
+/**
+ * Confidence interval upper bound for the arm's mean.
+ */
+export type ArmAnalysisMeanCiUpper = number | null;
+
 export interface ArmAnalysis {
 	/** ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
 	arm_id?: ArmAnalysisArmId;
@@ -137,6 +157,14 @@ export interface ArmAnalysis {
 	t_stat: ArmAnalysisTStat;
 	/** The standard error of the treatment effect estimate. */
 	std_error: ArmAnalysisStdError;
+	/** Confidence interval lower bound for the regression coefficient estimate. */
+	ci_lower?: ArmAnalysisCiLower;
+	/** Confidence interval upper bound for the regression coefficient estimate. */
+	ci_upper?: ArmAnalysisCiUpper;
+	/** Confidence interval lower bound for the arm's mean. */
+	mean_ci_lower?: ArmAnalysisMeanCiLower;
+	/** Confidence interval upper bound for the arm's mean. */
+	mean_ci_upper?: ArmAnalysisMeanCiUpper;
 	/**
 	 * The number of participants assigned to this arm with missing values (NaNs) for this metric. These rows are excluded from the analysis. -1 indicates arm analysis not available due to all assignments missing outcomes for this metric.
 	 * @minimum -1
@@ -1776,6 +1804,16 @@ export type MetricPowerAnalysisInputPctChangePossible = number | null;
 export type MetricPowerAnalysisInputMsg = MetricPowerAnalysisMessage | null;
 
 /**
+ * If the user provided a chosen sample size to evaluate for pre-assigned experiments, this is that value. Otherwise, it is None.
+ */
+export type MetricPowerAnalysisInputChosenN = number | null;
+
+/**
+ * Given a chosen sample size, what is the minimum detectable percent change for this metric. This is None because it is only calculated when a chosen sample size is provided.
+ */
+export type MetricPowerAnalysisInputPctChangeWithChosenN = number | null;
+
+/**
  * Describes analysis results of a single metric.
  */
 export interface MetricPowerAnalysisInput {
@@ -1790,6 +1828,10 @@ export interface MetricPowerAnalysisInput {
 	pct_change_possible?: MetricPowerAnalysisInputPctChangePossible;
 	/** Human friendly message about the above results. */
 	msg?: MetricPowerAnalysisInputMsg;
+	/** If the user provided a chosen sample size to evaluate for pre-assigned experiments, this is that value. Otherwise, it is None. */
+	chosen_n?: MetricPowerAnalysisInputChosenN;
+	/** Given a chosen sample size, what is the minimum detectable percent change for this metric. This is None because it is only calculated when a chosen sample size is provided. */
+	pct_change_with_chosen_n?: MetricPowerAnalysisInputPctChangeWithChosenN;
 }
 
 /**
@@ -1818,6 +1860,16 @@ export type MetricPowerAnalysisOutputPctChangePossible = number | null;
 export type MetricPowerAnalysisOutputMsg = MetricPowerAnalysisMessage | null;
 
 /**
+ * If the user provided a chosen sample size to evaluate for pre-assigned experiments, this is that value. Otherwise, it is None.
+ */
+export type MetricPowerAnalysisOutputChosenN = number | null;
+
+/**
+ * Given a chosen sample size, what is the minimum detectable percent change for this metric. This is None because it is only calculated when a chosen sample size is provided.
+ */
+export type MetricPowerAnalysisOutputPctChangeWithChosenN = number | null;
+
+/**
  * Describes analysis results of a single metric.
  */
 export interface MetricPowerAnalysisOutput {
@@ -1832,6 +1884,10 @@ export interface MetricPowerAnalysisOutput {
 	pct_change_possible?: MetricPowerAnalysisOutputPctChangePossible;
 	/** Human friendly message about the above results. */
 	msg?: MetricPowerAnalysisOutputMsg;
+	/** If the user provided a chosen sample size to evaluate for pre-assigned experiments, this is that value. Otherwise, it is None. */
+	chosen_n?: MetricPowerAnalysisOutputChosenN;
+	/** Given a chosen sample size, what is the minimum detectable percent change for this metric. This is None because it is only calculated when a chosen sample size is provided. */
+	pct_change_with_chosen_n?: MetricPowerAnalysisOutputPctChangeWithChosenN;
 }
 
 export type MetricPowerAnalysisMessageValuesAnyOf = {
