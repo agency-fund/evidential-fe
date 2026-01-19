@@ -5,18 +5,20 @@ import { Badge, Flex, Heading, Text, Tooltip as RadixTooltip } from '@radix-ui/t
 
 type MdeBadgeProps = {
   value?: string | number | null;
+  content?: string;
+  heading?: string;
   size?: '1' | '2' | '3';
 };
 
-export function MdeBadge({ value, size = '2' }: MdeBadgeProps) {
+export function MdeBadge({ value, content = '', heading = 'MDE', size = '2' }: MdeBadgeProps) {
   const displayValue = value === null || value === undefined ? 'unknown' : String(value);
   return (
     <Badge size={size}>
       <Flex gap="4" align="center">
-        <Heading size={size}>MDE:</Heading>
+        <Heading size={size}>{heading}:</Heading>
         <Flex gap="2" align="center">
           <Text>{displayValue}%</Text>
-          <RadixTooltip content="This metric's minimum detectable effect as defined in the experiment's design that meets the confidence and power requirements.">
+          <RadixTooltip content={content}>
             <InfoCircledIcon />
           </RadixTooltip>
         </Flex>
