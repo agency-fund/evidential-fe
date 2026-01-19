@@ -75,7 +75,7 @@ export function DecisionAndImpactSection({ impact, decision, onUpdate }: Decisio
                 value={formData.impact}
                 onValueChange={(val) => setFormData((prev) => ({ ...prev, impact: val as Impact }))}
               >
-                {IMPACT_LIST.map((option) => (
+                {IMPACT_LIST.filter((option) => option.value !== '').map((option) => (
                   <RadioCards.Item key={option.value} value={option.value}>
                     <Flex direction="column" gap="2">
                       <ExperimentImpactBadge impact={option.value} size="3" />

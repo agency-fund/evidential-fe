@@ -36,16 +36,12 @@ export function ExperimentsTableRow({ experiment }: ExperimentTableRowProps) {
         <Table.Cell>{formatIsoDateLocal(design_spec.start_date)}</Table.Cell>
         <Table.Cell>{formatIsoDateLocal(design_spec.end_date)}</Table.Cell>
         <Table.Cell>
-          {experiment.impact ? (
-            <ExperimentImpactBadge impact={experiment.impact} useShortLabel={true} />
-          ) : (
-            <Text color="gray">Ongoing</Text>
-          )}
+          <ExperimentImpactBadge impact={experiment.impact} useShortLabel={true} />
         </Table.Cell>
         <Table.Cell>
           <Flex width="150px">
             <Text truncate color={experiment.decision ? undefined : 'gray'}>
-              {experiment.decision || 'Ongoing'}
+              {experiment.decision || 'Undecided'}
             </Text>
           </Flex>
         </Table.Cell>

@@ -61,17 +61,8 @@ export default function Page() {
 
   const matchesImpactFilter = (experiment: ExperimentWithStatus): boolean => {
     if (selectedImpacts.length === 0) return true;
-
-    const hasNotSpecifiedFilter = selectedImpacts.includes('__not_specified__');
-    const isNotSpecified = experiment.impact === undefined || experiment.impact === '';
-
-    // If experiment has no impact set
-    if (isNotSpecified) {
-      return hasNotSpecifiedFilter;
-    }
-
-    // If experiment has impact set, check if it's in selected filters
-    return selectedImpacts.includes(experiment.impact!);
+    const normalizedImpact = experiment.impact ?? '';
+    return selectedImpacts.includes(normalizedImpact);
   };
 
   const matchesSearchQuery = (experiment: ExperimentWithStatus): boolean => {
