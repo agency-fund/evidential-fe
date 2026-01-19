@@ -83,7 +83,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
     if (supportsPowerCheck && formData.powerCheckResponse === undefined) {
       return 'Please complete the power check before proceeding.';
     }
-    if (!formData.chosenN) {
+    if (formData.experimentType === 'freq_preassigned' && !formData.chosenN) {
       return 'Please select a sample size before proceeding.';
     }
     return '';
