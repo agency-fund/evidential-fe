@@ -1,43 +1,15 @@
 'use client';
 
 import { ArrowLeftIcon } from '@radix-ui/react-icons';
-import { Badge, Button, Code, Flex, Heading, Table, Text } from '@radix-ui/themes';
+import { Button, Flex, Heading, Text } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
 
 import { useListSnapshots } from '@/api/admin';
-import { Snapshot } from '@/api/methods.schemas';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { XSpinner } from '@/components/ui/x-spinner';
 import Link from 'next/link';
 import { useCurrentOrganization } from '@/providers/organization-provider';
-import { Preformatted } from '@/components/ui/preformatted';
-
-const formatDuration = (createdAt: string, updatedAt: string): string => {
-  const created = new Date(createdAt);
-  const updated = new Date(updatedAt);
-  const diffMs = updated.getTime() - created.getTime();
-  const diffSec = Math.floor(diffMs / 1000);
-
-  if (diffSec < 1) return `< 1s`;
-  if (diffSec < 60) return `${diffSec}s`;
-  const diffMin = Math.floor(diffSec / 60);
-  const remainingSec = diffSec % 60;
-  if (diffMin < 60) return `${diffMin}m ${remainingSec}s`;
-  const diffHour = Math.floor(diffMin / 60);
-  const remainingMin = diffMin % 60;
-  return `${diffHour}h ${remainingMin}m`;
-};
-
-const getStatusColor = (status: Snapshot['status']): 'red' | 'yellow' | 'green' => {
-  switch (status) {
-    case 'failed':
-      return 'red';
-    case 'running':
-      return 'yellow';
-    case 'success':
-      return 'green';
-  }
-};
+import { SnapshotTable } from './snapshot-table';
 
 export default function SnapshotsPage() {
   const org = useCurrentOrganization();
@@ -119,36 +91,7 @@ export default function SnapshotsPage() {
         {failedItems.length === 0 ? (
           <Text color="gray">No failed snapshots</Text>
         ) : (
-          <Table.Root variant="surface">
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeaderCell>Snapshot ID</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Created</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Updated</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Duration</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Details</Table.ColumnHeaderCell>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {failedItems.map((snapshot) => (
-                <Table.Row key={snapshot.id}>
-                  <Table.Cell>
-                    <Code>{snapshot.id}</Code>
-                  </Table.Cell>
-                  <Table.Cell>{new Date(snapshot.created_at).toLocaleString()}</Table.Cell>
-                  <Table.Cell>{new Date(snapshot.updated_at).toLocaleString()}</Table.Cell>
-                  <Table.Cell>{formatDuration(snapshot.created_at, snapshot.updated_at)}</Table.Cell>
-                  <Table.Cell>
-                    <Badge color={getStatusColor(snapshot.status)}>{snapshot.status}</Badge>
-                  </Table.Cell>
-                  <Table.Cell>
-                    {snapshot.details ? <Preformatted content={snapshot.details} /> : <Text color="gray">-</Text>}
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
+          <SnapshotTable items={failedItems} showDetails={true} />
         )}
       </Flex>
 
@@ -157,32 +100,7 @@ export default function SnapshotsPage() {
         {runningSuccessItems.length === 0 ? (
           <Text color="gray">No snapshots</Text>
         ) : (
-          <Table.Root variant="surface">
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeaderCell>Snapshot ID</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Created</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Updated</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Duration</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {runningSuccessItems.map((snapshot) => (
-                <Table.Row key={snapshot.id}>
-                  <Table.Cell>
-                    <Code>{snapshot.id}</Code>
-                  </Table.Cell>
-                  <Table.Cell>{new Date(snapshot.created_at).toLocaleString()}</Table.Cell>
-                  <Table.Cell>{new Date(snapshot.updated_at).toLocaleString()}</Table.Cell>
-                  <Table.Cell>{formatDuration(snapshot.created_at, snapshot.updated_at)}</Table.Cell>
-                  <Table.Cell>
-                    <Badge color={getStatusColor(snapshot.status)}>{snapshot.status}</Badge>
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
+          <SnapshotTable items={runningSuccessItems} />
         )}
       </Flex>
     </Flex>
