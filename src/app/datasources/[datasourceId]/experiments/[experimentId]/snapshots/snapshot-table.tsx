@@ -1,6 +1,6 @@
 import { Badge, Code, Table, Text } from '@radix-ui/themes';
 
-import { Snapshot } from '@/api/methods.schemas';
+import { Snapshot, SnapshotDetails } from '@/api/methods.schemas';
 import { Preformatted } from '@/components/ui/preformatted';
 
 const formatDuration = (createdAt: string, updatedAt: string): string => {
@@ -28,6 +28,13 @@ const getStatusColor = (status: Snapshot['status']): 'red' | 'yellow' | 'green' 
     case 'success':
       return 'green';
   }
+};
+
+const getDetailsContent = (details: Exclude<SnapshotDetails, null>): string | Record<string, unknown> => {
+  if ('message' in details && Object.keys(details).length === 1) {
+    return typeof details.message === 'string' ? details.message : details;
+  }
+  return details;
 };
 
 interface SnapshotTableProps {
@@ -62,7 +69,11 @@ export function SnapshotTable({ items, showDetails = false }: SnapshotTableProps
             </Table.Cell>
             {showDetails && (
               <Table.Cell>
-                {snapshot.details ? <Preformatted content={snapshot.details} /> : <Text color="gray">-</Text>}
+                {snapshot.details ? (
+                  <Preformatted content={getDetailsContent(snapshot.details)} />
+                ) : (
+                  <Text color="gray">-</Text>
+                )}
               </Table.Cell>
             )}
           </Table.Row>
