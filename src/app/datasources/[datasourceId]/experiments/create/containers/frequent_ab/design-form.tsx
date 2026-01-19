@@ -48,6 +48,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
   const isNextButtonDisabled =
     !formData.primaryMetric?.metric.field_name ||
     !formData.primaryMetric?.mde ||
+    !formData.chosenN ||
     (supportsPowerCheck && (formData.powerCheckResponse === undefined || isMutating));
 
   const handleMetricChange = (newData: FrequentABFormData) => {

@@ -79,13 +79,7 @@ export function ExperimentCard({
           <Flex align="center" gap="2">
             <ExperimentTypeBadge type={type} />
             <Separator orientation="vertical" />
-            {impact ? (
-              <ExperimentImpactBadge impact={impact} />
-            ) : (
-              <Text size="2" color="gray">
-                Ongoing
-              </Text>
-            )}
+            <ExperimentImpactBadge impact={impact} />
           </Flex>
 
           <Separator size="4" />
@@ -104,7 +98,7 @@ export function ExperimentCard({
                 Decision
               </Text>
               <Text size="2" truncate color={decision ? undefined : 'gray'}>
-                {decision || 'Ongoing'}
+                {decision || 'Undecided'}
               </Text>
             </Flex>
           </Flex>

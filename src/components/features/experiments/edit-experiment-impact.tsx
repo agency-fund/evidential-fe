@@ -11,7 +11,7 @@ interface EditExperimentImpactProps {
   size?: '1' | '2' | '3';
 }
 
-const IMPACT_OPTIONS = IMPACT_LIST.map((c) => ({ label: c.label, value: c.value }));
+const EDIT_IMPACT_OPTIONS = IMPACT_LIST.filter((c) => c.value !== '').map((c) => ({ label: c.label, value: c.value }));
 
 export function EditExperimentImpact({ value, onSubmit, size = '2' }: EditExperimentImpactProps) {
   const normalizedValue = value || '';
@@ -19,7 +19,7 @@ export function EditExperimentImpact({ value, onSubmit, size = '2' }: EditExperi
   return (
     <EditableSelect
       value={normalizedValue}
-      options={IMPACT_OPTIONS}
+      options={EDIT_IMPACT_OPTIONS}
       onSubmit={(v) => onSubmit(v as Impact)}
       size={size}
       placeholder="Choose impact"
