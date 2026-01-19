@@ -33,7 +33,7 @@ export default function SnapshotsPage() {
   );
 
   const {
-    data: runningSuccessSnapshots,
+    data: successSnapshots,
     isLoading: rsLoading,
     error: rsError,
   } = useListSnapshots(
@@ -62,7 +62,7 @@ export default function SnapshotsPage() {
   }
 
   const failedItems = failedSnapshots?.items ?? [];
-  const runningSuccessItems = runningSuccessSnapshots?.items ?? [];
+  const successItems = successSnapshots?.items ?? [];
 
   return (
     <Flex direction="column" gap="6">
@@ -97,11 +97,7 @@ export default function SnapshotsPage() {
 
       <Flex direction="column" gap="4">
         <Heading size="5">Successful Snapshots</Heading>
-        {runningSuccessItems.length === 0 ? (
-          <Text color="gray">No snapshots</Text>
-        ) : (
-          <SnapshotTable items={runningSuccessItems} />
-        )}
+        {successItems.length === 0 ? <Text color="gray">No snapshots</Text> : <SnapshotTable items={successItems} />}
       </Flex>
     </Flex>
   );
