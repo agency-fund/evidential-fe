@@ -58,7 +58,6 @@ import { getExperimentStatus } from '@/services/experiment-utils';
 import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date-utils';
 import { ContextConfigBox } from '@/components/features/experiments/context-config-box';
 import { isBanditSpec, isCmabExperiment, isFrequentistSpec } from '../create/types';
-import { set } from 'zod';
 
 export default function ExperimentViewPage() {
   const params = useParams();
@@ -467,17 +466,14 @@ export default function ExperimentViewPage() {
                   </Badge>
                   <MdeBadge
                     value={mdePct}
-                    content="This metric's required minimum detectable effect as defined in the experiment's design."
+                    content="This metric's. desired minimum detectable effect as defined in the experiment's design."
+                    heading="Desired MDE"
                   />
                   {observableMdePct !== null && (
                     <MdeBadge
                       value={observableMdePct}
-                      content={
-                        chosenN
-                          ? `The minimum detectable effect given the chosen sample size of ${chosenN}, confidence and power.`
-                          : 'The minimum detectable effect given the chosen sample size, confidence and power.'
-                      }
-                      heading="Observable MDE"
+                      content={`The minimum detectable effect given the chosen sample size of ${chosenN}, confidence and power.`}
+                      heading="Estimated MDE"
                     />
                   )}
                 </Flex>
