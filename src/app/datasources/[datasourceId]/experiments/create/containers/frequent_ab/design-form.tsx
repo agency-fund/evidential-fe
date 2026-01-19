@@ -67,7 +67,6 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
       });
       onNext();
     } catch (error) {
-      // TODO
       console.error('Failed to create experiment:', error);
       throw new Error('failed to create experiment');
     }

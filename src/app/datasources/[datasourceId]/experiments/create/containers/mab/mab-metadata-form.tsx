@@ -244,6 +244,12 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
     if (!formData.hypothesis.trim()) {
       return 'Hypothesis is required.';
     }
+    if (!formData.startDate) {
+      return 'Start date is required.';
+    }
+    if (!formData.endDate) {
+      return 'End date is required.';
+    }
     if (!formData.outcomeType) {
       return 'Please select an outcome type.';
     }
