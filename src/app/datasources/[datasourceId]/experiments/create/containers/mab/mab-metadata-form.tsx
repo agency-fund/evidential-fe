@@ -244,9 +244,6 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
     if (!formData.hypothesis.trim()) {
       return 'Hypothesis is required.';
     }
-    if (!formData.priorType) {
-      return 'Please select a prior distribution type.';
-    }
     if (!formData.outcomeType) {
       return 'Please select an outcome type.';
     }
