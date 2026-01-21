@@ -1,6 +1,6 @@
 'use client';
 import { useGetParticipantType, useInspectParticipantTypes } from '@/api/admin';
-import { Button, Callout, Flex, Heading, Text } from '@radix-ui/themes';
+import { Button, Callout, Flex, Grid, Heading, Text } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { useParams } from 'next/navigation';
 import { InspectParticipantTypesSummary } from '@/components/features/participants/inspect-participant-types-summary';
@@ -8,6 +8,7 @@ import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { InfoCircledIcon, Pencil2Icon } from '@radix-ui/react-icons';
 import Link from 'next/link';
 import { ParticipantDriftTable } from '@/components/features/participants/participant-drift-table';
+import FieldDataCard from '@/components/ui/cards/field-data-card';
 
 export default function Page() {
   const params = useParams();
@@ -55,6 +56,8 @@ export default function Page() {
     (field) => !field.is_metric && !field.is_filter && !field.is_strata && !field.is_unique_id,
   ).length;
 
+  const uniqueIdField = data.proposed.fields.find((field) => field.is_unique_id);
+
   return (
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
@@ -83,6 +86,19 @@ export default function Page() {
           </Callout.Text>
         </Callout.Root>
       )}
+
+      <Flex direction="column" gap="4">
+        <Heading size="4">Unique ID Field</Heading>
+        <Grid columns={{ initial: '1', sm: '2', lg: '3' }} gap="4">
+          {uniqueIdField ? (
+            <FieldDataCard field={uniqueIdField} key={uniqueIdField.field_name} />
+          ) : (
+            <Text color="gray" size="4">
+              <em>Not set</em>
+            </Text>
+          )}
+        </Grid>
+      </Flex>
 
       {inspectError && <GenericErrorCallout title={'Failed to fetch participant type details'} error={inspectError} />}
 
