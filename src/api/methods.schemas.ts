@@ -1591,8 +1591,8 @@ export interface GetParticipantAssignmentResponse {
 }
 
 export interface GetParticipantsTypeResponse {
-	current: ParticipantsConfig;
-	proposed: ParticipantsConfig;
+	current: ParticipantsDef;
+	proposed: ParticipantsDef;
 	drift: Drift;
 }
 
@@ -1699,7 +1699,7 @@ export interface ListOrganizationsResponse {
 }
 
 export interface ListParticipantsTypeResponse {
-	items: ParticipantsConfig[];
+	items: ParticipantsDef[];
 }
 
 /**
@@ -2131,24 +2131,20 @@ export interface ParticipantProperty {
 	value: PropertyValueTypes;
 }
 
-export type ParticipantsConfig = ParticipantsDef;
+/**
+ * Participants are a logical representation of a table in the data warehouse.
 
-export type ParticipantsDefType =
-	(typeof ParticipantsDefType)[keyof typeof ParticipantsDefType];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const ParticipantsDefType = {
-	schema: "schema",
-} as const;
-
+Participants are defined by a participant_type, table_name and a schema.
+ */
 export interface ParticipantsDef {
 	/** Name of the table in the data warehouse */
 	table_name: string;
 	/** List of fields available in this table */
 	fields: FieldDescriptor[];
+	/** Indicates that the schema is determined by an inline schema. */
+	type: "schema";
 	/** The name of the set of participants defined by the filters. This name must be unique within a datasource. */
 	participant_type: string;
-	type: ParticipantsDefType;
 }
 
 /**

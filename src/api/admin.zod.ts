@@ -1756,69 +1756,79 @@ export const listParticipantTypesResponseItemsItemFieldsItemIsMetricDefault = fa
 
 export const listParticipantTypesResponse = zod.object({
 	items: zod.array(
-		zod.object({
-			table_name: zod
-				.string()
-				.describe("Name of the table in the data warehouse"),
-			fields: zod
-				.array(
-					zod.object({
-						field_name: zod
-							.string()
-							.describe("Name of the field in the data source"),
-						data_type: zod
-							.enum([
-								"boolean",
-								"character varying",
-								"uuid",
-								"date",
-								"integer",
-								"double precision",
-								"numeric",
-								"timestamp without time zone",
-								"timestamp with time zone",
-								"bigint",
-								"jsonb (unsupported)",
-								"json (unsupported)",
-								"unsupported",
-							])
-							.describe(
-								"Defines the supported data types for fields in the data source.",
-							),
-						description: zod
-							.string()
-							.optional()
-							.describe("Human-readable description of the field"),
-						is_unique_id: zod
-							.boolean()
-							.optional()
-							.describe("Whether this field uniquely identifies records"),
-						is_strata: zod
-							.boolean()
-							.optional()
-							.describe("Whether this field should be used for stratification"),
-						is_filter: zod
-							.boolean()
-							.optional()
-							.describe("Whether this field can be used as a filter"),
-						is_metric: zod
-							.boolean()
-							.optional()
-							.describe("Whether this field can be used as a metric"),
-						extra: zod
-							.record(zod.string(), zod.string())
-							.or(zod.null())
-							.optional(),
-					}),
-				)
-				.describe("List of fields available in this table"),
-			participant_type: zod
-				.string()
-				.describe(
-					"The name of the set of participants defined by the filters. This name must be unique within a datasource.",
-				),
-			type: zod.enum(["schema"]),
-		}),
+		zod
+			.object({
+				table_name: zod
+					.string()
+					.describe("Name of the table in the data warehouse"),
+				fields: zod
+					.array(
+						zod.object({
+							field_name: zod
+								.string()
+								.describe("Name of the field in the data source"),
+							data_type: zod
+								.enum([
+									"boolean",
+									"character varying",
+									"uuid",
+									"date",
+									"integer",
+									"double precision",
+									"numeric",
+									"timestamp without time zone",
+									"timestamp with time zone",
+									"bigint",
+									"jsonb (unsupported)",
+									"json (unsupported)",
+									"unsupported",
+								])
+								.describe(
+									"Defines the supported data types for fields in the data source.",
+								),
+							description: zod
+								.string()
+								.optional()
+								.describe("Human-readable description of the field"),
+							is_unique_id: zod
+								.boolean()
+								.optional()
+								.describe("Whether this field uniquely identifies records"),
+							is_strata: zod
+								.boolean()
+								.optional()
+								.describe(
+									"Whether this field should be used for stratification",
+								),
+							is_filter: zod
+								.boolean()
+								.optional()
+								.describe("Whether this field can be used as a filter"),
+							is_metric: zod
+								.boolean()
+								.optional()
+								.describe("Whether this field can be used as a metric"),
+							extra: zod
+								.record(zod.string(), zod.string())
+								.or(zod.null())
+								.optional(),
+						}),
+					)
+					.describe("List of fields available in this table"),
+				type: zod
+					.string()
+					.describe(
+						"Indicates that the schema is determined by an inline schema.",
+					),
+				participant_type: zod
+					.string()
+					.describe(
+						"The name of the set of participants defined by the filters. This name must be unique within a datasource.",
+					),
+			})
+			.describe(
+				"Participants are a logical representation of a table in the data warehouse.\n\nParticipants are defined by a participant_type, table_name and a schema.",
+			),
 	),
 });
 
@@ -2208,132 +2218,148 @@ export const getParticipantTypeResponseProposedFieldsItemIsFilterDefault = false
 export const getParticipantTypeResponseProposedFieldsItemIsMetricDefault = false;
 
 export const getParticipantTypeResponse = zod.object({
-	current: zod.object({
-		table_name: zod
-			.string()
-			.describe("Name of the table in the data warehouse"),
-		fields: zod
-			.array(
-				zod.object({
-					field_name: zod
-						.string()
-						.describe("Name of the field in the data source"),
-					data_type: zod
-						.enum([
-							"boolean",
-							"character varying",
-							"uuid",
-							"date",
-							"integer",
-							"double precision",
-							"numeric",
-							"timestamp without time zone",
-							"timestamp with time zone",
-							"bigint",
-							"jsonb (unsupported)",
-							"json (unsupported)",
-							"unsupported",
-						])
-						.describe(
-							"Defines the supported data types for fields in the data source.",
-						),
-					description: zod
-						.string()
-						.optional()
-						.describe("Human-readable description of the field"),
-					is_unique_id: zod
-						.boolean()
-						.optional()
-						.describe("Whether this field uniquely identifies records"),
-					is_strata: zod
-						.boolean()
-						.optional()
-						.describe("Whether this field should be used for stratification"),
-					is_filter: zod
-						.boolean()
-						.optional()
-						.describe("Whether this field can be used as a filter"),
-					is_metric: zod
-						.boolean()
-						.optional()
-						.describe("Whether this field can be used as a metric"),
-					extra: zod
-						.record(zod.string(), zod.string())
-						.or(zod.null())
-						.optional(),
-				}),
-			)
-			.describe("List of fields available in this table"),
-		participant_type: zod
-			.string()
-			.describe(
-				"The name of the set of participants defined by the filters. This name must be unique within a datasource.",
-			),
-		type: zod.enum(["schema"]),
-	}),
-	proposed: zod.object({
-		table_name: zod
-			.string()
-			.describe("Name of the table in the data warehouse"),
-		fields: zod
-			.array(
-				zod.object({
-					field_name: zod
-						.string()
-						.describe("Name of the field in the data source"),
-					data_type: zod
-						.enum([
-							"boolean",
-							"character varying",
-							"uuid",
-							"date",
-							"integer",
-							"double precision",
-							"numeric",
-							"timestamp without time zone",
-							"timestamp with time zone",
-							"bigint",
-							"jsonb (unsupported)",
-							"json (unsupported)",
-							"unsupported",
-						])
-						.describe(
-							"Defines the supported data types for fields in the data source.",
-						),
-					description: zod
-						.string()
-						.optional()
-						.describe("Human-readable description of the field"),
-					is_unique_id: zod
-						.boolean()
-						.optional()
-						.describe("Whether this field uniquely identifies records"),
-					is_strata: zod
-						.boolean()
-						.optional()
-						.describe("Whether this field should be used for stratification"),
-					is_filter: zod
-						.boolean()
-						.optional()
-						.describe("Whether this field can be used as a filter"),
-					is_metric: zod
-						.boolean()
-						.optional()
-						.describe("Whether this field can be used as a metric"),
-					extra: zod
-						.record(zod.string(), zod.string())
-						.or(zod.null())
-						.optional(),
-				}),
-			)
-			.describe("List of fields available in this table"),
-		participant_type: zod
-			.string()
-			.describe(
-				"The name of the set of participants defined by the filters. This name must be unique within a datasource.",
-			),
-		type: zod.enum(["schema"]),
-	}),
+	current: zod
+		.object({
+			table_name: zod
+				.string()
+				.describe("Name of the table in the data warehouse"),
+			fields: zod
+				.array(
+					zod.object({
+						field_name: zod
+							.string()
+							.describe("Name of the field in the data source"),
+						data_type: zod
+							.enum([
+								"boolean",
+								"character varying",
+								"uuid",
+								"date",
+								"integer",
+								"double precision",
+								"numeric",
+								"timestamp without time zone",
+								"timestamp with time zone",
+								"bigint",
+								"jsonb (unsupported)",
+								"json (unsupported)",
+								"unsupported",
+							])
+							.describe(
+								"Defines the supported data types for fields in the data source.",
+							),
+						description: zod
+							.string()
+							.optional()
+							.describe("Human-readable description of the field"),
+						is_unique_id: zod
+							.boolean()
+							.optional()
+							.describe("Whether this field uniquely identifies records"),
+						is_strata: zod
+							.boolean()
+							.optional()
+							.describe("Whether this field should be used for stratification"),
+						is_filter: zod
+							.boolean()
+							.optional()
+							.describe("Whether this field can be used as a filter"),
+						is_metric: zod
+							.boolean()
+							.optional()
+							.describe("Whether this field can be used as a metric"),
+						extra: zod
+							.record(zod.string(), zod.string())
+							.or(zod.null())
+							.optional(),
+					}),
+				)
+				.describe("List of fields available in this table"),
+			type: zod
+				.string()
+				.describe(
+					"Indicates that the schema is determined by an inline schema.",
+				),
+			participant_type: zod
+				.string()
+				.describe(
+					"The name of the set of participants defined by the filters. This name must be unique within a datasource.",
+				),
+		})
+		.describe(
+			"Participants are a logical representation of a table in the data warehouse.\n\nParticipants are defined by a participant_type, table_name and a schema.",
+		),
+	proposed: zod
+		.object({
+			table_name: zod
+				.string()
+				.describe("Name of the table in the data warehouse"),
+			fields: zod
+				.array(
+					zod.object({
+						field_name: zod
+							.string()
+							.describe("Name of the field in the data source"),
+						data_type: zod
+							.enum([
+								"boolean",
+								"character varying",
+								"uuid",
+								"date",
+								"integer",
+								"double precision",
+								"numeric",
+								"timestamp without time zone",
+								"timestamp with time zone",
+								"bigint",
+								"jsonb (unsupported)",
+								"json (unsupported)",
+								"unsupported",
+							])
+							.describe(
+								"Defines the supported data types for fields in the data source.",
+							),
+						description: zod
+							.string()
+							.optional()
+							.describe("Human-readable description of the field"),
+						is_unique_id: zod
+							.boolean()
+							.optional()
+							.describe("Whether this field uniquely identifies records"),
+						is_strata: zod
+							.boolean()
+							.optional()
+							.describe("Whether this field should be used for stratification"),
+						is_filter: zod
+							.boolean()
+							.optional()
+							.describe("Whether this field can be used as a filter"),
+						is_metric: zod
+							.boolean()
+							.optional()
+							.describe("Whether this field can be used as a metric"),
+						extra: zod
+							.record(zod.string(), zod.string())
+							.or(zod.null())
+							.optional(),
+					}),
+				)
+				.describe("List of fields available in this table"),
+			type: zod
+				.string()
+				.describe(
+					"Indicates that the schema is determined by an inline schema.",
+				),
+			participant_type: zod
+				.string()
+				.describe(
+					"The name of the set of participants defined by the filters. This name must be unique within a datasource.",
+				),
+		})
+		.describe(
+			"Participants are a logical representation of a table in the data warehouse.\n\nParticipants are defined by a participant_type, table_name and a schema.",
+		),
 	drift: zod
 		.object({
 			schema_diff: zod.array(
