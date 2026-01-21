@@ -800,6 +800,20 @@ export interface CallerIdentity {
 	is_privileged: boolean;
 }
 
+export type ColumnDeletedType =
+	(typeof ColumnDeletedType)[keyof typeof ColumnDeletedType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ColumnDeletedType = {
+	column_deleted: "column_deleted",
+} as const;
+
+export interface ColumnDeleted {
+	type: ColumnDeletedType;
+	table_name: string;
+	column_name: string;
+}
+
 /**
  * Unique identifier for the context, you should NOT set this when creating a new context.
  */
@@ -1068,6 +1082,13 @@ export interface DesignSpecMetricRequest {
 	metric_target?: DesignSpecMetricRequestMetricTarget;
 }
 
+/**
+ * Describes differences between two participant types.
+ */
+export interface Drift {
+	schema_diff: TableDiff[];
+}
+
 export type DsnInput = ApiOnlyDsn | PostgresDsn | BqDsnInput | RedshiftDsn;
 
 export type DsnOutput = ApiOnlyDsn | PostgresDsn | BqDsnOutput | RedshiftDsn;
@@ -1165,6 +1186,22 @@ export const ExperimentState = {
 	committed: "committed",
 	aborted: "aborted",
 } as const;
+
+export type FieldChangedTypeType =
+	(typeof FieldChangedTypeType)[keyof typeof FieldChangedTypeType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const FieldChangedTypeType = {
+	column_changed_type: "column_changed_type",
+} as const;
+
+export interface FieldChangedType {
+	type: FieldChangedTypeType;
+	table_name: string;
+	column_name: string;
+	old_type: DataType;
+	new_type: DataType;
+}
 
 export type FieldDescriptorExtraAnyOf = { [key: string]: string };
 
@@ -1551,6 +1588,12 @@ export interface GetParticipantAssignmentResponse {
 	participant_id: string;
 	/** Null if no assignment. assignment.strata are not included. */
 	assignment: GetParticipantAssignmentResponseAssignment;
+}
+
+export interface GetParticipantsTypeResponse {
+	current: ParticipantsConfig;
+	proposed: ParticipantsConfig;
+	drift: Drift;
 }
 
 /**
@@ -2487,6 +2530,21 @@ export interface Stratum {
 export type StrictFloat = number | null;
 
 export type StrictInt = number | null;
+
+export type TableDeletedType =
+	(typeof TableDeletedType)[keyof typeof TableDeletedType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const TableDeletedType = {
+	table_deleted: "table_deleted",
+} as const;
+
+export interface TableDeleted {
+	type: TableDeletedType;
+	table_name: string;
+}
+
+export type TableDiff = ColumnDeleted | FieldChangedType | TableDeleted;
 
 export type UpdateArmRequestName = string | null;
 

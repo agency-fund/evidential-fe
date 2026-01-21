@@ -41,6 +41,7 @@ import type {
 	GetExperimentResponse,
 	GetOrganizationResponse,
 	GetParticipantAssignmentResponse,
+	GetParticipantsTypeResponse,
 	GetSnapshotResponse,
 	HTTPExceptionError,
 	HTTPValidationError,
@@ -59,7 +60,6 @@ import type {
 	ListSnapshotsParams,
 	ListSnapshotsResponse,
 	ListWebhooksResponse,
-	ParticipantsConfig,
 	PowerRequest,
 	PowerResponseOutput,
 	RemoveMemberFromOrganizationParams,
@@ -2394,22 +2394,22 @@ export const useInspectParticipantTypes = <
 	};
 };
 /**
- * @summary Get Participant Types
+ * @summary Get Participant Type
  */
-export const getGetParticipantTypesUrl = (
+export const getGetParticipantTypeUrl = (
 	datasourceId: string,
 	participantId: string,
 ) => {
 	return `/v1/m/datasources/${datasourceId}/participants/${participantId}`;
 };
 
-export const getParticipantTypes = async (
+export const getParticipantType = async (
 	datasourceId: string,
 	participantId: string,
 	options?: RequestInit,
-): Promise<ParticipantsConfig> => {
-	return orvalFetch<ParticipantsConfig>(
-		getGetParticipantTypesUrl(datasourceId, participantId),
+): Promise<GetParticipantsTypeResponse> => {
+	return orvalFetch<GetParticipantsTypeResponse>(
+		getGetParticipantTypeUrl(datasourceId, participantId),
 		{
 			...options,
 			method: "GET",
@@ -2417,30 +2417,30 @@ export const getParticipantTypes = async (
 	);
 };
 
-export const getGetParticipantTypesKey = (
+export const getGetParticipantTypeKey = (
 	datasourceId: string,
 	participantId: string,
 ) =>
 	[`/v1/m/datasources/${datasourceId}/participants/${participantId}`] as const;
 
-export type GetParticipantTypesQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getParticipantTypes>>
+export type GetParticipantTypeQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getParticipantType>>
 >;
-export type GetParticipantTypesQueryError = ErrorType<
+export type GetParticipantTypeQueryError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
 /**
- * @summary Get Participant Types
+ * @summary Get Participant Type
  */
-export const useGetParticipantTypes = <
+export const useGetParticipantType = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
 	datasourceId: string,
 	participantId: string,
 	options?: {
 		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof getParticipantTypes>>,
+			Awaited<ReturnType<typeof getParticipantType>>,
 			TError
 		> & { swrKey?: Key; enabled?: boolean };
 		request?: SecondParameter<typeof orvalFetch>;
@@ -2453,11 +2453,9 @@ export const useGetParticipantTypes = <
 	const swrKey =
 		swrOptions?.swrKey ??
 		(() =>
-			isEnabled
-				? getGetParticipantTypesKey(datasourceId, participantId)
-				: null);
+			isEnabled ? getGetParticipantTypeKey(datasourceId, participantId) : null);
 	const swrFn = () =>
-		getParticipantTypes(datasourceId, participantId, requestOptions);
+		getParticipantType(datasourceId, participantId, requestOptions);
 
 	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
 		swrKey,
