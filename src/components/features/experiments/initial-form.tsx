@@ -119,7 +119,7 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
       return 'Hypothesis is required.';
     }
     if (!formData.startDate) {
-      return 'Start date is required.';
+      return 'Start date is missing or invalid.';
     }
     if (!formData.endDate) {
       return 'End date is required.';
