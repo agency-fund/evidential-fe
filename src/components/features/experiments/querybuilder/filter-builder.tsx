@@ -4,8 +4,14 @@ import { Button, Flex, Separator } from '@radix-ui/themes';
 import { PlusIcon } from '@radix-ui/react-icons';
 import { DataType, FilterInput } from '@/api/methods.schemas';
 import { FilterRow } from '@/components/features/experiments/querybuilder/filter-row';
-import { getDefaultFilterForType } from '@/components/features/experiments/querybuilder/utils';
 import React from 'react';
+
+// Placeholder filter for newly added rows before a field is selected
+const EMPTY_FILTER: FilterInput = {
+  field_name: '',
+  relation: 'includes',
+  value: [],
+};
 
 export interface FilterBuilderProps {
   availableFields: Array<{
@@ -22,11 +28,7 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
     e.preventDefault();
     if (availableFields.length === 0) return;
 
-    // Create a default filter using the first available field
-    const defaultField = availableFields[0];
-    const defaultFilter = getDefaultFilterForType(defaultField.field_name, defaultField.data_type);
-
-    onChange([...filters, defaultFilter]);
+    onChange([...filters, { ...EMPTY_FILTER }]);
   };
 
   const updateFilter = (index: number, filter: FilterInput) => {
