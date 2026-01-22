@@ -122,7 +122,7 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
       return 'Start date is missing or invalid.';
     }
     if (!formData.endDate) {
-      return 'End date is required.';
+      return 'End date is missing or invalid.';
     }
     if (formData.arms.length < 2) {
       return 'At least two arms are required.';
