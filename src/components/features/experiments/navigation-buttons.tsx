@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Button, Flex } from '@radix-ui/themes';
+import { Button, Flex, Tooltip } from '@radix-ui/themes';
 
 interface NavigationButtonsProps {
   onBack?: () => void;
@@ -10,6 +10,7 @@ interface NavigationButtonsProps {
   nextLoading?: boolean;
   showBack?: boolean;
   className?: string;
+  tooltipMessage?: string;
 }
 
 export function NavigationButtons({
@@ -20,7 +21,13 @@ export function NavigationButtons({
   nextLoading = false,
   showBack = true,
   className,
+  tooltipMessage = 'Please complete all required fields before proceeding.',
 }: NavigationButtonsProps) {
+  const nextButton = (
+    <Button onClick={onNext} disabled={nextDisabled} loading={nextLoading}>
+      {nextLabel}
+    </Button>
+  );
   return (
     <Flex gap="3" justify="end" align="center" className={className} mt="6">
       {showBack ? (
@@ -31,10 +38,12 @@ export function NavigationButtons({
         <div />
       )}
 
-      {onNext && (
-        <Button onClick={onNext} disabled={nextDisabled} loading={nextLoading}>
-          {nextLabel}
-        </Button>
+      {onNext && nextDisabled ? (
+        <Tooltip content={tooltipMessage} side="top" align="center">
+          {nextButton}
+        </Tooltip>
+      ) : (
+        onNext && nextButton
       )}
     </Flex>
   );
