@@ -2,10 +2,10 @@
 import { ParticipantsDef } from '@/api/methods.schemas';
 import {
   getGetDatasourceKey,
-  getGetParticipantTypesKey,
+  getGetParticipantTypeKey,
   getInspectParticipantTypesKey,
   getListParticipantTypesKey,
-  useGetParticipantTypes,
+  useGetParticipantType,
   useUpdateParticipantType,
 } from '@/api/admin';
 import { useState } from 'react';
@@ -26,9 +26,16 @@ export default function EditParticipantTypePage() {
     data: participantConfig,
     isLoading,
     error,
-  } = useGetParticipantTypes(datasourceId!, participantType!, {
+  } = useGetParticipantType(datasourceId!, participantType!, {
     swr: {
       enabled: datasourceId !== null && participantType !== null,
+      onSuccess: (response) => {
+        const hasSchemaDrift = response.drift.schema_diff?.length > 0;
+        if (hasSchemaDrift) {
+          // Initialize state to the proposed config for a quick save.
+          setEditedDef(response.proposed);
+        }
+      },
     },
   });
 
@@ -42,7 +49,7 @@ export default function EditParticipantTypePage() {
       onSuccess: async () => {
         await Promise.all([
           mutate(getGetDatasourceKey(datasourceId)),
-          mutate(getGetParticipantTypesKey(datasourceId, participantType)),
+          mutate(getGetParticipantTypeKey(datasourceId, participantType)),
           mutate(getInspectParticipantTypesKey(datasourceId, participantType)),
           mutate(getListParticipantTypesKey(datasourceId)),
         ]);
@@ -84,9 +91,9 @@ export default function EditParticipantTypePage() {
     router.push(`/datasources/${datasourceId}/participants/${participantType}`);
   };
 
-  const handleFieldsChange = (fields: typeof participantConfig.fields) => {
+  const handleFieldsChange = (fields: typeof participantConfig.proposed.fields) => {
     setEditedDef({
-      ...participantConfig,
+      ...participantConfig.proposed,
       fields,
     });
   };
@@ -94,7 +101,7 @@ export default function EditParticipantTypePage() {
   return (
     <Flex direction="column" gap="6">
       <Flex align="start" direction="column" gap="3">
-        <Heading size="8">Edit Participant Type: {participantConfig.participant_type}</Heading>
+        <Heading size="8">Edit Participant Type: {participantConfig.proposed.participant_type}</Heading>
       </Flex>
 
       {isMutating ? (
@@ -108,7 +115,7 @@ export default function EditParticipantTypePage() {
           )}
 
           <ParticipantFieldsEditor
-            fields={(editedDef || participantConfig).fields}
+            fields={(editedDef || participantConfig.proposed).fields}
             onFieldsChange={handleFieldsChange}
             allowFieldRemoval={false}
           />
