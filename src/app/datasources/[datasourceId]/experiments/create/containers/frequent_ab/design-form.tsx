@@ -1,5 +1,5 @@
 'use client';
-import { Button, Callout, Flex, Spinner, Text, TextField } from '@radix-ui/themes';
+import { Button, Callout, Flex, Spinner, Text, TextField, Tooltip } from '@radix-ui/themes';
 import { FrequentABFormData } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useCreateExperiment, useInspectParticipantTypes } from '@/api/admin';
@@ -45,11 +45,6 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
     participantTypesData !== undefined ? participantTypesData.filters : [];
   const strataFields = participantTypesData?.strata || [];
   const supportsPowerCheck = formData.experimentType === 'freq_preassigned';
-  const isNextButtonDisabled =
-    !formData.primaryMetric?.metric.field_name ||
-    !formData.primaryMetric?.mde ||
-    !formData.chosenN ||
-    (supportsPowerCheck && (formData.powerCheckResponse === undefined || isMutating));
 
   const handleMetricChange = (newData: FrequentABFormData) => {
     onFormDataChange({
@@ -72,11 +67,34 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
       });
       onNext();
     } catch (error) {
-      // TODO
       console.error('Failed to create experiment:', error);
       throw new Error('failed to create experiment');
     }
   };
+
+  const getValidationMessage = () => {
+    if (!formData.primaryMetric?.metric.field_name) {
+      return 'Please select a primary metric.';
+    }
+    if (!formData.primaryMetric?.mde) {
+      return 'Please specify the minimum detectable effect for the primary metric.';
+    }
+    if (supportsPowerCheck && formData.powerCheckResponse === undefined) {
+      return 'Please complete the power check before proceeding.';
+    }
+    if (formData.experimentType === 'freq_preassigned' && !formData.chosenN) {
+      return 'Please select a sample size before proceeding.';
+    }
+    return '';
+  };
+
+  const isFormValid = getValidationMessage() === '';
+
+  const nextButton = (
+    <Button type="submit" disabled={!isFormValid} loading={isMutating}>
+      Next
+    </Button>
+  );
 
   return (
     <form onSubmit={handleSubmit}>
@@ -167,10 +185,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
           <Button type="button" variant="soft" onClick={onBack}>
             Back
           </Button>
-          <Button type="submit" disabled={isNextButtonDisabled}>
-            {isMutating && <Spinner size="1" />}
-            Next
-          </Button>
+          {isFormValid ? nextButton : <Tooltip content={getValidationMessage()}>{nextButton}</Tooltip>}
         </Flex>
       </Flex>
     </form>

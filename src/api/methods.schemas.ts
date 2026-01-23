@@ -1086,6 +1086,7 @@ export interface DesignSpecMetricRequest {
  * Describes differences between two participant types.
  */
 export interface Drift {
+	/** List of individual changes detected that might break things. */
 	schema_diff: TableDiff[];
 }
 
@@ -1591,8 +1592,11 @@ export interface GetParticipantAssignmentResponse {
 }
 
 export interface GetParticipantsTypeResponse {
+	/** The currently saved configuration capturing the minimal set of fields possibly used. */
 	current: ParticipantsDef;
+	/** The configuration as implied by the live table schema, merged with current config annotations. */
 	proposed: ParticipantsDef;
+	/** Differences between the current and proposed configurations that might be breaking changes. */
 	drift: Drift;
 }
 

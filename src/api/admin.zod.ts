@@ -2362,65 +2362,69 @@ export const getParticipantTypeResponse = zod.object({
 		),
 	drift: zod
 		.object({
-			schema_diff: zod.array(
-				zod
-					.object({
-						type: zod.enum(["column_deleted"]),
-						table_name: zod.string(),
-						column_name: zod.string(),
-					})
-					.or(
-						zod.object({
-							type: zod.enum(["column_changed_type"]),
+			schema_diff: zod
+				.array(
+					zod
+						.object({
+							type: zod.enum(["column_deleted"]),
 							table_name: zod.string(),
 							column_name: zod.string(),
-							old_type: zod
-								.enum([
-									"boolean",
-									"character varying",
-									"uuid",
-									"date",
-									"integer",
-									"double precision",
-									"numeric",
-									"timestamp without time zone",
-									"timestamp with time zone",
-									"bigint",
-									"jsonb (unsupported)",
-									"json (unsupported)",
-									"unsupported",
-								])
-								.describe(
-									"Defines the supported data types for fields in the data source.",
-								),
-							new_type: zod
-								.enum([
-									"boolean",
-									"character varying",
-									"uuid",
-									"date",
-									"integer",
-									"double precision",
-									"numeric",
-									"timestamp without time zone",
-									"timestamp with time zone",
-									"bigint",
-									"jsonb (unsupported)",
-									"json (unsupported)",
-									"unsupported",
-								])
-								.describe(
-									"Defines the supported data types for fields in the data source.",
-								),
-						}),
-					)
-					.or(
-						zod.object({
-							type: zod.enum(["table_deleted"]),
-							table_name: zod.string(),
-						}),
-					),
-			),
+						})
+						.or(
+							zod.object({
+								type: zod.enum(["column_changed_type"]),
+								table_name: zod.string(),
+								column_name: zod.string(),
+								old_type: zod
+									.enum([
+										"boolean",
+										"character varying",
+										"uuid",
+										"date",
+										"integer",
+										"double precision",
+										"numeric",
+										"timestamp without time zone",
+										"timestamp with time zone",
+										"bigint",
+										"jsonb (unsupported)",
+										"json (unsupported)",
+										"unsupported",
+									])
+									.describe(
+										"Defines the supported data types for fields in the data source.",
+									),
+								new_type: zod
+									.enum([
+										"boolean",
+										"character varying",
+										"uuid",
+										"date",
+										"integer",
+										"double precision",
+										"numeric",
+										"timestamp without time zone",
+										"timestamp with time zone",
+										"bigint",
+										"jsonb (unsupported)",
+										"json (unsupported)",
+										"unsupported",
+									])
+									.describe(
+										"Defines the supported data types for fields in the data source.",
+									),
+							}),
+						)
+						.or(
+							zod.object({
+								type: zod.enum(["table_deleted"]),
+								table_name: zod.string(),
+							}),
+						),
+				)
+				.describe(
+					"List of individual changes detected that might break things.",
+				),
 		})
 		.describe("Describes differences between two participant types."),
 });

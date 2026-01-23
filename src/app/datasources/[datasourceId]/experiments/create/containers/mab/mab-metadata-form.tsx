@@ -79,12 +79,13 @@ const CONTEXT_TYPE_OPTIONS: ContextTypeOption[] = [
 ];
 
 export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, onBack }: MABMetadataFormProps) {
-  const { trigger: triggerCreateExperiment, error: createExperimentError } = useCreateExperiment(
-    formData.datasourceId!,
-    {
-      chosen_n: formData.chosenN!,
-    },
-  );
+  const {
+    trigger: triggerCreateExperiment,
+    isMutating,
+    error: createExperimentError,
+  } = useCreateExperiment(formData.datasourceId!, {
+    chosen_n: formData.chosenN!,
+  });
 
   const handleSaveExperiment = async () => {
     try {
@@ -236,18 +237,41 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
     return false;
   };
 
-  const isFormValid = () => {
-    const basicValid =
-      formData.name.trim() &&
-      formData.hypothesis.trim() &&
-      formData.priorType &&
-      formData.outcomeType &&
-      formData.arms.length >= 2 &&
-      (formData.experimentType === 'cmab_online' ? formData.contexts.length >= 1 : true);
-    const armsValid = formData.arms.every((arm) => arm.arm_name.trim() && isPriorParamValid(arm));
-
-    return basicValid && armsValid;
+  const getValidationMessage = () => {
+    if (!formData.name.trim()) {
+      return 'Experiment name is required.';
+    }
+    if (!formData.hypothesis.trim()) {
+      return 'Hypothesis is required.';
+    }
+    if (!formData.startDate) {
+      return 'Start date is required.';
+    }
+    if (!formData.endDate) {
+      return 'End date is required.';
+    }
+    if (!formData.outcomeType) {
+      return 'Please select an outcome type.';
+    }
+    if (formData.arms.length < 2) {
+      return 'At least 2 arms are required.';
+    }
+    if (formData.experimentType === 'cmab_online' && formData.contexts.length < 1) {
+      return 'At least 1 context variable is required.';
+    }
+    for (let i = 0; i < formData.arms.length; i++) {
+      const arm = formData.arms[i];
+      if (!arm.arm_name.trim()) {
+        return `Arm ${i + 1} name is required.`;
+      }
+      if (!isPriorParamValid(arm)) {
+        return `Arm ${i + 1} has invalid prior parameters.`;
+      }
+    }
+    return '';
   };
+
+  const isFormValid = getValidationMessage() === '';
 
   return (
     <Flex direction="column" gap="4">
@@ -454,7 +478,14 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
         <GenericErrorCallout title="Failed to create experiment" error={createExperimentError} />
       )}
 
-      <NavigationButtons onBack={onBack} onNext={handleSaveExperiment} nextLabel="Next" nextDisabled={!isFormValid()} />
+      <NavigationButtons
+        onBack={onBack}
+        onNext={handleSaveExperiment}
+        nextLabel="Next"
+        nextDisabled={!isFormValid}
+        nextLoading={isMutating}
+        tooltipMessage={getValidationMessage()}
+      />
     </Flex>
   );
 }
