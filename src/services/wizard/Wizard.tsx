@@ -6,43 +6,57 @@ import { NavigationButtons } from '@/components/features/experiments/navigation-
 import { WizardBreadcrumbsProvider } from './wizard-breadcrumbs-context';
 import { Box } from '@radix-ui/themes';
 
-type WizardProps<FormData, ScreenId extends string> = {
-  form: WizardForm<FormData, ScreenId>;
+type WizardProps<FormData, ScreenId extends string, InputData> = {
+  form: WizardForm<FormData, ScreenId, InputData>;
+  inputData?: InputData;
+  onPrev?: (data: FormData) => void;
   onSubmit: (data: FormData) => void;
   debug?: boolean;
 };
 
-export function Wizard<FormData, ScreenId extends string>({ form, onSubmit, debug }: WizardProps<FormData, ScreenId>) {
-  const [data, setData] = useState<FormData>(form.initialData);
-  const [currentScreenId, setCurrentScreenId] = useState<ScreenId>(() =>
-    // Use form's initialScreenId to determine starting screen
-    // Enables edit functionality by returning to appropriate screen based on data
-    form.initialScreenId(form.initialData()),
-  );
+export function Wizard<FormData, ScreenId extends string, InputData>({
+  form,
+  onSubmit,
+  onPrev,
+  debug,
+  inputData,
+}: WizardProps<FormData, ScreenId, InputData>) {
+  const [data, setData] = useState<FormData>(() => form.initialData(inputData));
+  const [currentScreenId, setCurrentScreenId] = useState<ScreenId>(() => form.initialScreenId(data));
 
   // Get current packed screen by id (direct object access instead of array.find)
   const currentPackedScreen = form.screens[currentScreenId];
 
   // Use CPS pattern to render the screen with full type safety
   return currentPackedScreen.withScreen((screen) => {
-    const handleDispatch = (message: Parameters<typeof screen.reducer>[1]) => {
-      console.log('handleDispatch', message);
+    const handleDispatch = (message: Parameters<typeof screen.reducer>[1]) =>
       setData((prev) => screen.reducer(prev, message));
-    };
 
     const handleNext = () => {
-      const next = screen.nextScreen(data);
-      if (next.type === 'submit') {
-        onSubmit(data);
-      } else {
-        setCurrentScreenId(next.id);
+      const task = screen.nextScreen(data);
+      switch (task.type) {
+        case 'submit':
+          onSubmit(data);
+          break;
+        case 'screen':
+          setCurrentScreenId(task.id);
       }
     };
 
     const handlePrev = () => {
-      const prev = screen.prevScreen(data);
-      if (prev) {
-        setCurrentScreenId(prev.id);
+      const task = screen.prevScreen(data);
+      if (!task) {
+        return;
+      }
+      switch (task.type) {
+        case 'screen':
+          setCurrentScreenId(task.id);
+          break;
+        case 'wizard-prop-onprev':
+          if (onPrev) {
+            onPrev(data);
+          }
+          break;
       }
     };
 
@@ -53,6 +67,17 @@ export function Wizard<FormData, ScreenId extends string>({ form, onSubmit, debu
     const prevScreen = screen.prevScreen(data);
     const isNextEnabled = screen.isNextEnabled(data);
     const nextScreen = screen.nextScreen(data);
+
+    // Determine button labels
+    const nextLabel = screen.nextButtonLabel
+      ? screen.nextButtonLabel(data)
+      : nextScreen.type === 'submit'
+        ? 'Submit'
+        : 'Next';
+    const prevLabel = screen.prevButtonLabel ? screen.prevButtonLabel(data) : 'Back';
+
+    // Check if navigation should be hidden
+    const hideNav = screen.hideNavigation?.(data) ?? false;
 
     const screenIdBreadcrumbs = screen.breadcrumbs
       ? screen.breadcrumbs(data)
@@ -80,14 +105,17 @@ export function Wizard<FormData, ScreenId extends string>({ form, onSubmit, debu
           onNavigate={handleNavigate}
         >
           <Fragment key={currentScreenId}>
-            <screen.render data={data} dispatch={handleDispatch} />
-            <NavigationButtons
-              onBack={prevScreen ? handlePrev : undefined}
-              onNext={handleNext}
-              nextLabel={nextScreen.type === 'submit' ? 'Submit' : 'Next'}
-              nextDisabled={!isNextEnabled}
-              showBack={prevScreen !== null}
-            />
+            <screen.render data={data} dispatch={handleDispatch} navigateNext={handleNext} navigatePrev={handlePrev} />
+            {!hideNav && (
+              <NavigationButtons
+                onBack={prevScreen ? handlePrev : undefined}
+                onNext={handleNext}
+                nextLabel={nextLabel}
+                backLabel={prevLabel}
+                nextDisabled={!isNextEnabled}
+                showBack={prevScreen !== null}
+              />
+            )}
           </Fragment>
         </WizardBreadcrumbsProvider>
         {debug && <DebugDrawer data={data} breadcrumbs={breadcrumbs} currentScreenId={currentScreenId} />}

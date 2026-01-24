@@ -18,6 +18,12 @@ type ScreenProps<FormData, Message> = {
   // dispatch() is how screens send events to the form state reducer. This is the only way to modify the global form
   // state.
   dispatch: (message: Message) => void;
+
+  // Navigate to the next screen (or trigger submit if on final screen)
+  navigateNext: () => void;
+
+  // Navigate to the previous screen (no-op if no previous screen)
+  navigatePrev: () => void;
 };
 
 // Screen definition with typed messages. The ScreenId generic enables type-safe navigation:
@@ -37,7 +43,7 @@ type Screen<FormData, Message, ScreenId extends string> = {
   isPrevEnabled: (data: FormData) => boolean;
   // Describes the behavior of the "prev" button: return null to hide prev button, and one of the navigation types
   // to navigate to a screen by id.
-  prevScreen: (data: FormData) => null | { type: 'screen'; id: ScreenId };
+  prevScreen: (data: FormData) => null | { type: 'screen'; id: ScreenId } | { type: 'wizard-prop-onprev' };
   // Describes the behavior of the "next" button: return a "screen" type to navigate to a specific screen by id, or
   // a "submit" type to cause the Wizard's onSubmit handler to be triggered.
   nextScreen: (data: FormData) => { type: 'screen'; id: ScreenId } | { type: 'submit' };
@@ -45,6 +51,13 @@ type Screen<FormData, Message, ScreenId extends string> = {
   breadcrumbs?: (data: FormData) => Array<ScreenId | null>;
   // Whether or not the breadcrumb is navigable.
   isBreadcrumbClickable?: (data: FormData) => boolean;
+  // Custom label for the "Next" button. If not set, defaults to "Next" or "Submit", depending on the return value of
+  // nextScreen().
+  nextButtonLabel?: (data: FormData) => string;
+  // Custom label for the "Back" button. If not set, defaults to "Back".
+  prevButtonLabel?: (data: FormData) => string;
+  // When true, the Wizard will not render NavigationButtons for this screen.
+  hideNavigation?: (data: FormData) => boolean;
 };
 
 // CPS-encoded existential - hides Message type while preserving type safety
@@ -69,10 +82,11 @@ function packScreen<FormData, ScreenId extends string>() {
 // The intention of this type and its related types is to allow all navigation-related and global-state related methods
 // to be defined in one place. The screens themselves may observe but should not mutate the global state directly.
 // All events from a screen should be handled by the per-screen reducer method Screen.reducer.
-type WizardForm<FormData, ScreenId extends string> = {
+type WizardForm<FormData, ScreenId extends string, InputData> = {
   // The initial value of the form. When creating new entities, this is likely suitable default values that the user
-  // may refine. For existing entities, this is likely the persisted values to be edited.
-  initialData: () => FormData;
+  // may refine. For existing entities, this is likely the persisted values to be edited. This may be called more than
+  // once so the return value must be deterministic.
+  initialData: (extra?: InputData) => FormData;
 
   // The screens, keyed by their ID. TypeScript ensures this object has exactly the keys defined in ScreenId.
   screens: { [K in ScreenId]: PackedScreen<FormData, ScreenId> };

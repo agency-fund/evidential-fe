@@ -44,7 +44,7 @@ export type ExperimentFormData = {
 
   // experiment-select-datasource-screen
   datasourceId?: string;
-  isCreatingDatasource?: boolean;
+  tableName?: string;
 
   // experiment-freq-stack-screen
   primaryMetric?: MetricWithMDE;
@@ -145,7 +145,7 @@ const breadcrumbs = ({ experimentType }: { experimentType?: ExperimentType }) =>
   }
 };
 
-export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId> = {
+export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, undefined> = {
   initialData: () => ({
     name: 'New Hypothesis',
     experimentType: 'freq_online',
@@ -214,18 +214,20 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId> 
       render: ExperimentSelectDatasourceScreen,
       reducer: (data, msg) => {
         if (msg.type === 'set-datasource') {
-          return { ...data, datasourceId: msg.value, isCreatingDatasource: false };
-        }
-        if (msg.type === 'set-creating-datasource') {
-          return { ...data, isCreatingDatasource: msg.value, datasourceId: undefined };
+          return {
+            ...data,
+            datasourceId: msg.datasourceId,
+            tableName: msg.tableName,
+          };
         }
         return data;
       },
-      isNextEnabled: (data) => !!data.datasourceId && !data.isCreatingDatasource,
+      isNextEnabled: (data) => !!data.datasourceId && !!data.tableName,
       isPrevEnabled: () => true,
       prevScreen: () => ({ type: 'screen', id: 'experiment-type' }),
       nextScreen: () => ({ type: 'screen', id: 'describe-arms' }),
       isBreadcrumbClickable: () => true,
+      hideNavigation: () => true,
     }),
     'bayes-binary-or-real': screen({
       breadcrumbTitle: 'Outcomes',

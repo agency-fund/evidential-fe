@@ -6,6 +6,7 @@ interface NavigationButtonsProps {
   onBack?: () => void;
   onNext?: () => void;
   nextLabel?: string;
+  backLabel?: string;
   nextDisabled?: boolean;
   nextLoading?: boolean;
   showBack?: boolean;
@@ -17,6 +18,7 @@ export function NavigationButtons({
   onBack,
   onNext,
   nextLabel = 'Next',
+  backLabel = 'Back',
   nextDisabled = false,
   nextLoading = false,
   showBack = true,
@@ -32,7 +34,7 @@ export function NavigationButtons({
     <Flex gap="3" justify="end" align="center" className={className} mt="6">
       {showBack ? (
         <Button variant="soft" color="gray" onClick={onBack} disabled={!onBack}>
-          Back
+          {backLabel}
         </Button>
       ) : (
         <div />
