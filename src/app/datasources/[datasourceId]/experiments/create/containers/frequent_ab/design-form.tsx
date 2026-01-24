@@ -9,7 +9,7 @@ import { convertFormDataToCreateExperimentRequest } from '@/app/datasources/[dat
 import { FilterBuilder } from '@/components/features/experiments/querybuilder/filter-builder';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { PRODUCT_NAME } from '@/services/constants';
-import { MetricBuilder } from '@/components/features/experiments/metric-builder';
+import { MetricBuilder, MetricBuilderAction } from '@/components/features/experiments/metric-builder';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { StrataBuilder } from '@/components/features/experiments/strata-builder';
 
@@ -46,12 +46,60 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
   const strataFields = participantTypesData?.strata || [];
   const supportsPowerCheck = formData.experimentType === 'freq_preassigned';
 
-  const handleMetricChange = (newData: FrequentABFormData) => {
-    onFormDataChange({
-      ...newData,
-      powerCheckResponse: undefined,
-      chosenN: undefined,
-    });
+  const handleMetricBuilderAction = (action: MetricBuilderAction) => {
+    switch (action.type) {
+      case 'primary-metric-select':
+        onFormDataChange({
+          ...formData,
+          primaryMetric: action.primaryMetric,
+          powerCheckResponse: undefined,
+          chosenN: undefined,
+        });
+        break;
+      case 'primary-metric-deselect':
+        onFormDataChange({
+          ...formData,
+          primaryMetric: action.primaryMetric,
+          secondaryMetrics: action.secondaryMetrics,
+          powerCheckResponse: undefined,
+          chosenN: undefined,
+        });
+        break;
+      case 'promote-secondary-to-primary':
+        onFormDataChange({
+          ...formData,
+          primaryMetric: action.primaryMetric,
+          secondaryMetrics: action.secondaryMetrics,
+          powerCheckResponse: undefined,
+          chosenN: undefined,
+        });
+        break;
+      case 'secondary-metric-add':
+        onFormDataChange({
+          ...formData,
+          secondaryMetrics: action.secondaryMetrics,
+          powerCheckResponse: undefined,
+          chosenN: undefined,
+        });
+        break;
+      case 'secondary-metric-remove':
+        onFormDataChange({
+          ...formData,
+          secondaryMetrics: action.secondaryMetrics,
+          powerCheckResponse: undefined,
+          chosenN: undefined,
+        });
+        break;
+      case 'mde-change':
+        onFormDataChange({
+          ...formData,
+          ...(action.primaryMetric !== undefined && { primaryMetric: action.primaryMetric }),
+          ...(action.secondaryMetrics !== undefined && { secondaryMetrics: action.secondaryMetrics }),
+          powerCheckResponse: undefined,
+          chosenN: undefined,
+        });
+        break;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -106,7 +154,12 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
               <Text size="2">Loading metrics...</Text>
             </Flex>
           ) : (
-            <MetricBuilder formData={formData} onFormDataChange={handleMetricChange} metricFields={metricFields} />
+            <MetricBuilder
+              primaryMetric={formData.primaryMetric}
+              secondaryMetrics={formData.secondaryMetrics}
+              dispatch={handleMetricBuilderAction}
+              metricFields={metricFields}
+            />
           )}
         </SectionCard>
 
