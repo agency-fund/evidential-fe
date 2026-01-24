@@ -3,6 +3,7 @@ import { Fragment, useState } from 'react';
 import { BreadcrumbInfo, WizardForm } from './wizard-types';
 import { DebugDrawer } from './wizard-debug-drawer';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
+import { WizardBreadcrumbsProvider } from './wizard-breadcrumbs-context';
 import { Box } from '@radix-ui/themes';
 
 type WizardProps<FormData, ScreenId extends string> = {
@@ -45,6 +46,10 @@ export function Wizard<FormData, ScreenId extends string>({ form, onSubmit, debu
       }
     };
 
+    const handleNavigate = (screenId: string) => {
+      setCurrentScreenId(screenId as ScreenId);
+    };
+
     const prevScreen = screen.prevScreen(data);
     const isNextEnabled = screen.isNextEnabled(data);
     const nextScreen = screen.nextScreen(data);
@@ -68,21 +73,22 @@ export function Wizard<FormData, ScreenId extends string>({ form, onSubmit, debu
 
     return (
       <Box style={{ paddingBottom: debug ? '45vh' : undefined }}>
-        <Fragment key={currentScreenId}>
-          <screen.render
-            data={data}
-            dispatch={handleDispatch}
-            currentScreenId={currentScreenId}
-            breadcrumbs={breadcrumbs}
-          />
-          <NavigationButtons
-            onBack={prevScreen ? handlePrev : undefined}
-            onNext={handleNext}
-            nextLabel={nextScreen.type === 'submit' ? 'Submit' : 'Next'}
-            nextDisabled={!isNextEnabled}
-            showBack={prevScreen !== null}
-          />
-        </Fragment>
+        <WizardBreadcrumbsProvider
+          breadcrumbs={breadcrumbs}
+          currentScreenId={currentScreenId}
+          onNavigate={handleNavigate}
+        >
+          <Fragment key={currentScreenId}>
+            <screen.render data={data} dispatch={handleDispatch} />
+            <NavigationButtons
+              onBack={prevScreen ? handlePrev : undefined}
+              onNext={handleNext}
+              nextLabel={nextScreen.type === 'submit' ? 'Submit' : 'Next'}
+              nextDisabled={!isNextEnabled}
+              showBack={prevScreen !== null}
+            />
+          </Fragment>
+        </WizardBreadcrumbsProvider>
         {debug && <DebugDrawer data={data} breadcrumbs={breadcrumbs} currentScreenId={currentScreenId} />}
       </Box>
     );

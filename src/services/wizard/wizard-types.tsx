@@ -17,12 +17,6 @@ type ScreenProps<FormData, Message> = {
   // dispatch() is how screens send events to the form state reducer. This is the only way to modify the global form
   // state.
   dispatch: (message: Message) => void;
-
-  // The ID of the current screen.
-  currentScreenId: string;
-
-  // The breadcrumbs to render.
-  breadcrumbs: Array<BreadcrumbInfo>;
 };
 
 // Screen definition with typed messages. The ScreenId generic enables type-safe navigation:

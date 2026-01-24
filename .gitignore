@@ -48,6 +48,7 @@ dist
 CONVENTIONS.md
 *.context
 prompts/
+CLAUDE.local.md
 
 # OpenAPI specs fetched from the apiserver backend (`task genapiclient`)
 openapi.json

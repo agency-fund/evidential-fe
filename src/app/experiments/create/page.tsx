@@ -9,10 +9,5 @@ export default function DefinerPage() {
     // Handle form submission
   };
 
-  return (
-    <div>
-      <h1>Definer</h1>
-      <Wizard form={ExperimentForm} onSubmit={handleSubmit} debug={true} />
-    </div>
-  );
+  return <Wizard form={ExperimentForm} onSubmit={handleSubmit} debug={true} />;
 }

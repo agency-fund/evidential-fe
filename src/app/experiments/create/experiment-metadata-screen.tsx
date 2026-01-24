@@ -1,6 +1,7 @@
 import { ScreenProps } from '@/services/wizard/wizard-types';
 import { ExperimentFormData } from '@/app/experiments/create/experiment-form-def';
 import { Box, Flex, Text, TextArea, TextField } from '@radix-ui/themes';
+import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 
 type ExperimentMetadataMessages =
   | { type: 'set-name'; value: string }
@@ -14,6 +15,7 @@ export const ExperimentMetadataScreen = ({
   dispatch,
 }: ScreenProps<ExperimentFormData, ExperimentMetadataMessages>) => (
   <Flex direction="column" gap="3">
+    <WizardBreadcrumbs />
     <Box>
       <Text as="label" size="2" weight="bold" mb="6px">
         Experiment Name

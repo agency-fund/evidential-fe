@@ -6,6 +6,7 @@ import { getListOrganizationDatasourcesKey, useCreateDatasource, useListOrganiza
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { Button, Card, Flex, Heading, Select } from '@radix-ui/themes';
+import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 import { PlusIcon } from '@radix-ui/react-icons';
 import { BqDsnInput, PostgresDsn, RedshiftDsn } from '@/api/methods.schemas';
 import { mutate } from 'swr';
@@ -110,41 +111,45 @@ export const ExperimentSelectDatasourceScreen = ({
   // Show create form if no datasources exist, or if user explicitly clicked "Add New"
   if (isEmpty || showCreateForm) {
     return (
-      <Card>
-        <form onSubmit={handleSubmit}>
-          <Heading size="4" mb="4">
-            Add Datasource
-          </Heading>
-          {error && !isDNSError && <GenericErrorCallout title="Failed to add datasource" error={error} />}
-          <Flex direction="column" gap="3">
-            <AddDatasourceForm data={dsFormData} dispatch={dsDispatch} isDNSError={isDNSError} />
-          </Flex>
-          <Flex gap="3" mt="4" justify="end">
-            {!isEmpty && (
-              <Button
-                type="button"
-                variant="soft"
-                color="gray"
-                onClick={() => {
-                  setShowCreateForm(false);
-                  dispatch({ type: 'set-creating-datasource', value: false });
-                  reset();
-                }}
-              >
-                Cancel
-              </Button>
-            )}
-            <Button type="submit" disabled={isMutating}>
+      <Flex direction="column" gap="3">
+        <WizardBreadcrumbs />
+        <Card>
+          <form onSubmit={handleSubmit}>
+            <Heading size="4" mb="4">
               Add Datasource
-            </Button>
-          </Flex>
-        </form>
-      </Card>
+            </Heading>
+            {error && !isDNSError && <GenericErrorCallout title="Failed to add datasource" error={error} />}
+            <Flex direction="column" gap="3">
+              <AddDatasourceForm data={dsFormData} dispatch={dsDispatch} isDNSError={isDNSError} />
+            </Flex>
+            <Flex gap="3" mt="4" justify="end">
+              {!isEmpty && (
+                <Button
+                  type="button"
+                  variant="soft"
+                  color="gray"
+                  onClick={() => {
+                    setShowCreateForm(false);
+                    dispatch({ type: 'set-creating-datasource', value: false });
+                    reset();
+                  }}
+                >
+                  Cancel
+                </Button>
+              )}
+              <Button type="submit" disabled={isMutating}>
+                Add Datasource
+              </Button>
+            </Flex>
+          </form>
+        </Card>
+      </Flex>
     );
   }
 
   return (
     <Flex direction="column" gap="3">
+      <WizardBreadcrumbs />
       <Select.Root
         value={data.datasourceId}
         onValueChange={(datasourceId) => {
