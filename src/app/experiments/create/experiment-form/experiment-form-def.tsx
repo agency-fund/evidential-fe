@@ -199,7 +199,6 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId> 
           case 'freq_online':
           case 'freq_preassigned':
             return { type: 'screen', id: 'freq-select-datasource' };
-
           case 'mab_online':
           case 'cmab_online':
             return { type: 'screen', id: 'bayes-binary-or-real' };
@@ -226,6 +225,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId> 
       isPrevEnabled: () => true,
       prevScreen: () => ({ type: 'screen', id: 'experiment-type' }),
       nextScreen: () => ({ type: 'screen', id: 'describe-arms' }),
+      isBreadcrumbClickable: () => true,
     }),
     'bayes-binary-or-real': screen({
       breadcrumbTitle: 'Outcomes',
