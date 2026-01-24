@@ -4,6 +4,7 @@ export type BreadcrumbInfo =
   | {
       type: 'screen';
       screenId: string;
+      label: string;
       clickable: boolean;
     }
   | { type: 'unknown' };
@@ -22,6 +23,8 @@ type ScreenProps<FormData, Message> = {
 // Screen definition with typed messages. The ScreenId generic enables type-safe navigation:
 // prevScreen and nextScreen can only return IDs that exist in the form's screens object.
 type Screen<FormData, Message, ScreenId extends string> = {
+  // Human-readable label for this screen, used by breadcrumbs.
+  breadcrumbTitle?: string;
   // React component that renders this screen.
   render: (props: ScreenProps<FormData, Message>) => JSX.Element;
   // Receives events from the Screen and can apply changes to FormData.

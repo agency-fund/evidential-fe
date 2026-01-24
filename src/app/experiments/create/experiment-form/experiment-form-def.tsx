@@ -86,24 +86,20 @@ const isCmab = (experimentType: ExperimentType) => {
   return experimentType === 'cmab_online';
 };
 
-// Maps screen IDs to human-readable names for the experiment form wizard.
-export const ScreenInventory = {
-  metadata: 'Experiment Description',
-  'experiment-type': 'Type',
-  'freq-select-datasource': 'Datasource',
-  'bayes-binary-or-real': 'Outcomes',
-  'describe-contexts': 'Contexts',
-  'describe-arms': 'Arms',
-  'describe-bandit-arms': 'Arms',
-  'describe-webhooks': 'Webhooks',
-  'freq-stack': 'Parameters',
-  'summarize-freq': 'Summary',
-  'summarize-bayes': 'Summary',
-} as const;
-
 // Defines a type for all known screen IDs for the experiment form. This type is used with screen() to
 // type-check the ids returned by nextScreen and prevScreen.
-export type ExperimentScreenId = keyof typeof ScreenInventory;
+export type ExperimentScreenId =
+  | 'metadata'
+  | 'experiment-type'
+  | 'freq-select-datasource'
+  | 'bayes-binary-or-real'
+  | 'describe-contexts'
+  | 'describe-arms'
+  | 'describe-bandit-arms'
+  | 'describe-webhooks'
+  | 'freq-stack'
+  | 'summarize-freq'
+  | 'summarize-bayes';
 
 // Helper to create screens with proper type inference
 const screen = packScreen<ExperimentFormData, ExperimentScreenId>();
@@ -164,6 +160,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId> 
   breadcrumbs: breadcrumbs,
   screens: {
     metadata: screen({
+      breadcrumbTitle: 'Experiment Description',
       render: ExperimentMetadataScreen,
       reducer: (data, msg) => {
         if (msg.type === 'set-name') return { ...data, name: msg.value };
@@ -186,6 +183,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId> 
       isBreadcrumbClickable: () => true,
     }),
     'experiment-type': screen({
+      breadcrumbTitle: 'Type',
       render: ExperimentTypeScreen,
       reducer: (data, msg) => {
         if (msg.type === 'set-experiment-type') {
@@ -213,6 +211,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId> 
       isBreadcrumbClickable: () => true,
     }),
     'freq-select-datasource': screen({
+      breadcrumbTitle: 'Datasource',
       render: ExperimentSelectDatasourceScreen,
       reducer: (data, msg) => {
         if (msg.type === 'set-datasource') {
@@ -229,6 +228,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId> 
       nextScreen: () => ({ type: 'screen', id: 'describe-arms' }),
     }),
     'bayes-binary-or-real': screen({
+      breadcrumbTitle: 'Outcomes',
       render: ExperimentSelectBinaryOrRealOutcomes,
       reducer: (data, msg) => {
         if (msg.type === 'set-outcome-type') {
@@ -249,6 +249,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId> 
       isBreadcrumbClickable: () => true,
     }),
     'describe-contexts': screen({
+      breadcrumbTitle: 'Contexts',
       render: ExperimentDescribeContextsScreen,
       reducer: (data) => data,
       isNextEnabled: () => true,
@@ -258,6 +259,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId> 
       isBreadcrumbClickable: ({ outcomeType }) => !!outcomeType,
     }),
     'describe-bandit-arms': screen({
+      breadcrumbTitle: 'Arms',
       render: ExperimentDescribeBanditArmsScreen,
       reducer: (data) => data,
       isNextEnabled: () => true,
@@ -283,6 +285,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId> 
       },
     }),
     'describe-arms': screen({
+      breadcrumbTitle: 'Arms',
       render: ExperimentDescribeArmsScreen,
       reducer: (data, msg: ExperimentDescribeArmsMessage) => {
         const arms = data.arms ?? [];
@@ -341,6 +344,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId> 
       },
     }),
     'describe-webhooks': screen({
+      breadcrumbTitle: 'Webhooks',
       render: ExperimentDescribeWebhooksScreen,
       reducer: (data) => data,
       isNextEnabled: () => true,
@@ -371,6 +375,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId> 
       },
     }),
     'freq-stack': screen({
+      breadcrumbTitle: 'Parameters',
       render: ExperimentFreqStackScreen,
       reducer: (data) => data,
       isNextEnabled: () => true,
@@ -379,6 +384,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId> 
       nextScreen: () => ({ type: 'screen', id: 'describe-webhooks' }),
     }),
     'summarize-freq': screen({
+      breadcrumbTitle: 'Summary',
       render: ExperimentsSummarizeFreqScreen,
       reducer: (data) => data,
       isNextEnabled: () => true,
@@ -387,6 +393,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId> 
       nextScreen: () => ({ type: 'submit' }),
     }),
     'summarize-bayes': screen({
+      breadcrumbTitle: 'Summary',
       render: ExperimentsSummarizeBayesScreen,
       reducer: (data) => data,
       isNextEnabled: () => true,

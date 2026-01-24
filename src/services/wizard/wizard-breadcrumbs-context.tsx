@@ -2,7 +2,6 @@
 import React, { createContext, PropsWithChildren, useContext } from 'react';
 import { Box, Flex, Text } from '@radix-ui/themes';
 import { BreadcrumbInfo } from './wizard-types';
-import { ExperimentScreenId, ScreenInventory } from '@/app/experiments/create/experiment-form/experiment-form-def';
 
 type WizardBreadcrumbsContextType = {
   breadcrumbs: Array<BreadcrumbInfo>;
@@ -88,7 +87,7 @@ function BreadcrumbItem({ crumb, isCurrent, onNavigate }: BreadcrumbItemProps) {
     );
   }
 
-  const label = ScreenInventory[crumb.screenId as ExperimentScreenId] || crumb.screenId;
+  const label = crumb.label;
   const isClickable = crumb.clickable && !isCurrent;
 
   return (

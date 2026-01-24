@@ -1,17 +1,22 @@
 'use client';
 import { useState } from 'react';
 import { BreadcrumbInfo } from './wizard-types';
-import { Badge, Box, Card, Flex, IconButton, ScrollArea, Separator, Text } from '@radix-ui/themes';
+import { Badge, Box, Card, Flex, IconButton, ScrollArea, Separator, Text, Tooltip } from '@radix-ui/themes';
 import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
 import { Preformatted } from '@/components/ui/preformatted';
 
 const DebugBreadcrumb = ({ breadcrumb }: { breadcrumb: BreadcrumbInfo }) => {
-  return breadcrumb.type === 'screen' && breadcrumb.clickable ? (
-    <Text color="blue">{breadcrumb.screenId}</Text>
-  ) : breadcrumb.type === 'screen' && !breadcrumb.clickable ? (
-    <Text color="gray">{breadcrumb.screenId}</Text>
-  ) : (
-    <Text color="red">unknown</Text>
+  if (breadcrumb.type === 'unknown') {
+    return <Text color="red">unknown</Text>;
+  }
+  return (
+    <Tooltip content={breadcrumb.label || 'No label'}>
+      {breadcrumb.clickable ? (
+        <Text color="blue">{breadcrumb.screenId}</Text>
+      ) : (
+        <Text color="gray">{breadcrumb.screenId}</Text>
+      )}
+    </Tooltip>
   );
 };
 

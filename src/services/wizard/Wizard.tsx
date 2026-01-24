@@ -65,6 +65,7 @@ export function Wizard<FormData, ScreenId extends string>({ form, onSubmit, debu
         : {
             type: 'screen',
             screenId: v,
+            label: form.screens[v].withScreen((s) => s.breadcrumbTitle ?? v),
             clickable: form.screens[v].withScreen((screen) =>
               screen.isBreadcrumbClickable ? screen.isBreadcrumbClickable(data) : false,
             ),
