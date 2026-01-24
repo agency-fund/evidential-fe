@@ -2,7 +2,7 @@
 import React, { createContext, PropsWithChildren, useContext } from 'react';
 import { Box, Flex, Text } from '@radix-ui/themes';
 import { BreadcrumbInfo } from './wizard-types';
-import { ScreenInventory, ExperimentScreenId } from '@/app/experiments/create/experiment-form-def';
+import { ExperimentScreenId, ScreenInventory } from '@/app/experiments/create/experiment-form/experiment-form-def';
 
 type WizardBreadcrumbsContextType = {
   breadcrumbs: Array<BreadcrumbInfo>;

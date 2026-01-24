@@ -1,7 +1,7 @@
 'use client';
 import { useReducer, useState } from 'react';
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import { ExperimentFormData } from '@/app/experiments/create/experiment-form-def';
+import { ExperimentFormData } from '@/app/experiments/create/experiment-form/experiment-form-def';
 import { getListOrganizationDatasourcesKey, useCreateDatasource, useListOrganizationDatasources } from '@/api/admin';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { XSpinner } from '@/components/ui/x-spinner';

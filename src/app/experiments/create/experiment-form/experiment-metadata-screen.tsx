@@ -1,5 +1,5 @@
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import { ExperimentFormData } from '@/app/experiments/create/experiment-form-def';
+import { ExperimentFormData } from '@/app/experiments/create/experiment-form/experiment-form-def';
 import { Box, Flex, Text, TextArea, TextField } from '@radix-ui/themes';
 import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 

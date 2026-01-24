@@ -1,7 +1,7 @@
 // Form data types
 import { packScreen, WizardForm } from '@/services/wizard/wizard-types';
-import { ExperimentMetadataScreen } from '@/app/experiments/create/experiment-metadata-screen';
-import { ExperimentTypeScreen } from '@/app/experiments/create/experiment-type-screen';
+import { ExperimentMetadataScreen } from '@/app/experiments/create/experiment-form/experiment-metadata-screen';
+import { ExperimentTypeScreen } from '@/app/experiments/create/experiment-form/experiment-type-screen';
 import {
   Arm,
   BayesABExperimentSpecInputExperimentType,
@@ -10,20 +10,23 @@ import {
   GetFiltersResponseElement,
   PowerResponseOutput,
 } from '@/api/methods.schemas';
-import { ExperimentSelectDatasourceScreen } from '@/app/experiments/create/experiment-select-datasource-screen';
-import { ExperimentSelectBinaryOrRealOutcomes } from '@/app/experiments/create/experiment-select-binary-or-real-outcomes';
-import { ExperimentDescribeContextsScreen } from '@/app/experiments/create/experiment-describe-contexts-screen';
+import { ExperimentSelectDatasourceScreen } from '@/app/experiments/create/experiment-form/experiment-select-datasource-screen';
+import { ExperimentSelectBinaryOrRealOutcomes } from '@/app/experiments/create/experiment-form/experiment-select-binary-or-real-outcomes';
+import { ExperimentDescribeContextsScreen } from '@/app/experiments/create/experiment-form/experiment-describe-contexts-screen';
 import {
   ExperimentDescribeArmsMessage,
   ExperimentDescribeArmsScreen,
-} from '@/app/experiments/create/experiment-describe-arms-screen';
-import { ExperimentFreqStackScreen } from '@/app/experiments/create/experiment-freq-stack-screen';
-import { ExperimentDescribeWebhooksScreen } from '@/app/experiments/create/experiment-describe-webhooks-screen';
-import { ExperimentsSummarizeBayesScreen } from '@/app/experiments/create/experiment-summarize-bayes-screen';
-import { ExperimentsSummarizeFreqScreen } from '@/app/experiments/create/experiment-summarize-freq-screen';
+} from '@/app/experiments/create/experiment-form/experiment-describe-arms-screen';
+import { ExperimentFreqStackScreen } from '@/app/experiments/create/experiment-form/experiment-freq-stack-screen';
+import { ExperimentDescribeWebhooksScreen } from '@/app/experiments/create/experiment-form/experiment-describe-webhooks-screen';
+import { ExperimentsSummarizeBayesScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-bayes-screen';
+import { ExperimentsSummarizeFreqScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-freq-screen';
 import { BanditArm, Context, MetricWithMDE, Stratum } from '@/app/datasources/[datasourceId]/experiments/create/types';
-import { ExperimentDescribeBanditArmsScreen } from '@/app/experiments/create/experiment-describe-bandit-arms-screen';
-import { getReasonableEndDate, getReasonableStartDate } from '@/app/experiments/create/experiment-form-helpers';
+import { ExperimentDescribeBanditArmsScreen } from '@/app/experiments/create/experiment-form/experiment-describe-bandit-arms-screen';
+import {
+  getReasonableEndDate,
+  getReasonableStartDate,
+} from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 
 export type ExperimentType = Exclude<DesignSpecInput['experiment_type'], BayesABExperimentSpecInputExperimentType>;
 

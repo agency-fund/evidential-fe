@@ -1,7 +1,7 @@
 'use client';
 
 import { Wizard } from '../../../services/wizard/Wizard';
-import { ExperimentForm } from '@/app/experiments/create/experiment-form-def';
+import { ExperimentForm } from '@/app/experiments/create/experiment-form/experiment-form-def';
 
 export default function DefinerPage() {
   const handleSubmit = (data: typeof ExperimentForm extends { initialData: () => infer D } ? D : never) => {
