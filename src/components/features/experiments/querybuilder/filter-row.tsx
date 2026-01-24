@@ -101,11 +101,11 @@ export function FilterRow({ filter, availableFields, onChange, onRemove }: Filte
     // We use a custom data attribute to identify the Popover.Content element that renders our dropdown.
     const relatedTarget = e.relatedTarget as HTMLElement;
     if (relatedTarget?.closest('[data-filter-dropdown]')) {
-      // Delay closing the popover to allow click events on dropdown items, which lets
-      // handleFieldSelect() close the popover.
+      // Since we appear to be interacting within the popover, avoid closing it here to allow click
+      // events on dropdown items, which will handle the close itself in handleFieldSelect().
       return;
     }
-    setTimeout(() => setIsPopoverOpen(false), 150);
+    setIsPopoverOpen(false);
   };
 
   // Search box handler for when the user presses a key while interacting with the combobox.
@@ -147,8 +147,10 @@ export function FilterRow({ filter, availableFields, onChange, onRemove }: Filte
           <TrashIcon />
         </IconButton>
 
-        {/* Implementation of our combobox uses a a Popover, with the input box as the Trigger, and
-        a scrollable list of fields as Content for the dropdown. */}
+        {/*
+          Our combobox implementation uses a Popover, with the input box as the Trigger,
+          and a scrollable list of fields as Content for the dropdown.
+        */}
         <Popover.Root
           open={isPopoverOpen}
           onOpenChange={(open) => {
