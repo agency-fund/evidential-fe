@@ -3,8 +3,8 @@
 import { Button, Flex, Separator } from '@radix-ui/themes';
 import { PlusIcon } from '@radix-ui/react-icons';
 import { DataType, FilterInput } from '@/api/methods.schemas';
-import { FilterRow } from '@/components/features/experiments/querybuilder/filter-row';
-import React from 'react';
+import { FilterRow, FilterRowChange } from '@/components/features/experiments/querybuilder/filter-row';
+import React, { useState } from 'react';
 
 // Placeholder filter for newly added rows before a field is selected
 const EMPTY_FILTER: FilterInput = {
@@ -24,6 +24,9 @@ export interface FilterBuilderProps {
 }
 
 export function FilterBuilder({ availableFields, filters, onChange }: FilterBuilderProps) {
+  const [editingIndex, setEditingIndex] = useState<number>(-1);
+  const [editingCursorPosition, setEditingCursorPosition] = useState<number | undefined>(undefined);
+
   const addFilter = (e: React.MouseEvent) => {
     e.preventDefault();
     if (availableFields.length === 0) return;
@@ -31,9 +34,9 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
     onChange([...filters, { ...EMPTY_FILTER }]);
   };
 
-  const updateFilter = (index: number, filter: FilterInput) => {
+  const updateFilter = (index: number, filterRowChange: FilterRowChange) => {
     // Get the field's data type
-    const field = availableFields.find((f) => f.field_name === filter.field_name);
+    const field = availableFields.find((f) => f.field_name === filterRowChange.field_name);
 
     // Ensure numeric fields have numeric values
     if (
@@ -44,7 +47,7 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
         field.data_type === 'numeric')
     ) {
       // Convert any string values to numbers and handle NaN
-      const numericValues = filter.value.map((val) => {
+      const numericValues = filterRowChange.value.map((val) => {
         if (val === null) return null;
 
         // If it's already a number and not NaN, keep it
@@ -61,11 +64,15 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
         return isNaN(num) ? 0 : num;
       });
 
-      filter = { ...filter, value: numericValues };
+      filterRowChange = { ...filterRowChange, value: numericValues };
     }
 
+    // Cache state about the latest filter row being updated
+    setEditingCursorPosition(filterRowChange.edit_position);
+    setEditingIndex(filterRowChange.edit_position !== undefined ? index : -1);
+
     // Sanitize the filter to ensure no NaN values
-    const sanitizedFilter = sanitizeFilter(filter);
+    const sanitizedFilter = sanitizeFilter(filterRowChange);
     const newFilters = [...filters];
     newFilters[index] = sanitizedFilter;
     onChange(newFilters);
@@ -100,6 +107,7 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
           <FilterRow
             filter={filter}
             availableFields={availableFields}
+            edit_position={editingIndex === index ? editingCursorPosition : undefined}
             onChange={(updatedFilter) => updateFilter(index, updatedFilter)}
             onRemove={() => removeFilter(index)}
           />

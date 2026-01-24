@@ -8,6 +8,35 @@ import { TypeSpecificFilterInput } from '@/components/features/experiments/query
 import { getDefaultFilterForType } from '@/components/features/experiments/querybuilder/utils';
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
 
+function _getSearchboxCursorPosition(ref: HTMLInputElement | null): number | undefined {
+  // Get the current cursor position if the ref is an input element
+  if (ref === null) return undefined;
+
+  let selectionStart: number | null = null;
+  if (ref.tagName === 'INPUT') {
+    selectionStart = ref.selectionStart;
+  }
+  return selectionStart ?? undefined;
+}
+
+function _setSearchboxCursorPosition(ref: HTMLInputElement | null, position: number | undefined) {
+  if (ref && ref.tagName !== 'INPUT') {
+    // See if we can find it as an ancestor
+    ref = ref.querySelector('input');
+  }
+  if (ref && ref.tagName === 'INPUT') {
+    const inputElement = ref as HTMLInputElement;
+    inputElement.focus();
+    if (position && position >= 0) {
+      inputElement.setSelectionRange(position, position);
+    }
+  }
+}
+
+export interface FilterRowChange extends FilterInput {
+  edit_position?: number;
+}
+
 export interface FilterRowProps {
   filter: FilterInput;
   availableFields: Array<{
@@ -15,11 +44,13 @@ export interface FilterRowProps {
     data_type: DataType;
     description: string;
   }>;
-  onChange: (filter: FilterInput) => void;
+  /* Search box cursor position to possibly restore after the filter is updated */
+  edit_position: number | undefined;
+  onChange: (filterRowChange: FilterRowChange) => void;
   onRemove: () => void;
 }
 
-export function FilterRow({ filter, availableFields, onChange, onRemove }: FilterRowProps) {
+export function FilterRow({ filter, availableFields, edit_position, onChange, onRemove }: FilterRowProps) {
   // State for the search input part of our combobox
   const [searchText, setSearchText] = useState(filter.field_name);
   // State for the dropdown part of our combobox
@@ -28,6 +59,10 @@ export function FilterRow({ filter, availableFields, onChange, onRemove }: Filte
   const [popoverHighlightedIndex, setPopoverHighlightedIndex] = useState(-1);
   // Ref for the array of dropdown items; used to scroll the highlighted item into view
   const popoverItemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  // Ref for the combobox's TextField representing the search box input element
+  const textFieldRootRef = useRef<HTMLInputElement>(null);
+
+  console.log('isediting', edit_position);
 
   // Find exact match for current search text
   const exactMatch = availableFields.find((f) => f.field_name === searchText);
@@ -57,6 +92,13 @@ export function FilterRow({ filter, availableFields, onChange, onRemove }: Filte
   useEffect(() => {
     setSearchText(filter.field_name);
   }, [filter.field_name]);
+
+  // Maintain focus on the TextField when isEditing is true to prevent focus loss during re-renders
+  useEffect(() => {
+    if (edit_position && textFieldRootRef.current) {
+      _setSearchboxCursorPosition(textFieldRootRef.current, edit_position);
+    }
+  }, [edit_position]);
 
   // Handler for selecting a field fills in the full field name and closes the dropdown.
   // It fires under several situations:
@@ -93,6 +135,7 @@ export function FilterRow({ filter, availableFields, onChange, onRemove }: Filte
           field_name: value,
           relation: 'includes',
           value: [],
+          edit_position: _getSearchboxCursorPosition(textFieldRootRef.current),
         });
       }
 
@@ -175,6 +218,7 @@ export function FilterRow({ filter, availableFields, onChange, onRemove }: Filte
           <Popover.Trigger>
             <Box minWidth="200px">
               <TextField.Root
+                ref={textFieldRootRef}
                 placeholder="Search fields..."
                 value={searchText}
                 onChange={handleSearchChange}
