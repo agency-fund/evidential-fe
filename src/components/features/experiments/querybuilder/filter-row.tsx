@@ -84,10 +84,23 @@ export function FilterRow({ filter, availableFields, onChange, onRemove }: Filte
     const matchedField = availableFields.find((f) => f.field_name === value);
     if (matchedField) {
       handleFieldSelect(value);
-    } else if (!isPopoverOpen) {
-      // Since handling the selection of a field closes the dropdown, we re-open it if the user
-      // edited the field such that we no longer have an exact match.
-      setIsPopoverOpen(true);
+    } else {
+      // If we previously had a valid filter selected but now don't have a match,
+      // reset to empty filter to prevent stale filter data from being used
+      const hadValidFilter = filter.field_name && availableFields.find((f) => f.field_name === filter.field_name);
+      if (hadValidFilter) {
+        onChange({
+          field_name: value,
+          relation: 'includes',
+          value: [],
+        });
+      }
+
+      if (!isPopoverOpen) {
+        // Since handling the selection of a field closes the dropdown, we re-open it if the user
+        // edited the field such that we no longer have an exact match.
+        setIsPopoverOpen(true);
+      }
     }
   };
 
