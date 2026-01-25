@@ -50,9 +50,10 @@ export interface ComboboxProps<TOption = string> {
   // Optional customization
   placeholder?: string;
   noMatchText?: string;
+  /** Render a component for the left side of the search box, defaulting to a magnifying glass icon. */
   leftSlot?: React.ReactNode;
-  /** Render a component for the right side of the search box when an *exact match* is found. */
-  rightSlot?: (option: TOption | null) => React.ReactNode;
+  /** Render a component for the right side of the search box. */
+  rightSlot?: React.ReactNode;
   dropdownRow?: (props: DropdownRowProps<TOption>) => React.ReactNode;
 
   // Optional handlers
@@ -102,7 +103,7 @@ export function Combobox<TOption = string>({
   const textFieldRootRef = useRef<HTMLInputElement>(null);
 
   // Find exact match for current search text
-  const exactMatch = findExactMatch(searchText, options);
+  const exactMatchOption = findExactMatch(searchText, options);
 
   // Filter options based on search text (case-insensitive)
   const filteredOptions = useMemo(() => {
@@ -159,8 +160,8 @@ export function Combobox<TOption = string>({
     } else {
       // If we previously had a valid option selected but now don't have a match,
       // call onUpdate to notify parent and preserve the cursor position.
-      // TODO? Would it be better to always call onMismatch here instead of only when an edit causes it?
-      if (exactMatch && onNoMatch) {
+      // TODO? Would it be better to always call onNoMatch here instead of only when an edit causes it?
+      if (exactMatchOption && onNoMatch) {
         const currentCursorPosition = getSearchboxCursorPosition(textFieldRootRef.current);
         setCursorPosition(currentCursorPosition);
         onNoMatch(newValue);
@@ -255,7 +256,7 @@ export function Combobox<TOption = string>({
             onKeyDown={handleKeyDown}
           >
             <TextField.Slot>{defaultLeftSlot}</TextField.Slot>
-            {exactMatch && rightSlot && <TextField.Slot>{rightSlot(exactMatch)}</TextField.Slot>}
+            {rightSlot && <TextField.Slot>{rightSlot}</TextField.Slot>}
           </TextField.Root>
         </Box>
       </Popover.Trigger>

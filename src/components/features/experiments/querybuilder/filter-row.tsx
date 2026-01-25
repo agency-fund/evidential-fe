@@ -7,7 +7,7 @@ import { TypeSpecificFilterInput } from '@/components/features/experiments/query
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
 import { Combobox } from '@/components/ui/combobox';
 
-const findExactMatchOption = (searchText: string, availableOptions: Array<FilterRowOption>) => {
+const findExactMatch = (searchText: string, availableOptions: Array<FilterRowOption>) => {
   return availableOptions.find((f) => f.field_name === searchText);
 };
 
@@ -25,12 +25,12 @@ export interface FilterRowProps {
 }
 
 export function FilterRow({ filter, availableOptions, onSelect, onUpdate, onRemove }: FilterRowProps) {
-  // If there's an exact match for the current filter, store it here so we can reference the data type.
-  const exactMatchField = findExactMatchOption(filter.field_name, availableOptions);
+  // If there's an exact match for the current filter, store it here for rendering.
+  const exactMatchField = findExactMatch(filter.field_name, availableOptions);
 
   // Handler for when value changed and now we don't have an exact match: reset to an empty filter
   // with the current search string to prevent stale filter data from being used.
-  const handleNoMatch = (searchText: string) => {
+  const onNoMatch = (searchText: string) => {
     onUpdate({
       field_name: searchText,
       relation: 'includes',
@@ -55,12 +55,12 @@ export function FilterRow({ filter, availableOptions, onSelect, onUpdate, onRemo
         <Combobox<FilterRowOption>
           options={availableOptions}
           onSelect={onSelect}
-          onNoMatch={handleNoMatch}
-          findExactMatch={findExactMatchOption}
+          onNoMatch={onNoMatch}
+          findExactMatch={findExactMatch}
           getSearchTextFromOption={(opt) => opt.field_name}
           placeholder="Search fields..."
           noMatchText="No matching fields"
-          rightSlot={(match) => (match ? <DataTypeBadge type={match.data_type} /> : null)}
+          rightSlot={exactMatchField && <DataTypeBadge type={exactMatchField.data_type} />}
           dropdownRow={({ option }) => (
             <Flex gap="2" align="center" justify="between" style={{ whiteSpace: 'nowrap' }}>
               <Text size="2">{option.field_name}</Text>
