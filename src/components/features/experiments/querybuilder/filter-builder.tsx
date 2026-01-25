@@ -106,7 +106,7 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
         <React.Fragment key={`${index}-${filter.field_name}`}>
           <FilterRow
             filter={filter}
-            availableFields={availableFields}
+            availableOptions={availableFields}
             edit_position={editingIndex === index ? editingCursorPosition : undefined}
             onChange={(updatedFilter) => updateFilter(index, updatedFilter)}
             onRemove={() => removeFilter(index)}

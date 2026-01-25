@@ -37,20 +37,21 @@ export interface FilterRowChange extends FilterInput {
   edit_position?: number;
 }
 
+export interface FilterRowOption {
+  field_name: string;
+  data_type: DataType;
+}
+
 export interface FilterRowProps {
   filter: FilterInput;
-  availableFields: Array<{
-    field_name: string;
-    data_type: DataType;
-    description: string;
-  }>;
+  availableOptions: Array<FilterRowOption>;
   /* Search box cursor position to possibly restore after the filter is updated */
   edit_position: number | undefined;
   onChange: (filterRowChange: FilterRowChange) => void;
   onRemove: () => void;
 }
 
-export function FilterRow({ filter, availableFields, edit_position, onChange, onRemove }: FilterRowProps) {
+export function FilterRow({ filter, availableOptions, edit_position, onChange, onRemove }: FilterRowProps) {
   // State for the search input part of our combobox
   const [searchText, setSearchText] = useState(filter.field_name);
   // State for the dropdown part of our combobox
@@ -65,14 +66,14 @@ export function FilterRow({ filter, availableFields, edit_position, onChange, on
   console.log('isediting', edit_position);
 
   // Find exact match for current search text
-  const exactMatch = availableFields.find((f) => f.field_name === searchText);
+  const exactMatch = availableOptions.find((f) => f.field_name === searchText);
 
   // Filter fields based on search text (case-insensitive)
   const filteredFields = useMemo(() => {
-    if (!searchText) return availableFields;
+    if (!searchText) return availableOptions;
     const lowerSearch = searchText.toLowerCase();
-    return availableFields.filter((f) => f.field_name.toLowerCase().includes(lowerSearch));
-  }, [availableFields, searchText]);
+    return availableOptions.filter((f) => f.field_name.toLowerCase().includes(lowerSearch));
+  }, [availableOptions, searchText]);
 
   // Reset highlighted index when filtered results change
   useEffect(() => {
@@ -105,15 +106,12 @@ export function FilterRow({ filter, availableFields, edit_position, onChange, on
   // - User clicks on a field in the dropdown
   // - User types a field name and presses enter
   // - User types a field name and matches exactly one field
-  const handleFieldSelect = (fieldName: string) => {
-    const newField = availableFields.find((f) => f.field_name === fieldName);
-    if (!newField) return;
-
-    setSearchText(fieldName);
+  const handleOptionSelect = (newOption: FilterRowOption) => {
+    setSearchText(newOption.field_name);
     setIsPopoverOpen(false);
 
     // Reset the filter with appropriate defaults for the new field type
-    const defaultFilter = getDefaultFilterForType(fieldName, newField.data_type);
+    const defaultFilter = getDefaultFilterForType(newOption.field_name, newOption.data_type);
     onChange(defaultFilter);
   };
 
@@ -123,13 +121,13 @@ export function FilterRow({ filter, availableFields, edit_position, onChange, on
     setSearchText(value);
 
     // Check for exact match and auto-select the field if found
-    const matchedField = availableFields.find((f) => f.field_name === value);
-    if (matchedField) {
-      handleFieldSelect(value);
+    const matchedOption = availableOptions.find((f) => f.field_name === value);
+    if (matchedOption) {
+      handleOptionSelect(matchedOption);
     } else {
       // If we previously had a valid filter selected but now don't have a match,
       // reset to empty filter to prevent stale filter data from being used
-      const hadValidFilter = filter.field_name && availableFields.find((f) => f.field_name === filter.field_name);
+      const hadValidFilter = filter.field_name && availableOptions.find((f) => f.field_name === filter.field_name);
       if (hadValidFilter) {
         onChange({
           field_name: value,
@@ -181,10 +179,10 @@ export function FilterRow({ filter, availableFields, edit_position, onChange, on
     } else if (e.key === 'Enter') {
       e.preventDefault();
       if (popoverHighlightedIndex >= 0 && popoverHighlightedIndex < filteredFields.length) {
-        handleFieldSelect(filteredFields[popoverHighlightedIndex].field_name);
+        handleOptionSelect(filteredFields[popoverHighlightedIndex]);
       } else if (filteredFields.length === 1) {
         // Only one option while the user is typing and presses enter without highlighting first
-        handleFieldSelect(filteredFields[0].field_name);
+        handleOptionSelect(filteredFields[0]);
       }
     }
   };
@@ -265,7 +263,7 @@ export function FilterRow({ filter, availableFields, edit_position, onChange, on
                           // Store the ref for this item in case we need to scroll it into view.
                           popoverItemRefs.current[index] = el;
                         }}
-                        onClick={() => handleFieldSelect(field.field_name)}
+                        onClick={() => handleOptionSelect(field)}
                         onMouseEnter={() => setPopoverHighlightedIndex(index)}
                         py="2"
                         px="3"
