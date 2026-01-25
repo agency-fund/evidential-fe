@@ -17,7 +17,10 @@ import {
   ExperimentDescribeArmsMessage,
   ExperimentDescribeArmsScreen,
 } from '@/app/experiments/create/experiment-form/experiment-describe-arms-screen';
-import { ExperimentFreqStackScreen } from '@/app/experiments/create/experiment-form/experiment-freq-stack-screen';
+import {
+  ExperimentFreqStackScreen,
+  ExperimentFreqStackScreenMessage,
+} from '@/app/experiments/create/experiment-form/experiment-freq-stack-screen';
 import { ExperimentDescribeWebhooksScreen } from '@/app/experiments/create/experiment-form/experiment-describe-webhooks-screen';
 import { ExperimentsSummarizeBayesScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-bayes-screen';
 import { ExperimentsSummarizeFreqScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-freq-screen';
@@ -47,6 +50,7 @@ export type ExperimentFormData = {
   tableName?: string;
 
   // experiment-freq-stack-screen
+  primaryKey?: string;
   primaryMetric?: MetricWithMDE;
   secondaryMetrics?: MetricWithMDE[];
   filters?: FilterInput[];
@@ -344,6 +348,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             throw new Error(`Experiment type ${experimentType} unhandled`);
         }
       },
+      isBreadcrumbClickable: () => true,
     }),
     'describe-webhooks': screen({
       breadcrumbTitle: 'Webhooks',
@@ -379,7 +384,48 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
     'freq-stack': screen({
       breadcrumbTitle: 'Parameters',
       render: ExperimentFreqStackScreen,
-      reducer: (data) => data,
+      reducer: (data, msg: ExperimentFreqStackScreenMessage) => {
+        // Primary key
+        if (msg.type === 'set-primary-key') {
+          return { ...data, primaryKey: msg.value };
+        }
+
+        // Metric builder actions
+        if (msg.type === 'primary-metric-select') {
+          return { ...data, primaryMetric: msg.primaryMetric };
+        }
+        if (msg.type === 'primary-metric-deselect') {
+          return { ...data, primaryMetric: msg.primaryMetric, secondaryMetrics: msg.secondaryMetrics };
+        }
+        if (msg.type === 'promote-secondary-to-primary') {
+          return { ...data, primaryMetric: msg.primaryMetric, secondaryMetrics: msg.secondaryMetrics };
+        }
+        if (msg.type === 'secondary-metric-add') {
+          return { ...data, secondaryMetrics: msg.secondaryMetrics };
+        }
+        if (msg.type === 'secondary-metric-remove') {
+          return { ...data, secondaryMetrics: msg.secondaryMetrics };
+        }
+        if (msg.type === 'mde-change') {
+          return {
+            ...data,
+            primaryMetric: msg.primaryMetric ?? data.primaryMetric,
+            secondaryMetrics: msg.secondaryMetrics ?? data.secondaryMetrics,
+          };
+        }
+
+        // Filter builder
+        if (msg.type === 'set-filters') {
+          return { ...data, filters: msg.filters };
+        }
+
+        // Strata builder
+        if (msg.type === 'set-strata') {
+          return { ...data, strata: msg.strata.map((fieldName) => ({ fieldName })) };
+        }
+
+        return data;
+      },
       isNextEnabled: () => true,
       isPrevEnabled: () => true,
       prevScreen: () => ({ type: 'screen', id: 'describe-arms' }),
