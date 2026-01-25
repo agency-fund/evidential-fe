@@ -5,6 +5,7 @@ import { PlusIcon } from '@radix-ui/react-icons';
 import { DataType, FilterInput } from '@/api/methods.schemas';
 import { FilterRow } from '@/components/features/experiments/querybuilder/filter-row';
 import React from 'react';
+import { getDefaultFilterForType } from './utils';
 
 // Placeholder filter for newly added rows before a field is selected
 const EMPTY_FILTER: FilterInput = {
@@ -100,7 +101,12 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
           <FilterRow
             filter={filter}
             availableOptions={availableFields}
-            onChange={(updatedFilter) => updateFilter(index, updatedFilter)}
+            onSelect={(selectedOption) => {
+              // Reset the filter with appropriate defaults for the new field type
+              const defaultFilter = getDefaultFilterForType(selectedOption.field_name, selectedOption.data_type);
+              updateFilter(index, defaultFilter);
+            }}
+            onUpdate={(updatedFilter) => updateFilter(index, updatedFilter)}
             onRemove={() => removeFilter(index)}
           />
           <Separator orientation="horizontal" size="4" />

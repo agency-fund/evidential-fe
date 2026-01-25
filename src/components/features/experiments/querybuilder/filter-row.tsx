@@ -5,10 +5,9 @@ import { Box, Flex, Grid, IconButton, Popover, ScrollArea, Text, TextField } fro
 import { TrashIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { DataType, FilterInput } from '@/api/methods.schemas';
 import { TypeSpecificFilterInput } from '@/components/features/experiments/querybuilder/type-specific-filter-input';
-import { getDefaultFilterForType } from '@/components/features/experiments/querybuilder/utils';
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
 
-function _getSearchboxCursorPosition(ref: HTMLInputElement | null): number | undefined {
+function getSearchboxCursorPosition(ref: HTMLInputElement | null): number | undefined {
   // Get the current cursor position if the ref is an input element
   if (ref === null) return undefined;
 
@@ -19,7 +18,7 @@ function _getSearchboxCursorPosition(ref: HTMLInputElement | null): number | und
   return selectionStart ?? undefined;
 }
 
-function _setSearchboxCursorPosition(ref: HTMLInputElement | null, position: number | undefined) {
+function setSearchboxCursorPosition(ref: HTMLInputElement | null, position: number | undefined) {
   if (ref && ref.tagName !== 'INPUT') {
     // See if we can find it as an ancestor
     ref = ref.querySelector('input');
@@ -41,11 +40,12 @@ export interface FilterRowOption {
 export interface FilterRowProps {
   filter: FilterInput;
   availableOptions: Array<FilterRowOption>;
-  onChange: (filterRowChange: FilterInput) => void;
+  onSelect: (selectedOption: FilterRowOption) => void;
+  onUpdate: (filterRowChange: FilterInput) => void;
   onRemove: () => void;
 }
 
-export function FilterRow({ filter, availableOptions, onChange, onRemove }: FilterRowProps) {
+export function FilterRow({ filter, availableOptions, onSelect, onUpdate, onRemove }: FilterRowProps) {
   // State for the search input part of our combobox
   const [searchText, setSearchText] = useState(filter.field_name);
   // State for the dropdown part of our combobox
@@ -92,8 +92,7 @@ export function FilterRow({ filter, availableOptions, onChange, onRemove }: Filt
   // NOTE: Requires the row to have a stable key for this to work properly!
   useEffect(() => {
     if (cursorPosition !== undefined && textFieldRootRef.current) {
-      _setSearchboxCursorPosition(textFieldRootRef.current, cursorPosition);
-      // Clear the cursor position after restoring it
+      setSearchboxCursorPosition(textFieldRootRef.current, cursorPosition);
       setCursorPosition(undefined);
     }
   }, [cursorPosition]);
@@ -106,10 +105,7 @@ export function FilterRow({ filter, availableOptions, onChange, onRemove }: Filt
   const handleOptionSelect = (newOption: FilterRowOption) => {
     setSearchText(newOption.field_name);
     setIsPopoverOpen(false);
-
-    // Reset the filter with appropriate defaults for the new field type
-    const defaultFilter = getDefaultFilterForType(newOption.field_name, newOption.data_type);
-    onChange(defaultFilter);
+    onSelect(newOption);
   };
 
   // Search box handler updates our searchText state and other side effects based on the input.
@@ -127,9 +123,9 @@ export function FilterRow({ filter, availableOptions, onChange, onRemove }: Filt
       const hadValidFilter = filter.field_name && availableOptions.find((f) => f.field_name === filter.field_name);
       if (hadValidFilter) {
         // Capture cursor position before updating
-        const currentCursorPosition = _getSearchboxCursorPosition(textFieldRootRef.current);
+        const currentCursorPosition = getSearchboxCursorPosition(textFieldRootRef.current);
         setCursorPosition(currentCursorPosition);
-        onChange({
+        onUpdate({
           field_name: value,
           relation: 'includes',
           value: [],
@@ -288,7 +284,7 @@ export function FilterRow({ filter, availableOptions, onChange, onRemove }: Filt
       {/* Filter options for the selected filter field or help text */}
       <Flex gap={'2'} align={'center'}>
         {exactMatch ? (
-          <TypeSpecificFilterInput dataType={exactMatch.data_type} filter={filter} onChange={onChange} />
+          <TypeSpecificFilterInput dataType={exactMatch.data_type} filter={filter} onChange={onUpdate} />
         ) : searchText === '' ? (
           <Text size="2" color="gray">
             ← Select a field
