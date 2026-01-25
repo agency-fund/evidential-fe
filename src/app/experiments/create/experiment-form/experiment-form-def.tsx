@@ -159,6 +159,8 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       { arm_name: 'Control', arm_description: 'Control' },
       { arm_name: 'Treatment', arm_description: 'Treatment' },
     ],
+    confidence: '95',
+    power: '80',
   }),
   initialScreenId: () => 'metadata',
   breadcrumbs: breadcrumbs,
@@ -390,33 +392,47 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           return { ...data, primaryKey: msg.value };
         }
 
-        // Metric builder actions
+        // Metric builder actions - all metric changes invalidate power check
         if (msg.type === 'primary-metric-select') {
-          return { ...data, primaryMetric: msg.primaryMetric };
+          return { ...data, primaryMetric: msg.primaryMetric, powerCheckResponse: undefined, chosenN: undefined };
         }
         if (msg.type === 'primary-metric-deselect') {
-          return { ...data, primaryMetric: msg.primaryMetric, secondaryMetrics: msg.secondaryMetrics };
+          return {
+            ...data,
+            primaryMetric: msg.primaryMetric,
+            secondaryMetrics: msg.secondaryMetrics,
+            powerCheckResponse: undefined,
+            chosenN: undefined,
+          };
         }
         if (msg.type === 'promote-secondary-to-primary') {
-          return { ...data, primaryMetric: msg.primaryMetric, secondaryMetrics: msg.secondaryMetrics };
+          return {
+            ...data,
+            primaryMetric: msg.primaryMetric,
+            secondaryMetrics: msg.secondaryMetrics,
+            powerCheckResponse: undefined,
+            chosenN: undefined,
+          };
         }
         if (msg.type === 'secondary-metric-add') {
-          return { ...data, secondaryMetrics: msg.secondaryMetrics };
+          return { ...data, secondaryMetrics: msg.secondaryMetrics, powerCheckResponse: undefined, chosenN: undefined };
         }
         if (msg.type === 'secondary-metric-remove') {
-          return { ...data, secondaryMetrics: msg.secondaryMetrics };
+          return { ...data, secondaryMetrics: msg.secondaryMetrics, powerCheckResponse: undefined, chosenN: undefined };
         }
         if (msg.type === 'mde-change') {
           return {
             ...data,
             primaryMetric: msg.primaryMetric ?? data.primaryMetric,
             secondaryMetrics: msg.secondaryMetrics ?? data.secondaryMetrics,
+            powerCheckResponse: undefined,
+            chosenN: undefined,
           };
         }
 
-        // Filter builder
+        // Filter builder - filter changes invalidate power check
         if (msg.type === 'set-filters') {
-          return { ...data, filters: msg.filters };
+          return { ...data, filters: msg.filters, powerCheckResponse: undefined, chosenN: undefined };
         }
 
         // Strata builder
@@ -424,9 +440,39 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           return { ...data, strata: msg.strata.map((fieldName) => ({ fieldName })) };
         }
 
+        // Power check - changing confidence/power invalidates power check response
+        if (msg.type === 'set-confidence') {
+          return { ...data, confidence: msg.value, powerCheckResponse: undefined, chosenN: undefined };
+        }
+        if (msg.type === 'set-power') {
+          return { ...data, power: msg.value, powerCheckResponse: undefined, chosenN: undefined };
+        }
+        if (msg.type === 'set-power-check-response') {
+          return { ...data, powerCheckResponse: msg.response, chosenN: msg.chosenN };
+        }
+        if (msg.type === 'set-chosen-n') {
+          return { ...data, chosenN: msg.value };
+        }
+
         return data;
       },
-      isNextEnabled: () => true,
+      isNextEnabled: (data) => {
+        // Must have primary key selected
+        if (!data.primaryKey) return false;
+        // Must have primary metric selected
+        if (!data.primaryMetric) return false;
+        // Must have valid confidence value (50-99)
+        const confidence = Number(data.confidence);
+        if (isNaN(confidence) || confidence < 50 || confidence > 99) return false;
+        // Must have valid power value (50-99)
+        const power = Number(data.power);
+        if (isNaN(power) || power < 50 || power > 99) return false;
+        // Must have run power check
+        if (!data.powerCheckResponse) return false;
+        // Must have selected a sample size
+        if (data.chosenN === undefined) return false;
+        return true;
+      },
       isPrevEnabled: () => true,
       prevScreen: () => ({ type: 'screen', id: 'describe-arms' }),
       nextScreen: () => ({ type: 'screen', id: 'describe-webhooks' }),

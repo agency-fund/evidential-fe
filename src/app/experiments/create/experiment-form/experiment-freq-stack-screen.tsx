@@ -1,19 +1,24 @@
 import { ScreenProps } from '@/services/wizard/wizard-types';
 import { ExperimentFormData } from '@/app/experiments/create/experiment-form/experiment-form-def';
-import { Flex, Heading } from '@radix-ui/themes';
+import { Card, Flex, Heading } from '@radix-ui/themes';
 import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 import { SelectPrimaryKey } from '@/app/experiments/create/experiment-form/select-primary-key';
 import { MetricBuilder, MetricBuilderAction } from '@/components/features/experiments/metric-builder';
 import { FilterBuilder } from '@/components/features/experiments/querybuilder/filter-builder';
 import { StrataBuilder } from '@/components/features/experiments/strata-builder';
 import { useInspectTableInDatasource } from '@/api/admin';
-import { FilterInput } from '@/api/methods.schemas';
+import { FilterInput, PowerResponseOutput } from '@/api/methods.schemas';
+import { PowerCheckSection } from './power-check-section';
 
 export type ExperimentFreqStackScreenMessage =
   | { type: 'set-primary-key'; value: string }
   | MetricBuilderAction
   | { type: 'set-filters'; filters: FilterInput[] }
-  | { type: 'set-strata'; strata: string[] };
+  | { type: 'set-strata'; strata: string[] }
+  | { type: 'set-confidence'; value: string }
+  | { type: 'set-power'; value: string }
+  | { type: 'set-power-check-response'; response: PowerResponseOutput; chosenN?: number }
+  | { type: 'set-chosen-n'; value: number | undefined };
 
 /** ExperimentFreqStackScreen allows users to define the primary key, metrics, filters, strata, confidence, power,
  * and run a power check on the selected values.
@@ -39,7 +44,6 @@ export const ExperimentFreqStackScreen = ({
   return (
     <Flex direction="column" gap="4">
       <WizardBreadcrumbs />
-      <h2>Describe Freq Experiment</h2>
 
       <SelectPrimaryKey
         datasourceId={data.datasourceId ?? ''}
@@ -51,32 +55,41 @@ export const ExperimentFreqStackScreen = ({
       <Heading as="h3" size="3">
         Metrics
       </Heading>
-      <MetricBuilder
-        primaryMetric={data.primaryMetric}
-        secondaryMetrics={data.secondaryMetrics ?? []}
-        dispatch={dispatch}
-        metricFields={metricFields}
-      />
+      <Card>
+        <MetricBuilder
+          primaryMetric={data.primaryMetric}
+          secondaryMetrics={data.secondaryMetrics ?? []}
+          dispatch={dispatch}
+          metricFields={metricFields}
+        />
+      </Card>
 
       <Heading as="h3" size="3">
         Filters
       </Heading>
-      <FilterBuilder
-        availableFields={fields}
-        filters={data.filters ?? []}
-        onChange={(filters) => dispatch({ type: 'set-filters', filters })}
-      />
+      <Card>
+        <FilterBuilder
+          availableFields={fields}
+          filters={data.filters ?? []}
+          onChange={(filters) => dispatch({ type: 'set-filters', filters })}
+        />
+      </Card>
 
       <Heading as="h3" size="3">
         Strata
       </Heading>
-      <StrataBuilder
-        availableStrata={fields}
-        selectedStrata={data.strata?.map((s) => s.fieldName) ?? []}
-        onStrataChange={(strata) => dispatch({ type: 'set-strata', strata })}
-      />
+      <Card>
+        <StrataBuilder
+          availableStrata={fields}
+          selectedStrata={data.strata?.map((s) => s.fieldName) ?? []}
+          onStrataChange={(strata) => dispatch({ type: 'set-strata', strata })}
+        />
+      </Card>
 
-      {/* TODO: Implement power check behavior. */}
+      <Heading as="h3" size="3">
+        Power Analysis
+      </Heading>
+      <PowerCheckSection data={data} dispatch={dispatch} />
     </Flex>
   );
 };
