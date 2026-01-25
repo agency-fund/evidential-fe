@@ -280,7 +280,6 @@ export function Combobox<TOption = string>({
             <Flex direction="column">
               {filteredOptions.map((option, index) => {
                 const isHighlighted = index === popoverHighlightedIndex;
-                const isSelected = getSearchTextFromOption(option) === searchText;
                 return (
                   <Box
                     key={getSearchTextFromOption(option)}
@@ -294,10 +293,10 @@ export function Combobox<TOption = string>({
                     px="3"
                     style={{
                       cursor: 'pointer',
-                      backgroundColor: isHighlighted || isSelected ? 'var(--gray-3)' : undefined,
+                      backgroundColor: isHighlighted ? 'var(--gray-3)' : undefined,
                     }}
                   >
-                    {renderDropdownRow({ option, isHighlighted, isSelected, index })}
+                    {renderDropdownRow({ option, isHighlighted, index })}
                   </Box>
                 );
               })}
