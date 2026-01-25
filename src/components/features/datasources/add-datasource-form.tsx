@@ -28,7 +28,7 @@ export interface DatasourceFormData {
   showPassword: boolean;
 }
 
-export type DatasourceFormMessage =
+export type AddDatasourceFormMessage =
   | { type: 'set-name'; value: string }
   | { type: 'set-host'; value: string }
   | { type: 'set-port'; value: string }
@@ -62,7 +62,7 @@ export function defaultDatasourceFormData(): DatasourceFormData {
   };
 }
 
-export function datasourceFormReducer(data: DatasourceFormData, msg: DatasourceFormMessage): DatasourceFormData {
+export function datasourceFormReducer(data: DatasourceFormData, msg: AddDatasourceFormMessage): DatasourceFormData {
   switch (msg.type) {
     case 'set-name':
       return { ...data, name: msg.value };
@@ -102,7 +102,7 @@ export function datasourceFormReducer(data: DatasourceFormData, msg: DatasourceF
 
 interface AddDatasourceFormProps {
   data: DatasourceFormData;
-  dispatch: (msg: DatasourceFormMessage) => void;
+  dispatch: (msg: AddDatasourceFormMessage) => void;
   isDNSError?: boolean;
 }
 

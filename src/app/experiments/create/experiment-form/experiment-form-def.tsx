@@ -351,11 +351,17 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         }
       },
       isBreadcrumbClickable: () => true,
+      breadcrumbs: breadcrumbs,
     }),
     'describe-webhooks': screen({
       breadcrumbTitle: 'Webhooks',
       render: ExperimentDescribeWebhooksScreen,
-      reducer: (data) => data,
+      reducer: (data, msg) => {
+        if (msg.type === 'set-webhook-ids') {
+          return { ...data, selectedWebhookIds: msg.value };
+        }
+        return data;
+      },
       isNextEnabled: () => true,
       isPrevEnabled: () => true,
       prevScreen: ({ experimentType }) => {
@@ -382,6 +388,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             throw new Error(`Experiment type ${experimentType} unhandled`);
         }
       },
+      isBreadcrumbClickable: (data) => !!data.datasourceId,
     }),
     'freq-stack': screen({
       breadcrumbTitle: 'Parameters',
@@ -476,6 +483,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       isPrevEnabled: () => true,
       prevScreen: () => ({ type: 'screen', id: 'describe-arms' }),
       nextScreen: () => ({ type: 'screen', id: 'describe-webhooks' }),
+      isBreadcrumbClickable: (data) => !!(data.datasourceId && data.tableName),
     }),
     'summarize-freq': screen({
       breadcrumbTitle: 'Summary',
