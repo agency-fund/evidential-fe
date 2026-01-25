@@ -77,7 +77,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   return (
     <Flex direction="column" gap="4">
       <Flex direction="row" gap="4">
-        <Flex direction="column" gap="1" style={{ flex: 1 }}>
+        <Flex direction="column" gap="1" flexGrow="1">
           <Text as="label" size="2" weight="medium">
             Confidence (%)
           </Text>
@@ -90,7 +90,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
             placeholder="95"
           />
         </Flex>
-        <Flex direction="column" gap="1" style={{ flex: 1 }}>
+        <Flex direction="column" gap="1" flexGrow="1">
           <Text as="label" size="2" weight="medium">
             Power (%)
           </Text>
@@ -244,7 +244,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                     <span>Use custom sample size:</span>
                     <div style={{ pointerEvents: 'auto' }}>
                       <TextField.Root
-                        style={{ textAlign: 'start', width: '250px' }}
+                        style={{ width: '250px' }}
                         size="2"
                         type="number"
                         max={allSamples ?? undefined}
