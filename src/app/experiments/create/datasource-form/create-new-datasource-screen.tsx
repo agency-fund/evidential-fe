@@ -95,7 +95,7 @@ export const CreateNewDatasourceScreen = ({
   };
 
   return (
-    <Flex direction="column" gap="3">
+    <Flex direction="column" gap={'3'}>
       <WizardBreadcrumbs />
       <Card>
         <form onSubmit={handleSubmit}>
@@ -103,7 +103,7 @@ export const CreateNewDatasourceScreen = ({
             Add Datasource
           </Heading>
           {error && !isDNSError && <GenericErrorCallout title="Failed to add datasource" error={error} />}
-          <Flex direction="column" gap="3">
+          <Flex direction="column" gap={'2'}>
             <AddDatasourceForm data={dsFormData} dispatch={handleFormDispatch} isDNSError={isDNSError} />
           </Flex>
           <Flex gap="3" mt="4" justify="end">

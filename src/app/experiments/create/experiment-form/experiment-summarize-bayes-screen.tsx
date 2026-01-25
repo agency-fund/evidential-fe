@@ -10,7 +10,7 @@ export const ExperimentsSummarizeBayesScreen = ({
   data,
   dispatch,
 }: ScreenProps<ExperimentFormData, ExperimentsSummarizeBayesScreenMessage>) => (
-  <Flex direction="column" gap="3">
+  <Flex direction="column" gap={'3'}>
     <WizardBreadcrumbs />
     <h2>Summary of Bayes Experiment</h2>
     <Preformatted content={data} />

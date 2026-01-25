@@ -9,7 +9,7 @@ export const ExperimentSelectBinaryOrRealOutcomes = ({
   data,
   dispatch,
 }: ScreenProps<ExperimentFormData, ExperimentSelectBinaryOrRealMessages>) => (
-  <Flex direction="column" gap="3">
+  <Flex direction="column" gap={'3'}>
     <WizardBreadcrumbs />
     <h2>Select Outcome Type</h2>
     <RadioCards.Root

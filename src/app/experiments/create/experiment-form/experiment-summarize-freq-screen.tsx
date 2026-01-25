@@ -10,7 +10,7 @@ export const ExperimentsSummarizeFreqScreen = ({
   data,
   dispatch,
 }: ScreenProps<ExperimentFormData, ExperimentsSummarizeFreqScreenMessage>) => (
-  <Flex direction="column" gap="3">
+  <Flex direction="column" gap={'3'}>
     <WizardBreadcrumbs />
     <h2>Summary of Freq Experiment</h2>
     <Preformatted content={data} />

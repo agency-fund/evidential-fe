@@ -27,7 +27,7 @@ export const SelectPrimaryKey = ({ datasourceId, tableName, value, onChange }: S
   const uniqueIdFields = tableData?.detected_unique_id_fields ?? [];
 
   return (
-    <Flex direction="column" gap="2">
+    <Flex direction="column" gap={'3'}>
       <Text as="label" size="2" weight="bold">
         Primary Key
       </Text>

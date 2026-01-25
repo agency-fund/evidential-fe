@@ -9,7 +9,7 @@ export const ExperimentDescribeWebhooksScreen = ({
   data,
   dispatch,
 }: ScreenProps<ExperimentFormData, ExperimentDescribeWebhooksScreenMessage>) => (
-  <Flex direction="column" gap="3">
+  <Flex direction="column" gap={'3'}>
     <WizardBreadcrumbs />
     <h2>Describe Webhooks</h2>
   </Flex>

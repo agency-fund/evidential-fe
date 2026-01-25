@@ -43,9 +43,11 @@ const experimentTypeOptions = [
 ];
 
 export const ExperimentTypeScreen = ({ data, dispatch }: ScreenProps<ExperimentFormData, ExperimentTypeMessage>) => (
-  <Flex direction="column" gap="3">
+  <Flex direction="column" gap={'3'}>
     <WizardBreadcrumbs />
-    <h2>Choose the type of experiment you want to create</h2>
+    <Text as="label" size="2" weight="bold" mb="6px">
+      What type of experiment do you want to create?
+    </Text>
     <RadioCards.Root
       defaultValue={data.experimentType}
       onValueChange={(v: ExperimentType) => dispatch({ type: 'set-experiment-type', value: v })}

@@ -20,7 +20,7 @@ export const ExperimentDescribeArmsScreen = ({
   const showArmsError = arms.length > 0 && arms.length < 2;
 
   return (
-    <Flex direction="column" gap="2">
+    <Flex direction="column" gap={'3'}>
       <WizardBreadcrumbs />
       <Flex justify="between" align="start">
         <Flex direction="column" gap="1">
@@ -34,10 +34,10 @@ export const ExperimentDescribeArmsScreen = ({
         <ArmWeightsDialog arms={arms} onWeightsChange={(weights) => dispatch({ type: 'set-weights', weights })} />
       </Flex>
 
-      <Flex direction="column" gap="3">
+      <Flex direction="column" gap={'2'}>
         {arms.map((arm, index) => (
           <Card key={index}>
-            <Flex direction="column" gap="2">
+            <Flex direction="column" gap={'2'}>
               <Flex justify="between" align="center">
                 <Flex direction="row" gap="2" align="baseline">
                   <Text size="3" weight="bold">
@@ -50,7 +50,7 @@ export const ExperimentDescribeArmsScreen = ({
                 </IconButton>
               </Flex>
 
-              <Flex direction="column" gap="2">
+              <Flex direction="column" gap={'2'}>
                 <Box maxWidth="50%">
                   <Text as="label" size="2" weight="bold">
                     Arm Name
@@ -64,7 +64,7 @@ export const ExperimentDescribeArmsScreen = ({
                 </Box>
               </Flex>
 
-              <Flex direction="column" gap="2">
+              <Flex direction="column" gap={'2'}>
                 <Text as="label" size="2" weight="bold">
                   Arm Description
                 </Text>

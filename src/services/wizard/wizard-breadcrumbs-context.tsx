@@ -1,6 +1,6 @@
 'use client';
 import React, { createContext, PropsWithChildren, useContext } from 'react';
-import { Box, Flex, Text } from '@radix-ui/themes';
+import { Box, Card, Flex, Text } from '@radix-ui/themes';
 import { BreadcrumbInfo } from './wizard-types';
 import { ChevronRightIcon, DotsHorizontalIcon } from '@radix-ui/react-icons';
 
@@ -43,16 +43,7 @@ export function WizardBreadcrumbs() {
   }
 
   return (
-    <Box
-      mb="5"
-      px="4"
-      py="3"
-      style={{
-        backgroundColor: 'var(--gray-2)',
-        border: '1px solid var(--gray-6)',
-        borderRadius: 'var(--radius-2)',
-      }}
-    >
+    <Card size="1">
       <Flex align="center" gap="2" wrap="wrap">
         {breadcrumbs.map((crumb, index) => (
           <React.Fragment key={index}>
@@ -61,15 +52,11 @@ export function WizardBreadcrumbs() {
               isCurrent={crumb.type === 'screen' && crumb.screenId === currentScreenId}
               onNavigate={onNavigate}
             />
-            {index < breadcrumbs.length - 1 && (
-              <Text size="2" color="gray">
-                <ChevronRightIcon />
-              </Text>
-            )}
+            {index < breadcrumbs.length - 1 && <ChevronRightIcon color="var(--gray-9)" />}
           </React.Fragment>
         ))}
       </Flex>
-    </Box>
+    </Card>
   );
 }
 
@@ -81,11 +68,7 @@ interface BreadcrumbItemProps {
 
 function BreadcrumbItem({ crumb, isCurrent, onNavigate }: BreadcrumbItemProps) {
   if (crumb.type === 'unknown') {
-    return (
-      <Text size="2" color="gray">
-        <DotsHorizontalIcon />
-      </Text>
-    );
+    return <DotsHorizontalIcon color="var(--gray-9)" />;
   }
 
   const label = crumb.label;
@@ -93,8 +76,8 @@ function BreadcrumbItem({ crumb, isCurrent, onNavigate }: BreadcrumbItemProps) {
 
   return (
     <Box
+      px="2"
       style={{
-        padding: '4px 8px',
         borderRadius: 'var(--radius-1)',
         cursor: isClickable ? 'pointer' : 'default',
         backgroundColor: isCurrent ? 'var(--accent-3)' : 'transparent',

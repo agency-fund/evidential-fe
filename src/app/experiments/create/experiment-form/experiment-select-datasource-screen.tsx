@@ -37,7 +37,7 @@ export const ExperimentSelectDatasourceScreen = ({
   );
 
   return (
-    <Flex direction="column" gap="3">
+    <Flex direction="column" gap={'3'}>
       <WizardBreadcrumbs />
       <Card>
         <Wizard form={DatasourceForm} onSubmit={handleSubmit} onPrev={navigatePrev} inputData={inputData} />

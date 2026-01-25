@@ -42,7 +42,7 @@ export const ExperimentFreqStackScreen = ({
   );
 
   return (
-    <Flex direction="column" gap="4">
+    <Flex direction="column" gap={'3'}>
       <WizardBreadcrumbs />
 
       <SelectPrimaryKey

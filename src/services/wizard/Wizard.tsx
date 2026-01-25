@@ -107,17 +107,24 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
           onNavigate={handleNavigate}
         >
           <Fragment key={currentScreenId}>
-            <screen.render data={data} dispatch={handleDispatch} navigateNext={handleNext} navigatePrev={handlePrev} />
-            {!hideNav && (
-              <NavigationButtons
-                onBack={prevScreen ? handlePrev : undefined}
-                onNext={handleNext}
-                nextLabel={nextLabel}
-                backLabel={prevLabel}
-                nextDisabled={!isNextEnabled}
-                showBack={prevScreen !== null}
+            <Box>
+              <screen.render
+                data={data}
+                dispatch={handleDispatch}
+                navigateNext={handleNext}
+                navigatePrev={handlePrev}
               />
-            )}
+              {!hideNav && (
+                <NavigationButtons
+                  onBack={prevScreen ? handlePrev : undefined}
+                  onNext={handleNext}
+                  nextLabel={nextLabel}
+                  backLabel={prevLabel}
+                  nextDisabled={!isNextEnabled}
+                  showBack={prevScreen !== null}
+                />
+              )}
+            </Box>
           </Fragment>
         </WizardBreadcrumbsProvider>
         {debug && <DebugDrawer data={data} breadcrumbs={breadcrumbs} currentScreenId={currentScreenId} />}

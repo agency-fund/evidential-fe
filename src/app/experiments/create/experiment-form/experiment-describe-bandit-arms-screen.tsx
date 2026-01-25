@@ -9,7 +9,7 @@ export const ExperimentDescribeBanditArmsScreen = ({
   data,
   dispatch,
 }: ScreenProps<ExperimentFormData, ExperimentsDescribeBanditArmsScreenMessage>) => (
-  <Flex direction="column" gap="3">
+  <Flex direction="column" gap={'3'}>
     <WizardBreadcrumbs />
     <h2>Describe Bandit Arms</h2>
   </Flex>

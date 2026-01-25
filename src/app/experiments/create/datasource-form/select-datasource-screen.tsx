@@ -46,7 +46,7 @@ export const SelectDatasourceScreen = ({
   }
 
   return (
-    <Flex direction="column" gap="3">
+    <Flex direction="column" gap={'3'}>
       <WizardBreadcrumbs />
       <Text size="2" weight="bold">
         Select a datasource

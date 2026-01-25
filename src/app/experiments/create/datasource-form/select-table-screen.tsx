@@ -28,7 +28,7 @@ export const SelectTableScreen = ({ data, dispatch }: ScreenProps<DatasourceForm
 
   if (error) {
     return (
-      <Flex direction="column" gap="3">
+      <Flex direction="column" gap={'2'}>
         <WizardBreadcrumbs />
         <GenericErrorCallout title="Failed to fetch tables" error={error} />
       </Flex>
@@ -37,7 +37,7 @@ export const SelectTableScreen = ({ data, dispatch }: ScreenProps<DatasourceForm
 
   if (tables.length === 0) {
     return (
-      <Flex direction="column" gap="3">
+      <Flex direction="column" gap={'2'}>
         <WizardBreadcrumbs />
         <Text color="gray">No tables found in this datasource. Please check your datasource configuration.</Text>
       </Flex>
@@ -45,7 +45,7 @@ export const SelectTableScreen = ({ data, dispatch }: ScreenProps<DatasourceForm
   }
 
   return (
-    <Flex direction="column" gap="3">
+    <Flex direction="column" gap={'3'}>
       <WizardBreadcrumbs />
       <Text size="2" weight="bold">
         Select a table

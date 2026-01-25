@@ -75,7 +75,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   };
 
   return (
-    <Flex direction="column" gap="4">
+    <Flex direction="column" gap={'3'}>
       <Flex direction="row" gap="4">
         <Flex direction="column" gap="1" flexGrow="1">
           <Text as="label" size="2" weight="medium">
@@ -145,7 +145,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
             !validationError &&
             data.powerCheckResponse.analyses.map((metricAnalysis, i) => (
               <Card key={i}>
-                <Flex direction="column" gap="3">
+                <Flex direction="column" gap={'2'}>
                   <Text weight={'bold'}>{metricAnalysis.metric_spec.field_name}</Text>
                   <Callout.Root color={metricAnalysis.sufficient_n ? 'green' : 'red'}>
                     <Callout.Icon>

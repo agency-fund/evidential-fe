@@ -14,7 +14,7 @@ export const ExperimentMetadataScreen = ({
   data,
   dispatch,
 }: ScreenProps<ExperimentFormData, ExperimentMetadataMessages>) => (
-  <Flex direction="column" gap="3">
+  <Flex direction="column" gap={'3'}>
     <WizardBreadcrumbs />
     <Box>
       <Text as="label" size="2" weight="bold" mb="6px">
