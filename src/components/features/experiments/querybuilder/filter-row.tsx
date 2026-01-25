@@ -59,7 +59,7 @@ export function FilterRow({ filter, availableOptions, onSelect, onUpdate, onRemo
   // Ref for the combobox's TextField representing the search box input element
   const textFieldRootRef = useRef<HTMLInputElement>(null);
 
-  // Find exact match for current search text
+  // Store whether or not we had an exact match for current search text
   const exactMatch = availableOptions.find((f) => f.field_name === searchText);
 
   // Filter fields based on search text (case-insensitive)
@@ -114,14 +114,13 @@ export function FilterRow({ filter, availableOptions, onSelect, onUpdate, onRemo
     setSearchText(value);
 
     // Check for exact match and auto-select the field if found
-    const matchedOption = availableOptions.find((f) => f.field_name === value);
-    if (matchedOption) {
-      handleOptionSelect(matchedOption);
+    const newExactMatch = availableOptions.find((f) => f.field_name === value);
+    if (newExactMatch) {
+      handleOptionSelect(newExactMatch);
     } else {
       // If we previously had a valid filter selected but now don't have a match,
       // reset to empty filter to prevent stale filter data from being used
-      const hadValidFilter = filter.field_name && availableOptions.find((f) => f.field_name === filter.field_name);
-      if (hadValidFilter) {
+      if (exactMatch) {
         // Capture cursor position before updating
         const currentCursorPosition = getSearchboxCursorPosition(textFieldRootRef.current);
         setCursorPosition(currentCursorPosition);
