@@ -2,6 +2,7 @@
 import React, { createContext, PropsWithChildren, useContext } from 'react';
 import { Box, Flex, Text } from '@radix-ui/themes';
 import { BreadcrumbInfo } from './wizard-types';
+import { ChevronRightIcon, DotsHorizontalIcon } from '@radix-ui/react-icons';
 
 type WizardBreadcrumbsContextType = {
   breadcrumbs: Array<BreadcrumbInfo>;
@@ -62,7 +63,7 @@ export function WizardBreadcrumbs() {
             />
             {index < breadcrumbs.length - 1 && (
               <Text size="2" color="gray">
-                /
+                <ChevronRightIcon />
               </Text>
             )}
           </React.Fragment>
@@ -82,7 +83,7 @@ function BreadcrumbItem({ crumb, isCurrent, onNavigate }: BreadcrumbItemProps) {
   if (crumb.type === 'unknown') {
     return (
       <Text size="2" color="gray">
-        ...
+        <DotsHorizontalIcon />
       </Text>
     );
   }

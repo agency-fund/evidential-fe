@@ -168,6 +168,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
     metadata: screen({
       breadcrumbTitle: 'Experiment Description',
       render: ExperimentMetadataScreen,
+      breadcrumbs: breadcrumbs,
       reducer: (data, msg) => {
         if (msg.type === 'set-name') return { ...data, name: msg.value };
         if (msg.type === 'set-hypothesis') return { ...data, hypothesis: msg.value };
@@ -185,7 +186,6 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       isPrevEnabled: () => false,
       prevScreen: () => null,
       nextScreen: () => ({ type: 'screen', id: 'experiment-type' }),
-      breadcrumbs: () => ['metadata', 'experiment-type', null],
       isBreadcrumbClickable: () => true,
     }),
     'experiment-type': screen({
@@ -212,7 +212,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             throw new Error(`Experiment type ${experimentType} unhandled`);
         }
       },
-      breadcrumbs: () => ['metadata', 'experiment-type', null],
+      breadcrumbs: breadcrumbs,
       isBreadcrumbClickable: () => true,
     }),
     'freq-select-datasource': screen({

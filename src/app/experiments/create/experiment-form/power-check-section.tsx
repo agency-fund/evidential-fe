@@ -32,7 +32,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const [allSamples, setAllSamples] = useState<number | undefined>();
   const [selectedSampleOption, setSelectedSampleOption] = useState<PowerCheckOption>(PowerCheckOption.NONE);
 
-  const isButtonDisabled = isMutating || data.primaryMetric === undefined;
+  const isButtonDisabled = isMutating || data.primaryMetric === undefined || data.primaryKey === undefined;
 
   const handlePowerCheck = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -40,7 +40,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
     try {
       const design_spec = convertToDesignSpec(data);
-      const response = await trigger({ design_spec });
+      const response = await trigger({ design_spec, table_name: data.tableName, primary_key: data.primaryKey });
       const primary = response.analyses.find((a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name);
 
       setPowerCheckTarget(primary?.target_n ?? undefined);
