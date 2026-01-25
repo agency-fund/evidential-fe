@@ -3,8 +3,8 @@
 import { Button, Flex, Separator } from '@radix-ui/themes';
 import { PlusIcon } from '@radix-ui/react-icons';
 import { DataType, FilterInput } from '@/api/methods.schemas';
-import { FilterRow, FilterRowChange } from '@/components/features/experiments/querybuilder/filter-row';
-import React, { useState } from 'react';
+import { FilterRow } from '@/components/features/experiments/querybuilder/filter-row';
+import React from 'react';
 
 // Placeholder filter for newly added rows before a field is selected
 const EMPTY_FILTER: FilterInput = {
@@ -24,9 +24,6 @@ export interface FilterBuilderProps {
 }
 
 export function FilterBuilder({ availableFields, filters, onChange }: FilterBuilderProps) {
-  const [editingIndex, setEditingIndex] = useState<number>(-1);
-  const [editingCursorPosition, setEditingCursorPosition] = useState<number | undefined>(undefined);
-
   const addFilter = (e: React.MouseEvent) => {
     e.preventDefault();
     if (availableFields.length === 0) return;
@@ -34,7 +31,7 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
     onChange([...filters, { ...EMPTY_FILTER }]);
   };
 
-  const updateFilter = (index: number, filterRowChange: FilterRowChange) => {
+  const updateFilter = (index: number, filterRowChange: FilterInput) => {
     // Get the field's data type
     const field = availableFields.find((f) => f.field_name === filterRowChange.field_name);
 
@@ -66,10 +63,6 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
 
       filterRowChange = { ...filterRowChange, value: numericValues };
     }
-
-    // Cache state about the latest filter row being updated
-    setEditingCursorPosition(filterRowChange.edit_position);
-    setEditingIndex(filterRowChange.edit_position !== undefined ? index : -1);
 
     // Sanitize the filter to ensure no NaN values
     const sanitizedFilter = sanitizeFilter(filterRowChange);
@@ -107,7 +100,6 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
           <FilterRow
             filter={filter}
             availableOptions={availableFields}
-            edit_position={editingIndex === index ? editingCursorPosition : undefined}
             onChange={(updatedFilter) => updateFilter(index, updatedFilter)}
             onRemove={() => removeFilter(index)}
           />

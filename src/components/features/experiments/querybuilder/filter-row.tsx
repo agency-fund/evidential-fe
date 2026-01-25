@@ -33,10 +33,6 @@ function _setSearchboxCursorPosition(ref: HTMLInputElement | null, position: num
   }
 }
 
-export interface FilterRowChange extends FilterInput {
-  edit_position?: number;
-}
-
 export interface FilterRowOption {
   field_name: string;
   data_type: DataType;
@@ -45,25 +41,23 @@ export interface FilterRowOption {
 export interface FilterRowProps {
   filter: FilterInput;
   availableOptions: Array<FilterRowOption>;
-  /* Search box cursor position to possibly restore after the filter is updated */
-  edit_position: number | undefined;
-  onChange: (filterRowChange: FilterRowChange) => void;
+  onChange: (filterRowChange: FilterInput) => void;
   onRemove: () => void;
 }
 
-export function FilterRow({ filter, availableOptions, edit_position, onChange, onRemove }: FilterRowProps) {
+export function FilterRow({ filter, availableOptions, onChange, onRemove }: FilterRowProps) {
   // State for the search input part of our combobox
   const [searchText, setSearchText] = useState(filter.field_name);
   // State for the dropdown part of our combobox
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   // Which index in the dropdown is highlighted; used for keyboard navigation
   const [popoverHighlightedIndex, setPopoverHighlightedIndex] = useState(-1);
+  // Cursor position within our search box to restore after filter updates
+  const [cursorPosition, setCursorPosition] = useState<number | undefined>(undefined);
   // Ref for the array of dropdown items; used to scroll the highlighted item into view
   const popoverItemRefs = useRef<(HTMLDivElement | null)[]>([]);
   // Ref for the combobox's TextField representing the search box input element
   const textFieldRootRef = useRef<HTMLInputElement>(null);
-
-  console.log('isediting', edit_position);
 
   // Find exact match for current search text
   const exactMatch = availableOptions.find((f) => f.field_name === searchText);
@@ -94,12 +88,15 @@ export function FilterRow({ filter, availableOptions, edit_position, onChange, o
     setSearchText(filter.field_name);
   }, [filter.field_name]);
 
-  // Maintain focus on the TextField when isEditing is true to prevent focus loss during re-renders
+  // Maintain focus on the TextField during a re-render when cursorPosition is set
+  // NOTE: Requires the row to have a stable key for this to work properly!
   useEffect(() => {
-    if (edit_position && textFieldRootRef.current) {
-      _setSearchboxCursorPosition(textFieldRootRef.current, edit_position);
+    if (cursorPosition !== undefined && textFieldRootRef.current) {
+      _setSearchboxCursorPosition(textFieldRootRef.current, cursorPosition);
+      // Clear the cursor position after restoring it
+      setCursorPosition(undefined);
     }
-  }, [edit_position]);
+  }, [cursorPosition]);
 
   // Handler for selecting a field fills in the full field name and closes the dropdown.
   // It fires under several situations:
@@ -129,11 +126,13 @@ export function FilterRow({ filter, availableOptions, edit_position, onChange, o
       // reset to empty filter to prevent stale filter data from being used
       const hadValidFilter = filter.field_name && availableOptions.find((f) => f.field_name === filter.field_name);
       if (hadValidFilter) {
+        // Capture cursor position before updating
+        const currentCursorPosition = _getSearchboxCursorPosition(textFieldRootRef.current);
+        setCursorPosition(currentCursorPosition);
         onChange({
           field_name: value,
           relation: 'includes',
           value: [],
-          edit_position: _getSearchboxCursorPosition(textFieldRootRef.current),
         });
       }
 
