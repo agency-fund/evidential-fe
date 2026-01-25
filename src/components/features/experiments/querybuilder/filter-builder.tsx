@@ -19,6 +19,11 @@ interface FilterWithId {
   filter: FilterInput;
 }
 
+/**
+  @param availableFields Available fields can have a one to many relationship with the filters prop, i.e. a field can be used in multiple filters with different constraints.
+  @param filters Array of currently configured FilterInputs, which may include invalid filters.
+  @param onChange Callback to notify parent of changes to the filters.
+  */
 export interface FilterBuilderProps {
   availableFields: Array<{
     field_name: string;
