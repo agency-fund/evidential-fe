@@ -9616,6 +9616,18 @@ export const powerCheckBody = zod.object({
 				),
 		])
 		.describe("The type of assignment and experiment design."),
+	table_name: zod
+		.union([zod.string(), zod.null()])
+		.optional()
+		.describe(
+			"Optional table name for ad-hoc power calculations. When provided with primary_key, synthesizes a participant schema instead of looking up from datasource configuration.",
+		),
+	primary_key: zod
+		.union([zod.string(), zod.null()])
+		.optional()
+		.describe(
+			"Optional primary key field name. Must be provided together with table_name.",
+		),
 });
 
 export const powerCheckResponseAnalysesItemMetricSpecFieldNameRegExp =

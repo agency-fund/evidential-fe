@@ -2243,8 +2243,22 @@ export interface PostgresDsn {
 	search_path: PostgresDsnSearchPath;
 }
 
+/**
+ * Optional table name for ad-hoc power calculations. When provided with primary_key, synthesizes a participant schema instead of looking up from datasource configuration.
+ */
+export type PowerRequestTableName = string | null;
+
+/**
+ * Optional primary key field name. Must be provided together with table_name.
+ */
+export type PowerRequestPrimaryKey = string | null;
+
 export interface PowerRequest {
 	design_spec: DesignSpecInput;
+	/** Optional table name for ad-hoc power calculations. When provided with primary_key, synthesizes a participant schema instead of looking up from datasource configuration. */
+	table_name?: PowerRequestTableName;
+	/** Optional primary key field name. Must be provided together with table_name. */
+	primary_key?: PowerRequestPrimaryKey;
 }
 
 export interface PowerResponseInput {
