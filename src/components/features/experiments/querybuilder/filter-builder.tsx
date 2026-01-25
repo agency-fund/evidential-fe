@@ -4,7 +4,7 @@ import { Button, Flex, Separator } from '@radix-ui/themes';
 import { PlusIcon } from '@radix-ui/react-icons';
 import { DataType, FilterInput } from '@/api/methods.schemas';
 import { FilterRow } from '@/components/features/experiments/querybuilder/filter-row';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { getDefaultFilterForType } from './utils';
 
 // Placeholder filter for newly added rows before a field is selected
@@ -13,6 +13,11 @@ const EMPTY_FILTER: FilterInput = {
   relation: 'includes',
   value: [],
 };
+
+interface FilterWithId {
+  id: string;
+  filter: FilterInput;
+}
 
 export interface FilterBuilderProps {
   availableFields: Array<{
@@ -25,14 +30,52 @@ export interface FilterBuilderProps {
 }
 
 export function FilterBuilder({ availableFields, filters, onChange }: FilterBuilderProps) {
+  // Internal state tracking filters with stable IDs
+  const [filtersWithIds, setFiltersWithIds] = useState<FilterWithId[]>(() => {
+    // Initialize by generating IDs for each incoming filter
+    return filters.map((filter) => ({
+      id: crypto.randomUUID(),
+      filter,
+    }));
+  });
+
+  // Sync with external filters prop changes
+  // If the length changes, treat it as a reset (parent modified state externally)
+  useEffect(() => {
+    if (filters.length !== filtersWithIds.length) {
+      // Reset: generate new IDs for all filters
+      setFiltersWithIds(
+        filters.map((filter) => ({
+          id: crypto.randomUUID(),
+          filter,
+        })),
+      );
+    } else {
+      // Update filters while preserving IDs (matching by index)
+      setFiltersWithIds((prev) =>
+        prev.map((item, index) => ({
+          id: item.id,
+          filter: filters[index]!,
+        })),
+      );
+    }
+  }, [filters, filtersWithIds.length]);
+
   const addFilter = (e: React.MouseEvent) => {
     e.preventDefault();
     if (availableFields.length === 0) return;
 
-    onChange([...filters, { ...EMPTY_FILTER }]);
+    const newFilterWithId: FilterWithId = {
+      id: crypto.randomUUID(),
+      filter: { ...EMPTY_FILTER },
+    };
+
+    setFiltersWithIds((prev) => [...prev, newFilterWithId]);
+    // Strip IDs before passing to parent
+    onChange([...filters, newFilterWithId.filter]);
   };
 
-  const updateFilter = (index: number, filterRowChange: FilterInput) => {
+  const updateFilter = (id: string, filterRowChange: FilterInput) => {
     // Get the field's data type
     const field = availableFields.find((f) => f.field_name === filterRowChange.field_name);
 
@@ -67,9 +110,14 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
 
     // Sanitize the filter to ensure no NaN values
     const sanitizedFilter = sanitizeFilter(filterRowChange);
-    const newFilters = [...filters];
-    newFilters[index] = sanitizedFilter;
-    onChange(newFilters);
+
+    // Update internal state and compute updated filters for parent
+    setFiltersWithIds((prev) => {
+      const updated = prev.map((item) => (item.id === id ? { ...item, filter: sanitizedFilter } : item));
+      // Strip IDs before passing to parent
+      onChange(updated.map((item) => item.filter));
+      return updated;
+    });
   };
 
   // Sanitize filter to ensure no NaN values are passed to the API
@@ -89,25 +137,29 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
     return filter;
   };
 
-  const removeFilter = (index: number) => {
-    const newFilters = filters.filter((_, i) => i !== index);
-    onChange(newFilters);
+  const removeFilter = (id: string) => {
+    setFiltersWithIds((prev) => {
+      const updated = prev.filter((item) => item.id !== id);
+      // Strip IDs before passing to parent
+      onChange(updated.map((item) => item.filter));
+      return updated;
+    });
   };
 
   return (
     <Flex direction="column" gap="3" overflow="auto">
-      {filters.map((filter, index) => (
-        <React.Fragment key={`${index}-${filter.field_name}`}>
+      {filtersWithIds.map(({ id, filter }) => (
+        <React.Fragment key={id}>
           <FilterRow
             filter={filter}
             availableOptions={availableFields}
             onSelect={(selectedOption) => {
               // Reset the filter with appropriate defaults for the new field type
               const defaultFilter = getDefaultFilterForType(selectedOption.field_name, selectedOption.data_type);
-              updateFilter(index, defaultFilter);
+              updateFilter(id, defaultFilter);
             }}
-            onUpdate={(updatedFilter) => updateFilter(index, updatedFilter)}
-            onRemove={() => removeFilter(index)}
+            onUpdate={(updatedFilter) => updateFilter(id, updatedFilter)}
+            onRemove={() => removeFilter(id)}
           />
           <Separator orientation="horizontal" size="4" />
         </React.Fragment>
