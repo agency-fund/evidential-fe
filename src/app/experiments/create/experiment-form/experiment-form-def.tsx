@@ -67,6 +67,8 @@ export type ExperimentFormData = {
   // Populated when user clicks "Power Check" on DesignForm
   chosenN?: number;
   powerCheckResponse?: PowerResponseOutput;
+  createExperimentResponse?: CreateExperimentResponse;
+  createExperimentError?: any;
 
   // experiment-describe-webhooks-screen
   selectedWebhookIds?: string[];
@@ -86,7 +88,6 @@ export type ExperimentFormData = {
 
   // experiment-summarize-freq-screen (populated after createExperiment API call)
   experimentId?: string;
-  createExperimentResponse?: CreateExperimentResponse;
 };
 
 const isFreq = (experimentType: ExperimentType) => {
@@ -427,27 +428,18 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         if (msg.type === 'set-chosen-n') {
           return { ...data, chosenN: msg.value };
         }
+        if (msg.type === 'set-create-error') {
+          return { ...data, createExperimentError: msg.response, createExperimentResponse: undefined };
+        }
+        if (msg.type === 'set-create-response') {
+          return { ...data, createExperimentResponse: msg.response, createExperimentError: undefined };
+        }
 
         return data;
       },
-      isNextEnabled: (data) => {
-        // Must have primary key selected
-        if (!data.primaryKey) return false;
-        // Must have primary metric selected
-        if (!data.primaryMetric) return false;
-        // Must have valid confidence value (50-99)
-        const confidence = Number(data.confidence);
-        if (isNaN(confidence) || confidence < 50 || confidence > 99) return false;
-        // Must have valid power value (50-99)
-        const power = Number(data.power);
-        if (isNaN(power) || power < 50 || power > 99) return false;
-        // Must have run power check
-        if (!data.powerCheckResponse) return false;
-        // Must have selected a sample size
-        if (data.chosenN === undefined) return false;
-        return true;
-      },
+      isNextEnabled: () => true, // ignored
       isPrevEnabled: () => true,
+      hideNavigation: () => true,
       prevScreen: () => ({ type: 'screen', id: 'describe-arms' }),
       nextScreen: () => ({ type: 'screen', id: 'summarize-freq' }),
       isBreadcrumbClickable: (data) => !!(data.datasourceId && data.tableName),

@@ -6,9 +6,12 @@ import { SelectPrimaryKey } from '@/app/experiments/create/experiment-form/selec
 import { MetricBuilder, MetricBuilderAction } from '@/components/features/experiments/metric-builder';
 import { FilterBuilder } from '@/components/features/experiments/querybuilder/filter-builder';
 import { StrataBuilder } from '@/components/features/experiments/strata-builder';
-import { useInspectTableInDatasource } from '@/api/admin';
-import { FilterInput, PowerResponseOutput } from '@/api/methods.schemas';
+import { useCreateExperiment, useInspectTableInDatasource } from '@/api/admin';
+import { CreateExperimentResponse, FilterInput, PowerResponseOutput } from '@/api/methods.schemas';
 import { PowerCheckSection } from './power-check-section';
+import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
+import { convertToDesignSpec } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
+import { createExperimentBody } from '@/api/admin.zod';
 
 export type ExperimentFreqStackScreenMessage =
   | { type: 'set-primary-key'; value: string }
@@ -18,7 +21,27 @@ export type ExperimentFreqStackScreenMessage =
   | { type: 'set-confidence'; value: string }
   | { type: 'set-power'; value: string }
   | { type: 'set-power-check-response'; response: PowerResponseOutput; chosenN?: number }
+  | { type: 'set-create-response'; response: CreateExperimentResponse }
+  | { type: 'set-create-error'; response: any }
   | { type: 'set-chosen-n'; value: number | undefined };
+
+const isNextEnabled = (data: ExperimentFormData) => {
+  // Must have primary key selected
+  if (!data.primaryKey) return false;
+  // Must have primary metric selected
+  if (!data.primaryMetric) return false;
+  // Must have valid confidence value (50-99)
+  const confidence = Number(data.confidence);
+  if (isNaN(confidence) || confidence < 50 || confidence > 99) return false;
+  // Must have valid power value (50-99)
+  const power = Number(data.power);
+  if (isNaN(power) || power < 50 || power > 99) return false;
+  // Must have run power check
+  if (!data.powerCheckResponse) return false;
+  // Must have selected a sample size
+  if (data.chosenN === undefined) return false;
+  return true;
+};
 
 /** ExperimentFreqStackScreen allows users to define the primary key, metrics, filters, strata, confidence, power,
  * and run a power check on the selected values.
@@ -29,10 +52,28 @@ export type ExperimentFreqStackScreenMessage =
 export const ExperimentFreqStackScreen = ({
   data,
   dispatch,
+  navigatePrev,
+  navigateNext,
 }: ScreenProps<ExperimentFormData, ExperimentFreqStackScreenMessage>) => {
   const { data: tableData } = useInspectTableInDatasource(data.datasourceId ?? '', data.tableName ?? '', {
     refresh: false,
   });
+  const { trigger: triggerCreate, isMutating: triggerLoading } = useCreateExperiment(
+    data.datasourceId!,
+    {
+      chosen_n: data.chosenN,
+    },
+    {
+      swr: {
+        onSuccess: async (response) => {
+          dispatch({ type: 'set-create-response', response: response });
+        },
+        onError: async (response) => {
+          dispatch({ type: 'set-create-error', response: response });
+        },
+      },
+    },
+  );
 
   const fields = tableData?.fields ?? [];
 
@@ -41,55 +82,86 @@ export const ExperimentFreqStackScreen = ({
     ['integer', 'bigint', 'double precision', 'numeric', 'boolean'].includes(f.data_type),
   );
 
+  const nextEnabled = isNextEnabled(data);
+
+  const handleCreate = async () => {
+    const designSpec = convertToDesignSpec(data);
+    const createExperimentRequest = createExperimentBody.parse({
+      design_spec: designSpec,
+      power_analysis: data.powerCheckResponse,
+      primary_key: data.primaryKey,
+      table_name: data.tableName,
+      webhooks: data.selectedWebhookIds && data.selectedWebhookIds.length > 0 ? data.selectedWebhookIds : [],
+    });
+    console.log('converted', createExperimentRequest);
+    try {
+      console.log('triggering');
+      await triggerCreate(createExperimentRequest);
+      console.log('triggered');
+    } catch (error) {
+      console.log('errored');
+    }
+    navigateNext();
+    console.log('navigated');
+  };
+
   return (
-    <Flex direction="column" gap={'3'}>
-      <WizardBreadcrumbs />
+    <>
+      <Flex direction="column" gap={'3'}>
+        <WizardBreadcrumbs />
 
-      <SelectPrimaryKey
-        datasourceId={data.datasourceId ?? ''}
-        tableName={data.tableName ?? ''}
-        value={data.primaryKey}
-        onChange={(v) => dispatch({ type: 'set-primary-key', value: v })}
+        <SelectPrimaryKey
+          datasourceId={data.datasourceId ?? ''}
+          tableName={data.tableName ?? ''}
+          value={data.primaryKey}
+          onChange={(v) => dispatch({ type: 'set-primary-key', value: v })}
+        />
+
+        <Heading as="h3" size="3">
+          Metrics
+        </Heading>
+        <Card>
+          <MetricBuilder
+            primaryMetric={data.primaryMetric}
+            secondaryMetrics={data.secondaryMetrics ?? []}
+            dispatch={dispatch}
+            metricFields={metricFields}
+          />
+        </Card>
+
+        <Heading as="h3" size="3">
+          Filters
+        </Heading>
+        <Card>
+          <FilterBuilder
+            availableFields={fields}
+            filters={data.filters ?? []}
+            onChange={(filters) => dispatch({ type: 'set-filters', filters })}
+          />
+        </Card>
+
+        <Heading as="h3" size="3">
+          Strata
+        </Heading>
+        <Card>
+          <StrataBuilder
+            availableStrata={fields}
+            selectedStrata={data.strata?.map((s) => s.fieldName) ?? []}
+            onStrataChange={(strata) => dispatch({ type: 'set-strata', strata })}
+          />
+        </Card>
+
+        <Heading as="h3" size="3">
+          Power Analysis
+        </Heading>
+        <PowerCheckSection data={data} dispatch={dispatch} />
+      </Flex>
+      <NavigationButtons
+        onBack={navigatePrev}
+        onNext={handleCreate}
+        nextDisabled={!nextEnabled}
+        nextLoading={triggerLoading}
       />
-
-      <Heading as="h3" size="3">
-        Metrics
-      </Heading>
-      <Card>
-        <MetricBuilder
-          primaryMetric={data.primaryMetric}
-          secondaryMetrics={data.secondaryMetrics ?? []}
-          dispatch={dispatch}
-          metricFields={metricFields}
-        />
-      </Card>
-
-      <Heading as="h3" size="3">
-        Filters
-      </Heading>
-      <Card>
-        <FilterBuilder
-          availableFields={fields}
-          filters={data.filters ?? []}
-          onChange={(filters) => dispatch({ type: 'set-filters', filters })}
-        />
-      </Card>
-
-      <Heading as="h3" size="3">
-        Strata
-      </Heading>
-      <Card>
-        <StrataBuilder
-          availableStrata={fields}
-          selectedStrata={data.strata?.map((s) => s.fieldName) ?? []}
-          onStrataChange={(strata) => dispatch({ type: 'set-strata', strata })}
-        />
-      </Card>
-
-      <Heading as="h3" size="3">
-        Power Analysis
-      </Heading>
-      <PowerCheckSection data={data} dispatch={dispatch} />
-    </Flex>
+    </>
   );
 };

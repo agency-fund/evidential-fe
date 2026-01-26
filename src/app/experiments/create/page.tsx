@@ -13,14 +13,14 @@ export default function DefinerPage() {
   const [commitError, setCommitError] = useState<Error | null>(null);
 
   const handleSubmit = async (data: ExperimentFormData) => {
-    if (!data.datasourceId || !data.experimentId) {
+    if (!data.datasourceId || !data.createExperimentResponse?.experiment_id) {
       console.error('Missing datasourceId or experimentId for commit');
       return;
     }
 
     try {
       setCommitError(null);
-      await commitExperiment(data.datasourceId, data.experimentId);
+      await commitExperiment(data.datasourceId, data.createExperimentResponse.experiment_id);
       router.push('/experiments');
     } catch (err) {
       setCommitError(err instanceof Error ? err : new Error(String(err)));
