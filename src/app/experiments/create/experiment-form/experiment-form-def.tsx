@@ -21,7 +21,7 @@ import {
   ExperimentFreqStackScreen,
   ExperimentFreqStackScreenMessage,
 } from '@/app/experiments/create/experiment-form/experiment-freq-stack-screen';
-import { ExperimentDescribeWebhooksScreen } from '@/app/experiments/create/experiment-form/experiment-describe-webhooks-screen';
+import { ExperimentMetadataMessages } from '@/app/experiments/create/experiment-form/experiment-metadata-screen';
 import { ExperimentsSummarizeBayesScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-bayes-screen';
 import { ExperimentsSummarizeFreqScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-freq-screen';
 import { BanditArm, Context, MetricWithMDE, Stratum } from '@/app/datasources/[datasourceId]/experiments/create/types';
@@ -100,7 +100,6 @@ export type ExperimentScreenId =
   | 'describe-contexts'
   | 'describe-arms'
   | 'describe-bandit-arms'
-  | 'describe-webhooks'
   | 'freq-stack'
   | 'summarize-freq'
   | 'summarize-bayes';
@@ -114,7 +113,6 @@ const FREQUENTIST_BREADCRUMBS: Array<ExperimentScreenId> = [
   'freq-select-datasource',
   'describe-arms',
   'freq-stack',
-  'describe-webhooks',
   'summarize-freq',
 ] as const;
 
@@ -124,7 +122,6 @@ const CMAB_BREADCRUMBS: Array<ExperimentScreenId> = [
   'bayes-binary-or-real',
   'describe-contexts',
   'describe-bandit-arms',
-  'describe-webhooks',
   'summarize-bayes',
 ] as const;
 
@@ -133,7 +130,6 @@ const MAB_BREADCRUMBS: Array<ExperimentScreenId> = [
   'experiment-type',
   'bayes-binary-or-real',
   'describe-bandit-arms',
-  'describe-webhooks',
   'summarize-bayes',
 ] as const;
 
@@ -169,12 +165,13 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       breadcrumbTitle: 'Experiment Description',
       render: ExperimentMetadataScreen,
       breadcrumbs: breadcrumbs,
-      reducer: (data, msg) => {
+      reducer: (data, msg: ExperimentMetadataMessages) => {
         if (msg.type === 'set-name') return { ...data, name: msg.value };
         if (msg.type === 'set-hypothesis') return { ...data, hypothesis: msg.value };
         if (msg.type === 'set-design-url') return { ...data, designUrl: msg.value || undefined };
         if (msg.type === 'set-start-date') return { ...data, startDate: msg.value };
         if (msg.type === 'set-end-date') return { ...data, endDate: msg.value };
+        if (msg.type === 'set-webhook-ids') return { ...data, selectedWebhookIds: msg.value };
         return data;
       },
       isNextEnabled: (data) => {
@@ -286,7 +283,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         switch (experimentType) {
           case 'mab_online':
           case 'cmab_online':
-            return { type: 'screen', id: 'describe-webhooks' };
+            return { type: 'screen', id: 'summarize-bayes' };
           default:
             throw new Error(`Experiment type ${experimentType} unhandled`);
         }
@@ -340,9 +337,6 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       },
       nextScreen: ({ experimentType }) => {
         switch (experimentType) {
-          case 'mab_online':
-          case 'cmab_online':
-            return { type: 'screen', id: 'describe-webhooks' };
           case 'freq_online':
           case 'freq_preassigned':
             return { type: 'screen', id: 'freq-stack' };
@@ -352,43 +346,6 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       },
       isBreadcrumbClickable: () => true,
       breadcrumbs: breadcrumbs,
-    }),
-    'describe-webhooks': screen({
-      breadcrumbTitle: 'Webhooks',
-      render: ExperimentDescribeWebhooksScreen,
-      reducer: (data, msg) => {
-        if (msg.type === 'set-webhook-ids') {
-          return { ...data, selectedWebhookIds: msg.value };
-        }
-        return data;
-      },
-      isNextEnabled: () => true,
-      isPrevEnabled: () => true,
-      prevScreen: ({ experimentType }) => {
-        switch (experimentType) {
-          case 'mab_online':
-          case 'cmab_online':
-            return { type: 'screen', id: 'describe-bandit-arms' };
-          case 'freq_online':
-          case 'freq_preassigned':
-            return { type: 'screen', id: 'freq-stack' };
-          default:
-            throw new Error(`Experiment type ${experimentType} unhandled`);
-        }
-      },
-      nextScreen: ({ experimentType }) => {
-        switch (experimentType) {
-          case 'mab_online':
-          case 'cmab_online':
-            return { type: 'screen', id: 'summarize-bayes' };
-          case 'freq_online':
-          case 'freq_preassigned':
-            return { type: 'screen', id: 'summarize-freq' };
-          default:
-            throw new Error(`Experiment type ${experimentType} unhandled`);
-        }
-      },
-      isBreadcrumbClickable: (data) => !!data.datasourceId,
     }),
     'freq-stack': screen({
       breadcrumbTitle: 'Parameters',
@@ -482,7 +439,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       },
       isPrevEnabled: () => true,
       prevScreen: () => ({ type: 'screen', id: 'describe-arms' }),
-      nextScreen: () => ({ type: 'screen', id: 'describe-webhooks' }),
+      nextScreen: () => ({ type: 'screen', id: 'summarize-freq' }),
       isBreadcrumbClickable: (data) => !!(data.datasourceId && data.tableName),
     }),
     'summarize-freq': screen({
@@ -491,7 +448,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       reducer: (data) => data,
       isNextEnabled: () => true,
       isPrevEnabled: () => true,
-      prevScreen: () => ({ type: 'screen', id: 'describe-webhooks' }),
+      prevScreen: () => ({ type: 'screen', id: 'freq-stack' }),
       nextScreen: () => ({ type: 'submit' }),
     }),
     'summarize-bayes': screen({
@@ -500,7 +457,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       reducer: (data) => data,
       isNextEnabled: () => true,
       isPrevEnabled: () => true,
-      prevScreen: () => ({ type: 'screen', id: 'describe-webhooks' }),
+      prevScreen: () => ({ type: 'screen', id: 'describe-bandit-arms' }),
       nextScreen: () => ({ type: 'submit' }),
     }),
   },
