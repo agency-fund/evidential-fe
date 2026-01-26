@@ -94,18 +94,18 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
             </>
           </Button>
 
-          {powerCheckError && (
-            <Flex align="center" gap="2">
-              <GenericErrorCallout title={'Power check failed'} error={powerCheckError} />
-            </Flex>
-          )}
-
           {validationError && (
             <Flex align="center" gap="2">
               <GenericErrorCallout
                 title={'Power check request validation failed'}
                 message={validationError.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('\n')}
               />
+            </Flex>
+          )}
+
+          {powerCheckError && (
+            <Flex align="center" gap="2">
+              <GenericErrorCallout title={'Power check failed'} error={powerCheckError} />
             </Flex>
           )}
 
