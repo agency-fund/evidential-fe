@@ -1,7 +1,7 @@
 'use client';
 import { ScreenProps } from '@/services/wizard/wizard-types';
 import { DatasourceFormData } from './datasource-form-def';
-import { Flex, RadioGroup, Text } from '@radix-ui/themes';
+import { Card, Flex, RadioGroup, Text } from '@radix-ui/themes';
 import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 import { useListOrganizationDatasources } from '@/api/admin';
 import { useCurrentOrganization } from '@/providers/organization-provider';
@@ -71,12 +71,14 @@ export const SelectDatasourceScreen = ({
           <RadioGroup.Item value="create">
             <Text weight="bold">Create a new datasource</Text>
             {data.selectionMode === 'create' && (
-              <CreateDatasourceForm
-                onDatasourceCreated={(id) => {
-                  dispatch({ type: 'datasource-created', datasourceId: id });
-                  navigateNext();
-                }}
-              />
+              <Card>
+                <CreateDatasourceForm
+                  onDatasourceCreated={(id) => {
+                    dispatch({ type: 'datasource-created', datasourceId: id });
+                    navigateNext();
+                  }}
+                />
+              </Card>
             )}
           </RadioGroup.Item>
         </RadioGroup.Root>

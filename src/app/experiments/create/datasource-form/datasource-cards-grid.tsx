@@ -22,7 +22,7 @@ const getDriverDisplayName = (driver: string) => {
 };
 
 export const DatasourceCardsGrid = ({ datasources, selectedDatasourceId, onSelect }: DatasourceCardsGridProps) => (
-  <RadioCards.Root columns="2" gap="3" value={selectedDatasourceId} onValueChange={onSelect}>
+  <RadioCards.Root columns="4" gap="3" value={selectedDatasourceId} onValueChange={onSelect}>
     {datasources.map((ds) => (
       <RadioCards.Item key={ds.id} value={ds.id}>
         <Flex direction="column" gap="1">

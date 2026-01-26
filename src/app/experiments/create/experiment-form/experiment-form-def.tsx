@@ -1,10 +1,14 @@
 // Form data types
 import { packScreen, WizardForm } from '@/services/wizard/wizard-types';
-import { ExperimentMetadataScreen } from '@/app/experiments/create/experiment-form/experiment-metadata-screen';
+import {
+  ExperimentMetadataMessages,
+  ExperimentMetadataScreen,
+} from '@/app/experiments/create/experiment-form/experiment-metadata-screen';
 import { ExperimentTypeScreen } from '@/app/experiments/create/experiment-form/experiment-type-screen';
 import {
   Arm,
   BayesABExperimentSpecInputExperimentType,
+  CreateExperimentResponse,
   DesignSpecInput,
   FilterInput,
   GetFiltersResponseElement,
@@ -21,7 +25,6 @@ import {
   ExperimentFreqStackScreen,
   ExperimentFreqStackScreenMessage,
 } from '@/app/experiments/create/experiment-form/experiment-freq-stack-screen';
-import { ExperimentMetadataMessages } from '@/app/experiments/create/experiment-form/experiment-metadata-screen';
 import { ExperimentsSummarizeBayesScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-bayes-screen';
 import { ExperimentsSummarizeFreqScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-freq-screen';
 import { BanditArm, Context, MetricWithMDE, Stratum } from '@/app/datasources/[datasourceId]/experiments/create/types';
@@ -80,6 +83,10 @@ export type ExperimentFormData = {
   // experiment-describe-contexts-screen
   priorType?: 'normal';
   contexts?: Context[];
+
+  // experiment-summarize-freq-screen (populated after createExperiment API call)
+  experimentId?: string;
+  createExperimentResponse?: CreateExperimentResponse;
 };
 
 const isFreq = (experimentType: ExperimentType) => {
@@ -190,7 +197,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       render: ExperimentTypeScreen,
       reducer: (data, msg) => {
         if (msg.type === 'set-experiment-type') {
-          return { ...data, experimentType: msg.value };
+          return { ...data, experimentType: msg.value, createExperimentResponse: undefined };
         }
         return data;
       },
@@ -221,6 +228,9 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             datasourceId: msg.datasourceId,
             tableName: msg.tableName,
+
+            // Changing datasource should clear power check
+            powerCheckResponse: undefined,
           };
         }
         return data;
@@ -445,11 +455,23 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
     'summarize-freq': screen({
       breadcrumbTitle: 'Summary',
       render: ExperimentsSummarizeFreqScreen,
-      reducer: (data) => data,
-      isNextEnabled: () => true,
-      isPrevEnabled: () => true,
+      isBreadcrumbClickable: () => false,
+      reducer: (data, msg: { type: 'set-experiment-response'; response: CreateExperimentResponse }) => {
+        if (msg.type === 'set-experiment-response') {
+          return {
+            ...data,
+            experimentId: msg.response.experiment_id,
+            createExperimentResponse: msg.response,
+          };
+        }
+        return data;
+      },
+      isNextEnabled: (data) => !!data.createExperimentResponse,
+      isPrevEnabled: (data) => !data.createExperimentResponse,
       prevScreen: () => ({ type: 'screen', id: 'freq-stack' }),
       nextScreen: () => ({ type: 'submit' }),
+      nextButtonLabel: (data) => 'Save Experiment',
+      hideNavigation: (data) => !data.createExperimentResponse,
     }),
     'summarize-bayes': screen({
       breadcrumbTitle: 'Summary',
