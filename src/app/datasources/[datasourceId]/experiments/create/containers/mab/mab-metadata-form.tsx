@@ -2,26 +2,26 @@
 import React from 'react';
 import {
   Box,
-  Card,
-  Flex,
-  Text,
-  TextField,
-  TextArea,
   Button,
-  IconButton,
+  Card,
   CheckboxCards,
+  Flex,
   Grid,
   Heading,
+  IconButton,
   RadioCards,
+  Text,
+  TextArea,
+  TextField,
 } from '@radix-ui/themes';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import {
-  MABFormData,
   BanditArm,
-  PriorType,
-  OutcomeType,
   CMABFormData,
   Context,
+  MABFormData,
+  OutcomeType,
+  PriorType,
 } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import { SectionCard } from '@/components/ui/cards/section-card';
@@ -484,7 +484,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
         nextLabel="Next"
         nextDisabled={!isFormValid}
         nextLoading={isMutating}
-        tooltipMessage={getValidationMessage()}
+        nextTooltipContent={getValidationMessage()}
       />
     </Flex>
   );

@@ -12,6 +12,7 @@ import { PowerCheckSection } from './power-check-section';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import { convertToDesignSpec } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import { createExperimentBody } from '@/api/admin.zod';
+import { ErrorType } from '@/services/orval-fetch';
 
 export type ExperimentFreqStackScreenMessage =
   | { type: 'set-primary-key'; value: string }
@@ -22,7 +23,7 @@ export type ExperimentFreqStackScreenMessage =
   | { type: 'set-power'; value: string }
   | { type: 'set-power-check-response'; response: PowerResponseOutput; chosenN?: number }
   | { type: 'set-create-response'; response: CreateExperimentResponse }
-  | { type: 'set-create-error'; response: any }
+  | { type: 'set-create-error'; response: ErrorType<unknown> }
   | { type: 'set-chosen-n'; value: number | undefined };
 
 const isNextEnabled = (data: ExperimentFormData) => {
@@ -98,8 +99,8 @@ export const ExperimentFreqStackScreen = ({
       console.log('triggering');
       await triggerCreate(createExperimentRequest);
       console.log('triggered');
-    } catch (error) {
-      console.log('errored');
+    } catch {
+      // handled by onError
     }
     navigateNext();
     console.log('navigated');

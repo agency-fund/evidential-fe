@@ -350,7 +350,7 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
           onNext={onNext}
           nextLabel="Next"
           nextDisabled={!isFormValid}
-          tooltipMessage={getValidationMessage()}
+          nextTooltipContent={getValidationMessage()}
         />
       </Flex>
     </form>

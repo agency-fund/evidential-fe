@@ -1,12 +1,14 @@
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 import { z } from 'zod';
 import {
+  CreateExperimentRequest,
   DesignSpecInput,
   DesignSpecMetricRequest,
   OnlineFrequentistExperimentSpecInput,
   PreassignedFrequentistExperimentSpecInput,
   Stratum,
 } from '@/api/methods.schemas';
+import { createExperimentBody } from '@/api/admin.zod';
 import { ExperimentFormData } from './experiment-form-def';
 
 export const getReasonableStartDate = (): string => {
@@ -83,4 +85,50 @@ export function convertToDesignSpec(data: ExperimentFormData): DesignSpecInput {
     ...commonFields,
     experiment_type: 'freq_online',
   } as OnlineFrequentistExperimentSpecInput;
+}
+
+export function convertToBanditCreateRequest(data: ExperimentFormData): CreateExperimentRequest {
+  // Map bandit arms to standard arms format with prior parameters
+  const standardArms = (data.bandit_arms ?? []).map((arm) => ({
+    arm_id: null,
+    arm_name: arm.arm_name,
+    arm_description: arm.arm_description || '',
+    // Beta distribution params (for binary outcomes)
+    alpha_init: arm.alpha_prior !== undefined ? arm.alpha_prior : null,
+    beta_init: arm.beta_prior !== undefined ? arm.beta_prior : null,
+    // Normal distribution params (for real-valued outcomes)
+    mu_init: arm.mean_prior !== undefined ? arm.mean_prior : null,
+    sigma_init: arm.stddev_prior !== undefined ? arm.stddev_prior : null,
+  }));
+
+  // Map contexts for CMAB experiments
+  let standardContexts = null;
+  if (data.experimentType === 'cmab_online' && data.contexts) {
+    standardContexts = data.contexts.map((context) => ({
+      context_id: null,
+      context_name: context.name,
+      context_description: context.description || '',
+      value_type: context.type,
+    }));
+  }
+
+  // Determine prior type from experiment type and outcome type
+  const priorType = data.experimentType === 'mab_online' && data.outcomeType === 'binary' ? 'beta' : 'normal';
+
+  return createExperimentBody.parse({
+    design_spec: {
+      experiment_name: data.name!,
+      participant_type: 'user',
+      experiment_type: data.experimentType,
+      arms: standardArms,
+      end_date: new Date(Date.parse(data.endDate!)).toISOString(),
+      start_date: new Date(Date.parse(data.startDate!)).toISOString(),
+      description: data.hypothesis ?? '',
+      design_url: data.designUrl ?? null,
+      prior_type: priorType,
+      reward_type: data.outcomeType === 'binary' ? 'binary' : 'real-valued',
+      contexts: standardContexts,
+    },
+    webhooks: data.selectedWebhookIds && data.selectedWebhookIds.length > 0 ? data.selectedWebhookIds : [],
+  });
 }

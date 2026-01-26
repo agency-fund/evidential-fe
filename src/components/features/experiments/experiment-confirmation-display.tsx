@@ -3,9 +3,11 @@
 import { Flex, Grid } from '@radix-ui/themes';
 import { ListSelectedWebhooksCard } from '@/components/features/experiments/list-selected-webhooks-card';
 import {
+  CMABExperimentSpecOutput,
   CreateExperimentResponse,
   DataType,
   FilterOutput,
+  MABExperimentSpecOutput,
   OnlineFrequentistExperimentSpecOutput,
   PreassignedFrequentistExperimentSpecOutput,
 } from '@/api/methods.schemas';
@@ -16,6 +18,8 @@ import { ParametersSection } from '@/components/features/experiments/sections/pa
 import { StatisticsSection } from '@/components/features/experiments/sections/statistics-section';
 import { FiltersSection } from '@/components/features/experiments/sections/filters-section';
 import { StrataSection } from '@/components/features/experiments/sections/strata-section';
+import { PriorOutcomeSection } from '@/components/features/experiments/sections/prior-outcome-section';
+import { ContextsSection } from '@/components/features/experiments/sections/contexts-section';
 
 // Type guard to check if design spec is frequentist (has alpha, power, filters, strata)
 function isFrequentistSpec(
@@ -24,9 +28,26 @@ function isFrequentistSpec(
   return spec.experiment_type === 'freq_online' || spec.experiment_type === 'freq_preassigned';
 }
 
+// Type guard for MAB experiments
+function isMABSpec(spec: CreateExperimentResponse['design_spec']): spec is MABExperimentSpecOutput {
+  return spec.experiment_type === 'mab_online';
+}
+
+// Type guard for CMAB experiments
+function isCMABSpec(spec: CreateExperimentResponse['design_spec']): spec is CMABExperimentSpecOutput {
+  return spec.experiment_type === 'cmab_online';
+}
+
+// Type guard for any bandit experiment
+function isBanditSpec(
+  spec: CreateExperimentResponse['design_spec'],
+): spec is MABExperimentSpecOutput | CMABExperimentSpecOutput {
+  return isMABSpec(spec) || isCMABSpec(spec);
+}
+
 export interface ExperimentConfirmationDisplayProps {
   response: CreateExperimentResponse;
-  // Data not available in response
+  // Data not available in response (frequentist-specific)
   metrics?: {
     primary?: MetricDisplay;
     secondary?: MetricDisplay[];
@@ -45,6 +66,9 @@ export function ExperimentConfirmationDisplay({
   footer,
 }: ExperimentConfirmationDisplayProps) {
   const designSpec = response.design_spec;
+  const isFreq = isFrequentistSpec(designSpec);
+  const isBandit = isBanditSpec(designSpec);
+  const isCmab = isCMABSpec(designSpec);
 
   // Extract frequentist-specific properties (confidence/power/filters/strata)
   // For non-frequentist experiments, these will be undefined
@@ -53,8 +77,7 @@ export function ExperimentConfirmationDisplay({
   let filters: FilterOutput[] = [];
   let strata: string[] | undefined;
 
-  // TODO: verify
-  if (isFrequentistSpec(designSpec)) {
+  if (isFreq) {
     const alpha = designSpec.alpha ?? 0.05;
     confidence = Math.round((1 - alpha) * 100);
     power = Math.round((designSpec.power ?? 0.8) * 100);
@@ -65,17 +88,28 @@ export function ExperimentConfirmationDisplay({
   // Extract webhook IDs from response (webhooks is string[] directly)
   const webhookIds = response.webhooks ?? [];
 
+  // Extract bandit-specific properties
+  const priorType = isBandit ? designSpec.prior_type : undefined;
+  const rewardType = isBandit ? designSpec.reward_type : undefined;
+  const contexts = isCmab ? (designSpec.contexts ?? []) : [];
+
   return (
     <Flex direction="column" gap="4">
       <BasicInformationSection response={response} />
+      {isBandit && <PriorOutcomeSection priorType={priorType} rewardType={rewardType} />}
+      {isCmab && contexts.length > 0 && <ContextsSection contexts={contexts} />}
       <TreatmentArmsSection response={response} />
-      <Grid columns="3" gap="3">
-        <MetricsSection metrics={metrics} />
-        <ParametersSection confidence={confidence} power={power} chosenN={chosenN} />
-        <StatisticsSection assignSummary={response.assign_summary} />
-      </Grid>
-      <FiltersSection filters={filters} filterFieldTypes={filterFieldTypes} />
-      <StrataSection strata={strata} />
+      {isFreq && (
+        <>
+          <Grid columns="3" gap="3">
+            <MetricsSection metrics={metrics} />
+            <ParametersSection confidence={confidence} power={power} chosenN={chosenN} />
+            <StatisticsSection assignSummary={response.assign_summary} />
+          </Grid>
+          <FiltersSection filters={filters} filterFieldTypes={filterFieldTypes} />
+          <StrataSection strata={strata} />
+        </>
+      )}
       <ListSelectedWebhooksCard webhookIds={webhookIds} />
       {footer}
     </Flex>

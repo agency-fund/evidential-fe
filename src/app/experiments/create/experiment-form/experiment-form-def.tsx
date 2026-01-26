@@ -8,6 +8,7 @@ import { ExperimentTypeScreen } from '@/app/experiments/create/experiment-form/e
 import {
   Arm,
   BayesABExperimentSpecInputExperimentType,
+  ContextType,
   CreateExperimentResponse,
   DesignSpecInput,
   FilterInput,
@@ -16,23 +17,24 @@ import {
 } from '@/api/methods.schemas';
 import { ExperimentSelectDatasourceScreen } from '@/app/experiments/create/experiment-form/experiment-select-datasource-screen';
 import { ExperimentSelectBinaryOrRealOutcomes } from '@/app/experiments/create/experiment-form/experiment-select-binary-or-real-outcomes';
-import { ExperimentDescribeContextsScreen } from '@/app/experiments/create/experiment-form/experiment-describe-contexts-screen';
 import {
   ExperimentDescribeArmsMessage,
   ExperimentDescribeArmsScreen,
 } from '@/app/experiments/create/experiment-form/experiment-describe-arms-screen';
+import { ExperimentDescribeContextsScreen } from '@/app/experiments/create/experiment-form/experiment-describe-contexts-screen';
+import { ExperimentDescribeBanditArmsScreen } from '@/app/experiments/create/experiment-form/experiment-describe-bandit-arms-screen';
+import { ExperimentsSummarizeBayesScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-bayes-screen';
 import {
   ExperimentFreqStackScreen,
   ExperimentFreqStackScreenMessage,
 } from '@/app/experiments/create/experiment-form/experiment-freq-stack-screen';
-import { ExperimentsSummarizeBayesScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-bayes-screen';
 import { ExperimentsSummarizeFreqScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-freq-screen';
 import { BanditArm, Context, MetricWithMDE, Stratum } from '@/app/datasources/[datasourceId]/experiments/create/types';
-import { ExperimentDescribeBanditArmsScreen } from '@/app/experiments/create/experiment-form/experiment-describe-bandit-arms-screen';
 import {
   getReasonableEndDate,
   getReasonableStartDate,
 } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
+import { ErrorType } from '@/services/orval-fetch';
 
 export type ExperimentType = Exclude<DesignSpecInput['experiment_type'], BayesABExperimentSpecInputExperimentType>;
 
@@ -68,7 +70,7 @@ export type ExperimentFormData = {
   chosenN?: number;
   powerCheckResponse?: PowerResponseOutput;
   createExperimentResponse?: CreateExperimentResponse;
-  createExperimentError?: any;
+  createExperimentError?: ErrorType<unknown>;
 
   // experiment-describe-webhooks-screen
   selectedWebhookIds?: string[];
@@ -83,11 +85,12 @@ export type ExperimentFormData = {
   bandit_arms?: BanditArm[];
 
   // experiment-describe-contexts-screen
-  priorType?: 'normal';
+  priorType?: 'beta' | 'normal';
   contexts?: Context[];
 
   // experiment-summarize-freq-screen (populated after createExperiment API call)
   experimentId?: string;
+  commitError?: ErrorType<unknown>;
 };
 
 const isFreq = (experimentType: ExperimentType) => {
@@ -163,6 +166,26 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       { arm_name: 'Control', arm_description: 'Control' },
       { arm_name: 'Treatment', arm_description: 'Treatment' },
     ],
+    bandit_arms: [
+      {
+        arm_name: 'Control',
+        arm_description: 'Control',
+        alpha_prior: 1,
+        beta_prior: 1,
+        mean_prior: 0,
+        stddev_prior: 1,
+      },
+      {
+        arm_name: 'Treatment',
+        arm_description: 'Treatment',
+        alpha_prior: 2,
+        beta_prior: 1,
+        mean_prior: 1,
+        stddev_prior: 1,
+      },
+    ],
+    contexts: [{ name: 'Context', description: '', type: 'real-valued' }],
+    outcomeType: 'binary',
     confidence: '95',
     power: '80',
   }),
@@ -245,6 +268,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
     }),
     'bayes-binary-or-real': screen({
       breadcrumbTitle: 'Outcomes',
+      breadcrumbs: breadcrumbs,
       render: ExperimentSelectBinaryOrRealOutcomes,
       reducer: (data, msg) => {
         if (msg.type === 'set-outcome-type') {
@@ -259,27 +283,95 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         if (experimentType === 'cmab_online') {
           return { type: 'screen', id: 'describe-contexts' };
         }
-        return { type: 'screen', id: 'describe-arms' };
+        return { type: 'screen', id: 'describe-bandit-arms' };
       },
-      breadcrumbs: () => ['metadata', 'experiment-type', 'bayes-binary-or-real'],
       isBreadcrumbClickable: () => true,
     }),
     'describe-contexts': screen({
       breadcrumbTitle: 'Contexts',
       render: ExperimentDescribeContextsScreen,
-      reducer: (data) => data,
-      isNextEnabled: () => true,
+      reducer: (data, msg) => {
+        const contexts = data.contexts ?? [];
+        if (msg.type === 'add-context') {
+          return { ...data, contexts: [...contexts, { name: '', description: '', type: 'binary' }] };
+        }
+        if (msg.type === 'remove-context') {
+          return { ...data, contexts: contexts.filter((_, i) => i !== msg.index) };
+        }
+        if (msg.type === 'update-context') {
+          const newContexts = [...contexts];
+          const ctx = newContexts[msg.index];
+          switch (msg.field) {
+            case 'name':
+              newContexts[msg.index] = { ...ctx, name: msg.value };
+              break;
+            case 'description':
+              newContexts[msg.index] = { ...ctx, description: msg.value };
+              break;
+            case 'type':
+              newContexts[msg.index] = { ...ctx, type: msg.value as ContextType };
+              break;
+          }
+          return { ...data, contexts: newContexts };
+        }
+        return data;
+      },
+      isNextEnabled: (data) => {
+        const contexts = data.contexts ?? [];
+        return contexts.length >= 1 && contexts.every((c) => c.name.trim() !== '');
+      },
       isPrevEnabled: () => true,
       prevScreen: () => ({ type: 'screen', id: 'bayes-binary-or-real' }),
       nextScreen: () => ({ type: 'screen', id: 'describe-bandit-arms' }),
       isBreadcrumbClickable: ({ outcomeType }) => !!outcomeType,
+      nextButtonTooltip: (data) => {
+        const contexts = data.contexts ?? [];
+        if (contexts.length < 1) return 'At least one context is required.';
+        const emptyNameIndex = contexts.findIndex((c) => c.name.trim() === '');
+        if (emptyNameIndex >= 0) return `Context ${emptyNameIndex + 1} name is required.`;
+        return '';
+      },
     }),
     'describe-bandit-arms': screen({
       breadcrumbTitle: 'Arms',
       render: ExperimentDescribeBanditArmsScreen,
-      reducer: (data) => data,
-      isNextEnabled: () => true,
+      reducer: (data, msg) => {
+        const arms = data.bandit_arms ?? [];
+        if (msg.type === 'add-arm') {
+          const priorType = data.experimentType === 'mab_online' && data.outcomeType === 'binary' ? 'beta' : 'normal';
+          const newArm =
+            priorType === 'beta'
+              ? { arm_name: '', arm_description: '', alpha_prior: 1, beta_prior: 1 }
+              : { arm_name: '', arm_description: '', mean_prior: 0, stddev_prior: 1 };
+          return { ...data, bandit_arms: [...arms, newArm] };
+        }
+        if (msg.type === 'remove-arm') {
+          return { ...data, bandit_arms: arms.filter((_, i) => i !== msg.index) };
+        }
+        if (msg.type === 'update-arm') {
+          const newArms = [...arms];
+          newArms[msg.index] = { ...newArms[msg.index], [msg.field]: msg.value };
+          return { ...data, bandit_arms: newArms };
+        }
+        if (msg.type === 'set-create-response') {
+          return {
+            ...data,
+            createExperimentResponse: msg.response,
+            createExperimentError: undefined,
+            experimentId: msg.response.experiment_id,
+          };
+        }
+        if (msg.type === 'set-create-error') {
+          return { ...data, createExperimentError: msg.response, createExperimentResponse: undefined };
+        }
+        if (msg.type === 'set-datasource-id') {
+          return { ...data, datasourceId: msg.datasourceId };
+        }
+        return data;
+      },
+      isNextEnabled: () => true, // The screen handles its own validation
       isPrevEnabled: () => true,
+      hideNavigation: () => true,
       prevScreen: ({ experimentType }) => {
         switch (experimentType) {
           case 'mab_online':
@@ -299,6 +391,8 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             throw new Error(`Experiment type ${experimentType} unhandled`);
         }
       },
+      isBreadcrumbClickable: ({ outcomeType }) => !!outcomeType,
+      breadcrumbs: breadcrumbs,
     }),
     'describe-arms': screen({
       breadcrumbTitle: 'Arms',
@@ -448,13 +542,9 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       breadcrumbTitle: 'Summary',
       render: ExperimentsSummarizeFreqScreen,
       isBreadcrumbClickable: () => false,
-      reducer: (data, msg: { type: 'set-experiment-response'; response: CreateExperimentResponse }) => {
-        if (msg.type === 'set-experiment-response') {
-          return {
-            ...data,
-            experimentId: msg.response.experiment_id,
-            createExperimentResponse: msg.response,
-          };
+      reducer: (data, msg) => {
+        if (msg.type === 'set-commit-error') {
+          return { ...data, commitError: msg.response };
         }
         return data;
       },
@@ -462,17 +552,24 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       isPrevEnabled: (data) => !data.createExperimentResponse,
       prevScreen: () => ({ type: 'screen', id: 'freq-stack' }),
       nextScreen: () => ({ type: 'submit' }),
-      nextButtonLabel: (data) => 'Save Experiment',
-      hideNavigation: (data) => !data.createExperimentResponse,
+      hideNavigation: () => true,
     }),
     'summarize-bayes': screen({
       breadcrumbTitle: 'Summary',
       render: ExperimentsSummarizeBayesScreen,
-      reducer: (data) => data,
-      isNextEnabled: () => true,
-      isPrevEnabled: () => true,
+      reducer: (data, msg) => {
+        if (msg.type === 'set-commit-error') {
+          return { ...data, commitError: msg.response };
+        }
+        return data;
+      },
+      isNextEnabled: (data) => !!data.createExperimentResponse,
+      isPrevEnabled: (data) => !data.createExperimentResponse,
       prevScreen: () => ({ type: 'screen', id: 'describe-bandit-arms' }),
       nextScreen: () => ({ type: 'submit' }),
+      hideNavigation: () => true,
+      isBreadcrumbClickable: () => false,
+      breadcrumbs: breadcrumbs,
     }),
   },
 };

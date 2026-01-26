@@ -7,10 +7,17 @@ import { WizardBreadcrumbsProvider } from './wizard-breadcrumbs-context';
 import { Box } from '@radix-ui/themes';
 
 type WizardProps<FormData, ScreenId extends string, InputData> = {
+  // The wizard definition, composed of screens and breadcrumbs and callback functions that inform Wizard's behavior.
   form: WizardForm<FormData, ScreenId, InputData>;
+  // Data to be injected into the initial state of the form.
   inputData?: InputData;
+  // Screens can request that the "Prev" button invoke this handler. Useful for nested wizards.
   onPrev?: (data: FormData) => void;
-  onSubmit: (data: FormData) => void;
+  // Screens can request that the "Next" button invoke this handler. This is usually used by the final screen in
+  // the series.
+  onSubmit?: (data: FormData) => void;
+  // If true, a debugging drawer will be rendered at the bottom of the screen, showing navigation state and current
+  // form data.
   debug?: boolean;
 };
 
@@ -38,7 +45,9 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
       const task = screen.nextScreen(data);
       switch (task.type) {
         case 'submit':
-          onSubmit(data);
+          if (onSubmit) {
+            onSubmit(data);
+          }
           break;
         case 'screen':
           setCurrentScreenId(task.id);
@@ -54,7 +63,7 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
         case 'screen':
           setCurrentScreenId(task.id);
           break;
-        case 'wizard-prop-onprev':
+        case 'wizard-exit-left':
           if (onPrev) {
             onPrev(data);
           }
@@ -81,22 +90,21 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
     // Check if navigation should be hidden
     const hideNav = screen.hideNavigation?.(data) ?? false;
 
+    // Get tooltip message for next button
+    const nextButtonTooltip = screen.nextButtonTooltip?.(data) ?? '';
+
     const screenIdBreadcrumbs = screen.breadcrumbs
       ? screen.breadcrumbs(data)
       : form.breadcrumbs
         ? form.breadcrumbs(data)
         : [];
     const breadcrumbs: Array<BreadcrumbInfo> = screenIdBreadcrumbs.map((v): BreadcrumbInfo => {
-      return v === null
-        ? { type: 'unknown' }
-        : {
-            type: 'screen',
-            screenId: v,
-            label: form.screens[v].withScreen((s) => s.breadcrumbTitle ?? v),
-            clickable: form.screens[v].withScreen((screen) =>
-              screen.isBreadcrumbClickable ? screen.isBreadcrumbClickable(data) : false,
-            ),
-          };
+      return form.screens[v].withScreen((s) => ({
+        type: 'screen',
+        screenId: v,
+        label: s.breadcrumbTitle ?? v,
+        clickable: s.isBreadcrumbClickable?.(data) ?? false,
+      }));
     });
 
     return (
@@ -122,6 +130,7 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
                   backLabel={prevLabel}
                   nextDisabled={!isNextEnabled}
                   showBack={prevScreen !== null}
+                  nextTooltipContent={nextButtonTooltip}
                 />
               )}
             </Box>

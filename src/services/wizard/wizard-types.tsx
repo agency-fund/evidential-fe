@@ -43,12 +43,12 @@ type Screen<FormData, Message, ScreenId extends string> = {
   isPrevEnabled: (data: FormData) => boolean;
   // Describes the behavior of the "prev" button: return null to hide prev button, and one of the navigation types
   // to navigate to a screen by id.
-  prevScreen: (data: FormData) => null | { type: 'screen'; id: ScreenId } | { type: 'wizard-prop-onprev' };
+  prevScreen: (data: FormData) => null | { type: 'screen'; id: ScreenId } | { type: 'wizard-exit-left' };
   // Describes the behavior of the "next" button: return a "screen" type to navigate to a specific screen by id, or
   // a "submit" type to cause the Wizard's onSubmit handler to be triggered.
   nextScreen: (data: FormData) => { type: 'screen'; id: ScreenId } | { type: 'submit' };
   // Breadcrumbs to render
-  breadcrumbs?: (data: FormData) => Array<ScreenId | null>;
+  breadcrumbs?: (data: FormData) => Array<ScreenId>;
   // Whether or not the breadcrumb is navigable.
   isBreadcrumbClickable?: (data: FormData) => boolean;
   // Custom label for the "Next" button. If not set, defaults to "Next" or "Submit", depending on the return value of
@@ -58,6 +58,11 @@ type Screen<FormData, Message, ScreenId extends string> = {
   prevButtonLabel?: (data: FormData) => string;
   // When true, the Wizard will not render NavigationButtons for this screen.
   hideNavigation?: (data: FormData) => boolean;
+  // Optional tooltip message for the Prev button (e.g., validation errors).
+  prevButtonTooltip?: (data: FormData) => string;
+
+  // Optional tooltip message for the Next button (e.g., validation errors).
+  nextButtonTooltip?: (data: FormData) => string;
 };
 
 // CPS-encoded existential - hides Message type while preserving type safety

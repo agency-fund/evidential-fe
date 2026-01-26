@@ -1,46 +1,66 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { ScreenProps } from '@/services/wizard/wizard-types';
 import { ExperimentFormData } from '@/app/experiments/create/experiment-form/experiment-form-def';
-import { Callout, Flex, Spinner, Text } from '@radix-ui/themes';
+import { Callout, Flex } from '@radix-ui/themes';
 import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
-import { CreateExperimentResponse } from '@/api/methods.schemas';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import {
   ExperimentConfirmationDisplay,
   ExperimentConfirmationDisplayProps,
 } from '@/components/features/experiments/experiment-confirmation-display';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
+import { useAbandonExperiment, useCommitExperiment } from '@/api/admin';
+import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
+import { ErrorType } from '@/services/orval-fetch';
 
-type CreationStatus = 'idle' | 'creating-experiment' | 'success' | 'error';
-
-type ExperimentsSummarizeFreqScreenMessage = {
-  type: 'set-experiment-response';
-  response: CreateExperimentResponse;
-};
-
-function LoadingUI({ status }: { status: CreationStatus }) {
-  const statusMessages: Record<CreationStatus, string> = {
-    idle: 'Preparing...',
-    'creating-experiment': 'Creating experiment and generating assignments...',
-    success: 'Complete!',
-    error: 'Error occurred',
-  };
-
-  return (
-    <Flex direction="column" gap="4" align="center" justify="center" py="9">
-      <Spinner size="3" />
-      <Text size="3" color="gray">
-        {statusMessages[status]}
-      </Text>
-    </Flex>
-  );
-}
+type ExperimentsSummarizeFreqScreenMessage = { type: 'set-commit-error'; response: ErrorType<unknown> };
 
 export const ExperimentsSummarizeFreqScreen = ({
   data,
+  navigatePrev,
   dispatch,
 }: ScreenProps<ExperimentFormData, ExperimentsSummarizeFreqScreenMessage>) => {
+  const router = useRouter();
+
+  const experimentId = data.createExperimentResponse?.experiment_id ?? '';
+  const datasourceId = data.datasourceId ?? '';
+
+  const { trigger: triggerCommit, isMutating: commitLoading } = useCommitExperiment(datasourceId, experimentId, {
+    swr: {
+      onSuccess: () => {
+        router.push('/experiments');
+      },
+      onError: async (response: ErrorType<unknown>) => {
+        dispatch({ type: 'set-commit-error', response });
+      },
+    },
+  });
+
+  const { trigger: triggerAbandon } = useAbandonExperiment(datasourceId, experimentId);
+
+  const handleCommit = async () => {
+    if (!datasourceId || !experimentId) {
+      return;
+    }
+    try {
+      await triggerCommit();
+    } catch {
+      // Error handled by onError callback
+    }
+  };
+
+  const handleAbandon = async () => {
+    if (!datasourceId || !experimentId) return;
+    try {
+      await triggerAbandon();
+    } catch {
+      // Error handled by callback
+    }
+    navigatePrev();
+  };
+
   // Prepare props for ExperimentConfirmationDisplay
   const metrics: ExperimentConfirmationDisplayProps['metrics'] = {
     primary: data.primaryMetric
@@ -61,32 +81,48 @@ export const ExperimentsSummarizeFreqScreen = ({
     (data.availableFilterFields ?? []).map((f) => [f.field_name, f.data_type]),
   );
 
-  return (
-    <Flex direction="column" gap="3">
-      <WizardBreadcrumbs />
-
-      {data.createExperimentError !== undefined && (
+  if (data.commitError) {
+    return (
+      <>
         <Flex direction="column" gap="3">
+          <WizardBreadcrumbs />
           <GenericErrorCallout title="Failed to create experiment" error={data.createExperimentError} />
         </Flex>
-      )}
+        <NavigationButtons onBack={navigatePrev} onNext={() => {}} nextDisabled />
+      </>
+    );
+  }
 
-      {data.createExperimentResponse !== undefined && (
-        <>
-          <ExperimentConfirmationDisplay
-            response={data.createExperimentResponse}
-            metrics={metrics}
-            filterFieldTypes={filterFieldTypes}
-            chosenN={data.chosenN}
-          />
-          <Callout.Root variant={'soft'} size={'1'}>
-            <Callout.Icon>
-              <InfoCircledIcon />
-            </Callout.Icon>
-            <Callout.Text>Assignments will be downloadable after the experiment is saved.</Callout.Text>
-          </Callout.Root>
-        </>
-      )}
-    </Flex>
+  return (
+    <>
+      <Flex direction="column" gap="4">
+        <WizardBreadcrumbs />
+
+        {data.createExperimentResponse !== undefined && (
+          <>
+            <ExperimentConfirmationDisplay
+              response={data.createExperimentResponse}
+              metrics={metrics}
+              filterFieldTypes={filterFieldTypes}
+              chosenN={data.chosenN}
+            />
+            <Callout.Root>
+              <Callout.Icon>
+                <InfoCircledIcon />
+              </Callout.Icon>
+              <Callout.Text>Assignments will be downloadable after the experiment is saved.</Callout.Text>
+            </Callout.Root>
+          </>
+        )}
+      </Flex>
+      <NavigationButtons
+        onBack={handleAbandon}
+        onNext={handleCommit}
+        nextDisabled={!data.createExperimentResponse}
+        nextLoading={commitLoading}
+        nextLabel="Save Experiment"
+        showBack
+      />
+    </>
   );
 };

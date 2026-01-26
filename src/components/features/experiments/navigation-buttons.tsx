@@ -3,15 +3,16 @@ import React from 'react';
 import { Button, Flex, Tooltip } from '@radix-ui/themes';
 
 interface NavigationButtonsProps {
+  backLabel?: string;
+  className?: string;
+  nextDisabled?: boolean;
+  nextLabel?: string;
+  nextLoading?: boolean;
+  nextTooltipContent?: string;
   onBack?: () => void;
   onNext?: () => void;
-  nextLabel?: string;
-  backLabel?: string;
-  nextDisabled?: boolean;
-  nextLoading?: boolean;
+  prevTooltipContent?: string;
   showBack?: boolean;
-  className?: string;
-  tooltipMessage?: string;
 }
 
 export function NavigationButtons({
@@ -23,7 +24,7 @@ export function NavigationButtons({
   nextLoading = false,
   showBack = true,
   className,
-  tooltipMessage = 'Please complete all required fields before proceeding.',
+  nextTooltipContent,
 }: NavigationButtonsProps) {
   const nextButton = (
     <Button onClick={onNext} disabled={nextDisabled} loading={nextLoading}>
@@ -41,7 +42,7 @@ export function NavigationButtons({
       )}
 
       {onNext && nextDisabled ? (
-        <Tooltip content={tooltipMessage} side="top" align="center">
+        <Tooltip content={nextTooltipContent} side="top" align="center">
           {nextButton}
         </Tooltip>
       ) : (
