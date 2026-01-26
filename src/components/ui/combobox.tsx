@@ -5,6 +5,17 @@ import { Box, Flex, Popover, ScrollArea, Text, TextField } from '@radix-ui/theme
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { useDebounceFunction } from './use-debounced-function';
 
+// Helper for computing filtered options with a different search text (used in handlers)
+const filterOptions = <TOption = string,>(
+  text: string,
+  options: TOption[],
+  getSearchTextFromOption: (option: TOption) => string,
+) => {
+  if (!text) return options;
+  const lowerSearch = text.toLowerCase();
+  return options.filter((opt) => getSearchTextFromOption(opt).toLowerCase().includes(lowerSearch));
+};
+
 export interface DropdownRowProps<TOption> {
   option: TOption;
   isHighlighted: boolean;
@@ -70,30 +81,26 @@ export function Combobox<TOption = string>({
   maxHeight = '200px',
   dropdownDataAttribute = 'data-filter-dropdown',
 }: ComboboxProps<TOption>) {
-  // State for the search input text (kept for exactMatch calculation)
   const [searchText, setSearchText] = useState(initialSearchText);
+  const [isFocused, setIsFocused] = useState(false);
   // State for the dropdown part of our combobox
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  // Which index in the dropdown is highlighted; used for keyboard navigation
   const [popoverHighlightedIndex, setPopoverHighlightedIndex] = useState(-1);
-  // Ref for the array of dropdown items; used to scroll the highlighted item into view
   const popoverItemRefs = useRef<(HTMLDivElement | null)[]>([]);
   // Ref for the combobox's TextField representing the search box input element
   const textFieldRootRef = useRef<HTMLInputElement>(null);
-
   const [debouncedOnNoMatch, clearDebouncedOnNoMatch] = useDebounceFunction(onNoMatch, 100);
+  // State for use in resetting highlighted index when filtered results change
+  const [prevFilteredOptionsLength, setPrevFilteredOptionsLength] = useState(options.length);
 
   // Filter options based on search text (case-insensitive)
   const filteredOptions = useMemo(() => {
-    if (!searchText) return options;
-    const lowerSearch = searchText.toLowerCase();
-    return options.filter((opt) => getSearchTextFromOption(opt).toLowerCase().includes(lowerSearch));
+    return filterOptions(searchText, options, getSearchTextFromOption);
   }, [options, searchText, getSearchTextFromOption]);
 
   // Reset highlighted index when filtered results change
-  const [prevFilteredOptions, setPrevFilteredOptions] = useState(filteredOptions);
-  if (filteredOptions !== prevFilteredOptions) {
-    setPrevFilteredOptions(filteredOptions);
+  if (filteredOptions.length !== prevFilteredOptionsLength) {
+    setPrevFilteredOptionsLength(filteredOptions.length);
     setPopoverHighlightedIndex(-1);
   }
 
@@ -106,40 +113,42 @@ export function Combobox<TOption = string>({
     }
   }, [popoverHighlightedIndex]);
 
+  // Handler for auto-selecting when user types an exact match.
+  const handleAutoSelect = (option: TOption, closePopover: boolean) => {
+    clearDebouncedOnNoMatch();
+    if (closePopover) {
+      setIsPopoverOpen(false);
+      setPopoverHighlightedIndex(-1);
+    }
+    setSearchText(getSearchTextFromOption(option));
+    onSelect(option);
+  };
+
   // Handler for selecting an option that fills in the search text and closes the dropdown.
   // It fires under several situations:
-  // - User types a field name and matches exactly one field
-  // - User hightlights a field in the dropdown and presses enter
-  // - User types text, filtering the options down to only 1 and presses enter
+  // - User highlights a field in the dropdown and presses enter
+  // - User while typing, filters the options down to only 1, and presses enter
   // - User clicks on a field in the dropdown
+  // (For auto-select while typing, see handleAutoSelect.)
   const handleOptionSelect = (option: TOption) => {
-    // We have an exact match, so clear any pending mismatches so they don't overwrite the selection.
-    clearDebouncedOnNoMatch();
-
-    const optionText = getSearchTextFromOption(option);
-    setSearchText(optionText);
-    setIsPopoverOpen(false);
-    onSelect(option);
+    handleAutoSelect(option, true);
   };
 
   // Search box handler that updates our search text state and other side effects based on the input.
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setSearchText(newValue);
+    setIsPopoverOpen(true);
 
-    // Check for exact match and auto-select the option if found
+    // Check for exact match and auto-select the option if found.
     const newExactMatch = findExactMatch(newValue, options);
     if (newExactMatch) {
-      handleOptionSelect(newExactMatch);
+      // Only close the popover if it's the only matching option.
+      // Must recompute filtered options here since the existing value is stale until next render.
+      const newFilteredOptions = filterOptions(newValue, options, getSearchTextFromOption);
+      handleAutoSelect(newExactMatch, newFilteredOptions.length === 1);
     } else {
-      // call onNoMatch to notify parent.
       debouncedOnNoMatch(newValue);
-
-      if (!isPopoverOpen) {
-        // Since handling the selection of an option closes the dropdown, we re-open it if the user
-        // edited the field such that we no longer have an exact match.
-        setIsPopoverOpen(true);
-      }
     }
   };
 
@@ -218,6 +227,7 @@ export function Combobox<TOption = string>({
             ref={textFieldRootRef}
             placeholder={placeholder}
             value={searchText}
+            autoFocus={isFocused}
             onChange={handleSearchChange}
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}
