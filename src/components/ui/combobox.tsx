@@ -32,7 +32,6 @@ const setSearchboxCursorPosition = (ref: HTMLInputElement | null, position: numb
 export interface DropdownRowProps<TOption> {
   option: TOption;
   isHighlighted: boolean;
-  isSelected: boolean;
   index: number;
 }
 
