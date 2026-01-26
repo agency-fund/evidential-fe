@@ -19,12 +19,13 @@ export interface FilterRowOption {
 export interface FilterRowProps {
   filter: FilterInput;
   availableOptions: Array<FilterRowOption>;
+  isNewRow: boolean;
   onSelect: (selectedOption: FilterRowOption) => void;
   onUpdate: (filterRowChange: FilterInput) => void;
   onRemove: () => void;
 }
 
-export function FilterRow({ filter, availableOptions, onSelect, onUpdate, onRemove }: FilterRowProps) {
+export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpdate, onRemove }: FilterRowProps) {
   // If there's an exact match for the current filter, store it here for rendering.
   const exactMatchField = findExactMatch(filter.field_name, availableOptions);
 
@@ -58,6 +59,7 @@ export function FilterRow({ filter, availableOptions, onSelect, onUpdate, onRemo
           onNoMatch={onNoMatch}
           findExactMatch={findExactMatch}
           getSearchTextFromOption={(opt) => opt.field_name}
+          initFocused={isNewRow}
           initialSearchText={filter.field_name}
           placeholder="Search fields..."
           noMatchText="No matching fields"

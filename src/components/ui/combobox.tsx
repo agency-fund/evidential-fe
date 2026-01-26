@@ -37,6 +37,8 @@ export interface ComboboxProps<TOption = string> {
   getSearchTextFromOption: (option: TOption) => string;
 
   // Optional customization
+  /** Whether to initially focus the search box. */
+  initFocused?: boolean;
   initialSearchText?: string;
   placeholder?: string;
   noMatchText?: string;
@@ -58,7 +60,6 @@ export interface ComboboxProps<TOption = string> {
 }
 
 /**
-
   Combobox implementation that internally uses a Popover, with the input box as the Trigger, and a
   scrollable list of fields as Content for the dropdown.
 */
@@ -68,6 +69,7 @@ export function Combobox<TOption = string>({
   onNoMatch,
   findExactMatch,
   getSearchTextFromOption,
+  initFocused = false,
   initialSearchText = '',
   placeholder = 'Search...',
   noMatchText = 'No matching options',
@@ -82,13 +84,10 @@ export function Combobox<TOption = string>({
   dropdownDataAttribute = 'data-filter-dropdown',
 }: ComboboxProps<TOption>) {
   const [searchText, setSearchText] = useState(initialSearchText);
-  const [isFocused, setIsFocused] = useState(false);
   // State for the dropdown part of our combobox
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [popoverHighlightedIndex, setPopoverHighlightedIndex] = useState(-1);
   const popoverItemRefs = useRef<(HTMLDivElement | null)[]>([]);
-  // Ref for the combobox's TextField representing the search box input element
-  const textFieldRootRef = useRef<HTMLInputElement>(null);
   const [debouncedOnNoMatch, clearDebouncedOnNoMatch] = useDebounceFunction(onNoMatch, 100);
   // State for use in resetting highlighted index when filtered results change
   const [prevFilteredOptionsLength, setPrevFilteredOptionsLength] = useState(options.length);
@@ -224,10 +223,9 @@ export function Combobox<TOption = string>({
       <Popover.Trigger>
         <Box minWidth={minWidth}>
           <TextField.Root
-            ref={textFieldRootRef}
             placeholder={placeholder}
             value={searchText}
-            autoFocus={isFocused}
+            autoFocus={initFocused}
             onChange={handleSearchChange}
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}

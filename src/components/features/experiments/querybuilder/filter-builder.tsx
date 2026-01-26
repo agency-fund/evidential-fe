@@ -127,11 +127,12 @@ export function FilterBuilder({ availableFields, initialFilters, onChange }: Fil
 
   return (
     <Flex direction="column" gap="3" overflow="auto">
-      {filtersWithIds.map(({ id, filter }) => (
+      {filtersWithIds.map(({ id, filter }, index) => (
         <React.Fragment key={id}>
           <FilterRow
             filter={filter}
             availableOptions={availableFields}
+            isNewRow={index === filtersWithIds.length - 1 && filter.field_name === ''}
             onSelect={(selectedOption) => {
               // Reset the filter with appropriate defaults for the new field type
               const defaultFilter = getDefaultFilterForType(selectedOption.field_name, selectedOption.data_type);
