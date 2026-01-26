@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { Box, Flex, Popover, ScrollArea, Text, TextField } from '@radix-ui/themes';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
+import { useDebouncedFunction } from './use-debounced-function';
 
 const getSearchboxCursorPosition = (ref: HTMLInputElement | null): number | undefined => {
   if (ref === null) return undefined;
@@ -101,8 +102,7 @@ export function Combobox<TOption = string>({
   // Ref for the combobox's TextField representing the search box input element
   const textFieldRootRef = useRef<HTMLInputElement>(null);
 
-  // Find exact match for current search text
-  const exactMatchOption = findExactMatch(searchText, options);
+  const [debouncedOnNoMatch, clearDebouncedOnNoMatch] = useDebouncedFunction(onNoMatch, 200);
 
   // Filter options based on search text (case-insensitive)
   const filteredOptions = useMemo(() => {
@@ -141,6 +141,9 @@ export function Combobox<TOption = string>({
   // - User types text, filtering the options down to only 1 and presses enter
   // - User clicks on a field in the dropdown
   const handleOptionSelect = (option: TOption) => {
+    // We have an exact match, so clear any pending mismatches so they don't overwrite the selection.
+    clearDebouncedOnNoMatch();
+
     const optionText = getSearchTextFromOption(option);
     setSearchText(optionText);
     setIsPopoverOpen(false);
@@ -159,12 +162,9 @@ export function Combobox<TOption = string>({
     } else {
       // If we previously had a valid option selected but now don't have a match,
       // call onUpdate to notify parent and preserve the cursor position.
-      // TODO? Would it be better to always call onNoMatch here instead of only when an edit causes it?
-      if (exactMatchOption && onNoMatch) {
-        const currentCursorPosition = getSearchboxCursorPosition(textFieldRootRef.current);
-        setCursorPosition(currentCursorPosition);
-        onNoMatch(newValue);
-      }
+      const currentCursorPosition = getSearchboxCursorPosition(textFieldRootRef.current);
+      setCursorPosition(currentCursorPosition);
+      debouncedOnNoMatch(newValue);
 
       if (!isPopoverOpen) {
         // Since handling the selection of an option closes the dropdown, we re-open it if the user
