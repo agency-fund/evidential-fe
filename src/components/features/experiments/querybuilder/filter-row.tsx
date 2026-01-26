@@ -1,15 +1,12 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Flex, Grid, IconButton, Text } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
 import { DataType, FilterInput } from '@/api/methods.schemas';
 import { TypeSpecificFilterInput } from '@/components/features/experiments/querybuilder/type-specific-filter-input';
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
 import { Combobox } from '@/components/ui/combobox';
-
-const findExactMatch = (searchText: string, availableOptions: Array<FilterRowOption>) => {
-  return availableOptions.find((f) => f.field_name === searchText);
-};
 
 export interface FilterRowOption {
   field_name: string;
@@ -25,17 +22,35 @@ export interface FilterRowProps {
 }
 
 export function FilterRow({ filter, availableOptions, onSelect, onUpdate, onRemove }: FilterRowProps) {
-  // If there's an exact match for the current filter, store it here for rendering.
-  const exactMatchField = findExactMatch(filter.field_name, availableOptions);
+  // Local state for the search text, synced with filter.field_name
+  const [searchText, setSearchText] = useState(filter.field_name);
 
-  // Handler for when value changed and now we don't have an exact match: reset to an empty filter
-  // with the current search string to prevent stale filter data from being used.
-  const onNoMatch = (searchText: string) => {
-    onUpdate({
-      field_name: searchText,
-      relation: 'includes',
-      value: [],
-    });
+  // Sync searchText when filter.field_name changes externally
+  useEffect(() => {
+    setSearchText(filter.field_name);
+  }, [filter.field_name]);
+
+  // If there's an exact match for the current filter, store it here for rendering.
+  const exactMatchField = availableOptions.find((f) => f.field_name === searchText);
+
+  // Handler for when value changed: update the filter with the current search text
+  const handleSearchChange = (newValue: string) => {
+    setSearchText(newValue);
+    // If the new value doesn't match an option, reset to an empty filter
+    const hasMatch = availableOptions.some((f) => f.field_name === newValue);
+    if (!hasMatch) {
+      onUpdate({
+        field_name: newValue,
+        relation: 'includes',
+        value: [],
+      });
+    }
+  };
+
+  // Handler for when an option is selected
+  const handleSelect = (option: FilterRowOption) => {
+    setSearchText(option.field_name);
+    onSelect(option);
   };
 
   return (
@@ -53,12 +68,11 @@ export function FilterRow({ filter, availableOptions, onSelect, onUpdate, onRemo
         </IconButton>
 
         <Combobox<FilterRowOption>
+          value={searchText}
+          onChange={handleSearchChange}
           options={availableOptions}
-          onSelect={onSelect}
-          onNoMatch={onNoMatch}
-          findExactMatch={findExactMatch}
+          onSelect={handleSelect}
           getSearchTextFromOption={(opt) => opt.field_name}
-          initialSearchText={filter.field_name}
           placeholder="Search fields..."
           noMatchText="No matching fields"
           rightSlot={exactMatchField && <DataTypeBadge type={exactMatchField.data_type} />}
@@ -75,7 +89,7 @@ export function FilterRow({ filter, availableOptions, onSelect, onUpdate, onRemo
       <Flex gap={'2'} align={'center'}>
         {exactMatchField ? (
           <TypeSpecificFilterInput dataType={exactMatchField.data_type} filter={filter} onChange={onUpdate} />
-        ) : filter.field_name === '' ? (
+        ) : searchText === '' ? (
           <Text size="2" color="gray">
             ← Select a field
           </Text>

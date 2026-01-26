@@ -3,32 +3,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { Box, Flex, Popover, ScrollArea, Text, TextField } from '@radix-ui/themes';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
-import { useDebounceFunction } from './use-debounced-function';
-
-const getSearchboxCursorPosition = (ref: HTMLInputElement | null): number | undefined => {
-  if (ref === null) return undefined;
-
-  // Get the current cursor position if the ref is an input element
-  let selectionStart: number | null = null;
-  if (ref.tagName === 'INPUT') {
-    selectionStart = ref.selectionStart;
-  }
-  return selectionStart ?? undefined;
-};
-
-const setSearchboxCursorPosition = (ref: HTMLInputElement | null, position: number | undefined) => {
-  if (ref && ref.tagName !== 'INPUT') {
-    // See if we can find it among descendants
-    ref = ref.querySelector('input');
-  }
-  if (ref && ref.tagName === 'INPUT') {
-    const inputElement = ref as HTMLInputElement;
-    inputElement.focus();
-    if (position && position >= 0) {
-      inputElement.setSelectionRange(position, position);
-    }
-  }
-};
 
 export interface DropdownRowProps<TOption> {
   option: TOption;
@@ -37,13 +11,13 @@ export interface DropdownRowProps<TOption> {
 }
 
 export interface ComboboxProps<TOption = string> {
-  // Required props
+  // Required - controlled value
+  value: string;
+  onChange: (value: string) => void;
+
+  // Required - options and selection
   options: TOption[];
   onSelect: (option: TOption) => void;
-  /** Handler to notify user when we had a match but now a mismatch between the search text and the available options. */
-  onNoMatch: (searchText: string) => void;
-  /** Function to find an exact match within the available options given the search text. */
-  findExactMatch: (searchText: string, options: TOption[]) => TOption | undefined;
   /**
    If an option is selected, this function is used to get the text to display in the search box.
    Must be usable as a unique identifier for the option.
@@ -51,7 +25,6 @@ export interface ComboboxProps<TOption = string> {
   getSearchTextFromOption: (option: TOption) => string;
 
   // Optional customization
-  initialSearchText?: string;
   placeholder?: string;
   noMatchText?: string;
   /** Render a component for the left side of the search box, defaulting to a magnifying glass icon. */
@@ -76,12 +49,11 @@ export interface ComboboxProps<TOption = string> {
   scrollable list of fields as Content for the dropdown.
 */
 export function Combobox<TOption = string>({
+  value,
+  onChange,
   options,
   onSelect,
-  onNoMatch,
-  findExactMatch,
   getSearchTextFromOption,
-  initialSearchText = '',
   placeholder = 'Search...',
   noMatchText = 'No matching options',
   leftSlot,
@@ -94,27 +66,19 @@ export function Combobox<TOption = string>({
   maxHeight = '200px',
   dropdownDataAttribute = 'data-filter-dropdown',
 }: ComboboxProps<TOption>) {
-  // State for the search input text (kept for exactMatch calculation)
-  const [searchText, setSearchText] = useState(initialSearchText);
   // State for the dropdown part of our combobox
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   // Which index in the dropdown is highlighted; used for keyboard navigation
   const [popoverHighlightedIndex, setPopoverHighlightedIndex] = useState(-1);
-  // Cursor position within our search box to restore after updates
-  const [cursorPosition, setCursorPosition] = useState<number | undefined>(undefined);
   // Ref for the array of dropdown items; used to scroll the highlighted item into view
   const popoverItemRefs = useRef<(HTMLDivElement | null)[]>([]);
-  // Ref for the combobox's TextField representing the search box input element
-  const textFieldRootRef = useRef<HTMLInputElement>(null);
-
-  const [debouncedOnNoMatch, clearDebouncedOnNoMatch] = useDebounceFunction(onNoMatch, 200);
 
   // Filter options based on search text (case-insensitive)
   const filteredOptions = useMemo(() => {
-    if (!searchText) return options;
-    const lowerSearch = searchText.toLowerCase();
+    if (!value) return options;
+    const lowerSearch = value.toLowerCase();
     return options.filter((opt) => getSearchTextFromOption(opt).toLowerCase().includes(lowerSearch));
-  }, [options, searchText, getSearchTextFromOption]);
+  }, [options, value, getSearchTextFromOption]);
 
   // Reset highlighted index when filtered results change
   useEffect(() => {
@@ -130,52 +94,19 @@ export function Combobox<TOption = string>({
     }
   }, [popoverHighlightedIndex]);
 
-  // Maintain focus on the TextField during a re-render when cursorPosition is set
-  // NOTE: Requires the component to have a stable key for this to work properly!
-  useEffect(() => {
-    if (cursorPosition !== undefined && textFieldRootRef.current) {
-      setSearchboxCursorPosition(textFieldRootRef.current, cursorPosition);
-      setCursorPosition(undefined);
-    }
-  }, [cursorPosition]);
-
-  // Handler for selecting an option that fills in the search text and closes the dropdown.
-  // It fires under several situations:
-  // - User types a field name and matches exactly one field
-  // - User hightlights a field in the dropdown and presses enter
-  // - User types text, filtering the options down to only 1 and presses enter
-  // - User clicks on a field in the dropdown
+  // Handler for selecting an option that updates the value and closes the dropdown.
   const handleOptionSelect = (option: TOption) => {
-    // We have an exact match, so clear any pending mismatches so they don't overwrite the selection.
-    clearDebouncedOnNoMatch();
-
     const optionText = getSearchTextFromOption(option);
-    setSearchText(optionText);
+    onChange(optionText);
     setIsPopoverOpen(false);
     onSelect(option);
   };
 
-  // Search box handler that updates our search text state and other side effects based on the input.
+  // Search box handler that notifies parent of value changes.
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setSearchText(newValue);
-
-    // Check for exact match and auto-select the option if found
-    const newExactMatch = findExactMatch(newValue, options);
-    if (newExactMatch) {
-      handleOptionSelect(newExactMatch);
-    } else {
-      // If we previously had a valid option selected but now don't have a match,
-      // call onUpdate to notify parent and preserve the cursor position.
-      const currentCursorPosition = getSearchboxCursorPosition(textFieldRootRef.current);
-      setCursorPosition(currentCursorPosition);
-      debouncedOnNoMatch(newValue);
-
-      if (!isPopoverOpen) {
-        // Since handling the selection of an option closes the dropdown, we re-open it if the user
-        // edited the field such that we no longer have an exact match.
-        setIsPopoverOpen(true);
-      }
+    onChange(e.target.value);
+    if (!isPopoverOpen) {
+      setIsPopoverOpen(true);
     }
   };
 
@@ -251,9 +182,8 @@ export function Combobox<TOption = string>({
       <Popover.Trigger>
         <Box minWidth={minWidth}>
           <TextField.Root
-            ref={textFieldRootRef}
             placeholder={placeholder}
-            value={searchText}
+            value={value}
             onChange={handleSearchChange}
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}
