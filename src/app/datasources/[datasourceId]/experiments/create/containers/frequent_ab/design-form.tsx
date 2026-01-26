@@ -115,7 +115,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
             <FilterBuilder
               key={`${formData.datasourceId}-${formData.participantType}`}
               availableFields={filterFields}
-              initialFilters={[]}
+              initialFilters={formData.filters || []}
               onChange={(filters: FilterInput[]) =>
                 onFormDataChange({ ...formData, filters, availableFilterFields: filterFields })
               }

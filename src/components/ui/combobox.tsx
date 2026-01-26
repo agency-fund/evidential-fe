@@ -48,6 +48,7 @@ export interface ComboboxProps<TOption = string> {
   getSearchTextFromOption: (option: TOption) => string;
 
   // Optional customization
+  initialSearchText?: string;
   placeholder?: string;
   noMatchText?: string;
   /** Render a component for the left side of the search box, defaulting to a magnifying glass icon. */
@@ -77,6 +78,7 @@ export function Combobox<TOption = string>({
   onNoMatch,
   findExactMatch,
   getSearchTextFromOption,
+  initialSearchText = '',
   placeholder = 'Search...',
   noMatchText = 'No matching options',
   leftSlot,
@@ -90,7 +92,7 @@ export function Combobox<TOption = string>({
   dropdownDataAttribute = 'data-filter-dropdown',
 }: ComboboxProps<TOption>) {
   // State for the search input text (kept for exactMatch calculation)
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState(initialSearchText);
   // State for the dropdown part of our combobox
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   // Which index in the dropdown is highlighted; used for keyboard navigation

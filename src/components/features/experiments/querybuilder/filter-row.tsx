@@ -58,6 +58,7 @@ export function FilterRow({ filter, availableOptions, onSelect, onUpdate, onRemo
           onNoMatch={onNoMatch}
           findExactMatch={findExactMatch}
           getSearchTextFromOption={(opt) => opt.field_name}
+          initialSearchText={filter.field_name}
           placeholder="Search fields..."
           noMatchText="No matching fields"
           rightSlot={exactMatchField && <DataTypeBadge type={exactMatchField.data_type} />}
