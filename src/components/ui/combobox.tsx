@@ -5,31 +5,6 @@ import { Box, Flex, Popover, ScrollArea, Text, TextField } from '@radix-ui/theme
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { useDebounceFunction } from './use-debounced-function';
 
-const getSearchboxCursorPosition = (ref: HTMLInputElement | null): number | undefined => {
-  if (ref === null) return undefined;
-
-  // Get the current cursor position if the ref is an input element
-  let selectionStart: number | null = null;
-  if (ref.tagName === 'INPUT') {
-    selectionStart = ref.selectionStart;
-  }
-  return selectionStart ?? undefined;
-};
-
-const setSearchboxCursorPosition = (ref: HTMLInputElement | null, position: number | undefined) => {
-  if (ref && ref.tagName !== 'INPUT') {
-    // See if we can find it among descendants
-    ref = ref.querySelector('input');
-  }
-  if (ref && ref.tagName === 'INPUT') {
-    const inputElement = ref as HTMLInputElement;
-    inputElement.focus();
-    if (position && position >= 0) {
-      inputElement.setSelectionRange(position, position);
-    }
-  }
-};
-
 export interface DropdownRowProps<TOption> {
   option: TOption;
   isHighlighted: boolean;
@@ -72,6 +47,7 @@ export interface ComboboxProps<TOption = string> {
 }
 
 /**
+
   Combobox implementation that internally uses a Popover, with the input box as the Trigger, and a
   scrollable list of fields as Content for the dropdown.
 */
@@ -100,14 +76,12 @@ export function Combobox<TOption = string>({
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   // Which index in the dropdown is highlighted; used for keyboard navigation
   const [popoverHighlightedIndex, setPopoverHighlightedIndex] = useState(-1);
-  // Cursor position within our search box to restore after updates
-  const [cursorPosition, setCursorPosition] = useState<number | undefined>(undefined);
   // Ref for the array of dropdown items; used to scroll the highlighted item into view
   const popoverItemRefs = useRef<(HTMLDivElement | null)[]>([]);
   // Ref for the combobox's TextField representing the search box input element
   const textFieldRootRef = useRef<HTMLInputElement>(null);
 
-  const [debouncedOnNoMatch, clearDebouncedOnNoMatch] = useDebounceFunction(onNoMatch, 200);
+  const [debouncedOnNoMatch, clearDebouncedOnNoMatch] = useDebounceFunction(onNoMatch, 100);
 
   // Filter options based on search text (case-insensitive)
   const filteredOptions = useMemo(() => {
@@ -117,9 +91,11 @@ export function Combobox<TOption = string>({
   }, [options, searchText, getSearchTextFromOption]);
 
   // Reset highlighted index when filtered results change
-  useEffect(() => {
+  const [prevFilteredOptions, setPrevFilteredOptions] = useState(filteredOptions);
+  if (filteredOptions !== prevFilteredOptions) {
+    setPrevFilteredOptions(filteredOptions);
     setPopoverHighlightedIndex(-1);
-  }, [filteredOptions.length]);
+  }
 
   // Scroll highlighted item into view
   useEffect(() => {
@@ -129,15 +105,6 @@ export function Combobox<TOption = string>({
       });
     }
   }, [popoverHighlightedIndex]);
-
-  // Maintain focus on the TextField during a re-render when cursorPosition is set
-  // NOTE: Requires the component to have a stable key for this to work properly!
-  useEffect(() => {
-    if (cursorPosition !== undefined && textFieldRootRef.current) {
-      setSearchboxCursorPosition(textFieldRootRef.current, cursorPosition);
-      setCursorPosition(undefined);
-    }
-  }, [cursorPosition]);
 
   // Handler for selecting an option that fills in the search text and closes the dropdown.
   // It fires under several situations:
@@ -165,10 +132,7 @@ export function Combobox<TOption = string>({
     if (newExactMatch) {
       handleOptionSelect(newExactMatch);
     } else {
-      // If we previously had a valid option selected but now don't have a match,
-      // call onUpdate to notify parent and preserve the cursor position.
-      const currentCursorPosition = getSearchboxCursorPosition(textFieldRootRef.current);
-      setCursorPosition(currentCursorPosition);
+      // call onNoMatch to notify parent.
       debouncedOnNoMatch(newValue);
 
       if (!isPopoverOpen) {
