@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { Box, Flex, Popover, ScrollArea, Text, TextField } from '@radix-ui/themes';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
-import { useDebouncedFunction } from './use-debounced-function';
+import { useDebounceFunction } from './use-debounced-function';
 
 const getSearchboxCursorPosition = (ref: HTMLInputElement | null): number | undefined => {
   if (ref === null) return undefined;
@@ -44,7 +44,10 @@ export interface ComboboxProps<TOption = string> {
   onNoMatch: (searchText: string) => void;
   /** Function to find an exact match within the available options given the search text. */
   findExactMatch: (searchText: string, options: TOption[]) => TOption | undefined;
-  /** If an option is selected, this function is used to get the text to display in the search box. */
+  /**
+   If an option is selected, this function is used to get the text to display in the search box.
+   Must be usable as a unique identifier for the option.
+   */
   getSearchTextFromOption: (option: TOption) => string;
 
   // Optional customization
@@ -104,7 +107,7 @@ export function Combobox<TOption = string>({
   // Ref for the combobox's TextField representing the search box input element
   const textFieldRootRef = useRef<HTMLInputElement>(null);
 
-  const [debouncedOnNoMatch, clearDebouncedOnNoMatch] = useDebouncedFunction(onNoMatch, 200);
+  const [debouncedOnNoMatch, clearDebouncedOnNoMatch] = useDebounceFunction(onNoMatch, 200);
 
   // Filter options based on search text (case-insensitive)
   const filteredOptions = useMemo(() => {
