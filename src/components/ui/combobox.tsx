@@ -24,11 +24,11 @@ export interface DropdownRowProps<TOption> {
 export interface ComboboxProps<TOption = string> {
   // Required - Controlled input
   /** The current input value. */
-  inputValue: string;
+  value: string;
   /** Called on every input change. */
   onChange: (value: string) => void;
 
-  // Required options and selection
+  // Required - options and selection
   options: TOption[];
   onSelect: (option: TOption) => void;
   /** Function to find an exact match within the available options given the search text. */
@@ -39,8 +39,13 @@ export interface ComboboxProps<TOption = string> {
    */
   getSearchTextFromOption: (option: TOption) => string;
 
+  // Optional handlers
+  onFocus?: (e: React.FocusEvent) => void;
+  onBlur?: (e: React.FocusEvent) => void;
+  onKeyDown?: (e: React.KeyboardEvent) => void;
+
   // Optional customization
-  /** Whether to initially focus the search box. */
+  /** Whether to focus on the search box. */
   autoFocus?: boolean;
   placeholder?: string;
   noMatchText?: string;
@@ -50,11 +55,6 @@ export interface ComboboxProps<TOption = string> {
   rightSlot?: React.ReactNode;
   dropdownRow?: (props: DropdownRowProps<TOption>) => React.ReactNode;
 
-  // Optional handlers
-  onFocus?: (e: React.FocusEvent) => void;
-  onBlur?: (e: React.FocusEvent) => void;
-  onKeyDown?: (e: React.KeyboardEvent) => void;
-
   // Optional styling/layout
   minWidth?: string;
   maxHeight?: string;
@@ -63,24 +63,24 @@ export interface ComboboxProps<TOption = string> {
 
 /**
  * Controlled combobox with a text input and a dropdown list of options.
- * Parent owns the input value via inputValue/onInputChange props.
+ * Parent owns the input value via value/onChange props.
  */
 export function Combobox<TOption = string>({
+  value,
+  onChange,
   options,
   onSelect,
   findExactMatch,
   getSearchTextFromOption,
-  inputValue,
-  onChange: onInputChange,
+  onFocus,
+  onBlur,
+  onKeyDown,
   autoFocus = false,
   placeholder = 'Search...',
   noMatchText = 'No matching options',
   leftSlot,
   rightSlot,
   dropdownRow,
-  onFocus,
-  onBlur,
-  onKeyDown,
   minWidth = '200px',
   maxHeight = '200px',
   dropdownDataAttribute = 'data-filter-dropdown',
@@ -92,8 +92,8 @@ export function Combobox<TOption = string>({
 
   // Filter options based on input value (case-insensitive)
   const filteredOptions = useMemo(() => {
-    return filterOptions(inputValue, options, getSearchTextFromOption);
-  }, [options, inputValue, getSearchTextFromOption]);
+    return filterOptions(value, options, getSearchTextFromOption);
+  }, [options, value, getSearchTextFromOption]);
 
   // Reset highlighted index when filtered results change
   if (filteredOptions.length !== prevFilteredOptionsLength) {
@@ -116,22 +116,23 @@ export function Combobox<TOption = string>({
       setIsPopoverOpen(false);
       setPopoverHighlightedIndex(-1);
     }
-    onInputChange(getSearchTextFromOption(option));
+    onChange(getSearchTextFromOption(option));
     onSelect(option);
   };
 
   // Search box handler for input changes
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    onInputChange(newValue);
-    setIsPopoverOpen(true);
-
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Check for exact match and auto-select if found
+    const newValue = e.target.value;
     const exactMatch = findExactMatch(newValue, options);
     if (exactMatch) {
       // Only close the popover if it's the only matching option
       const newFilteredOptions = filterOptions(newValue, options, getSearchTextFromOption);
       handleSelect(exactMatch, newFilteredOptions.length === 1);
+    } else {
+      // Else still notify of a text change and keep the popover open.
+      onChange(newValue);
+      setIsPopoverOpen(true);
     }
   };
 
@@ -203,9 +204,9 @@ export function Combobox<TOption = string>({
         <Box minWidth={minWidth}>
           <TextField.Root
             placeholder={placeholder}
-            value={inputValue}
+            value={value}
             autoFocus={autoFocus}
-            onChange={handleSearchChange}
+            onChange={handleInputChange}
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}
             onKeyDown={handleKeyDown}

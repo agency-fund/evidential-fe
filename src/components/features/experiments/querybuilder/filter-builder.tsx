@@ -37,14 +37,14 @@ interface FilterWithId {
   filter: FilterInput;
 }
 
-/**
-  @param availableFields Available fields can have a one to many relationship with the filters, i.e. a field can be used in multiple filters with different constraints.
-  @param initialFilters Array of FilterInputs used only to seed the initial state. The component owns the draft state internally and will not sync with changes to this prop. To reset the component, change its key prop.
-  @param onChange Callback to notify parent of changes to the filters.
-  */
 export interface FilterBuilderProps {
+  // Available fields can have a one to many relationship with the filters, i.e. a field can be used
+  // in multiple filters with different constraints.
   availableFields: Array<FilterRowOption>;
+  // Array of FilterInputs used to seed the initial state. Component will own the draft state
+  // internally and will not sync changes to this prop. To reset the component, change its key prop.
   initialFilters: FilterInput[];
+  // Callback to notify parent of changes to the filters.
   onChange: (filters: FilterInput[]) => void;
 }
 

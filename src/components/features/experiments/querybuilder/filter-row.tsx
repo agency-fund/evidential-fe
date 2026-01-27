@@ -26,18 +26,21 @@ export interface FilterRowProps {
 }
 
 export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpdate, onRemove }: FilterRowProps) {
-  // If there's an exact match for the current filter, store it here for rendering.
   const exactMatchField = findExactMatch(filter.field_name, availableOptions);
 
-  // Using controlled mode: parent owns the input value via filter.field_name
-  const handleInputChange = (value: string) => {
-    // Only update if the value actually changed (avoid unnecessary re-renders)
+  const handleComboboxChange = (value: string) => {
     if (value !== filter.field_name) {
       onUpdate({
         field_name: value,
         relation: 'includes',
         value: [],
       });
+    }
+  };
+
+  const handleSelect = (selectedOption: FilterRowOption) => {
+    if (selectedOption.field_name !== filter.field_name) {
+      onSelect(selectedOption);
     }
   };
 
@@ -56,12 +59,12 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
         </IconButton>
 
         <Combobox<FilterRowOption>
+          value={filter.field_name}
+          onChange={handleComboboxChange}
           options={availableOptions}
-          onSelect={onSelect}
+          onSelect={handleSelect}
           findExactMatch={findExactMatch}
           getSearchTextFromOption={(option) => option.field_name}
-          inputValue={filter.field_name}
-          onChange={handleInputChange}
           autoFocus={isNewRow}
           placeholder="Search fields..."
           noMatchText="No matching fields"
