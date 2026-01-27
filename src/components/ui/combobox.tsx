@@ -8,11 +8,11 @@ import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 const filterOptions = <TOption = string,>(
   text: string,
   options: TOption[],
-  getSearchTextFromOption: (option: TOption) => string,
+  getDisplayTextForOption: (option: TOption) => string,
 ) => {
   if (!text) return options;
   const lowerSearch = text.toLowerCase();
-  return options.filter((opt) => getSearchTextFromOption(opt).toLowerCase().includes(lowerSearch));
+  return options.filter((opt) => getDisplayTextForOption(opt).toLowerCase().includes(lowerSearch));
 };
 
 export interface DropdownRowProps<TOption> {
@@ -44,13 +44,16 @@ export interface ComboboxProps<TOption = string> {
    */
   onChange: (value: string, selectedOption?: TOption) => void;
 
-  // Required - options
+  // Required - combobox options to select from
   options: TOption[];
   /**
-   * Returns the text to display/match for an option.
-   * Must be usable as a unique identifier for the option.
+   * Returns the text to display for an option (used for filtering and display).
    */
-  getSearchTextFromOption: (option: TOption) => string;
+  getDisplayTextForOption: (option: TOption) => string;
+  /**
+   * Returns a unique key/identifier for an option (used for React keys).
+   */
+  getKeyForOption: (option: TOption) => string;
 
   // Optional handlers
   onFocus?: (e: React.FocusEvent) => void;
@@ -82,7 +85,8 @@ export function Combobox<TOption = string>({
   value,
   onChange,
   options,
-  getSearchTextFromOption,
+  getDisplayTextForOption,
+  getKeyForOption,
   onFocus,
   onBlur,
   onKeyDown,
@@ -100,11 +104,11 @@ export function Combobox<TOption = string>({
   const [popoverHighlightedIndex, setPopoverHighlightedIndex] = useState(-1);
   const popoverItemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [prevFilteredOptionsLength, setPrevFilteredOptionsLength] = useState(
-    () => filterOptions(value, options, getSearchTextFromOption).length,
+    () => filterOptions(value, options, getDisplayTextForOption).length,
   );
 
   // Filter options based on input value (case-insensitive)
-  const filteredOptions = filterOptions(value, options, getSearchTextFromOption);
+  const filteredOptions = filterOptions(value, options, getDisplayTextForOption);
 
   // Reset highlighted index when filtered results change
   if (filteredOptions.length !== prevFilteredOptionsLength) {
@@ -127,12 +131,12 @@ export function Combobox<TOption = string>({
       setIsPopoverOpen(false);
       setPopoverHighlightedIndex(-1);
     }
-    onChange(getSearchTextFromOption(option), option);
+    onChange(getDisplayTextForOption(option), option);
   };
 
   // Find exact match for a given text value
   const findExactMatch = (text: string): TOption | undefined => {
-    return options.find((opt) => getSearchTextFromOption(opt) === text);
+    return options.find((opt) => getDisplayTextForOption(opt) === text);
   };
 
   // Search box handler for input changes
@@ -188,7 +192,7 @@ export function Combobox<TOption = string>({
 
   const renderDropdownRow =
     dropdownRow ??
-    ((props: DropdownRowProps<TOption>) => <DefaultComboboxRow optionText={getSearchTextFromOption(props.option)} />);
+    ((props: DropdownRowProps<TOption>) => <DefaultComboboxRow optionText={getDisplayTextForOption(props.option)} />);
 
   return (
     <Popover.Root
@@ -237,7 +241,7 @@ export function Combobox<TOption = string>({
                 const isHighlighted = index === popoverHighlightedIndex;
                 return (
                   <Box
-                    key={getSearchTextFromOption(option)}
+                    key={getKeyForOption(option)}
                     ref={(el) => {
                       popoverItemRefs.current[index] = el;
                     }}

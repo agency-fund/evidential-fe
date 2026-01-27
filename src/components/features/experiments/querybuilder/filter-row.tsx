@@ -21,6 +21,7 @@ export interface FilterRowProps {
   onRemove: () => void;
 }
 
+// We'll use this function for both option display and as as its unique key
 const getSearchTextFromOption = (option: FilterRowOption) => option.field_name;
 
 interface ComboboxRowProps {
@@ -72,7 +73,8 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
           value={filter.field_name}
           onChange={handleComboboxChange}
           options={availableOptions}
-          getSearchTextFromOption={getSearchTextFromOption}
+          getDisplayTextForOption={getSearchTextFromOption}
+          getKeyForOption={getSearchTextFromOption}
           autoFocus={isNewRow}
           placeholder="Search fields..."
           noMatchText="No matching fields"
@@ -87,11 +89,11 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
           <TypeSpecificFilterInput dataType={exactMatchField.data_type} filter={filter} onChange={onUpdate} />
         ) : filter.field_name === '' ? (
           <Text size="2" color="gray">
-            ← Select a field
+            ← Select a field or type the name
           </Text>
         ) : (
           <Text size="2" color="red">
-            Invalid field — select from dropdown or type the name
+            Invalid field
           </Text>
         )}
       </Flex>
