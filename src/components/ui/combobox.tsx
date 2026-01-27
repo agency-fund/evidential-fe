@@ -161,13 +161,22 @@ export function Combobox<TOption = string>({
   return (
     <Popover.Root open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
       <Popover.Trigger>
-        <Box minWidth={minWidth}>
+        <Box
+          minWidth={minWidth}
+          onClick={(e) => {
+            // Radix' Trigger is a toggle-like behavior. We want the dropdown to be open when the trigger is activated,
+            // so do not let Radix close it.
+            if (isPopoverOpen) e.preventDefault();
+          }}
+        >
           <TextField.Root
             placeholder={placeholder}
             value={value}
-            autoFocus={autoFocus}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
+            autoFocus={autoFocus}
+            onFocus={() => setIsPopoverOpen(true)}
+            onPointerDown={() => setIsPopoverOpen(true)}
           >
             <TextField.Slot>{defaultLeftSlot}</TextField.Slot>
             {rightSlot && <TextField.Slot>{rightSlot}</TextField.Slot>}
@@ -181,6 +190,7 @@ export function Combobox<TOption = string>({
         sideOffset={4}
         style={{ minWidth: 'var(--radix-popover-trigger-width)', padding: 0 }}
         onOpenAutoFocus={(e) => e.preventDefault()}
+        onCloseAutoFocus={(e) => e.preventDefault()}
       >
         <ScrollArea scrollbars="vertical" style={{ maxHeight }}>
           {filteredOptions.length === 0 ? (
