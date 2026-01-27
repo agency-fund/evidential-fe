@@ -36,7 +36,6 @@ const DefaultComboboxRow = ({ optionText }: DefaultComboboxRowProps) => {
 };
 
 export interface ComboboxProps<TOption = string> {
-  // Required - Controlled input
   /** The current input value. */
   value: string;
   /**
@@ -45,7 +44,7 @@ export interface ComboboxProps<TOption = string> {
    */
   onChange: (value: string) => void;
 
-  // Required - combobox options to select from
+  /** The array of items to present */
   options: TOption[];
   /**
    * Returns the text to display for an option (used for filtering and display).
@@ -56,12 +55,6 @@ export interface ComboboxProps<TOption = string> {
    */
   getKeyForOption: (option: TOption) => string;
 
-  // Optional handlers
-  onFocus?: (e: React.FocusEvent) => void;
-  onBlur?: (e: React.FocusEvent) => void;
-  onKeyDown?: (e: React.KeyboardEvent) => void;
-
-  // Optional customization
   /** Whether to focus on the search box. */
   autoFocus?: boolean;
   placeholder?: string;
@@ -70,6 +63,8 @@ export interface ComboboxProps<TOption = string> {
   leftSlot?: React.ReactNode;
   /** Render a component for the right side of the search box. */
   rightSlot?: React.ReactNode;
+
+  /** The element to render for each row. */
   dropdownRow?: DropdownRow<TOption>;
 
   // Optional styling/layout
@@ -88,9 +83,6 @@ export function Combobox<TOption = string>({
   options,
   getDisplayTextForOption,
   getKeyForOption,
-  onFocus,
-  onBlur,
-  onKeyDown,
   autoFocus = false,
   placeholder = 'Search...',
   noMatchText = 'No matching options',
@@ -143,10 +135,7 @@ export function Combobox<TOption = string>({
   };
 
   // Search box handler for when the input gains focus
-  const handleInputFocus = (e: React.FocusEvent) => {
-    setIsPopoverOpen(true);
-    onFocus?.(e);
-  };
+  const handleInputFocus = () => setIsPopoverOpen(true);
 
   // Search box handler for when the input loses focus
   const handleInputBlur = (e: React.FocusEvent) => {
@@ -156,7 +145,6 @@ export function Combobox<TOption = string>({
       return;
     }
     setIsPopoverOpen(false);
-    onBlur?.(e);
   };
 
   // Search box handler for keyboard navigation
@@ -181,7 +169,6 @@ export function Combobox<TOption = string>({
         handleSelect(filteredOptions[0], true);
       }
     }
-    onKeyDown?.(e);
   };
 
   const defaultLeftSlot = leftSlot ?? <MagnifyingGlassIcon height="16" width="16" />;
