@@ -59,12 +59,12 @@ export interface ComboboxProps<TOption = string> {
   autoFocus?: boolean;
   placeholder?: string;
   noMatchText?: string;
-  /** Render a component for the left side of the search box, defaulting to a magnifying glass icon. */
+  /** Component to display to the left side of the search box. Defaults to a magnifying glass icon. */
   leftSlot?: React.ReactNode;
-  /** Render a component for the right side of the search box. */
+  /** Component to display to the right side of the search box. */
   rightSlot?: React.ReactNode;
 
-  /** The element to render for each row. */
+  /** The element to render for each selectable/searchable row. */
   dropdownRow?: DropdownRow<TOption>;
 
   // Optional styling/layout
