@@ -876,11 +876,25 @@ export interface CreateDatasourceResponse {
 
 export type CreateExperimentRequestPowerAnalyses = PowerResponseInput | null;
 
+/**
+ * Optional table name for creating experiments without a pre-registered participant type. When provided with primary_key, synthesizes a participant schema and persists it. The design_spec.participant_type field is ignored when this is set.
+ */
+export type CreateExperimentRequestTableName = string | null;
+
+/**
+ * Optional primary key field name. Must be provided together with table_name.
+ */
+export type CreateExperimentRequestPrimaryKey = string | null;
+
 export interface CreateExperimentRequest {
 	design_spec: DesignSpecInput;
 	power_analyses?: CreateExperimentRequestPowerAnalyses;
 	/** List of webhook IDs to associate with this experiment. When the experiment is committed, these webhooks will be triggered with experiment details. Must contain unique values. */
 	webhooks?: string[];
+	/** Optional table name for creating experiments without a pre-registered participant type. When provided with primary_key, synthesizes a participant schema and persists it. The design_spec.participant_type field is ignored when this is set. */
+	table_name?: CreateExperimentRequestTableName;
+	/** Optional primary key field name. Must be provided together with table_name. */
+	primary_key?: CreateExperimentRequestPrimaryKey;
 }
 
 /**
@@ -2176,6 +2190,8 @@ export interface ParticipantsDef {
 	type: "schema";
 	/** The name of the set of participants defined by the filters. This name must be unique within a datasource. */
 	participant_type: string;
+	/** If true, this participant type is hidden from list_participant_types. Used for auto-generated participant types. */
+	hidden?: boolean;
 }
 
 /**
@@ -2244,20 +2260,20 @@ export interface PostgresDsn {
 }
 
 /**
- * Optional table name for ad-hoc power calculations. When provided with primary_key, synthesizes a participant schema instead of looking up from datasource configuration.
+ * Optional table name for ad-hoc power calculations. When provided with primary_key, synthesizes a participant schema instead of looking up from datasource configuration. When set, the participant_type value is ignored.
  */
 export type PowerRequestTableName = string | null;
 
 /**
- * Optional primary key field name. Must be provided together with table_name.
+ * Optional primary key field name. Must be provided together with table_name. When set, the participant_type value is ignored.
  */
 export type PowerRequestPrimaryKey = string | null;
 
 export interface PowerRequest {
 	design_spec: DesignSpecInput;
-	/** Optional table name for ad-hoc power calculations. When provided with primary_key, synthesizes a participant schema instead of looking up from datasource configuration. */
+	/** Optional table name for ad-hoc power calculations. When provided with primary_key, synthesizes a participant schema instead of looking up from datasource configuration. When set, the participant_type value is ignored. */
 	table_name?: PowerRequestTableName;
-	/** Optional primary key field name. Must be provided together with table_name. */
+	/** Optional primary key field name. Must be provided together with table_name. When set, the participant_type value is ignored. */
 	primary_key?: PowerRequestPrimaryKey;
 }
 
