@@ -70,7 +70,6 @@ export interface ComboboxProps<TOption = string> {
   // Optional styling/layout
   minWidth?: string;
   maxHeight?: string;
-  dropdownDataAttribute?: string;
 }
 
 /**
@@ -91,7 +90,6 @@ export function Combobox<TOption = string>({
   dropdownRow,
   minWidth = '200px',
   maxHeight = '200px',
-  dropdownDataAttribute = 'data-filter-dropdown',
 }: ComboboxProps<TOption>) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [popoverHighlightedIndex, setPopoverHighlightedIndex] = useState(-1);
@@ -136,14 +134,7 @@ export function Combobox<TOption = string>({
   const handleInputFocus = () => setIsPopoverOpen(true);
 
   // Search box handler for when the input loses focus
-  const handleInputBlur = (e: React.FocusEvent) => {
-    const relatedTarget = e.relatedTarget as HTMLElement;
-    if (relatedTarget?.closest(`[${dropdownDataAttribute}]`)) {
-      // Interacting within the popover, let click handler close it
-      return;
-    }
-    setIsPopoverOpen(false);
-  };
+  const handleInputBlur = () => setIsPopoverOpen(false);
 
   // Search box handler for keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -176,14 +167,7 @@ export function Combobox<TOption = string>({
     ((props: DropdownRowProps<TOption>) => <DefaultComboboxRow optionText={getDisplayTextForOption(props.option)} />);
 
   return (
-    <Popover.Root
-      open={isPopoverOpen}
-      onOpenChange={(open) => {
-        // Only allow closing via our controlled handlers, not via Popover's internal logic
-        if (!open) return;
-        setIsPopoverOpen(true);
-      }}
-    >
+    <Popover.Root open={isPopoverOpen}>
       <Popover.Trigger>
         <Box minWidth={minWidth}>
           <TextField.Root
@@ -202,7 +186,6 @@ export function Combobox<TOption = string>({
       </Popover.Trigger>
 
       <Popover.Content
-        {...{ [dropdownDataAttribute]: true }}
         side="bottom"
         align="start"
         sideOffset={4}
