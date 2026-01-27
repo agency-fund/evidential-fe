@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Box, Flex, Popover, ScrollArea, Text, TextField } from '@radix-ui/themes';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 
@@ -20,6 +20,18 @@ export interface DropdownRowProps<TOption> {
   isHighlighted: boolean;
   index: number;
 }
+
+interface DefaultComboboxRowProps {
+  optionText: string;
+}
+
+const DefaultComboboxRow = ({ optionText }: DefaultComboboxRowProps) => {
+  return (
+    <Flex gap="2" align="center" justify="between" style={{ whiteSpace: 'nowrap' }}>
+      <Text size="2">{optionText}</Text>
+    </Flex>
+  );
+};
 
 export interface ComboboxProps<TOption = string> {
   // Required - Controlled input
@@ -87,12 +99,12 @@ export function Combobox<TOption = string>({
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [popoverHighlightedIndex, setPopoverHighlightedIndex] = useState(-1);
   const popoverItemRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [prevFilteredOptionsLength, setPrevFilteredOptionsLength] = useState(options.length);
+  const [prevFilteredOptionsLength, setPrevFilteredOptionsLength] = useState(
+    () => filterOptions(value, options, getSearchTextFromOption).length,
+  );
 
   // Filter options based on input value (case-insensitive)
-  const filteredOptions = useMemo(() => {
-    return filterOptions(value, options, getSearchTextFromOption);
-  }, [options, value, getSearchTextFromOption]);
+  const filteredOptions = filterOptions(value, options, getSearchTextFromOption);
 
   // Reset highlighted index when filtered results change
   if (filteredOptions.length !== prevFilteredOptionsLength) {
@@ -174,16 +186,9 @@ export function Combobox<TOption = string>({
 
   const defaultLeftSlot = leftSlot ?? <MagnifyingGlassIcon height="16" width="16" />;
 
-  const defaultDropdownRow = (props: DropdownRowProps<TOption>) => {
-    const optionText = getSearchTextFromOption(props.option);
-    return (
-      <Flex gap="2" align="center" justify="between" style={{ whiteSpace: 'nowrap' }}>
-        <Text size="2">{optionText}</Text>
-      </Flex>
-    );
-  };
-
-  const renderDropdownRow = dropdownRow ?? defaultDropdownRow;
+  const renderDropdownRow =
+    dropdownRow ??
+    ((props: DropdownRowProps<TOption>) => <DefaultComboboxRow optionText={getSearchTextFromOption(props.option)} />);
 
   return (
     <Popover.Root

@@ -23,6 +23,20 @@ export interface FilterRowProps {
 
 const getSearchTextFromOption = (option: FilterRowOption) => option.field_name;
 
+interface ComboboxRowProps {
+  field_name: string;
+  data_type: DataType;
+}
+
+const ComboboxRow = ({ field_name, data_type }: ComboboxRowProps) => {
+  return (
+    <Flex gap="2" align="center" justify="between" style={{ whiteSpace: 'nowrap' }}>
+      <Text size="2">{field_name}</Text>
+      <DataTypeBadge type={data_type} />
+    </Flex>
+  );
+};
+
 export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpdate, onRemove }: FilterRowProps) {
   const exactMatchField = availableOptions.find((f) => f.field_name === filter.field_name);
 
@@ -63,12 +77,7 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
           placeholder="Search fields..."
           noMatchText="No matching fields"
           rightSlot={exactMatchField && <DataTypeBadge type={exactMatchField.data_type} />}
-          dropdownRow={({ option }) => (
-            <Flex gap="2" align="center" justify="between" style={{ whiteSpace: 'nowrap' }}>
-              <Text size="2">{option.field_name}</Text>
-              <DataTypeBadge type={option.data_type} />
-            </Flex>
-          )}
+          dropdownRow={({ option }) => <ComboboxRow field_name={option.field_name} data_type={option.data_type} />}
         />
       </Flex>
 
