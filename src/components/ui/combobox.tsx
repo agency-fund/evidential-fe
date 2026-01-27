@@ -96,18 +96,16 @@ export function Combobox<TOption = string>({
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [popoverHighlightedIndex, setPopoverHighlightedIndex] = useState(-1);
   const popoverItemRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [prevFilteredOptionsLength, setPrevFilteredOptionsLength] = useState(
-    () => filterOptions(value, options, getDisplayTextForOption).length,
-  );
 
   // Filter options based on input value (case-insensitive)
   const filteredOptions = filterOptions(value, options, getDisplayTextForOption);
 
-  // Reset highlighted index when filtered results change
-  if (filteredOptions.length !== prevFilteredOptionsLength) {
-    setPrevFilteredOptionsLength(filteredOptions.length);
+  // If filteredOptions changes, existing refs and highlight indexes will be potentially stale,
+  // so we clear them.
+  useEffect(() => {
     setPopoverHighlightedIndex(-1);
-  }
+    popoverItemRefs.current = [];
+  }, [filteredOptions.length]);
 
   // Scroll highlighted item into view
   useEffect(() => {
