@@ -1,15 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import { Flex, Grid, IconButton, Text } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
 import { DataType, FilterInput } from '@/api/methods.schemas';
 import { TypeSpecificFilterInput } from '@/components/features/experiments/querybuilder/type-specific-filter-input';
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
 import { Combobox } from '@/components/ui/combobox';
-
-const findExactMatch = (searchText: string, availableOptions: Array<FilterRowOption>) => {
-  return availableOptions.find((f) => f.field_name === searchText);
-};
 
 export interface FilterRowOption {
   field_name: string;
@@ -26,18 +23,25 @@ export interface FilterRowProps {
 }
 
 export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpdate, onRemove }: FilterRowProps) {
-  // If there's an exact match for the current filter, store it here for rendering.
-  const exactMatchField = findExactMatch(filter.field_name, availableOptions);
+  const [isOpen, setIsOpen] = useState(false);
 
-  // Using controlled mode: parent owns the input value via filter.field_name
-  const handleInputChange = (value: string) => {
-    // Only update if the value actually changed (avoid unnecessary re-renders)
+  // Find exact match for rendering the data type badge
+  const exactMatchField = availableOptions.find((f) => f.field_name === filter.field_name);
+
+  const handleInputChange = (value: string, filteredOptions: FilterRowOption[]) => {
     if (value !== filter.field_name) {
+      // Value changed - reset the filter to avoid stale state
       onUpdate({
         field_name: value,
         relation: 'includes',
         value: [],
       });
+
+      // Auto-close if there's an exact match and it's the only filtered option
+      const hasExactMatch = filteredOptions.some((opt) => opt.field_name === value);
+      if (hasExactMatch && filteredOptions.length === 1) {
+        setIsOpen(false);
+      }
     }
   };
 
@@ -56,12 +60,13 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
         </IconButton>
 
         <Combobox<FilterRowOption>
-          options={availableOptions}
-          onSelect={onSelect}
-          findExactMatch={findExactMatch}
-          getSearchTextFromOption={(option) => option.field_name}
           inputValue={filter.field_name}
           onChange={handleInputChange}
+          open={isOpen}
+          onOpenChange={setIsOpen}
+          options={availableOptions}
+          onSelect={onSelect}
+          getSearchTextFromOption={(option) => option.field_name}
           autoFocus={isNewRow}
           placeholder="Search fields..."
           noMatchText="No matching fields"

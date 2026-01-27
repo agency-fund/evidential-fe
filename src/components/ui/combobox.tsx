@@ -1,17 +1,17 @@
 'use client';
 
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Box, Flex, Popover, ScrollArea, Text, TextField } from '@radix-ui/themes';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 
-// Helper for computing filtered options with a different search text (used in handlers)
-const filterOptions = <TOption = string,>(
-  text: string,
+// Filter options by search text (case-insensitive substring match)
+const filterOptions = <TOption,>(
+  searchText: string,
   options: TOption[],
   getSearchTextFromOption: (option: TOption) => string,
-) => {
-  if (!text) return options;
-  const lowerSearch = text.toLowerCase();
+): TOption[] => {
+  if (!searchText) return options;
+  const lowerSearch = searchText.toLowerCase();
   return options.filter((opt) => getSearchTextFromOption(opt).toLowerCase().includes(lowerSearch));
 };
 
@@ -22,25 +22,26 @@ export interface DropdownRowProps<TOption> {
 }
 
 export interface ComboboxProps<TOption = string> {
-  // Required - Controlled input
+  // Controlled input (required)
   /** The current input value. */
   inputValue: string;
-  /** Called on every input change. */
-  onChange: (value: string) => void;
+  /** Called on every input change with the new value and resulting filtered options. */
+  onChange: (value: string, filteredOptions: TOption[]) => void;
 
-  // Required options and selection
+  // Controlled open state (required)
+  /** Whether the dropdown is open. */
+  open: boolean;
+  /** Called when the dropdown should open or close. */
+  onOpenChange: (open: boolean) => void;
+
+  // Options and selection (required)
   options: TOption[];
+  /** Called when user explicitly selects an option (click or Enter). */
   onSelect: (option: TOption) => void;
-  /** Function to find an exact match within the available options given the search text. */
-  findExactMatch: (searchText: string, options: TOption[]) => TOption | undefined;
-  /**
-   * If an option is selected, this function is used to get the text to display in the search box.
-   * Must be usable as a unique identifier for the option.
-   */
+  /** Returns the display text for an option. Must be unique per option. */
   getSearchTextFromOption: (option: TOption) => string;
 
   // Optional customization
-  /** Whether to initially focus the search box. */
   autoFocus?: boolean;
   placeholder?: string;
   noMatchText?: string;
@@ -62,16 +63,16 @@ export interface ComboboxProps<TOption = string> {
 }
 
 /**
- * Controlled combobox with a text input and a dropdown list of options.
- * Parent owns the input value via inputValue/onInputChange props.
+ * Fully controlled combobox. Parent owns both the input value and open state.
  */
 export function Combobox<TOption = string>({
+  inputValue,
+  onChange,
+  open,
+  onOpenChange,
   options,
   onSelect,
-  findExactMatch,
   getSearchTextFromOption,
-  inputValue,
-  onChange: onInputChange,
   autoFocus = false,
   placeholder = 'Search...',
   noMatchText = 'No matching options',
@@ -83,95 +84,94 @@ export function Combobox<TOption = string>({
   onKeyDown,
   minWidth = '200px',
   maxHeight = '200px',
-  dropdownDataAttribute = 'data-filter-dropdown',
+  dropdownDataAttribute = 'data-combobox-dropdown',
 }: ComboboxProps<TOption>) {
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [popoverHighlightedIndex, setPopoverHighlightedIndex] = useState(-1);
-  const popoverItemRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [prevFilteredOptionsLength, setPrevFilteredOptionsLength] = useState(options.length);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Filter options based on input value (case-insensitive)
-  const filteredOptions = useMemo(() => {
-    return filterOptions(inputValue, options, getSearchTextFromOption);
-  }, [options, inputValue, getSearchTextFromOption]);
+  // Filtered options as state - computed in handlers and updated when props change
+  const [filteredOptions, setFilteredOptions] = useState<TOption[]>(() =>
+    filterOptions(inputValue, options, getSearchTextFromOption),
+  );
+
+  // Track previous props to detect external changes
+  const [prevOptions, setPrevOptions] = useState(options);
+  const [prevInputValue, setPrevInputValue] = useState(inputValue);
+  const [prevFilteredLength, setPrevFilteredLength] = useState(filteredOptions.length);
+
+  // Recompute filtered options when props change externally (not via our handlers)
+  if (options !== prevOptions || inputValue !== prevInputValue) {
+    setPrevOptions(options);
+    setPrevInputValue(inputValue);
+    const newFiltered = filterOptions(inputValue, options, getSearchTextFromOption);
+    setFilteredOptions(newFiltered);
+  }
 
   // Reset highlighted index when filtered results change
-  if (filteredOptions.length !== prevFilteredOptionsLength) {
-    setPrevFilteredOptionsLength(filteredOptions.length);
-    setPopoverHighlightedIndex(-1);
+  if (filteredOptions.length !== prevFilteredLength) {
+    setPrevFilteredLength(filteredOptions.length);
+    setHighlightedIndex(-1);
   }
 
   // Scroll highlighted item into view
   useEffect(() => {
-    if (popoverHighlightedIndex >= 0 && popoverItemRefs.current[popoverHighlightedIndex]) {
-      popoverItemRefs.current[popoverHighlightedIndex]?.scrollIntoView({
-        block: 'nearest',
-      });
+    if (highlightedIndex >= 0 && itemRefs.current[highlightedIndex]) {
+      itemRefs.current[highlightedIndex]?.scrollIntoView({ block: 'nearest' });
     }
-  }, [popoverHighlightedIndex]);
+  }, [highlightedIndex]);
 
-  // Handler for selecting an option (click, Enter, or auto-select on exact match)
-  const handleSelect = (option: TOption, closePopover: boolean) => {
-    if (closePopover) {
-      setIsPopoverOpen(false);
-      setPopoverHighlightedIndex(-1);
-    }
-    onInputChange(getSearchTextFromOption(option));
+  const handleSelect = (option: TOption) => {
+    setHighlightedIndex(-1);
+    const optionText = getSearchTextFromOption(option);
+    const newFiltered = filterOptions(optionText, options, getSearchTextFromOption);
+    setFilteredOptions(newFiltered);
+    onChange(optionText, newFiltered);
     onSelect(option);
+    onOpenChange(false);
   };
 
-  // Search box handler for input changes
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    onInputChange(newValue);
-    setIsPopoverOpen(true);
-
-    // Check for exact match and auto-select if found
-    const exactMatch = findExactMatch(newValue, options);
-    if (exactMatch) {
-      // Only close the popover if it's the only matching option
-      const newFilteredOptions = filterOptions(newValue, options, getSearchTextFromOption);
-      handleSelect(exactMatch, newFilteredOptions.length === 1);
-    }
+    const newFiltered = filterOptions(newValue, options, getSearchTextFromOption);
+    setFilteredOptions(newFiltered);
+    onChange(newValue, newFiltered);
+    onOpenChange(true);
   };
 
-  // Search box handler for when the input gains focus
   const handleInputFocus = (e: React.FocusEvent) => {
-    setIsPopoverOpen(true);
+    onOpenChange(true);
     onFocus?.(e);
   };
 
-  // Search box handler for when the input loses focus
   const handleInputBlur = (e: React.FocusEvent) => {
     const relatedTarget = e.relatedTarget as HTMLElement;
     if (relatedTarget?.closest(`[${dropdownDataAttribute}]`)) {
-      // Interacting within the popover, let click handler close it
+      // Clicking within popover, let click handler handle it
       return;
     }
-    setIsPopoverOpen(false);
+    onOpenChange(false);
     onBlur?.(e);
   };
 
-  // Search box handler for keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
-      setIsPopoverOpen(false);
+      onOpenChange(false);
       (e.target as HTMLInputElement)?.blur();
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
-      if (!isPopoverOpen) {
-        setIsPopoverOpen(true);
+      if (!open) {
+        onOpenChange(true);
       }
-      setPopoverHighlightedIndex((prev) => (prev < filteredOptions.length - 1 ? prev + 1 : prev));
+      setHighlightedIndex((prev) => (prev < filteredOptions.length - 1 ? prev + 1 : prev));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setPopoverHighlightedIndex((prev) => (prev > 0 ? prev - 1 : prev));
+      setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : prev));
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      if (popoverHighlightedIndex >= 0 && popoverHighlightedIndex < filteredOptions.length) {
-        handleSelect(filteredOptions[popoverHighlightedIndex], true);
+      if (highlightedIndex >= 0 && highlightedIndex < filteredOptions.length) {
+        handleSelect(filteredOptions[highlightedIndex]);
       } else if (filteredOptions.length === 1) {
-        handleSelect(filteredOptions[0], true);
+        handleSelect(filteredOptions[0]);
       }
     }
     onKeyDown?.(e);
@@ -179,24 +179,20 @@ export function Combobox<TOption = string>({
 
   const defaultLeftSlot = leftSlot ?? <MagnifyingGlassIcon height="16" width="16" />;
 
-  const defaultDropdownRow = (props: DropdownRowProps<TOption>) => {
-    const optionText = getSearchTextFromOption(props.option);
-    return (
-      <Flex gap="2" align="center" justify="between" style={{ whiteSpace: 'nowrap' }}>
-        <Text size="2">{optionText}</Text>
-      </Flex>
-    );
-  };
+  const defaultDropdownRow = (props: DropdownRowProps<TOption>) => (
+    <Flex gap="2" align="center" justify="between" style={{ whiteSpace: 'nowrap' }}>
+      <Text size="2">{getSearchTextFromOption(props.option)}</Text>
+    </Flex>
+  );
 
   const renderDropdownRow = dropdownRow ?? defaultDropdownRow;
 
   return (
     <Popover.Root
-      open={isPopoverOpen}
-      onOpenChange={(open) => {
-        // Only allow closing via our controlled handlers, not via Popover's internal logic
-        if (!open) return;
-        setIsPopoverOpen(true);
+      open={open}
+      onOpenChange={(newOpen) => {
+        // Only allow Popover to open, not close (we handle closing via blur/escape/select)
+        if (newOpen) onOpenChange(true);
       }}
     >
       <Popover.Trigger>
@@ -205,7 +201,7 @@ export function Combobox<TOption = string>({
             placeholder={placeholder}
             value={inputValue}
             autoFocus={autoFocus}
-            onChange={handleSearchChange}
+            onChange={handleInputChange}
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}
             onKeyDown={handleKeyDown}
@@ -234,15 +230,15 @@ export function Combobox<TOption = string>({
           ) : (
             <Flex direction="column">
               {filteredOptions.map((option, index) => {
-                const isHighlighted = index === popoverHighlightedIndex;
+                const isHighlighted = index === highlightedIndex;
                 return (
                   <Box
                     key={getSearchTextFromOption(option)}
                     ref={(el) => {
-                      popoverItemRefs.current[index] = el;
+                      itemRefs.current[index] = el;
                     }}
-                    onClick={() => handleSelect(option, true)}
-                    onMouseEnter={() => setPopoverHighlightedIndex(index)}
+                    onClick={() => handleSelect(option)}
+                    onMouseEnter={() => setHighlightedIndex(index)}
                     py="2"
                     px="3"
                     style={{
