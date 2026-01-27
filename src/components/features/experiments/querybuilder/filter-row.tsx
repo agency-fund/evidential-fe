@@ -41,12 +41,15 @@ const ComboboxRow = ({ field_name, data_type }: ComboboxRowProps) => {
 export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpdate, onRemove }: FilterRowProps) {
   const exactMatchField = availableOptions.find((f) => f.field_name === filter.field_name);
 
-  const handleComboboxChange = (value: string, selectedOption?: FilterRowOption) => {
+  const handleComboboxChange = (value: string) => {
+    // User selected the current value.
     if (value === filter.field_name) return;
-
-    if (selectedOption) {
-      onSelect(selectedOption);
+    // User selected a new value that has an exact match
+    const exactMatch = availableOptions.find((opt) => opt.field_name === value);
+    if (exactMatch) {
+      onSelect(exactMatch);
     } else {
+      // User input a non-exact match
       onUpdate({
         field_name: value,
         relation: 'includes',

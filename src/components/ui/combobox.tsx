@@ -42,9 +42,8 @@ export interface ComboboxProps<TOption = string> {
   /**
    * Called on every input change (typing or selection).
    * value - The new text value
-   * selectedOption - The option if user selected from dropdown or typed an exact match
    */
-  onChange: (value: string, selectedOption?: TOption) => void;
+  onChange: (value: string) => void;
 
   // Required - combobox options to select from
   options: TOption[];
@@ -133,19 +132,14 @@ export function Combobox<TOption = string>({
       setIsPopoverOpen(false);
       setPopoverHighlightedIndex(-1);
     }
-    onChange(getDisplayTextForOption(option), option);
-  };
-
-  // Find exact match for a given text value
-  const findExactMatch = (text: string): TOption | undefined => {
-    return options.find((opt) => getDisplayTextForOption(opt) === text);
+    onChange(getDisplayTextForOption(option));
   };
 
   // Search box handler for input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsPopoverOpen(true);
     const newValue = e.target.value;
-    onChange(newValue, findExactMatch(newValue));
+    onChange(newValue);
   };
 
   // Search box handler for when the input gains focus
