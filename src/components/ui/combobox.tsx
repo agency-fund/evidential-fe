@@ -128,12 +128,6 @@ export function Combobox<TOption = string>({
     onChange(newValue);
   };
 
-  // Search box handler for when the input gains focus
-  const handleInputFocus = () => setIsPopoverOpen(true);
-
-  // Search box handler for when the input loses focus
-  const handleInputBlur = () => setIsPopoverOpen(false);
-
   // Search box handler for keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
@@ -165,7 +159,7 @@ export function Combobox<TOption = string>({
     ((props: DropdownRowProps<TOption>) => <DefaultComboboxRow optionText={getDisplayTextForOption(props.option)} />);
 
   return (
-    <Popover.Root open={isPopoverOpen}>
+    <Popover.Root open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
       <Popover.Trigger>
         <Box minWidth={minWidth}>
           <TextField.Root
@@ -173,8 +167,6 @@ export function Combobox<TOption = string>({
             value={value}
             autoFocus={autoFocus}
             onChange={handleInputChange}
-            onFocus={handleInputFocus}
-            onBlur={handleInputBlur}
             onKeyDown={handleKeyDown}
           >
             <TextField.Slot>{defaultLeftSlot}</TextField.Slot>
