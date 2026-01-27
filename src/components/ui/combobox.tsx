@@ -25,16 +25,17 @@ export interface ComboboxProps<TOption = string> {
   // Required - Controlled input
   /** The current input value. */
   value: string;
-  /** Called on every input change. */
-  onChange: (value: string) => void;
-
-  // Required - options and selection
-  options: TOption[];
-  onSelect: (option: TOption) => void;
-  /** Function to find an exact match within the available options given the search text. */
-  findExactMatch: (searchText: string, options: TOption[]) => TOption | undefined;
   /**
-   * If an option is selected, this function is used to get the text to display in the search box.
+   * Called on every input change (typing or selection).
+   * value - The new text value
+   * selectedOption - The option if user selected from dropdown or typed an exact match
+   */
+  onChange: (value: string, selectedOption?: TOption) => void;
+
+  // Required - options
+  options: TOption[];
+  /**
+   * Returns the text to display/match for an option.
    * Must be usable as a unique identifier for the option.
    */
   getSearchTextFromOption: (option: TOption) => string;
@@ -69,8 +70,6 @@ export function Combobox<TOption = string>({
   value,
   onChange,
   options,
-  onSelect,
-  findExactMatch,
   getSearchTextFromOption,
   onFocus,
   onBlur,
@@ -110,30 +109,25 @@ export function Combobox<TOption = string>({
     }
   }, [popoverHighlightedIndex]);
 
-  // Handler for selecting an option (click, Enter, or auto-select on exact match)
+  // Handler for selecting an option from dropdown (click or Enter)
   const handleSelect = (option: TOption, closePopover: boolean) => {
     if (closePopover) {
       setIsPopoverOpen(false);
       setPopoverHighlightedIndex(-1);
     }
-    onChange(getSearchTextFromOption(option));
-    onSelect(option);
+    onChange(getSearchTextFromOption(option), option);
+  };
+
+  // Find exact match for a given text value
+  const findExactMatch = (text: string): TOption | undefined => {
+    return options.find((opt) => getSearchTextFromOption(opt) === text);
   };
 
   // Search box handler for input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Check for exact match and auto-select if found
+    setIsPopoverOpen(true);
     const newValue = e.target.value;
-    const exactMatch = findExactMatch(newValue, options);
-    if (exactMatch) {
-      // Only close the popover if it's the only matching option
-      const newFilteredOptions = filterOptions(newValue, options, getSearchTextFromOption);
-      handleSelect(exactMatch, newFilteredOptions.length === 1);
-    } else {
-      // Else still notify of a text change and keep the popover open.
-      onChange(newValue);
-      setIsPopoverOpen(true);
-    }
+    onChange(newValue, findExactMatch(newValue));
   };
 
   // Search box handler for when the input gains focus

@@ -7,10 +7,6 @@ import { TypeSpecificFilterInput } from '@/components/features/experiments/query
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
 import { Combobox } from '@/components/ui/combobox';
 
-const findExactMatch = (searchText: string, availableOptions: Array<FilterRowOption>) => {
-  return availableOptions.find((f) => f.field_name === searchText);
-};
-
 export interface FilterRowOption {
   field_name: string;
   data_type: DataType;
@@ -25,22 +21,22 @@ export interface FilterRowProps {
   onRemove: () => void;
 }
 
-export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpdate, onRemove }: FilterRowProps) {
-  const exactMatchField = findExactMatch(filter.field_name, availableOptions);
+const getSearchTextFromOption = (option: FilterRowOption) => option.field_name;
 
-  const handleComboboxChange = (value: string) => {
-    if (value !== filter.field_name) {
+export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpdate, onRemove }: FilterRowProps) {
+  const exactMatchField = availableOptions.find((f) => f.field_name === filter.field_name);
+
+  const handleComboboxChange = (value: string, selectedOption?: FilterRowOption) => {
+    if (value === filter.field_name) return;
+
+    if (selectedOption) {
+      onSelect(selectedOption);
+    } else {
       onUpdate({
         field_name: value,
         relation: 'includes',
         value: [],
       });
-    }
-  };
-
-  const handleSelect = (selectedOption: FilterRowOption) => {
-    if (selectedOption.field_name !== filter.field_name) {
-      onSelect(selectedOption);
     }
   };
 
@@ -62,9 +58,7 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
           value={filter.field_name}
           onChange={handleComboboxChange}
           options={availableOptions}
-          onSelect={handleSelect}
-          findExactMatch={findExactMatch}
-          getSearchTextFromOption={(option) => option.field_name}
+          getSearchTextFromOption={getSearchTextFromOption}
           autoFocus={isNewRow}
           placeholder="Search fields..."
           noMatchText="No matching fields"
