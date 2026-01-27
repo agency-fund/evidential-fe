@@ -61,8 +61,8 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
           findExactMatch={findExactMatch}
           getSearchTextFromOption={(option) => option.field_name}
           inputValue={filter.field_name}
-          onInputChange={handleInputChange}
-          initFocused={isNewRow}
+          onChange={handleInputChange}
+          autoFocus={isNewRow}
           placeholder="Search fields..."
           noMatchText="No matching fields"
           rightSlot={exactMatchField && <DataTypeBadge type={exactMatchField.data_type} />}
