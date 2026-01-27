@@ -9,7 +9,6 @@ import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ZodError } from 'zod';
 import { useState } from 'react';
 import { SectionCard } from '@/components/ui/cards/section-card';
-import { ApiValidationError } from '@/services/orval-fetch';
 
 interface PowerCheckSectionProps {
   formData: FrequentABFormData;
@@ -62,19 +61,21 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
     event.preventDefault();
 
     setValidationError(null);
+    let design_spec;
     try {
-      const { design_spec } = convertFormDataToCreateExperimentRequest(formData);
+      ({ design_spec } = convertFormDataToCreateExperimentRequest(formData));
+    } catch (error) {
+      if (error instanceof ZodError) {
+        setValidationError(error);
+        return;
+      }
+      throw error;
+    }
+
+    try {
       await trigger({ design_spec });
-    } catch (err) {
-      if (err instanceof ZodError) {
-        setValidationError(err);
-        return;
-      }
-      if (err instanceof ApiValidationError) {
-        // Handled by usePowerCheck
-        return;
-      }
-      throw err;
+    } catch {
+      // error handled by swr; powerCheckError will be its error state if the mutation fails
     }
   };
 
