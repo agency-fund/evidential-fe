@@ -90,7 +90,7 @@ export const CreateDatasourceForm = ({ onDatasourceCreated }: CreateDatasourceFo
       </Flex>
       {error && !isDNSError && <GenericErrorCallout title="Failed to add datasource" error={error} />}
       <Flex gap="3" mt="4" justify="end">
-        <Button type="submit" disabled={isMutating}>
+        <Button type="submit" loading={isMutating}>
           Add Datasource
         </Button>
       </Flex>
