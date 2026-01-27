@@ -26,20 +26,29 @@ export interface ComboboxProps<TOption = string> {
   // Required props
   options: TOption[];
   onSelect: (option: TOption) => void;
-  /** Handler to notify user when we had a match but now a mismatch between the search text and the available options. */
-  onNoMatch: (searchText: string) => void;
   /** Function to find an exact match within the available options given the search text. */
   findExactMatch: (searchText: string, options: TOption[]) => TOption | undefined;
   /**
-   If an option is selected, this function is used to get the text to display in the search box.
-   Must be usable as a unique identifier for the option.
+   * If an option is selected, this function is used to get the text to display in the search box.
+   * Must be usable as a unique identifier for the option.
    */
   getSearchTextFromOption: (option: TOption) => string;
+
+  // Controlled mode (optional) - if inputValue is provided, the component is controlled
+  /** Controlled input value. If provided, the component is controlled and onInputChange should also be provided. */
+  inputValue?: string;
+  /** Called on every input change when in controlled mode. */
+  onInputChange?: (value: string) => void;
+
+  // Uncontrolled mode (optional) - used when inputValue is not provided
+  /** Initial search text for uncontrolled mode. Ignored if inputValue is provided. */
+  initialSearchText?: string;
+  /** Handler called when search text changes and there's no exact match. Only used in uncontrolled mode. */
+  onNoMatch?: (searchText: string) => void;
 
   // Optional customization
   /** Whether to initially focus the search box. */
   initFocused?: boolean;
-  initialSearchText?: string;
   placeholder?: string;
   noMatchText?: string;
   /** Render a component for the left side of the search box, defaulting to a magnifying glass icon. */
@@ -66,11 +75,13 @@ export interface ComboboxProps<TOption = string> {
 export function Combobox<TOption = string>({
   options,
   onSelect,
-  onNoMatch,
   findExactMatch,
   getSearchTextFromOption,
-  initFocused = false,
+  inputValue,
+  onInputChange,
   initialSearchText = '',
+  onNoMatch,
+  initFocused = false,
   placeholder = 'Search...',
   noMatchText = 'No matching options',
   leftSlot,
@@ -83,12 +94,24 @@ export function Combobox<TOption = string>({
   maxHeight = '200px',
   dropdownDataAttribute = 'data-filter-dropdown',
 }: ComboboxProps<TOption>) {
-  const [searchText, setSearchText] = useState(initialSearchText);
+  // Support both controlled and uncontrolled modes
+  const isControlled = inputValue !== undefined;
+  const [internalValue, setInternalValue] = useState(initialSearchText);
+  const searchText = isControlled ? inputValue : internalValue;
+
+  const setSearchText = (value: string) => {
+    if (!isControlled) {
+      setInternalValue(value);
+    }
+    onInputChange?.(value);
+  };
   // State for the dropdown part of our combobox
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [popoverHighlightedIndex, setPopoverHighlightedIndex] = useState(-1);
   const popoverItemRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [debouncedOnNoMatch, clearDebouncedOnNoMatch] = useDebounceFunction(onNoMatch, 100);
+  // onNoMatch is only used in uncontrolled mode; in controlled mode, parent can derive no-match from inputValue
+  const noopCallback = () => {};
+  const [debouncedOnNoMatch, clearDebouncedOnNoMatch] = useDebounceFunction(onNoMatch ?? noopCallback, 100);
   // State for use in resetting highlighted index when filtered results change
   const [prevFilteredOptionsLength, setPrevFilteredOptionsLength] = useState(options.length);
 
