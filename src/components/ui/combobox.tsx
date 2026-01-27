@@ -115,11 +115,9 @@ export function Combobox<TOption = string>({
   }, [popoverHighlightedIndex]);
 
   // Handler for selecting an option from dropdown (click or Enter)
-  const handleSelect = (option: TOption, closePopover: boolean) => {
-    if (closePopover) {
-      setIsPopoverOpen(false);
-      setPopoverHighlightedIndex(-1);
-    }
+  const handleSelect = (option: TOption) => {
+    setIsPopoverOpen(false);
+    setPopoverHighlightedIndex(-1);
     onChange(getDisplayTextForOption(option));
   };
 
@@ -153,9 +151,9 @@ export function Combobox<TOption = string>({
     } else if (e.key === 'Enter') {
       e.preventDefault();
       if (popoverHighlightedIndex >= 0 && popoverHighlightedIndex < filteredOptions.length) {
-        handleSelect(filteredOptions[popoverHighlightedIndex], true);
+        handleSelect(filteredOptions[popoverHighlightedIndex]);
       } else if (filteredOptions.length === 1) {
-        handleSelect(filteredOptions[0], true);
+        handleSelect(filteredOptions[0]);
       }
     }
   };
@@ -209,8 +207,9 @@ export function Combobox<TOption = string>({
                     ref={(el) => {
                       popoverItemRefs.current[index] = el;
                     }}
-                    onClick={() => handleSelect(option, true)}
+                    onClick={() => handleSelect(option)}
                     onMouseEnter={() => setPopoverHighlightedIndex(index)}
+                    onPointerDown={(e) => e.preventDefault()}
                     py="2"
                     px="3"
                     style={{
