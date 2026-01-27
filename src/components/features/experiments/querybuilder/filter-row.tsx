@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Flex, Grid, IconButton, Text } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
 import { DataType, FilterInput } from '@/api/methods.schemas';
@@ -22,35 +21,14 @@ export interface FilterRowProps {
 }
 
 export function FilterRow({ filter, availableOptions, onSelect, onUpdate, onRemove }: FilterRowProps) {
-  // Local state for the search text, synced with filter.field_name
-  const [searchText, setSearchText] = useState(filter.field_name);
+  const exactMatchField = availableOptions.find((f) => f.field_name === filter.field_name);
 
-  // Sync searchText when filter.field_name changes externally
-  useEffect(() => {
-    setSearchText(filter.field_name);
-  }, [filter.field_name]);
-
-  // If there's an exact match for the current filter, store it here for rendering.
-  const exactMatchField = availableOptions.find((f) => f.field_name === searchText);
-
-  // Handler for when value changed: update the filter with the current search text
   const handleSearchChange = (newValue: string) => {
-    setSearchText(newValue);
-    // If the new value doesn't match an option, reset to an empty filter
-    const hasMatch = availableOptions.some((f) => f.field_name === newValue);
-    if (!hasMatch) {
-      onUpdate({
-        field_name: newValue,
-        relation: 'includes',
-        value: [],
-      });
-    }
-  };
-
-  // Handler for when an option is selected
-  const handleSelect = (option: FilterRowOption) => {
-    setSearchText(option.field_name);
-    onSelect(option);
+    onUpdate({
+      field_name: newValue,
+      relation: 'includes',
+      value: [],
+    });
   };
 
   return (
@@ -68,10 +46,10 @@ export function FilterRow({ filter, availableOptions, onSelect, onUpdate, onRemo
         </IconButton>
 
         <Combobox<FilterRowOption>
-          value={searchText}
+          value={filter.field_name}
           onChange={handleSearchChange}
           options={availableOptions}
-          onSelect={handleSelect}
+          onSelect={onSelect}
           getSearchTextFromOption={(opt) => opt.field_name}
           placeholder="Search fields..."
           noMatchText="No matching fields"
@@ -89,7 +67,7 @@ export function FilterRow({ filter, availableOptions, onSelect, onUpdate, onRemo
       <Flex gap={'2'} align={'center'}>
         {exactMatchField ? (
           <TypeSpecificFilterInput dataType={exactMatchField.data_type} filter={filter} onChange={onUpdate} />
-        ) : searchText === '' ? (
+        ) : filter.field_name === '' ? (
           <Text size="2" color="gray">
             ← Select a field
           </Text>
