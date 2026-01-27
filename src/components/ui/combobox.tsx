@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Box, Flex, Popover, ScrollArea, Text, TextField } from '@radix-ui/themes';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 
@@ -20,6 +20,8 @@ export interface DropdownRowProps<TOption> {
   isHighlighted: boolean;
   index: number;
 }
+
+type DropdownRow<TOption = string> = (props: DropdownRowProps<TOption>) => React.ReactNode;
 
 interface DefaultComboboxRowProps {
   optionText: string;
@@ -69,7 +71,7 @@ export interface ComboboxProps<TOption = string> {
   leftSlot?: React.ReactNode;
   /** Render a component for the right side of the search box. */
   rightSlot?: React.ReactNode;
-  dropdownRow?: (props: DropdownRowProps<TOption>) => React.ReactNode;
+  dropdownRow?: DropdownRow<TOption>;
 
   // Optional styling/layout
   minWidth?: string;
