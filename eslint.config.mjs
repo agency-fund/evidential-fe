@@ -31,6 +31,7 @@ const eslintConfig = [
           caughtErrorsIgnorePattern: '^_',
         },
       ],
+      '@typescript-eslint/switch-exhaustiveness-check': 'error',
     },
   },
   {
