@@ -15,16 +15,16 @@ import {
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import {
   BanditEffectData,
-  EffectSizeData,
-  computeAxisBounds,
   BASELINE_INDICATOR_COLOR,
+  COMMON_AXIS_STYLE,
+  computeAxisBounds,
   CONTROL_COLOR,
   DEFAULT_POINT_COLOR,
-  POSITIVE_COLOR,
+  EffectSizeData,
   NEGATIVE_COLOR,
-  POSITIVE_LIGHT_COLOR,
   NEGATIVE_LIGHT_COLOR,
-  COMMON_AXIS_STYLE,
+  POSITIVE_COLOR,
+  POSITIVE_LIGHT_COLOR,
 } from './forest-plot-utils';
 import { useState } from 'react';
 
@@ -356,6 +356,7 @@ function CustomTooltip({ active, payload, state, onMouseLeave }: CustomTooltipPr
       </Card>
     );
   }
+  return null;
 }
 
 export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: maxXProp }: ForestPlotProps) {
