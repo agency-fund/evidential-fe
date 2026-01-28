@@ -44,7 +44,7 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
   const handleComboboxChange = (value: string) => {
     // User selected the current value.
     if (value === filter.field_name) return;
-    // User selected a new value that has an exact match
+    // Regardless of a selection or typing, we can use the value to look for an exact match given our usage.
     const exactMatch = availableOptions.find((opt) => opt.field_name === value);
     if (exactMatch) {
       onSelect(exactMatch);

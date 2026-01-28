@@ -35,14 +35,15 @@ const DefaultComboboxRow = ({ optionText }: DefaultComboboxRowProps) => {
   );
 };
 
-export interface ComboboxProps<TOption = string> {
+export interface ComboboxProps<TOption = string, TKey = string> {
   /** The current input value. */
   value: string;
   /**
    * Called on every input change (typing or selection).
-   * value - The new text value
+   * value - The new text value (from typing, or the display text of a selection)
+   * key - If an option was selected, we also provide its key. Undefined if typing even in the case of an "exact" match.
    */
-  onChange: (value: string) => void;
+  onChange: (value: string, key?: TKey) => void;
 
   /** The array of items to present */
   options: TOption[];
@@ -53,7 +54,7 @@ export interface ComboboxProps<TOption = string> {
   /**
    * Returns a unique key/identifier for an option (used for React keys).
    */
-  getKeyForOption: (option: TOption) => string;
+  getKeyForOption: (option: TOption) => TKey;
 
   /** Whether to focus on the search box. */
   autoFocus?: boolean;
@@ -118,7 +119,7 @@ export function Combobox<TOption = string>({
   const handleSelect = (option: TOption) => {
     setIsPopoverOpen(false);
     setPopoverHighlightedIndex(-1);
-    onChange(getDisplayTextForOption(option));
+    onChange(getDisplayTextForOption(option), getKeyForOption(option));
   };
 
   // Search box handler for input changes
