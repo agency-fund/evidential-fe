@@ -356,7 +356,7 @@ function CustomTooltip({ active, payload, state, onMouseLeave }: CustomTooltipPr
       </Card>
     );
   }
-  return <></>;
+  return null;
 }
 
 export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: maxXProp }: ForestPlotProps) {
