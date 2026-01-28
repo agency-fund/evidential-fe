@@ -48,6 +48,7 @@ import { MdeBadge } from '@/components/features/experiments/mde-badge';
 import { ArmsAndAllocationsTable } from '@/components/features/experiments/arms-and-allocations-table';
 import { IntegrationGuideDialog } from '@/components/features/experiments/integration-guide-dialog';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
+import { ExperimentDetailsDropdownMenu } from '@/components/features/experiments/experiment-details-dropdown-menu';
 import { DecisionAndImpactSection } from '@/components/features/experiments/decision-and-impact-section';
 import { ExperimentCompletionCallout } from '@/components/features/experiments/experiment-completion-callout';
 import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
@@ -337,13 +338,16 @@ export default function ExperimentViewPage() {
           <EditableTextField value={experiment_name} onSubmit={(value) => updateExperiment({ name: value })} size="2">
             <Heading size="8">{experiment_name}</Heading>
           </EditableTextField>
-          <IntegrationGuideDialog
-            experimentId={experimentId}
-            datasourceId={datasourceId}
-            organizationId={organizationId}
-            arms={arms}
-            contexts={contexts}
-          />
+          <Flex gap="2" align="center">
+            <IntegrationGuideDialog
+              experimentId={experimentId}
+              datasourceId={datasourceId}
+              organizationId={organizationId}
+              arms={arms}
+              contexts={contexts}
+            />
+            <ExperimentDetailsDropdownMenu datasourceId={datasourceId} experimentId={experimentId} />
+          </Flex>
         </Flex>
 
         <ExperimentCompletionCallout endDate={end_date} hasImpact={!!impact} hasDecision={!!decision} />
