@@ -113,8 +113,9 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
         <SectionCard title="Filters">
           <Flex direction="column" gap="3">
             <FilterBuilder
+              key={`${formData.datasourceId}-${formData.participantType}`}
               availableFields={filterFields}
-              filters={formData.filters}
+              initialFilters={formData.filters || []}
               onChange={(filters: FilterInput[]) =>
                 onFormDataChange({ ...formData, filters, availableFilterFields: filterFields })
               }
