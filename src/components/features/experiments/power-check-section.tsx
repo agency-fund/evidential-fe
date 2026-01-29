@@ -8,7 +8,6 @@ import { convertFormDataToCreateExperimentRequest } from '@/app/datasources/[dat
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ZodError } from 'zod';
 import { useState } from 'react';
-import { prettyJSON } from '@/services/json-utils';
 import { SectionCard } from '@/components/ui/cards/section-card';
 
 interface PowerCheckSectionProps {
@@ -25,7 +24,31 @@ enum PowerCheckOption {
 
 export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSectionProps) {
   const [validationError, setValidationError] = useState<ZodError | null>(null);
-  const { trigger, isMutating, error } = usePowerCheck(formData.datasourceId!);
+  const {
+    trigger,
+    isMutating,
+    error: powerCheckError,
+  } = usePowerCheck(formData.datasourceId!, {
+    swr: {
+      onSuccess: (response) => {
+        const primary = response.analyses.find(
+          (a) => a.metric_spec.field_name === formData.primaryMetric?.metric.field_name,
+        );
+
+        setPowerCheckTarget(primary?.target_n ?? undefined);
+
+        setNonNullSamples(primary?.metric_spec.available_nonnull_n ?? 0);
+        setAllSamples(primary?.metric_spec.available_n ?? 0);
+        setSelectedSampleOption(PowerCheckOption.NONE);
+
+        onFormDataChange({
+          ...formData,
+          powerCheckResponse: response,
+          chosenN: undefined,
+        });
+      },
+    },
+  });
 
   const isButtonDisabled = isMutating || formData.primaryMetric === undefined;
 
@@ -38,30 +61,21 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
     event.preventDefault();
 
     setValidationError(null);
+    let design_spec;
     try {
-      const { design_spec } = convertFormDataToCreateExperimentRequest(formData);
-      const response = await trigger({ design_spec });
-      const primary = response.analyses.find(
-        (a) => a.metric_spec.field_name === formData.primaryMetric?.metric.field_name,
-      );
-
-      setPowerCheckTarget(primary?.target_n ?? undefined);
-
-      setNonNullSamples(primary?.metric_spec.available_nonnull_n ?? 0);
-      setAllSamples(primary?.metric_spec.available_n ?? 0);
-      setSelectedSampleOption(PowerCheckOption.NONE);
-
-      onFormDataChange({
-        ...formData,
-        powerCheckResponse: response,
-        chosenN: undefined,
-      });
-    } catch (err) {
-      if (err instanceof ZodError) {
-        setValidationError(err);
+      ({ design_spec } = convertFormDataToCreateExperimentRequest(formData));
+    } catch (error) {
+      if (error instanceof ZodError) {
+        setValidationError(error);
         return;
       }
-      throw err;
+      throw error;
+    }
+
+    try {
+      await trigger({ design_spec });
+    } catch {
+      // error handled by swr; powerCheckError will be its error state if the mutation fails
     }
   };
 
@@ -81,18 +95,18 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
             </>
           </Button>
 
-          {error && (
-            <Flex align="center" gap="2">
-              <GenericErrorCallout title={'Power check failed'} message={error ? prettyJSON(error) : 'unknown'} />
-            </Flex>
-          )}
-
           {validationError && (
             <Flex align="center" gap="2">
               <GenericErrorCallout
-                title={'Validation failed'}
+                title={'Power check request validation failed'}
                 message={validationError.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('\n')}
               />
+            </Flex>
+          )}
+
+          {powerCheckError && (
+            <Flex align="center" gap="2">
+              <GenericErrorCallout title={'Power check failed'} error={powerCheckError} />
             </Flex>
           )}
 

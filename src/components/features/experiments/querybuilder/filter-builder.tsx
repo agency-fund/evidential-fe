@@ -2,36 +2,85 @@
 
 import { Button, Flex, Separator } from '@radix-ui/themes';
 import { PlusIcon } from '@radix-ui/react-icons';
-import { DataType, FilterInput } from '@/api/methods.schemas';
-import { FilterRow } from '@/components/features/experiments/querybuilder/filter-row';
-import { getDefaultFilterForType } from '@/components/features/experiments/querybuilder/utils';
-import React from 'react';
+import { FilterInput } from '@/api/methods.schemas';
+import { FilterRow, FilterRowOption } from '@/components/features/experiments/querybuilder/filter-row';
+import React, { useState } from 'react';
+import { getDefaultFilterForType } from './utils';
+
+// Sanitize filter to ensure no NaN values are passed to the API
+const sanitizeFilter = (availableFields: FilterRowOption[], filter: FilterInput): FilterInput => {
+  // For numeric fields, ensure no NaN values
+  const field = availableFields.find((f) => f.field_name === filter.field_name);
+  const isNumeric =
+    field?.data_type === 'integer' ||
+    field?.data_type === 'bigint' ||
+    field?.data_type === 'double precision' ||
+    field?.data_type === 'numeric';
+
+  if (isNumeric) {
+    const sanitizedValues = filter.value.map((val) => (val === null ? null : isNaN(val as number) ? 0 : Number(val)));
+    return { ...filter, value: sanitizedValues };
+  }
+  return filter;
+};
+
+// Placeholder filter for newly added rows before a field is selected
+const EMPTY_FILTER: FilterInput = {
+  field_name: '',
+  relation: 'includes',
+  value: [],
+};
+
+// Internal FilterBuilder state model for associating a stable id with a draft filter.
+interface FilterWithId {
+  id: string;
+  filter: FilterInput;
+}
 
 export interface FilterBuilderProps {
-  availableFields: Array<{
-    field_name: string;
-    data_type: DataType;
-    description: string;
-  }>;
-  filters: FilterInput[];
+  // Available fields can have a one to many relationship with the filters, i.e. a field can be used
+  // in multiple filters with different constraints.
+  availableFields: Array<FilterRowOption>;
+  // Array of FilterInputs used to seed the initial state. Component will own the draft state
+  // internally and will not sync changes to this prop. To reset the component, change its key prop.
+  initialFilters: FilterInput[];
+  // Callback to notify parent of changes to the filters.
   onChange: (filters: FilterInput[]) => void;
 }
 
-export function FilterBuilder({ availableFields, filters, onChange }: FilterBuilderProps) {
+export function FilterBuilder({ availableFields, initialFilters, onChange }: FilterBuilderProps) {
+  // Internal state that associates initial filters prop as the starting point with stable IDs on
+  // init. To reset our internal state, the parent component should change the builder's key prop.
+  const [filtersWithIds, setFiltersWithIds] = useState<FilterWithId[]>(() => {
+    // Initialize by generating IDs for each incoming filter
+    return initialFilters.map((filter) => ({
+      id: crypto.randomUUID(),
+      filter,
+    }));
+  });
+
+  const commitFilters = (filtersWithIds: FilterWithId[]) => {
+    // Strip the IDs before passing to parent.
+    onChange(filtersWithIds.map((item) => item.filter));
+  };
+
   const addFilter = (e: React.MouseEvent) => {
     e.preventDefault();
     if (availableFields.length === 0) return;
 
-    // Create a default filter using the first available field
-    const defaultField = availableFields[0];
-    const defaultFilter = getDefaultFilterForType(defaultField.field_name, defaultField.data_type);
+    const newFilterWithId: FilterWithId = {
+      id: crypto.randomUUID(),
+      filter: { ...EMPTY_FILTER },
+    };
 
-    onChange([...filters, defaultFilter]);
+    const newFiltersWithIds = [...filtersWithIds, newFilterWithId];
+    setFiltersWithIds(newFiltersWithIds);
+    commitFilters(newFiltersWithIds);
   };
 
-  const updateFilter = (index: number, filter: FilterInput) => {
+  const updateFilter = (id: string, filterRowChange: FilterInput) => {
     // Get the field's data type
-    const field = availableFields.find((f) => f.field_name === filter.field_name);
+    const field = availableFields.find((f) => f.field_name === filterRowChange.field_name);
 
     // Ensure numeric fields have numeric values
     if (
@@ -42,7 +91,7 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
         field.data_type === 'numeric')
     ) {
       // Convert any string values to numbers and handle NaN
-      const numericValues = filter.value.map((val) => {
+      const numericValues = filterRowChange.value.map((val) => {
         if (val === null) return null;
 
         // If it's already a number and not NaN, keep it
@@ -59,47 +108,38 @@ export function FilterBuilder({ availableFields, filters, onChange }: FilterBuil
         return isNaN(num) ? 0 : num;
       });
 
-      filter = { ...filter, value: numericValues };
+      filterRowChange = { ...filterRowChange, value: numericValues };
     }
 
-    // Sanitize the filter to ensure no NaN values
-    const sanitizedFilter = sanitizeFilter(filter);
-    const newFilters = [...filters];
-    newFilters[index] = sanitizedFilter;
-    onChange(newFilters);
+    const sanitizedFilter = sanitizeFilter(availableFields, filterRowChange);
+    const newFiltersWithIds = filtersWithIds.map((item) =>
+      item.id === id ? { ...item, filter: sanitizedFilter } : item,
+    );
+    setFiltersWithIds(newFiltersWithIds);
+    commitFilters(newFiltersWithIds);
   };
 
-  // Sanitize filter to ensure no NaN values are passed to the API
-  const sanitizeFilter = (filter: FilterInput): FilterInput => {
-    // For numeric fields, ensure no NaN values
-    const field = availableFields.find((f) => f.field_name === filter.field_name);
-    const isNumeric =
-      field?.data_type === 'integer' ||
-      field?.data_type === 'bigint' ||
-      field?.data_type === 'double precision' ||
-      field?.data_type === 'numeric';
-
-    if (isNumeric) {
-      const sanitizedValues = filter.value.map((val) => (val === null ? null : isNaN(val as number) ? 0 : Number(val)));
-      return { ...filter, value: sanitizedValues };
-    }
-    return filter;
-  };
-
-  const removeFilter = (index: number) => {
-    const newFilters = filters.filter((_, i) => i !== index);
-    onChange(newFilters);
+  const removeFilter = (id: string) => {
+    const newFiltersWithIds = filtersWithIds.filter((item) => item.id !== id);
+    setFiltersWithIds(newFiltersWithIds);
+    commitFilters(newFiltersWithIds);
   };
 
   return (
     <Flex direction="column" gap="3" overflow="auto">
-      {filters.map((filter, index) => (
-        <React.Fragment key={`${index}-${filter.field_name}`}>
+      {filtersWithIds.map(({ id, filter }, index) => (
+        <React.Fragment key={id}>
           <FilterRow
             filter={filter}
-            availableFields={availableFields}
-            onChange={(updatedFilter) => updateFilter(index, updatedFilter)}
-            onRemove={() => removeFilter(index)}
+            availableOptions={availableFields}
+            isNewRow={index === filtersWithIds.length - 1 && filter.field_name === ''}
+            onSelect={(selectedOption) => {
+              // Reset the filter with appropriate defaults for the new field type
+              const defaultFilter = getDefaultFilterForType(selectedOption.field_name, selectedOption.data_type);
+              updateFilter(id, defaultFilter);
+            }}
+            onUpdate={(updatedFilter) => updateFilter(id, updatedFilter)}
+            onRemove={() => removeFilter(id)}
           />
           <Separator orientation="horizontal" size="4" />
         </React.Fragment>
