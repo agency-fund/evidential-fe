@@ -984,6 +984,33 @@ export interface DatasourceSummary {
 }
 
 /**
+ * Delete related arm assignments.
+ */
+export type DeleteExperimentDataRequestAssignments = boolean | null;
+
+/**
+ * Delete related draws.
+ */
+export type DeleteExperimentDataRequestDraws = boolean | null;
+
+/**
+ * Delete related snapshots.
+ */
+export type DeleteExperimentDataRequestSnapshots = boolean | null;
+
+/**
+ * Request to delete specific data associated with an experiment.
+ */
+export interface DeleteExperimentDataRequest {
+	/** Delete related arm assignments. */
+	assignments?: DeleteExperimentDataRequestAssignments;
+	/** Delete related draws. */
+	draws?: DeleteExperimentDataRequestDraws;
+	/** Delete related snapshots. */
+	snapshots?: DeleteExperimentDataRequestSnapshots;
+}
+
+/**
  * The type of assignment and experiment design.
  */
 export type DesignSpecInput =

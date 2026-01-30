@@ -30,6 +30,7 @@ import type {
 	CreateSnapshotResponse,
 	DeleteApiKeyParams,
 	DeleteDatasourceParams,
+	DeleteExperimentDataRequest,
 	DeleteExperimentParams,
 	DeleteParticipantParams,
 	DeleteSnapshotParams,
@@ -3927,6 +3928,95 @@ export const useGetExperimentAssignmentForParticipant = <
 		swrFn,
 		swrOptions,
 	);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * Deletes specific data associated with an experiment.
+ * @summary Delete Experiment Data
+ */
+export const getDeleteExperimentDataUrl = (
+	datasourceId: string,
+	experimentId: string,
+) => {
+	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/data`;
+};
+
+export const deleteExperimentData = async (
+	datasourceId: string,
+	experimentId: string,
+	deleteExperimentDataRequest: DeleteExperimentDataRequest,
+	options?: RequestInit,
+): Promise<void> => {
+	return orvalFetch<void>(
+		getDeleteExperimentDataUrl(datasourceId, experimentId),
+		{
+			...options,
+			method: "DELETE",
+			headers: { "Content-Type": "application/json", ...options?.headers },
+			body: JSON.stringify(deleteExperimentDataRequest),
+		},
+	);
+};
+
+export const getDeleteExperimentDataMutationFetcher = (
+	datasourceId: string,
+	experimentId: string,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, { arg }: { arg: DeleteExperimentDataRequest }) => {
+		return deleteExperimentData(datasourceId, experimentId, arg, options);
+	};
+};
+export const getDeleteExperimentDataMutationKey = (
+	datasourceId: string,
+	experimentId: string,
+) =>
+	[
+		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/data`,
+	] as const;
+
+export type DeleteExperimentDataMutationResult = NonNullable<
+	Awaited<ReturnType<typeof deleteExperimentData>>
+>;
+export type DeleteExperimentDataMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+/**
+ * @summary Delete Experiment Data
+ */
+export const useDeleteExperimentData = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	datasourceId: string,
+	experimentId: string,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof deleteExperimentData>>,
+			TError,
+			Key,
+			DeleteExperimentDataRequest,
+			Awaited<ReturnType<typeof deleteExperimentData>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey =
+		swrOptions?.swrKey ??
+		getDeleteExperimentDataMutationKey(datasourceId, experimentId);
+	const swrFn = getDeleteExperimentDataMutationFetcher(
+		datasourceId,
+		experimentId,
+		requestOptions,
+	);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
 	return {
 		swrKey,

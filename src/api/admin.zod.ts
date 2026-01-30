@@ -8647,6 +8647,32 @@ export const getExperimentAssignmentForParticipantResponse = zod
 	);
 
 /**
+ * Deletes specific data associated with an experiment.
+ * @summary Delete Experiment Data
+ */
+export const deleteExperimentDataParams = zod.object({
+	datasource_id: zod.string(),
+	experiment_id: zod.string(),
+});
+
+export const deleteExperimentDataBody = zod
+	.object({
+		assignments: zod
+			.union([zod.boolean(), zod.null()])
+			.optional()
+			.describe("Delete related arm assignments."),
+		draws: zod
+			.union([zod.boolean(), zod.null()])
+			.optional()
+			.describe("Delete related draws."),
+		snapshots: zod
+			.union([zod.boolean(), zod.null()])
+			.optional()
+			.describe("Delete related snapshots."),
+	})
+	.describe("Request to delete specific data associated with an experiment.");
+
+/**
  * @summary Update Arm
  */
 export const updateArmParams = zod.object({
