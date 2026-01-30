@@ -1769,7 +1769,6 @@ export const listParticipantTypesResponseItemsItemFieldsItemIsUniqueIdDefault = 
 export const listParticipantTypesResponseItemsItemFieldsItemIsStrataDefault = false;
 export const listParticipantTypesResponseItemsItemFieldsItemIsFilterDefault = false;
 export const listParticipantTypesResponseItemsItemFieldsItemIsMetricDefault = false;
-export const listParticipantTypesResponseItemsItemHiddenDefault = false;
 
 export const listParticipantTypesResponse = zod.object({
 	items: zod.array(
@@ -1840,12 +1839,6 @@ export const listParticipantTypesResponse = zod.object({
 					.string()
 					.describe(
 						"The name of the set of participants defined by the filters. This name must be unique within a datasource.",
-					),
-				hidden: zod
-					.boolean()
-					.optional()
-					.describe(
-						"If true, this participant type is hidden from list_participant_types. Used for auto-generated participant types.",
 					),
 			})
 			.describe(
@@ -2022,14 +2015,9 @@ export const inspectParticipantTypesParams = zod.object({
 });
 
 export const inspectParticipantTypesQueryRefreshDefault = false;
-export const inspectParticipantTypesQueryExpensiveDefault = false;
 
 export const inspectParticipantTypesQueryParams = zod.object({
 	refresh: zod.boolean().optional().describe("Refresh the cache."),
-	expensive: zod
-		.boolean()
-		.optional()
-		.describe("Whether to run expensive metadata queries."),
 });
 
 export const inspectParticipantTypesResponseFiltersItemFieldNameRegExp =
@@ -2241,14 +2229,12 @@ export const getParticipantTypeResponseCurrentFieldsItemIsUniqueIdDefault = fals
 export const getParticipantTypeResponseCurrentFieldsItemIsStrataDefault = false;
 export const getParticipantTypeResponseCurrentFieldsItemIsFilterDefault = false;
 export const getParticipantTypeResponseCurrentFieldsItemIsMetricDefault = false;
-export const getParticipantTypeResponseCurrentHiddenDefault = false;
 export const getParticipantTypeResponseProposedFieldsItemDescriptionDefault =
 	"";
 export const getParticipantTypeResponseProposedFieldsItemIsUniqueIdDefault = false;
 export const getParticipantTypeResponseProposedFieldsItemIsStrataDefault = false;
 export const getParticipantTypeResponseProposedFieldsItemIsFilterDefault = false;
 export const getParticipantTypeResponseProposedFieldsItemIsMetricDefault = false;
-export const getParticipantTypeResponseProposedHiddenDefault = false;
 
 export const getParticipantTypeResponse = zod.object({
 	current: zod
@@ -2316,12 +2302,6 @@ export const getParticipantTypeResponse = zod.object({
 				.string()
 				.describe(
 					"The name of the set of participants defined by the filters. This name must be unique within a datasource.",
-				),
-			hidden: zod
-				.boolean()
-				.optional()
-				.describe(
-					"If true, this participant type is hidden from list_participant_types. Used for auto-generated participant types.",
 				),
 		})
 		.describe(
@@ -2392,12 +2372,6 @@ export const getParticipantTypeResponse = zod.object({
 				.string()
 				.describe(
 					"The name of the set of participants defined by the filters. This name must be unique within a datasource.",
-				),
-			hidden: zod
-				.boolean()
-				.optional()
-				.describe(
-					"If true, this participant type is hidden from list_participant_types. Used for auto-generated participant types.",
 				),
 		})
 		.describe(
@@ -3805,18 +3779,6 @@ export const createExperimentBody = zod.object({
 		.default(createExperimentBodyWebhooksDefault)
 		.describe(
 			"List of webhook IDs to associate with this experiment. When the experiment is committed, these webhooks will be triggered with experiment details. Must contain unique values.",
-		),
-	table_name: zod
-		.union([zod.string(), zod.null()])
-		.optional()
-		.describe(
-			"Optional table name for creating experiments without a pre-registered participant type. When provided with primary_key, synthesizes a participant schema and persists it. The design_spec.participant_type field is ignored when this is set.",
-		),
-	primary_key: zod
-		.union([zod.string(), zod.null()])
-		.optional()
-		.describe(
-			"Optional primary key field name. Must be provided together with table_name.",
 		),
 });
 
@@ -9649,18 +9611,6 @@ export const powerCheckBody = zod.object({
 				),
 		])
 		.describe("The type of assignment and experiment design."),
-	table_name: zod
-		.union([zod.string(), zod.null()])
-		.optional()
-		.describe(
-			"Optional table name for ad-hoc power calculations. When provided with primary_key, synthesizes a participant schema instead of looking up from datasource configuration. When set, the participant_type value is ignored.",
-		),
-	primary_key: zod
-		.union([zod.string(), zod.null()])
-		.optional()
-		.describe(
-			"Optional primary key field name. Must be provided together with table_name. When set, the participant_type value is ignored.",
-		),
 });
 
 export const powerCheckResponseAnalysesItemMetricSpecFieldNameRegExp =
