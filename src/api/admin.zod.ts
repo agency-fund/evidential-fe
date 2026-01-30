@@ -2015,9 +2015,14 @@ export const inspectParticipantTypesParams = zod.object({
 });
 
 export const inspectParticipantTypesQueryRefreshDefault = false;
+export const inspectParticipantTypesQueryExpensiveDefault = false;
 
 export const inspectParticipantTypesQueryParams = zod.object({
 	refresh: zod.boolean().optional().describe("Refresh the cache."),
+	expensive: zod
+		.boolean()
+		.optional()
+		.describe("Whether to run expensive metadata queries."),
 });
 
 export const inspectParticipantTypesResponseFiltersItemFieldNameRegExp =
