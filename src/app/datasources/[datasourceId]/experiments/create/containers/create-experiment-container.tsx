@@ -1,14 +1,14 @@
 'use client';
 import React, { useState } from 'react';
-import { Container, Flex, Heading, Box, Text } from '@radix-ui/themes';
+import { Box, Container, Flex, Heading, Text } from '@radix-ui/themes';
 import { useParams } from 'next/navigation';
 import {
-  ExperimentType,
-  isFreqExperimentType,
-  ExperimentFormData,
-  FrequentABFormData,
-  MABFormData,
   CMABFormData,
+  ExperimentFormData,
+  ExperimentType,
+  FrequentABFormData,
+  isFreqExperimentType,
+  MABFormData,
 } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { WebhookSummary } from '@/api/methods.schemas';
 import { ExperimentTypeSelector } from '@/components/features/experiments/experiment-type-selector';
@@ -110,7 +110,7 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
             },
           ],
         } as CMABFormData;
-
+      case 'bayes_ab_online':
       default:
         throw new Error(`Unsupported experiment type: ${experimentType}`);
     }
@@ -157,6 +157,7 @@ export function CreateExperimentContainer({ webhooks }: CreateExperimentContaine
             onBack={handleBackToTypeSelection}
           />
         );
+      case 'bayes_ab_online':
       default:
         return null;
     }

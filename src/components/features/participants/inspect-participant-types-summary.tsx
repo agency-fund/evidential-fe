@@ -61,19 +61,19 @@ export function InspectParticipantTypesSummary({ data }: { data: InspectParticip
           <Grid columns={{ initial: '1', sm: '2', lg: '3' }} gap="4">
             {data.filters.map((field) => (
               <FieldDataCard field={field} key={field.field_name}>
-                {'min' in field && (
-                  <>
-                    <DataList.Item>
-                      <DataList.Label>Lower Bound</DataList.Label>
-                      <DataList.Value>{field.min}</DataList.Value>
-                    </DataList.Item>
-                    <DataList.Item>
-                      <DataList.Label minWidth="120px">Upper Bound</DataList.Label>
-                      <DataList.Value>{field.max}</DataList.Value>
-                    </DataList.Item>
-                  </>
+                {'min' in field && field.min !== null && (
+                  <DataList.Item>
+                    <DataList.Label>Lower Bound</DataList.Label>
+                    <DataList.Value>{field.min}</DataList.Value>
+                  </DataList.Item>
                 )}
-                {'distinct_values' in field && field.distinct_values && (
+                {'max' in field && field.max !== null && (
+                  <DataList.Item>
+                    <DataList.Label minWidth="120px">Upper Bound</DataList.Label>
+                    <DataList.Value>{field.max}</DataList.Value>
+                  </DataList.Item>
+                )}
+                {'distinct_values' in field && field.distinct_values !== null && (
                   <DataList.Item>
                     <DataList.Label minWidth="120px">Valid Values</DataList.Label>
                     <DataList.Value>

@@ -2793,6 +2793,10 @@ export type InspectParticipantTypesParams = {
 	 * Refresh the cache.
 	 */
 	refresh?: boolean;
+	/**
+	 * Whether to run expensive metadata queries.
+	 */
+	expensive?: boolean;
 };
 
 export type DeleteParticipantParams = {

@@ -1,51 +1,61 @@
 'use client';
 
-import { Flex, Grid, IconButton, Select, Text } from '@radix-ui/themes';
+import { Flex, Grid, IconButton, Text } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
 import { DataType, FilterInput } from '@/api/methods.schemas';
 import { TypeSpecificFilterInput } from '@/components/features/experiments/querybuilder/type-specific-filter-input';
-import { getDefaultFilterForType } from '@/components/features/experiments/querybuilder/utils';
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
+import { Combobox } from '@/components/ui/combobox';
+
+export interface FilterRowOption {
+  field_name: string;
+  data_type: DataType;
+}
 
 export interface FilterRowProps {
   filter: FilterInput;
-  availableFields: Array<{
-    field_name: string;
-    data_type: DataType;
-    description: string;
-  }>;
-  onChange: (filter: FilterInput) => void;
+  availableOptions: Array<FilterRowOption>;
+  isNewRow: boolean;
+  onSelect: (selectedOption: FilterRowOption) => void;
+  onUpdate: (filterRowChange: FilterInput) => void;
   onRemove: () => void;
 }
 
-export function FilterRow({ filter, availableFields, onChange, onRemove }: FilterRowProps) {
-  const selectedField = availableFields.find((f) => f.field_name === filter.field_name);
-  const dataType = selectedField?.data_type;
+// We'll use this function for both option display and as as its unique key
+const getSearchTextFromOption = (option: FilterRowOption) => option.field_name;
 
-  const handleFieldChange = (fieldName: string) => {
-    const newField = availableFields.find((f) => f.field_name === fieldName);
-    if (!newField) return;
+interface ComboboxRowProps {
+  field_name: string;
+  data_type: DataType;
+}
 
-    // Reset the filter with appropriate defaults for the new field type
-    const defaultFilter = getDefaultFilterForType(fieldName, newField.data_type);
+const ComboboxRow = ({ field_name, data_type }: ComboboxRowProps) => {
+  return (
+    <Flex gap="2" align="center" justify="between" style={{ whiteSpace: 'nowrap' }}>
+      <Text size="2">{field_name}</Text>
+      <DataTypeBadge type={data_type} />
+    </Flex>
+  );
+};
 
-    // Ensure numeric fields have numeric values
-    if (
-      newField.data_type === 'integer' ||
-      newField.data_type === 'bigint' ||
-      newField.data_type === 'double precision' ||
-      newField.data_type === 'numeric'
-    ) {
-      // Make sure the value is a number, not a string
-      const numericValues = defaultFilter.value.map((val) => {
-        if (val === null) return null;
-        return typeof val === 'number' ? val : 0;
+export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpdate, onRemove }: FilterRowProps) {
+  const exactMatchField = availableOptions.find((f) => f.field_name === filter.field_name);
+
+  const handleComboboxChange = (value: string) => {
+    // User selected the current value.
+    if (value === filter.field_name) return;
+    // Regardless of a selection or typing, we can use the value to look for an exact match given our usage.
+    const exactMatch = availableOptions.find((opt) => opt.field_name === value);
+    if (exactMatch) {
+      onSelect(exactMatch);
+    } else {
+      // User input a non-exact match
+      onUpdate({
+        field_name: value,
+        relation: 'includes',
+        value: [],
       });
-
-      defaultFilter.value = numericValues;
     }
-
-    onChange(defaultFilter);
   };
 
   return (
@@ -62,23 +72,33 @@ export function FilterRow({ filter, availableFields, onChange, onRemove }: Filte
           <TrashIcon />
         </IconButton>
 
-        <Select.Root value={filter.field_name} onValueChange={handleFieldChange}>
-          <Select.Trigger />
-          <Select.Content>
-            {availableFields.map((field) => (
-              <Select.Item key={field.field_name} value={field.field_name}>
-                <Flex gap={'2'}>
-                  <Text>{field.field_name}</Text>
-                  <DataTypeBadge type={field.data_type} />
-                </Flex>
-              </Select.Item>
-            ))}
-          </Select.Content>
-        </Select.Root>
+        <Combobox<FilterRowOption>
+          value={filter.field_name}
+          onChange={handleComboboxChange}
+          options={availableOptions}
+          getDisplayTextForOption={getSearchTextFromOption}
+          getKeyForOption={getSearchTextFromOption}
+          autoFocus={isNewRow}
+          placeholder="Search fields..."
+          noMatchText="No matching fields"
+          rightSlot={exactMatchField && <DataTypeBadge type={exactMatchField.data_type} />}
+          dropdownRow={({ option }) => <ComboboxRow field_name={option.field_name} data_type={option.data_type} />}
+        />
       </Flex>
 
+      {/* Filter options for the selected filter field or help text */}
       <Flex gap={'2'} align={'center'}>
-        {dataType ? <TypeSpecificFilterInput dataType={dataType} filter={filter} onChange={onChange} /> : <Flex></Flex>}
+        {exactMatchField ? (
+          <TypeSpecificFilterInput dataType={exactMatchField.data_type} filter={filter} onChange={onUpdate} />
+        ) : filter.field_name === '' ? (
+          <Text size="2" color="gray">
+            ← Select a field or type the name
+          </Text>
+        ) : (
+          <Text size="2" color="red">
+            Invalid field
+          </Text>
+        )}
       </Flex>
     </Grid>
   );

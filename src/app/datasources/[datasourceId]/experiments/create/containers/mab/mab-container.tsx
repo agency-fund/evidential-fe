@@ -2,9 +2,9 @@
 import React, { useState } from 'react';
 import { Box, Heading } from '@radix-ui/themes';
 import {
-  MABFormData,
   CMABFormData,
   EXPERIMENT_STEP_FLOWS,
+  MABFormData,
   STEP_TITLES,
 } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { AdaptiveBreadcrumbs } from '@/components/features/experiments/adaptive-bread-crumbs';
@@ -57,7 +57,7 @@ export function MABContainer({ webhooks, initialFormData, onBack }: MABContainer
             onNext={handleNext} // This should handle final submission
           />
         );
-
+      case 'type':
       default:
         return null;
     }
