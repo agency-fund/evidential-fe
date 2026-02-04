@@ -121,8 +121,8 @@ const screen = packScreen<ExperimentFormData, ExperimentScreenId>();
 const FREQUENTIST_BREADCRUMBS: Array<ExperimentScreenId> = [
   'metadata',
   'experiment-type',
-  'freq-select-datasource',
   'describe-arms',
+  'freq-select-datasource',
   'freq-stack',
   'summarize-freq',
 ] as const;
@@ -232,7 +232,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         switch (experimentType) {
           case 'freq_online':
           case 'freq_preassigned':
-            return { type: 'screen', id: 'freq-select-datasource' };
+            return { type: 'screen', id: 'describe-arms' };
           case 'mab_online':
           case 'cmab_online':
             return { type: 'screen', id: 'bayes-binary-or-real' };
@@ -261,8 +261,8 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       },
       isNextEnabled: (data) => !!data.datasourceId && !!data.tableName,
       isPrevEnabled: () => true,
-      prevScreen: () => ({ type: 'screen', id: 'experiment-type' }),
-      nextScreen: () => ({ type: 'screen', id: 'describe-arms' }),
+      prevScreen: () => ({ type: 'screen', id: 'describe-arms' }),
+      nextScreen: () => ({ type: 'screen', id: 'freq-stack' }),
       isBreadcrumbClickable: () => true,
       hideNavigation: () => true,
     }),
@@ -435,7 +435,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         switch (experimentType) {
           case 'freq_online':
           case 'freq_preassigned':
-            return { type: 'screen', id: 'freq-select-datasource' };
+            return { type: 'screen', id: 'experiment-type' };
           default:
             throw new Error(`Experiment type ${experimentType} unhandled`);
         }
@@ -444,7 +444,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         switch (experimentType) {
           case 'freq_online':
           case 'freq_preassigned':
-            return { type: 'screen', id: 'freq-stack' };
+            return { type: 'screen', id: 'freq-select-datasource' };
           default:
             throw new Error(`Experiment type ${experimentType} unhandled`);
         }
@@ -534,7 +534,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       isNextEnabled: () => true, // ignored
       isPrevEnabled: () => true,
       hideNavigation: () => true,
-      prevScreen: () => ({ type: 'screen', id: 'describe-arms' }),
+      prevScreen: () => ({ type: 'screen', id: 'freq-select-datasource' }),
       nextScreen: () => ({ type: 'screen', id: 'summarize-freq' }),
       isBreadcrumbClickable: (data) => !!(data.datasourceId && data.tableName),
     }),
