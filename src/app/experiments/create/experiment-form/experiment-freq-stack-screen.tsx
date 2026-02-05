@@ -136,7 +136,7 @@ export const ExperimentFreqStackScreen = ({
         <Card>
           <FilterBuilder
             availableFields={fields}
-            filters={data.filters ?? []}
+            initialFilters={data.filters ?? []}
             onChange={(filters) => dispatch({ type: 'set-filters', filters })}
           />
         </Card>
