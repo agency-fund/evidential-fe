@@ -1,6 +1,7 @@
 'use client';
 
-import { DataList, Flex, Text } from '@radix-ui/themes';
+import { Button, DataList, Flex, Text } from '@radix-ui/themes';
+import { Pencil2Icon } from '@radix-ui/react-icons';
 import { DataType } from '@/api/methods.schemas';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
@@ -18,11 +19,22 @@ export interface MetricsSectionProps {
     secondary?: MetricDisplay[];
   };
   strata?: string[];
+  onEdit?: () => void;
 }
 
-export function MetricsSection({ metrics, strata }: MetricsSectionProps) {
+export function MetricsSection({ metrics, strata, onEdit }: MetricsSectionProps) {
   return (
-    <SectionCard title="Metrics">
+    <SectionCard
+      title="Metrics"
+      headerRight={
+        onEdit ? (
+          <Button size="1" onClick={onEdit}>
+            <Pencil2Icon />
+            Edit
+          </Button>
+        ) : undefined
+      }
+    >
       <DataList.Root>
         <DataList.Item>
           <DataList.Label>Primary Metric</DataList.Label>

@@ -1,6 +1,6 @@
 'use client';
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import { ExperimentFormData } from '@/app/experiments/create/experiment-form/experiment-form-def';
+import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
 import { Box, Button, Flex, Separator, Text, TextArea, TextField } from '@radix-ui/themes';
 import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 import { SelectWebhooksSection } from '@/app/experiments/create/experiment-form/select-webhooks-section';
@@ -19,7 +19,7 @@ export type ExperimentMetadataMessages =
 export const ExperimentMetadataScreen = ({
   data,
   dispatch,
-}: ScreenProps<ExperimentFormData, ExperimentMetadataMessages>) => {
+}: ScreenProps<ExperimentFormData, ExperimentMetadataMessages, ExperimentScreenId>) => {
   const [webhooksOpen, setWebhooksOpen] = useState(false);
 
   return (

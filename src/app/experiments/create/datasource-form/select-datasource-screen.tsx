@@ -1,6 +1,6 @@
 'use client';
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import { DatasourceFormData } from './datasource-form-def';
+import { DatasourceFormData, DatasourceScreenId } from './datasource-form-def';
 import { Card, Flex, RadioGroup, Text } from '@radix-ui/themes';
 import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 import { useListOrganizationDatasources } from '@/api/admin';
@@ -23,7 +23,7 @@ export const SelectDatasourceScreen = ({
   data,
   dispatch,
   navigateNext,
-}: ScreenProps<DatasourceFormData, SelectDatasourceMessages>) => {
+}: ScreenProps<DatasourceFormData, SelectDatasourceMessages, DatasourceScreenId>) => {
   const orgContext = useCurrentOrganization();
   const organizationId = orgContext!.current.id;
 

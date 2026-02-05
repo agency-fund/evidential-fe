@@ -1,21 +1,33 @@
 'use client';
 
-import { Flex, Table, Text } from '@radix-ui/themes';
+import { Button, Flex, Table, Text } from '@radix-ui/themes';
+import { Pencil2Icon } from '@radix-ui/react-icons';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
 import { Context } from '@/api/methods.schemas';
 
 interface ContextsSectionProps {
   contexts: Context[];
+  onEdit?: () => void;
 }
 
-export function ContextsSection({ contexts }: ContextsSectionProps) {
+export function ContextsSection({ contexts, onEdit }: ContextsSectionProps) {
   if (contexts.length === 0) {
     return null;
   }
 
   return (
-    <SectionCard title="Contexts">
+    <SectionCard
+      title="Contexts"
+      headerRight={
+        onEdit ? (
+          <Button size="1" onClick={onEdit}>
+            <Pencil2Icon />
+            Edit
+          </Button>
+        ) : undefined
+      }
+    >
       <Table.Root>
         <Table.Header>
           <Table.Row>

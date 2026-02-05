@@ -75,6 +75,10 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
       setCurrentScreenId(screenId as ScreenId);
     };
 
+    const handleNavigateTo = (screenId: ScreenId) => {
+      setCurrentScreenId(screenId);
+    };
+
     const prevScreen = screen.prevScreen(data);
     const isNextEnabled = screen.isNextEnabled(data);
     const nextScreen = screen.nextScreen(data);
@@ -121,6 +125,7 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
                 dispatch={handleDispatch}
                 navigateNext={handleNext}
                 navigatePrev={handlePrev}
+                navigateTo={handleNavigateTo}
               />
               {!hideNav && (
                 <NavigationButtons

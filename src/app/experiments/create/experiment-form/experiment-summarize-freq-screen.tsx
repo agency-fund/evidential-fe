@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import { ExperimentFormData } from '@/app/experiments/create/experiment-form/experiment-form-def';
+import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
 import { Callout, Flex } from '@radix-ui/themes';
 import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -20,8 +20,9 @@ type ExperimentsSummarizeFreqScreenMessage = { type: 'set-commit-error'; respons
 export const ExperimentsSummarizeFreqScreen = ({
   data,
   navigatePrev,
+  navigateTo,
   dispatch,
-}: ScreenProps<ExperimentFormData, ExperimentsSummarizeFreqScreenMessage>) => {
+}: ScreenProps<ExperimentFormData, ExperimentsSummarizeFreqScreenMessage, ExperimentScreenId>) => {
   const router = useRouter();
 
   const experimentId = data.createExperimentResponse?.experiment_id ?? '';
@@ -52,13 +53,25 @@ export const ExperimentsSummarizeFreqScreen = ({
   };
 
   const handleAbandon = async () => {
-    if (!datasourceId || !experimentId) return;
-    try {
-      await triggerAbandon();
-    } catch {
-      // Error handled by callback
+    if (datasourceId && experimentId) {
+      try {
+        await triggerAbandon();
+      } catch {
+        // Error handled by callback
+      }
     }
     navigatePrev();
+  };
+
+  const handleEdit = async (screenId: ExperimentScreenId) => {
+    if (datasourceId && experimentId) {
+      try {
+        await triggerAbandon();
+      } catch {
+        // Error handled by callback
+      }
+    }
+    navigateTo(screenId);
   };
 
   // Prepare props for ExperimentConfirmationDisplay
@@ -102,6 +115,12 @@ export const ExperimentsSummarizeFreqScreen = ({
               primaryKey={data.primaryKey}
               metrics={metrics}
               chosenN={data.chosenN}
+              onEditMetadata={() => handleEdit('metadata')}
+              onEditTreatmentArms={() => handleEdit('describe-arms')}
+              onEditDatasource={() => handleEdit('freq-select-datasource')}
+              onEditFilters={() => handleEdit('freq-stack')}
+              onEditMetrics={() => handleEdit('freq-stack')}
+              onEditPowerBalance={() => handleEdit('freq-stack')}
             />
             <Callout.Root>
               <Callout.Icon>

@@ -1,7 +1,7 @@
 'use client';
 
-import { Badge, Flex, Separator, Text } from '@radix-ui/themes';
-import { PersonIcon } from '@radix-ui/react-icons';
+import { Badge, Button, Flex, Separator, Text } from '@radix-ui/themes';
+import { Pencil2Icon, PersonIcon } from '@radix-ui/react-icons';
 import {
   ArmBandit,
   CMABExperimentSpecOutput,
@@ -18,7 +18,12 @@ function isBanditExperiment(
   return spec.experiment_type === 'mab_online' || spec.experiment_type === 'cmab_online';
 }
 
-export function TreatmentArmsSection({ response }: { response: CreateExperimentResponse }) {
+interface TreatmentArmsSectionProps {
+  response: CreateExperimentResponse;
+  onEdit?: () => void;
+}
+
+export function TreatmentArmsSection({ response, onEdit }: TreatmentArmsSectionProps) {
   const designSpec = response.design_spec;
   const arms = designSpec.arms;
   const assignSummary = response.assign_summary;
@@ -28,7 +33,17 @@ export function TreatmentArmsSection({ response }: { response: CreateExperimentR
 
   if (isBandit) {
     return (
-      <SectionCard title="Treatment Arms">
+      <SectionCard
+        title="Treatment Arms"
+        headerRight={
+          onEdit ? (
+            <Button size="1" onClick={onEdit}>
+              <Pencil2Icon />
+              Edit
+            </Button>
+          ) : undefined
+        }
+      >
         <Flex direction="column" gap="4">
           {arms.map((arm, index) => {
             const banditArm = arm as ArmBandit;
@@ -69,7 +84,17 @@ export function TreatmentArmsSection({ response }: { response: CreateExperimentR
 
   // Frequentist experiment display
   return (
-    <SectionCard title="Treatment Arms">
+    <SectionCard
+      title="Treatment Arms"
+      headerRight={
+        onEdit ? (
+          <Button size="1" onClick={onEdit}>
+            <Pencil2Icon />
+            Edit
+          </Button>
+        ) : undefined
+      }
+    >
       <Flex direction="column" gap="4">
         {arms.map((arm, index) => {
           const armSize = assignSummary?.arm_sizes?.[index]?.size || 0;

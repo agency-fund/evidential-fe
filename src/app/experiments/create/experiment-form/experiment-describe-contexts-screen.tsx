@@ -1,7 +1,7 @@
 'use client';
 
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import { ExperimentFormData } from '@/app/experiments/create/experiment-form/experiment-form-def';
+import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
 import { Box, Button, Card, Flex, Heading, IconButton, RadioCards, Text, TextArea, TextField } from '@radix-ui/themes';
 import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
@@ -112,7 +112,7 @@ function ContextCard({ context, contextIndex, canDelete, onUpdate, onDelete }: C
 export const ExperimentDescribeContextsScreen = ({
   data,
   dispatch,
-}: ScreenProps<ExperimentFormData, ExperimentDescribeContextsMessage>) => {
+}: ScreenProps<ExperimentFormData, ExperimentDescribeContextsMessage, ExperimentScreenId>) => {
   const contexts = data.contexts ?? [];
 
   return (

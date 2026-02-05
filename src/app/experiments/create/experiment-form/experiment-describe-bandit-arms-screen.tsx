@@ -1,7 +1,7 @@
 'use client';
 
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import { ExperimentFormData } from '@/app/experiments/create/experiment-form/experiment-form-def';
+import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
 import { Box, Button, Callout, Card, Flex, Heading, IconButton, Text, TextArea, TextField } from '@radix-ui/themes';
 import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
@@ -174,7 +174,7 @@ export const ExperimentDescribeBanditArmsScreen = ({
   dispatch,
   navigatePrev,
   navigateNext,
-}: ScreenProps<ExperimentFormData, ExperimentDescribeBanditArmsMessage>) => {
+}: ScreenProps<ExperimentFormData, ExperimentDescribeBanditArmsMessage, ExperimentScreenId>) => {
   const orgContext = useCurrentOrganization();
   const organizationId = orgContext!.current.id;
 

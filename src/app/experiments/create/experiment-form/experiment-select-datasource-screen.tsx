@@ -1,6 +1,6 @@
 'use client';
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import { ExperimentFormData } from '@/app/experiments/create/experiment-form/experiment-form-def';
+import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
 import { Wizard } from '@/services/wizard/Wizard';
 import { DatasourceForm, DatasourceFormData, DatasourceFormInputData } from '../datasource-form/datasource-form-def';
 import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
@@ -19,7 +19,7 @@ export const ExperimentSelectDatasourceScreen = ({
   dispatch,
   navigateNext,
   navigatePrev,
-}: ScreenProps<ExperimentFormData, ExperimentSelectDatasourceMessages>) => {
+}: ScreenProps<ExperimentFormData, ExperimentSelectDatasourceMessages, ExperimentScreenId>) => {
   const handleSubmit = (formData: DatasourceFormData) => {
     dispatch({
       type: 'set-datasource',

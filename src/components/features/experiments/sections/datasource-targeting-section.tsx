@@ -1,6 +1,7 @@
 'use client';
 
-import { DataList, Table, Text } from '@radix-ui/themes';
+import { Button, DataList, Flex, Table, Text } from '@radix-ui/themes';
+import { Pencil2Icon } from '@radix-ui/react-icons';
 import { FilterOutput } from '@/api/methods.schemas';
 import { SectionCard } from '@/components/ui/cards/section-card';
 
@@ -8,6 +9,8 @@ interface DatasourceTargetingSectionProps {
   tableName?: string;
   primaryKey?: string;
   filters: FilterOutput[];
+  onEditDatasource?: () => void;
+  onEditFilters?: () => void;
 }
 
 const formatFilterValue = (value: Array<string | number | boolean | null>) =>
@@ -36,9 +39,35 @@ const formatFilterValueDisplay = (filter: FilterOutput) => {
   return formatFilterValue(filter.value);
 };
 
-export function DatasourceTargetingSection({ tableName, primaryKey, filters }: DatasourceTargetingSectionProps) {
+export function DatasourceTargetingSection({
+  tableName,
+  primaryKey,
+  filters,
+  onEditDatasource,
+  onEditFilters,
+}: DatasourceTargetingSectionProps) {
   return (
-    <SectionCard title="Targeting">
+    <SectionCard
+      title="Targeting"
+      headerRight={
+        onEditDatasource || onEditFilters ? (
+          <Flex gap="2">
+            {onEditDatasource && (
+              <Button size="1" onClick={onEditDatasource}>
+                <Pencil2Icon />
+                Datasource
+              </Button>
+            )}
+            {onEditFilters && (
+              <Button size="1" onClick={onEditFilters}>
+                <Pencil2Icon />
+                Filters
+              </Button>
+            )}
+          </Flex>
+        ) : undefined
+      }
+    >
       <DataList.Root>
         <DataList.Item>
           <DataList.Label>Table</DataList.Label>

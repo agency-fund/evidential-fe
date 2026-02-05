@@ -10,7 +10,7 @@ export type BreadcrumbInfo =
   | { type: 'unknown' };
 
 // Props passed to screen render functions
-type ScreenProps<FormData, Message> = {
+type ScreenProps<FormData, Message, ScreenId extends string> = {
   // FormData is the global state. Screens should treat this as read-only and dispatch events for the Screen.reducer to
   // handle.
   data: FormData;
@@ -24,6 +24,9 @@ type ScreenProps<FormData, Message> = {
 
   // Navigate to the previous screen (no-op if no previous screen)
   navigatePrev: () => void;
+
+  // Navigate directly to a specific screen.
+  navigateTo: (screenId: ScreenId) => void;
 };
 
 // Screen definition with typed messages. The ScreenId generic enables type-safe navigation:
@@ -32,7 +35,7 @@ type Screen<FormData, Message, ScreenId extends string> = {
   // Human-readable label for this screen, used by breadcrumbs.
   breadcrumbTitle?: string;
   // React component that renders this screen.
-  render: (props: ScreenProps<FormData, Message>) => JSX.Element;
+  render: (props: ScreenProps<FormData, Message, ScreenId>) => JSX.Element;
   // Receives events from the Screen and can apply changes to FormData.
   reducer: (data: FormData, message: Message) => FormData;
   // When isNextEnabled returns true, the "Next" button will be enabled. If it returns anything else, the button will

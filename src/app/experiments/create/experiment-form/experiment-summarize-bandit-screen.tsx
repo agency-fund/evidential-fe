@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import { ExperimentFormData } from '@/app/experiments/create/experiment-form/experiment-form-def';
+import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
 import { Callout, Flex } from '@radix-ui/themes';
 import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
@@ -17,8 +17,9 @@ export type ExperimentsSummarizeBanditMessage = { type: 'set-commit-error'; resp
 export const ExperimentsSummarizeBanditScreen = ({
   data,
   navigatePrev,
+  navigateTo,
   dispatch,
-}: ScreenProps<ExperimentFormData, ExperimentsSummarizeBanditMessage>) => {
+}: ScreenProps<ExperimentFormData, ExperimentsSummarizeBanditMessage, ExperimentScreenId>) => {
   const router = useRouter();
 
   const experimentId = data.createExperimentResponse?.experiment_id ?? '';
@@ -47,13 +48,25 @@ export const ExperimentsSummarizeBanditScreen = ({
   };
 
   const handleAbandon = async () => {
-    if (!datasourceId || !experimentId) return;
-    try {
-      await triggerAbandon();
-    } catch {
-      // Error handled by callback
+    if (datasourceId && experimentId) {
+      try {
+        await triggerAbandon();
+      } catch {
+        // Error handled by callback
+      }
     }
     navigatePrev();
+  };
+
+  const handleEdit = async (screenId: ExperimentScreenId) => {
+    if (datasourceId && experimentId) {
+      try {
+        await triggerAbandon();
+      } catch {
+        // Error handled by callback
+      }
+    }
+    navigateTo(screenId);
   };
 
   const isCmab = data.experimentType === 'cmab_online';
@@ -81,6 +94,10 @@ export const ExperimentsSummarizeBanditScreen = ({
               response={data.createExperimentResponse}
               tableName={data.tableName}
               primaryKey={data.primaryKey}
+              onEditMetadata={() => handleEdit('metadata')}
+              onEditTreatmentArms={() => handleEdit('describe-bandit-arms')}
+              onEditOutcomesPrior={() => handleEdit('bandit-binary-or-real')}
+              onEditContexts={isCmab ? () => handleEdit('describe-contexts') : undefined}
             />
 
             <Callout.Root>

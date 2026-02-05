@@ -1,5 +1,5 @@
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import { ExperimentFormData } from '@/app/experiments/create/experiment-form/experiment-form-def';
+import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
 import { Card, Flex, Heading } from '@radix-ui/themes';
 import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 import { MetricBuilder, MetricBuilderAction } from '@/components/features/experiments/metric-builder';
@@ -54,7 +54,7 @@ export const ExperimentFreqStackScreen = ({
   dispatch,
   navigatePrev,
   navigateNext,
-}: ScreenProps<ExperimentFormData, ExperimentFreqStackScreenMessage>) => {
+}: ScreenProps<ExperimentFormData, ExperimentFreqStackScreenMessage, ExperimentScreenId>) => {
   const { data: tableData } = useInspectTableInDatasource(data.datasourceId ?? '', data.tableName ?? '', {
     refresh: false,
   });

@@ -1,6 +1,6 @@
 'use client';
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import { ExperimentFormData } from '@/app/experiments/create/experiment-form/experiment-form-def';
+import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
 import { Badge, Box, Button, Card, Flex, Heading, IconButton, Text, TextArea, TextField } from '@radix-ui/themes';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { ArmWeightsDialog } from '@/components/features/experiments/arm-weights-dialog';
@@ -15,7 +15,7 @@ export type ExperimentDescribeArmsMessage =
 export const ExperimentDescribeArmsScreen = ({
   data,
   dispatch,
-}: ScreenProps<ExperimentFormData, ExperimentDescribeArmsMessage>) => {
+}: ScreenProps<ExperimentFormData, ExperimentDescribeArmsMessage, ExperimentScreenId>) => {
   const arms = data.arms ?? [];
   const showArmsError = arms.length > 0 && arms.length < 2;
 

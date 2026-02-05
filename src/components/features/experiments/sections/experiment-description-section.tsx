@@ -1,7 +1,8 @@
 'use client';
 
-import { DataList, Flex, Text } from '@radix-ui/themes';
-import Link from 'next/link';
+import { Button, DataList, Flex, Text } from '@radix-ui/themes';
+import { Pencil2Icon } from '@radix-ui/react-icons';
+import NextLink from 'next/link';
 import { CreateExperimentResponse } from '@/api/methods.schemas';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { ReadMoreText } from '@/components/ui/read-more-text';
@@ -10,7 +11,12 @@ import { useListOrganizationWebhooks } from '@/api/admin';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { ExperimentTypeOptions } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 
-export function ExperimentDescriptionSection({ response }: { response: CreateExperimentResponse }) {
+interface ExperimentDescriptionSectionProps {
+  response: CreateExperimentResponse;
+  onEdit?: () => void;
+}
+
+export function ExperimentDescriptionSection({ response, onEdit }: ExperimentDescriptionSectionProps) {
   const designSpec = response.design_spec;
   const webhookIds = response.webhooks ?? [];
   const org = useCurrentOrganization();
@@ -22,7 +28,17 @@ export function ExperimentDescriptionSection({ response }: { response: CreateExp
   const experimentTypeTitle =
     ExperimentTypeOptions.find((v) => v.value == designSpec.experiment_type)?.title ?? designSpec.experiment_type;
   return (
-    <SectionCard title="Experiment Description">
+    <SectionCard
+      title="Experiment Description"
+      headerRight={
+        onEdit ? (
+          <Button size="1" onClick={onEdit}>
+            <Pencil2Icon />
+            Edit
+          </Button>
+        ) : undefined
+      }
+    >
       <DataList.Root>
         <DataList.Item>
           <DataList.Label>Experiment Type</DataList.Label>
@@ -42,9 +58,9 @@ export function ExperimentDescriptionSection({ response }: { response: CreateExp
           <DataList.Label>Design Document</DataList.Label>
           <DataList.Value>
             {designSpec.design_url ? (
-              <Link href={designSpec.design_url} target="_blank" rel="noopener noreferrer">
+              <NextLink href={designSpec.design_url} target="_blank" rel="noopener noreferrer">
                 {designSpec.design_url}
-              </Link>
+              </NextLink>
             ) : (
               '-'
             )}

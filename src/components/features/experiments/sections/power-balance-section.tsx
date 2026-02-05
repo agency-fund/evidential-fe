@@ -1,6 +1,7 @@
 'use client';
 
-import { DataList } from '@radix-ui/themes';
+import { Button, DataList } from '@radix-ui/themes';
+import { Pencil2Icon } from '@radix-ui/react-icons';
 import { AssignSummary } from '@/api/methods.schemas';
 import { SectionCard } from '@/components/ui/cards/section-card';
 
@@ -9,13 +10,24 @@ export interface PowerBalanceSectionProps {
   power: number;
   chosenN?: number;
   assignSummary: AssignSummary | null | undefined;
+  onEdit?: () => void;
 }
 
-export function PowerBalanceSection({ confidence, power, chosenN, assignSummary }: PowerBalanceSectionProps) {
+export function PowerBalanceSection({ confidence, power, chosenN, assignSummary, onEdit }: PowerBalanceSectionProps) {
   const balanceCheck = assignSummary?.balance_check;
 
   return (
-    <SectionCard title="Power & Balance">
+    <SectionCard
+      title="Power & Balance"
+      headerRight={
+        onEdit ? (
+          <Button size="1" onClick={onEdit}>
+            <Pencil2Icon />
+            Edit
+          </Button>
+        ) : undefined
+      }
+    >
       <DataList.Root>
         <DataList.Item>
           <DataList.Label>Confidence</DataList.Label>

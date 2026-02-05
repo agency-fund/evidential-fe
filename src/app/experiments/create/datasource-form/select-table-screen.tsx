@@ -1,6 +1,6 @@
 'use client';
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import { DatasourceFormData } from './datasource-form-def';
+import { DatasourceFormData, DatasourceScreenId } from './datasource-form-def';
 import { useInspectDatasource, useInspectTableInDatasource } from '@/api/admin';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { Box, Flex, Select, Text } from '@radix-ui/themes';
@@ -10,7 +10,10 @@ import { SelectPrimaryKey } from '@/app/experiments/create/experiment-form/selec
 
 type SelectTableMessages = { type: 'set-table'; value: string } | { type: 'set-primary-key'; value: string };
 
-export const SelectTableScreen = ({ data, dispatch }: ScreenProps<DatasourceFormData, SelectTableMessages>) => {
+export const SelectTableScreen = ({
+  data,
+  dispatch,
+}: ScreenProps<DatasourceFormData, SelectTableMessages, DatasourceScreenId>) => {
   const {
     data: inspectData,
     isLoading,

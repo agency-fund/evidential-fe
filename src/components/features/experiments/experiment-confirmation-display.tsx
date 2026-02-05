@@ -52,6 +52,14 @@ export interface ExperimentConfirmationDisplayProps {
     secondary?: MetricDisplay[];
   };
   chosenN?: number;
+  onEditMetadata?: () => void;
+  onEditTreatmentArms?: () => void;
+  onEditDatasource?: () => void;
+  onEditFilters?: () => void;
+  onEditOutcomesPrior?: () => void;
+  onEditContexts?: () => void;
+  onEditMetrics?: () => void;
+  onEditPowerBalance?: () => void;
   // Optional footer for actions (commit/abandon in old flow, nothing in new flow)
   footer?: React.ReactNode;
 }
@@ -62,6 +70,14 @@ export function ExperimentConfirmationDisplay({
   primaryKey,
   metrics,
   chosenN,
+  onEditMetadata,
+  onEditTreatmentArms,
+  onEditDatasource,
+  onEditFilters,
+  onEditOutcomesPrior,
+  onEditContexts,
+  onEditMetrics,
+  onEditPowerBalance,
   footer,
 }: ExperimentConfirmationDisplayProps) {
   const designSpec = response.design_spec;
@@ -93,19 +109,30 @@ export function ExperimentConfirmationDisplay({
   return (
     <Flex direction="column" gap="4">
       <Grid columns={'2'} gap={'3'}>
-        <ExperimentDescriptionSection response={response} />
-        {isFreq && <DatasourceTargetingSection tableName={tableName} primaryKey={primaryKey} filters={filters} />}
-        <TreatmentArmsSection response={response} />
-        {isBandit && <OutcomesPriorSection priorType={priorType} rewardType={rewardType} />}
-        {isCmab && contexts.length > 0 && <ContextsSection contexts={contexts} />}
+        <ExperimentDescriptionSection response={response} onEdit={onEditMetadata} />
+        {isFreq && (
+          <DatasourceTargetingSection
+            tableName={tableName}
+            primaryKey={primaryKey}
+            filters={filters}
+            onEditDatasource={onEditDatasource}
+            onEditFilters={onEditFilters}
+          />
+        )}
+        <TreatmentArmsSection response={response} onEdit={onEditTreatmentArms} />
+        {isBandit && (
+          <OutcomesPriorSection priorType={priorType} rewardType={rewardType} onEdit={onEditOutcomesPrior} />
+        )}
+        {isCmab && contexts.length > 0 && <ContextsSection contexts={contexts} onEdit={onEditContexts} />}
         {isFreq && (
           <>
-            <MetricsSection metrics={metrics} strata={strata} />
+            <MetricsSection metrics={metrics} strata={strata} onEdit={onEditMetrics} />
             <PowerBalanceSection
               confidence={confidence}
               power={power}
               chosenN={chosenN}
               assignSummary={response.assign_summary}
+              onEdit={onEditPowerBalance}
             />
           </>
         )}
