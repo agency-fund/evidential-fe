@@ -1,6 +1,6 @@
 'use client';
 
-import { DataList, Text } from '@radix-ui/themes';
+import { DataList } from '@radix-ui/themes';
 import { AssignSummary } from '@/api/methods.schemas';
 import { SectionCard } from '@/components/ui/cards/section-card';
 
@@ -33,12 +33,13 @@ export function PowerBalanceSection({ confidence, power, chosenN, assignSummary 
           <DataList.Label>Actual Sample Size</DataList.Label>
           <DataList.Value>{assignSummary?.sample_size ?? 'N/A'}</DataList.Value>
         </DataList.Item>
-        <DataList.Item>
-          <DataList.Label>Balance Check</DataList.Label>
-          <DataList.Value>{balanceCheck ? 'Computed' : 'N/A'}</DataList.Value>
-        </DataList.Item>
         {balanceCheck ? (
           <>
+            <DataList.Item>
+              <DataList.Label>
+                <b>Balance Check</b>
+              </DataList.Label>
+            </DataList.Item>
             <DataList.Item>
               <DataList.Label>F Statistic</DataList.Label>
               <DataList.Value>{balanceCheck.f_statistic.toFixed(3)}</DataList.Value>
@@ -60,14 +61,7 @@ export function PowerBalanceSection({ confidence, power, chosenN, assignSummary 
               <DataList.Value>{balanceCheck.balance_ok ? 'Yes' : 'No'}</DataList.Value>
             </DataList.Item>
           </>
-        ) : (
-          <DataList.Item>
-            <DataList.Label>Balance Details</DataList.Label>
-            <DataList.Value>
-              <Text color="gray">No balance check results available.</Text>
-            </DataList.Value>
-          </DataList.Item>
-        )}
+        ) : null}
       </DataList.Root>
     </SectionCard>
   );
