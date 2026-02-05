@@ -23,7 +23,7 @@ import {
 } from '@/app/experiments/create/experiment-form/experiment-describe-arms-screen';
 import { ExperimentDescribeContextsScreen } from '@/app/experiments/create/experiment-form/experiment-describe-contexts-screen';
 import { ExperimentDescribeBanditArmsScreen } from '@/app/experiments/create/experiment-form/experiment-describe-bandit-arms-screen';
-import { ExperimentsSummarizeBayesScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-bayes-screen';
+import { ExperimentsSummarizeBanditScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-bandit-screen';
 import {
   ExperimentFreqStackScreen,
   ExperimentFreqStackScreenMessage,
@@ -107,13 +107,13 @@ export type ExperimentScreenId =
   | 'metadata'
   | 'experiment-type'
   | 'freq-select-datasource'
-  | 'bayes-binary-or-real'
+  | 'bandit-binary-or-real'
   | 'describe-contexts'
   | 'describe-arms'
   | 'describe-bandit-arms'
   | 'freq-stack'
   | 'summarize-freq'
-  | 'summarize-bayes';
+  | 'summarize-bandit';
 
 // Helper to create screens with proper type inference
 const screen = packScreen<ExperimentFormData, ExperimentScreenId>();
@@ -130,18 +130,18 @@ const FREQUENTIST_BREADCRUMBS: Array<ExperimentScreenId> = [
 const CMAB_BREADCRUMBS: Array<ExperimentScreenId> = [
   'metadata',
   'experiment-type',
-  'bayes-binary-or-real',
+  'bandit-binary-or-real',
   'describe-contexts',
   'describe-bandit-arms',
-  'summarize-bayes',
+  'summarize-bandit',
 ] as const;
 
 const MAB_BREADCRUMBS: Array<ExperimentScreenId> = [
   'metadata',
   'experiment-type',
-  'bayes-binary-or-real',
+  'bandit-binary-or-real',
   'describe-bandit-arms',
-  'summarize-bayes',
+  'summarize-bandit',
 ] as const;
 
 const breadcrumbs = ({ experimentType }: { experimentType?: ExperimentType }) => {
@@ -235,7 +235,9 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             return { type: 'screen', id: 'describe-arms' };
           case 'mab_online':
           case 'cmab_online':
-            return { type: 'screen', id: 'bayes-binary-or-real' };
+            return { type: 'screen', id: 'bandit-binary-or-real' };
+          case undefined:
+            throw new Error('Experiment type undefined');
           default:
             throw new Error(`Experiment type ${experimentType} unhandled`);
         }
@@ -266,7 +268,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       isBreadcrumbClickable: () => true,
       hideNavigation: () => true,
     }),
-    'bayes-binary-or-real': screen({
+    'bandit-binary-or-real': screen({
       breadcrumbTitle: 'Outcomes',
       breadcrumbs: breadcrumbs,
       render: ExperimentSelectBinaryOrRealOutcomes,
@@ -321,7 +323,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         return contexts.length >= 1 && contexts.every((c) => c.name.trim() !== '');
       },
       isPrevEnabled: () => true,
-      prevScreen: () => ({ type: 'screen', id: 'bayes-binary-or-real' }),
+      prevScreen: () => ({ type: 'screen', id: 'bandit-binary-or-real' }),
       nextScreen: () => ({ type: 'screen', id: 'describe-bandit-arms' }),
       isBreadcrumbClickable: ({ outcomeType }) => !!outcomeType,
       nextButtonTooltip: (data) => {
@@ -375,10 +377,12 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       prevScreen: ({ experimentType }) => {
         switch (experimentType) {
           case 'mab_online':
-            return { type: 'screen', id: 'bayes-binary-or-real' };
+            return { type: 'screen', id: 'bandit-binary-or-real' };
           case 'cmab_online':
             return { type: 'screen', id: 'describe-contexts' };
-          default:
+          case 'freq_online':
+          case 'freq_preassigned':
+          case undefined:
             throw new Error(`Experiment type ${experimentType} unhandled`);
         }
       },
@@ -386,8 +390,10 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         switch (experimentType) {
           case 'mab_online':
           case 'cmab_online':
-            return { type: 'screen', id: 'summarize-bayes' };
-          default:
+            return { type: 'screen', id: 'summarize-bandit' };
+          case 'freq_online':
+          case 'freq_preassigned':
+          case undefined:
             throw new Error(`Experiment type ${experimentType} unhandled`);
         }
       },
@@ -436,7 +442,9 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           case 'freq_online':
           case 'freq_preassigned':
             return { type: 'screen', id: 'experiment-type' };
-          default:
+          case 'mab_online':
+          case 'cmab_online':
+          case undefined:
             throw new Error(`Experiment type ${experimentType} unhandled`);
         }
       },
@@ -445,7 +453,9 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           case 'freq_online':
           case 'freq_preassigned':
             return { type: 'screen', id: 'freq-select-datasource' };
-          default:
+          case 'mab_online':
+          case 'cmab_online':
+          case undefined:
             throw new Error(`Experiment type ${experimentType} unhandled`);
         }
       },
@@ -554,9 +564,9 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       nextScreen: () => ({ type: 'submit' }),
       hideNavigation: () => true,
     }),
-    'summarize-bayes': screen({
+    'summarize-bandit': screen({
       breadcrumbTitle: 'Summary',
-      render: ExperimentsSummarizeBayesScreen,
+      render: ExperimentsSummarizeBanditScreen,
       reducer: (data, msg) => {
         if (msg.type === 'set-commit-error') {
           return { ...data, commitError: msg.response };

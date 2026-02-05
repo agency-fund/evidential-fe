@@ -12,13 +12,13 @@ import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { ExperimentConfirmationDisplay } from '@/components/features/experiments/experiment-confirmation-display';
 import { ErrorType } from '@/services/orval-fetch';
 
-export type ExperimentsSummarizeBayesMessage = { type: 'set-commit-error'; response: ErrorType<unknown> };
+export type ExperimentsSummarizeBanditMessage = { type: 'set-commit-error'; response: ErrorType<unknown> };
 
-export const ExperimentsSummarizeBayesScreen = ({
+export const ExperimentsSummarizeBanditScreen = ({
   data,
   navigatePrev,
   dispatch,
-}: ScreenProps<ExperimentFormData, ExperimentsSummarizeBayesMessage>) => {
+}: ScreenProps<ExperimentFormData, ExperimentsSummarizeBanditMessage>) => {
   const router = useRouter();
 
   const experimentId = data.createExperimentResponse?.experiment_id ?? '';
