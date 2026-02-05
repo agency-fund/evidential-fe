@@ -3,7 +3,7 @@ import { XSpinner } from '@/components/ui/x-spinner';
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
 import { DataType, InspectDatasourceTableResponse } from '@/api/methods.schemas';
 import { Combobox } from '@/components/ui/combobox';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface RightBadgesProps {
   primary_key: boolean;
@@ -46,25 +46,30 @@ interface SelectPrimaryKeyProps {
 }
 
 export const SelectPrimaryKey = ({ tableData, isLoading, value, onChange, disabled }: SelectPrimaryKeyProps) => {
+  const primaryKeyFields = useMemo(() => new Set(tableData?.primary_key_fields ?? []), [tableData]);
   const uniqueIdFields = useMemo(() => new Set(tableData?.detected_unique_id_fields ?? []), [tableData]);
   const orderedFields = useMemo(() => {
     const fields = tableData?.fields ?? [];
     const primaryKeys = fields
-      .filter((field) => tableData?.primary_key_fields.includes(field.field_name))
+      .filter((field) => primaryKeyFields.has(field.field_name))
       .sort((a, b) => a.field_name.localeCompare(b.field_name));
     const recommended = fields
-      .filter(
-        (field) => uniqueIdFields.has(field.field_name) && !tableData?.primary_key_fields.includes(field.field_name),
-      )
+      .filter((field) => uniqueIdFields.has(field.field_name) && !primaryKeyFields.has(field.field_name))
       .sort((a, b) => a.field_name.localeCompare(b.field_name));
     const remaining = fields
       .filter((field) => !uniqueIdFields.has(field.field_name))
       .sort((a, b) => a.field_name.localeCompare(b.field_name));
     return [...primaryKeys, ...recommended, ...remaining];
-  }, [tableData, uniqueIdFields]);
-  const [inputValue, setInputValue] = useState<string>(value ?? tableData?.primary_key_fields[0] ?? '');
+  }, [tableData, uniqueIdFields, primaryKeyFields]);
+  const [inputValue, setInputValue] = useState<string>(value ?? '');
   const exactMatchField = tableData?.fields.find((v) => v.field_name === inputValue);
   const showSpinner = isLoading && !disabled;
+
+  useEffect(() => {
+    if (value !== undefined) {
+      setInputValue(value);
+    }
+  }, [value]);
 
   return (
     <Flex direction="column" gap={'3'}>
@@ -88,7 +93,7 @@ export const SelectPrimaryKey = ({ tableData, isLoading, value, onChange, disabl
           rightSlot={
             exactMatchField && (
               <RightBadges
-                primary_key={tableData?.primary_key_fields.includes(exactMatchField.field_name) ?? false}
+                primary_key={primaryKeyFields.has(exactMatchField.field_name) ?? false}
                 recommended={uniqueIdFields.has(exactMatchField.field_name)}
                 type={exactMatchField.data_type}
               />
@@ -98,7 +103,7 @@ export const SelectPrimaryKey = ({ tableData, isLoading, value, onChange, disabl
             <ComboboxRow
               data_type={option.data_type}
               field_name={option.field_name}
-              primary_key={tableData?.primary_key_fields.includes(option.field_name) ?? false}
+              primary_key={primaryKeyFields.has(option.field_name) ?? false}
               recommended={uniqueIdFields.has(option.field_name)}
             />
           )}

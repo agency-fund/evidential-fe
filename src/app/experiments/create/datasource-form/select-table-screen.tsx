@@ -18,6 +18,11 @@ export const SelectTableScreen = ({ data, dispatch }: ScreenProps<DatasourceForm
   } = useInspectDatasource(data.datasourceId!, undefined, {
     swr: {
       enabled: !!data.datasourceId,
+      onSuccess: (response) => {
+        if (!data.tableName && response.tables.length > 0) {
+          dispatch({ type: 'set-table', value: response.tables[0] });
+        }
+      },
     },
   });
 
@@ -30,6 +35,15 @@ export const SelectTableScreen = ({ data, dispatch }: ScreenProps<DatasourceForm
     {
       swr: {
         enabled: !!data.datasourceId && !!data.tableName,
+        onSuccess: (response) => {
+          if (!data.primaryKey) {
+            if (response.primary_key_fields.length > 0) {
+              dispatch({ type: 'set-primary-key', value: response.primary_key_fields[0] });
+            } else if (response.detected_unique_id_fields.length > 0) {
+              dispatch({ type: 'set-primary-key', value: response.detected_unique_id_fields[0] });
+            }
+          }
+        },
       },
     },
   );
