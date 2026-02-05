@@ -35,7 +35,13 @@ export function WizardBreadcrumbsProvider({
   );
 }
 
-export function WizardBreadcrumbs() {
+type OnNavigateAway = (targetScreenId: string, currentScreenId: string) => void | boolean | Promise<void | boolean>;
+
+interface WizardBreadcrumbsProps {
+  onNavigateAway?: OnNavigateAway;
+}
+
+export function WizardBreadcrumbs({ onNavigateAway }: WizardBreadcrumbsProps = {}) {
   const { breadcrumbs, currentScreenId, onNavigate } = useWizardBreadcrumbs();
 
   if (breadcrumbs.length === 0) {
@@ -49,8 +55,10 @@ export function WizardBreadcrumbs() {
           <React.Fragment key={index}>
             <BreadcrumbItem
               crumb={crumb}
+              currentScreenId={currentScreenId}
               isCurrent={crumb.type === 'screen' && crumb.screenId === currentScreenId}
               onNavigate={onNavigate}
+              onNavigateAway={onNavigateAway}
             />
             {index < breadcrumbs.length - 1 && <ChevronRightIcon color="var(--gray-9)" />}
           </React.Fragment>
@@ -62,17 +70,33 @@ export function WizardBreadcrumbs() {
 
 interface BreadcrumbItemProps {
   crumb: BreadcrumbInfo;
+  currentScreenId: string;
   isCurrent: boolean;
   onNavigate: (screenId: string) => void;
+  onNavigateAway?: OnNavigateAway;
 }
 
-function BreadcrumbItem({ crumb, isCurrent, onNavigate }: BreadcrumbItemProps) {
+function BreadcrumbItem({ crumb, currentScreenId, isCurrent, onNavigate, onNavigateAway }: BreadcrumbItemProps) {
   if (crumb.type === 'unknown') {
     return <DotsHorizontalIcon color="var(--gray-9)" />;
   }
 
   const label = crumb.label;
   const isClickable = crumb.clickable && !isCurrent;
+  const handleClick = async () => {
+    if (!isClickable) {
+      return;
+    }
+
+    if (onNavigateAway) {
+      const result = await onNavigateAway(crumb.screenId, currentScreenId);
+      if (result === false) {
+        return;
+      }
+    }
+
+    onNavigate(crumb.screenId);
+  };
 
   return (
     <Box
@@ -82,7 +106,7 @@ function BreadcrumbItem({ crumb, isCurrent, onNavigate }: BreadcrumbItemProps) {
         cursor: isClickable ? 'pointer' : 'default',
         backgroundColor: isCurrent ? 'var(--accent-3)' : 'transparent',
       }}
-      onClick={isClickable ? () => onNavigate(crumb.screenId) : undefined}
+      onClick={isClickable ? handleClick : undefined}
     >
       <Text
         size="2"

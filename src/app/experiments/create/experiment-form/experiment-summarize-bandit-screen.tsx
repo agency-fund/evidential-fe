@@ -47,7 +47,7 @@ export const ExperimentsSummarizeBanditScreen = ({
     }
   };
 
-  const handleAbandon = async () => {
+  async function doAbandon() {
     if (datasourceId && experimentId) {
       try {
         await triggerAbandon();
@@ -55,18 +55,21 @@ export const ExperimentsSummarizeBanditScreen = ({
         // Error handled by callback
       }
     }
+  }
+
+  const handleAbandon = async () => {
+    await doAbandon();
     navigatePrev();
   };
 
   const handleEdit = async (screenId: ExperimentScreenId) => {
-    if (datasourceId && experimentId) {
-      try {
-        await triggerAbandon();
-      } catch {
-        // Error handled by callback
-      }
-    }
+    await doAbandon();
     navigateTo(screenId);
+  };
+
+  const handleBreadcrumbNavigateAway = async () => {
+    await doAbandon();
+    return true;
   };
 
   const isCmab = data.experimentType === 'cmab_online';
@@ -75,7 +78,7 @@ export const ExperimentsSummarizeBanditScreen = ({
     return (
       <>
         <Flex direction="column" gap="3">
-          <WizardBreadcrumbs />
+          <WizardBreadcrumbs onNavigateAway={handleBreadcrumbNavigateAway} />
           <GenericErrorCallout title="Failed to create experiment" error={data.createExperimentError} />
         </Flex>
         <NavigationButtons onBack={navigatePrev} onNext={() => {}} nextDisabled />
@@ -86,7 +89,7 @@ export const ExperimentsSummarizeBanditScreen = ({
   return (
     <>
       <Flex direction="column" gap="4">
-        <WizardBreadcrumbs />
+        <WizardBreadcrumbs onNavigateAway={handleBreadcrumbNavigateAway} />
 
         {data.createExperimentResponse !== undefined && (
           <>
