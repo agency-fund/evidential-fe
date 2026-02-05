@@ -23,11 +23,16 @@ export const SelectTableScreen = ({ data, dispatch }: ScreenProps<DatasourceForm
 
   const tables = inspectData?.tables ?? [];
 
-  const { data: tableData } = useInspectTableInDatasource(data.datasourceId!, data.tableName!, undefined, {
-    swr: {
-      enabled: !!data.datasourceId && !!data.tableName,
+  const { data: tableData, isLoading: isLoadingTable } = useInspectTableInDatasource(
+    data.datasourceId!,
+    data.tableName!,
+    undefined,
+    {
+      swr: {
+        enabled: !!data.datasourceId && !!data.tableName,
+      },
     },
-  });
+  );
 
   if (isLoading) {
     return <XSpinner message="Loading tables..." />;
@@ -83,15 +88,13 @@ export const SelectTableScreen = ({ data, dispatch }: ScreenProps<DatasourceForm
       </Text>
 
       <Box maxWidth={'50%'}>
-        {tableData && (
-          <SelectPrimaryKey
-            tableData={tableData}
-            isLoading={isLoading}
-            value={data.primaryKey}
-            onChange={(value) => dispatch({ type: 'set-primary-key', value })}
-            disabled={primaryKeyDisabled}
-          />
-        )}
+        <SelectPrimaryKey
+          tableData={tableData}
+          isLoading={isLoadingTable}
+          value={data.primaryKey}
+          onChange={(value) => dispatch({ type: 'set-primary-key', value })}
+          disabled={primaryKeyDisabled}
+        />
       </Box>
     </Flex>
   );

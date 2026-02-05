@@ -1,25 +1,21 @@
 'use client';
 
 import { Flex, Grid } from '@radix-ui/themes';
-import { ListSelectedWebhooksCard } from '@/components/features/experiments/list-selected-webhooks-card';
 import {
   CMABExperimentSpecOutput,
   CreateExperimentResponse,
-  DataType,
   FilterOutput,
   MABExperimentSpecOutput,
   OnlineFrequentistExperimentSpecOutput,
   PreassignedFrequentistExperimentSpecOutput,
 } from '@/api/methods.schemas';
 import { MetricDisplay, MetricsSection } from '@/components/features/experiments/sections/metrics-section';
-import { BasicInformationSection } from '@/components/features/experiments/sections/basic-information-section';
+import { ExperimentDescriptionSection } from '@/components/features/experiments/sections/experiment-description-section';
 import { TreatmentArmsSection } from '@/components/features/experiments/sections/treatment-arms-section';
-import { ParametersSection } from '@/components/features/experiments/sections/parameters-section';
-import { StatisticsSection } from '@/components/features/experiments/sections/statistics-section';
-import { FiltersSection } from '@/components/features/experiments/sections/filters-section';
-import { StrataSection } from '@/components/features/experiments/sections/strata-section';
-import { PriorOutcomeSection } from '@/components/features/experiments/sections/prior-outcome-section';
 import { ContextsSection } from '@/components/features/experiments/sections/contexts-section';
+import { DatasourceTargetingSection } from '@/components/features/experiments/sections/datasource-targeting-section';
+import { PowerBalanceSection } from '@/components/features/experiments/sections/power-balance-section';
+import { OutcomesPriorSection } from '@/components/features/experiments/sections/outcomes-prior-section';
 
 // Type guard to check if design spec is frequentist (has alpha, power, filters, strata)
 function isFrequentistSpec(
@@ -47,12 +43,14 @@ function isBanditSpec(
 
 export interface ExperimentConfirmationDisplayProps {
   response: CreateExperimentResponse;
+
+  tableName?: string;
+  primaryKey?: string;
   // Data not available in response (frequentist-specific)
   metrics?: {
     primary?: MetricDisplay;
     secondary?: MetricDisplay[];
   };
-  filterFieldTypes?: Record<string, DataType>; // field_name -> data_type
   chosenN?: number;
   // Optional footer for actions (commit/abandon in old flow, nothing in new flow)
   footer?: React.ReactNode;
@@ -60,8 +58,9 @@ export interface ExperimentConfirmationDisplayProps {
 
 export function ExperimentConfirmationDisplay({
   response,
+  tableName,
+  primaryKey,
   metrics,
-  filterFieldTypes,
   chosenN,
   footer,
 }: ExperimentConfirmationDisplayProps) {
@@ -86,8 +85,6 @@ export function ExperimentConfirmationDisplay({
   }
 
   // Extract webhook IDs from response (webhooks is string[] directly)
-  const webhookIds = response.webhooks ?? [];
-
   // Extract bandit-specific properties
   const priorType = isBandit ? designSpec.prior_type : undefined;
   const rewardType = isBandit ? designSpec.reward_type : undefined;
@@ -95,23 +92,25 @@ export function ExperimentConfirmationDisplay({
 
   return (
     <Flex direction="column" gap="4">
-      <BasicInformationSection response={response} />
-      {isBandit && <PriorOutcomeSection priorType={priorType} rewardType={rewardType} />}
-      {isCmab && contexts.length > 0 && <ContextsSection contexts={contexts} />}
-      <TreatmentArmsSection response={response} />
-      {isFreq && (
-        <>
-          <Grid columns="3" gap="3">
-            <MetricsSection metrics={metrics} />
-            <ParametersSection confidence={confidence} power={power} chosenN={chosenN} />
-            <StatisticsSection assignSummary={response.assign_summary} />
-          </Grid>
-          <FiltersSection filters={filters} filterFieldTypes={filterFieldTypes} />
-          <StrataSection strata={strata} />
-        </>
-      )}
-      <ListSelectedWebhooksCard webhookIds={webhookIds} />
-      {footer}
+      <Grid columns={'2'} gap={'3'}>
+        <ExperimentDescriptionSection response={response} />
+        {isFreq && <DatasourceTargetingSection tableName={tableName} primaryKey={primaryKey} filters={filters} />}
+        <TreatmentArmsSection response={response} />
+        {isBandit && <OutcomesPriorSection priorType={priorType} rewardType={rewardType} />}
+        {isCmab && contexts.length > 0 && <ContextsSection contexts={contexts} />}
+        {isFreq && (
+          <>
+            <MetricsSection metrics={metrics} strata={strata} />
+            <PowerBalanceSection
+              confidence={confidence}
+              power={power}
+              chosenN={chosenN}
+              assignSummary={response.assign_summary}
+            />
+          </>
+        )}
+        {footer}
+      </Grid>
     </Flex>
   );
 }

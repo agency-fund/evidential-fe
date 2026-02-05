@@ -1,6 +1,15 @@
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 import { z } from 'zod';
-import { CreateExperimentRequest, DesignSpecInput, DesignSpecMetricRequest, Stratum } from '@/api/methods.schemas';
+import {
+  CMABExperimentSpecInputExperimentType,
+  CreateExperimentRequest,
+  DesignSpecInput,
+  DesignSpecMetricRequest,
+  MABExperimentSpecInputExperimentType,
+  OnlineFrequentistExperimentSpecInputExperimentType,
+  PreassignedFrequentistExperimentSpecInputExperimentType,
+  Stratum,
+} from '@/api/methods.schemas';
 import { createExperimentBody } from '@/api/admin.zod';
 import { ExperimentFormData } from './experiment-form-def';
 
@@ -115,3 +124,34 @@ export function convertToBanditCreateRequest(data: ExperimentFormData): CreateEx
     webhooks: data.selectedWebhookIds && data.selectedWebhookIds.length > 0 ? data.selectedWebhookIds : [],
   });
 }
+
+export const ExperimentTypeOptions = [
+  {
+    value: PreassignedFrequentistExperimentSpecInputExperimentType.freq_preassigned,
+    title: 'Preassigned A/B Testing',
+    badge: 'A/B',
+    description:
+      'Participants are assigned to experiment arms at design time. Suitable for controlled experiments with fixed sample sizes.',
+  },
+  {
+    value: OnlineFrequentistExperimentSpecInputExperimentType.freq_online,
+    title: 'Online A/B Testing',
+    badge: 'A/B',
+    description:
+      'Participants are assigned to experiment arms dynamically as they arrive. Better for real-time experiments with unknown traffic.',
+  },
+  {
+    value: MABExperimentSpecInputExperimentType.mab_online,
+    title: 'Multi-Armed Bandit',
+    badge: 'MAB',
+    description:
+      'Adaptive allocation that learns and optimizes automatically. Minimizes opportunity cost by converging to the best performing variant.',
+  },
+  {
+    value: CMABExperimentSpecInputExperimentType.cmab_online,
+    title: 'Contextual Multi-Armed Bandit',
+    badge: 'CMAB',
+    description:
+      'Context-aware optimization for personalized experiences. Adapts recommendations based on user or environmental context.',
+  },
+];

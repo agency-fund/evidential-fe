@@ -77,7 +77,11 @@ export const ExperimentsSummarizeBanditScreen = ({
 
         {data.createExperimentResponse !== undefined && (
           <>
-            <ExperimentConfirmationDisplay response={data.createExperimentResponse} />
+            <ExperimentConfirmationDisplay
+              response={data.createExperimentResponse}
+              tableName={data.tableName}
+              primaryKey={data.primaryKey}
+            />
 
             <Callout.Root>
               <Callout.Icon>

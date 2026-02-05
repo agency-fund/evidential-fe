@@ -77,10 +77,6 @@ export const ExperimentsSummarizeFreqScreen = ({
     })),
   };
 
-  const filterFieldTypes = Object.fromEntries(
-    (data.availableFilterFields ?? []).map((f) => [f.field_name, f.data_type]),
-  );
-
   if (data.commitError) {
     return (
       <>
@@ -102,8 +98,9 @@ export const ExperimentsSummarizeFreqScreen = ({
           <>
             <ExperimentConfirmationDisplay
               response={data.createExperimentResponse}
+              tableName={data.tableName}
+              primaryKey={data.primaryKey}
               metrics={metrics}
-              filterFieldTypes={filterFieldTypes}
               chosenN={data.chosenN}
             />
             <Callout.Root>
