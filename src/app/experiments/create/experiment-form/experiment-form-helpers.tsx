@@ -1,13 +1,6 @@
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 import { z } from 'zod';
-import {
-  CreateExperimentRequest,
-  DesignSpecInput,
-  DesignSpecMetricRequest,
-  OnlineFrequentistExperimentSpecInput,
-  PreassignedFrequentistExperimentSpecInput,
-  Stratum,
-} from '@/api/methods.schemas';
+import { CreateExperimentRequest, DesignSpecInput, DesignSpecMetricRequest, Stratum } from '@/api/methods.schemas';
 import { createExperimentBody } from '@/api/admin.zod';
 import { ExperimentFormData } from './experiment-form-def';
 
@@ -74,17 +67,10 @@ export function convertToDesignSpec(data: ExperimentFormData): DesignSpecInput {
     alpha: data.confidence ? 1 - Number(data.confidence) / 100.0 : 0.05,
   };
 
-  if (data.experimentType === 'freq_preassigned') {
-    return {
-      ...commonFields,
-      experiment_type: 'freq_preassigned',
-    } as PreassignedFrequentistExperimentSpecInput;
-  }
-
-  return {
+  return createExperimentBody.shape.design_spec.parse({
     ...commonFields,
-    experiment_type: 'freq_online',
-  } as OnlineFrequentistExperimentSpecInput;
+    experiment_type: data.experimentType,
+  });
 }
 
 export function convertToBanditCreateRequest(data: ExperimentFormData): CreateExperimentRequest {
@@ -112,9 +98,6 @@ export function convertToBanditCreateRequest(data: ExperimentFormData): CreateEx
     }));
   }
 
-  // Determine prior type from experiment type and outcome type
-  const priorType = data.experimentType === 'mab_online' && data.outcomeType === 'binary' ? 'beta' : 'normal';
-
   return createExperimentBody.parse({
     design_spec: {
       experiment_name: data.name!,
@@ -125,7 +108,7 @@ export function convertToBanditCreateRequest(data: ExperimentFormData): CreateEx
       start_date: new Date(Date.parse(data.startDate!)).toISOString(),
       description: data.hypothesis ?? '',
       design_url: data.designUrl ?? null,
-      prior_type: priorType,
+      prior_type: data.priorType,
       reward_type: data.outcomeType === 'binary' ? 'binary' : 'real-valued',
       contexts: standardContexts,
     },

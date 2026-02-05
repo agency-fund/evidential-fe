@@ -29,12 +29,17 @@ import {
   ExperimentFreqStackScreenMessage,
 } from '@/app/experiments/create/experiment-form/experiment-freq-stack-screen';
 import { ExperimentsSummarizeFreqScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-freq-screen';
-import { BanditArm, Context, MetricWithMDE, Stratum } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import {
   getReasonableEndDate,
   getReasonableStartDate,
 } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import { ErrorType } from '@/services/orval-fetch';
+import {
+  BanditArm,
+  Context,
+  MetricWithMDE,
+  Stratum,
+} from '@/app/experiments/create/experiment-form/experiment-form-types';
 
 export type ExperimentType = Exclude<DesignSpecInput['experiment_type'], BayesABExperimentSpecInputExperimentType>;
 

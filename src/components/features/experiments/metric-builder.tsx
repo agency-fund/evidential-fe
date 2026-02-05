@@ -2,10 +2,10 @@
 
 import { Badge, Flex, Grid, IconButton, Table, Text, TextField, Tooltip } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
-import { MetricWithMDE } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { GetMetricsResponseElement } from '@/api/methods.schemas';
 import { ClickableBadge } from '@/components/features/experiments/clickable-badge';
 import FieldDataCard from '@/components/ui/cards/field-data-card';
+import { MetricWithMDE } from '@/app/experiments/create/experiment-form/experiment-form-types';
 
 const DEFAULT_MDE = '10';
 

@@ -65,7 +65,11 @@ import { prettyJSON } from '@/services/json-utils';
 import { getExperimentStatus } from '@/services/experiment-utils';
 import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date-utils';
 import { ContextConfigBox } from '@/components/features/experiments/context-config-box';
-import { isBanditSpec, isCmabExperiment, isFrequentistSpec } from '../create/types';
+import {
+  isBanditSpec,
+  isCmabExperiment,
+  isFrequentistSpec,
+} from '@/app/experiments/create/experiment-form/experiment-form-types';
 
 const SNAPSHOT_ERROR_ALERT_THRESHOLD_MS = 8 * 60 * 60 * 1000;
 

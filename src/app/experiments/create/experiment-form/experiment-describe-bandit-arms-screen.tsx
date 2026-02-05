@@ -6,7 +6,6 @@ import { Box, Button, Callout, Card, Flex, Heading, IconButton, Text, TextArea, 
 import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import { InfoCircledIcon, PlusIcon, TrashIcon } from '@radix-ui/react-icons';
-import { BanditArm, PriorType } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { useCreateExperiment, useListOrganizationDatasources } from '@/api/admin';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { convertToBanditCreateRequest } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
@@ -14,6 +13,7 @@ import { CreateExperimentResponse } from '@/api/methods.schemas';
 import { ErrorType } from '@/services/orval-fetch';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { XSpinner } from '@/components/ui/x-spinner';
+import { BanditArm, PriorType } from '@/app/experiments/create/experiment-form/experiment-form-types';
 
 export type ExperimentDescribeBanditArmsMessage =
   | { type: 'add-arm' }

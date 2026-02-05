@@ -5,8 +5,9 @@ import { ExperimentFormData } from '@/app/experiments/create/experiment-form/exp
 import { Box, Button, Card, Flex, Heading, IconButton, RadioCards, Text, TextArea, TextField } from '@radix-ui/themes';
 import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
-import { Context } from '@/app/datasources/[datasourceId]/experiments/create/types';
+
 import { ContextType } from '@/api/methods.schemas';
+import { Context } from '@/app/experiments/create/experiment-form/experiment-form-types';
 
 export type ExperimentDescribeContextsMessage =
   | { type: 'add-context' }

@@ -1,21 +1,21 @@
 import {
-  MetricAnalysis,
+  BanditExperimentAnalysisResponse,
   ExperimentAnalysisResponse,
   FreqExperimentAnalysisResponse,
-  BanditExperimentAnalysisResponse,
   GetExperimentResponse,
+  MetricAnalysis,
 } from '@/api/methods.schemas';
 import {
-  BanditEffectData,
-  EffectSizeData,
   AnalysisState,
   ArmDataPoint,
-  TimeSeriesDataPoint,
   ArmMetadata,
+  BanditEffectData,
+  EffectSizeData,
   Significance,
+  TimeSeriesDataPoint,
 } from './forest-plot-models';
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
-import { isFrequentistSpec } from '@/app/datasources/[datasourceId]/experiments/create/types';
+import { isFrequentistSpec } from '@/app/experiments/create/experiment-form/experiment-form-types';
 
 // Base Radix colors for use as color props.
 // NOTE: keep in sync with ARM_COLORS used for plotting.
