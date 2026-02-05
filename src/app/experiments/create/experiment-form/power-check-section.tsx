@@ -61,7 +61,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const [powerCheckTarget, setPowerCheckTarget] = useState<number | undefined>();
   const [nonNullSamples, setNonNullSamples] = useState<number | undefined>();
   const [allSamples, setAllSamples] = useState<number | undefined>();
-  const [selectedSampleOption, setSelectedSampleOption] = useState<PowerCheckOption>(PowerCheckOption.NONE);
+  const [selectedSampleOption, setSelectedSampleOption] = useState<PowerCheckOption>(PowerCheckOption.USE_POWER_CHECK);
 
   const { enabled } = isPowerCheckButtonEnabled(isMutating, data); // TODO: present reason field
 
@@ -69,17 +69,22 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     event.preventDefault();
     setValidationError(null);
 
+    // TODO: reimplement this to be simpler
     try {
       const design_spec = convertToDesignSpec(data);
       const response = await trigger({ design_spec, table_name: data.tableName, primary_key: data.primaryKey });
       const primary = response.analyses.find((a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name);
 
+      dispatch({ type: 'set-power-check-response', response, chosenN: undefined });
       setPowerCheckTarget(primary?.target_n ?? undefined);
       setNonNullSamples(primary?.metric_spec.available_nonnull_n ?? 0);
       setAllSamples(primary?.metric_spec.available_n ?? 0);
-      setSelectedSampleOption(PowerCheckOption.NONE);
-
-      dispatch({ type: 'set-power-check-response', response, chosenN: undefined });
+      if (primary?.sufficient_n) {
+        setSelectedSampleOption(PowerCheckOption.USE_POWER_CHECK);
+        dispatch({ type: 'set-chosen-n', value: primary?.target_n ?? undefined });
+      } else {
+        setSelectedSampleOption(PowerCheckOption.NONE);
+      }
     } catch (err) {
       if (err instanceof ZodError) {
         setValidationError(err);
