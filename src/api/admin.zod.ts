@@ -1697,6 +1697,9 @@ export const inspectTableInDatasourceResponseFieldsItemDescriptionMax = 2000;
 
 export const inspectTableInDatasourceResponse = zod
 	.object({
+		primary_key_fields: zod
+			.array(zod.string())
+			.describe("Fields that are primary keys."),
 		detected_unique_id_fields: zod
 			.array(zod.string())
 			.describe("Fields that are possibly candidates for unique IDs."),

@@ -1696,6 +1696,8 @@ export interface InspectDatasourceResponse {
  * Describes a table in the datasource.
  */
 export interface InspectDatasourceTableResponse {
+	/** Fields that are primary keys. */
+	primary_key_fields: string[];
 	/** Fields that are possibly candidates for unique IDs. */
 	detected_unique_id_fields: string[];
 	/** Fields in the table. */
