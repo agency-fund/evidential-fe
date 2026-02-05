@@ -24,6 +24,37 @@ interface PowerCheckSectionProps {
   dispatch: (msg: ExperimentFreqStackScreenMessage) => void;
 }
 
+const isPowerCheckButtonEnabled = (isMutating: boolean, data: ExperimentFormData) => {
+  const reasons = [];
+  if (isMutating) {
+    reasons.push('Running power check');
+  }
+  if (data.primaryKey === undefined) {
+    reasons.push('Please select a primary key.');
+  }
+  if (data.primaryMetric === undefined) {
+    reasons.push('Please select a primary metric.');
+  }
+  return { enabled: !reasons.length, reason: reasons.join('\n') };
+};
+
+interface PowerCheckButtonProps {
+  enabled: boolean;
+  onClick: (event: React.MouseEvent<HTMLButtonElement>) => Promise<void>;
+  loading: boolean;
+}
+
+function RunPowerCheckButton({ enabled, onClick, loading }: PowerCheckButtonProps) {
+  return (
+    <Button disabled={!enabled} onClick={onClick} style={{ minWidth: '25%' }}>
+      <Spinner loading={loading}>
+        <LightningBoltIcon />
+      </Spinner>
+      Run Power Check
+    </Button>
+  );
+}
+
 export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const { trigger, isMutating, error } = usePowerCheck(data.datasourceId!);
   const [validationError, setValidationError] = useState<ZodError | null>(null);
@@ -32,7 +63,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const [allSamples, setAllSamples] = useState<number | undefined>();
   const [selectedSampleOption, setSelectedSampleOption] = useState<PowerCheckOption>(PowerCheckOption.NONE);
 
-  const isButtonDisabled = isMutating || data.primaryMetric === undefined || data.primaryKey === undefined;
+  const { enabled } = isPowerCheckButtonEnabled(isMutating, data); // TODO: present reason field
 
   const handlePowerCheck = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -107,17 +138,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
       <SectionCard title="Analysis">
         <Flex direction="column" gap="3" align="center">
-          <Button
-            disabled={isButtonDisabled}
-            onClick={handlePowerCheck}
-            style={{ minWidth: '25%' }}
-            loading={isMutating}
-          >
-            <>
-              <LightningBoltIcon />
-              Run Power Check
-            </>
-          </Button>
+          <RunPowerCheckButton enabled={enabled} onClick={handlePowerCheck} loading={isMutating} />
 
           {error && (
             <Flex align="center" gap="2">
@@ -131,13 +152,6 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                 title={'Validation failed'}
                 message={validationError.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('\n')}
               />
-            </Flex>
-          )}
-
-          {isMutating && (
-            <Flex align="center" gap="2">
-              <Spinner size="1" />
-              <Text>Analyzing metrics and population data...</Text>
             </Flex>
           )}
 
