@@ -11,6 +11,7 @@ type ExperimentSelectDatasourceMessages = {
   type: 'set-datasource';
   datasourceId: string;
   tableName: string;
+  primaryKey?: string;
 };
 
 export const ExperimentSelectDatasourceScreen = ({
@@ -24,6 +25,7 @@ export const ExperimentSelectDatasourceScreen = ({
       type: 'set-datasource',
       datasourceId: formData.datasourceId!,
       tableName: formData.tableName!,
+      primaryKey: formData.primaryKey,
     });
     navigateNext();
   };
@@ -32,8 +34,9 @@ export const ExperimentSelectDatasourceScreen = ({
     () => ({
       datasourceId: data.datasourceId,
       tableName: data.tableName,
+      primaryKey: data.primaryKey,
     }),
-    [data.datasourceId, data.tableName],
+    [data.datasourceId, data.primaryKey, data.tableName],
   );
 
   return (

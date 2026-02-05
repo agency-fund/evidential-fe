@@ -11,6 +11,7 @@ import {
 export type DatasourceFormInputData = {
   datasourceId?: string;
   tableName?: string;
+  primaryKey?: string;
 };
 // Form data for the datasource selection/creation wizard
 export type DatasourceFormData = {
@@ -18,6 +19,8 @@ export type DatasourceFormData = {
   datasourceId?: string;
   // Selected table name
   tableName?: string;
+  // Selected primary key field
+  primaryKey?: string;
   // Selection mode: existing or create
   selectionMode: 'existing' | 'create';
   // Create datasource form state (reuse existing interface)
@@ -35,6 +38,7 @@ export const DatasourceForm: WizardForm<DatasourceFormData, DatasourceScreenId, 
     createForm: defaultDatasourceFormData(),
     datasourceId: inputData?.datasourceId,
     tableName: inputData?.tableName,
+    primaryKey: inputData?.primaryKey,
     selectionMode: 'existing',
   }),
   initialScreenId: () => 'select-datasource',
@@ -45,7 +49,7 @@ export const DatasourceForm: WizardForm<DatasourceFormData, DatasourceScreenId, 
       render: SelectDatasourceScreen,
       reducer: (data, msg) => {
         if (msg.type === 'set-datasource') {
-          return { ...data, datasourceId: msg.value, tableName: undefined };
+          return { ...data, datasourceId: msg.value, tableName: undefined, primaryKey: undefined };
         }
         if (msg.type === 'set-mode') {
           if (msg.value === 'create') {
@@ -58,6 +62,8 @@ export const DatasourceForm: WizardForm<DatasourceFormData, DatasourceScreenId, 
             ...data,
             datasourceId: msg.datasourceId,
             selectionMode: 'existing',
+            tableName: undefined,
+            primaryKey: undefined,
             createForm: defaultDatasourceFormData(),
           };
         }
@@ -74,11 +80,14 @@ export const DatasourceForm: WizardForm<DatasourceFormData, DatasourceScreenId, 
       render: SelectTableScreen,
       reducer: (data, msg) => {
         if (msg.type === 'set-table') {
-          return { ...data, tableName: msg.value };
+          return { ...data, tableName: msg.value, primaryKey: undefined };
+        }
+        if (msg.type === 'set-primary-key') {
+          return { ...data, primaryKey: msg.value };
         }
         return data;
       },
-      isNextEnabled: (data) => !!data.tableName,
+      isNextEnabled: (data) => !!data.tableName && !!data.primaryKey,
       isPrevEnabled: () => true,
       prevScreen: () => ({ type: 'screen', id: 'select-datasource' }),
       nextScreen: () => ({ type: 'submit' }),

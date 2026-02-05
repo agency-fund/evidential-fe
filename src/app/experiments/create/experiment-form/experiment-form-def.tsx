@@ -254,6 +254,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             datasourceId: msg.datasourceId,
             tableName: msg.tableName,
+            primaryKey: msg.primaryKey,
 
             // Changing datasource should clear power check
             powerCheckResponse: undefined,
