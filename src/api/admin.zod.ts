@@ -1096,22 +1096,26 @@ export const listOrganizationDatasourcesResponseItemsItemOrganizationIdMax = 64;
 export const listOrganizationDatasourcesResponseItemsItemOrganizationNameMax = 100;
 
 export const listOrganizationDatasourcesResponse = zod.object({
-	items: zod.array(
-		zod.object({
-			id: zod.string().max(listOrganizationDatasourcesResponseItemsItemIdMax),
-			name: zod
-				.string()
-				.max(listOrganizationDatasourcesResponseItemsItemNameMax),
-			driver: zod.string(),
-			type: zod.string(),
-			organization_id: zod
-				.string()
-				.max(listOrganizationDatasourcesResponseItemsItemOrganizationIdMax),
-			organization_name: zod
-				.string()
-				.max(listOrganizationDatasourcesResponseItemsItemOrganizationNameMax),
-		}),
-	),
+	items: zod
+		.array(
+			zod.object({
+				id: zod.string().max(listOrganizationDatasourcesResponseItemsItemIdMax),
+				name: zod
+					.string()
+					.max(listOrganizationDatasourcesResponseItemsItemNameMax),
+				driver: zod.string(),
+				type: zod.string(),
+				organization_id: zod
+					.string()
+					.max(listOrganizationDatasourcesResponseItemsItemOrganizationIdMax),
+				organization_name: zod
+					.string()
+					.max(listOrganizationDatasourcesResponseItemsItemOrganizationNameMax),
+			}),
+		)
+		.describe(
+			"Descriptions of the datasources in this organization, ordered in descending order of frequency of use.",
+		),
 });
 
 /**

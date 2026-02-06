@@ -1730,6 +1730,7 @@ export interface ListApiKeysResponse {
 }
 
 export interface ListDatasourcesResponse {
+	/** Descriptions of the datasources in this organization, ordered in descending order of frequency of use. */
 	items: DatasourceSummary[];
 }
 
