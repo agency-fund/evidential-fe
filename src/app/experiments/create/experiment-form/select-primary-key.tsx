@@ -46,6 +46,7 @@ interface SelectPrimaryKeyProps {
 }
 
 export const SelectPrimaryKey = ({ tableData, isLoading, value, onChange, disabled }: SelectPrimaryKeyProps) => {
+  const [inputValue, setInputValue] = useState<string>(value ?? '');
   const primaryKeyFields = useMemo(() => new Set(tableData?.primary_key_fields ?? []), [tableData]);
   const uniqueIdFields = useMemo(() => new Set(tableData?.detected_unique_id_fields ?? []), [tableData]);
   const orderedFields = useMemo(() => {
@@ -61,7 +62,6 @@ export const SelectPrimaryKey = ({ tableData, isLoading, value, onChange, disabl
       .sort((a, b) => a.field_name.localeCompare(b.field_name));
     return [...primaryKeys, ...recommended, ...remaining];
   }, [tableData, uniqueIdFields, primaryKeyFields]);
-  const [inputValue, setInputValue] = useState<string>(value ?? '');
   const exactMatchField = tableData?.fields.find((v) => v.field_name === inputValue);
   const showSpinner = isLoading && !disabled;
 
@@ -93,7 +93,7 @@ export const SelectPrimaryKey = ({ tableData, isLoading, value, onChange, disabl
           rightSlot={
             exactMatchField && (
               <RightBadges
-                primary_key={primaryKeyFields.has(exactMatchField.field_name) ?? false}
+                primary_key={primaryKeyFields.has(exactMatchField.field_name)}
                 recommended={uniqueIdFields.has(exactMatchField.field_name)}
                 type={exactMatchField.data_type}
               />
@@ -103,7 +103,7 @@ export const SelectPrimaryKey = ({ tableData, isLoading, value, onChange, disabl
             <ComboboxRow
               data_type={option.data_type}
               field_name={option.field_name}
-              primary_key={primaryKeyFields.has(option.field_name) ?? false}
+              primary_key={primaryKeyFields.has(option.field_name)}
               recommended={uniqueIdFields.has(option.field_name)}
             />
           )}
