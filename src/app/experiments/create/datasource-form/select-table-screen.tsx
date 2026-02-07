@@ -29,8 +29,6 @@ export const SelectTableScreen = ({
     },
   });
 
-  const tables = inspectData?.tables ?? [];
-
   const { data: tableData, isLoading: isLoadingTable } = useInspectTableInDatasource(
     data.datasourceId!,
     data.tableName!,
@@ -50,6 +48,9 @@ export const SelectTableScreen = ({
       },
     },
   );
+
+  const tables = inspectData?.tables ?? [];
+  const primaryKeyDisabled = !data.tableName || !inspectData;
 
   if (isLoading) {
     return <XSpinner message="Loading tables..." />;
@@ -73,8 +74,6 @@ export const SelectTableScreen = ({
     );
   }
 
-  const primaryKeyDisabled = !data.tableName || !inspectData;
-
   return (
     <Flex direction="column" gap={'3'}>
       <WizardBreadcrumbs />
@@ -85,9 +84,7 @@ export const SelectTableScreen = ({
           </Text>
           <Select.Root
             value={data.tableName}
-            onValueChange={(tableName) => {
-              dispatch({ type: 'set-table', value: tableName });
-            }}
+            onValueChange={(tableName) => dispatch({ type: 'set-table', value: tableName })}
           >
             <Select.Trigger placeholder="Select a table" />
             <Select.Content>
