@@ -32,7 +32,7 @@ export const SelectWebhooksSection = ({ selectedWebhookIds, onWebhookIdsChange }
         <Text size="2" color="gray">
           There are no webhooks configured for your organization. Please visit the{' '}
           <Link href={`/organizations/${organizationId}`}>
-            <GearIcon style={{ display: 'inline', verticalAlign: 'middle' }} /> Settings Page
+            <GearIcon /> Settings Page
           </Link>{' '}
           to configure them.
         </Text>
