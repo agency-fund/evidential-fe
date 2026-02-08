@@ -187,11 +187,7 @@ export const ExperimentDescribeBanditArmsScreen = ({
   const noDwhDatasource = datasourcesData?.items?.find((ds) => ds.driver === 'none');
   const datasourceId = noDwhDatasource?.id ?? '';
 
-  const {
-    trigger: triggerCreate,
-    isMutating: createLoading,
-    error: createError,
-  } = useCreateExperiment(
+  const { trigger: triggerCreate, isMutating: createLoading } = useCreateExperiment(
     datasourceId,
     { chosen_n: 0 },
     {
@@ -199,6 +195,7 @@ export const ExperimentDescribeBanditArmsScreen = ({
         onSuccess: async (response) => {
           dispatch({ type: 'set-datasource-id', datasourceId: datasourceId });
           dispatch({ type: 'set-create-response', response });
+          navigateNext();
         },
         onError: async (response: ErrorType<unknown>) => {
           dispatch({ type: 'set-create-error', response });
@@ -216,13 +213,8 @@ export const ExperimentDescribeBanditArmsScreen = ({
       console.error('No NoDWH datasource found');
       return;
     }
-    try {
-      const request = convertToBanditCreateRequest(data);
-      await triggerCreate(request);
-    } catch {
-      // handled by onError
-    }
-    navigateNext();
+    const request = convertToBanditCreateRequest(data);
+    await triggerCreate(request, { throwOnError: false });
   };
 
   if (datasourcesLoading) {
@@ -247,6 +239,11 @@ export const ExperimentDescribeBanditArmsScreen = ({
     <>
       <Flex direction="column" gap={'3'}>
         <WizardBreadcrumbs />
+
+        {data.createExperimentError && (
+          <GenericErrorCallout title="Failed to create experiment" error={data.createExperimentError} />
+        )}
+
         <Heading as="h2" size="4">
           Define Treatment Arms
         </Heading>
@@ -286,10 +283,6 @@ export const ExperimentDescribeBanditArmsScreen = ({
             </Flex>
           )}
         </Flex>
-
-        {(createError || data.createExperimentError) && (
-          <GenericErrorCallout title="Failed to create experiment" error={createError || data.createExperimentError} />
-        )}
       </Flex>
       <NavigationButtons
         onBack={navigatePrev}

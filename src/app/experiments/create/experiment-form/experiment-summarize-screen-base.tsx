@@ -103,7 +103,7 @@ export function ExperimentsSummarizeScreenBase({
       <>
         <Flex direction="column" gap="3">
           <WizardBreadcrumbs onNavigateAway={handleBreadcrumbNavigateAway} />
-          <GenericErrorCallout title="Failed to create experiment" error={data.createExperimentError} />
+          <GenericErrorCallout title="Failed to create experiment" error={data.commitError} />
         </Flex>
         <NavigationButtons onBack={navigatePrev} onNext={() => {}} nextDisabled />
       </>

@@ -12,6 +12,7 @@ import { NavigationButtons } from '@/components/features/experiments/navigation-
 import { convertToDesignSpec } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import { createExperimentBody } from '@/api/admin.zod';
 import { ErrorType } from '@/services/orval-fetch';
+import { GenericErrorCallout } from '@/components/ui/generic-error';
 
 export type ExperimentFreqStackScreenMessage =
   | { type: 'set-primary-key'; value: string }
@@ -67,6 +68,7 @@ export const ExperimentFreqStackScreen = ({
       swr: {
         onSuccess: async (response) => {
           dispatch({ type: 'set-create-response', response: response });
+          navigateNext();
         },
         onError: async (response) => {
           dispatch({ type: 'set-create-error', response: response });
@@ -94,21 +96,17 @@ export const ExperimentFreqStackScreen = ({
       webhooks: data.selectedWebhookIds && data.selectedWebhookIds.length > 0 ? data.selectedWebhookIds : [],
     });
     console.log('converted', createExperimentRequest);
-    try {
-      console.log('triggering');
-      await triggerCreate(createExperimentRequest);
-      console.log('triggered');
-    } catch {
-      // handled by onError
-    }
-    navigateNext();
-    console.log('navigated');
+    await triggerCreate(createExperimentRequest, { throwOnError: false });
   };
 
   return (
     <>
       <Flex direction="column" gap={'3'}>
         <WizardBreadcrumbs />
+
+        {data.createExperimentError && (
+          <GenericErrorCallout title={'Failed to create experiment'} error={data.createExperimentError} />
+        )}
 
         <Heading as="h3" size="3">
           Metrics
