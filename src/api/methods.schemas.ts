@@ -2770,6 +2770,13 @@ export type RemoveMemberFromOrganizationParams = {
 	allow_missing?: boolean;
 };
 
+export type CreateDatasourceParams = {
+	/**
+	 * When true, validate datasource connectivity before creation.
+	 */
+	connectivity_check?: boolean;
+};
+
 export type InspectDatasourceParams = {
 	/**
 	 * Refresh the cache.

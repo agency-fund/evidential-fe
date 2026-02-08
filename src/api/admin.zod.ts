@@ -1122,6 +1122,15 @@ export const listOrganizationDatasourcesResponse = zod.object({
  * Creates a new datasource for the specified organization.
  * @summary Create Datasource
  */
+export const createDatasourceQueryConnectivityCheckDefault = false;
+
+export const createDatasourceQueryParams = zod.object({
+	connectivity_check: zod
+		.boolean()
+		.optional()
+		.describe("When true, validate datasource connectivity before creation."),
+});
+
 export const createDatasourceBodyOrganizationIdMax = 64;
 
 export const createDatasourceBodyDsnPortMin = 1024;
