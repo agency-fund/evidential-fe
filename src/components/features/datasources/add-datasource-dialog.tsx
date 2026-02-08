@@ -17,7 +17,7 @@ import {
 export function AddDatasourceDialog({ organizationId }: { organizationId: string }) {
   const [open, setOpen] = useState(false);
   const [formData, dispatch] = useReducer(datasourceFormReducer, undefined, defaultDatasourceFormData);
-  const { trigger, reset, error } = useCreateDatasource({
+  const { trigger, reset, error } = useCreateDatasource(undefined, {
     swr: {
       onSuccess: async () => {
         handleClose();

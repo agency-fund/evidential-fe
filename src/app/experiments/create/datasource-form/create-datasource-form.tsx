@@ -23,14 +23,17 @@ export const CreateDatasourceForm = ({ onDatasourceCreated }: CreateDatasourceFo
   const organizationId = orgContext!.current.id;
   const [formData, dispatch] = useReducer(datasourceFormReducer, defaultDatasourceFormData());
 
-  const { trigger, error, isMutating } = useCreateDatasource({
-    swr: {
-      onSuccess: async (response) => {
-        onDatasourceCreated(response.id);
-        await mutate(getListOrganizationDatasourcesKey(organizationId));
+  const { trigger, error, isMutating } = useCreateDatasource(
+    { connectivity_check: true },
+    {
+      swr: {
+        onSuccess: async (response) => {
+          onDatasourceCreated(response.id);
+          await mutate(getListOrganizationDatasourcesKey(organizationId));
+        },
       },
     },
-  });
+  );
 
   const isDNSError = error instanceof ApiError && error.response.status === 400;
 
