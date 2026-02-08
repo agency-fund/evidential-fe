@@ -21,13 +21,17 @@ export const ExperimentSelectBinaryOrRealOutcomes = ({
       <RadioCards.Item value="binary">
         <Flex direction="column" width="100%">
           <Text weight="bold">Binary</Text>
-          <Text>01010101</Text>
+          <Text>
+            Yes/No outcomes: conversions, clicks, sign-ups, purchases. Results are expressed as percentages or rates.
+          </Text>
         </Flex>
       </RadioCards.Item>
       <RadioCards.Item value="real">
         <Flex direction="column" width="100%">
-          <Text weight="bold">Real</Text>
-          <Text>3.141592654</Text>
+          <Text weight="bold">Real-valued</Text>
+          <Text>
+            Continuous numeric outcomes: revenue per user, time spent, satisfaction scores, any measurable quantity.
+          </Text>
         </Flex>
       </RadioCards.Item>
     </RadioCards.Root>
