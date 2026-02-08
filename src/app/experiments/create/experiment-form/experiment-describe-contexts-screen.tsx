@@ -113,7 +113,7 @@ export const ExperimentDescribeContextsScreen = ({
   data,
   dispatch,
 }: ScreenProps<ExperimentFormData, ExperimentDescribeContextsMessage, ExperimentScreenId>) => {
-  const contexts = data.contexts ?? [];
+  const contexts = data.bandit?.experimentType === 'cmab_online' ? data.bandit.contexts : [];
 
   return (
     <>

@@ -1,6 +1,5 @@
 import {
   Arm,
-  BayesABExperimentSpecInputExperimentType,
   BayesABExperimentSpecOutput,
   CMABExperimentSpecInputExperimentType,
   CMABExperimentSpecOutput,
@@ -9,7 +8,6 @@ import {
   GetExperimentResponse,
   GetMetricsResponseElement,
   MABExperimentSpecInput,
-  MABExperimentSpecInputExperimentType,
   MABExperimentSpecOutput,
   OnlineFrequentistExperimentSpecInputExperimentType,
   OnlineFrequentistExperimentSpecOutput,
@@ -27,6 +25,8 @@ export type Context = {
   type: ContextVariableType;
 };
 export type PriorType = MABExperimentSpecInput['prior_type'];
+export type FormOutcomeType = 'binary' | 'real';
+export type BanditExperimentType = 'mab_online' | 'cmab_online';
 
 // MAB-specific arm configuration with prior parameters
 export type BanditArm = Omit<Arm, 'arm_id'> & {
@@ -37,6 +37,29 @@ export type BanditArm = Omit<Arm, 'arm_id'> & {
   mean_prior?: number;
   stddev_prior?: number;
 };
+
+export type BanditParams =
+  | {
+      experimentType: 'mab_online';
+      outcomeType: 'binary';
+      priorType: 'beta';
+      arms: BanditArm[];
+      contexts?: never;
+    }
+  | {
+      experimentType: 'mab_online';
+      outcomeType: 'real';
+      priorType: 'normal';
+      arms: BanditArm[];
+      contexts?: never;
+    }
+  | {
+      experimentType: 'cmab_online';
+      outcomeType: FormOutcomeType;
+      priorType: 'normal';
+      arms: BanditArm[];
+      contexts: Context[];
+    };
 
 export type Stratum = {
   fieldName: string;
@@ -55,14 +78,6 @@ export function isFreqExperimentType(type: string): boolean {
   );
 }
 
-export function isBanditExperimentType(type: string): boolean {
-  return (
-    type in MABExperimentSpecInputExperimentType ||
-    type in CMABExperimentSpecInputExperimentType ||
-    type in BayesABExperimentSpecInputExperimentType
-  );
-}
-
 export const isFrequentistSpec = (
   spec: DesignSpecOutput | undefined,
 ): spec is OnlineFrequentistExperimentSpecOutput | PreassignedFrequentistExperimentSpecOutput =>
@@ -75,3 +90,5 @@ export const isBanditSpec = (
 
 export const isCmabExperiment = (experiment: GetExperimentResponse | undefined): boolean =>
   !!experiment && experiment.design_spec.experiment_type === CMABExperimentSpecInputExperimentType.cmab_online;
+export const isBanditExperimentType = (experimentType?: string): experimentType is BanditExperimentType =>
+  experimentType === 'mab_online' || experimentType === 'cmab_online';

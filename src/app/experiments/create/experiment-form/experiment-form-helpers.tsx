@@ -12,6 +12,7 @@ import {
 } from '@/api/methods.schemas';
 import { createExperimentBody } from '@/api/admin.zod';
 import { ExperimentFormData } from './experiment-form-def';
+import { getCanonicalRewardType } from '@/app/experiments/create/experiment-form/experiment-bandit-helpers';
 
 export const getReasonableStartDate = (): string => {
   const date = new Date();
@@ -83,23 +84,28 @@ export function convertToDesignSpec(data: ExperimentFormData): DesignSpecInput {
 }
 
 export function convertToBanditCreateRequest(data: ExperimentFormData): CreateExperimentRequest {
+  if (data.bandit === undefined) {
+    throw new Error('Bandit configuration is required.');
+  }
+  const { experimentType, outcomeType, priorType, arms } = data.bandit;
+  const canonicalRewardType = getCanonicalRewardType(outcomeType);
+
   // Map bandit arms to standard arms format with prior parameters
-  const standardArms = (data.bandit_arms ?? []).map((arm) => ({
+  const standardArms = arms.map((arm) => ({
     arm_id: null,
     arm_name: arm.arm_name,
     arm_description: arm.arm_description || '',
-    // Beta distribution params (for binary outcomes)
-    alpha_init: arm.alpha_prior !== undefined ? arm.alpha_prior : null,
-    beta_init: arm.beta_prior !== undefined ? arm.beta_prior : null,
-    // Normal distribution params (for real-valued outcomes)
-    mu_init: arm.mean_prior !== undefined ? arm.mean_prior : null,
-    sigma_init: arm.stddev_prior !== undefined ? arm.stddev_prior : null,
+    // Populate only the active prior parameter family.
+    alpha_init: priorType === 'beta' && arm.alpha_prior !== undefined ? arm.alpha_prior : null,
+    beta_init: priorType === 'beta' && arm.beta_prior !== undefined ? arm.beta_prior : null,
+    mu_init: priorType === 'normal' && arm.mean_prior !== undefined ? arm.mean_prior : null,
+    sigma_init: priorType === 'normal' && arm.stddev_prior !== undefined ? arm.stddev_prior : null,
   }));
 
   // Map contexts for CMAB experiments
   let standardContexts = null;
-  if (data.experimentType === 'cmab_online' && data.contexts) {
-    standardContexts = data.contexts.map((context) => ({
+  if (experimentType === 'cmab_online' && data.bandit.contexts.length > 0) {
+    standardContexts = data.bandit.contexts.map((context) => ({
       context_id: null,
       context_name: context.name,
       context_description: context.description || '',
@@ -111,14 +117,14 @@ export function convertToBanditCreateRequest(data: ExperimentFormData): CreateEx
     design_spec: {
       experiment_name: data.name!,
       participant_type: 'user',
-      experiment_type: data.experimentType,
+      experiment_type: experimentType,
       arms: standardArms,
       end_date: new Date(Date.parse(data.endDate!)).toISOString(),
       start_date: new Date(Date.parse(data.startDate!)).toISOString(),
       description: data.hypothesis ?? '',
       design_url: data.designUrl ?? null,
-      prior_type: data.priorType,
-      reward_type: data.outcomeType === 'binary' ? 'binary' : 'real-valued',
+      prior_type: priorType,
+      reward_type: canonicalRewardType,
       contexts: standardContexts,
     },
     webhooks: data.selectedWebhookIds && data.selectedWebhookIds.length > 0 ? data.selectedWebhookIds : [],

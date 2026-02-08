@@ -2,8 +2,9 @@ import { ScreenProps } from '@/services/wizard/wizard-types';
 import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
 import { Flex, RadioCards, Text } from '@radix-ui/themes';
 import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
+import { FormOutcomeType } from '@/app/experiments/create/experiment-form/experiment-form-types';
 
-type ExperimentSelectBinaryOrRealMessages = { type: 'set-outcome-type'; value: 'binary' | 'real' };
+type ExperimentSelectBinaryOrRealMessages = { type: 'set-outcome-type'; value: FormOutcomeType };
 
 export const ExperimentSelectBinaryOrRealOutcomes = ({
   data,
@@ -13,9 +14,9 @@ export const ExperimentSelectBinaryOrRealOutcomes = ({
     <WizardBreadcrumbs />
     <h2>Select Outcome Type</h2>
     <RadioCards.Root
-      defaultValue={data.outcomeType}
+      value={data.bandit?.outcomeType}
       columns={{ initial: '1', sm: '3' }}
-      onValueChange={(v) => dispatch({ type: 'set-outcome-type', value: v as 'binary' | 'real' })}
+      onValueChange={(v) => dispatch({ type: 'set-outcome-type', value: v as FormOutcomeType })}
     >
       <RadioCards.Item value="binary">
         <Flex direction="column" width="100%">

@@ -134,14 +134,6 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
   );
 }
 
-const getPriorType = (data: ExperimentFormData): PriorType => {
-  // MAB with binary outcome uses beta; everything else uses normal
-  if (data.experimentType === 'mab_online' && data.outcomeType === 'binary') {
-    return 'beta';
-  }
-  return 'normal';
-};
-
 const isPriorParamValid = (arm: BanditArm, priorType: PriorType) => {
   if (priorType === 'beta') {
     return arm.alpha_prior !== undefined && arm.alpha_prior > 0 && arm.beta_prior !== undefined && arm.beta_prior > 0;
@@ -153,8 +145,9 @@ const isPriorParamValid = (arm: BanditArm, priorType: PriorType) => {
 };
 
 const getValidationMessage = (data: ExperimentFormData) => {
-  const arms = data.bandit_arms ?? [];
-  const priorType = getPriorType(data);
+  if (data.bandit === undefined) return 'Bandit configuration is required.';
+  const arms = data.bandit.arms;
+  const priorType = data.bandit.priorType;
 
   if (arms.length < 2) return 'At least 2 arms are required.';
   if (arms.length > 10) return 'Maximum 10 arms allowed.';
@@ -204,13 +197,17 @@ export const ExperimentDescribeBanditArmsScreen = ({
     },
   );
 
-  const arms = data.bandit_arms ?? [];
-  const priorType = getPriorType(data);
+  const arms = data.bandit?.arms ?? [];
+  const priorType = data.bandit?.priorType ?? 'normal';
+  const outcomeType = data.bandit?.outcomeType;
   const formValid = isFormValid(data);
 
   const handleCreate = async () => {
     if (!datasourceId) {
       console.error('No NoDWH datasource found');
+      return;
+    }
+    if (!isFormValid(data)) {
       return;
     }
     const request = convertToBanditCreateRequest(data);
@@ -258,7 +255,7 @@ export const ExperimentDescribeBanditArmsScreen = ({
           </Callout.Icon>
           <Callout.Text>
             Using {priorType === 'beta' ? 'Beta' : 'Normal'} distribution for{' '}
-            {data.outcomeType === 'binary' ? 'binary' : 'real-valued'} outcomes.
+            {outcomeType === 'binary' ? 'binary' : 'real-valued'} outcomes.
           </Callout.Text>
         </Callout.Root>
 

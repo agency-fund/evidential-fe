@@ -33,10 +33,16 @@ import {
   getReasonableEndDate,
   getReasonableStartDate,
 } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
+import {
+  createDefaultBanditParams,
+  toBanditParamsForExperimentType,
+  toCmabBanditParams,
+  toMabBanditParams,
+} from '@/app/experiments/create/experiment-form/experiment-bandit-helpers';
 import { ErrorType } from '@/services/orval-fetch';
 import {
-  BanditArm,
-  Context,
+  BanditParams,
+  isBanditExperimentType,
   MetricWithMDE,
   Stratum,
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
@@ -80,18 +86,11 @@ export type ExperimentFormData = {
   // experiment-describe-webhooks-screen
   selectedWebhookIds?: string[];
 
-  // experiment-select-binary-or-real-outcomes
-  outcomeType?: 'binary' | 'real';
-
   // experiment-describe-arms-screen
   arms?: Omit<Arm, 'arm_id'>[];
 
-  // experiment-describe-bandit-arms-screen
-  bandit_arms?: BanditArm[];
-
-  // experiment-describe-contexts-screen
-  priorType?: 'beta' | 'normal';
-  contexts?: Context[];
+  // bandit flow config
+  bandit?: BanditParams;
 
   // experiment-summarize-freq-screen (populated after createExperiment API call)
   experimentId?: string;
@@ -171,26 +170,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       { arm_name: 'Control', arm_description: 'Control' },
       { arm_name: 'Treatment', arm_description: 'Treatment' },
     ],
-    bandit_arms: [
-      {
-        arm_name: 'Control',
-        arm_description: 'Control',
-        alpha_prior: 1,
-        beta_prior: 1,
-        mean_prior: 0,
-        stddev_prior: 1,
-      },
-      {
-        arm_name: 'Treatment',
-        arm_description: 'Treatment',
-        alpha_prior: 2,
-        beta_prior: 1,
-        mean_prior: 1,
-        stddev_prior: 1,
-      },
-    ],
-    contexts: [{ name: 'Context', description: '', type: 'real-valued' }],
-    outcomeType: 'binary',
+    bandit: createDefaultBanditParams('mab_online'),
     confidence: '95',
     power: '80',
   }),
@@ -226,7 +206,26 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       render: ExperimentTypeScreen,
       reducer: (data, msg) => {
         if (msg.type === 'set-experiment-type') {
-          return { ...data, experimentType: msg.value, createExperimentResponse: undefined };
+          const experimentType = msg.value;
+          const nextData = {
+            ...data,
+            experimentType,
+            createExperimentResponse: undefined,
+            createExperimentError: undefined,
+            commitError: undefined,
+          };
+
+          if (!isBanditExperimentType(experimentType)) {
+            return {
+              ...nextData,
+              bandit: undefined,
+            };
+          }
+
+          return {
+            ...nextData,
+            bandit: toBanditParamsForExperimentType(experimentType, data.bandit),
+          };
         }
         return data;
       },
@@ -280,7 +279,16 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       render: ExperimentSelectBinaryOrRealOutcomes,
       reducer: (data, msg) => {
         if (msg.type === 'set-outcome-type') {
-          return { ...data, outcomeType: msg.value };
+          if (data.bandit === undefined) {
+            return data;
+          }
+          return {
+            ...data,
+            bandit:
+              data.bandit.experimentType === 'mab_online'
+                ? toMabBanditParams(msg.value, data.bandit.arms)
+                : toCmabBanditParams(msg.value, data.bandit.arms, data.bandit.contexts),
+          };
         }
         return data;
       },
@@ -299,12 +307,21 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       breadcrumbTitle: 'Contexts',
       render: ExperimentDescribeContextsScreen,
       reducer: (data, msg) => {
-        const contexts = data.contexts ?? [];
+        if (data.bandit?.experimentType !== 'cmab_online') {
+          return data;
+        }
+        const contexts = data.bandit.contexts;
         if (msg.type === 'add-context') {
-          return { ...data, contexts: [...contexts, { name: '', description: '', type: 'binary' }] };
+          return {
+            ...data,
+            bandit: { ...data.bandit, contexts: [...contexts, { name: '', description: '', type: 'real-valued' }] },
+          };
         }
         if (msg.type === 'remove-context') {
-          return { ...data, contexts: contexts.filter((_, i) => i !== msg.index) };
+          return {
+            ...data,
+            bandit: { ...data.bandit, contexts: contexts.filter((_, i) => i !== msg.index) },
+          };
         }
         if (msg.type === 'update-context') {
           const newContexts = [...contexts];
@@ -320,20 +337,20 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
               newContexts[msg.index] = { ...ctx, type: msg.value as ContextType };
               break;
           }
-          return { ...data, contexts: newContexts };
+          return { ...data, bandit: { ...data.bandit, contexts: newContexts } };
         }
         return data;
       },
       isNextEnabled: (data) => {
-        const contexts = data.contexts ?? [];
+        const contexts = data.bandit?.experimentType === 'cmab_online' ? data.bandit.contexts : [];
         return contexts.length >= 1 && contexts.every((c) => c.name.trim() !== '');
       },
       isPrevEnabled: () => true,
       prevScreen: () => ({ type: 'screen', id: 'bandit-binary-or-real' }),
       nextScreen: () => ({ type: 'screen', id: 'describe-bandit-arms' }),
-      isBreadcrumbClickable: ({ outcomeType }) => !!outcomeType,
+      isBreadcrumbClickable: ({ bandit }) => bandit !== undefined,
       nextButtonTooltip: (data) => {
-        const contexts = data.contexts ?? [];
+        const contexts = data.bandit?.experimentType === 'cmab_online' ? data.bandit.contexts : [];
         if (contexts.length < 1) return 'At least one context is required.';
         const emptyNameIndex = contexts.findIndex((c) => c.name.trim() === '');
         if (emptyNameIndex >= 0) return `Context ${emptyNameIndex + 1} name is required.`;
@@ -344,22 +361,25 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       breadcrumbTitle: 'Arms',
       render: ExperimentDescribeBanditArmsScreen,
       reducer: (data, msg) => {
-        const arms = data.bandit_arms ?? [];
+        if (data.bandit === undefined) {
+          return data;
+        }
+        const arms = data.bandit.arms;
         if (msg.type === 'add-arm') {
-          const priorType = data.experimentType === 'mab_online' && data.outcomeType === 'binary' ? 'beta' : 'normal';
+          const priorType = data.bandit.priorType;
           const newArm =
             priorType === 'beta'
               ? { arm_name: '', arm_description: '', alpha_prior: 1, beta_prior: 1 }
               : { arm_name: '', arm_description: '', mean_prior: 0, stddev_prior: 1 };
-          return { ...data, bandit_arms: [...arms, newArm] };
+          return { ...data, bandit: { ...data.bandit, arms: [...arms, newArm] } };
         }
         if (msg.type === 'remove-arm') {
-          return { ...data, bandit_arms: arms.filter((_, i) => i !== msg.index) };
+          return { ...data, bandit: { ...data.bandit, arms: arms.filter((_, i) => i !== msg.index) } };
         }
         if (msg.type === 'update-arm') {
           const newArms = [...arms];
           newArms[msg.index] = { ...newArms[msg.index], [msg.field]: msg.value };
-          return { ...data, bandit_arms: newArms };
+          return { ...data, bandit: { ...data.bandit, arms: newArms } };
         }
         if (msg.type === 'set-create-response') {
           return {
@@ -403,7 +423,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             throw new Error(`Experiment type ${experimentType} unhandled`);
         }
       },
-      isBreadcrumbClickable: ({ outcomeType }) => !!outcomeType,
+      isBreadcrumbClickable: ({ bandit }) => bandit !== undefined,
       breadcrumbs: breadcrumbs,
     }),
     'describe-arms': screen({
