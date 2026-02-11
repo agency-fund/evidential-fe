@@ -3,10 +3,12 @@ import { ScreenProps } from '@/services/wizard/wizard-types';
 import { DatasourceFormData, DatasourceScreenId } from './datasource-form-def';
 import { useInspectDatasource, useInspectTableInDatasource } from '@/api/admin';
 import { XSpinner } from '@/components/ui/x-spinner';
-import { Box, Flex, Select, Text } from '@radix-ui/themes';
+import { Box, Flex, IconButton, Select, Text } from '@radix-ui/themes';
 import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { SelectPrimaryKey } from '@/app/experiments/create/experiment-form/select-primary-key';
+import { ReloadIcon } from '@radix-ui/react-icons';
+import { useState } from 'react';
 
 type SelectTableMessages = { type: 'set-table'; value: string } | { type: 'set-primary-key'; value: string };
 
@@ -14,14 +16,19 @@ export const SelectTableScreen = ({
   data,
   dispatch,
 }: ScreenProps<DatasourceFormData, SelectTableMessages, DatasourceScreenId>) => {
+  const [refresh, setRefresh] = useState(false);
   const {
     data: inspectData,
+    isValidating: validatingDatasource,
     isLoading,
     error,
-  } = useInspectDatasource(data.datasourceId!, undefined, {
+  } = useInspectDatasource(data.datasourceId!, refresh ? { refresh: true } : undefined, {
     swr: {
       enabled: !!data.datasourceId,
       onSuccess: (response) => {
+        if (refresh) {
+          setRefresh(false);
+        }
         if (!data.tableName && response.tables.length > 0) {
           dispatch({ type: 'set-table', value: response.tables[0] });
         }
@@ -82,19 +89,33 @@ export const SelectTableScreen = ({
           <Text size="2" weight="bold">
             Select a table
           </Text>
-          <Select.Root
-            value={data.tableName}
-            onValueChange={(tableName) => dispatch({ type: 'set-table', value: tableName })}
-          >
-            <Select.Trigger placeholder="Select a table" />
-            <Select.Content>
-              {tables.map((table) => (
-                <Select.Item key={table} value={table}>
-                  {table}
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Root>
+          <Flex direction={'row'} gap={'3'}>
+            <Select.Root
+              value={data.tableName}
+              onValueChange={(tableName) => dispatch({ type: 'set-table', value: tableName })}
+            >
+              <Select.Trigger placeholder="Select a table" />
+              <Select.Content>
+                {tables.map((table) => (
+                  <Select.Item key={table} value={table}>
+                    {table}
+                  </Select.Item>
+                ))}
+              </Select.Content>
+            </Select.Root>
+            <IconButton
+              size={'2'}
+              variant={'soft'}
+              onClick={async () => {
+                if (!refresh) {
+                  setRefresh(!refresh);
+                }
+              }}
+              loading={validatingDatasource}
+            >
+              <ReloadIcon />
+            </IconButton>
+          </Flex>
         </Flex>
       </Box>
       <Text size="1" color="gray">
