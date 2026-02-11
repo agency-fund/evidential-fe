@@ -2,9 +2,9 @@
 import React, { useState } from 'react';
 import { Box, Heading } from '@radix-ui/themes';
 import {
+  EXPERIMENT_STEP_FLOWS,
   FrequentABFormData,
   STEP_TITLES,
-  EXPERIMENT_STEP_FLOWS,
 } from '@/app/datasources/[datasourceId]/experiments/create/types';
 import { AdaptiveBreadcrumbs } from '@/components/features/experiments/adaptive-bread-crumbs';
 import { InitialForm } from '@/components/features/experiments/initial-form';
@@ -66,7 +66,7 @@ export function FrequentABContainer({ webhooks, initialFormData, onBack }: Frequ
             onBack={handleBackStep}
           />
         );
-
+      case 'type':
       default:
         return null;
     }

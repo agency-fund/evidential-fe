@@ -111,6 +111,32 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
     onNext();
   };
 
+  const getValidationMessage = () => {
+    if (!formData.name.trim()) {
+      return 'Experiment name is required.';
+    }
+    if (!formData.hypothesis.trim()) {
+      return 'Hypothesis is required.';
+    }
+    if (!formData.startDate) {
+      return 'Start date is missing or invalid.';
+    }
+    if (!formData.endDate) {
+      return 'End date is missing or invalid.';
+    }
+    if (formData.arms.length < 2) {
+      return 'At least two arms are required.';
+    }
+    for (let i = 0; i < formData.arms.length; i++) {
+      if (!formData.arms[i].arm_name.trim()) {
+        return `Arm ${i + 1} name is required.`;
+      }
+    }
+    return '';
+  };
+
+  const isFormValid = getValidationMessage() === '';
+
   return (
     <form onSubmit={handleSubmit}>
       <Flex direction="column" gap="4">
@@ -319,7 +345,13 @@ export function InitialForm({ formData, onFormDataChange, onNext, onBack, webhoo
           </Card>
         )}
 
-        <NavigationButtons onBack={onBack} onNext={onNext} nextLabel="Next" />
+        <NavigationButtons
+          onBack={onBack}
+          onNext={onNext}
+          nextLabel="Next"
+          nextDisabled={!isFormValid}
+          tooltipMessage={getValidationMessage()}
+        />
       </Flex>
     </form>
   );

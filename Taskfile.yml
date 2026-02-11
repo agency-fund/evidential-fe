@@ -57,7 +57,8 @@ tasks:
   genapiclient:
     desc: 'Updates the generated API client from the apiserver running at http://localhost:8000'
     cmd: |
-      curl --max-time 3 -o /tmp/apispec.json http://localhost:8000/openapi.json
+      curl --no-progress-meter --retry 10 --retry-connrefused --max-time 3 \
+        -o /tmp/apispec.json http://localhost:8000/openapi.json
       jq . /tmp/apispec.json > openapi.json
       npx orval --config orval.config.ts
       if [ $? -eq 0 ]; then
