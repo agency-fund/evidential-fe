@@ -28,6 +28,8 @@ import {
   ExperimentAnalysisResponse,
   MABExperimentSpecOutput,
   MetricPowerAnalysisOutput,
+  MetricAnalysis,
+  Snapshot,
 } from '@/api/methods.schemas';
 import { ForestPlot } from '@/components/features/experiments/plots/forest-plot';
 import {
