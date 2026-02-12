@@ -38,7 +38,7 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
       <Flex direction="column" gap="2">
         <Flex align="center" justify="between">
           <Text weight="bold" size="3">
-            {armIndex === 0 ? `Arm ${armIndex + 1} (control)` : `Arm ${armIndex + 1}`}
+            {`Arm ${armIndex + 1}`}
           </Text>
           <IconButton onClick={onDelete} disabled={!canDelete} color="red" variant="soft" size="1">
             <TrashIcon />
