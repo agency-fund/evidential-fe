@@ -110,22 +110,16 @@ export function ExperimentConfirmationDisplay({
     <Flex direction="column" gap="4">
       <Grid columns={'2'} gap={'3'}>
         <ExperimentDescriptionSection response={response} onEdit={onEditMetadata} />
-        {isFreq && (
-          <DatasourceTargetingSection
-            tableName={tableName}
-            primaryKey={primaryKey}
-            filters={filters}
-            onEditDatasource={onEditDatasource}
-            onEditFilters={onEditFilters}
-          />
-        )}
         <TreatmentArmsSection response={response} onEdit={onEditTreatmentArms} />
-        {isBandit && (
-          <OutcomesPriorSection priorType={priorType} rewardType={rewardType} onEdit={onEditOutcomesPrior} />
-        )}
-        {isCmab && contexts.length > 0 && <ContextsSection contexts={contexts} onEdit={onEditContexts} />}
         {isFreq && (
           <>
+            <DatasourceTargetingSection
+              tableName={tableName}
+              primaryKey={primaryKey}
+              filters={filters}
+              onEditDatasource={onEditDatasource}
+              onEditFilters={onEditFilters}
+            />
             <MetricsSection metrics={metrics} strata={strata} onEdit={onEditMetrics} />
             <PowerBalanceSection
               confidence={confidence}
@@ -136,6 +130,10 @@ export function ExperimentConfirmationDisplay({
             />
           </>
         )}
+        {isBandit && (
+          <OutcomesPriorSection priorType={priorType} rewardType={rewardType} onEdit={onEditOutcomesPrior} />
+        )}
+        {isCmab && contexts.length > 0 && <ContextsSection contexts={contexts} onEdit={onEditContexts} />}
         {footer}
       </Grid>
     </Flex>
