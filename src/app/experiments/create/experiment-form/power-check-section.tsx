@@ -213,7 +213,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                         metricAnalysis.pct_change_possible !== undefined && (
                           <Table.Row>
                             <Table.RowHeaderCell>
-                              Minimum Detectable Effect with all available samples
+                              Minimum Meaningful Effect with all available samples
                             </Table.RowHeaderCell>
                             <Table.Cell>{(metricAnalysis.pct_change_possible * 100).toFixed(4)}%</Table.Cell>
                           </Table.Row>
