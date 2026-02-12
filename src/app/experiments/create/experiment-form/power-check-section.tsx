@@ -30,7 +30,7 @@ const isPowerCheckButtonEnabled = (isMutating: boolean, data: ExperimentFormData
     reasons.push('Running power check');
   }
   if (data.primaryKey === undefined) {
-    reasons.push('Please select a unique user key.');
+    reasons.push('Please select a unique ID field.');
   }
   if (data.primaryMetric === undefined) {
     reasons.push('Please select a primary metric.');

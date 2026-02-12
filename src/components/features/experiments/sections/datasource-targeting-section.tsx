@@ -74,7 +74,7 @@ export function DatasourceTargetingSection({
           <DataList.Value>{tableName || '-'}</DataList.Value>
         </DataList.Item>
         <DataList.Item>
-          <DataList.Label>Unique User Key</DataList.Label>
+          <DataList.Label>Unique ID</DataList.Label>
           <DataList.Value>{primaryKey || '-'}</DataList.Value>
         </DataList.Item>
         <DataList.Item>

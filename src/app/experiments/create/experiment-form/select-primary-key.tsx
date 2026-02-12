@@ -74,7 +74,7 @@ export const SelectPrimaryKey = ({ tableData, isLoading, value, onChange, disabl
   return (
     <Flex direction="column" gap={'3'}>
       <Text as="label" size="2" weight="bold">
-        Unique User Key
+        Unique ID
       </Text>
       {showSpinner ? (
         <XSpinner message="Loading fields..." />

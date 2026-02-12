@@ -74,14 +74,10 @@ export function ExperimentDescriptionSection({ response, onEdit }: ExperimentDes
           <DataList.Label>End Date</DataList.Label>
           <DataList.Value>{designSpec.end_date ? formatIsoDateLocal(designSpec.end_date) : '-'}</DataList.Value>
         </DataList.Item>
-        <DataList.Item>
-          <DataList.Label>Webhooks</DataList.Label>
-          <DataList.Value>
-            {webhookIds.length === 0 ? (
-              <Text color="gray">None</Text>
-            ) : loadingWebhooks ? (
-              <Text color="gray">Loading webhooks...</Text>
-            ) : selectedWebhooks.length > 0 ? (
+        {webhookIds.length && (
+          <DataList.Item>
+            <DataList.Label>Webhooks</DataList.Label>
+            <DataList.Value>
               <Flex direction="column" gap="1">
                 {selectedWebhooks.map((webhook) => (
                   <Flex key={webhook.id} direction="column" gap="1">
@@ -92,11 +88,9 @@ export function ExperimentDescriptionSection({ response, onEdit }: ExperimentDes
                   </Flex>
                 ))}
               </Flex>
-            ) : (
-              <Text color="gray">Selected webhooks not found</Text>
-            )}
-          </DataList.Value>
-        </DataList.Item>
+            </DataList.Value>
+          </DataList.Item>
+        )}
       </DataList.Root>
     </SectionCard>
   );
