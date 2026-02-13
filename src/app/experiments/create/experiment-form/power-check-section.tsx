@@ -285,7 +285,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                               '?'
                             ) : metricAnalysis.metric_spec.available_n === 0 ||
                               metricAnalysis.metric_spec.available_n < (metricAnalysis.target_n ?? 0) ? (
-                              <span color="crimson">{metricAnalysis.metric_spec.available_n}</span>
+                              <Text color="crimson">{metricAnalysis.metric_spec.available_n}</Text>
                             ) : (
                               metricAnalysis.metric_spec.available_n
                             )}
@@ -295,7 +295,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                               '?'
                             ) : metricAnalysis.metric_spec.available_nonnull_n === 0 ||
                               metricAnalysis.metric_spec.available_nonnull_n < (metricAnalysis.target_n ?? 0) ? (
-                              <span color="crimson">{metricAnalysis.metric_spec.available_nonnull_n}</span>
+                              <Text color="crimson">{metricAnalysis.metric_spec.available_nonnull_n}</Text>
                             ) : (
                               metricAnalysis.metric_spec.available_nonnull_n
                             )}
