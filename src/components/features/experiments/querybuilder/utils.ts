@@ -20,8 +20,14 @@ export function getDefaultFilterForType(fieldName: string, dataType: DataType): 
         value: [true],
       };
 
-    case 'integer':
     case 'bigint':
+      return {
+        field_name: fieldName,
+        relation: 'includes',
+        value: ['0'], // Ensure this is a number, not a string
+      };
+
+    case 'integer':
       return {
         field_name: fieldName,
         relation: 'includes',
@@ -92,7 +98,8 @@ export function createDefaultValueForOperator(operator: string, dataType: DataTy
     case 'not-equals':
     case 'on':
       if (dataType === 'boolean') return [true];
-      if (dataType === 'integer' || dataType === 'bigint') return [0];
+      if (dataType === 'integer') return [0];
+      if (dataType === 'bigint') return ['0'];
       if (dataType === 'double precision' || dataType === 'numeric') return [0.0];
       if (dataType.includes('date') || dataType.includes('timestamp')) {
         return [formatDateUtcYYYYMMDD(new Date())];
@@ -101,7 +108,8 @@ export function createDefaultValueForOperator(operator: string, dataType: DataTy
 
     case 'gte':
     case 'after':
-      if (dataType === 'integer' || dataType === 'bigint') return [0, null];
+      if (dataType === 'integer') return [0, null];
+      if (dataType === 'bigint') return ['0', null];
       if (dataType === 'double precision' || dataType === 'numeric') return [0.0, null];
       if (dataType.includes('date') || dataType.includes('timestamp')) {
         return [formatDateUtcYYYYMMDD(new Date()), null];
@@ -110,7 +118,8 @@ export function createDefaultValueForOperator(operator: string, dataType: DataTy
 
     case 'lte':
     case 'before':
-      if (dataType === 'integer' || dataType === 'bigint') return [null, 0];
+      if (dataType === 'integer') return [null, 0];
+      if (dataType === 'bigint') return [null, '0'];
       if (dataType === 'double precision' || dataType === 'numeric') return [null, 0.0];
       if (dataType.includes('date') || dataType.includes('timestamp')) {
         return [null, formatDateUtcYYYYMMDD(new Date())];
@@ -118,7 +127,8 @@ export function createDefaultValueForOperator(operator: string, dataType: DataTy
       return [null, ''];
 
     case 'between':
-      if (dataType === 'integer' || dataType === 'bigint') return [0, 10];
+      if (dataType === 'integer') return [0, 10];
+      if (dataType === 'bigint') return ['0', '10'];
       if (dataType === 'double precision' || dataType === 'numeric') return [0.0, 10.0];
       if (dataType.includes('date') || dataType.includes('timestamp')) {
         const today = new Date();
@@ -131,7 +141,8 @@ export function createDefaultValueForOperator(operator: string, dataType: DataTy
     case 'in-list':
     case 'not-in-list':
       if (dataType === 'boolean') return [true];
-      if (dataType === 'integer' || dataType === 'bigint') return [0];
+      if (dataType === 'integer') return [0];
+      if (dataType === 'bigint') return ['0'];
       if (dataType === 'double precision' || dataType === 'numeric') return [0.0];
       if (dataType.includes('date') || dataType.includes('timestamp')) {
         return [formatDateUtcYYYYMMDD(new Date())];

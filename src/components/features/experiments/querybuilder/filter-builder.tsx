@@ -12,10 +12,7 @@ const sanitizeFilter = (availableFields: FilterRowOption[], filter: FilterInput)
   // For numeric fields, ensure no NaN values
   const field = availableFields.find((f) => f.field_name === filter.field_name);
   const isNumeric =
-    field?.data_type === 'integer' ||
-    field?.data_type === 'bigint' ||
-    field?.data_type === 'double precision' ||
-    field?.data_type === 'numeric';
+    field?.data_type === 'integer' || field?.data_type === 'double precision' || field?.data_type === 'numeric';
 
   if (isNumeric) {
     const sanitizedValues = filter.value.map((val) => (val === null ? null : isNaN(val as number) ? 0 : Number(val)));
@@ -85,10 +82,7 @@ export function FilterBuilder({ availableFields, initialFilters, onChange }: Fil
     // Ensure numeric fields have numeric values
     if (
       field &&
-      (field.data_type === 'integer' ||
-        field.data_type === 'bigint' ||
-        field.data_type === 'double precision' ||
-        field.data_type === 'numeric')
+      (field.data_type === 'integer' || field.data_type === 'double precision' || field.data_type === 'numeric')
     ) {
       // Convert any string values to numbers and handle NaN
       const numericValues = filterRowChange.value.map((val) => {
@@ -98,17 +92,25 @@ export function FilterBuilder({ availableFields, initialFilters, onChange }: Fil
         if (typeof val === 'number' && !isNaN(val)) return val;
 
         // Otherwise convert to number or use 0 as fallback
-        const num =
-          typeof val === 'string'
-            ? field.data_type === 'integer' || field.data_type === 'bigint'
-              ? parseInt(val, 10)
-              : parseFloat(val)
-            : 0;
+        const num = typeof val === 'string' ? (field.data_type === 'integer' ? parseInt(val, 10) : parseFloat(val)) : 0;
 
         return isNaN(num) ? 0 : num;
       });
 
       filterRowChange = { ...filterRowChange, value: numericValues };
+    }
+    if (field && field.data_type === 'bigint') {
+      const stringValues = filterRowChange.value.map((val) => {
+        if (val === null) return null;
+
+        // If it's already a string, keep it
+        if (typeof val === 'string') return val;
+
+        // Otherwise convert to string
+        return String(val);
+      });
+
+      filterRowChange = { ...filterRowChange, value: stringValues };
     }
 
     const sanitizedFilter = sanitizeFilter(availableFields, filterRowChange);
