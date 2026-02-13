@@ -10,6 +10,7 @@ import { formatIsoDateLocal } from '@/services/date-utils';
 import { useListOrganizationWebhooks } from '@/api/admin';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { ExperimentTypeOptions } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
+import { XSpinner } from '@/components/ui/x-spinner';
 
 interface ExperimentDescriptionSectionProps {
   response: CreateExperimentResponse;
@@ -74,11 +75,12 @@ export function ExperimentDescriptionSection({ response, onEdit }: ExperimentDes
           <DataList.Label>End Date</DataList.Label>
           <DataList.Value>{designSpec.end_date ? formatIsoDateLocal(designSpec.end_date) : '-'}</DataList.Value>
         </DataList.Item>
-        {webhookIds.length && (
+        {webhookIds.length ? (
           <DataList.Item>
             <DataList.Label>Webhooks</DataList.Label>
             <DataList.Value>
               <Flex direction="column" gap="1">
+                {loadingWebhooks && <XSpinner />}
                 {selectedWebhooks.map((webhook) => (
                   <Flex key={webhook.id} direction="column" gap="1">
                     <Text weight="bold">{webhook.name}</Text>
@@ -90,7 +92,7 @@ export function ExperimentDescriptionSection({ response, onEdit }: ExperimentDes
               </Flex>
             </DataList.Value>
           </DataList.Item>
-        )}
+        ) : null}
       </DataList.Root>
     </SectionCard>
   );
