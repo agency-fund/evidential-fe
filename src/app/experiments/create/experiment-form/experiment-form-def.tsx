@@ -210,6 +210,10 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           const nextData = {
             ...data,
             experimentType,
+            datasourceId:
+              isBanditExperimentType(data.experimentType) != isBanditExperimentType(experimentType)
+                ? undefined
+                : data.datasourceId,
             createExperimentResponse: undefined,
             createExperimentError: undefined,
             commitError: undefined,
