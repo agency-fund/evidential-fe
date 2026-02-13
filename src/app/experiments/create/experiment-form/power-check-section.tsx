@@ -1,6 +1,20 @@
 'use client';
 
-import { Button, Callout, Card, Flex, RadioCards, Spinner, Table, Text, TextField } from '@radix-ui/themes';
+import {
+  Badge,
+  Button,
+  Callout,
+  Card,
+  DataList,
+  Flex,
+  Grid,
+  Heading,
+  RadioCards,
+  Spinner,
+  Table,
+  Text,
+  TextField,
+} from '@radix-ui/themes';
 import { CheckCircledIcon, CrossCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData } from './experiment-form-def';
 import { ExperimentFreqStackScreenMessage } from './experiment-freq-stack-screen';
@@ -110,6 +124,13 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     }
   };
 
+  const primaryPower =
+    data.powerCheckResponse !== undefined && !validationError ? data.powerCheckResponse.analyses[0] : undefined;
+  const restPower =
+    data.powerCheckResponse !== undefined && !validationError && data.powerCheckResponse.analyses.length > 1
+      ? data.powerCheckResponse.analyses.slice(1)
+      : undefined;
+
   return (
     <Flex direction="column" gap={'3'}>
       <Flex direction="row" gap="4">
@@ -160,69 +181,133 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
             </Flex>
           )}
 
-          {data.powerCheckResponse !== undefined &&
-            !validationError &&
-            data.powerCheckResponse.analyses.map((metricAnalysis, i) => (
-              <Card key={i}>
-                <Flex direction="column" gap={'2'}>
-                  <Text weight={'bold'}>{metricAnalysis.metric_spec.field_name}</Text>
-                  <Callout.Root color={metricAnalysis.sufficient_n ? 'green' : 'red'}>
-                    <Callout.Icon>
-                      {metricAnalysis.sufficient_n ? <CheckCircledIcon /> : <CrossCircledIcon />}
-                    </Callout.Icon>
-                    <Callout.Text>
-                      {metricAnalysis.msg?.msg ||
-                        (metricAnalysis.sufficient_n
-                          ? `The experiment has sufficient power.`
-                          : `The experiment does not have sufficient power.`)}
-                    </Callout.Text>
-                  </Callout.Root>
+          {primaryPower && (
+            <Callout.Root color={primaryPower.sufficient_n ? 'green' : 'red'}>
+              <Callout.Icon>{primaryPower.sufficient_n ? <CheckCircledIcon /> : <CrossCircledIcon />}</Callout.Icon>
+              <Callout.Text>
+                {primaryPower.msg?.msg ||
+                  (primaryPower.sufficient_n
+                    ? `The experiment has sufficient power.`
+                    : `The experiment does not have sufficient power.`)}
+              </Callout.Text>
+            </Callout.Root>
+          )}
+
+          <Grid rows={'1'} columns={restPower ? '2' : '1'} gap={'3'}>
+            {primaryPower && (
+              <>
+                <Card>
+                  <Flex direction="column" gap={'3'}>
+                    <Heading size={'3'}>Primary Metric: {primaryPower.metric_spec.field_name}</Heading>
+                    <DataList.Root>
+                      <DataList.Item>
+                        <DataList.Label>Status</DataList.Label>
+                        <DataList.Value>
+                          {primaryPower.sufficient_n ? (
+                            <Badge color={'green'}>Pass</Badge>
+                          ) : (
+                            <Badge color={'red'}>Failed</Badge>
+                          )}
+                        </DataList.Value>
+                      </DataList.Item>
+                      <DataList.Item>
+                        <DataList.Label>Required</DataList.Label>
+                        <DataList.Value>{primaryPower.target_n || '?'}</DataList.Value>
+                      </DataList.Item>
+                      <DataList.Item>
+                        <DataList.Label>Available</DataList.Label>
+                        <DataList.Value>
+                          {' '}
+                          {primaryPower.metric_spec.available_n == null ? (
+                            '?'
+                          ) : primaryPower.metric_spec.available_n === 0 ||
+                            primaryPower.metric_spec.available_n < (primaryPower.target_n ?? 0) ? (
+                            <span color="crimson">{primaryPower.metric_spec.available_n}</span>
+                          ) : (
+                            primaryPower.metric_spec.available_n
+                          )}
+                        </DataList.Value>
+                      </DataList.Item>
+                      <DataList.Item>
+                        <DataList.Label>Available (non-null)</DataList.Label>
+                        <DataList.Value>
+                          {primaryPower.metric_spec.available_nonnull_n == null ? (
+                            '?'
+                          ) : primaryPower.metric_spec.available_nonnull_n === 0 ||
+                            primaryPower.metric_spec.available_nonnull_n < (primaryPower.target_n ?? 0) ||
+                            primaryPower.metric_spec.available_nonnull_n <
+                              (primaryPower.metric_spec.available_n ?? 0) ? (
+                            <Text color="orange">{primaryPower.metric_spec.available_nonnull_n}</Text>
+                          ) : (
+                            primaryPower.metric_spec.available_nonnull_n
+                          )}
+                        </DataList.Value>
+                      </DataList.Item>
+                      {primaryPower.pct_change_possible !== null && primaryPower.pct_change_possible !== undefined && (
+                        <DataList.Item>
+                          <DataList.Label>MME</DataList.Label>
+                          <DataList.Value>{(primaryPower.pct_change_possible * 100).toFixed(4)}%</DataList.Value>
+                        </DataList.Item>
+                      )}
+                    </DataList.Root>
+                  </Flex>
+                </Card>
+              </>
+            )}
+            {restPower ? (
+              <Card key={'secondary'}>
+                <Flex direction="column" gap={'3'}>
+                  <Heading size={'3'}>Secondary Metrics</Heading>
                   <Table.Root>
+                    <Table.Header>
+                      <Table.Row>
+                        <Table.ColumnHeaderCell>Metric</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell></Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell>Required</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell>Available</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell>Available (non-null)</Table.ColumnHeaderCell>
+                      </Table.Row>
+                    </Table.Header>
                     <Table.Body>
-                      <Table.Row>
-                        <Table.RowHeaderCell>Required Sample Size</Table.RowHeaderCell>
-                        <Table.Cell>{metricAnalysis.target_n || '?'}</Table.Cell>
-                      </Table.Row>
-                      <Table.Row>
-                        <Table.RowHeaderCell>Available Samples</Table.RowHeaderCell>
-                        <Table.Cell>
-                          {metricAnalysis.metric_spec.available_n == null ? (
-                            '?'
-                          ) : metricAnalysis.metric_spec.available_n === 0 ||
-                            metricAnalysis.metric_spec.available_n < (metricAnalysis.target_n ?? 0) ? (
-                            <span color="crimson">{metricAnalysis.metric_spec.available_n}</span>
-                          ) : (
-                            metricAnalysis.metric_spec.available_n
-                          )}
-                        </Table.Cell>
-                      </Table.Row>
-                      <Table.Row>
-                        <Table.RowHeaderCell>Available non-null Samples</Table.RowHeaderCell>
-                        <Table.Cell>
-                          {metricAnalysis.metric_spec.available_nonnull_n == null ? (
-                            '?'
-                          ) : metricAnalysis.metric_spec.available_nonnull_n === 0 ||
-                            metricAnalysis.metric_spec.available_nonnull_n < (metricAnalysis.target_n ?? 0) ? (
-                            <span color="crimson">{metricAnalysis.metric_spec.available_nonnull_n}</span>
-                          ) : (
-                            metricAnalysis.metric_spec.available_nonnull_n
-                          )}
-                        </Table.Cell>
-                      </Table.Row>
-                      {metricAnalysis.pct_change_possible !== null &&
-                        metricAnalysis.pct_change_possible !== undefined && (
-                          <Table.Row>
-                            <Table.RowHeaderCell>
-                              Minimum Meaningful Effect with all available samples
-                            </Table.RowHeaderCell>
-                            <Table.Cell>{(metricAnalysis.pct_change_possible * 100).toFixed(4)}%</Table.Cell>
-                          </Table.Row>
-                        )}
+                      {restPower.map((metricAnalysis, i) => (
+                        <Table.Row key={`rest${i}`}>
+                          <Table.Cell>{metricAnalysis.metric_spec.field_name}</Table.Cell>
+                          <Table.Cell>
+                            {metricAnalysis.sufficient_n ? (
+                              <Badge color={'green'}>Pass</Badge>
+                            ) : (
+                              <Badge color={'orange'}>Failed</Badge>
+                            )}
+                          </Table.Cell>
+                          <Table.Cell align={'right'}>{metricAnalysis.target_n ?? ''}</Table.Cell>
+                          <Table.Cell align={'right'}>
+                            {metricAnalysis.metric_spec.available_n == null ? (
+                              '?'
+                            ) : metricAnalysis.metric_spec.available_n === 0 ||
+                              metricAnalysis.metric_spec.available_n < (metricAnalysis.target_n ?? 0) ? (
+                              <span color="crimson">{metricAnalysis.metric_spec.available_n}</span>
+                            ) : (
+                              metricAnalysis.metric_spec.available_n
+                            )}
+                          </Table.Cell>
+                          <Table.Cell align={'right'}>
+                            {metricAnalysis.metric_spec.available_nonnull_n == null ? (
+                              '?'
+                            ) : metricAnalysis.metric_spec.available_nonnull_n === 0 ||
+                              metricAnalysis.metric_spec.available_nonnull_n < (metricAnalysis.target_n ?? 0) ? (
+                              <span color="crimson">{metricAnalysis.metric_spec.available_nonnull_n}</span>
+                            ) : (
+                              metricAnalysis.metric_spec.available_nonnull_n
+                            )}
+                          </Table.Cell>
+                        </Table.Row>
+                      ))}
                     </Table.Body>
                   </Table.Root>
                 </Flex>
               </Card>
-            ))}
+            ) : null}
+          </Grid>
         </Flex>
       </SectionCard>
 
@@ -243,41 +328,43 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                 </Callout.Root>
               )}
               <RadioCards.Root columns="1" value={selectedSampleOption} onValueChange={handleSampleOptionChange}>
-                <RadioCards.Item
-                  value={PowerCheckOption.USE_POWER_CHECK}
-                  disabled={powerCheckTarget === undefined || powerCheckTarget === 0}
-                >
-                  Use minimum sample required: {powerCheckTarget ?? 'N/A'}
-                </RadioCards.Item>
-                <RadioCards.Item
-                  value={PowerCheckOption.USE_ALL_NON_NULL_SAMPLES}
-                  disabled={nonNullSamples === undefined || nonNullSamples === 0}
-                >
-                  Use all available non-null samples: {nonNullSamples}
-                </RadioCards.Item>
-                <RadioCards.Item
-                  value={PowerCheckOption.ENTER_OWN}
-                  disabled={allSamples === undefined || allSamples === 0}
-                >
-                  <Flex align="center" direction={'row'} gap="2">
-                    <span>Use custom sample size:</span>
-                    <div style={{ pointerEvents: 'auto' }}>
-                      <TextField.Root
-                        style={{ width: '250px' }}
-                        size="2"
-                        type="number"
-                        max={allSamples ?? undefined}
-                        onChange={(e) =>
-                          dispatch({
-                            type: 'set-chosen-n',
-                            value: e.target.value === '' ? undefined : Number(e.target.value),
-                          })
-                        }
-                        placeholder="Type your own desired #."
-                      />
-                    </div>
-                  </Flex>
-                </RadioCards.Item>
+                <Flex direction={'row'} gap={'3'} justify={'between'}>
+                  <RadioCards.Item
+                    value={PowerCheckOption.USE_POWER_CHECK}
+                    disabled={powerCheckTarget === undefined || powerCheckTarget === 0}
+                  >
+                    Use minimum sample required: {powerCheckTarget ?? 'N/A'}
+                  </RadioCards.Item>
+                  <RadioCards.Item
+                    value={PowerCheckOption.USE_ALL_NON_NULL_SAMPLES}
+                    disabled={nonNullSamples === undefined || nonNullSamples === 0}
+                  >
+                    Use all available non-null samples: {nonNullSamples}
+                  </RadioCards.Item>
+                  <RadioCards.Item
+                    value={PowerCheckOption.ENTER_OWN}
+                    disabled={allSamples === undefined || allSamples === 0}
+                  >
+                    <Flex align="center" direction={'row'} gap="2">
+                      <span>Use custom sample size:</span>
+                      <div style={{ pointerEvents: 'auto' }}>
+                        <TextField.Root
+                          style={{ width: '250px' }}
+                          size="2"
+                          type="number"
+                          max={allSamples ?? undefined}
+                          onChange={(e) =>
+                            dispatch({
+                              type: 'set-chosen-n',
+                              value: e.target.value === '' ? undefined : Number(e.target.value),
+                            })
+                          }
+                          placeholder="Type your own desired #."
+                        />
+                      </div>
+                    </Flex>
+                  </RadioCards.Item>
+                </Flex>
               </RadioCards.Root>
             </Flex>
           </Flex>
