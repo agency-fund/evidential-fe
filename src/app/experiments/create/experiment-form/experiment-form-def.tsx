@@ -253,6 +253,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       breadcrumbTitle: 'Datasource',
       render: ExperimentSelectDatasourceScreen,
       reducer: (data, msg) => {
+        const shouldClearDependents = data.datasourceId !== msg.datasourceId || data.tableName !== msg.tableName;
         if (msg.type === 'set-datasource') {
           return {
             ...data,
@@ -260,8 +261,16 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             tableName: msg.tableName,
             primaryKey: msg.primaryKey,
 
+            // Clear metrics and filters if the datasource ID or table have changed. This could be improved by retain
+            // entries based on the inspection results.
+            primaryMetric: shouldClearDependents ? undefined : data.primaryMetric,
+            secondaryMetrics: shouldClearDependents ? undefined : data.secondaryMetrics,
+            filters: shouldClearDependents ? undefined : data.filters,
+            strata: shouldClearDependents ? undefined : data.strata,
+
             // Changing datasource should clear power check
             powerCheckResponse: undefined,
+            chosenN: undefined,
           };
         }
         return data;
@@ -387,6 +396,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             createExperimentResponse: msg.response,
             createExperimentError: undefined,
             experimentId: msg.response.experiment_id,
+            commitError: undefined,
           };
         }
         if (msg.type === 'set-create-error') {
@@ -494,7 +504,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       reducer: (data, msg: ExperimentFreqStackScreenMessage) => {
         // Primary key
         if (msg.type === 'set-primary-key') {
-          return { ...data, primaryKey: msg.value };
+          return { ...data, primaryKey: msg.value, powerCheckResponse: undefined, chosenN: undefined };
         }
 
         // Metric builder actions - all metric changes invalidate power check
@@ -562,7 +572,12 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           return { ...data, createExperimentError: msg.response, createExperimentResponse: undefined };
         }
         if (msg.type === 'set-create-response') {
-          return { ...data, createExperimentResponse: msg.response, createExperimentError: undefined };
+          return {
+            ...data,
+            createExperimentResponse: msg.response,
+            createExperimentError: undefined,
+            commitError: undefined,
+          };
         }
 
         return data;
