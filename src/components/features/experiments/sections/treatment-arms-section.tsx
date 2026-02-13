@@ -52,11 +52,11 @@ export function TreatmentArmsSection({ response, onEdit }: TreatmentArmsSectionP
                 <Flex align="center" justify="between" gap="3" wrap="wrap">
                   <Flex align="center" gap="2" wrap="wrap">
                     <Text weight="bold">{banditArm.arm_name}</Text>
-                    {index === 0 && (
+                    {index === 0 && !isBandit ? (
                       <Text size="1" color="gray">
                         (Control)
                       </Text>
-                    )}
+                    ) : null}
                   </Flex>
                   <Flex align="center" gap="2" wrap="wrap">
                     {isBetaPrior ? (
