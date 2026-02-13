@@ -15,7 +15,6 @@ import { ErrorType } from '@/services/orval-fetch';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 
 export type ExperimentFreqStackScreenMessage =
-  | { type: 'set-primary-key'; value: string }
   | MetricBuilderAction
   | { type: 'set-filters'; filters: FilterInput[] }
   | { type: 'set-strata'; strata: string[] }

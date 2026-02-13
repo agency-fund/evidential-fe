@@ -41,7 +41,7 @@ interface SelectPrimaryKeyProps {
   tableData: InspectDatasourceTableResponse | undefined;
   value: string | undefined;
   isLoading: boolean;
-  onChange: (value: string) => void;
+  onChange: (value: string | undefined) => void;
   disabled?: boolean;
 }
 
@@ -83,11 +83,7 @@ export const SelectPrimaryKey = ({ tableData, isLoading, value, onChange, disabl
           value={inputValue ?? ''}
           onChange={(value, key) => {
             setInputValue(value);
-            if (key !== undefined) {
-              onChange(key);
-            } else {
-              onChange('');
-            }
+            onChange(key);
           }}
           options={orderedFields}
           rightSlot={

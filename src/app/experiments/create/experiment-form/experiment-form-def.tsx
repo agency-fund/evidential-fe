@@ -502,11 +502,6 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       breadcrumbTitle: 'Parameters',
       render: ExperimentFreqStackScreen,
       reducer: (data, msg: ExperimentFreqStackScreenMessage) => {
-        // Primary key
-        if (msg.type === 'set-primary-key') {
-          return { ...data, primaryKey: msg.value, powerCheckResponse: undefined, chosenN: undefined };
-        }
-
         // Metric builder actions - all metric changes invalidate power check
         if (msg.type === 'primary-metric-select') {
           return { ...data, primaryMetric: msg.primaryMetric, powerCheckResponse: undefined, chosenN: undefined };

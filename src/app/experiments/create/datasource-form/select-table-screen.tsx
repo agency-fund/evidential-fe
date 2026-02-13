@@ -10,7 +10,9 @@ import { SelectPrimaryKey } from '@/app/experiments/create/experiment-form/selec
 import { ReloadIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 
-type SelectTableMessages = { type: 'set-table'; value: string } | { type: 'set-primary-key'; value: string };
+type SelectTableMessages =
+  | { type: 'set-table'; value: string }
+  | { type: 'set-primary-key'; value: string | undefined };
 
 export const SelectTableScreen = ({
   data,

@@ -35,13 +35,13 @@ const DefaultComboboxRow = ({ optionText }: DefaultComboboxRowProps) => {
   );
 };
 
-export interface ComboboxProps<TOption = string, TKey = string> {
+export interface ComboboxProps<TOption = string, TKey extends React.Key = string> {
   /** The current input value. */
   value: string;
   /**
-   * Called on every input change (typing or selection).
-   * value - The new text value (from typing, or the display text of a selection)
-   * key - If an option was selected, we also provide its key. Undefined if typing even in the case of an "exact" match.
+   * Called on every input change (typing or selection). `value` is the text entered by the user. When the input value
+   * matches a known item's key, `key` will refer to the selected entry. If the entered value does not match an item,
+   * `key` will be undefined.
    */
   onChange: (value: string, key?: TKey) => void;
 
@@ -81,7 +81,7 @@ export interface ComboboxProps<TOption = string, TKey = string> {
  * Controlled combobox with a text input and a dropdown list of options.
  * Parent owns the input value via value/onChange props.
  */
-export function Combobox<TOption = string>({
+export function Combobox<TOption = string, TKey extends React.Key = string>({
   value,
   onChange,
   options,
@@ -97,7 +97,7 @@ export function Combobox<TOption = string>({
   maxHeight = '200px',
   disabled = false,
   shouldFilter = true,
-}: ComboboxProps<TOption>) {
+}: ComboboxProps<TOption, TKey>) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [popoverHighlightedIndex, setPopoverHighlightedIndex] = useState(-1);
   const popoverItemRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -134,7 +134,8 @@ export function Combobox<TOption = string>({
     if (disabled) return;
     setIsPopoverOpen(true);
     const newValue = e.target.value;
-    onChange(newValue);
+    const exactMatch = options.find((opt) => getDisplayTextForOption(opt) === newValue);
+    onChange(newValue, exactMatch ? getKeyForOption(exactMatch) : undefined);
   };
 
   // Search box handler for keyboard navigation
