@@ -44,18 +44,17 @@ type Screen<FormData, Message, ScreenId extends string> = {
   // When isPrev enabled returns true, the "Prev" button will be enabled. If it returns anything else, the button will
   // be disabled.
   isPrevEnabled: (data: FormData) => boolean;
-  // Describes the behavior of the "prev" button: return null to hide prev button, and one of the navigation types
-  // to navigate to a screen by id.
-  prevScreen: (data: FormData) => null | { type: 'screen'; id: ScreenId } | { type: 'wizard-exit-left' };
-  // Describes the behavior of the "next" button: return a "screen" type to navigate to a specific screen by id, or
-  // a "submit" type to cause the Wizard's onSubmit handler to be triggered.
-  nextScreen: (data: FormData) => { type: 'screen'; id: ScreenId } | { type: 'submit' };
+  // Optional override for "prev" navigation. If omitted, Wizard falls back to breadcrumb order.
+  // Return null to hide prev button. Return a "screen" type to navigate to a specific screen by id.
+  prevScreen?: (data: FormData) => null | { type: 'screen'; id: ScreenId } | { type: 'wizard-exit-left' };
+  // Optional override for "next" navigation. If omitted, Wizard falls back to breadcrumb order.
+  // Return a "screen" type to navigate to a specific screen by id, or a "submit" type to trigger onSubmit.
+  nextScreen?: (data: FormData) => { type: 'screen'; id: ScreenId } | { type: 'submit' };
   // Breadcrumbs to render
   breadcrumbs?: (data: FormData) => Array<ScreenId>;
-  // Whether or not the breadcrumb is navigable.
+  // Whether or not the breadcrumb for the current screen is navigable. If undefined, breadcrumb is clickable.
   isBreadcrumbClickable?: (data: FormData) => boolean;
-  // Custom label for the "Next" button. If not set, defaults to "Next" or "Submit", depending on the return value of
-  // nextScreen().
+  // Custom label for the "Next" button. If not set, defaults to "Next" or "Submit", depending on resolved next action.
   nextButtonLabel?: (data: FormData) => string;
   // Custom label for the "Back" button. If not set, defaults to "Back".
   prevButtonLabel?: (data: FormData) => string;
@@ -63,7 +62,6 @@ type Screen<FormData, Message, ScreenId extends string> = {
   hideNavigation?: (data: FormData) => boolean;
   // Optional tooltip message for the Prev button (e.g., validation errors).
   prevButtonTooltip?: (data: FormData) => string;
-
   // Optional tooltip message for the Next button (e.g., validation errors).
   nextButtonTooltip?: (data: FormData) => string;
 };
@@ -100,6 +98,7 @@ type WizardForm<FormData, ScreenId extends string, InputData> = {
   screens: { [K in ScreenId]: PackedScreen<FormData, ScreenId> };
 
   // Default breadcrumbs. If an individual screen doesn't specify a breadcrumb function, this is used instead.
+  // When screens omit prevScreen and nextScreen helpers, the breadcrumbs also define how next/prev buttons behave.
   breadcrumbs?: (data: FormData) => Array<ScreenId>;
 
   // Returns the screen ID to start on, based on provided data. This allows the form definition to select a starting

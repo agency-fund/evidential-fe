@@ -180,7 +180,6 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
     metadata: screen({
       breadcrumbTitle: 'Experiment Description',
       render: ExperimentMetadataScreen,
-      breadcrumbs: breadcrumbs,
       reducer: (data, msg: ExperimentMetadataMessages) => {
         if (msg.type === 'set-name') return { ...data, name: msg.value };
         if (msg.type === 'set-hypothesis') return { ...data, hypothesis: msg.value };
@@ -197,9 +196,6 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         return true;
       },
       isPrevEnabled: () => false,
-      prevScreen: () => null,
-      nextScreen: () => ({ type: 'screen', id: 'experiment-type' }),
-      isBreadcrumbClickable: () => true,
     }),
     'experiment-type': screen({
       breadcrumbTitle: 'Type',
@@ -235,24 +231,6 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       },
       isNextEnabled: (data) => !!data.experimentType,
       isPrevEnabled: () => true,
-      prevScreen: () => ({ type: 'screen', id: 'metadata' }),
-      nextScreen: ({ experimentType }) => {
-        switch (experimentType) {
-          case 'freq_online':
-          case 'freq_preassigned':
-            return { type: 'screen', id: 'describe-arms' };
-          case 'mab_online':
-            return { type: 'screen', id: 'bandit-binary-or-real' };
-          case 'cmab_online':
-            return { type: 'screen', id: 'describe-contexts' };
-          case undefined:
-            throw new Error('Experiment type undefined');
-          default:
-            throw new Error(`Experiment type ${experimentType} unhandled`);
-        }
-      },
-      breadcrumbs: breadcrumbs,
-      isBreadcrumbClickable: () => true,
     }),
     'freq-select-datasource': screen({
       breadcrumbTitle: 'Datasource',
@@ -282,14 +260,12 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       },
       isNextEnabled: (data) => !!data.datasourceId && !!data.tableName,
       isPrevEnabled: () => true,
-      prevScreen: () => ({ type: 'screen', id: 'describe-arms' }),
-      nextScreen: () => ({ type: 'screen', id: 'freq-stack' }),
-      isBreadcrumbClickable: () => true,
+
       hideNavigation: () => true,
     }),
     'bandit-binary-or-real': screen({
       breadcrumbTitle: 'Outcomes',
-      breadcrumbs: breadcrumbs,
+
       render: ExperimentSelectBinaryOrRealOutcomes,
       reducer: (data, msg) => {
         if (msg.type === 'set-outcome-type') {
@@ -308,14 +284,6 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       },
       isNextEnabled: () => true,
       isPrevEnabled: () => true,
-      prevScreen: ({ experimentType }) => {
-        if (experimentType === 'cmab_online') {
-          return { type: 'screen', id: 'describe-contexts' };
-        }
-        return { type: 'screen', id: 'experiment-type' };
-      },
-      nextScreen: () => ({ type: 'screen', id: 'describe-bandit-arms' }),
-      isBreadcrumbClickable: () => true,
     }),
     'describe-contexts': screen({
       breadcrumbTitle: 'Contexts',
@@ -360,18 +328,6 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         return contexts.length >= 1 && contexts.every((c) => c.name.trim() !== '');
       },
       isPrevEnabled: () => true,
-      prevScreen: ({ experimentType }) => {
-        if (experimentType === 'cmab_online') {
-          return { type: 'screen', id: 'experiment-type' };
-        }
-        return { type: 'screen', id: 'bandit-binary-or-real' };
-      },
-      nextScreen: ({ experimentType }) => {
-        if (experimentType === 'cmab_online') {
-          return { type: 'screen', id: 'bandit-binary-or-real' };
-        }
-        return { type: 'screen', id: 'describe-bandit-arms' };
-      },
       isBreadcrumbClickable: ({ bandit }) => bandit !== undefined,
       nextButtonTooltip: (data) => {
         const contexts = data.bandit?.experimentType === 'cmab_online' ? data.bandit.contexts : [];
@@ -425,30 +381,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       isNextEnabled: () => true, // The screen handles its own validation
       isPrevEnabled: () => true,
       hideNavigation: () => true,
-      prevScreen: ({ experimentType }) => {
-        switch (experimentType) {
-          case 'cmab_online':
-          case 'mab_online':
-            return { type: 'screen', id: 'bandit-binary-or-real' };
-          case 'freq_online':
-          case 'freq_preassigned':
-          case undefined:
-            throw new Error(`Experiment type ${experimentType} unhandled`);
-        }
-      },
-      nextScreen: ({ experimentType }) => {
-        switch (experimentType) {
-          case 'mab_online':
-          case 'cmab_online':
-            return { type: 'screen', id: 'summarize-bandit' };
-          case 'freq_online':
-          case 'freq_preassigned':
-          case undefined:
-            throw new Error(`Experiment type ${experimentType} unhandled`);
-        }
-      },
       isBreadcrumbClickable: ({ bandit }) => bandit !== undefined,
-      breadcrumbs: breadcrumbs,
     }),
     'describe-arms': screen({
       breadcrumbTitle: 'Arms',
@@ -487,30 +420,6 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       },
       isNextEnabled: (data) => (data.arms?.length ?? 0) >= 2,
       isPrevEnabled: () => true,
-      prevScreen: ({ experimentType }) => {
-        switch (experimentType) {
-          case 'freq_online':
-          case 'freq_preassigned':
-            return { type: 'screen', id: 'experiment-type' };
-          case 'mab_online':
-          case 'cmab_online':
-          case undefined:
-            throw new Error(`Experiment type ${experimentType} unhandled`);
-        }
-      },
-      nextScreen: ({ experimentType }) => {
-        switch (experimentType) {
-          case 'freq_online':
-          case 'freq_preassigned':
-            return { type: 'screen', id: 'freq-select-datasource' };
-          case 'mab_online':
-          case 'cmab_online':
-          case undefined:
-            throw new Error(`Experiment type ${experimentType} unhandled`);
-        }
-      },
-      isBreadcrumbClickable: () => true,
-      breadcrumbs: breadcrumbs,
     }),
     'freq-stack': screen({
       breadcrumbTitle: 'Parameters',
@@ -594,8 +503,6 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       isNextEnabled: () => true, // ignored
       isPrevEnabled: () => true,
       hideNavigation: () => true,
-      prevScreen: () => ({ type: 'screen', id: 'freq-select-datasource' }),
-      nextScreen: () => ({ type: 'screen', id: 'summarize-freq' }),
       isBreadcrumbClickable: (data) => !!(data.datasourceId && data.tableName),
     }),
     'summarize-freq': screen({
@@ -610,8 +517,6 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       },
       isNextEnabled: (data) => !!data.createExperimentResponse,
       isPrevEnabled: (data) => !data.createExperimentResponse,
-      prevScreen: () => ({ type: 'screen', id: 'freq-stack' }),
-      nextScreen: () => ({ type: 'submit' }),
       hideNavigation: () => true,
     }),
     'summarize-bandit': screen({
@@ -625,11 +530,8 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       },
       isNextEnabled: (data) => !!data.createExperimentResponse,
       isPrevEnabled: (data) => !data.createExperimentResponse,
-      prevScreen: () => ({ type: 'screen', id: 'describe-bandit-arms' }),
-      nextScreen: () => ({ type: 'submit' }),
       hideNavigation: () => true,
       isBreadcrumbClickable: () => false,
-      breadcrumbs: breadcrumbs,
     }),
   },
 };

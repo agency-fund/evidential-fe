@@ -6,6 +6,27 @@ import { NavigationButtons } from '@/components/features/experiments/navigation-
 import { WizardBreadcrumbsProvider } from './wizard-breadcrumbs-context';
 import { Box } from '@radix-ui/themes';
 
+type NextTask<ScreenId extends string> = { type: 'screen'; id: ScreenId } | { type: 'submit' };
+type PrevTask<ScreenId extends string> = null | { type: 'screen'; id: ScreenId } | { type: 'wizard-exit-left' };
+
+const prevFromFlow = <ScreenId extends string>(flow: Array<ScreenId>, current: ScreenId): PrevTask<ScreenId> => {
+  const index = flow.indexOf(current);
+  if (index < 0) {
+    throw new Error(`No prevScreen provided and current screen ${current} is not present in breadcrumbs`);
+  }
+  const prev = flow[index - 1];
+  return prev ? { type: 'screen', id: prev } : null;
+};
+
+const nextFromFlow = <ScreenId extends string>(flow: Array<ScreenId>, current: ScreenId): NextTask<ScreenId> => {
+  const index = flow.indexOf(current);
+  if (index < 0) {
+    throw new Error(`No nextScreen provided and current screen ${current} is not present in breadcrumbs`);
+  }
+  const next = flow[index + 1];
+  return next ? { type: 'screen', id: next } : { type: 'submit' };
+};
+
 type WizardProps<FormData, ScreenId extends string, InputData> = {
   // The wizard definition, composed of screens and breadcrumbs and callback functions that inform Wizard's behavior.
   form: WizardForm<FormData, ScreenId, InputData>;
@@ -41,8 +62,26 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
       setData((prev) => screen.reducer(prev, message));
     };
 
+    const screenIdBreadcrumbs = screen.breadcrumbs
+      ? screen.breadcrumbs(data)
+      : form.breadcrumbs
+        ? form.breadcrumbs(data)
+        : [];
+    const resolvePrevScreen = (): PrevTask<ScreenId> => {
+      if (screen.prevScreen) {
+        return screen.prevScreen(data);
+      }
+      return prevFromFlow(screenIdBreadcrumbs, currentScreenId);
+    };
+    const resolveNextScreen = (): NextTask<ScreenId> => {
+      if (screen.nextScreen) {
+        return screen.nextScreen(data);
+      }
+      return nextFromFlow(screenIdBreadcrumbs, currentScreenId);
+    };
+
     const handleNext = () => {
-      const task = screen.nextScreen(data);
+      const task = resolveNextScreen();
       switch (task.type) {
         case 'submit':
           if (onSubmit) {
@@ -55,7 +94,7 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
     };
 
     const handlePrev = () => {
-      const task = screen.prevScreen(data);
+      const task = resolvePrevScreen();
       if (!task) {
         return;
       }
@@ -79,9 +118,9 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
       setCurrentScreenId(screenId);
     };
 
-    const prevScreen = screen.prevScreen(data);
+    const prevScreen = resolvePrevScreen();
     const isNextEnabled = screen.isNextEnabled(data);
-    const nextScreen = screen.nextScreen(data);
+    const nextScreen = resolveNextScreen();
 
     // Determine button labels
     const nextLabel = screen.nextButtonLabel
@@ -97,17 +136,12 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
     // Get tooltip message for next button
     const nextButtonTooltip = screen.nextButtonTooltip?.(data) ?? '';
 
-    const screenIdBreadcrumbs = screen.breadcrumbs
-      ? screen.breadcrumbs(data)
-      : form.breadcrumbs
-        ? form.breadcrumbs(data)
-        : [];
     const breadcrumbs: Array<BreadcrumbInfo> = screenIdBreadcrumbs.map((v): BreadcrumbInfo => {
       return form.screens[v].withScreen((s) => ({
         type: 'screen',
         screenId: v,
         label: s.breadcrumbTitle ?? v,
-        clickable: s.isBreadcrumbClickable?.(data) ?? false,
+        clickable: s.isBreadcrumbClickable === undefined ? true : s.isBreadcrumbClickable(data),
       }));
     });
 
