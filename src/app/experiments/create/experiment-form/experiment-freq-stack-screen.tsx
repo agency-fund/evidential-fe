@@ -101,10 +101,6 @@ export const ExperimentFreqStackScreen = ({
       <Flex direction="column" gap={'3'}>
         <WizardBreadcrumbs />
 
-        {data.createExperimentError && (
-          <GenericErrorCallout title={'Failed to create experiment'} error={data.createExperimentError} />
-        )}
-
         <Heading as="h3" size="3">
           Metrics
         </Heading>
@@ -144,6 +140,10 @@ export const ExperimentFreqStackScreen = ({
         </Heading>
         <PowerCheckSection data={data} dispatch={dispatch} />
       </Flex>
+
+      {data.createExperimentError && (
+        <GenericErrorCallout title={'Failed to create experiment'} error={data.createExperimentError} />
+      )}
       <NavigationButtons
         onBack={navigatePrev}
         onNext={handleCreate}

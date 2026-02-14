@@ -237,10 +237,6 @@ export const ExperimentDescribeBanditArmsScreen = ({
       <Flex direction="column" gap={'3'}>
         <WizardBreadcrumbs />
 
-        {data.createExperimentError && (
-          <GenericErrorCallout title="Failed to create experiment" error={data.createExperimentError} />
-        )}
-
         <Heading as="h2" size="4">
           Define Treatment Arms
         </Heading>
@@ -281,6 +277,11 @@ export const ExperimentDescribeBanditArmsScreen = ({
           )}
         </Flex>
       </Flex>
+
+      {data.createExperimentError && (
+        <GenericErrorCallout title="Failed to create experiment" error={data.createExperimentError} />
+      )}
+
       <NavigationButtons
         onBack={navigatePrev}
         onNext={handleCreate}
