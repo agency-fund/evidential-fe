@@ -260,8 +260,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       },
       isNextEnabled: (data) => !!data.datasourceId && !!data.tableName,
       isPrevEnabled: () => true,
-
-      hideNavigation: () => true,
+      hideNavigation: () => true, // hide navigation because this screen uses a nested wizard.
     }),
     'bandit-binary-or-real': screen({
       breadcrumbTitle: 'Outcomes',
@@ -380,7 +379,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       },
       isNextEnabled: () => true, // The screen handles its own validation
       isPrevEnabled: () => true,
-      hideNavigation: () => true,
+      hideNavigation: () => true, // screen handles next to handle CreateExperiment API call
       isBreadcrumbClickable: ({ bandit }) => bandit !== undefined,
     }),
     'describe-arms': screen({
@@ -502,7 +501,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       },
       isNextEnabled: () => true, // ignored
       isPrevEnabled: () => true,
-      hideNavigation: () => true,
+      hideNavigation: () => true, // screen handles next to handle CreateExperiment API call
       isBreadcrumbClickable: (data) => !!(data.datasourceId && data.tableName),
     }),
     'summarize-freq': screen({
@@ -517,7 +516,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       },
       isNextEnabled: (data) => !!data.createExperimentResponse,
       isPrevEnabled: (data) => !data.createExperimentResponse,
-      hideNavigation: () => true,
+      hideNavigation: () => true, // screen handles prev to allow "back" to handle abandonment
     }),
     'summarize-bandit': screen({
       breadcrumbTitle: 'Summary',
@@ -530,7 +529,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       },
       isNextEnabled: (data) => !!data.createExperimentResponse,
       isPrevEnabled: (data) => !data.createExperimentResponse,
-      hideNavigation: () => true,
+      hideNavigation: () => true, // screen handles prev to allow "back" to handle abandonment
       isBreadcrumbClickable: () => false,
     }),
   },
