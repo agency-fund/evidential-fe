@@ -70,10 +70,8 @@ export const DatasourceForm: WizardForm<DatasourceFormData, DatasourceScreenId, 
         return data;
       },
       isNextEnabled: (data) => !!data.datasourceId,
-      isPrevEnabled: () => true,
       prevScreen: () => ({ type: 'wizard-exit-left' }),
       nextScreen: () => ({ type: 'screen', id: 'select-table' }),
-      isBreadcrumbClickable: () => true,
     }),
     'select-table': screen({
       breadcrumbTitle: 'Table',
@@ -88,11 +86,10 @@ export const DatasourceForm: WizardForm<DatasourceFormData, DatasourceScreenId, 
         return data;
       },
       isNextEnabled: (data) => !!data.tableName && !!data.primaryKey,
-      isPrevEnabled: () => true,
       prevScreen: () => ({ type: 'screen', id: 'select-datasource' }),
       nextScreen: () => ({ type: 'submit' }),
       isBreadcrumbClickable: (data) => !!data.datasourceId,
-      nextButtonLabel: () => 'Next',
+      nextButtonLabel: () => 'Next', // override "submit" text
     }),
   },
 };
