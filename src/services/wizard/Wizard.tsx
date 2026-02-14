@@ -118,8 +118,9 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
       setCurrentScreenId(screenId);
     };
 
+    const isPrevEnabled = screen.isPrevEnabled === undefined ? true : screen.isPrevEnabled(data);
     const prevScreen = resolvePrevScreen();
-    const isNextEnabled = screen.isNextEnabled(data);
+    const isNextEnabled = screen.isNextEnabled === undefined ? true : screen.isNextEnabled(data);
     const nextScreen = resolveNextScreen();
 
     // Determine button labels
@@ -134,7 +135,7 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
     const hideNav = screen.hideNavigation?.(data) ?? false;
 
     // Get tooltip message for next button
-    const nextButtonTooltip = screen.nextButtonTooltip?.(data) ?? '';
+    const nextButtonTooltip = screen.nextButtonTooltip?.(data) ?? undefined;
 
     const breadcrumbs: Array<BreadcrumbInfo> = screenIdBreadcrumbs.map((v): BreadcrumbInfo => {
       return form.screens[v].withScreen((s) => ({
@@ -164,11 +165,11 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
               {!hideNav && (
                 <NavigationButtons
                   onBack={prevScreen ? handlePrev : undefined}
-                  onNext={handleNext}
-                  nextLabel={nextLabel}
+                  onNext={nextScreen ? handleNext : undefined}
                   backLabel={prevLabel}
+                  nextLabel={nextLabel}
+                  prevDisabled={!isPrevEnabled}
                   nextDisabled={!isNextEnabled}
-                  showBack={prevScreen !== null}
                   nextTooltipContent={nextButtonTooltip}
                 />
               )}

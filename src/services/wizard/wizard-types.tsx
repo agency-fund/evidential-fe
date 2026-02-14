@@ -39,11 +39,11 @@ type Screen<FormData, Message, ScreenId extends string> = {
   // Receives events from the Screen and can apply changes to FormData.
   reducer: (data: FormData, message: Message) => FormData;
   // When isNextEnabled returns true, the "Next" button will be enabled. If it returns anything else, the button will
-  // be disabled.
-  isNextEnabled: (data: FormData) => boolean;
+  // be disabled. If undefined, the next button will be enabled.
+  isNextEnabled?: (data: FormData) => boolean;
   // When isPrev enabled returns true, the "Prev" button will be enabled. If it returns anything else, the button will
-  // be disabled.
-  isPrevEnabled: (data: FormData) => boolean;
+  // be disabled. If undefined, the prev button will be enabled.
+  isPrevEnabled?: (data: FormData) => boolean;
   // Optional override for "prev" navigation. If omitted, Wizard falls back to breadcrumb order.
   // Return null to hide prev button. Return a "screen" type to navigate to a specific screen by id.
   prevScreen?: (data: FormData) => null | { type: 'screen'; id: ScreenId } | { type: 'wizard-exit-left' };
@@ -60,10 +60,8 @@ type Screen<FormData, Message, ScreenId extends string> = {
   prevButtonLabel?: (data: FormData) => string;
   // When true, the Wizard will not render NavigationButtons for this screen.
   hideNavigation?: (data: FormData) => boolean;
-  // Optional tooltip message for the Prev button (e.g., validation errors).
-  prevButtonTooltip?: (data: FormData) => string;
   // Optional tooltip message for the Next button (e.g., validation errors).
-  nextButtonTooltip?: (data: FormData) => string;
+  nextButtonTooltip?: (data: FormData) => string | undefined;
 };
 
 // CPS-encoded existential - hides Message type while preserving type safety

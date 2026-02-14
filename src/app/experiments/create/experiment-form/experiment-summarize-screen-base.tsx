@@ -147,7 +147,6 @@ export function ExperimentsSummarizeScreenBase({
         nextDisabled={!data.createExperimentResponse}
         nextLoading={commitLoading}
         nextLabel="Save Experiment"
-        showBack
       />
     </>
   );

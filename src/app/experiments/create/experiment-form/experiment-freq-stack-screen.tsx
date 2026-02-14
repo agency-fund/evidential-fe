@@ -26,8 +26,6 @@ export type ExperimentFreqStackScreenMessage =
   | { type: 'set-chosen-n'; value: number | undefined };
 
 const isNextEnabled = (data: ExperimentFormData) => {
-  // Must have primary key selected
-  if (!data.primaryKey) return false;
   // Must have primary metric selected
   if (!data.primaryMetric) return false;
   // Must have valid confidence value (50-99)

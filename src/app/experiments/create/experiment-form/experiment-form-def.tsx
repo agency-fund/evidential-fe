@@ -195,7 +195,6 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         if (data.endDate <= data.startDate) return false;
         return true;
       },
-      isPrevEnabled: () => false,
     }),
     'experiment-type': screen({
       breadcrumbTitle: 'Type',
@@ -230,7 +229,6 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         return data;
       },
       isNextEnabled: (data) => !!data.experimentType,
-      isPrevEnabled: () => true,
     }),
     'freq-select-datasource': screen({
       breadcrumbTitle: 'Datasource',
@@ -259,7 +257,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         return data;
       },
       isNextEnabled: (data) => !!data.datasourceId && !!data.tableName,
-      isPrevEnabled: () => true,
+
       hideNavigation: () => true, // hide navigation because this screen uses a nested wizard.
     }),
     'bandit-binary-or-real': screen({
@@ -281,8 +279,6 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         }
         return data;
       },
-      isNextEnabled: () => true,
-      isPrevEnabled: () => true,
     }),
     'describe-contexts': screen({
       breadcrumbTitle: 'Contexts',
@@ -326,14 +322,14 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         const contexts = data.bandit?.experimentType === 'cmab_online' ? data.bandit.contexts : [];
         return contexts.length >= 1 && contexts.every((c) => c.name.trim() !== '');
       },
-      isPrevEnabled: () => true,
+
       isBreadcrumbClickable: ({ bandit }) => bandit !== undefined,
       nextButtonTooltip: (data) => {
         const contexts = data.bandit?.experimentType === 'cmab_online' ? data.bandit.contexts : [];
         if (contexts.length < 1) return 'At least one context is required.';
         const emptyNameIndex = contexts.findIndex((c) => c.name.trim() === '');
         if (emptyNameIndex >= 0) return `Context ${emptyNameIndex + 1} name is required.`;
-        return '';
+        return undefined;
       },
     }),
     'describe-bandit-arms': screen({
@@ -377,8 +373,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         }
         return data;
       },
-      isNextEnabled: () => true, // The screen handles its own validation
-      isPrevEnabled: () => true,
+
       hideNavigation: () => true, // screen handles next to handle CreateExperiment API call
       isBreadcrumbClickable: ({ bandit }) => bandit !== undefined,
     }),
@@ -418,7 +413,6 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         return data;
       },
       isNextEnabled: (data) => (data.arms?.length ?? 0) >= 2,
-      isPrevEnabled: () => true,
     }),
     'freq-stack': screen({
       breadcrumbTitle: 'Parameters',
@@ -499,8 +493,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
 
         return data;
       },
-      isNextEnabled: () => true, // ignored
-      isPrevEnabled: () => true,
+
       hideNavigation: () => true, // screen handles next to handle CreateExperiment API call
       isBreadcrumbClickable: (data) => !!(data.datasourceId && data.tableName),
     }),
