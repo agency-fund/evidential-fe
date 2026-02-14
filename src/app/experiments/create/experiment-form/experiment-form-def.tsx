@@ -134,8 +134,8 @@ const FREQUENTIST_BREADCRUMBS: Array<ExperimentScreenId> = [
 const CMAB_BREADCRUMBS: Array<ExperimentScreenId> = [
   'metadata',
   'experiment-type',
-  'bandit-binary-or-real',
   'describe-contexts',
+  'bandit-binary-or-real',
   'describe-bandit-arms',
   'summarize-bandit',
 ] as const;
@@ -242,8 +242,9 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           case 'freq_preassigned':
             return { type: 'screen', id: 'describe-arms' };
           case 'mab_online':
-          case 'cmab_online':
             return { type: 'screen', id: 'bandit-binary-or-real' };
+          case 'cmab_online':
+            return { type: 'screen', id: 'describe-contexts' };
           case undefined:
             throw new Error('Experiment type undefined');
           default:
@@ -307,13 +308,13 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       },
       isNextEnabled: () => true,
       isPrevEnabled: () => true,
-      prevScreen: () => ({ type: 'screen', id: 'experiment-type' }),
-      nextScreen: ({ experimentType }) => {
+      prevScreen: ({ experimentType }) => {
         if (experimentType === 'cmab_online') {
           return { type: 'screen', id: 'describe-contexts' };
         }
-        return { type: 'screen', id: 'describe-bandit-arms' };
+        return { type: 'screen', id: 'experiment-type' };
       },
+      nextScreen: () => ({ type: 'screen', id: 'describe-bandit-arms' }),
       isBreadcrumbClickable: () => true,
     }),
     'describe-contexts': screen({
@@ -359,8 +360,18 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         return contexts.length >= 1 && contexts.every((c) => c.name.trim() !== '');
       },
       isPrevEnabled: () => true,
-      prevScreen: () => ({ type: 'screen', id: 'bandit-binary-or-real' }),
-      nextScreen: () => ({ type: 'screen', id: 'describe-bandit-arms' }),
+      prevScreen: ({ experimentType }) => {
+        if (experimentType === 'cmab_online') {
+          return { type: 'screen', id: 'experiment-type' };
+        }
+        return { type: 'screen', id: 'bandit-binary-or-real' };
+      },
+      nextScreen: ({ experimentType }) => {
+        if (experimentType === 'cmab_online') {
+          return { type: 'screen', id: 'bandit-binary-or-real' };
+        }
+        return { type: 'screen', id: 'describe-bandit-arms' };
+      },
       isBreadcrumbClickable: ({ bandit }) => bandit !== undefined,
       nextButtonTooltip: (data) => {
         const contexts = data.bandit?.experimentType === 'cmab_online' ? data.bandit.contexts : [];
@@ -416,10 +427,9 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       hideNavigation: () => true,
       prevScreen: ({ experimentType }) => {
         switch (experimentType) {
+          case 'cmab_online':
           case 'mab_online':
             return { type: 'screen', id: 'bandit-binary-or-real' };
-          case 'cmab_online':
-            return { type: 'screen', id: 'describe-contexts' };
           case 'freq_online':
           case 'freq_preassigned':
           case undefined:
