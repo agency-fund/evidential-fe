@@ -50,7 +50,8 @@ type Screen<FormData, Message, ScreenId extends string> = {
   // Optional override for "next" navigation. If omitted, Wizard falls back to breadcrumb order.
   // Return a "screen" type to navigate to a specific screen by id, or a "submit" type to trigger onSubmit.
   nextScreen?: (data: FormData) => { type: 'screen'; id: ScreenId } | { type: 'submit' };
-  // Breadcrumbs to render
+  // Breadcrumbs to apply to the wizard flow. This controls the items in the breadcrumbs bar and the default behavior
+  // of the next/prev buttons.
   breadcrumbs?: (data: FormData) => Array<ScreenId>;
   // Whether or not the breadcrumb for the current screen is navigable. If undefined, breadcrumb is clickable.
   isBreadcrumbClickable?: (data: FormData) => boolean;

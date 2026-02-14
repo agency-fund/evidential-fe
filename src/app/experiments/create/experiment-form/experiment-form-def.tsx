@@ -322,7 +322,6 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         const contexts = data.bandit?.experimentType === 'cmab_online' ? data.bandit.contexts : [];
         return contexts.length >= 1 && contexts.every((c) => c.name.trim() !== '');
       },
-
       isBreadcrumbClickable: ({ bandit }) => bandit !== undefined,
       nextButtonTooltip: (data) => {
         const contexts = data.bandit?.experimentType === 'cmab_online' ? data.bandit.contexts : [];
@@ -500,7 +499,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
     'summarize-freq': screen({
       breadcrumbTitle: 'Summary',
       render: ExperimentsSummarizeFreqScreen,
-      isBreadcrumbClickable: () => false,
+      isBreadcrumbClickable: () => false, // user must enter screen via "next" from previous screen
       reducer: (data, msg) => {
         if (msg.type === 'set-commit-error') {
           return { ...data, commitError: msg.response };
@@ -523,7 +522,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       isNextEnabled: (data) => !!data.createExperimentResponse,
       isPrevEnabled: (data) => !data.createExperimentResponse,
       hideNavigation: () => true, // screen handles prev to allow "back" to handle abandonment
-      isBreadcrumbClickable: () => false,
+      isBreadcrumbClickable: () => false, // user must enter screen via "next" from previous screen
     }),
   },
 };
