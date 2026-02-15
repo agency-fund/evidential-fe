@@ -84,9 +84,9 @@ export const ExperimentFreqStackScreen = ({
 
   const handleCreate = async () => {
     const designSpec = convertToDesignSpec(data);
-    const createExperimentRequest = createExperimentBody.parse({
+    const createExperimentRequest = createExperimentBody.strict().parse({
       design_spec: designSpec,
-      power_analysis: data.powerCheckResponse,
+      power_analyses: data.powerCheckResponse,
       primary_key: data.primaryKey,
       table_name: data.tableName,
       webhooks: data.selectedWebhookIds && data.selectedWebhookIds.length > 0 ? data.selectedWebhookIds : [],
