@@ -42,6 +42,106 @@ type WizardProps<FormData, ScreenId extends string, InputData> = {
   debug?: boolean;
 };
 
+// language=Markdown
+/**
+ Wizard provides an opinionated framework for implementing multi-stage forms. Each screen is implemented as a distinct,
+ standard React component. The user's journey through these screens is defined as a function of global form state.
+ Next/Prev buttons are breadcrumbs are provided for you.
+
+ ## Defining Forms
+
+ Wizards are created by defining a WizardForm. WizardForm describes the set of screens, each identified by a unique
+ ID. Mutations to global form state are performed via screen-specific reducer functions. Screens declare a type
+ describing the reducer event types that the screen is allowed to send. Screens send events up by calling a dispatch
+ method.
+
+ ```typescript
+ type CheckoutFormData = {
+   // shipping screen
+   shippingAddress?: Address;
+   shippingMethod?: 'standard' | 'express';
+
+   // payment screen
+   paymentMethod?: PaymentMethod;
+   sameAsShipping?: boolean;
+ }
+
+ type CheckoutScreenId =
+   | 'shipping'
+   | 'payment'
+   | 'review';
+
+ // ordering of the screens
+ const CHECKOUT_BREADCRUMBS: Array<CheckoutScreenId> = [
+   'shipping',
+   'payment',
+   'review',
+ ];
+
+ // helper to express type safe screen transitions more concisely
+ const screen = packScreen<CheckoutFormData, CheckoutScreenId>();
+
+ export const CheckoutForm: WizardForm<CheckoutFormData, CheckoutScreenId, undefined> = {
+   initialData: () => ({
+     shippingMethod: 'standard',
+     sameAsShipping: true,
+   }),
+   initialScreenId: () => 'shipping',
+   breadcrumbs: () => CHECKOUT_BREADCRUMBS,
+   screens: {
+     'shipping': screen({
+       breadcrumbTitle: 'Shipping',
+       render: ShippingScreen,
+       reducer: (data, msg) => {
+         if (msg.type === 'set-address') return { ...data, shippingAddress: msg.value };
+         if (msg.type === 'set-shipping-method') return { ...data, shippingMethod: msg.value };
+         return data;
+       },
+       isNextEnabled: (data) => !!data.shippingAddress
+     }),
+
+     'payment': screen({
+       breadcrumbTitle: 'Payment',
+       render: PaymentScreen,
+       reducer: (data, msg) => {
+         if (msg.type === 'set-payment') return { ...data, paymentMethod: msg.value };
+         if (msg.type === 'set-same-as-shipping') return { ...data, sameAsShipping: msg.value };
+         return data;
+       },
+       isNextEnabled: (data) => !!data.paymentMethod,
+     }),
+
+     'review': screen({
+       breadcrumbTitle: 'Review',
+       render: ReviewScreen,
+       reducer: (data, msg) => (data)
+     })
+   }
+ };
+ ```
+
+ ## Implementing Screens
+
+ Screens receive a ScreenProps with global form state and the reducer's dispatch method:
+
+ ```typescript jsx
+ export const ShippingScreen = ({data, dispatch}: ScreenProps<CheckoutFormData, ShippingScreenMessages, CheckoutScreenIds>) => {
+   return <>
+     <input value={data.shippingAddress} onChange={(v) => dispatch({type:"set-shipping-address", value: v}/>
+   </>;
+ }
+ ```
+
+ ## Rendering Wizards
+
+ Wizards are rendered by passing the WizardForm to the <Wizard> component; e.g.:
+
+ ```typescript jsx
+ const MyCheckoutWizard = () => {
+   return <Wizard form={CheckoutForm} onSubmit={...} />;
+ }
+ ```
+ */
 export function Wizard<FormData, ScreenId extends string, InputData>({
   form,
   onSubmit,
