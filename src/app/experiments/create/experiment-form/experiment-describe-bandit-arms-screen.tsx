@@ -278,7 +278,7 @@ export const ExperimentDescribeBanditArmsScreen = ({
       )}
 
       <NavigationButtons
-        onBack={navigatePrev}
+        onPrev={navigatePrev}
         onNext={handleCreate}
         nextDisabled={!formValid}
         nextLoading={createLoading}

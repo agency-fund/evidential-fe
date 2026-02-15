@@ -76,7 +76,7 @@ export function ExperimentsSummarizeScreenBase({
         <Flex direction="column" gap="3">
           <GenericErrorCallout title="Failed to create experiment" error={data.commitError} />
         </Flex>
-        <NavigationButtons onBack={navigatePrev} onNext={() => {}} nextDisabled />
+        <NavigationButtons onPrev={navigatePrev} onNext={() => {}} nextDisabled />
       </>
     );
   }
@@ -111,7 +111,7 @@ export function ExperimentsSummarizeScreenBase({
         )}
       </Flex>
       <NavigationButtons
-        onBack={navigatePrev} // navigatePrev will handle abandonment
+        onPrev={navigatePrev} // navigatePrev will handle abandonment
         onNext={handleCommit}
         nextDisabled={!data.createExperimentResponse}
         nextLoading={commitLoading}

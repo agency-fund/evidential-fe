@@ -142,7 +142,7 @@ export const ExperimentFreqStackScreen = ({
         <GenericErrorCallout title={'Failed to create experiment'} error={data.createExperimentError} />
       )}
       <NavigationButtons
-        onBack={navigatePrev}
+        onPrev={navigatePrev}
         onNext={handleCreate}
         nextDisabled={!nextEnabled}
         nextLoading={triggerLoading}

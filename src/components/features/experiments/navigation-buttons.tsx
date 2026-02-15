@@ -3,10 +3,10 @@ import React from 'react';
 import { Button, Flex, Tooltip } from '@radix-ui/themes';
 
 interface NavigationButtonsProps {
-  // The text to render on the Back button.
-  backLabel?: string;
+  // The text to render on the prev button.
+  prevLabel?: string;
 
-  // The text to render on the Next button.
+  // The text to render on the next button.
   nextLabel?: string;
 
   // If true, the "prev" button will be rendered in a disabled state.
@@ -18,8 +18,8 @@ interface NavigationButtonsProps {
   // If true, the "next" button text will be replaced with a spinner.
   nextLoading?: boolean;
 
-  // Handler for the "back" button. If undefined, the back button will not be rendered.
-  onBack?: () => void;
+  // Handler for the "prev" button. If undefined, the prev button will not be rendered.
+  onPrev?: () => void;
 
   // Handler for the "next" button. If undefined, the next button will not be rendered.
   onNext?: () => void;
@@ -29,10 +29,10 @@ interface NavigationButtonsProps {
 }
 
 export function NavigationButtons({
-  onBack,
+  onPrev,
   onNext,
   nextLabel = 'Next',
-  backLabel = 'Back',
+  prevLabel = 'Back',
   nextDisabled = false,
   nextLoading = false,
   prevDisabled = false,
@@ -51,13 +51,13 @@ export function NavigationButtons({
     );
   }
   const prevButton = (
-    <Button onClick={onBack} disabled={!onBack || prevDisabled} variant="soft" color="gray">
-      {backLabel}
+    <Button onClick={onPrev} disabled={!onPrev || prevDisabled} variant="soft" color="gray">
+      {prevLabel}
     </Button>
   );
   return (
     <Flex gap="3" justify="end" align="center" mt="6">
-      {onBack ? prevButton : <div />}
+      {onPrev ? prevButton : <div />}
       {onNext ? nextButton : <div />}
     </Flex>
   );

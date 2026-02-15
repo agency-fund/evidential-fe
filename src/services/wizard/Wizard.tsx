@@ -293,9 +293,9 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
               />
               {!hideNav && (
                 <NavigationButtons
-                  onBack={prevScreen ? handlePrev : undefined}
+                  onPrev={prevScreen ? handlePrev : undefined}
                   onNext={nextScreen ? handleNext : undefined}
-                  backLabel={prevLabel}
+                  prevLabel={prevLabel}
                   nextLabel={nextLabel}
                   prevDisabled={!isPrevEnabled || isTransitioning}
                   nextDisabled={!isNextEnabled || isTransitioning}

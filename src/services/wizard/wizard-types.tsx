@@ -55,7 +55,7 @@ type Screen<FormData, Message, ScreenId extends string> = {
   // When isNextEnabled returns true, the "Next" button will be enabled. If it returns anything else, the button will
   // be disabled. If undefined, the next button will be enabled.
   isNextEnabled?: (data: FormData) => boolean;
-  // When isPrev enabled returns true, the "Prev" button will be enabled. If it returns anything else, the button will
+  // When isPrevEnabled returns true, the "prev" button will be enabled. If it returns anything else, the button will
   // be disabled. If undefined, the prev button will be enabled.
   isPrevEnabled?: (data: FormData) => boolean;
   // Optional override for "prev" navigation. If omitted, Wizard falls back to breadcrumb order.
@@ -71,7 +71,7 @@ type Screen<FormData, Message, ScreenId extends string> = {
   isBreadcrumbClickable?: (data: FormData) => boolean;
   // Custom label for the "Next" button. If not set, defaults to "Next" or "Submit", depending on resolved next action.
   nextButtonLabel?: (data: FormData) => string;
-  // Custom label for the "Back" button. If not set, defaults to "Back".
+  // Custom label for the prev button. If not set, defaults to "Back".
   prevButtonLabel?: (data: FormData) => string;
   // When true, the Wizard will not render NavigationButtons for this screen.
   hideNavigation?: (data: FormData) => boolean;
