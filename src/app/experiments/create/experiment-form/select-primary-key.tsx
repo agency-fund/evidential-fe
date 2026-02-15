@@ -58,7 +58,7 @@ export const SelectPrimaryKey = ({ tableData, isLoading, value, onChange, disabl
       .filter((field) => uniqueIdFields.has(field.field_name) && !primaryKeyFields.has(field.field_name))
       .sort((a, b) => a.field_name.localeCompare(b.field_name));
     const remaining = fields
-      .filter((field) => !uniqueIdFields.has(field.field_name))
+      .filter((field) => !uniqueIdFields.has(field.field_name) && !primaryKeyFields.has(field.field_name))
       .sort((a, b) => a.field_name.localeCompare(b.field_name));
     return [...primaryKeys, ...recommended, ...remaining];
   }, [tableData, uniqueIdFields, primaryKeyFields]);
@@ -66,9 +66,7 @@ export const SelectPrimaryKey = ({ tableData, isLoading, value, onChange, disabl
   const showSpinner = isLoading && !disabled;
 
   useEffect(() => {
-    if (value !== undefined) {
-      setInputValue(value);
-    }
+    setInputValue(value ?? '');
   }, [value]);
 
   return (
