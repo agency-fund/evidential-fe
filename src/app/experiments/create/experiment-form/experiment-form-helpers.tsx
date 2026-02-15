@@ -77,10 +77,12 @@ export function convertToDesignSpec(data: ExperimentFormData): DesignSpecInput {
     alpha: data.confidence ? 1 - Number(data.confidence) / 100.0 : 0.05,
   };
 
-  return createExperimentBody.shape.design_spec.parse({
-    ...commonFields,
-    experiment_type: data.experimentType,
-  });
+  return createExperimentBody.strict().parse({
+    design_spec: {
+      ...commonFields,
+      experiment_type: data.experimentType,
+    },
+  }).design_spec;
 }
 
 export function convertToBanditCreateRequest(data: ExperimentFormData): CreateExperimentRequest {
@@ -113,7 +115,7 @@ export function convertToBanditCreateRequest(data: ExperimentFormData): CreateEx
     }));
   }
 
-  return createExperimentBody.parse({
+  return createExperimentBody.strict().parse({
     design_spec: {
       experiment_name: data.name!,
       participant_type: 'user',
