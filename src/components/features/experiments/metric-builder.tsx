@@ -46,7 +46,7 @@ export function MetricBuilder({ primaryMetric, secondaryMetrics, dispatch, metri
     dispatch({
       type: 'primary-metric-deselect',
       primaryMetric: undefined,
-      secondaryMetrics: [], // TODO: bug?
+      secondaryMetrics: [],
     });
   };
 
