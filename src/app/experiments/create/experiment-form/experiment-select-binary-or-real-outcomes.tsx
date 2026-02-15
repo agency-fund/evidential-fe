@@ -1,6 +1,6 @@
 import { ScreenProps } from '@/services/wizard/wizard-types';
 import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
-import { Flex, RadioCards, Text } from '@radix-ui/themes';
+import { Flex, Heading, RadioCards, Text } from '@radix-ui/themes';
 import { FormOutcomeType } from '@/app/experiments/create/experiment-form/experiment-form-types';
 
 type ExperimentSelectBinaryOrRealMessages = { type: 'set-outcome-type'; value: FormOutcomeType };
@@ -10,7 +10,9 @@ export const ExperimentSelectBinaryOrRealOutcomes = ({
   dispatch,
 }: ScreenProps<ExperimentFormData, ExperimentSelectBinaryOrRealMessages, ExperimentScreenId>) => (
   <Flex direction="column" gap={'3'}>
-    <h2>Select Outcome Type</h2>
+    <Heading as="h3" size={'3'}>
+      Select Outcome Type
+    </Heading>
     <RadioCards.Root
       value={data.bandit?.outcomeType}
       columns={{ initial: '1', sm: '3' }}

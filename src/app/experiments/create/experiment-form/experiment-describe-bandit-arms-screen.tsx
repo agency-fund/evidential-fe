@@ -232,7 +232,7 @@ export const ExperimentDescribeBanditArmsScreen = ({
   return (
     <>
       <Flex direction="column" gap={'3'}>
-        <Heading as="h2" size="4">
+        <Heading as="h3" size={'3'}>
           Define Treatment Arms
         </Heading>
         <Text size="2" color="gray">

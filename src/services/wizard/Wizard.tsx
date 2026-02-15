@@ -4,7 +4,7 @@ import { BreadcrumbInfo, NavigationSource, NavigationTask, WizardForm } from './
 import { DebugDrawer } from './wizard-debug-drawer';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import { WizardBreadcrumbs, WizardBreadcrumbsProvider } from './wizard-breadcrumbs-context';
-import { Box } from '@radix-ui/themes';
+import { Box, Flex } from '@radix-ui/themes';
 
 type NextTask<ScreenId extends string> = { type: 'screen'; id: ScreenId } | { type: 'submit' };
 type PrevTask<ScreenId extends string> = null | { type: 'screen'; id: ScreenId } | { type: 'wizard-exit-left' };
@@ -282,7 +282,7 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
           onNavigate={handleNavigate}
         >
           <Fragment key={currentScreenId}>
-            <Box>
+            <Flex direction={'column'} gap={'3'}>
               <WizardBreadcrumbs />
               <screen.render
                 data={data}
@@ -302,7 +302,7 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
                   nextTooltipContent={nextButtonTooltip}
                 />
               )}
-            </Box>
+            </Flex>
           </Fragment>
         </WizardBreadcrumbsProvider>
         {debug && <DebugDrawer data={data} breadcrumbs={breadcrumbs} currentScreenId={currentScreenId} />}
