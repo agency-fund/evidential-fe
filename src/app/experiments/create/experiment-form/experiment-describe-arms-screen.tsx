@@ -4,7 +4,6 @@ import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create
 import { Badge, Box, Button, Card, Flex, Heading, IconButton, Text, TextArea, TextField } from '@radix-ui/themes';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { ArmWeightsDialog } from '@/components/features/experiments/arm-weights-dialog';
-import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 
 export type ExperimentDescribeArmsMessage =
   | { type: 'add-arm' }
@@ -21,7 +20,6 @@ export const ExperimentDescribeArmsScreen = ({
 
   return (
     <Flex direction="column" gap={'3'}>
-      <WizardBreadcrumbs />
       <Flex justify="between" align="start">
         <Flex direction="column" gap="1">
           <Heading size="4">Arms</Heading>

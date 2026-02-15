@@ -3,9 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { Callout, Flex } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
-import { useAbandonExperiment, useCommitExperiment } from '@/api/admin';
+import { useCommitExperiment } from '@/api/admin';
 import { ErrorType } from '@/services/orval-fetch';
-import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import {
@@ -60,18 +59,6 @@ export function ExperimentsSummarizeScreenBase({
     },
   });
 
-  const { trigger: triggerAbandon } = useAbandonExperiment(datasourceId, experimentId);
-
-  const doAbandon = async () => {
-    if (datasourceId && experimentId) {
-      try {
-        await triggerAbandon();
-      } catch {
-        // Error handled by callback
-      }
-    }
-  };
-
   const handleCommit = async () => {
     if (!datasourceId || !experimentId) return;
     try {
@@ -81,28 +68,12 @@ export function ExperimentsSummarizeScreenBase({
     }
   };
 
-  const handleAbandon = async () => {
-    await doAbandon();
-    navigatePrev();
-  };
-
-  const handleEdit = async (screenId: ExperimentScreenId) => {
-    await doAbandon();
-    navigateTo(screenId);
-  };
-
-  const handleBreadcrumbNavigateAway = async () => {
-    await doAbandon();
-    return true;
-  };
-
-  const toEditHandler = (target?: ExperimentScreenId) => (target ? () => handleEdit(target) : undefined);
+  const toEditHandler = (target?: ExperimentScreenId) => (target ? () => navigateTo(target) : undefined);
 
   if (data.commitError) {
     return (
       <>
         <Flex direction="column" gap="3">
-          <WizardBreadcrumbs onNavigateAway={handleBreadcrumbNavigateAway} />
           <GenericErrorCallout title="Failed to create experiment" error={data.commitError} />
         </Flex>
         <NavigationButtons onBack={navigatePrev} onNext={() => {}} nextDisabled />
@@ -113,8 +84,6 @@ export function ExperimentsSummarizeScreenBase({
   return (
     <>
       <Flex direction="column" gap="4">
-        <WizardBreadcrumbs onNavigateAway={handleBreadcrumbNavigateAway} />
-
         {data.createExperimentResponse !== undefined && (
           <>
             <ExperimentConfirmationDisplay
@@ -142,7 +111,7 @@ export function ExperimentsSummarizeScreenBase({
         )}
       </Flex>
       <NavigationButtons
-        onBack={handleAbandon}
+        onBack={navigatePrev} // navigatePrev will handle abandonment
         onNext={handleCommit}
         nextDisabled={!data.createExperimentResponse}
         nextLoading={commitLoading}

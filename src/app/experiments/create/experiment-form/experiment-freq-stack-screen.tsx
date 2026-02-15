@@ -1,7 +1,6 @@
 import { ScreenProps } from '@/services/wizard/wizard-types';
 import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
 import { Card, Flex, Heading } from '@radix-ui/themes';
-import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 import { MetricBuilder, MetricBuilderAction } from '@/components/features/experiments/metric-builder';
 import { FilterBuilder } from '@/components/features/experiments/querybuilder/filter-builder';
 import { StrataBuilder } from '@/components/features/experiments/strata-builder';
@@ -99,8 +98,6 @@ export const ExperimentFreqStackScreen = ({
   return (
     <>
       <Flex direction="column" gap={'3'}>
-        <WizardBreadcrumbs />
-
         <Heading as="h3" size="3">
           Metrics
         </Heading>

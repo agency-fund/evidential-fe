@@ -5,7 +5,6 @@ import {
   ExperimentType,
 } from '@/app/experiments/create/experiment-form/experiment-form-def';
 import { Badge, Flex, RadioCards, Text } from '@radix-ui/themes';
-import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 import { ExperimentTypeOptions } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 
 type ExperimentTypeMessage = { type: 'set-experiment-type'; value: ExperimentType };
@@ -15,7 +14,6 @@ export const ExperimentTypeScreen = ({
   dispatch,
 }: ScreenProps<ExperimentFormData, ExperimentTypeMessage, ExperimentScreenId>) => (
   <Flex direction="column" gap={'3'}>
-    <WizardBreadcrumbs />
     <Text as="label" size="2" weight="bold" mb="6px">
       What type of experiment do you want to create?
     </Text>

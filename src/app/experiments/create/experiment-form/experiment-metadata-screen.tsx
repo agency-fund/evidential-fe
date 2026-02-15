@@ -2,7 +2,6 @@
 import { ScreenProps } from '@/services/wizard/wizard-types';
 import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
 import { Box, Button, Flex, Separator, Text, TextArea, TextField } from '@radix-ui/themes';
-import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 import { SelectWebhooksSection } from '@/app/experiments/create/experiment-form/select-webhooks-section';
 import { Collapsible } from 'radix-ui';
 import { ChevronDownIcon, ChevronRightIcon } from '@radix-ui/react-icons';
@@ -24,7 +23,6 @@ export const ExperimentMetadataScreen = ({
 
   return (
     <Flex direction="column" gap={'3'}>
-      <WizardBreadcrumbs />
       <Box>
         <Text as="label" size="2" weight="bold" mb="6px">
           Experiment Name

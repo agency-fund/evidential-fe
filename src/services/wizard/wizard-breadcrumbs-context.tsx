@@ -7,7 +7,7 @@ import { ChevronRightIcon, DotsHorizontalIcon } from '@radix-ui/react-icons';
 type WizardBreadcrumbsContextType = {
   breadcrumbs: Array<BreadcrumbInfo>;
   currentScreenId: string;
-  onNavigate: (screenId: string) => void;
+  onNavigate: (screenId: string) => Promise<void>;
 };
 
 const WizardBreadcrumbsContext = createContext<WizardBreadcrumbsContextType | null>(null);
@@ -35,13 +35,7 @@ export function WizardBreadcrumbsProvider({
   );
 }
 
-type OnNavigateAway = (targetScreenId: string, currentScreenId: string) => void | boolean | Promise<void | boolean>;
-
-interface WizardBreadcrumbsProps {
-  onNavigateAway?: OnNavigateAway;
-}
-
-export function WizardBreadcrumbs({ onNavigateAway }: WizardBreadcrumbsProps = {}) {
+export function WizardBreadcrumbs() {
   const { breadcrumbs, currentScreenId, onNavigate } = useWizardBreadcrumbs();
 
   if (breadcrumbs.length === 0) {
@@ -55,10 +49,8 @@ export function WizardBreadcrumbs({ onNavigateAway }: WizardBreadcrumbsProps = {
           <React.Fragment key={index}>
             <BreadcrumbItem
               crumb={crumb}
-              currentScreenId={currentScreenId}
               isCurrent={crumb.type === 'screen' && crumb.screenId === currentScreenId}
               onNavigate={onNavigate}
-              onNavigateAway={onNavigateAway}
             />
             {index < breadcrumbs.length - 1 && <ChevronRightIcon color="var(--gray-9)" />}
           </React.Fragment>
@@ -70,13 +62,11 @@ export function WizardBreadcrumbs({ onNavigateAway }: WizardBreadcrumbsProps = {
 
 interface BreadcrumbItemProps {
   crumb: BreadcrumbInfo;
-  currentScreenId: string;
   isCurrent: boolean;
-  onNavigate: (screenId: string) => void;
-  onNavigateAway?: OnNavigateAway;
+  onNavigate: (screenId: string) => Promise<void>;
 }
 
-function BreadcrumbItem({ crumb, currentScreenId, isCurrent, onNavigate, onNavigateAway }: BreadcrumbItemProps) {
+function BreadcrumbItem({ crumb, isCurrent, onNavigate }: BreadcrumbItemProps) {
   if (crumb.type === 'unknown') {
     return <DotsHorizontalIcon color="var(--gray-9)" />;
   }
@@ -88,14 +78,7 @@ function BreadcrumbItem({ crumb, currentScreenId, isCurrent, onNavigate, onNavig
       return;
     }
 
-    if (onNavigateAway) {
-      const result = await onNavigateAway(crumb.screenId, currentScreenId);
-      if (result === false) {
-        return;
-      }
-    }
-
-    onNavigate(crumb.screenId);
+    await onNavigate(crumb.screenId);
   };
 
   return (

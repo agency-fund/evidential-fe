@@ -3,7 +3,6 @@
 import { ScreenProps } from '@/services/wizard/wizard-types';
 import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
 import { Box, Button, Callout, Card, Flex, Heading, IconButton, Text, TextArea, TextField } from '@radix-ui/themes';
-import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import { InfoCircledIcon, PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { useCreateExperiment, useListOrganizationDatasources } from '@/api/admin';
@@ -217,7 +216,6 @@ export const ExperimentDescribeBanditArmsScreen = ({
   if (datasourcesLoading) {
     return (
       <Flex direction="column" gap="3">
-        <WizardBreadcrumbs />
         <XSpinner />
       </Flex>
     );
@@ -226,7 +224,6 @@ export const ExperimentDescribeBanditArmsScreen = ({
   if (!noDwhDatasource) {
     return (
       <Flex direction="column" gap="3">
-        <WizardBreadcrumbs />
         <GenericErrorCallout title="Configuration error" message="No NoDWH datasource found. Please contact support." />
       </Flex>
     );
@@ -235,8 +232,6 @@ export const ExperimentDescribeBanditArmsScreen = ({
   return (
     <>
       <Flex direction="column" gap={'3'}>
-        <WizardBreadcrumbs />
-
         <Heading as="h2" size="4">
           Define Treatment Arms
         </Heading>

@@ -1,9 +1,9 @@
 'use client';
 import { Fragment, useState } from 'react';
-import { BreadcrumbInfo, WizardForm } from './wizard-types';
+import { BreadcrumbInfo, NavigationSource, NavigationTask, WizardForm } from './wizard-types';
 import { DebugDrawer } from './wizard-debug-drawer';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
-import { WizardBreadcrumbsProvider } from './wizard-breadcrumbs-context';
+import { WizardBreadcrumbs, WizardBreadcrumbsProvider } from './wizard-breadcrumbs-context';
 import { Box } from '@radix-ui/themes';
 
 type NextTask<ScreenId extends string> = { type: 'screen'; id: ScreenId } | { type: 'submit' };
@@ -51,6 +51,7 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
 }: WizardProps<FormData, ScreenId, InputData>) {
   const [data, setData] = useState<FormData>(() => form.initialData(inputData));
   const [currentScreenId, setCurrentScreenId] = useState<ScreenId>(() => form.initialScreenId(data));
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Get current packed screen by id (direct object access instead of array.find)
   const currentPackedScreen = form.screens[currentScreenId];
@@ -80,27 +81,27 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
       return nextFromFlow(screenIdBreadcrumbs, currentScreenId);
     };
 
-    const handleNext = () => {
-      const task = resolveNextScreen();
+    const runBeforeNavigateAway = async (source: NavigationSource, target: NavigationTask<ScreenId>) => {
+      if (!screen.beforeNavigateAway) {
+        return true;
+      }
+      const result = await screen.beforeNavigateAway(data, {
+        source,
+        fromScreenId: currentScreenId,
+        target,
+      });
+      return result !== false;
+    };
+
+    const executeNavigationTask = (task: Exclude<NavigationTask<ScreenId>, null>) => {
       switch (task.type) {
+        case 'screen':
+          setCurrentScreenId(task.id);
+          break;
         case 'submit':
           if (onSubmit) {
             onSubmit(data);
           }
-          break;
-        case 'screen':
-          setCurrentScreenId(task.id);
-      }
-    };
-
-    const handlePrev = () => {
-      const task = resolvePrevScreen();
-      if (!task) {
-        return;
-      }
-      switch (task.type) {
-        case 'screen':
-          setCurrentScreenId(task.id);
           break;
         case 'wizard-exit-left':
           if (onPrev) {
@@ -110,12 +111,39 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
       }
     };
 
-    const handleNavigate = (screenId: string) => {
-      setCurrentScreenId(screenId as ScreenId);
+    const navigateWithGuard = async (source: NavigationSource, target: NavigationTask<ScreenId>) => {
+      if (target === null || isTransitioning) {
+        return;
+      }
+
+      setIsTransitioning(true);
+      try {
+        const shouldContinue = await runBeforeNavigateAway(source, target);
+        if (!shouldContinue) {
+          return;
+        }
+        executeNavigationTask(target);
+      } finally {
+        setIsTransitioning(false);
+      }
     };
 
-    const handleNavigateTo = (screenId: ScreenId) => {
-      setCurrentScreenId(screenId);
+    const handleNext = async () => {
+      const task = resolveNextScreen();
+      await navigateWithGuard('next', task);
+    };
+
+    const handlePrev = async () => {
+      const task = resolvePrevScreen();
+      await navigateWithGuard('prev', task);
+    };
+
+    const handleNavigate = async (screenId: string) => {
+      await navigateWithGuard('breadcrumb', { type: 'screen', id: screenId as ScreenId });
+    };
+
+    const handleNavigateTo = async (screenId: ScreenId) => {
+      await navigateWithGuard('navigate-to', { type: 'screen', id: screenId });
     };
 
     const isPrevEnabled = screen.isPrevEnabled === undefined ? true : screen.isPrevEnabled(data);
@@ -155,6 +183,7 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
         >
           <Fragment key={currentScreenId}>
             <Box>
+              <WizardBreadcrumbs />
               <screen.render
                 data={data}
                 dispatch={handleDispatch}
@@ -168,8 +197,8 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
                   onNext={nextScreen ? handleNext : undefined}
                   backLabel={prevLabel}
                   nextLabel={nextLabel}
-                  prevDisabled={!isPrevEnabled}
-                  nextDisabled={!isNextEnabled}
+                  prevDisabled={!isPrevEnabled || isTransitioning}
+                  nextDisabled={!isNextEnabled || isTransitioning}
                   nextTooltipContent={nextButtonTooltip}
                 />
               )}

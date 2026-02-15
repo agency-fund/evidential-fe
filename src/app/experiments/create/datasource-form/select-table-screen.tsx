@@ -4,7 +4,6 @@ import { DatasourceFormData, DatasourceScreenId } from './datasource-form-def';
 import { useInspectDatasource, useInspectTableInDatasource } from '@/api/admin';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { Box, Flex, IconButton, Select, Text } from '@radix-ui/themes';
-import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { SelectPrimaryKey } from '@/app/experiments/create/experiment-form/select-primary-key';
 import { ReloadIcon } from '@radix-ui/react-icons';
@@ -68,7 +67,6 @@ export const SelectTableScreen = ({
   if (error) {
     return (
       <Flex direction="column" gap={'2'}>
-        <WizardBreadcrumbs />
         <GenericErrorCallout title="Failed to fetch tables" error={error} />
       </Flex>
     );
@@ -77,7 +75,6 @@ export const SelectTableScreen = ({
   if (tables.length === 0) {
     return (
       <Flex direction="column" gap={'2'}>
-        <WizardBreadcrumbs />
         <Text color="gray">No tables found in this datasource. Please check your datasource configuration.</Text>
       </Flex>
     );
@@ -85,7 +82,6 @@ export const SelectTableScreen = ({
 
   return (
     <Flex direction="column" gap={'3'}>
-      <WizardBreadcrumbs />
       <Box maxWidth={'50%'}>
         <Flex direction="column" gap={'3'}>
           <Text size="2" weight="bold">

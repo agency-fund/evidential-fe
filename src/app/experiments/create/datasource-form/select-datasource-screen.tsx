@@ -2,7 +2,6 @@
 import { ScreenProps } from '@/services/wizard/wizard-types';
 import { DatasourceFormData, DatasourceScreenId } from './datasource-form-def';
 import { Card, Flex, RadioGroup, Text } from '@radix-ui/themes';
-import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 import { useListOrganizationDatasources } from '@/api/admin';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { XSpinner } from '@/components/ui/x-spinner';
@@ -53,7 +52,6 @@ export const SelectDatasourceScreen = ({
   if (!hasDatasources) {
     return (
       <Flex direction="column" gap="3">
-        <WizardBreadcrumbs />
         <CreateDatasourceForm
           onDatasourceCreated={(id) => {
             dispatch({ type: 'datasource-created', datasourceId: id });
@@ -67,7 +65,6 @@ export const SelectDatasourceScreen = ({
   // Case 2: Has datasources - show RadioCards toggle
   return (
     <Flex direction="column" gap="3">
-      <WizardBreadcrumbs />
       <Flex direction={'column'} gap={'3'}>
         <RadioGroup.Root
           value={data.selectionMode}

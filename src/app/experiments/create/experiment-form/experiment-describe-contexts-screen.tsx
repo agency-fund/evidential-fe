@@ -3,7 +3,6 @@
 import { ScreenProps } from '@/services/wizard/wizard-types';
 import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
 import { Box, Button, Card, Flex, Heading, IconButton, RadioCards, Text, TextArea, TextField } from '@radix-ui/themes';
-import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 
 import { ContextType } from '@/api/methods.schemas';
@@ -118,7 +117,6 @@ export const ExperimentDescribeContextsScreen = ({
   return (
     <>
       <Flex direction="column" gap={'3'}>
-        <WizardBreadcrumbs />
         <Heading as="h2" size="4">
           Define Context Variables
         </Heading>

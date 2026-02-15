@@ -15,6 +15,7 @@ import {
   GetFiltersResponseElement,
   PowerResponseOutput,
 } from '@/api/methods.schemas';
+import { abandonExperiment } from '@/api/admin';
 import { ExperimentSelectDatasourceScreen } from '@/app/experiments/create/experiment-form/experiment-select-datasource-screen';
 import { ExperimentSelectBinaryOrRealOutcomes } from '@/app/experiments/create/experiment-form/experiment-select-binary-or-real-outcomes';
 import {
@@ -157,6 +158,20 @@ const breadcrumbs = ({ experimentType }: { experimentType?: ExperimentType }) =>
     return CMAB_BREADCRUMBS;
   } else {
     return MAB_BREADCRUMBS;
+  }
+};
+
+const abandonDraftExperiment = async (data: ExperimentFormData) => {
+  const datasourceId = data.datasourceId;
+  const experimentId = data.createExperimentResponse?.experiment_id ?? data.experimentId;
+  if (!datasourceId || !experimentId) {
+    return;
+  }
+
+  try {
+    await abandonExperiment(datasourceId, experimentId);
+  } catch {
+    // Intentionally ignore abandon failures to avoid blocking navigation.
   }
 };
 
@@ -509,6 +524,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       isNextEnabled: (data) => !!data.createExperimentResponse,
       isPrevEnabled: (data) => !data.createExperimentResponse,
       hideNavigation: () => true, // screen handles prev to allow "back" to handle abandonment
+      beforeNavigateAway: async (data) => await abandonDraftExperiment(data),
     }),
     'summarize-bandit': screen({
       breadcrumbTitle: 'Summary',
@@ -523,6 +539,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       isPrevEnabled: (data) => !data.createExperimentResponse,
       hideNavigation: () => true, // screen handles prev to allow "back" to handle abandonment
       isBreadcrumbClickable: () => false, // user must enter screen via "next" from previous screen
+      beforeNavigateAway: async (data) => await abandonDraftExperiment(data),
     }),
   },
 };

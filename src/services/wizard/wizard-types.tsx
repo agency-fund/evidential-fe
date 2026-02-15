@@ -29,6 +29,20 @@ type ScreenProps<FormData, Message, ScreenId extends string> = {
   navigateTo: (screenId: ScreenId) => void;
 };
 
+type NavigationSource = 'next' | 'prev' | 'breadcrumb' | 'navigate-to';
+
+type NavigationTask<ScreenId extends string> =
+  | null
+  | { type: 'screen'; id: ScreenId }
+  | { type: 'submit' }
+  | { type: 'wizard-exit-left' };
+
+type BeforeNavigateAwayContext<ScreenId extends string> = {
+  source: NavigationSource;
+  fromScreenId: ScreenId;
+  target: NavigationTask<ScreenId>;
+};
+
 // Screen definition with typed messages. The ScreenId generic enables type-safe navigation:
 // prevScreen and nextScreen can only return IDs that exist in the form's screens object.
 type Screen<FormData, Message, ScreenId extends string> = {
@@ -61,6 +75,12 @@ type Screen<FormData, Message, ScreenId extends string> = {
   prevButtonLabel?: (data: FormData) => string;
   // When true, the Wizard will not render NavigationButtons for this screen.
   hideNavigation?: (data: FormData) => boolean;
+  // Optional hook invoked before leaving this screen via breadcrumbs or next/prev buttons.
+  // Returning false blocks navigation.
+  beforeNavigateAway?: (
+    data: FormData,
+    context: BeforeNavigateAwayContext<ScreenId>,
+  ) => void | boolean | Promise<void | boolean>;
   // Optional tooltip message for the Next button (e.g., validation errors).
   nextButtonTooltip?: (data: FormData) => string | undefined;
 };
@@ -108,5 +128,14 @@ type WizardForm<FormData, ScreenId extends string, InputData> = {
 
 export default function Definer() {}
 
-export type { ScreenProps, Screen, ScreenConsumer, PackedScreen, WizardForm };
+export type {
+  BeforeNavigateAwayContext,
+  NavigationSource,
+  NavigationTask,
+  ScreenProps,
+  Screen,
+  ScreenConsumer,
+  PackedScreen,
+  WizardForm,
+};
 export { packScreen };

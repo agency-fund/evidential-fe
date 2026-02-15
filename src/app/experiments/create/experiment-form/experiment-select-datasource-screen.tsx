@@ -3,7 +3,6 @@ import { ScreenProps } from '@/services/wizard/wizard-types';
 import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
 import { Wizard } from '@/services/wizard/Wizard';
 import { DatasourceForm, DatasourceFormData, DatasourceFormInputData } from '../datasource-form/datasource-form-def';
-import { WizardBreadcrumbs } from '@/services/wizard/wizard-breadcrumbs-context';
 import { Card, Flex } from '@radix-ui/themes';
 import { useMemo } from 'react';
 
@@ -41,7 +40,6 @@ export const ExperimentSelectDatasourceScreen = ({
 
   return (
     <Flex direction="column" gap={'3'}>
-      <WizardBreadcrumbs />
       <Card>
         <Wizard form={DatasourceForm} onSubmit={handleSubmit} onPrev={navigatePrev} inputData={inputData} />
       </Card>
