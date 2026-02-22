@@ -438,7 +438,9 @@ export const listSnapshotsQueryParams = zod.object({
 		.number()
 		.min(listSnapshotsQuerySkipMin)
 		.optional()
-		.describe("Number of records to skip from the start of the result set."),
+		.describe(
+			"Number of records to skip after page_token (or from the start when page_token is omitted).",
+		),
 });
 
 export const listSnapshotsResponseNextPageTokenDefault = "";
@@ -997,7 +999,9 @@ export const listOrganizationEventsQueryParams = zod.object({
 		.number()
 		.min(listOrganizationEventsQuerySkipMin)
 		.optional()
-		.describe("Number of records to skip from the start of the result set."),
+		.describe(
+			"Number of records to skip after page_token (or from the start when page_token is omitted).",
+		),
 });
 
 export const listOrganizationEventsResponseNextPageTokenDefault = "";

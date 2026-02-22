@@ -2736,7 +2736,7 @@ export type ListSnapshotsParams = {
 	 */
 	page_token?: string | null;
 	/**
-	 * Number of records to skip from the start of the result set.
+	 * Number of records to skip after page_token (or from the start when page_token is omitted).
 	 * @minimum 0
 	 */
 	skip?: number;
@@ -2761,7 +2761,7 @@ export type ListOrganizationEventsParams = {
 	 */
 	page_token?: string | null;
 	/**
-	 * Number of records to skip from the start of the result set.
+	 * Number of records to skip after page_token (or from the start when page_token is omitted).
 	 * @minimum 0
 	 */
 	skip?: number;
