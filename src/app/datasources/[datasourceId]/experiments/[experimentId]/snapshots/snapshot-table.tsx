@@ -134,12 +134,12 @@ function SnapshotTableImpl({
     );
   }
 
-  if (snapshotsData === undefined) {
-    return <XSpinner message="Loading snapshots..." />;
-  }
-
   if (error) {
     return <GenericErrorCallout title="Failed to fetch snapshots" error={error as Error} />;
+  }
+
+  if (snapshotsData === undefined) {
+    return <XSpinner message="Loading snapshots..." />;
   }
 
   if (snapshots.length === 0) {
