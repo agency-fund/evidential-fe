@@ -404,6 +404,12 @@ export const listSnapshotsParams = zod.object({
 	experiment_id: zod.string(),
 });
 
+export const listSnapshotsQueryPageSizeDefault = 20;
+export const listSnapshotsQueryPageSizeMax = 100;
+
+export const listSnapshotsQuerySkipDefault = 0;
+export const listSnapshotsQuerySkipMin = 0;
+
 export const listSnapshotsQueryParams = zod.object({
 	status: zod
 		.union([
@@ -418,8 +424,24 @@ export const listSnapshotsQueryParams = zod.object({
 		.describe(
 			"Filter the returned snapshots to only those of this status. May be specified multiple times.",
 		),
+	page_size: zod
+		.number()
+		.min(1)
+		.max(listSnapshotsQueryPageSizeMax)
+		.default(listSnapshotsQueryPageSizeDefault)
+		.describe("Maximum number of snapshots to return per page."),
+	page_token: zod
+		.union([zod.string(), zod.null()])
+		.optional()
+		.describe("Token from a previous response to fetch the next page."),
+	skip: zod
+		.number()
+		.min(listSnapshotsQuerySkipMin)
+		.optional()
+		.describe("Number of records to skip from the start of the result set."),
 });
 
+export const listSnapshotsResponseNextPageTokenDefault = "";
 export const listSnapshotsResponseItemsItemDataMetricAnalysesItemMetricFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const listSnapshotsResponseItemsItemDataMetricAnalysesItemArmAnalysesItemArmNameMax = 100;
@@ -434,6 +456,10 @@ export const listSnapshotsResponseItemsItemDataArmAnalysesItemArmNameMax = 100;
 export const listSnapshotsResponseItemsItemDataArmAnalysesItemArmDescriptionMaxOne = 2000;
 
 export const listSnapshotsResponse = zod.object({
+	next_page_token: zod
+		.string()
+		.optional()
+		.describe("Token to retrieve the next page. Empty when no more results."),
 	items: zod.array(
 		zod.object({
 			experiment_id: zod
@@ -943,14 +969,44 @@ export const regenerateWebhookAuthTokenParams = zod.object({
 });
 
 /**
- * Returns the most recent 200 events in an organization.
+ * Returns events in an organization, newest first.
  * @summary List Organization Events
  */
 export const listOrganizationEventsParams = zod.object({
 	organization_id: zod.string(),
 });
 
+export const listOrganizationEventsQueryPageSizeDefault = 20;
+export const listOrganizationEventsQueryPageSizeMax = 100;
+
+export const listOrganizationEventsQuerySkipDefault = 0;
+export const listOrganizationEventsQuerySkipMin = 0;
+
+export const listOrganizationEventsQueryParams = zod.object({
+	page_size: zod
+		.number()
+		.min(1)
+		.max(listOrganizationEventsQueryPageSizeMax)
+		.default(listOrganizationEventsQueryPageSizeDefault)
+		.describe("Maximum number of events to return per page."),
+	page_token: zod
+		.union([zod.string(), zod.null()])
+		.optional()
+		.describe("Token from a previous response to fetch the next page."),
+	skip: zod
+		.number()
+		.min(listOrganizationEventsQuerySkipMin)
+		.optional()
+		.describe("Number of records to skip from the start of the result set."),
+});
+
+export const listOrganizationEventsResponseNextPageTokenDefault = "";
+
 export const listOrganizationEventsResponse = zod.object({
+	next_page_token: zod
+		.string()
+		.optional()
+		.describe("Token to retrieve the next page. Empty when no more results."),
 	items: zod.array(
 		zod
 			.object({
