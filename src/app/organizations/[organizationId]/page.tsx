@@ -2,7 +2,7 @@
 import { Flex, Heading, Text } from '@radix-ui/themes';
 import { RenameOrganizationDialog } from '@/components/features/organizations/rename-organization-dialog';
 import { XSpinner } from '@/components/ui/x-spinner';
-import { useGetOrganization, useListOrganizationEvents, useListOrganizationWebhooks } from '@/api/admin';
+import { useGetOrganization, useListOrganizationWebhooks } from '@/api/admin';
 import { useParams } from 'next/navigation';
 import { DatasourcesTable } from '@/components/features/datasources/datasources-table';
 import { UsersTable } from '@/components/features/organizations/users-table';
@@ -22,16 +22,6 @@ export default function Page() {
     isLoading,
     error,
   } = useGetOrganization(organizationId!, {
-    swr: {
-      enabled: organizationId !== null,
-    },
-  });
-
-  const {
-    data: eventsData,
-    isLoading: isLoadingEvents,
-    error: eventsError,
-  } = useListOrganizationEvents(organizationId!, {
     swr: {
       enabled: organizationId !== null,
     },
@@ -81,7 +71,7 @@ export default function Page() {
         webhookCount={webhooksData?.items.length || 0}
         webhookLimit={WEBHOOK_LIMIT}
       />
-      <EventsTable events={eventsData?.items || []} isLoading={isLoadingEvents} error={eventsError} />
+      <EventsTable organizationId={organizationId} />
     </Flex>
   );
 }
