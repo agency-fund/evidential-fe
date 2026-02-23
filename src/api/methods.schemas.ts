@@ -2726,7 +2726,7 @@ export type ListSnapshotsParams = {
 	 */
 	status?: SnapshotStatus[] | null;
 	/**
-	 * Maximum number of snapshots to return per page.
+	 * Maximum number of items to return per page.
 	 * @minimum 1
 	 * @maximum 100
 	 */
@@ -2736,7 +2736,7 @@ export type ListSnapshotsParams = {
 	 */
 	page_token?: string | null;
 	/**
-	 * Number of records to skip after page_token (or from the start when page_token is omitted).
+	 * Number of items to skip after page_token (or from the start when page_token is omitted).
 	 * @minimum 0
 	 */
 	skip?: number;
@@ -2751,7 +2751,7 @@ export type DeleteWebhookFromOrganizationParams = {
 
 export type ListOrganizationEventsParams = {
 	/**
-	 * Maximum number of events to return per page.
+	 * Maximum number of items to return per page.
 	 * @minimum 1
 	 * @maximum 100
 	 */
@@ -2761,7 +2761,7 @@ export type ListOrganizationEventsParams = {
 	 */
 	page_token?: string | null;
 	/**
-	 * Number of records to skip after page_token (or from the start when page_token is omitted).
+	 * Number of items to skip after page_token (or from the start when page_token is omitted).
 	 * @minimum 0
 	 */
 	skip?: number;

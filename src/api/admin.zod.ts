@@ -429,7 +429,7 @@ export const listSnapshotsQueryParams = zod.object({
 		.min(1)
 		.max(listSnapshotsQueryPageSizeMax)
 		.default(listSnapshotsQueryPageSizeDefault)
-		.describe("Maximum number of snapshots to return per page."),
+		.describe("Maximum number of items to return per page."),
 	page_token: zod
 		.union([zod.string(), zod.null()])
 		.optional()
@@ -439,7 +439,7 @@ export const listSnapshotsQueryParams = zod.object({
 		.min(listSnapshotsQuerySkipMin)
 		.optional()
 		.describe(
-			"Number of records to skip after page_token (or from the start when page_token is omitted).",
+			"Number of items to skip after page_token (or from the start when page_token is omitted).",
 		),
 });
 
@@ -990,7 +990,7 @@ export const listOrganizationEventsQueryParams = zod.object({
 		.min(1)
 		.max(listOrganizationEventsQueryPageSizeMax)
 		.default(listOrganizationEventsQueryPageSizeDefault)
-		.describe("Maximum number of events to return per page."),
+		.describe("Maximum number of items to return per page."),
 	page_token: zod
 		.union([zod.string(), zod.null()])
 		.optional()
@@ -1000,7 +1000,7 @@ export const listOrganizationEventsQueryParams = zod.object({
 		.min(listOrganizationEventsQuerySkipMin)
 		.optional()
 		.describe(
-			"Number of records to skip after page_token (or from the start when page_token is omitted).",
+			"Number of items to skip after page_token (or from the start when page_token is omitted).",
 		),
 });
 
