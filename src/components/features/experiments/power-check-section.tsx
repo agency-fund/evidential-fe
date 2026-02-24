@@ -44,7 +44,7 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
         onFormDataChange({
           ...formData,
           powerCheckResponse: response,
-          chosenN: undefined,
+          desiredN: undefined,
         });
       },
     },
@@ -207,18 +207,18 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
                     case PowerCheckOption.USE_POWER_CHECK:
                       onFormDataChange({
                         ...formData,
-                        chosenN: powerCheckTarget,
+                        desiredN: powerCheckTarget,
                       });
                       break;
                     case PowerCheckOption.USE_ALL_NON_NULL_SAMPLES:
                       onFormDataChange({
                         ...formData,
-                        chosenN: nonNullSamples,
+                        desiredN: nonNullSamples,
                       });
                       break;
                     case PowerCheckOption.ENTER_OWN:
                     case PowerCheckOption.NONE:
-                      onFormDataChange({ ...formData, chosenN: undefined });
+                      onFormDataChange({ ...formData, desiredN: undefined });
                       break;
                   }
                 }}
@@ -254,7 +254,7 @@ export function PowerCheckSection({ formData, onFormDataChange }: PowerCheckSect
                         onChange={(e) =>
                           onFormDataChange({
                             ...formData,
-                            chosenN: e.target.value === '' ? undefined : Number(e.target.value),
+                            desiredN: e.target.value === '' ? undefined : Number(e.target.value),
                           })
                         }
                         placeholder="Type your own desired #."

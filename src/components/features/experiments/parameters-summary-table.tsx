@@ -18,7 +18,7 @@ export function ParametersSummaryTable({ formData }: { formData: FrequentABFormD
           </Table.Row>
           <Table.Row>
             <Table.RowHeaderCell>Desired sample size</Table.RowHeaderCell>
-            <Table.Cell>{formData.chosenN || 'N/A'}</Table.Cell>
+            <Table.Cell>{formData.desiredN || 'N/A'}</Table.Cell>
           </Table.Row>
         </Table.Body>
       </Table.Root>

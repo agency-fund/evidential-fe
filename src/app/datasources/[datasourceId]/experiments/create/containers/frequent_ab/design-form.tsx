@@ -36,7 +36,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
     isMutating,
     error: createExperimentError,
   } = useCreateExperiment(formData.datasourceId!, {
-    chosen_n: formData.chosenN!,
+    desired_n: formData.desiredN!,
   });
 
   const metricFields: GetMetricsResponseElement[] =
@@ -50,7 +50,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
     onFormDataChange({
       ...newData,
       powerCheckResponse: undefined,
-      chosenN: undefined,
+      desiredN: undefined,
     });
   };
 
@@ -82,7 +82,7 @@ export function DesignForm({ formData, onFormDataChange, onNext, onBack }: Desig
     if (supportsPowerCheck && formData.powerCheckResponse === undefined) {
       return 'Please complete the power check before proceeding.';
     }
-    if (formData.experimentType === 'freq_preassigned' && !formData.chosenN) {
+    if (formData.experimentType === 'freq_preassigned' && !formData.desiredN) {
       return 'Please select a sample size before proceeding.';
     }
     return '';

@@ -84,7 +84,7 @@ export function MABMetadataForm({ webhooks, formData, onFormDataChange, onNext, 
     isMutating,
     error: createExperimentError,
   } = useCreateExperiment(formData.datasourceId!, {
-    chosen_n: formData.chosenN!,
+    desired_n: formData.desiredN!,
   });
 
   const handleSaveExperiment = async () => {

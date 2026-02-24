@@ -117,7 +117,7 @@ export type FrequentABFormData = BaseExperimentFormData & {
   confidence: string;
   power: string;
   // Populated when user clicks "Power Check" on DesignForm
-  chosenN?: number;
+  desiredN?: number;
   powerCheckResponse?: PowerResponseOutput;
   // Populated when assignments are created
   experimentId?: string;
@@ -131,7 +131,7 @@ export type MABFormData = BaseExperimentFormData & {
   outcomeType: OutcomeType;
   experimentId?: string;
   createExperimentResponse?: CreateExperimentResponse;
-  chosenN?: number;
+  desiredN?: number;
 };
 
 export type CMABFormData = Omit<MABFormData, 'experimentType' | 'priorType'> & {
