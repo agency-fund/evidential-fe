@@ -13,6 +13,9 @@ import {
 } from '@/components/features/experiments/experiment-confirmation-display';
 import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
 
+// The "Edit" buttons on the confirmation screen are temporarily disabled pending further UX effort.
+const FEATURE_EDIT_BUTTONS_ENABLED = false;
+
 type EditTargets = {
   metadata?: ExperimentScreenId;
   treatmentArms?: ExperimentScreenId;
@@ -68,7 +71,9 @@ export function ExperimentsSummarizeScreenBase({
     }
   };
 
-  const toEditHandler = (target?: ExperimentScreenId) => (target ? () => navigateTo(target) : undefined);
+  const toEditHandler = FEATURE_EDIT_BUTTONS_ENABLED
+    ? (target?: ExperimentScreenId) => (target ? () => navigateTo(target) : undefined)
+    : () => undefined;
 
   if (data.commitError) {
     return (
