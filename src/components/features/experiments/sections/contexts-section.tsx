@@ -1,9 +1,8 @@
 'use client';
 
-import { Button, Flex, Table, Text } from '@radix-ui/themes';
+import { Button, Table } from '@radix-ui/themes';
 import { Pencil2Icon } from '@radix-ui/react-icons';
 import { SectionCard } from '@/components/ui/cards/section-card';
-import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
 import { Context } from '@/api/methods.schemas';
 
 interface ContextsSectionProps {
@@ -31,7 +30,6 @@ export function ContextsSection({ contexts, onEdit }: ContextsSectionProps) {
       <Table.Root>
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeaderCell>ID</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Value Type</Table.ColumnHeaderCell>
@@ -40,12 +38,6 @@ export function ContextsSection({ contexts, onEdit }: ContextsSectionProps) {
         <Table.Body>
           {contexts.map((context, index) => (
             <Table.Row key={index}>
-              <Table.Cell>
-                <Flex gap="2" align="center">
-                  <Text>{context.context_id}</Text>
-                  {context.context_id && <CopyToClipBoard content={context.context_id} />}
-                </Flex>
-              </Table.Cell>
               <Table.Cell>{context.context_name}</Table.Cell>
               <Table.Cell>{context.context_description || '-'}</Table.Cell>
               <Table.Cell>{context.value_type || '-'}</Table.Cell>
