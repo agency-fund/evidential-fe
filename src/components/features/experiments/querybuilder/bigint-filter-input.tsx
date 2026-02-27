@@ -11,6 +11,7 @@ import {
   BETWEEN_WITH_NULL_LENGTH,
 } from '@/components/features/experiments/querybuilder/utils';
 import React, { useEffect, useState } from 'react';
+import { z } from 'zod';
 import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
 import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
 
@@ -91,10 +92,18 @@ export function BigIntFilterInput({ filter, onChange, dataType }: BigIntFilterIn
       return null;
     }
 
-    const parsedValue = inputValue.trim();
+    const BigIntStringSchema = z.string().refine((val: string) => {
+      // decimals, sci-notation, random letters etc should fail.
+      try {
+        BigInt(val);
+        return true;
+      } catch {
+        return false;
+      }
+    }, 'BigInt format error');
 
-    // If parsing resulted in NaN, return null
-    return isNaN(Number(parsedValue)) ? null : parsedValue;
+    const parsedValue = BigIntStringSchema.safeParse(inputValue);
+    return parsedValue.success ? inputValue : null;
   };
 
   const getStepAttribute = (): string => {
