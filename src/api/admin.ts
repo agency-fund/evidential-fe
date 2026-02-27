@@ -56,6 +56,7 @@ import type {
 	ListApiKeysResponse,
 	ListDatasourcesResponse,
 	ListExperimentsResponse,
+	ListOrganizationEventsParams,
 	ListOrganizationEventsResponse,
 	ListOrganizationsResponse,
 	ListParticipantsTypeResponse,
@@ -1181,19 +1182,35 @@ export const useRegenerateWebhookAuthToken = <
 	};
 };
 /**
- * Returns the most recent 200 events in an organization.
+ * Returns events in an organization, newest first.
  * @summary List Organization Events
  */
-export const getListOrganizationEventsUrl = (organizationId: string) => {
-	return `/v1/m/organizations/${organizationId}/events`;
+export const getListOrganizationEventsUrl = (
+	organizationId: string,
+	params?: ListOrganizationEventsParams,
+) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/v1/m/organizations/${organizationId}/events?${stringifiedParams}`
+		: `/v1/m/organizations/${organizationId}/events`;
 };
 
 export const listOrganizationEvents = async (
 	organizationId: string,
+	params?: ListOrganizationEventsParams,
 	options?: RequestInit,
 ): Promise<ListOrganizationEventsResponse> => {
 	return orvalFetch<ListOrganizationEventsResponse>(
-		getListOrganizationEventsUrl(organizationId),
+		getListOrganizationEventsUrl(organizationId, params),
 		{
 			...options,
 			method: "GET",
@@ -1201,8 +1218,14 @@ export const listOrganizationEvents = async (
 	);
 };
 
-export const getListOrganizationEventsKey = (organizationId: string) =>
-	[`/v1/m/organizations/${organizationId}/events`] as const;
+export const getListOrganizationEventsKey = (
+	organizationId: string,
+	params?: ListOrganizationEventsParams,
+) =>
+	[
+		`/v1/m/organizations/${organizationId}/events`,
+		...(params ? [params] : []),
+	] as const;
 
 export type ListOrganizationEventsQueryResult = NonNullable<
 	Awaited<ReturnType<typeof listOrganizationEvents>>
@@ -1218,6 +1241,7 @@ export const useListOrganizationEvents = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
 	organizationId: string,
+	params?: ListOrganizationEventsParams,
 	options?: {
 		swr?: SWRConfiguration<
 			Awaited<ReturnType<typeof listOrganizationEvents>>,
@@ -1231,8 +1255,10 @@ export const useListOrganizationEvents = <
 	const isEnabled = swrOptions?.enabled !== false && !!organizationId;
 	const swrKey =
 		swrOptions?.swrKey ??
-		(() => (isEnabled ? getListOrganizationEventsKey(organizationId) : null));
-	const swrFn = () => listOrganizationEvents(organizationId, requestOptions);
+		(() =>
+			isEnabled ? getListOrganizationEventsKey(organizationId, params) : null);
+	const swrFn = () =>
+		listOrganizationEvents(organizationId, params, requestOptions);
 
 	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
 		swrKey,

@@ -1739,6 +1739,8 @@ export interface ListExperimentsResponse {
 }
 
 export interface ListOrganizationEventsResponse {
+	/** Token to retrieve the next page. Empty when no more results. */
+	next_page_token?: string;
 	items: EventSummary[];
 }
 
@@ -1756,6 +1758,8 @@ export interface ListParticipantsTypeResponse {
 export type ListSnapshotsResponseLatestFailure = string | null;
 
 export interface ListSnapshotsResponse {
+	/** Token to retrieve the next page. Empty when no more results. */
+	next_page_token?: string;
 	items: Snapshot[];
 	/** The timestamp of the latest snapshot that failed, or null if there have been no snapshot failures. */
 	latest_failure: ListSnapshotsResponseLatestFailure;
@@ -2754,6 +2758,21 @@ export type ListSnapshotsParams = {
 	 * Filter the returned snapshots to only those of this status. May be specified multiple times.
 	 */
 	status?: SnapshotStatus[] | null;
+	/**
+	 * Maximum number of items to return per page.
+	 * @minimum 1
+	 * @maximum 100
+	 */
+	page_size?: number;
+	/**
+	 * Token from a previous response to fetch the next page.
+	 */
+	page_token?: string | null;
+	/**
+	 * Number of items to skip after page_token (or from the start when page_token is omitted).
+	 * @minimum 0
+	 */
+	skip?: number;
 };
 
 export type DeleteWebhookFromOrganizationParams = {
@@ -2761,6 +2780,24 @@ export type DeleteWebhookFromOrganizationParams = {
 	 * If true, return a 204 even if the resource does not exist.
 	 */
 	allow_missing?: boolean;
+};
+
+export type ListOrganizationEventsParams = {
+	/**
+	 * Maximum number of items to return per page.
+	 * @minimum 1
+	 * @maximum 100
+	 */
+	page_size?: number;
+	/**
+	 * Token from a previous response to fetch the next page.
+	 */
+	page_token?: string | null;
+	/**
+	 * Number of items to skip after page_token (or from the start when page_token is omitted).
+	 * @minimum 0
+	 */
+	skip?: number;
 };
 
 export type RemoveMemberFromOrganizationParams = {
