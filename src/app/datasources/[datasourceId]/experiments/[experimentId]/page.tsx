@@ -71,6 +71,7 @@ import {
   isFrequentistSpec,
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { TableNameBadge } from '@/components/features/participants/table-name-badge';
+import { TargetingDialog } from '@/components/features/experiments/targeting-dialog';
 
 const SNAPSHOT_ERROR_ALERT_THRESHOLD_MS = 8 * 60 * 60 * 1000;
 
@@ -390,6 +391,14 @@ export default function ExperimentViewPage() {
               <Separator orientation="vertical" />
             </>
           )}
+          <>
+            <TargetingDialog
+              designSpec={design_spec}
+              participantType={experiment.participant_type}
+              webhookIds={experiment.config.webhooks ?? []}
+            />
+            <Separator orientation="vertical" />
+          </>
           <Flex align="center" gap="2">
             <FileTextIcon />
             <EditableTextField
