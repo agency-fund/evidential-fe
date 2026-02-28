@@ -1763,7 +1763,10 @@ export interface ListOrganizationsResponse {
 }
 
 export interface ListParticipantsTypeResponse {
+	/** List of participant type definitions. */
 	items: ParticipantsDef[];
+	/** True when the datasource has hidden participant types. */
+	has_hidden: boolean;
 }
 
 /**
