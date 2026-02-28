@@ -70,6 +70,7 @@ import {
   isCmabExperiment,
   isFrequentistSpec,
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
+import { TableNameBadge } from '@/components/features/participants/table-name-badge';
 
 const SNAPSHOT_ERROR_ALERT_THRESHOLD_MS = 8 * 60 * 60 * 1000;
 
@@ -109,15 +110,16 @@ export default function ExperimentViewPage() {
   } = useGetExperimentForUi(datasourceId, experimentId, {
     swr: {
       enabled: !!datasourceId,
-      onSuccess: (exp) => {
+      onSuccess: (expForUi) => {
+        const expConfig = expForUi.config;
         // Only initialize context input ids for CMAB experiments if they are not already set.
         // Should only need to set this once for an experiment, as they are fixed at design time.
         if (
-          isBanditSpec(exp.design_spec) &&
-          exp.design_spec.contexts &&
+          isBanditSpec(expConfig.design_spec) &&
+          expConfig.design_spec.contexts &&
           cmabAnalysisRequest.context_inputs.length === 0
         ) {
-          const contextInputs = exp.design_spec.contexts
+          const contextInputs = expConfig.design_spec.contexts
             .filter((ctx) => ctx.context_id !== undefined)
             .map((ctx) => ({ context_id: ctx.context_id!, context_value: 0.0 }));
           setCmabAnalysisRequest({ ...cmabAnalysisRequest, context_inputs: contextInputs });
@@ -132,7 +134,7 @@ export default function ExperimentViewPage() {
     error: liveAnalysisError,
   } = useAnalyzeExperiment(datasourceId, experimentId, undefined, {
     swr: {
-      enabled: !!datasourceId && !!experiment && !isCmabExperiment(experiment),
+      enabled: !!datasourceId && !!experiment && !isCmabExperiment(experiment.config),
       // Disable revalidation to only allow manual triggering of the live analysis
       revalidateOnMount: false,
       revalidateOnFocus: false,
@@ -259,7 +261,7 @@ export default function ExperimentViewPage() {
   // Wrapper around the live analysis functions for CMAB and non-CMAB experiments.
   const triggerLiveAnalysis = async (requestOverride?: CMABContextInputRequest) => {
     const request = requestOverride ?? cmabAnalysisRequest;
-    return isCmabExperiment(experiment) ? await analyzeLiveCmab(request) : await analyzeLive();
+    return isCmabExperiment(experiment?.config) ? await analyzeLiveCmab(request) : await analyzeLive();
   };
 
   const handleLiveAnalysisSuccess = (analysisData: ExperimentAnalysisResponse) => {
@@ -310,8 +312,8 @@ export default function ExperimentViewPage() {
     return <Text>No experiment data found</Text>;
   }
 
-  const { design_spec, assign_summary, decision, impact } = experiment;
-  const { alpha, power } = getAlphaAndPower(experiment); // undefined for non-frequentist experiments
+  const { design_spec, assign_summary, decision, impact } = experiment.config;
+  const { alpha, power } = getAlphaAndPower(experiment.config); // undefined for non-frequentist experiments
   const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
   const isFrequentistExperiment = isFrequentistSpec(design_spec);
   const contexts = isBanditSpec(design_spec) ? (design_spec.contexts ?? []) : [];
@@ -373,11 +375,21 @@ export default function ExperimentViewPage() {
         <Flex gap="4" align="center">
           <ExperimentTypeBadge type={design_spec.experiment_type} />
           <Separator orientation="vertical" />
-          <ParticipantTypeBadge
-            datasourceId={experiment.datasource_id}
-            participantType={experiment.design_spec.participant_type}
-          />
-          <Separator orientation="vertical" />
+          {isBanditSpec(experiment.config.design_spec) ? (
+            <></>
+          ) : (
+            <>
+              {experiment.participant_type?.hidden && experiment.participant_type?.table_name ? (
+                <TableNameBadge tableName={experiment.participant_type.table_name} />
+              ) : (
+                <ParticipantTypeBadge
+                  datasourceId={experiment.config.datasource_id}
+                  participantType={experiment.config.design_spec.participant_type}
+                />
+              )}
+              <Separator orientation="vertical" />
+            </>
+          )}
           <Flex align="center" gap="2">
             <FileTextIcon />
             <EditableTextField
@@ -413,7 +425,10 @@ export default function ExperimentViewPage() {
             headerLeft={
               <Flex gap="3" align="center">
                 <Heading size="3">Arms & Allocations</Heading>
-                <DownloadAssignmentsCsvButton datasourceId={experiment.datasource_id} experimentId={experimentId} />
+                <DownloadAssignmentsCsvButton
+                  datasourceId={experiment.config.datasource_id}
+                  experimentId={experimentId}
+                />
               </Flex>
             }
             headerRight={
@@ -476,19 +491,19 @@ export default function ExperimentViewPage() {
                   <Badge size="2">
                     <Flex gap="2" align="center">
                       <Heading size="2"> Prior Type:</Heading>
-                      <Text>{(experiment.design_spec as MABExperimentSpecOutput).prior_type}</Text>
+                      <Text>{(experiment.config.design_spec as MABExperimentSpecOutput).prior_type}</Text>
                     </Flex>
                   </Badge>
                   <Badge size="2">
                     <Flex gap="2" align="center">
                       <Heading size="2">Reward Type:</Heading>
-                      <Text>{(experiment.design_spec as MABExperimentSpecOutput).reward_type}</Text>
+                      <Text>{(experiment.config.design_spec as MABExperimentSpecOutput).reward_type}</Text>
                     </Flex>
                   </Badge>
                   {cmabAnalysisRequest.context_inputs.length > 0 && (
                     <ContextConfigBox
                       analysisKey={selectedAnalysisState.key}
-                      contexts={(experiment.design_spec as CMABExperimentSpecOutput).contexts || []}
+                      contexts={(experiment.config.design_spec as CMABExperimentSpecOutput).contexts || []}
                       contextValues={cmabAnalysisRequest.context_inputs}
                       onUpdate={handleUpdateCmabContextValue}
                     />
