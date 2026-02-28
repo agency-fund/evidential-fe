@@ -1486,6 +1486,20 @@ export interface GetExperimentAssignmentsResponse {
 }
 
 /**
+ * If available, the Participant Type information for this experiment.
+ */
+export type GetExperimentForUiResponseParticipantType = ParticipantsDef | null;
+
+/**
+ * Experiment configuration and participant type information.
+ */
+export interface GetExperimentForUiResponse {
+	config: ExperimentConfig;
+	/** If available, the Participant Type information for this experiment. */
+	participant_type: GetExperimentForUiResponseParticipantType;
+}
+
+/**
  * The date and time assignments were stopped. Null if assignments are still allowed to be made.
  */
 export type GetExperimentResponseStoppedAssignmentsAt = string | null;
