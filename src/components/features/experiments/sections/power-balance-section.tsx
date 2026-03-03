@@ -11,9 +11,17 @@ export interface PowerBalanceSectionProps {
   chosenN?: number;
   assignSummary: AssignSummary | null | undefined;
   onEdit?: () => void;
+  showDesiredSampleSize?: boolean;
 }
 
-export function PowerBalanceSection({ confidence, power, chosenN, assignSummary, onEdit }: PowerBalanceSectionProps) {
+export function PowerBalanceSection({
+  confidence,
+  power,
+  chosenN,
+  assignSummary,
+  onEdit,
+  showDesiredSampleSize = true,
+}: PowerBalanceSectionProps) {
   const balanceCheck = assignSummary?.balance_check;
 
   return (
@@ -37,10 +45,12 @@ export function PowerBalanceSection({ confidence, power, chosenN, assignSummary,
           <DataList.Label>Power</DataList.Label>
           <DataList.Value>{power}%</DataList.Value>
         </DataList.Item>
-        <DataList.Item>
-          <DataList.Label>Desired Sample Size</DataList.Label>
-          <DataList.Value>{chosenN ?? 'N/A'}</DataList.Value>
-        </DataList.Item>
+        {showDesiredSampleSize && (
+          <DataList.Item>
+            <DataList.Label>Desired Sample Size</DataList.Label>
+            <DataList.Value>{chosenN ?? 'N/A'}</DataList.Value>
+          </DataList.Item>
+        )}
         <DataList.Item>
           <DataList.Label>Actual Sample Size</DataList.Label>
           <DataList.Value>{assignSummary?.sample_size ?? 'N/A'}</DataList.Value>
