@@ -8,7 +8,7 @@ interface TableNameBadgeProps {
 }
 
 export const TableNameBadge = ({ tableName }: TableNameBadgeProps) => (
-  <Badge variant="soft" color="blue" size="1">
+  <Badge variant="soft" color="blue" size="1" style={{ cursor: 'default' }}>
     <TableIcon width="12" height="12" />
     {tableName}
   </Badge>
