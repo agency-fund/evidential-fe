@@ -35,15 +35,18 @@ const DefaultComboboxRow = ({ optionText }: DefaultComboboxRowProps) => {
   );
 };
 
-export interface ComboboxProps<TOption = string, TKey = string> {
+export interface ComboboxProps<TOption = string, TKey extends React.Key = string> {
   /** The current input value. */
   value: string;
   /**
-   * Called on every input change (typing or selection).
-   * value - The new text value (from typing, or the display text of a selection)
-   * key - If an option was selected, we also provide its key. Undefined if typing even in the case of an "exact" match.
+   * Called on every input change (typing or selection). `value` is the text entered by the user. When the input value
+   * matches a known item's key, `key` will refer to the selected entry. If the entered value does not match an item,
+   * `key` will be undefined.
    */
   onChange: (value: string, key?: TKey) => void;
+
+  /** Whether the user's input value should apply as a filter to the selected options. Defaults to true. */
+  shouldFilter?: boolean;
 
   /** The array of items to present */
   options: TOption[];
@@ -71,13 +74,14 @@ export interface ComboboxProps<TOption = string, TKey = string> {
   // Optional styling/layout
   minWidth?: string;
   maxHeight?: string;
+  disabled?: boolean;
 }
 
 /**
  * Controlled combobox with a text input and a dropdown list of options.
  * Parent owns the input value via value/onChange props.
  */
-export function Combobox<TOption = string>({
+export function Combobox<TOption = string, TKey extends React.Key = string>({
   value,
   onChange,
   options,
@@ -91,13 +95,15 @@ export function Combobox<TOption = string>({
   dropdownRow,
   minWidth = '200px',
   maxHeight = '200px',
-}: ComboboxProps<TOption>) {
+  disabled = false,
+  shouldFilter = true,
+}: ComboboxProps<TOption, TKey>) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [popoverHighlightedIndex, setPopoverHighlightedIndex] = useState(-1);
   const popoverItemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Filter options based on input value (case-insensitive)
-  const filteredOptions = filterOptions(value, options, getDisplayTextForOption);
+  const filteredOptions = filterOptions(shouldFilter ? value : '', options, getDisplayTextForOption);
 
   // If filteredOptions changes, existing refs and highlight indexes will be potentially stale,
   // so we clear them.
@@ -117,6 +123,7 @@ export function Combobox<TOption = string>({
 
   // Handler for selecting an option from dropdown (click or Enter)
   const handleSelect = (option: TOption) => {
+    if (disabled) return;
     setIsPopoverOpen(false);
     setPopoverHighlightedIndex(-1);
     onChange(getDisplayTextForOption(option), getKeyForOption(option));
@@ -124,13 +131,16 @@ export function Combobox<TOption = string>({
 
   // Search box handler for input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (disabled) return;
     setIsPopoverOpen(true);
     const newValue = e.target.value;
-    onChange(newValue);
+    const exactMatch = options.find((opt) => getDisplayTextForOption(opt) === newValue);
+    onChange(newValue, exactMatch ? getKeyForOption(exactMatch) : undefined);
   };
 
   // Search box handler for keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (disabled) return;
     if (e.key === 'Escape') {
       setIsPopoverOpen(false);
       (e.target as HTMLInputElement)?.blur();
@@ -160,14 +170,19 @@ export function Combobox<TOption = string>({
     ((props: DropdownRowProps<TOption>) => <DefaultComboboxRow optionText={getDisplayTextForOption(props.option)} />);
 
   return (
-    <Popover.Root open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+    <Popover.Root
+      open={disabled ? false : isPopoverOpen}
+      onOpenChange={(open) => {
+        if (!disabled) setIsPopoverOpen(open);
+      }}
+    >
       <Popover.Trigger>
         <Box
           minWidth={minWidth}
           onClick={(e) => {
             // Radix' Trigger is a toggle-like behavior. We want the dropdown to be open when the trigger is activated,
             // so do not let Radix close it.
-            if (isPopoverOpen) e.preventDefault();
+            if (isPopoverOpen || disabled) e.preventDefault();
           }}
         >
           <TextField.Root
@@ -176,8 +191,9 @@ export function Combobox<TOption = string>({
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             autoFocus={autoFocus}
-            onFocus={() => setIsPopoverOpen(true)}
-            onPointerDown={() => setIsPopoverOpen(true)}
+            disabled={disabled}
+            onFocus={() => !disabled && setIsPopoverOpen(true)}
+            onPointerDown={() => !disabled && setIsPopoverOpen(true)}
           >
             <TextField.Slot>{defaultLeftSlot}</TextField.Slot>
             {rightSlot && <TextField.Slot>{rightSlot}</TextField.Slot>}

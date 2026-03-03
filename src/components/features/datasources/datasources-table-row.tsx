@@ -6,8 +6,8 @@ import Link from 'next/link';
 import { DeleteDatasourceDialog } from '@/components/features/datasources/delete-datasource-dialog';
 import { EditDatasourceDialog } from '@/components/features/datasources/edit-datasource-dialog';
 import { CreateApiKeyDialog } from '@/components/features/datasources/create-api-key-dialog';
-import { useListParticipantTypes, useListApiKeys } from '@/api/admin';
-import { PersonIcon, PlusIcon, LockClosedIcon } from '@radix-ui/react-icons';
+import { useListApiKeys, useListParticipantTypes } from '@/api/admin';
+import { LockClosedIcon, PersonIcon, PlusIcon } from '@radix-ui/react-icons';
 
 export default function DatasourceRow({
   datasource,
@@ -23,6 +23,11 @@ export default function DatasourceRow({
   const [createApiKeyDialogOpen, setCreateApiKeyDialogOpen] = useState(false);
   const { data: participantTypesData, isLoading, error } = useListParticipantTypes(datasource.id);
   const { data: apiKeysData, isLoading: isApiKeysLoading, error: apiKeysError } = useListApiKeys(datasource.id);
+  const doesDriverSupportParticipants = datasource.driver !== 'none';
+  // Don't show the "+ Participant Type" buttons when a datasource is only used by experiments built using the new
+  // flows.
+  const isParticipantTypeAllowed = participantTypesData?.items?.length === 0 ? !participantTypesData?.has_hidden : true;
+  const showAddParticipantType = doesDriverSupportParticipants && isParticipantTypeAllowed;
   return (
     <>
       <CreateApiKeyDialog
@@ -75,12 +80,16 @@ export default function DatasourceRow({
               ))}
             </Flex>
           ) : (
-            <Link href={`/datasources/${datasource.id}/participants/create`}>
-              <Button size="1">
-                <PlusIcon />
-                Add participant type
-              </Button>
-            </Link>
+            <>
+              {showAddParticipantType ? (
+                <Link href={`/datasources/${datasource.id}/participants/create`}>
+                  <Button size="1">
+                    <PlusIcon />
+                    Add participant type
+                  </Button>
+                </Link>
+              ) : null}
+            </>
           )}
         </Table.Cell>
 
@@ -97,25 +106,17 @@ export default function DatasourceRow({
                 <LockClosedIcon />
               </IconButton>
             </Tooltip>
-            <Tooltip
-              content={
-                datasource.driver === 'none'
-                  ? 'Cannot add participant types without a warehouse'
-                  : 'Add Participant Type'
-              }
-            >
-              {datasource.driver === 'none' ? (
-                <IconButton variant="soft" color="gray" disabled>
-                  <PersonIcon />
-                </IconButton>
-              ) : (
-                <Link href={`/datasources/${datasource.id}/participants/create`}>
-                  <IconButton variant="soft" color="blue">
-                    <PersonIcon />
-                  </IconButton>
-                </Link>
-              )}
-            </Tooltip>
+            {showAddParticipantType ? (
+              <>
+                <Tooltip content={'Add Participant Type'}>
+                  <Link href={`/datasources/${datasource.id}/participants/create`}>
+                    <IconButton variant="soft" color="blue">
+                      <PersonIcon />
+                    </IconButton>
+                  </Link>
+                </Tooltip>
+              </>
+            ) : null}
             <EditDatasourceDialog organizationId={organizationId} datasourceId={datasource.id} />
             <DeleteDatasourceDialog organizationId={organizationId} datasourceId={datasource.id} />
           </Flex>

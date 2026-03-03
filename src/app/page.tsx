@@ -29,11 +29,7 @@ export default function Page() {
 
   const isCardView = viewMode === null || viewMode === 'card';
 
-  const {
-    data: datasourcesData,
-    isLoading: datasourcesIsLoading,
-    error: datasourcesError,
-  } = useListOrganizationDatasources(currentOrgId, {
+  const { data: datasourcesData, error: datasourcesError } = useListOrganizationDatasources(currentOrgId, {
     swr: {
       enabled: !!currentOrgId,
     },
@@ -102,9 +98,7 @@ export default function Page() {
           Experiments
           {orgContext && orgContext.available.length > 1 && <> for {orgContext.current.name}</>}
         </Heading>
-        {datasourcesData && datasourcesData.items.length > 0 && (
-          <CreateExperimentButton datasources={datasourcesData} loading={datasourcesIsLoading} />
-        )}
+        <CreateExperimentButton />
       </Flex>
 
       {experimentsIsLoading && (
@@ -132,7 +126,7 @@ export default function Page() {
           title="Create your first experiment"
           description="Get started by creating your first experiment."
         >
-          <CreateExperimentButton datasources={datasourcesData} loading={datasourcesIsLoading || false} />
+          <CreateExperimentButton />
         </EmptyStateCard>
       ) : experimentsData ? (
         <Flex direction="column" gap="4">

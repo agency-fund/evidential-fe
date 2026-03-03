@@ -26,15 +26,6 @@ export const formatUtcDownToMinuteLabel = (date: Date): string => {
 };
 
 /**
- * Converts an ISO datetime string or Date obj to YYYY-MM-DD format. Uses local timezone to preserve
- * the user's calendar date
- */
-export const formatIsoDateYYYYMMDD = (dateInput: string | Date): string => {
-  const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-};
-
-/**
  * Converts a date object to YYYY-MM-DD format (UTC)
  */
 export const formatDateUtcYYYYMMDD = (date: Date): string => {
