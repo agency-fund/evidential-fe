@@ -5,10 +5,12 @@ import { Badge, Flex, Heading, Text, Tooltip as RadixTooltip } from '@radix-ui/t
 
 type MdeBadgeProps = {
   value?: string | number | null;
+  content?: string;
+  heading?: string;
   size?: '1' | '2' | '3';
 };
 
-export function MdeBadge({ value, size = '2' }: MdeBadgeProps) {
+export function MdeBadge({ value, content = '', heading = 'MDE', size = '2' }: MdeBadgeProps) {
   const displayValue = value === null || value === undefined ? 'unknown' : String(value);
   return (
     <Badge size={size}>
