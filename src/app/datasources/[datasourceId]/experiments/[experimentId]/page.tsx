@@ -27,9 +27,10 @@ import {
   ContextInput,
   ExperimentAnalysisResponse,
   MABExperimentSpecOutput,
+  MetricPowerAnalysisOutput,
   MetricAnalysis,
   Snapshot,
-  MetricPowerAnalysisOutput
+  MetricPowerAnalysisOutput,
 } from '@/api/methods.schemas';
 import { ForestPlot } from '@/components/features/experiments/plots/forest-plot';
 import {
@@ -323,8 +324,8 @@ export default function ExperimentViewPage() {
     return <Text>No experiment data found</Text>;
   }
 
-  const { design_spec, assign_summary, decision, impact } = experiment.config;
-  const { alpha, power } = getAlphaAndPower(experiment.config); // undefined for non-frequentist experiments
+  const { design_spec, assign_summary, power_analyses, decision, impact } = experiment;
+  const { alpha, power } = getAlphaAndPower(experiment); // undefined for non-frequentist experiments
   const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
   const isFrequentistExperiment = isFrequentistSpec(design_spec);
   const contexts = isBanditSpec(design_spec) ? (design_spec.contexts ?? []) : [];
