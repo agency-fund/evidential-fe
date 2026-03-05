@@ -89,7 +89,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
       const response = await trigger({ design_spec, table_name: data.tableName, primary_key: data.primaryKey });
       const primary = response.analyses.find((a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name);
 
-      dispatch({ type: 'set-power-check-response', response, chosenN: undefined });
+      dispatch({ type: 'set-power-check-response', response, desiredN: undefined });
       setPowerCheckTarget(primary?.target_n ?? undefined);
       setNonNullSamples(primary?.metric_spec.available_nonnull_n ?? 0);
       setAllSamples(primary?.metric_spec.available_n ?? 0);

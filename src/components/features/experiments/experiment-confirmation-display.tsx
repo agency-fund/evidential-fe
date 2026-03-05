@@ -51,7 +51,7 @@ export interface ExperimentConfirmationDisplayProps {
     primary?: MetricDisplay;
     secondary?: MetricDisplay[];
   };
-  chosenN?: number;
+  desiredN?: number;
   onEditMetadata?: () => void;
   onEditTreatmentArms?: () => void;
   onEditDatasource?: () => void;
@@ -69,7 +69,7 @@ export function ExperimentConfirmationDisplay({
   tableName,
   primaryKey,
   metrics,
-  chosenN,
+  desiredN,
   onEditMetadata,
   onEditTreatmentArms,
   onEditDatasource,
@@ -124,7 +124,7 @@ export function ExperimentConfirmationDisplay({
             <PowerBalanceSection
               confidence={confidence}
               power={power}
-              chosenN={chosenN}
+              desiredN={desiredN}
               assignSummary={response.assign_summary}
               onEdit={onEditPowerBalance}
             />

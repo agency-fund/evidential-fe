@@ -19,7 +19,7 @@ export type ExperimentFreqStackScreenMessage =
   | { type: 'set-strata'; strata: string[] }
   | { type: 'set-confidence'; value: string }
   | { type: 'set-power'; value: string }
-  | { type: 'set-power-check-response'; response: PowerResponseOutput; chosenN?: number }
+  | { type: 'set-power-check-response'; response: PowerResponseOutput; desiredN?: number }
   | { type: 'set-create-response'; response: CreateExperimentResponse }
   | { type: 'set-create-error'; response: ErrorType<unknown> }
   | { type: 'set-chosen-n'; value: number | undefined };
@@ -36,7 +36,7 @@ const isNextEnabled = (data: ExperimentFormData) => {
   // Must have run power check
   if (!data.powerCheckResponse) return false;
   // Must have selected a sample size
-  if (data.chosenN === undefined) return false;
+  if (data.desiredN === undefined) return false;
   return true;
 };
 
@@ -58,7 +58,7 @@ export const ExperimentFreqStackScreen = ({
   const { trigger: triggerCreate, isMutating: triggerLoading } = useCreateExperiment(
     data.datasourceId!,
     {
-      chosen_n: data.chosenN,
+      desired_n: data.desiredN,
     },
     {
       swr: {
