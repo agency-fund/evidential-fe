@@ -8,7 +8,7 @@ import { SectionCard } from '@/components/ui/cards/section-card';
 export interface PowerBalanceSectionProps {
   confidence: number;
   power: number;
-  chosenN?: number;
+  desiredN?: number;
   assignSummary: AssignSummary | null | undefined;
   onEdit?: () => void;
   showDesiredSampleSize?: boolean;
@@ -17,7 +17,7 @@ export interface PowerBalanceSectionProps {
 export function PowerBalanceSection({
   confidence,
   power,
-  chosenN,
+  desiredN,
   assignSummary,
   onEdit,
   showDesiredSampleSize = true,
@@ -48,7 +48,7 @@ export function PowerBalanceSection({
         {showDesiredSampleSize && (
           <DataList.Item>
             <DataList.Label>Desired Sample Size</DataList.Label>
-            <DataList.Value>{chosenN ?? 'N/A'}</DataList.Value>
+            <DataList.Value>{desiredN ?? 'N/A'}</DataList.Value>
           </DataList.Item>
         )}
         <DataList.Item>

@@ -44,7 +44,7 @@ export const ExperimentsSummarizeFreqScreen = ({
         metrics: 'freq-stack',
         powerBalance: 'freq-stack',
       }}
-      frequentistInfo={{ metrics, chosenN: data.chosenN }}
+      frequentistInfo={{ metrics, desiredN: data.desiredN }}
     />
   );
 };

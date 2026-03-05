@@ -34,7 +34,7 @@ interface ExperimentsSummarizeScreenBaseProps {
   onCommitError: (response: ErrorType<unknown>) => void;
   infoCalloutText: React.ReactNode;
   editTargets: EditTargets;
-  frequentistInfo?: Pick<ExperimentConfirmationDisplayProps, 'metrics' | 'chosenN'>;
+  frequentistInfo?: Pick<ExperimentConfirmationDisplayProps, 'metrics' | 'desiredN'>;
 }
 
 export function ExperimentsSummarizeScreenBase({
@@ -96,7 +96,7 @@ export function ExperimentsSummarizeScreenBase({
               tableName={data.tableName}
               primaryKey={data.primaryKey}
               metrics={frequentistInfo?.metrics}
-              chosenN={frequentistInfo?.chosenN}
+              desiredN={frequentistInfo?.desiredN}
               onEditMetadata={toEditHandler(editTargets.metadata)}
               onEditTreatmentArms={toEditHandler(editTargets.treatmentArms)}
               onEditDatasource={toEditHandler(editTargets.datasource)}

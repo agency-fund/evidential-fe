@@ -2881,7 +2881,7 @@ export type CreateExperimentParams = {
 	/**
 	 * Number of participants to assign.
 	 */
-	chosen_n?: number | null;
+	desired_n?: number | null;
 	/**
 	 * Whether to also stratify on metrics during assignment.
 	 */

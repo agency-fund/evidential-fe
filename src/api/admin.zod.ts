@@ -2812,13 +2812,13 @@ export const createExperimentParams = zod.object({
 	datasource_id: zod.string(),
 });
 
-export const createExperimentQueryChosenNMinOne = 0;
+export const createExperimentQuerydesiredNMinOne = 0;
 
 export const createExperimentQueryStratifyOnMetricsDefault = true;
 
 export const createExperimentQueryParams = zod.object({
-	chosen_n: zod
-		.union([zod.number().min(createExperimentQueryChosenNMinOne), zod.null()])
+	desired_n: zod
+		.union([zod.number().min(createExperimentQuerydesiredNMinOne), zod.null()])
 		.optional()
 		.describe("Number of participants to assign."),
 	stratify_on_metrics: zod

@@ -79,7 +79,7 @@ export type ExperimentFormData = {
   confidence?: string;
   power?: string;
   // Populated when user clicks "Power Check" on DesignForm
-  chosenN?: number;
+  desiredN?: number;
   powerCheckResponse?: PowerResponseOutput;
   createExperimentResponse?: CreateExperimentResponse;
   createExperimentError?: ErrorType<unknown>;
@@ -266,7 +266,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
 
             // Changing datasource should clear power check
             powerCheckResponse: undefined,
-            chosenN: undefined,
+            desiredN: undefined,
           };
         }
         return data;
@@ -434,7 +434,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       reducer: (data, msg: ExperimentFreqStackScreenMessage) => {
         // Metric builder actions - all metric changes invalidate power check
         if (msg.type === 'primary-metric-select') {
-          return { ...data, primaryMetric: msg.primaryMetric, powerCheckResponse: undefined, chosenN: undefined };
+          return { ...data, primaryMetric: msg.primaryMetric, powerCheckResponse: undefined, desiredN: undefined };
         }
         if (msg.type === 'primary-metric-deselect') {
           return {
@@ -442,7 +442,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             primaryMetric: msg.primaryMetric,
             secondaryMetrics: msg.secondaryMetrics,
             powerCheckResponse: undefined,
-            chosenN: undefined,
+            desiredN: undefined,
           };
         }
         if (msg.type === 'promote-secondary-to-primary') {
@@ -451,14 +451,24 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             primaryMetric: msg.primaryMetric,
             secondaryMetrics: msg.secondaryMetrics,
             powerCheckResponse: undefined,
-            chosenN: undefined,
+            desiredN: undefined,
           };
         }
         if (msg.type === 'secondary-metric-add') {
-          return { ...data, secondaryMetrics: msg.secondaryMetrics, powerCheckResponse: undefined, chosenN: undefined };
+          return {
+            ...data,
+            secondaryMetrics: msg.secondaryMetrics,
+            powerCheckResponse: undefined,
+            desiredN: undefined,
+          };
         }
         if (msg.type === 'secondary-metric-remove') {
-          return { ...data, secondaryMetrics: msg.secondaryMetrics, powerCheckResponse: undefined, chosenN: undefined };
+          return {
+            ...data,
+            secondaryMetrics: msg.secondaryMetrics,
+            powerCheckResponse: undefined,
+            desiredN: undefined,
+          };
         }
         if (msg.type === 'mde-change') {
           return {
@@ -466,13 +476,13 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             primaryMetric: msg.primaryMetric ?? data.primaryMetric,
             secondaryMetrics: msg.secondaryMetrics ?? data.secondaryMetrics,
             powerCheckResponse: undefined,
-            chosenN: undefined,
+            desiredN: undefined,
           };
         }
 
         // Filter builder - filter changes invalidate power check
         if (msg.type === 'set-filters') {
-          return { ...data, filters: msg.filters, powerCheckResponse: undefined, chosenN: undefined };
+          return { ...data, filters: msg.filters, powerCheckResponse: undefined, desiredN: undefined };
         }
 
         // Strata builder
@@ -482,16 +492,16 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
 
         // Power check - changing confidence/power invalidates power check response
         if (msg.type === 'set-confidence') {
-          return { ...data, confidence: msg.value, powerCheckResponse: undefined, chosenN: undefined };
+          return { ...data, confidence: msg.value, powerCheckResponse: undefined, desiredN: undefined };
         }
         if (msg.type === 'set-power') {
-          return { ...data, power: msg.value, powerCheckResponse: undefined, chosenN: undefined };
+          return { ...data, power: msg.value, powerCheckResponse: undefined, desiredN: undefined };
         }
         if (msg.type === 'set-power-check-response') {
-          return { ...data, powerCheckResponse: msg.response, chosenN: msg.chosenN };
+          return { ...data, powerCheckResponse: msg.response, desiredN: msg.desiredN };
         }
         if (msg.type === 'set-chosen-n') {
-          return { ...data, chosenN: msg.value };
+          return { ...data, desiredN: msg.value };
         }
         if (msg.type === 'set-create-error') {
           return { ...data, createExperimentError: msg.response, createExperimentResponse: undefined };
