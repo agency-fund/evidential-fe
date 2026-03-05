@@ -455,10 +455,20 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           };
         }
         if (msg.type === 'secondary-metric-add') {
-          return { ...data, secondaryMetrics: msg.secondaryMetrics, powerCheckResponse: undefined, desiredN: undefined };
+          return {
+            ...data,
+            secondaryMetrics: msg.secondaryMetrics,
+            powerCheckResponse: undefined,
+            desiredN: undefined,
+          };
         }
         if (msg.type === 'secondary-metric-remove') {
-          return { ...data, secondaryMetrics: msg.secondaryMetrics, powerCheckResponse: undefined, desiredN: undefined };
+          return {
+            ...data,
+            secondaryMetrics: msg.secondaryMetrics,
+            powerCheckResponse: undefined,
+            desiredN: undefined,
+          };
         }
         if (msg.type === 'mde-change') {
           return {
