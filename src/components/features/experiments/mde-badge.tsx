@@ -13,10 +13,10 @@ export function MdeBadge({ value, size = '2' }: MdeBadgeProps) {
   return (
     <Badge size={size}>
       <Flex gap="4" align="center">
-        <Heading size={size}>MDE:</Heading>
+        <Heading size={size}>MME:</Heading>
         <Flex gap="2" align="center">
           <Text>{displayValue}%</Text>
-          <RadixTooltip content="This metric's minimum detectable effect as defined in the experiment's design that meets the confidence and power requirements.">
+          <RadixTooltip content="This metric's minimum meaningful effect as defined in the experiment's design that meets the confidence and power requirements.">
             <InfoCircledIcon />
           </RadixTooltip>
         </Flex>

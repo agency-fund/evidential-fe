@@ -38,8 +38,8 @@ export function getDefaultFilterForType(fieldName: string, dataType: DataType): 
     case 'numeric':
       return {
         field_name: fieldName,
-        relation: 'includes',
-        value: [0.0], // Ensure this is a number, not a string
+        relation: 'between',
+        value: [0.0, null], // Ensure this is a number, not a string
       };
 
     case 'date':

@@ -16,15 +16,19 @@ import { DataType } from '@/api/methods.schemas';
 
 const dataTypeConfig: Record<
   DataType,
-  { color: 'orange' | 'gold' | 'cyan' | 'green' | 'lime' | 'iris' | 'purple' | 'red'; icon: React.ReactNode }
+  {
+    color: 'orange' | 'gold' | 'cyan' | 'green' | 'lime' | 'iris' | 'purple' | 'red';
+    icon: React.ReactNode;
+    label?: string;
+  }
 > = {
   boolean: { color: 'iris', icon: <CheckCircledIcon /> },
-  'character varying': { color: 'gold', icon: <TextIcon /> },
+  'character varying': { color: 'gold', icon: <TextIcon />, label: 'text' },
   date: { color: 'cyan', icon: <CalendarIcon /> },
-  'timestamp without time zone': { color: 'green', icon: <ClockIcon /> },
-  'timestamp with time zone': { color: 'lime', icon: <ClockIcon /> },
+  'timestamp without time zone': { color: 'green', icon: <ClockIcon />, label: 'timestamp' },
+  'timestamp with time zone': { color: 'lime', icon: <ClockIcon />, label: 'timestamptz' },
   integer: { color: 'purple', icon: <BarChartIcon /> },
-  'double precision': { color: 'purple', icon: <BarChartIcon /> },
+  'double precision': { color: 'purple', icon: <BarChartIcon />, label: 'double' },
   numeric: { color: 'purple', icon: <BarChartIcon /> },
   bigint: { color: 'purple', icon: <LapTimerIcon /> },
   uuid: { color: 'orange', icon: <IdCardIcon /> },
@@ -39,7 +43,7 @@ export function DataTypeBadge({ type }: { type: DataType }) {
     <Badge color={config.color}>
       <Flex gap="1" align="center">
         {config.icon}
-        {type}
+        {config.label ?? type}
       </Flex>
     </Badge>
   );

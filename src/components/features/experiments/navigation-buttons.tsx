@@ -3,48 +3,62 @@ import React from 'react';
 import { Button, Flex, Tooltip } from '@radix-ui/themes';
 
 interface NavigationButtonsProps {
-  onBack?: () => void;
-  onNext?: () => void;
+  // The text to render on the prev button.
+  prevLabel?: string;
+
+  // The text to render on the next button.
   nextLabel?: string;
+
+  // If true, the "prev" button will be rendered in a disabled state.
+  prevDisabled?: boolean;
+
+  // If true, the "next" button will be rendered in a disabled state.
   nextDisabled?: boolean;
+
+  // If true, the "next" button text will be replaced with a spinner.
   nextLoading?: boolean;
-  showBack?: boolean;
-  className?: string;
-  tooltipMessage?: string;
+
+  // Handler for the "prev" button. If undefined, the prev button will not be rendered.
+  onPrev?: () => void;
+
+  // Handler for the "next" button. If undefined, the next button will not be rendered.
+  onNext?: () => void;
+
+  // Tooltip to display over the "next" button when nextDisabled is true.
+  nextTooltipContent?: string;
 }
 
 export function NavigationButtons({
-  onBack,
+  onPrev,
   onNext,
   nextLabel = 'Next',
+  prevLabel = 'Back',
   nextDisabled = false,
   nextLoading = false,
-  showBack = true,
-  className,
-  tooltipMessage = 'Please complete all required fields before proceeding.',
+  prevDisabled = false,
+  nextTooltipContent,
 }: NavigationButtonsProps) {
-  const nextButton = (
-    <Button onClick={onNext} disabled={nextDisabled} loading={nextLoading}>
+  let nextButton = (
+    <Button onClick={onNext} disabled={!onNext || nextDisabled} loading={nextLoading}>
       {nextLabel}
     </Button>
   );
+  if (nextTooltipContent !== undefined) {
+    nextButton = (
+      <Tooltip content={nextTooltipContent} side="top" align="center">
+        {nextButton}
+      </Tooltip>
+    );
+  }
+  const prevButton = (
+    <Button onClick={onPrev} disabled={!onPrev || prevDisabled} variant="soft" color="gray">
+      {prevLabel}
+    </Button>
+  );
   return (
-    <Flex gap="3" justify="end" align="center" className={className} mt="6">
-      {showBack ? (
-        <Button variant="soft" color="gray" onClick={onBack} disabled={!onBack}>
-          Back
-        </Button>
-      ) : (
-        <div />
-      )}
-
-      {onNext && nextDisabled ? (
-        <Tooltip content={tooltipMessage} side="top" align="center">
-          {nextButton}
-        </Tooltip>
-      ) : (
-        onNext && nextButton
-      )}
+    <Flex gap="3" justify="end" align="center" mt="6">
+      {onPrev ? prevButton : <div />}
+      {onNext ? nextButton : <div />}
     </Flex>
   );
 }

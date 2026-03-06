@@ -1,0 +1,48 @@
+'use client';
+import { ScreenProps } from '@/services/wizard/wizard-types';
+import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
+import { Wizard } from '@/services/wizard/Wizard';
+import { DatasourceForm, DatasourceFormData, DatasourceFormInputData } from '../datasource-form/datasource-form-def';
+import { Card, Flex } from '@radix-ui/themes';
+import { useMemo } from 'react';
+
+type ExperimentSelectDatasourceMessages = {
+  type: 'set-datasource';
+  datasourceId: string;
+  tableName: string;
+  primaryKey?: string;
+};
+
+export const ExperimentSelectDatasourceScreen = ({
+  data,
+  dispatch,
+  navigateNext,
+  navigatePrev,
+}: ScreenProps<ExperimentFormData, ExperimentSelectDatasourceMessages, ExperimentScreenId>) => {
+  const handleSubmit = (formData: DatasourceFormData) => {
+    dispatch({
+      type: 'set-datasource',
+      datasourceId: formData.datasourceId!,
+      tableName: formData.tableName!,
+      primaryKey: formData.primaryKey,
+    });
+    navigateNext();
+  };
+
+  const inputData: DatasourceFormInputData = useMemo(
+    () => ({
+      datasourceId: data.datasourceId,
+      tableName: data.tableName,
+      primaryKey: data.primaryKey,
+    }),
+    [data.datasourceId, data.primaryKey, data.tableName],
+  );
+
+  return (
+    <Flex direction="column" gap={'3'}>
+      <Card>
+        <Wizard form={DatasourceForm} onSubmit={handleSubmit} onPrev={navigatePrev} inputData={inputData} />
+      </Card>
+    </Flex>
+  );
+};

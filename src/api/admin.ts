@@ -18,6 +18,7 @@ import type {
 	CMABContextInputRequest,
 	CallerIdentity,
 	CreateApiKeyResponse,
+	CreateDatasourceParams,
 	CreateDatasourceRequest,
 	CreateDatasourceResponse,
 	CreateExperimentParams,
@@ -39,7 +40,7 @@ import type {
 	GetDatasourceResponse,
 	GetExperimentAssignmentForParticipantParams,
 	GetExperimentAssignmentsResponse,
-	GetExperimentResponse,
+	GetExperimentForUiResponse,
 	GetOrganizationResponse,
 	GetParticipantAssignmentResponse,
 	GetParticipantsTypeResponse,
@@ -55,6 +56,7 @@ import type {
 	ListApiKeysResponse,
 	ListDatasourcesResponse,
 	ListExperimentsResponse,
+	ListOrganizationEventsParams,
 	ListOrganizationEventsResponse,
 	ListOrganizationsResponse,
 	ListParticipantsTypeResponse,
@@ -1180,19 +1182,35 @@ export const useRegenerateWebhookAuthToken = <
 	};
 };
 /**
- * Returns the most recent 200 events in an organization.
+ * Returns events in an organization, newest first.
  * @summary List Organization Events
  */
-export const getListOrganizationEventsUrl = (organizationId: string) => {
-	return `/v1/m/organizations/${organizationId}/events`;
+export const getListOrganizationEventsUrl = (
+	organizationId: string,
+	params?: ListOrganizationEventsParams,
+) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/v1/m/organizations/${organizationId}/events?${stringifiedParams}`
+		: `/v1/m/organizations/${organizationId}/events`;
 };
 
 export const listOrganizationEvents = async (
 	organizationId: string,
+	params?: ListOrganizationEventsParams,
 	options?: RequestInit,
 ): Promise<ListOrganizationEventsResponse> => {
 	return orvalFetch<ListOrganizationEventsResponse>(
-		getListOrganizationEventsUrl(organizationId),
+		getListOrganizationEventsUrl(organizationId, params),
 		{
 			...options,
 			method: "GET",
@@ -1200,8 +1218,14 @@ export const listOrganizationEvents = async (
 	);
 };
 
-export const getListOrganizationEventsKey = (organizationId: string) =>
-	[`/v1/m/organizations/${organizationId}/events`] as const;
+export const getListOrganizationEventsKey = (
+	organizationId: string,
+	params?: ListOrganizationEventsParams,
+) =>
+	[
+		`/v1/m/organizations/${organizationId}/events`,
+		...(params ? [params] : []),
+	] as const;
 
 export type ListOrganizationEventsQueryResult = NonNullable<
 	Awaited<ReturnType<typeof listOrganizationEvents>>
@@ -1217,6 +1241,7 @@ export const useListOrganizationEvents = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
 	organizationId: string,
+	params?: ListOrganizationEventsParams,
 	options?: {
 		swr?: SWRConfiguration<
 			Awaited<ReturnType<typeof listOrganizationEvents>>,
@@ -1230,8 +1255,10 @@ export const useListOrganizationEvents = <
 	const isEnabled = swrOptions?.enabled !== false && !!organizationId;
 	const swrKey =
 		swrOptions?.swrKey ??
-		(() => (isEnabled ? getListOrganizationEventsKey(organizationId) : null));
-	const swrFn = () => listOrganizationEvents(organizationId, requestOptions);
+		(() =>
+			isEnabled ? getListOrganizationEventsKey(organizationId, params) : null);
+	const swrFn = () =>
+		listOrganizationEvents(organizationId, params, requestOptions);
 
 	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
 		swrKey,
@@ -1645,15 +1672,28 @@ export const useListOrganizationDatasources = <
  * Creates a new datasource for the specified organization.
  * @summary Create Datasource
  */
-export const getCreateDatasourceUrl = () => {
-	return `/v1/m/datasources`;
+export const getCreateDatasourceUrl = (params?: CreateDatasourceParams) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/v1/m/datasources?${stringifiedParams}`
+		: `/v1/m/datasources`;
 };
 
 export const createDatasource = async (
 	createDatasourceRequest: CreateDatasourceRequest,
+	params?: CreateDatasourceParams,
 	options?: RequestInit,
 ): Promise<CreateDatasourceResponse> => {
-	return orvalFetch<CreateDatasourceResponse>(getCreateDatasourceUrl(), {
+	return orvalFetch<CreateDatasourceResponse>(getCreateDatasourceUrl(params), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
@@ -1662,14 +1702,16 @@ export const createDatasource = async (
 };
 
 export const getCreateDatasourceMutationFetcher = (
+	params?: CreateDatasourceParams,
 	options?: SecondParameter<typeof orvalFetch>,
 ) => {
 	return (_: Key, { arg }: { arg: CreateDatasourceRequest }) => {
-		return createDatasource(arg, options);
+		return createDatasource(arg, params, options);
 	};
 };
-export const getCreateDatasourceMutationKey = () =>
-	[`/v1/m/datasources`] as const;
+export const getCreateDatasourceMutationKey = (
+	params?: CreateDatasourceParams,
+) => [`/v1/m/datasources`, ...(params ? [params] : [])] as const;
 
 export type CreateDatasourceMutationResult = NonNullable<
 	Awaited<ReturnType<typeof createDatasource>>
@@ -1683,20 +1725,23 @@ export type CreateDatasourceMutationError = ErrorType<
  */
 export const useCreateDatasource = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(options?: {
-	swr?: SWRMutationConfiguration<
-		Awaited<ReturnType<typeof createDatasource>>,
-		TError,
-		Key,
-		CreateDatasourceRequest,
-		Awaited<ReturnType<typeof createDatasource>>
-	> & { swrKey?: string };
-	request?: SecondParameter<typeof orvalFetch>;
-}) => {
+>(
+	params?: CreateDatasourceParams,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof createDatasource>>,
+			TError,
+			Key,
+			CreateDatasourceRequest,
+			Awaited<ReturnType<typeof createDatasource>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
 	const { swr: swrOptions, request: requestOptions } = options ?? {};
 
-	const swrKey = swrOptions?.swrKey ?? getCreateDatasourceMutationKey();
-	const swrFn = getCreateDatasourceMutationFetcher(requestOptions);
+	const swrKey = swrOptions?.swrKey ?? getCreateDatasourceMutationKey(params);
+	const swrFn = getCreateDatasourceMutationFetcher(params, requestOptions);
 
 	const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
@@ -3405,8 +3450,8 @@ export const getExperimentForUi = async (
 	datasourceId: string,
 	experimentId: string,
 	options?: RequestInit,
-): Promise<GetExperimentResponse> => {
-	return orvalFetch<GetExperimentResponse>(
+): Promise<GetExperimentForUiResponse> => {
+	return orvalFetch<GetExperimentForUiResponse>(
 		getGetExperimentForUiUrl(datasourceId, experimentId),
 		{
 			...options,
