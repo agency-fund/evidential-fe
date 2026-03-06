@@ -2812,13 +2812,13 @@ export const createExperimentParams = zod.object({
 	datasource_id: zod.string(),
 });
 
-export const createExperimentQuerydesiredNMinOne = 0;
+export const createExperimentQueryDesiredNMinOne = 0;
 
 export const createExperimentQueryStratifyOnMetricsDefault = true;
 
 export const createExperimentQueryParams = zod.object({
 	desired_n: zod
-		.union([zod.number().min(createExperimentQuerydesiredNMinOne), zod.null()])
+		.union([zod.number().min(createExperimentQueryDesiredNMinOne), zod.null()])
 		.optional()
 		.describe("Number of participants to assign."),
 	stratify_on_metrics: zod
@@ -3110,6 +3110,12 @@ export const createExperimentBody = zod.object({
 						.describe(
 							"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
 						),
+					desired_n: zod
+						.union([zod.number(), zod.null()])
+						.optional()
+						.describe(
+							"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+						),
 					power: zod
 						.number()
 						.min(createExperimentBodyDesignSpecPowerMin)
@@ -3270,6 +3276,12 @@ export const createExperimentBody = zod.object({
 						.max(createExperimentBodyDesignSpecFiltersMaxOne)
 						.describe(
 							"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+						),
+					desired_n: zod
+						.union([zod.number(), zod.null()])
+						.optional()
+						.describe(
+							"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
 						),
 					power: zod
 						.number()
@@ -4221,6 +4233,12 @@ export const createExperimentResponse = zod
 							.describe(
 								"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
 							),
+						desired_n: zod
+							.union([zod.number(), zod.null()])
+							.optional()
+							.describe(
+								"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+							),
 						power: zod
 							.number()
 							.min(createExperimentResponseDesignSpecPowerMin)
@@ -4385,6 +4403,12 @@ export const createExperimentResponse = zod
 							.max(createExperimentResponseDesignSpecFiltersMaxOne)
 							.describe(
 								"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+							),
+						desired_n: zod
+							.union([zod.number(), zod.null()])
+							.optional()
+							.describe(
+								"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
 							),
 						power: zod
 							.number()
@@ -6138,6 +6162,12 @@ export const listOrganizationExperimentsResponse = zod.object({
 									.describe(
 										"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
 									),
+								desired_n: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe(
+										"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+									),
 								power: zod
 									.number()
 									.min(
@@ -6342,6 +6372,12 @@ export const listOrganizationExperimentsResponse = zod.object({
 									)
 									.describe(
 										"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+									),
+								desired_n: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe(
+										"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
 									),
 								power: zod
 									.number()
@@ -7529,6 +7565,12 @@ export const getExperimentForUiResponse = zod
 									.describe(
 										"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
 									),
+								desired_n: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe(
+										"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+									),
 								power: zod
 									.number()
 									.min(getExperimentForUiResponseConfigDesignSpecPowerMin)
@@ -7711,6 +7753,12 @@ export const getExperimentForUiResponse = zod
 									.max(getExperimentForUiResponseConfigDesignSpecFiltersMaxOne)
 									.describe(
 										"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+									),
+								desired_n: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe(
+										"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
 									),
 								power: zod
 									.number()
@@ -9286,6 +9334,12 @@ export const powerCheckBody = zod.object({
 						.describe(
 							"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
 						),
+					desired_n: zod
+						.union([zod.number(), zod.null()])
+						.optional()
+						.describe(
+							"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+						),
 					power: zod
 						.number()
 						.min(powerCheckBodyDesignSpecPowerMin)
@@ -9446,6 +9500,12 @@ export const powerCheckBody = zod.object({
 						.max(powerCheckBodyDesignSpecFiltersMaxOne)
 						.describe(
 							"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+						),
+					desired_n: zod
+						.union([zod.number(), zod.null()])
+						.optional()
+						.describe(
+							"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
 						),
 					power: zod
 						.number()
