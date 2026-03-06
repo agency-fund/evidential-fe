@@ -21,6 +21,16 @@ export interface BigIntFilterInputProps {
   dataType: DataType;
 }
 
+const BigIntStringSchema = z.string().refine((val: string) => {
+  // decimals, sci-notation, random letters etc should fail.
+  try {
+    BigInt(val);
+    return true;
+  } catch {
+    return false;
+  }
+}, 'BigInt format error');
+
 export function BigIntFilterInput({ filter, onChange, dataType }: BigIntFilterInputProps) {
   // Initialize operator state based on filter configuration
   const [operator, setOperator] = useState(() => {
@@ -85,23 +95,6 @@ export function BigIntFilterInput({ filter, onChange, dataType }: BigIntFilterIn
     if (inputValue.trim() === '' || inputValue === '-') {
       return null;
     }
-
-    // Check if the input is a valid number string
-    const isValidNumber = /^-?\d*\.?\d*$/.test(inputValue);
-    if (!isValidNumber) {
-      return null;
-    }
-
-    const BigIntStringSchema = z.string().refine((val: string) => {
-      // decimals, sci-notation, random letters etc should fail.
-      try {
-        BigInt(val);
-        return true;
-      } catch {
-        return false;
-      }
-    }, 'BigInt format error');
-
     const parsedValue = BigIntStringSchema.safeParse(inputValue);
     return parsedValue.success ? inputValue : null;
   };
