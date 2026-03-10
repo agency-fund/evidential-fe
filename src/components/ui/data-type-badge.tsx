@@ -32,13 +32,13 @@ const dataTypeConfig: Record<
   numeric: { color: 'purple', icon: <BarChartIcon /> },
   bigint: { color: 'purple', icon: <LapTimerIcon /> },
   uuid: { color: 'orange', icon: <IdCardIcon /> },
-  'json (unsupported)': { color: 'red', icon: <ExclamationTriangleIcon /> },
-  'jsonb (unsupported)': { color: 'red', icon: <ExclamationTriangleIcon /> },
-  unsupported: { color: 'red', icon: <QuestionMarkCircledIcon /> },
+  json: { color: 'red', icon: <ExclamationTriangleIcon /> },
+  jsonb: { color: 'red', icon: <ExclamationTriangleIcon /> },
+  unknown: { color: 'red', icon: <QuestionMarkCircledIcon /> },
 };
 
 export function DataTypeBadge({ type }: { type: DataType }) {
-  const config = dataTypeConfig[type] || dataTypeConfig.unsupported;
+  const config = dataTypeConfig[type] || dataTypeConfig.unknown;
   return (
     <Badge color={config.color}>
       <Flex gap="1" align="center">

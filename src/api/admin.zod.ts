@@ -1795,9 +1795,9 @@ export const inspectTableInDatasourceResponse = zod
 								"timestamp without time zone",
 								"timestamp with time zone",
 								"bigint",
-								"jsonb (unsupported)",
-								"json (unsupported)",
-								"unsupported",
+								"jsonb",
+								"json",
+								"unknown",
 							])
 							.describe(
 								"Defines the supported data types for fields in the data source.",
@@ -1873,9 +1873,9 @@ export const listParticipantTypesResponse = zod.object({
 										"timestamp without time zone",
 										"timestamp with time zone",
 										"bigint",
-										"jsonb (unsupported)",
-										"json (unsupported)",
-										"unsupported",
+										"jsonb",
+										"json",
+										"unknown",
 									])
 									.describe(
 										"Defines the supported data types for fields in the data source.",
@@ -1978,9 +1978,9 @@ export const createParticipantTypeBody = zod.object({
 								"timestamp without time zone",
 								"timestamp with time zone",
 								"bigint",
-								"jsonb (unsupported)",
-								"json (unsupported)",
-								"unsupported",
+								"jsonb",
+								"json",
+								"unknown",
 							])
 							.describe(
 								"Defines the supported data types for fields in the data source.",
@@ -2053,9 +2053,9 @@ export const createParticipantTypeResponse = zod.object({
 								"timestamp without time zone",
 								"timestamp with time zone",
 								"bigint",
-								"jsonb (unsupported)",
-								"json (unsupported)",
-								"unsupported",
+								"jsonb",
+								"json",
+								"unknown",
 							])
 							.describe(
 								"Defines the supported data types for fields in the data source.",
@@ -2155,9 +2155,9 @@ export const inspectParticipantTypesResponse = zod
 								"timestamp without time zone",
 								"timestamp with time zone",
 								"bigint",
-								"jsonb (unsupported)",
-								"json (unsupported)",
-								"unsupported",
+								"jsonb",
+								"json",
+								"unknown",
 							])
 							.describe(
 								"Defines the supported data types for fields in the data source.",
@@ -2215,9 +2215,9 @@ export const inspectParticipantTypesResponse = zod
 								"timestamp without time zone",
 								"timestamp with time zone",
 								"bigint",
-								"jsonb (unsupported)",
-								"json (unsupported)",
-								"unsupported",
+								"jsonb",
+								"json",
+								"unknown",
 							])
 							.describe(
 								"Defines the supported data types for fields in the data source.",
@@ -2260,9 +2260,9 @@ export const inspectParticipantTypesResponse = zod
 							"timestamp without time zone",
 							"timestamp with time zone",
 							"bigint",
-							"jsonb (unsupported)",
-							"json (unsupported)",
-							"unsupported",
+							"jsonb",
+							"json",
+							"unknown",
 						])
 						.describe(
 							"Defines the supported data types for fields in the data source.",
@@ -2288,9 +2288,9 @@ export const inspectParticipantTypesResponse = zod
 							"timestamp without time zone",
 							"timestamp with time zone",
 							"bigint",
-							"jsonb (unsupported)",
-							"json (unsupported)",
-							"unsupported",
+							"jsonb",
+							"json",
+							"unknown",
 						])
 						.describe(
 							"Defines the supported data types for fields in the data source.",
@@ -2355,9 +2355,9 @@ export const getParticipantTypeResponse = zod.object({
 								"timestamp without time zone",
 								"timestamp with time zone",
 								"bigint",
-								"jsonb (unsupported)",
-								"json (unsupported)",
-								"unsupported",
+								"jsonb",
+								"json",
+								"unknown",
 							])
 							.describe(
 								"Defines the supported data types for fields in the data source.",
@@ -2431,9 +2431,9 @@ export const getParticipantTypeResponse = zod.object({
 								"timestamp without time zone",
 								"timestamp with time zone",
 								"bigint",
-								"jsonb (unsupported)",
-								"json (unsupported)",
-								"unsupported",
+								"jsonb",
+								"json",
+								"unknown",
 							])
 							.describe(
 								"Defines the supported data types for fields in the data source.",
@@ -2510,9 +2510,9 @@ export const getParticipantTypeResponse = zod.object({
 									"timestamp without time zone",
 									"timestamp with time zone",
 									"bigint",
-									"jsonb (unsupported)",
-									"json (unsupported)",
-									"unsupported",
+									"jsonb",
+									"json",
+									"unknown",
 								])
 								.describe(
 									"Defines the supported data types for fields in the data source.",
@@ -2529,9 +2529,9 @@ export const getParticipantTypeResponse = zod.object({
 									"timestamp without time zone",
 									"timestamp with time zone",
 									"bigint",
-									"jsonb (unsupported)",
-									"json (unsupported)",
-									"unsupported",
+									"jsonb",
+									"json",
+									"unknown",
 								])
 								.describe(
 									"Defines the supported data types for fields in the data source.",
@@ -2601,9 +2601,9 @@ export const updateParticipantTypeBody = zod.object({
 							"timestamp without time zone",
 							"timestamp with time zone",
 							"bigint",
-							"jsonb (unsupported)",
-							"json (unsupported)",
-							"unsupported",
+							"jsonb",
+							"json",
+							"unknown",
 						])
 						.describe(
 							"Defines the supported data types for fields in the data source.",
@@ -2680,9 +2680,9 @@ export const updateParticipantTypeResponse = zod.object({
 								"timestamp without time zone",
 								"timestamp with time zone",
 								"bigint",
-								"jsonb (unsupported)",
-								"json (unsupported)",
-								"unsupported",
+								"jsonb",
+								"json",
+								"unknown",
 							])
 							.describe(
 								"Defines the supported data types for fields in the data source.",
@@ -8596,9 +8596,9 @@ export const getExperimentForUiResponse = zod
 											"timestamp without time zone",
 											"timestamp with time zone",
 											"bigint",
-											"jsonb (unsupported)",
-											"json (unsupported)",
-											"unsupported",
+											"jsonb",
+											"json",
+											"unknown",
 										])
 										.describe(
 											"Defines the supported data types for fields in the data source.",

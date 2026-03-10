@@ -979,9 +979,9 @@ export const DataType = {
 	timestamp_without_time_zone: "timestamp without time zone",
 	timestamp_with_time_zone: "timestamp with time zone",
 	bigint: "bigint",
-	"jsonb_(unsupported)": "jsonb (unsupported)",
-	"json_(unsupported)": "json (unsupported)",
-	unsupported: "unsupported",
+	jsonb: "jsonb",
+	json: "json",
+	unknown: "unknown",
 } as const;
 
 export interface DatasourceSummary {

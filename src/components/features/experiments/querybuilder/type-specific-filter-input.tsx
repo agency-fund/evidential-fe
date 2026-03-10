@@ -36,11 +36,11 @@ export function TypeSpecificFilterInput({ dataType, filter, onChange }: TypeSpec
     case 'timestamp without time zone':
       return <DateFilterInput filter={filter as TypedFilter<string>} onChange={onChange} dataType={dataType} />;
 
-    case 'json (unsupported)':
-    case 'jsonb (unsupported)':
+    case 'json':
+    case 'jsonb':
     case 'timestamp with time zone': // should support this
-    case 'unsupported':
+    case 'unknown':
     default:
-      return <Text>Unsupported data type: {dataType}</Text>;
+      return <Text>Unknown data type: {dataType}</Text>;
   }
 }

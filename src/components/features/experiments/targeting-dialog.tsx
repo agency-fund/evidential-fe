@@ -58,7 +58,7 @@ export function TargetingDialog({ designSpec, participantType, webhookIds }: Tar
   const primaryKey = participantType?.fields.find((field) => field.is_unique_id)?.field_name;
 
   const toMetricDisplay = (fieldName: string, mdePct: number | null | undefined): MetricDisplay => {
-    const dataType = fieldTypeByName.get(fieldName) ?? DataType.unsupported;
+    const dataType = fieldTypeByName.get(fieldName) ?? DataType.unknown;
     return {
       field_name: fieldName,
       data_type: dataType,
