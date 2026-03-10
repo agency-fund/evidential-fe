@@ -29,14 +29,15 @@ const isNextEnabled = (data: ExperimentFormData) => {
   if (!data.primaryMetric) return false;
   // Must have valid confidence value (50-99)
   const confidence = Number(data.confidence);
-  if (isNaN(confidence) || confidence < 50 || confidence > 99) return false;
-  // Must have valid power value (50-99)
+  if (data.experimentType == 'freq_preassigned' && (isNaN(confidence) || confidence < 50 || confidence > 99))
+    return false;
+  // Must have valid power value (50-99) for pre-assigned frequentist experiment
   const power = Number(data.power);
-  if (isNaN(power) || power < 50 || power > 99) return false;
-  // Must have run power check
-  if (!data.powerCheckResponse) return false;
-  // Must have selected a sample size
-  if (data.desiredN === undefined) return false;
+  if (data.experimentType == 'freq_preassigned' && (isNaN(power) || power < 50 || power > 99)) return false;
+  // Must have run power check for pre-assigned frequentist experiment
+  if (data.experimentType == 'freq_preassigned' && !data.powerCheckResponse) return false;
+  // Must have selected a sample size for pre-assigned frequentist experiment
+  if (data.experimentType == 'freq_preassigned' && data.desiredN === undefined) return false;
   return true;
 };
 
@@ -132,10 +133,14 @@ export const ExperimentFreqStackScreen = ({
           />
         </Card>
 
-        <Heading as="h3" size="3">
-          Power Analysis
-        </Heading>
-        <PowerCheckSection data={data} dispatch={dispatch} />
+        {data.experimentType == 'freq_preassigned' && (
+          <Flex direction="column" gap={'3'}>
+            <Heading as="h3" size="3">
+              Power Analysis
+            </Heading>
+            <PowerCheckSection data={data} dispatch={dispatch} />
+          </Flex>
+        )}
       </Flex>
 
       {data.createExperimentError && (

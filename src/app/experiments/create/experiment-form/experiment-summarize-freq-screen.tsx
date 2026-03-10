@@ -35,7 +35,11 @@ export const ExperimentsSummarizeFreqScreen = ({
       navigatePrev={navigatePrev}
       navigateTo={navigateTo}
       onCommitError={(response) => dispatch({ type: 'set-commit-error', response })}
-      infoCalloutText="Assignments will be downloadable after the experiment is saved."
+      infoCalloutText={
+        data.experimentType === 'freq_preassigned'
+          ? 'Assignments will be downloadable after the experiment is saved.'
+          : 'Assignments are made online as experiment progresses'
+      }
       editTargets={{
         metadata: 'metadata',
         treatmentArms: 'describe-arms',

@@ -121,13 +121,15 @@ export function ExperimentConfirmationDisplay({
               onEditFilters={onEditFilters}
             />
             <MetricsSection metrics={metrics} strata={strata} onEdit={onEditMetrics} />
-            <PowerBalanceSection
-              confidence={confidence}
-              power={power}
-              desiredN={desiredN}
-              assignSummary={response.assign_summary}
-              onEdit={onEditPowerBalance}
-            />
+            {designSpec.experiment_type === 'freq_preassigned' && (
+              <PowerBalanceSection
+                confidence={confidence}
+                power={power}
+                desiredN={desiredN}
+                assignSummary={response.assign_summary}
+                onEdit={onEditPowerBalance}
+              />
+            )}
           </>
         )}
         {isBandit && (
