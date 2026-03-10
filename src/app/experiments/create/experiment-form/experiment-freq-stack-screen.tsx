@@ -25,19 +25,20 @@ export type ExperimentFreqStackScreenMessage =
   | { type: 'set-chosen-n'; value: number | undefined };
 
 const isNextEnabled = (data: ExperimentFormData) => {
+  const isFreqPreassigned = data.experimentType === 'freq_preassigned';
+
   // Must have primary metric selected
   if (!data.primaryMetric) return false;
   // Must have valid confidence value (50-99)
   const confidence = Number(data.confidence);
-  if (data.experimentType == 'freq_preassigned' && (isNaN(confidence) || confidence < 50 || confidence > 99))
-    return false;
+  if (isFreqPreassigned && (isNaN(confidence) || confidence < 50 || confidence > 99)) return false;
   // Must have valid power value (50-99) for pre-assigned frequentist experiment
   const power = Number(data.power);
-  if (data.experimentType == 'freq_preassigned' && (isNaN(power) || power < 50 || power > 99)) return false;
+  if (isFreqPreassigned && (isNaN(power) || power < 50 || power > 99)) return false;
   // Must have run power check for pre-assigned frequentist experiment
-  if (data.experimentType == 'freq_preassigned' && !data.powerCheckResponse) return false;
+  if (isFreqPreassigned && !data.powerCheckResponse) return false;
   // Must have selected a sample size for pre-assigned frequentist experiment
-  if (data.experimentType == 'freq_preassigned' && data.desiredN === undefined) return false;
+  if (isFreqPreassigned && data.desiredN === undefined) return false;
   return true;
 };
 

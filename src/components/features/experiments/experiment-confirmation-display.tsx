@@ -82,6 +82,7 @@ export function ExperimentConfirmationDisplay({
 }: ExperimentConfirmationDisplayProps) {
   const designSpec = response.design_spec;
   const isFreq = isFrequentistSpec(designSpec);
+  const isFreqPreassigned = designSpec.experiment_type === 'freq_preassigned';
   const isBandit = isBanditSpec(designSpec);
   const isCmab = isCMABSpec(designSpec);
 
@@ -121,7 +122,7 @@ export function ExperimentConfirmationDisplay({
               onEditFilters={onEditFilters}
             />
             <MetricsSection metrics={metrics} strata={strata} onEdit={onEditMetrics} />
-            {designSpec.experiment_type === 'freq_preassigned' && (
+            {isFreqPreassigned && (
               <PowerBalanceSection
                 confidence={confidence}
                 power={power}
