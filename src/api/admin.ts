@@ -63,6 +63,7 @@ import type {
 	ListSnapshotsParams,
 	ListSnapshotsResponse,
 	ListWebhooksResponse,
+	MessageError,
 	PowerRequest,
 	PowerResponseOutput,
 	RemoveMemberFromOrganizationParams,
@@ -73,6 +74,7 @@ import type {
 	UpdateOrganizationWebhookRequest,
 	UpdateParticipantsTypeRequest,
 	UpdateParticipantsTypeResponse,
+	XHTTPValidationError,
 } from "./methods.schemas";
 
 import { orvalFetch } from "@/services/orval-fetch";
@@ -1717,14 +1719,14 @@ export type CreateDatasourceMutationResult = NonNullable<
 	Awaited<ReturnType<typeof createDatasource>>
 >;
 export type CreateDatasourceMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
+	HTTPExceptionError | XHTTPValidationError | MessageError
 >;
 
 /**
  * @summary Create Datasource
  */
 export const useCreateDatasource = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError | XHTTPValidationError | MessageError>,
 >(
 	params?: CreateDatasourceParams,
 	options?: {
@@ -1934,14 +1936,14 @@ export type InspectDatasourceQueryResult = NonNullable<
 	Awaited<ReturnType<typeof inspectDatasource>>
 >;
 export type InspectDatasourceQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
+	HTTPExceptionError | MessageError | XHTTPValidationError
 >;
 
 /**
  * @summary Inspect Datasource
  */
 export const useInspectDatasource = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>,
 >(
 	datasourceId: string,
 	params?: InspectDatasourceParams,
@@ -2025,14 +2027,14 @@ export type InspectTableInDatasourceQueryResult = NonNullable<
 	Awaited<ReturnType<typeof inspectTableInDatasource>>
 >;
 export type InspectTableInDatasourceQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
+	HTTPExceptionError | MessageError | XHTTPValidationError
 >;
 
 /**
  * @summary Inspect Table In Datasource
  */
 export const useInspectTableInDatasource = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>,
 >(
 	datasourceId: string,
 	tableName: string,
@@ -2369,14 +2371,14 @@ export type InspectParticipantTypesQueryResult = NonNullable<
 	Awaited<ReturnType<typeof inspectParticipantTypes>>
 >;
 export type InspectParticipantTypesQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
+	HTTPExceptionError | MessageError | XHTTPValidationError
 >;
 
 /**
  * @summary Inspect Participant Types
  */
 export const useInspectParticipantTypes = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>,
 >(
 	datasourceId: string,
 	participantId: string,
@@ -2452,14 +2454,14 @@ export type GetParticipantTypeQueryResult = NonNullable<
 	Awaited<ReturnType<typeof getParticipantType>>
 >;
 export type GetParticipantTypeQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
+	HTTPExceptionError | MessageError | XHTTPValidationError
 >;
 
 /**
  * @summary Get Participant Type
  */
 export const useGetParticipantType = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>,
 >(
 	datasourceId: string,
 	participantId: string,
@@ -3246,14 +3248,14 @@ export type CommitExperimentMutationResult = NonNullable<
 	Awaited<ReturnType<typeof commitExperiment>>
 >;
 export type CommitExperimentMutationError = ErrorType<
-	void | HTTPExceptionError | HTTPValidationError
+	HTTPExceptionError | HTTPValidationError
 >;
 
 /**
  * @summary Commit Experiment
  */
 export const useCommitExperiment = <
-	TError = ErrorType<void | HTTPExceptionError | HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
 	datasourceId: string,
 	experimentId: string,
@@ -3328,14 +3330,14 @@ export type AbandonExperimentMutationResult = NonNullable<
 	Awaited<ReturnType<typeof abandonExperiment>>
 >;
 export type AbandonExperimentMutationError = ErrorType<
-	void | HTTPExceptionError | HTTPValidationError
+	HTTPExceptionError | HTTPValidationError
 >;
 
 /**
  * @summary Abandon Experiment
  */
 export const useAbandonExperiment = <
-	TError = ErrorType<void | HTTPExceptionError | HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
 	datasourceId: string,
 	experimentId: string,
@@ -4195,14 +4197,14 @@ export type PowerCheckMutationResult = NonNullable<
 	Awaited<ReturnType<typeof powerCheck>>
 >;
 export type PowerCheckMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
+	HTTPExceptionError | MessageError | XHTTPValidationError
 >;
 
 /**
  * @summary Power Check
  */
 export const usePowerCheck = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>,
 >(
 	datasourceId: string,
 	options?: {

@@ -1882,6 +1882,10 @@ export interface MABExperimentSpecOutput {
 	reward_type?: LikelihoodTypes;
 }
 
+export interface MessageError {
+	message: string;
+}
+
 /**
  * Describes the change in a single metric for each arm of an experiment.
  */
@@ -2054,6 +2058,11 @@ export const OnlineFrequentistExperimentSpecInputExperimentType = {
 export type OnlineFrequentistExperimentSpecInputDesignUrl = string | null;
 
 /**
+ * Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.
+ */
+export type OnlineFrequentistExperimentSpecInputDesiredN = number | null;
+
+/**
  * Use this type to randomly assign participants into arms during live experiment execution with
 frequentist A/B experiments.
 
@@ -2092,6 +2101,8 @@ export interface OnlineFrequentistExperimentSpecInput {
 	 * @maxItems 20
 	 */
 	filters: FilterInput[];
+	/** Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size. */
+	desired_n?: OnlineFrequentistExperimentSpecInputDesiredN;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
@@ -2124,6 +2135,11 @@ export const OnlineFrequentistExperimentSpecOutputExperimentType = {
  * Optional URL to a more detailed experiment design doc.
  */
 export type OnlineFrequentistExperimentSpecOutputDesignUrl = string | null;
+
+/**
+ * Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.
+ */
+export type OnlineFrequentistExperimentSpecOutputDesiredN = number | null;
 
 /**
  * Use this type to randomly assign participants into arms during live experiment execution with
@@ -2164,6 +2180,8 @@ export interface OnlineFrequentistExperimentSpecOutput {
 	 * @maxItems 20
 	 */
 	filters: FilterOutput[];
+	/** Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size. */
+	desired_n?: OnlineFrequentistExperimentSpecOutputDesiredN;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
@@ -2325,6 +2343,11 @@ export const PreassignedFrequentistExperimentSpecInputExperimentType = {
 export type PreassignedFrequentistExperimentSpecInputDesignUrl = string | null;
 
 /**
+ * Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.
+ */
+export type PreassignedFrequentistExperimentSpecInputDesiredN = number | null;
+
+/**
  * Use this type to randomly select and assign from existing participants at design time with
 frequentist A/B experiments.
  */
@@ -2361,6 +2384,8 @@ export interface PreassignedFrequentistExperimentSpecInput {
 	 * @maxItems 20
 	 */
 	filters: FilterInput[];
+	/** Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size. */
+	desired_n?: PreassignedFrequentistExperimentSpecInputDesiredN;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
@@ -2393,6 +2418,11 @@ export const PreassignedFrequentistExperimentSpecOutputExperimentType = {
  * Optional URL to a more detailed experiment design doc.
  */
 export type PreassignedFrequentistExperimentSpecOutputDesignUrl = string | null;
+
+/**
+ * Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.
+ */
+export type PreassignedFrequentistExperimentSpecOutputDesiredN = number | null;
 
 /**
  * Use this type to randomly select and assign from existing participants at design time with
@@ -2431,6 +2461,8 @@ export interface PreassignedFrequentistExperimentSpecOutput {
 	 * @maxItems 20
 	 */
 	filters: FilterOutput[];
+	/** Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size. */
+	desired_n?: PreassignedFrequentistExperimentSpecOutputDesiredN;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
@@ -2736,10 +2768,14 @@ export interface UserSummary {
 
 export type ValidationErrorLocItem = string | number;
 
+export type ValidationErrorCtx = { [key: string]: unknown };
+
 export interface ValidationError {
 	loc: ValidationErrorLocItem[];
 	msg: string;
 	type: string;
+	input?: unknown;
+	ctx?: ValidationErrorCtx;
 }
 
 /**
@@ -2761,6 +2797,18 @@ export interface WebhookSummary {
 	url: string;
 	/** The value of the Webhook-Token: header that will be sent with the request to the configured URL. */
 	auth_token: WebhookSummaryAuthToken;
+}
+
+export interface XHTTPValidationError {
+	detail: XValidationError[];
+}
+
+export type XValidationErrorLocItem = string | number;
+
+export interface XValidationError {
+	loc: XValidationErrorLocItem[];
+	msg: string;
+	type: string;
 }
 
 export type DeleteSnapshotParams = {
