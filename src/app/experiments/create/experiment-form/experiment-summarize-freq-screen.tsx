@@ -14,6 +14,7 @@ export const ExperimentsSummarizeFreqScreen = ({
   navigateTo,
   dispatch,
 }: ScreenProps<ExperimentFormData, ExperimentsSummarizeFreqScreenMessage, ExperimentScreenId>) => {
+  const isFreqPreassigned = data.experimentType === 'freq_preassigned';
   const metrics: ExperimentConfirmationDisplayProps['metrics'] = {
     primary: data.primaryMetric
       ? {
@@ -35,7 +36,11 @@ export const ExperimentsSummarizeFreqScreen = ({
       navigatePrev={navigatePrev}
       navigateTo={navigateTo}
       onCommitError={(response) => dispatch({ type: 'set-commit-error', response })}
-      infoCalloutText="Assignments will be downloadable after the experiment is saved."
+      infoCalloutText={
+        isFreqPreassigned
+          ? 'Assignments will be downloadable after the experiment is saved.'
+          : 'For online A/B testing, assignments are generated on the fly as users enter the experiment. No power analysis or sample size planning is required.'
+      }
       editTargets={{
         metadata: 'metadata',
         treatmentArms: 'describe-arms',
