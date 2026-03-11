@@ -51,10 +51,10 @@ export function getDefaultFilterForType(fieldName: string, dataType: DataType): 
       };
 
     case 'character varying':
-    case 'json (unsupported)':
-    case 'jsonb (unsupported)':
+    case 'json':
+    case 'jsonb':
     case 'timestamp with time zone':
-    case 'unsupported':
+    case 'unknown':
     case 'uuid':
     default:
       return {
