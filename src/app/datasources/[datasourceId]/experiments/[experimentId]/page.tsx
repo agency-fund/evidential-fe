@@ -131,14 +131,17 @@ export default function ExperimentViewPage() {
 
   const {
     mutate: analyzeLive,
+    data: analyzeExperimentData,
     isLoading: isLoadingLiveAnalysis,
     error: liveAnalysisError,
   } = useAnalyzeExperiment(datasourceId, experimentId, undefined, {
     swr: {
       enabled: !!datasourceId && !!experiment && !isCmabExperiment(experiment.config),
       // Disable revalidation to only allow manual triggering of the live analysis
-      revalidateOnMount: false,
+      revalidateIfStale: false,
       revalidateOnFocus: false,
+      revalidateOnMount: false,
+      revalidateOnReconnect: false,
       shouldRetryOnError: false,
       onSuccess: (analysisData) => handleLiveAnalysisSuccess(analysisData),
     },
@@ -146,6 +149,7 @@ export default function ExperimentViewPage() {
 
   const {
     trigger: analyzeLiveCmab,
+    data: analyzeCmabExperimentData,
     isMutating: isLoadingLiveCmabAnalysis,
     error: liveCmabAnalysisError,
   } = useAnalyzeCmabExperiment(datasourceId, experimentId, {
@@ -153,6 +157,10 @@ export default function ExperimentViewPage() {
       onSuccess: (analysisData) => handleLiveAnalysisSuccess(analysisData),
     },
   });
+
+  const haveAnalysisData = isCmabExperiment(experiment?.config)
+    ? analyzeCmabExperimentData !== undefined
+    : analyzeExperimentData !== undefined;
 
   const { isLoading: isLoadingHistory, error: analysisHistoryError } = useListSnapshots(
     organizationId,
@@ -163,12 +171,14 @@ export default function ExperimentViewPage() {
       swr: {
         enabled: !!organizationId && !!datasourceId && !!experimentId && !!experiment,
         shouldRetryOnError: false,
+        focusThrottleInterval: 15 * 60_000, // refresh on focus after 15 minutes
         onSuccess: async (data) => {
           // Make human-readable labels for the dropdown, showing UTC down to the minute.
           // Use the snapshot ID as the key, looking up the analysisState by ID upon selection.
 
-          // Do live analysis if there are no snapshots
-          if (data.items.length === 0) {
+          // Do live analysis if there are no snapshots and we don't have live analysis data already. This avoids
+          // duplicating a potentially expensive query when useListSnapshots runs.
+          if (data.items.length === 0 && !haveAnalysisData) {
             await triggerLiveAnalysis();
             return;
           }
@@ -300,6 +310,8 @@ export default function ExperimentViewPage() {
       console.warn('Cannot update context values for snapshot analyses.');
     }
   };
+
+  const showLoadingAnalysisSpinner = isLoadingLiveAnalysis || isLoadingLiveCmabAnalysis || isLoadingHistory;
 
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
@@ -615,7 +627,7 @@ export default function ExperimentViewPage() {
                     Raw Data <CodeIcon />
                   </Flex>
                 </Tabs.Trigger>
-                {(isLoadingLiveCmabAnalysis || isLoadingLiveAnalysis || isLoadingHistory) && (
+                {showLoadingAnalysisSpinner && (
                   <Tabs.Trigger value="loading" disabled={true}>
                     <Flex gap="2" align="center">
                       <XSpinner message="Loading analyses..." />
