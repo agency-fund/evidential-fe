@@ -170,14 +170,21 @@ export const ExperimentDescribeBanditArmsScreen = ({
   const orgContext = useCurrentOrganization();
   const organizationId = orgContext!.current.id;
 
-  // Fetch datasources to find the NoDWH datasource
+  // Fetch datasources
   const { data: datasourcesData, isLoading: datasourcesLoading } = useListOrganizationDatasources(organizationId, {
     swr: { enabled: !!organizationId },
   });
 
   // Find the NoDWH datasource (driver === 'none')
+  // If it doesn't exist, fall back to the first datasource in the list (if any)
+  let datasource;
   const noDwhDatasource = datasourcesData?.items?.find((ds) => ds.driver === 'none');
-  const datasourceId = noDwhDatasource?.id ?? '';
+  if (noDwhDatasource) {
+    datasource = noDwhDatasource;
+  } else {
+    datasource = datasourcesData?.items[0];
+  }
+  const datasourceId = datasource?.id ?? '';
 
   const { trigger: triggerCreate, isMutating: createLoading } = useCreateExperiment(
     datasourceId,
@@ -221,7 +228,7 @@ export const ExperimentDescribeBanditArmsScreen = ({
     );
   }
 
-  if (!noDwhDatasource) {
+  if (!datasource) {
     return (
       <Flex direction="column" gap="3">
         <GenericErrorCallout title="Configuration error" message="No NoDWH datasource found. Please contact support." />

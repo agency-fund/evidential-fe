@@ -38,11 +38,8 @@ import type {
 	DeleteWebhookFromOrganizationParams,
 	ExperimentAnalysisResponse,
 	GetDatasourceResponse,
-	GetExperimentAssignmentForParticipantParams,
-	GetExperimentAssignmentsResponse,
 	GetExperimentForUiResponse,
 	GetOrganizationResponse,
-	GetParticipantAssignmentResponse,
 	GetParticipantsTypeResponse,
 	GetSnapshotResponse,
 	HTTPExceptionError,
@@ -3700,85 +3697,6 @@ export const useDeleteExperiment = <
 	};
 };
 /**
- * @summary Get Experiment Assignments For Ui
- */
-export const getGetExperimentAssignmentsForUiUrl = (
-	datasourceId: string,
-	experimentId: string,
-) => {
-	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments`;
-};
-
-export const getExperimentAssignmentsForUi = async (
-	datasourceId: string,
-	experimentId: string,
-	options?: RequestInit,
-): Promise<GetExperimentAssignmentsResponse> => {
-	return orvalFetch<GetExperimentAssignmentsResponse>(
-		getGetExperimentAssignmentsForUiUrl(datasourceId, experimentId),
-		{
-			...options,
-			method: "GET",
-		},
-	);
-};
-
-export const getGetExperimentAssignmentsForUiKey = (
-	datasourceId: string,
-	experimentId: string,
-) =>
-	[
-		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments`,
-	] as const;
-
-export type GetExperimentAssignmentsForUiQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getExperimentAssignmentsForUi>>
->;
-export type GetExperimentAssignmentsForUiQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-/**
- * @summary Get Experiment Assignments For Ui
- */
-export const useGetExperimentAssignmentsForUi = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	experimentId: string,
-	options?: {
-		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof getExperimentAssignmentsForUi>>,
-			TError
-		> & { swrKey?: Key; enabled?: boolean };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled =
-		swrOptions?.enabled !== false && !!(datasourceId && experimentId);
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() =>
-			isEnabled
-				? getGetExperimentAssignmentsForUiKey(datasourceId, experimentId)
-				: null);
-	const swrFn = () =>
-		getExperimentAssignmentsForUi(datasourceId, experimentId, requestOptions);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-/**
  * @summary Export experiment assignments as CSV file; BalanceCheck not included. csv header form: participant_id,arm_id,arm_name,strata_name1,strata_name2,...
  */
 export const getGetExperimentAssignmentsAsCsvForUiUrl = (
@@ -3792,8 +3710,8 @@ export const getExperimentAssignmentsAsCsvForUi = async (
 	datasourceId: string,
 	experimentId: string,
 	options?: RequestInit,
-): Promise<unknown> => {
-	return orvalFetch<unknown>(
+): Promise<string> => {
+	return orvalFetch<string>(
 		getGetExperimentAssignmentsAsCsvForUiUrl(datasourceId, experimentId),
 		{
 			...options,
@@ -3847,126 +3765,6 @@ export const useGetExperimentAssignmentsAsCsvForUi = <
 		getExperimentAssignmentsAsCsvForUi(
 			datasourceId,
 			experimentId,
-			requestOptions,
-		);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-/**
- * Get the assignment for a specific participant, excluding strata if any.
-    For 'preassigned' experiments, the participant's Assignment is returned if it exists.
-    For 'online', returns the assignment if it exists, else generates an assignment.
- * @summary Get Experiment Assignment For Participant
- */
-export const getGetExperimentAssignmentForParticipantUrl = (
-	datasourceId: string,
-	experimentId: string,
-	participantId: string,
-	params?: GetExperimentAssignmentForParticipantParams,
-) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
-
-	const stringifiedParams = normalizedParams.toString();
-
-	return stringifiedParams.length > 0
-		? `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments/${participantId}?${stringifiedParams}`
-		: `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments/${participantId}`;
-};
-
-export const getExperimentAssignmentForParticipant = async (
-	datasourceId: string,
-	experimentId: string,
-	participantId: string,
-	params?: GetExperimentAssignmentForParticipantParams,
-	options?: RequestInit,
-): Promise<GetParticipantAssignmentResponse> => {
-	return orvalFetch<GetParticipantAssignmentResponse>(
-		getGetExperimentAssignmentForParticipantUrl(
-			datasourceId,
-			experimentId,
-			participantId,
-			params,
-		),
-		{
-			...options,
-			method: "GET",
-		},
-	);
-};
-
-export const getGetExperimentAssignmentForParticipantKey = (
-	datasourceId: string,
-	experimentId: string,
-	participantId: string,
-	params?: GetExperimentAssignmentForParticipantParams,
-) =>
-	[
-		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments/${participantId}`,
-		...(params ? [params] : []),
-	] as const;
-
-export type GetExperimentAssignmentForParticipantQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getExperimentAssignmentForParticipant>>
->;
-export type GetExperimentAssignmentForParticipantQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-/**
- * @summary Get Experiment Assignment For Participant
- */
-export const useGetExperimentAssignmentForParticipant = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	experimentId: string,
-	participantId: string,
-	params?: GetExperimentAssignmentForParticipantParams,
-	options?: {
-		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof getExperimentAssignmentForParticipant>>,
-			TError
-		> & { swrKey?: Key; enabled?: boolean };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled =
-		swrOptions?.enabled !== false &&
-		!!(datasourceId && experimentId && participantId);
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() =>
-			isEnabled
-				? getGetExperimentAssignmentForParticipantKey(
-						datasourceId,
-						experimentId,
-						participantId,
-						params,
-					)
-				: null);
-	const swrFn = () =>
-		getExperimentAssignmentForParticipant(
-			datasourceId,
-			experimentId,
-			participantId,
-			params,
 			requestOptions,
 		);
 

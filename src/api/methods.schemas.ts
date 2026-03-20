@@ -2949,10 +2949,3 @@ export type DeleteExperimentParams = {
 	 */
 	allow_missing?: boolean;
 };
-
-export type GetExperimentAssignmentForParticipantParams = {
-	/**
-	 * Create an assignment if none exists. Does nothing for preassigned experiments. Override if you just want to check if an assignment exists.
-	 */
-	create_if_none?: boolean;
-};
