@@ -61,13 +61,13 @@ export function TreatmentArmsSection({ response, onEdit }: TreatmentArmsSectionP
                   <Flex align="center" gap="2" wrap="wrap">
                     {isBetaPrior ? (
                       <>
-                        <Badge>α {banditArm.alpha_init ?? 1}</Badge>
-                        <Badge>β {banditArm.beta_init ?? 1}</Badge>
+                        <Badge>α = {banditArm.alpha_init?.toFixed(2) ?? 'Not set'}</Badge>
+                        <Badge>β ={banditArm.beta_init?.toFixed(2) ?? 'Not set'}</Badge>
                       </>
                     ) : (
                       <>
-                        <Badge>μ {banditArm.mu_init ?? 0}</Badge>
-                        <Badge>σ {banditArm.sigma_init ?? 1}</Badge>
+                        <Badge>μ = {banditArm.mu_init?.toFixed(2) ?? 'Not set'}</Badge>
+                        <Badge>σ = {banditArm.sigma_init?.toFixed(2) ?? 'Not set'}</Badge>
                       </>
                     )}
                   </Flex>
