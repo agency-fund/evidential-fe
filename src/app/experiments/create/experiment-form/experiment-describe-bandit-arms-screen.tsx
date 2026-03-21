@@ -13,11 +13,13 @@ import { ErrorType } from '@/services/orval-fetch';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { BanditArm, PriorType } from '@/app/experiments/create/experiment-form/experiment-form-types';
+import { ArmWeightsDialog } from '@/components/features/experiments/arm-weights-dialog';
 
 export type ExperimentDescribeBanditArmsMessage =
   | { type: 'add-arm' }
   | { type: 'remove-arm'; index: number }
   | { type: 'update-arm'; index: number; field: keyof BanditArm; value: string | number }
+  | { type: 'set-weights'; weights: number[] }
   | { type: 'set-create-response'; response: CreateExperimentResponse }
   | { type: 'set-create-error'; response: ErrorType<unknown> }
   | { type: 'set-datasource-id'; datasourceId: string };
@@ -71,7 +73,7 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
           />
         </Flex>
 
-        <Flex direction="column" gap="4">
+        {/* <Flex direction="column" gap="4">
           {priorType === 'beta' && (
             <Flex gap="3">
               <Box>
@@ -127,26 +129,26 @@ function ArmCard({ arm, armIndex, priorType, canDelete, onUpdate, onDelete }: Ar
               </Box>
             </Flex>
           )}
-        </Flex>
+        </Flex> */}
       </Flex>
     </Card>
   );
 }
 
-const isPriorParamValid = (arm: BanditArm, priorType: PriorType) => {
-  if (priorType === 'beta') {
-    return arm.alpha_prior !== undefined && arm.alpha_prior > 0 && arm.beta_prior !== undefined && arm.beta_prior > 0;
-  }
-  if (priorType === 'normal') {
-    return arm.mean_prior !== undefined && arm.stddev_prior !== undefined && arm.stddev_prior > 0;
-  }
-  return false;
-};
+// const isPriorParamValid = (arm: BanditArm, priorType: PriorType) => {
+//   if (priorType === 'beta') {
+//     return arm.alpha_prior !== undefined && arm.alpha_prior > 0 && arm.beta_prior !== undefined && arm.beta_prior > 0;
+//   }
+//   if (priorType === 'normal') {
+//     return arm.mean_prior !== undefined && arm.stddev_prior !== undefined && arm.stddev_prior > 0;
+//   }
+//   return false;
+// };
 
 const getValidationMessage = (data: ExperimentFormData) => {
   if (data.bandit === undefined) return 'Bandit configuration is required.';
   const arms = data.bandit.arms;
-  const priorType = data.bandit.priorType;
+  // const priorType = data.bandit.priorType;
 
   if (arms.length < 2) return 'At least 2 arms are required.';
   if (arms.length > 10) return 'Maximum 10 arms allowed.';
@@ -154,7 +156,7 @@ const getValidationMessage = (data: ExperimentFormData) => {
   for (let i = 0; i < arms.length; i++) {
     const arm = arms[i];
     if (!arm.arm_name?.trim()) return `Arm ${i + 1} name is required.`;
-    if (!isPriorParamValid(arm, priorType)) return `Arm ${i + 1} has invalid prior parameters.`;
+    // if (!isPriorParamValid(arm, priorType)) return `Arm ${i + 1} has invalid prior parameters.`;
   }
   return '';
 };
@@ -236,15 +238,28 @@ export const ExperimentDescribeBanditArmsScreen = ({
     );
   }
 
+  const showArmsError = arms.length > 0 && arms.length < 2;
+
   return (
     <>
       <Flex direction="column" gap={'3'}>
-        <Heading as="h3" size={'3'}>
+        {/* <Heading as="h3" size={'3'}>
           Define Treatment Arms
         </Heading>
         <Text size="2" color="gray">
           Define the treatment arms for your experiment. Each arm can have its own prior parameters.
-        </Text>
+        </Text> */}
+        <Flex justify="between" align="start">
+          <Flex direction="column" gap="1">
+            <Heading size="4">Arms</Heading>
+            {showArmsError && (
+              <Text size="1" color="red">
+                At least two arms are required
+              </Text>
+            )}
+          </Flex>
+          <ArmWeightsDialog arms={arms} onWeightsChange={(weights) => dispatch({ type: 'set-weights', weights })} />
+        </Flex>
 
         {/* Prior configuration info */}
         <Callout.Root>
