@@ -393,14 +393,20 @@ export default function ExperimentViewPage() {
           ) : (
             <>
               {experiment.participant_type?.hidden && experiment.participant_type?.table_name ? (
-                <TableNameBadge tableName={experiment.participant_type.table_name} />
-              ) : (
-                <ParticipantTypeBadge
-                  datasourceId={experiment.config.datasource_id}
-                  participantType={experiment.config.design_spec.participant_type}
-                />
-              )}
-              <Separator orientation="vertical" />
+                <>
+                  <TableNameBadge tableName={experiment.participant_type.table_name} />
+                  <Separator orientation="vertical" />
+                </>
+              ) : experiment.config.participant_type ? (
+                // For backwards compatibility with legacy experiments, show the participant type badge.
+                <>
+                  <ParticipantTypeBadge
+                    datasourceId={experiment.config.datasource_id}
+                    participantType={experiment.config.participant_type}
+                  />
+                  <Separator orientation="vertical" />
+                </>
+              ) : null}
             </>
           )}
           <>

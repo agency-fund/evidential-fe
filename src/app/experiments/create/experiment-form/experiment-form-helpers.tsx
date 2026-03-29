@@ -63,7 +63,6 @@ export function convertToDesignSpec(data: ExperimentFormData): DesignSpecInput {
   const strata: Stratum[] = (data.strata ?? []).map((s) => ({ field_name: s.fieldName }));
 
   const commonFields = {
-    participant_type: data.tableName!,
     experiment_name: data.name!,
     description: data.hypothesis ?? '',
     design_url: data.designUrl ?? null,
@@ -118,7 +117,6 @@ export function convertToBanditCreateRequest(data: ExperimentFormData): CreateEx
   return createExperimentBody.strict().parse({
     design_spec: {
       experiment_name: data.name!,
-      participant_type: 'user',
       experiment_type: experimentType,
       arms: standardArms,
       end_date: new Date(Date.parse(data.endDate!)).toISOString(),
