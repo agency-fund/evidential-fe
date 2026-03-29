@@ -510,8 +510,6 @@ Bayesian A/B experiments.
 For example, you may wish to experiment on new users. Assignments are issued via API request.
  */
 export interface BayesABExperimentSpecInput {
-	/** @maxLength 100 */
-	participant_type: string;
 	experiment_type: BayesABExperimentSpecInputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
@@ -559,8 +557,6 @@ Bayesian A/B experiments.
 For example, you may wish to experiment on new users. Assignments are issued via API request.
  */
 export interface BayesABExperimentSpecOutput {
-	/** @maxLength 100 */
-	participant_type: string;
 	experiment_type: BayesABExperimentSpecOutputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
@@ -706,8 +702,6 @@ contextual MAB experiments.
 For example, you may wish to experiment on new users. Assignments are issued via API request.
  */
 export interface CMABExperimentSpecInput {
-	/** @maxLength 100 */
-	participant_type: string;
 	experiment_type: CMABExperimentSpecInputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
@@ -755,8 +749,6 @@ contextual MAB experiments.
 For example, you may wish to experiment on new users. Assignments are issued via API request.
  */
 export interface CMABExperimentSpecOutput {
-	/** @maxLength 100 */
-	participant_type: string;
 	experiment_type: CMABExperimentSpecOutputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
@@ -877,7 +869,7 @@ export interface CreateDatasourceResponse {
 export type CreateExperimentRequestPowerAnalyses = PowerResponseInput | null;
 
 /**
- * Optional table name for creating experiments without a pre-registered participant type. When provided with primary_key, synthesizes a participant schema and persists it. The design_spec.participant_type field is ignored when this is set.
+ * Optional table name for creating experiments without a pre-registered participant type. When provided with primary_key, inspects the datasource table to derive experiment field metadata.
  */
 export type CreateExperimentRequestTableName = string | null;
 
@@ -891,11 +883,16 @@ export interface CreateExperimentRequest {
 	power_analyses?: CreateExperimentRequestPowerAnalyses;
 	/** List of webhook IDs to associate with this experiment. When the experiment is committed, these webhooks will be triggered with experiment details. Must contain unique values. */
 	webhooks?: string[];
-	/** Optional table name for creating experiments without a pre-registered participant type. When provided with primary_key, synthesizes a participant schema and persists it. The design_spec.participant_type field is ignored when this is set. */
+	/** Optional table name for creating experiments without a pre-registered participant type. When provided with primary_key, inspects the datasource table to derive experiment field metadata. */
 	table_name?: CreateExperimentRequestTableName;
 	/** Optional primary key field name. Must be provided together with table_name. */
 	primary_key?: CreateExperimentRequestPrimaryKey;
 }
+
+/**
+ * (legacy experiments) Persisted participant-type name for backwards compatibility. New experiments should not have this set.
+ */
+export type CreateExperimentResponseParticipantType = string | null;
 
 /**
  * The date and time assignments were stopped. Null if assignments are still allowed to be made.
@@ -919,6 +916,8 @@ export interface CreateExperimentResponse {
 	/** Server-generated ID of the experiment. */
 	experiment_id: string;
 	datasource_id: string;
+	/** (legacy experiments) Persisted participant-type name for backwards compatibility. New experiments should not have this set. */
+	participant_type: CreateExperimentResponseParticipantType;
 	/** Current state of this experiment. */
 	state: ExperimentState;
 	/** The date and time assignments were stopped. Null if assignments are still allowed to be made. */
@@ -1173,6 +1172,11 @@ export type ExperimentAnalysisResponse =
 	| BanditExperimentAnalysisResponse;
 
 /**
+ * (legacy experiments) Persisted participant-type name for backwards compatibility. New experiments should not have this set.
+ */
+export type ExperimentConfigParticipantType = string | null;
+
+/**
  * The date and time assignments were stopped. Null if assignments are still allowed to be made.
  */
 export type ExperimentConfigStoppedAssignmentsAt = string | null;
@@ -1194,6 +1198,8 @@ export interface ExperimentConfig {
 	/** Server-generated ID of the experiment. */
 	experiment_id: string;
 	datasource_id: string;
+	/** (legacy experiments) Persisted participant-type name for backwards compatibility. New experiments should not have this set. */
+	participant_type: ExperimentConfigParticipantType;
 	/** Current state of this experiment. */
 	state: ExperimentState;
 	/** The date and time assignments were stopped. Null if assignments are still allowed to be made. */
@@ -1486,7 +1492,7 @@ export interface GetExperimentAssignmentsResponse {
 }
 
 /**
- * If available, the Participant Type information for this experiment.
+ * If available, the Participant Type information for this experiment. May not exist if the experiment is not backed by a real datasource.
  */
 export type GetExperimentForUiResponseParticipantType = ParticipantsDef | null;
 
@@ -1495,9 +1501,14 @@ export type GetExperimentForUiResponseParticipantType = ParticipantsDef | null;
  */
 export interface GetExperimentForUiResponse {
 	config: ExperimentConfig;
-	/** If available, the Participant Type information for this experiment. */
+	/** If available, the Participant Type information for this experiment. May not exist if the experiment is not backed by a real datasource. */
 	participant_type: GetExperimentForUiResponseParticipantType;
 }
+
+/**
+ * (legacy experiments) Persisted participant-type name for backwards compatibility. New experiments should not have this set.
+ */
+export type GetExperimentResponseParticipantType = string | null;
 
 /**
  * The date and time assignments were stopped. Null if assignments are still allowed to be made.
@@ -1521,6 +1532,8 @@ export interface GetExperimentResponse {
 	/** Server-generated ID of the experiment. */
 	experiment_id: string;
 	datasource_id: string;
+	/** (legacy experiments) Persisted participant-type name for backwards compatibility. New experiments should not have this set. */
+	participant_type: GetExperimentResponseParticipantType;
 	/** Current state of this experiment. */
 	state: ExperimentState;
 	/** The date and time assignments were stopped. Null if assignments are still allowed to be made. */
@@ -1810,8 +1823,6 @@ export type MABExperimentSpecInputContexts = Context[] | null;
 For example, you may wish to experiment on new users. Assignments are issued via API request.
  */
 export interface MABExperimentSpecInput {
-	/** @maxLength 100 */
-	participant_type: string;
 	experiment_type: MABExperimentSpecInputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
@@ -1858,8 +1869,6 @@ export type MABExperimentSpecOutputContexts = Context[] | null;
 For example, you may wish to experiment on new users. Assignments are issued via API request.
  */
 export interface MABExperimentSpecOutput {
-	/** @maxLength 100 */
-	participant_type: string;
 	experiment_type: MABExperimentSpecOutputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
@@ -2033,7 +2042,7 @@ Usage notes:
 1. Currently only used for FREQ_ONLINE experiments.
 2. If the experiment defines no filters, use the corresponding GET endpoint instead.
 3. If an assignment already exists for a given participant, the property list is ignored and assignment returned.
-4. Property names must reference a valid field_name from the participant_type defined in the experiment.
+4. Property names must reference a valid field_name from the experiment's fields.
 5. Property list may be empty.
 6. If a filter is specified but no value is found, it is treated as NULL.
 7. Other differences from the SQL-based filtering logic:
@@ -2069,8 +2078,6 @@ frequentist A/B experiments.
 For example, you may wish to experiment on new users. Assignments are issued via API request.
  */
 export interface OnlineFrequentistExperimentSpecInput {
-	/** @maxLength 100 */
-	participant_type: string;
 	experiment_type: OnlineFrequentistExperimentSpecInputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
@@ -2086,7 +2093,7 @@ export interface OnlineFrequentistExperimentSpecInput {
 	 */
 	arms: Arm[];
 	/**
-	 * Optional participant_type fields to use for stratified assignment.
+	 * Optional fields to use for stratified assignment.
 	 * @maxItems 150
 	 */
 	strata: Stratum[];
@@ -2097,7 +2104,7 @@ export interface OnlineFrequentistExperimentSpecInput {
 	 */
 	metrics: DesignSpecMetricRequest[];
 	/**
-	 * Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.
+	 * Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.
 	 * @maxItems 20
 	 */
 	filters: FilterInput[];
@@ -2148,8 +2155,6 @@ frequentist A/B experiments.
 For example, you may wish to experiment on new users. Assignments are issued via API request.
  */
 export interface OnlineFrequentistExperimentSpecOutput {
-	/** @maxLength 100 */
-	participant_type: string;
 	experiment_type: OnlineFrequentistExperimentSpecOutputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
@@ -2165,7 +2170,7 @@ export interface OnlineFrequentistExperimentSpecOutput {
 	 */
 	arms: Arm[];
 	/**
-	 * Optional participant_type fields to use for stratified assignment.
+	 * Optional fields to use for stratified assignment.
 	 * @maxItems 150
 	 */
 	strata: Stratum[];
@@ -2176,7 +2181,7 @@ export interface OnlineFrequentistExperimentSpecOutput {
 	 */
 	metrics: DesignSpecMetricRequest[];
 	/**
-	 * Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.
+	 * Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.
 	 * @maxItems 20
 	 */
 	filters: FilterOutput[];
@@ -2302,20 +2307,20 @@ export interface PostgresDsn {
 }
 
 /**
- * Optional table name for ad-hoc power calculations. When provided with primary_key, synthesizes a participant schema instead of looking up from datasource configuration. When set, the participant_type value is ignored.
+ * Optional table name for ad-hoc power calculations. When provided with primary_key, field metadata is verified against the inspected table.
  */
 export type PowerRequestTableName = string | null;
 
 /**
- * Optional primary key field name. Must be provided together with table_name. When set, the participant_type value is ignored.
+ * Optional primary key field name. Must be provided together with table_name.
  */
 export type PowerRequestPrimaryKey = string | null;
 
 export interface PowerRequest {
 	design_spec: DesignSpecInput;
-	/** Optional table name for ad-hoc power calculations. When provided with primary_key, synthesizes a participant schema instead of looking up from datasource configuration. When set, the participant_type value is ignored. */
+	/** Optional table name for ad-hoc power calculations. When provided with primary_key, field metadata is verified against the inspected table. */
 	table_name?: PowerRequestTableName;
-	/** Optional primary key field name. Must be provided together with table_name. When set, the participant_type value is ignored. */
+	/** Optional primary key field name. Must be provided together with table_name. */
 	primary_key?: PowerRequestPrimaryKey;
 }
 
@@ -2352,8 +2357,6 @@ export type PreassignedFrequentistExperimentSpecInputDesiredN = number | null;
 frequentist A/B experiments.
  */
 export interface PreassignedFrequentistExperimentSpecInput {
-	/** @maxLength 100 */
-	participant_type: string;
 	experiment_type: PreassignedFrequentistExperimentSpecInputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
@@ -2369,7 +2372,7 @@ export interface PreassignedFrequentistExperimentSpecInput {
 	 */
 	arms: Arm[];
 	/**
-	 * Optional participant_type fields to use for stratified assignment.
+	 * Optional fields to use for stratified assignment.
 	 * @maxItems 150
 	 */
 	strata: Stratum[];
@@ -2380,7 +2383,7 @@ export interface PreassignedFrequentistExperimentSpecInput {
 	 */
 	metrics: DesignSpecMetricRequest[];
 	/**
-	 * Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.
+	 * Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.
 	 * @maxItems 20
 	 */
 	filters: FilterInput[];
@@ -2429,8 +2432,6 @@ export type PreassignedFrequentistExperimentSpecOutputDesiredN = number | null;
 frequentist A/B experiments.
  */
 export interface PreassignedFrequentistExperimentSpecOutput {
-	/** @maxLength 100 */
-	participant_type: string;
 	experiment_type: PreassignedFrequentistExperimentSpecOutputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
@@ -2446,7 +2447,7 @@ export interface PreassignedFrequentistExperimentSpecOutput {
 	 */
 	arms: Arm[];
 	/**
-	 * Optional participant_type fields to use for stratified assignment.
+	 * Optional fields to use for stratified assignment.
 	 * @maxItems 150
 	 */
 	strata: Stratum[];
@@ -2457,7 +2458,7 @@ export interface PreassignedFrequentistExperimentSpecOutput {
 	 */
 	metrics: DesignSpecMetricRequest[];
 	/**
-	 * Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.
+	 * Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.
 	 * @maxItems 20
 	 */
 	filters: FilterOutput[];

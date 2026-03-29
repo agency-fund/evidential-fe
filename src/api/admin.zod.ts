@@ -2827,8 +2827,6 @@ export const createExperimentQueryParams = zod.object({
 		.describe("Whether to also stratify on metrics during assignment."),
 });
 
-export const createExperimentBodyDesignSpecParticipantTypeMax = 100;
-
 export const createExperimentBodyDesignSpecExperimentNameMax = 100;
 
 export const createExperimentBodyDesignSpecDescriptionMax = 2000;
@@ -2865,8 +2863,6 @@ export const createExperimentBodyDesignSpecAlphaMax = 1;
 export const createExperimentBodyDesignSpecFstatThreshDefault = 0.6;
 export const createExperimentBodyDesignSpecFstatThreshMin = 0;
 export const createExperimentBodyDesignSpecFstatThreshMax = 1;
-
-export const createExperimentBodyDesignSpecParticipantTypeMaxOne = 100;
 
 export const createExperimentBodyDesignSpecExperimentNameMaxOne = 100;
 
@@ -2905,8 +2901,6 @@ export const createExperimentBodyDesignSpecFstatThreshDefaultOne = 0.6;
 export const createExperimentBodyDesignSpecFstatThreshMinOne = 0;
 export const createExperimentBodyDesignSpecFstatThreshMaxOne = 1;
 
-export const createExperimentBodyDesignSpecParticipantTypeMaxTwo = 100;
-
 export const createExperimentBodyDesignSpecExperimentNameMaxTwo = 100;
 
 export const createExperimentBodyDesignSpecDescriptionMaxTwo = 2000;
@@ -2926,8 +2920,6 @@ export const createExperimentBodyDesignSpecContextsItemContextDescriptionMaxOne 
 
 export const createExperimentBodyDesignSpecContextsMaxOne = 150;
 
-export const createExperimentBodyDesignSpecParticipantTypeMaxThree = 100;
-
 export const createExperimentBodyDesignSpecExperimentNameMaxThree = 100;
 
 export const createExperimentBodyDesignSpecDescriptionMaxThree = 2000;
@@ -2946,8 +2938,6 @@ export const createExperimentBodyDesignSpecContextsItemContextNameMaxOne = 100;
 export const createExperimentBodyDesignSpecContextsItemContextDescriptionMaxFour = 2000;
 
 export const createExperimentBodyDesignSpecContextsMaxFour = 150;
-
-export const createExperimentBodyDesignSpecParticipantTypeMaxFour = 100;
 
 export const createExperimentBodyDesignSpecExperimentNameMaxFour = 100;
 
@@ -2979,9 +2969,6 @@ export const createExperimentBody = zod.object({
 		.union([
 			zod
 				.object({
-					participant_type: zod
-						.string()
-						.max(createExperimentBodyDesignSpecParticipantTypeMax),
 					experiment_type: zod.enum(["freq_preassigned"]),
 					experiment_name: zod
 						.string()
@@ -3049,9 +3036,7 @@ export const createExperimentBody = zod.object({
 								.describe("Describes a variable used for stratification."),
 						)
 						.max(createExperimentBodyDesignSpecStrataMax)
-						.describe(
-							"Optional participant_type fields to use for stratified assignment.",
-						),
+						.describe("Optional fields to use for stratified assignment."),
 					metrics: zod
 						.array(
 							zod
@@ -3108,7 +3093,7 @@ export const createExperimentBody = zod.object({
 						)
 						.max(createExperimentBodyDesignSpecFiltersMax)
 						.describe(
-							"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+							"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 						),
 					desired_n: zod
 						.union([zod.number(), zod.null()])
@@ -3146,9 +3131,6 @@ export const createExperimentBody = zod.object({
 				),
 			zod
 				.object({
-					participant_type: zod
-						.string()
-						.max(createExperimentBodyDesignSpecParticipantTypeMaxOne),
 					experiment_type: zod.enum(["freq_online"]),
 					experiment_name: zod
 						.string()
@@ -3216,9 +3198,7 @@ export const createExperimentBody = zod.object({
 								.describe("Describes a variable used for stratification."),
 						)
 						.max(createExperimentBodyDesignSpecStrataMaxOne)
-						.describe(
-							"Optional participant_type fields to use for stratified assignment.",
-						),
+						.describe("Optional fields to use for stratified assignment."),
 					metrics: zod
 						.array(
 							zod
@@ -3275,7 +3255,7 @@ export const createExperimentBody = zod.object({
 						)
 						.max(createExperimentBodyDesignSpecFiltersMaxOne)
 						.describe(
-							"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+							"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 						),
 					desired_n: zod
 						.union([zod.number(), zod.null()])
@@ -3313,9 +3293,6 @@ export const createExperimentBody = zod.object({
 				),
 			zod
 				.object({
-					participant_type: zod
-						.string()
-						.max(createExperimentBodyDesignSpecParticipantTypeMaxTwo),
 					experiment_type: zod.enum(["mab_online"]),
 					experiment_name: zod
 						.string()
@@ -3461,9 +3438,6 @@ export const createExperimentBody = zod.object({
 				),
 			zod
 				.object({
-					participant_type: zod
-						.string()
-						.max(createExperimentBodyDesignSpecParticipantTypeMaxThree),
 					experiment_type: zod.enum(["cmab_online"]),
 					experiment_name: zod
 						.string()
@@ -3609,9 +3583,6 @@ export const createExperimentBody = zod.object({
 				),
 			zod
 				.object({
-					participant_type: zod
-						.string()
-						.max(createExperimentBodyDesignSpecParticipantTypeMaxFour),
 					experiment_type: zod.enum(["bayes_ab_online"]),
 					experiment_name: zod
 						.string()
@@ -3903,7 +3874,7 @@ export const createExperimentBody = zod.object({
 		.union([zod.string(), zod.null()])
 		.optional()
 		.describe(
-			"Optional table name for creating experiments without a pre-registered participant type. When provided with primary_key, synthesizes a participant schema and persists it. The design_spec.participant_type field is ignored when this is set.",
+			"Optional table name for creating experiments without a pre-registered participant type. When provided with primary_key, inspects the datasource table to derive experiment field metadata.",
 		),
 	primary_key: zod
 		.union([zod.string(), zod.null()])
@@ -3913,7 +3884,7 @@ export const createExperimentBody = zod.object({
 		),
 });
 
-export const createExperimentResponseDesignSpecParticipantTypeMax = 100;
+export const createExperimentResponseParticipantTypeMaxOne = 100;
 
 export const createExperimentResponseDesignSpecExperimentNameMax = 100;
 
@@ -3952,8 +3923,6 @@ export const createExperimentResponseDesignSpecFstatThreshDefault = 0.6;
 export const createExperimentResponseDesignSpecFstatThreshMin = 0;
 export const createExperimentResponseDesignSpecFstatThreshMax = 1;
 
-export const createExperimentResponseDesignSpecParticipantTypeMaxOne = 100;
-
 export const createExperimentResponseDesignSpecExperimentNameMaxOne = 100;
 
 export const createExperimentResponseDesignSpecDescriptionMaxOne = 2000;
@@ -3991,8 +3960,6 @@ export const createExperimentResponseDesignSpecFstatThreshDefaultOne = 0.6;
 export const createExperimentResponseDesignSpecFstatThreshMinOne = 0;
 export const createExperimentResponseDesignSpecFstatThreshMaxOne = 1;
 
-export const createExperimentResponseDesignSpecParticipantTypeMaxTwo = 100;
-
 export const createExperimentResponseDesignSpecExperimentNameMaxTwo = 100;
 
 export const createExperimentResponseDesignSpecDescriptionMaxTwo = 2000;
@@ -4012,8 +3979,6 @@ export const createExperimentResponseDesignSpecContextsItemContextDescriptionMax
 
 export const createExperimentResponseDesignSpecContextsMaxOne = 150;
 
-export const createExperimentResponseDesignSpecParticipantTypeMaxThree = 100;
-
 export const createExperimentResponseDesignSpecExperimentNameMaxThree = 100;
 
 export const createExperimentResponseDesignSpecDescriptionMaxThree = 2000;
@@ -4032,8 +3997,6 @@ export const createExperimentResponseDesignSpecContextsItemContextNameMaxOne = 1
 export const createExperimentResponseDesignSpecContextsItemContextDescriptionMaxFour = 2000;
 
 export const createExperimentResponseDesignSpecContextsMaxFour = 150;
-
-export const createExperimentResponseDesignSpecParticipantTypeMaxFour = 100;
 
 export const createExperimentResponseDesignSpecExperimentNameMaxFour = 100;
 
@@ -4074,6 +4037,14 @@ export const createExperimentResponse = zod
 			.string()
 			.describe("Server-generated ID of the experiment."),
 		datasource_id: zod.string(),
+		participant_type: zod
+			.union([
+				zod.string().max(createExperimentResponseParticipantTypeMaxOne),
+				zod.null(),
+			])
+			.describe(
+				"(legacy experiments) Persisted participant-type name for backwards compatibility. New experiments should not have this set.",
+			),
 		state: zod
 			.enum(["designing", "assigned", "abandoned", "committed", "aborted"])
 			.describe(
@@ -4098,9 +4069,6 @@ export const createExperimentResponse = zod
 			.union([
 				zod
 					.object({
-						participant_type: zod
-							.string()
-							.max(createExperimentResponseDesignSpecParticipantTypeMax),
 						experiment_type: zod.enum(["freq_preassigned"]),
 						experiment_name: zod
 							.string()
@@ -4172,9 +4140,7 @@ export const createExperimentResponse = zod
 									.describe("Describes a variable used for stratification."),
 							)
 							.max(createExperimentResponseDesignSpecStrataMax)
-							.describe(
-								"Optional participant_type fields to use for stratified assignment.",
-							),
+							.describe("Optional fields to use for stratified assignment."),
 						metrics: zod
 							.array(
 								zod
@@ -4231,7 +4197,7 @@ export const createExperimentResponse = zod
 							)
 							.max(createExperimentResponseDesignSpecFiltersMax)
 							.describe(
-								"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+								"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 							),
 						desired_n: zod
 							.union([zod.number(), zod.null()])
@@ -4269,9 +4235,6 @@ export const createExperimentResponse = zod
 					),
 				zod
 					.object({
-						participant_type: zod
-							.string()
-							.max(createExperimentResponseDesignSpecParticipantTypeMaxOne),
 						experiment_type: zod.enum(["freq_online"]),
 						experiment_name: zod
 							.string()
@@ -4343,9 +4306,7 @@ export const createExperimentResponse = zod
 									.describe("Describes a variable used for stratification."),
 							)
 							.max(createExperimentResponseDesignSpecStrataMaxOne)
-							.describe(
-								"Optional participant_type fields to use for stratified assignment.",
-							),
+							.describe("Optional fields to use for stratified assignment."),
 						metrics: zod
 							.array(
 								zod
@@ -4402,7 +4363,7 @@ export const createExperimentResponse = zod
 							)
 							.max(createExperimentResponseDesignSpecFiltersMaxOne)
 							.describe(
-								"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+								"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 							),
 						desired_n: zod
 							.union([zod.number(), zod.null()])
@@ -4440,9 +4401,6 @@ export const createExperimentResponse = zod
 					),
 				zod
 					.object({
-						participant_type: zod
-							.string()
-							.max(createExperimentResponseDesignSpecParticipantTypeMaxTwo),
 						experiment_type: zod.enum(["mab_online"]),
 						experiment_name: zod
 							.string()
@@ -4594,9 +4552,6 @@ export const createExperimentResponse = zod
 					),
 				zod
 					.object({
-						participant_type: zod
-							.string()
-							.max(createExperimentResponseDesignSpecParticipantTypeMaxThree),
 						experiment_type: zod.enum(["cmab_online"]),
 						experiment_name: zod
 							.string()
@@ -4748,9 +4703,6 @@ export const createExperimentResponse = zod
 					),
 				zod
 					.object({
-						participant_type: zod
-							.string()
-							.max(createExperimentResponseDesignSpecParticipantTypeMaxFour),
 						experiment_type: zod.enum(["bayes_ab_online"]),
 						experiment_name: zod
 							.string()
@@ -5818,7 +5770,7 @@ export const listOrganizationExperimentsParams = zod.object({
 	organization_id: zod.string(),
 });
 
-export const listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMax = 100;
+export const listOrganizationExperimentsResponseItemsItemParticipantTypeMaxOne = 100;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMax = 100;
 
@@ -5857,8 +5809,6 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshDe
 export const listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMin = 0;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMax = 1;
 
-export const listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxOne = 100;
-
 export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxOne = 100;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxOne = 2000;
@@ -5896,8 +5846,6 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshDe
 export const listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMinOne = 0;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMaxOne = 1;
 
-export const listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxTwo = 100;
-
 export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxTwo = 100;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxTwo = 2000;
@@ -5917,8 +5865,6 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemC
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxOne = 150;
 
-export const listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxThree = 100;
-
 export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxThree = 100;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxThree = 2000;
@@ -5937,8 +5883,6 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemC
 export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextDescriptionMaxFour = 2000;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxFour = 150;
-
-export const listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxFour = 100;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxFour = 100;
 
@@ -5981,6 +5925,18 @@ export const listOrganizationExperimentsResponse = zod.object({
 					.string()
 					.describe("Server-generated ID of the experiment."),
 				datasource_id: zod.string(),
+				participant_type: zod
+					.union([
+						zod
+							.string()
+							.max(
+								listOrganizationExperimentsResponseItemsItemParticipantTypeMaxOne,
+							),
+						zod.null(),
+					])
+					.describe(
+						"(legacy experiments) Persisted participant-type name for backwards compatibility. New experiments should not have this set.",
+					),
 				state: zod
 					.enum(["designing", "assigned", "abandoned", "committed", "aborted"])
 					.describe(
@@ -6005,11 +5961,6 @@ export const listOrganizationExperimentsResponse = zod.object({
 					.union([
 						zod
 							.object({
-								participant_type: zod
-									.string()
-									.max(
-										listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMax,
-									),
 								experiment_type: zod.enum(["freq_preassigned"]),
 								experiment_name: zod
 									.string()
@@ -6096,7 +6047,7 @@ export const listOrganizationExperimentsResponse = zod.object({
 										listOrganizationExperimentsResponseItemsItemDesignSpecStrataMax,
 									)
 									.describe(
-										"Optional participant_type fields to use for stratified assignment.",
+										"Optional fields to use for stratified assignment.",
 									),
 								metrics: zod
 									.array(
@@ -6160,7 +6111,7 @@ export const listOrganizationExperimentsResponse = zod.object({
 										listOrganizationExperimentsResponseItemsItemDesignSpecFiltersMax,
 									)
 									.describe(
-										"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+										"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 									),
 								desired_n: zod
 									.union([zod.number(), zod.null()])
@@ -6216,11 +6167,6 @@ export const listOrganizationExperimentsResponse = zod.object({
 							),
 						zod
 							.object({
-								participant_type: zod
-									.string()
-									.max(
-										listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxOne,
-									),
 								experiment_type: zod.enum(["freq_online"]),
 								experiment_name: zod
 									.string()
@@ -6307,7 +6253,7 @@ export const listOrganizationExperimentsResponse = zod.object({
 										listOrganizationExperimentsResponseItemsItemDesignSpecStrataMaxOne,
 									)
 									.describe(
-										"Optional participant_type fields to use for stratified assignment.",
+										"Optional fields to use for stratified assignment.",
 									),
 								metrics: zod
 									.array(
@@ -6371,7 +6317,7 @@ export const listOrganizationExperimentsResponse = zod.object({
 										listOrganizationExperimentsResponseItemsItemDesignSpecFiltersMaxOne,
 									)
 									.describe(
-										"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+										"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 									),
 								desired_n: zod
 									.union([zod.number(), zod.null()])
@@ -6427,11 +6373,6 @@ export const listOrganizationExperimentsResponse = zod.object({
 							),
 						zod
 							.object({
-								participant_type: zod
-									.string()
-									.max(
-										listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxTwo,
-									),
 								experiment_type: zod.enum(["mab_online"]),
 								experiment_name: zod
 									.string()
@@ -6602,11 +6543,6 @@ export const listOrganizationExperimentsResponse = zod.object({
 							),
 						zod
 							.object({
-								participant_type: zod
-									.string()
-									.max(
-										listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxThree,
-									),
 								experiment_type: zod.enum(["cmab_online"]),
 								experiment_name: zod
 									.string()
@@ -6777,11 +6713,6 @@ export const listOrganizationExperimentsResponse = zod.object({
 							),
 						zod
 							.object({
-								participant_type: zod
-									.string()
-									.max(
-										listOrganizationExperimentsResponseItemsItemDesignSpecParticipantTypeMaxFour,
-									),
 								experiment_type: zod.enum(["bayes_ab_online"]),
 								experiment_name: zod
 									.string()
@@ -7224,7 +7155,7 @@ export const getExperimentForUiParams = zod.object({
 	experiment_id: zod.string(),
 });
 
-export const getExperimentForUiResponseConfigDesignSpecParticipantTypeMax = 100;
+export const getExperimentForUiResponseConfigParticipantTypeMaxOne = 100;
 
 export const getExperimentForUiResponseConfigDesignSpecExperimentNameMax = 100;
 
@@ -7263,8 +7194,6 @@ export const getExperimentForUiResponseConfigDesignSpecFstatThreshDefault = 0.6;
 export const getExperimentForUiResponseConfigDesignSpecFstatThreshMin = 0;
 export const getExperimentForUiResponseConfigDesignSpecFstatThreshMax = 1;
 
-export const getExperimentForUiResponseConfigDesignSpecParticipantTypeMaxOne = 100;
-
 export const getExperimentForUiResponseConfigDesignSpecExperimentNameMaxOne = 100;
 
 export const getExperimentForUiResponseConfigDesignSpecDescriptionMaxOne = 2000;
@@ -7302,8 +7231,6 @@ export const getExperimentForUiResponseConfigDesignSpecFstatThreshDefaultOne = 0
 export const getExperimentForUiResponseConfigDesignSpecFstatThreshMinOne = 0;
 export const getExperimentForUiResponseConfigDesignSpecFstatThreshMaxOne = 1;
 
-export const getExperimentForUiResponseConfigDesignSpecParticipantTypeMaxTwo = 100;
-
 export const getExperimentForUiResponseConfigDesignSpecExperimentNameMaxTwo = 100;
 
 export const getExperimentForUiResponseConfigDesignSpecDescriptionMaxTwo = 2000;
@@ -7323,8 +7250,6 @@ export const getExperimentForUiResponseConfigDesignSpecContextsItemContextDescri
 
 export const getExperimentForUiResponseConfigDesignSpecContextsMaxOne = 150;
 
-export const getExperimentForUiResponseConfigDesignSpecParticipantTypeMaxThree = 100;
-
 export const getExperimentForUiResponseConfigDesignSpecExperimentNameMaxThree = 100;
 
 export const getExperimentForUiResponseConfigDesignSpecDescriptionMaxThree = 2000;
@@ -7343,8 +7268,6 @@ export const getExperimentForUiResponseConfigDesignSpecContextsItemContextNameMa
 export const getExperimentForUiResponseConfigDesignSpecContextsItemContextDescriptionMaxFour = 2000;
 
 export const getExperimentForUiResponseConfigDesignSpecContextsMaxFour = 150;
-
-export const getExperimentForUiResponseConfigDesignSpecParticipantTypeMaxFour = 100;
 
 export const getExperimentForUiResponseConfigDesignSpecExperimentNameMaxFour = 100;
 
@@ -7394,6 +7317,16 @@ export const getExperimentForUiResponse = zod
 					.string()
 					.describe("Server-generated ID of the experiment."),
 				datasource_id: zod.string(),
+				participant_type: zod
+					.union([
+						zod
+							.string()
+							.max(getExperimentForUiResponseConfigParticipantTypeMaxOne),
+						zod.null(),
+					])
+					.describe(
+						"(legacy experiments) Persisted participant-type name for backwards compatibility. New experiments should not have this set.",
+					),
 				state: zod
 					.enum(["designing", "assigned", "abandoned", "committed", "aborted"])
 					.describe(
@@ -7418,11 +7351,6 @@ export const getExperimentForUiResponse = zod
 					.union([
 						zod
 							.object({
-								participant_type: zod
-									.string()
-									.max(
-										getExperimentForUiResponseConfigDesignSpecParticipantTypeMax,
-									),
 								experiment_type: zod.enum(["freq_preassigned"]),
 								experiment_name: zod
 									.string()
@@ -7503,7 +7431,7 @@ export const getExperimentForUiResponse = zod
 									)
 									.max(getExperimentForUiResponseConfigDesignSpecStrataMax)
 									.describe(
-										"Optional participant_type fields to use for stratified assignment.",
+										"Optional fields to use for stratified assignment.",
 									),
 								metrics: zod
 									.array(
@@ -7563,7 +7491,7 @@ export const getExperimentForUiResponse = zod
 									)
 									.max(getExperimentForUiResponseConfigDesignSpecFiltersMax)
 									.describe(
-										"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+										"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 									),
 								desired_n: zod
 									.union([zod.number(), zod.null()])
@@ -7607,11 +7535,6 @@ export const getExperimentForUiResponse = zod
 							),
 						zod
 							.object({
-								participant_type: zod
-									.string()
-									.max(
-										getExperimentForUiResponseConfigDesignSpecParticipantTypeMaxOne,
-									),
 								experiment_type: zod.enum(["freq_online"]),
 								experiment_name: zod
 									.string()
@@ -7692,7 +7615,7 @@ export const getExperimentForUiResponse = zod
 									)
 									.max(getExperimentForUiResponseConfigDesignSpecStrataMaxOne)
 									.describe(
-										"Optional participant_type fields to use for stratified assignment.",
+										"Optional fields to use for stratified assignment.",
 									),
 								metrics: zod
 									.array(
@@ -7752,7 +7675,7 @@ export const getExperimentForUiResponse = zod
 									)
 									.max(getExperimentForUiResponseConfigDesignSpecFiltersMaxOne)
 									.describe(
-										"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+										"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 									),
 								desired_n: zod
 									.union([zod.number(), zod.null()])
@@ -7800,11 +7723,6 @@ export const getExperimentForUiResponse = zod
 							),
 						zod
 							.object({
-								participant_type: zod
-									.string()
-									.max(
-										getExperimentForUiResponseConfigDesignSpecParticipantTypeMaxTwo,
-									),
 								experiment_type: zod.enum(["mab_online"]),
 								experiment_name: zod
 									.string()
@@ -7971,11 +7889,6 @@ export const getExperimentForUiResponse = zod
 							),
 						zod
 							.object({
-								participant_type: zod
-									.string()
-									.max(
-										getExperimentForUiResponseConfigDesignSpecParticipantTypeMaxThree,
-									),
 								experiment_type: zod.enum(["cmab_online"]),
 								experiment_name: zod
 									.string()
@@ -8142,11 +8055,6 @@ export const getExperimentForUiResponse = zod
 							),
 						zod
 							.object({
-								participant_type: zod
-									.string()
-									.max(
-										getExperimentForUiResponseConfigDesignSpecParticipantTypeMaxFour,
-									),
 								experiment_type: zod.enum(["bayes_ab_online"]),
 								experiment_name: zod
 									.string()
@@ -8654,7 +8562,7 @@ export const getExperimentForUiResponse = zod
 				zod.null(),
 			])
 			.describe(
-				"If available, the Participant Type information for this experiment.",
+				"If available, the Participant Type information for this experiment. May not exist if the experiment is not backed by a real datasource.",
 			),
 	})
 	.describe("Experiment configuration and participant type information.");
@@ -8790,8 +8698,6 @@ export const powerCheckParams = zod.object({
 	datasource_id: zod.string(),
 });
 
-export const powerCheckBodyDesignSpecParticipantTypeMax = 100;
-
 export const powerCheckBodyDesignSpecExperimentNameMax = 100;
 
 export const powerCheckBodyDesignSpecDescriptionMax = 2000;
@@ -8831,8 +8737,6 @@ export const powerCheckBodyDesignSpecAlphaMax = 1;
 export const powerCheckBodyDesignSpecFstatThreshDefault = 0.6;
 export const powerCheckBodyDesignSpecFstatThreshMin = 0;
 export const powerCheckBodyDesignSpecFstatThreshMax = 1;
-
-export const powerCheckBodyDesignSpecParticipantTypeMaxOne = 100;
 
 export const powerCheckBodyDesignSpecExperimentNameMaxOne = 100;
 
@@ -8874,8 +8778,6 @@ export const powerCheckBodyDesignSpecFstatThreshDefaultOne = 0.6;
 export const powerCheckBodyDesignSpecFstatThreshMinOne = 0;
 export const powerCheckBodyDesignSpecFstatThreshMaxOne = 1;
 
-export const powerCheckBodyDesignSpecParticipantTypeMaxTwo = 100;
-
 export const powerCheckBodyDesignSpecExperimentNameMaxTwo = 100;
 
 export const powerCheckBodyDesignSpecDescriptionMaxTwo = 2000;
@@ -8895,8 +8797,6 @@ export const powerCheckBodyDesignSpecContextsItemContextDescriptionMaxOne = 2000
 
 export const powerCheckBodyDesignSpecContextsMaxOne = 150;
 
-export const powerCheckBodyDesignSpecParticipantTypeMaxThree = 100;
-
 export const powerCheckBodyDesignSpecExperimentNameMaxThree = 100;
 
 export const powerCheckBodyDesignSpecDescriptionMaxThree = 2000;
@@ -8915,8 +8815,6 @@ export const powerCheckBodyDesignSpecContextsItemContextNameMaxOne = 100;
 export const powerCheckBodyDesignSpecContextsItemContextDescriptionMaxFour = 2000;
 
 export const powerCheckBodyDesignSpecContextsMaxFour = 150;
-
-export const powerCheckBodyDesignSpecParticipantTypeMaxFour = 100;
 
 export const powerCheckBodyDesignSpecExperimentNameMaxFour = 100;
 
@@ -8942,9 +8840,6 @@ export const powerCheckBody = zod.object({
 		.union([
 			zod
 				.object({
-					participant_type: zod
-						.string()
-						.max(powerCheckBodyDesignSpecParticipantTypeMax),
 					experiment_type: zod.enum(["freq_preassigned"]),
 					experiment_name: zod
 						.string()
@@ -9008,9 +8903,7 @@ export const powerCheckBody = zod.object({
 								.describe("Describes a variable used for stratification."),
 						)
 						.max(powerCheckBodyDesignSpecStrataMax)
-						.describe(
-							"Optional participant_type fields to use for stratified assignment.",
-						),
+						.describe("Optional fields to use for stratified assignment."),
 					metrics: zod
 						.array(
 							zod
@@ -9063,7 +8956,7 @@ export const powerCheckBody = zod.object({
 						)
 						.max(powerCheckBodyDesignSpecFiltersMax)
 						.describe(
-							"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+							"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 						),
 					desired_n: zod
 						.union([zod.number(), zod.null()])
@@ -9101,9 +8994,6 @@ export const powerCheckBody = zod.object({
 				),
 			zod
 				.object({
-					participant_type: zod
-						.string()
-						.max(powerCheckBodyDesignSpecParticipantTypeMaxOne),
 					experiment_type: zod.enum(["freq_online"]),
 					experiment_name: zod
 						.string()
@@ -9171,9 +9061,7 @@ export const powerCheckBody = zod.object({
 								.describe("Describes a variable used for stratification."),
 						)
 						.max(powerCheckBodyDesignSpecStrataMaxOne)
-						.describe(
-							"Optional participant_type fields to use for stratified assignment.",
-						),
+						.describe("Optional fields to use for stratified assignment."),
 					metrics: zod
 						.array(
 							zod
@@ -9230,7 +9118,7 @@ export const powerCheckBody = zod.object({
 						)
 						.max(powerCheckBodyDesignSpecFiltersMaxOne)
 						.describe(
-							"Optional filters that constrain a general participant_type to a specific subset who can participate in an experiment.",
+							"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 						),
 					desired_n: zod
 						.union([zod.number(), zod.null()])
@@ -9268,9 +9156,6 @@ export const powerCheckBody = zod.object({
 				),
 			zod
 				.object({
-					participant_type: zod
-						.string()
-						.max(powerCheckBodyDesignSpecParticipantTypeMaxTwo),
 					experiment_type: zod.enum(["mab_online"]),
 					experiment_name: zod
 						.string()
@@ -9416,9 +9301,6 @@ export const powerCheckBody = zod.object({
 				),
 			zod
 				.object({
-					participant_type: zod
-						.string()
-						.max(powerCheckBodyDesignSpecParticipantTypeMaxThree),
 					experiment_type: zod.enum(["cmab_online"]),
 					experiment_name: zod
 						.string()
@@ -9564,9 +9446,6 @@ export const powerCheckBody = zod.object({
 				),
 			zod
 				.object({
-					participant_type: zod
-						.string()
-						.max(powerCheckBodyDesignSpecParticipantTypeMaxFour),
 					experiment_type: zod.enum(["bayes_ab_online"]),
 					experiment_name: zod
 						.string()
@@ -9716,13 +9595,13 @@ export const powerCheckBody = zod.object({
 		.union([zod.string(), zod.null()])
 		.optional()
 		.describe(
-			"Optional table name for ad-hoc power calculations. When provided with primary_key, synthesizes a participant schema instead of looking up from datasource configuration. When set, the participant_type value is ignored.",
+			"Optional table name for ad-hoc power calculations. When provided with primary_key, field metadata is verified against the inspected table.",
 		),
 	primary_key: zod
 		.union([zod.string(), zod.null()])
 		.optional()
 		.describe(
-			"Optional primary key field name. Must be provided together with table_name. When set, the participant_type value is ignored.",
+			"Optional primary key field name. Must be provided together with table_name.",
 		),
 });
 
