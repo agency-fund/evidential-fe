@@ -8744,11 +8744,7 @@ export const deleteExperimentDataBody = zod
 		assignments: zod
 			.union([zod.boolean(), zod.null()])
 			.optional()
-			.describe("Delete related arm assignments."),
-		draws: zod
-			.union([zod.boolean(), zod.null()])
-			.optional()
-			.describe("Delete related draws."),
+			.describe("Delete related participant assignments."),
 		snapshots: zod
 			.union([zod.boolean(), zod.null()])
 			.optional()
