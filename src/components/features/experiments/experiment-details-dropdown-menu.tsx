@@ -79,16 +79,7 @@ export function ExperimentDetailsDropdownMenu({ datasourceId, experimentId }: Ex
                     checked={!!deleteDataRequest.assignments}
                     onCheckedChange={(checked) => setDeleteDataRequest((prev) => ({ ...prev, assignments: !!checked }))}
                   />
-                  Assignments - Delete all arm assignments
-                </Flex>
-              </Text>
-              <Text as="label" size="2">
-                <Flex gap="2" align="center">
-                  <Checkbox
-                    checked={!!deleteDataRequest.draws}
-                    onCheckedChange={(checked) => setDeleteDataRequest((prev) => ({ ...prev, draws: !!checked }))}
-                  />
-                  Draws - Delete all draws
+                  Assignments / Draws - Delete all participant assignments
                 </Flex>
               </Text>
               <Text as="label" size="2">
@@ -125,7 +116,7 @@ export function ExperimentDetailsDropdownMenu({ datasourceId, experimentId }: Ex
               <Button
                 variant="solid"
                 color="red"
-                disabled={!deleteDataRequest.assignments && !deleteDataRequest.draws && !deleteDataRequest.snapshots}
+                disabled={!deleteDataRequest.assignments && !deleteDataRequest.snapshots}
                 loading={isDeletingData}
                 onClick={handleDeleteData}
               >
