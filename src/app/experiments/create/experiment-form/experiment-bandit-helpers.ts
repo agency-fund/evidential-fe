@@ -16,13 +16,14 @@ const maybeConvertArm = (arm: BanditArm, priorType: PriorType, index: number): B
   const baseArm = {
     arm_name: arm.arm_name,
     arm_description: arm.arm_description,
+    arm_weight: arm.arm_weight,
   };
 
   if (priorType === 'beta') {
     return {
       ...baseArm,
-      alpha_prior: arm.alpha_prior ?? 1,
-      beta_prior: arm.beta_prior ?? 1,
+      alpha_prior: arm.alpha_prior,
+      beta_prior: arm.beta_prior,
       mean_prior: undefined,
       stddev_prior: undefined,
     };
@@ -30,8 +31,8 @@ const maybeConvertArm = (arm: BanditArm, priorType: PriorType, index: number): B
 
   return {
     ...baseArm,
-    mean_prior: arm.mean_prior ?? (index === 0 ? 0 : 1),
-    stddev_prior: arm.stddev_prior ?? 1,
+    mean_prior: arm.mean_prior,
+    stddev_prior: arm.stddev_prior,
     alpha_prior: undefined,
     beta_prior: undefined,
   };
@@ -44,13 +45,37 @@ const maybeConvertArms = (arms: BanditArm[] | undefined, priorType: PriorType): 
 const getDefaultBanditArms = (priorType: PriorType): BanditArm[] => {
   if (priorType === 'beta') {
     return [
-      { arm_name: 'Control', arm_description: 'Control', alpha_prior: 1, beta_prior: 1 },
-      { arm_name: 'Treatment', arm_description: 'Treatment', alpha_prior: 2, beta_prior: 1 },
+      {
+        arm_name: 'Control',
+        arm_description: 'Control',
+        alpha_prior: undefined,
+        beta_prior: undefined,
+        arm_weight: 50.0,
+      },
+      {
+        arm_name: 'Treatment',
+        arm_description: 'Treatment',
+        alpha_prior: undefined,
+        beta_prior: undefined,
+        arm_weight: 50.0,
+      },
     ];
   }
   return [
-    { arm_name: 'Control', arm_description: 'Control', mean_prior: 0, stddev_prior: 1 },
-    { arm_name: 'Treatment', arm_description: 'Treatment', mean_prior: 1, stddev_prior: 1 },
+    {
+      arm_name: 'Control',
+      arm_description: 'Control',
+      mean_prior: undefined,
+      stddev_prior: undefined,
+      arm_weight: 50.0,
+    },
+    {
+      arm_name: 'Treatment',
+      arm_description: 'Treatment',
+      mean_prior: undefined,
+      stddev_prior: undefined,
+      arm_weight: 50.0,
+    },
   ];
 };
 

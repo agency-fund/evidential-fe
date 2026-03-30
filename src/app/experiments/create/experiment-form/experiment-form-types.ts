@@ -30,6 +30,7 @@ export type BanditExperimentType = 'mab_online' | 'cmab_online';
 
 // MAB-specific arm configuration with prior parameters
 export type BanditArm = Omit<Arm, 'arm_id'> & {
+  arm_weight?: number;
   // For Beta distribution
   alpha_prior?: number;
   beta_prior?: number;
