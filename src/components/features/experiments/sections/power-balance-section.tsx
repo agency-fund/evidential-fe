@@ -12,6 +12,7 @@ export interface PowerBalanceSectionProps {
   assignSummary: AssignSummary | null | undefined;
   onEdit?: () => void;
   showDesiredSampleSize?: boolean;
+  showTitle?: boolean;
 }
 
 export function PowerBalanceSection({
@@ -21,12 +22,13 @@ export function PowerBalanceSection({
   assignSummary,
   onEdit,
   showDesiredSampleSize = true,
+  showTitle = true,
 }: PowerBalanceSectionProps) {
   const balanceCheck = assignSummary?.balance_check;
 
   return (
     <SectionCard
-      title="Power & Balance"
+      title={showTitle ? 'Power & Balance' : undefined}
       headerRight={
         onEdit ? (
           <Button size="1" onClick={onEdit}>

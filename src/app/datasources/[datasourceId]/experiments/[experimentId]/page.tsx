@@ -72,6 +72,7 @@ import {
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { TableNameBadge } from '@/components/features/participants/table-name-badge';
 import { TargetingDialog } from '@/components/features/experiments/targeting-dialog';
+import { PowerAndBalanceDialog } from '@/components/features/experiments/power-and-balance-dialog';
 
 const SNAPSHOT_ERROR_ALERT_THRESHOLD_MS = 8 * 60 * 60 * 1000;
 
@@ -158,7 +159,7 @@ export default function ExperimentViewPage() {
     },
   });
 
-  const haveAnalysisData = isCmabExperiment(experiment?.config)
+  const haveLiveAnalysisData = isCmabExperiment(experiment?.config)
     ? analyzeCmabExperimentData !== undefined
     : analyzeExperimentData !== undefined;
 
@@ -178,8 +179,13 @@ export default function ExperimentViewPage() {
 
           // Do live analysis if there are no snapshots and we don't have live analysis data already. This avoids
           // duplicating a potentially expensive query when useListSnapshots runs.
-          if (data.items.length === 0 && !haveAnalysisData) {
-            await triggerLiveAnalysis();
+          if (data.items.length === 0) {
+            if (haveLiveAnalysisData) {
+              // no snapshots, but have (cached) live analysis data, so use that as our selection.
+              handleLiveAnalysisSuccess(analyzeExperimentData!);
+            } else {
+              await triggerLiveAnalysis();
+            }
             return;
           }
 
@@ -417,6 +423,17 @@ export default function ExperimentViewPage() {
             />
             <Separator orientation="vertical" />
           </>
+          {isFrequentistSpec(design_spec) && (
+            <>
+              <PowerAndBalanceDialog
+                confidence={Math.round((1 - alpha!) * 100)}
+                power={Math.round(power!) * 100}
+                desiredN={design_spec.desired_n ?? undefined}
+                assignSummary={assign_summary}
+              />
+              <Separator orientation="vertical" />
+            </>
+          )}
           <Flex align="center" gap="2">
             <FileTextIcon />
             <EditableTextField
