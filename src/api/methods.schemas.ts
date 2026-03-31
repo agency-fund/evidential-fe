@@ -523,7 +523,7 @@ export interface BayesABExperimentSpecInput {
 	end_date: string;
 	/**
 	 * @minItems 2
-	 * @maxItems 10
+	 * @maxItems 20
 	 */
 	arms: ArmBandit[];
 	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
@@ -572,7 +572,7 @@ export interface BayesABExperimentSpecOutput {
 	end_date: string;
 	/**
 	 * @minItems 2
-	 * @maxItems 10
+	 * @maxItems 20
 	 */
 	arms: ArmBandit[];
 	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
@@ -719,7 +719,7 @@ export interface CMABExperimentSpecInput {
 	end_date: string;
 	/**
 	 * @minItems 2
-	 * @maxItems 10
+	 * @maxItems 20
 	 */
 	arms: ArmBandit[];
 	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
@@ -768,7 +768,7 @@ export interface CMABExperimentSpecOutput {
 	end_date: string;
 	/**
 	 * @minItems 2
-	 * @maxItems 10
+	 * @maxItems 20
 	 */
 	arms: ArmBandit[];
 	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
@@ -1816,7 +1816,7 @@ export interface MABExperimentSpecInput {
 	end_date: string;
 	/**
 	 * @minItems 2
-	 * @maxItems 10
+	 * @maxItems 20
 	 */
 	arms: ArmBandit[];
 	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
@@ -1864,7 +1864,7 @@ export interface MABExperimentSpecOutput {
 	end_date: string;
 	/**
 	 * @minItems 2
-	 * @maxItems 10
+	 * @maxItems 20
 	 */
 	arms: ArmBandit[];
 	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
@@ -2075,7 +2075,7 @@ export interface OnlineFrequentistExperimentSpecInput {
 	end_date: string;
 	/**
 	 * @minItems 2
-	 * @maxItems 10
+	 * @maxItems 20
 	 */
 	arms: Arm[];
 	/**
@@ -2154,7 +2154,7 @@ export interface OnlineFrequentistExperimentSpecOutput {
 	end_date: string;
 	/**
 	 * @minItems 2
-	 * @maxItems 10
+	 * @maxItems 20
 	 */
 	arms: Arm[];
 	/**
@@ -2294,22 +2294,12 @@ export interface PostgresDsn {
 	search_path: PostgresDsnSearchPath;
 }
 
-/**
- * Optional table name for ad-hoc power calculations. When provided with primary_key, synthesizes a participant schema instead of looking up from datasource configuration. When set, the participant_type value is ignored.
- */
-export type PowerRequestTableName = string | null;
-
-/**
- * Optional primary key field name. Must be provided together with table_name. When set, the participant_type value is ignored.
- */
-export type PowerRequestPrimaryKey = string | null;
-
 export interface PowerRequest {
 	design_spec: DesignSpecInput;
-	/** Optional table name for ad-hoc power calculations. When provided with primary_key, synthesizes a participant schema instead of looking up from datasource configuration. When set, the participant_type value is ignored. */
-	table_name?: PowerRequestTableName;
-	/** Optional primary key field name. Must be provided together with table_name. When set, the participant_type value is ignored. */
-	primary_key?: PowerRequestPrimaryKey;
+	/** Table name for ad-hoc power calculations. Fields are verified against the inspected table. */
+	table_name: string;
+	/** Primary key field name. */
+	primary_key: string;
 }
 
 export interface PowerResponseInput {
@@ -2358,7 +2348,7 @@ export interface PreassignedFrequentistExperimentSpecInput {
 	end_date: string;
 	/**
 	 * @minItems 2
-	 * @maxItems 10
+	 * @maxItems 20
 	 */
 	arms: Arm[];
 	/**
@@ -2435,7 +2425,7 @@ export interface PreassignedFrequentistExperimentSpecOutput {
 	end_date: string;
 	/**
 	 * @minItems 2
-	 * @maxItems 10
+	 * @maxItems 20
 	 */
 	arms: Arm[];
 	/**

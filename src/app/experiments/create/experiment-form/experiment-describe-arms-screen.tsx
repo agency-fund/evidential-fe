@@ -4,6 +4,7 @@ import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create
 import { Badge, Box, Button, Card, Flex, Heading, IconButton, Text, TextArea, TextField } from '@radix-ui/themes';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { ArmWeightsDialog } from '@/components/features/experiments/arm-weights-dialog';
+import { createExperimentBodyDesignSpecArmsMin as MIN_ARMS } from '@/api/admin.zod';
 
 export type ExperimentDescribeArmsMessage =
   | { type: 'add-arm' }
@@ -16,7 +17,7 @@ export const ExperimentDescribeArmsScreen = ({
   dispatch,
 }: ScreenProps<ExperimentFormData, ExperimentDescribeArmsMessage, ExperimentScreenId>) => {
   const arms = data.arms ?? [];
-  const showArmsError = arms.length > 0 && arms.length < 2;
+  const showArmsError = arms.length > 0 && arms.length < MIN_ARMS;
 
   return (
     <Flex direction="column" gap={'3'}>
@@ -25,7 +26,7 @@ export const ExperimentDescribeArmsScreen = ({
           <Heading size="4">Arms</Heading>
           {showArmsError && (
             <Text size="1" color="red">
-              At least two arms are required
+              At least {MIN_ARMS} arms are required
             </Text>
           )}
         </Flex>

@@ -3,6 +3,7 @@
 import { ScreenProps } from '@/services/wizard/wizard-types';
 import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
 import {
+  Badge,
   Box,
   Button,
   Callout,
@@ -16,7 +17,7 @@ import {
   SegmentedControl,
 } from '@radix-ui/themes';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
-import { InfoCircledIcon, Pencil2Icon, PlusIcon, TrashIcon } from '@radix-ui/react-icons';
+import { InfoCircledIcon, PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { useCreateExperiment, useListOrganizationDatasources } from '@/api/admin';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { convertToBanditCreateRequest } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
@@ -27,6 +28,10 @@ import { XSpinner } from '@/components/ui/x-spinner';
 import { BanditArm, PriorType } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { ArmWeightsDialog } from '@/components/features/experiments/arm-weights-dialog';
 import { useState } from 'react';
+import {
+  createExperimentBodyDesignSpecArmsMin as MIN_ARMS,
+  createExperimentBodyDesignSpecArmsMax as MAX_ARMS,
+} from '@/api/admin.zod';
 
 export type ExperimentDescribeBanditArmsMessage =
   | { type: 'add-arm' }
@@ -52,9 +57,12 @@ function ArmCard({ arm, armIndex, priorType, showPriors, canDelete, onUpdate, on
     <Card>
       <Flex direction="column" gap="2">
         <Flex align="center" justify="between">
-          <Text weight="bold" size="3">
-            {`Arm ${armIndex + 1}`}
-          </Text>
+          <Flex direction="row" gap="2" align="baseline">
+            <Text weight="bold" size="3">
+              {`Arm ${armIndex + 1}`}
+            </Text>
+            {arm.arm_weight != null && <Badge>{arm.arm_weight.toFixed(1)}%</Badge>}
+          </Flex>
           <IconButton onClick={onDelete} disabled={!canDelete} color="red" variant="soft" size="1">
             <TrashIcon />
           </IconButton>
@@ -166,8 +174,8 @@ const getValidationMessage = (data: ExperimentFormData, showPriors: boolean) => 
   const arms = data.bandit.arms;
   const priorType = data.bandit.priorType;
 
-  if (arms.length < 2) return 'At least 2 arms are required.';
-  if (arms.length > 10) return 'Maximum 10 arms allowed.';
+  if (arms.length < MIN_ARMS) return `At least ${MIN_ARMS} arms are required.`;
+  if (arms.length > MAX_ARMS) return `Maximum ${MAX_ARMS} arms allowed.`;
 
   for (let i = 0; i < arms.length; i++) {
     const arm = arms[i];
@@ -252,7 +260,8 @@ export const ExperimentDescribeBanditArmsScreen = ({
       }
     } else if (value === 'weights') {
       setShowPriors(false);
-      dispatch({ type: 'set-weights', weights: [50, 50] });
+      const equalWeight = parseFloat((100 / arms.length).toFixed(1));
+      dispatch({ type: 'set-weights', weights: arms.map(() => equalWeight) });
       for (let i = 0; i < arms.length; i++) {
         dispatch({ type: 'update-arm', index: i, field: 'alpha_prior', value: '' });
         dispatch({ type: 'update-arm', index: i, field: 'beta_prior', value: '' });
@@ -278,7 +287,7 @@ export const ExperimentDescribeBanditArmsScreen = ({
     );
   }
 
-  const showArmsError = arms.length > 0 && arms.length < 2;
+  const showArmsError = arms.length > 0 && arms.length < MIN_ARMS;
 
   return (
     <>
@@ -288,7 +297,7 @@ export const ExperimentDescribeBanditArmsScreen = ({
             <Heading size="4">Arms</Heading>
             {showArmsError && (
               <Text size="1" color="red">
-                At least two arms are required
+                At least {MIN_ARMS} arms are required
               </Text>
             )}
           </Flex>
@@ -334,12 +343,12 @@ export const ExperimentDescribeBanditArmsScreen = ({
               armIndex={index}
               priorType={priorType}
               showPriors={showPriors}
-              canDelete={arms.length > 2}
+              canDelete={arms.length > MIN_ARMS}
               onUpdate={(field, value) => dispatch({ type: 'update-arm', index, field, value })}
               onDelete={() => dispatch({ type: 'remove-arm', index })}
             />
           ))}
-          {arms.length < 10 && (
+          {arms.length < MAX_ARMS && (
             <Flex justify="center" mt="4">
               <Button onClick={() => dispatch({ type: 'add-arm' })} variant="outline">
                 <PlusIcon />
