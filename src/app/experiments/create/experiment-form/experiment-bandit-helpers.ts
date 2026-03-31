@@ -12,7 +12,7 @@ type RewardType = 'binary' | 'real-valued';
 export const getCanonicalRewardType = (outcomeType?: FormOutcomeType): RewardType =>
   outcomeType === 'binary' ? 'binary' : 'real-valued';
 
-const maybeConvertArm = (arm: BanditArm, priorType: PriorType, index: number): BanditArm => {
+const maybeConvertArm = (arm: BanditArm, priorType: PriorType): BanditArm => {
   const baseArm = {
     arm_name: arm.arm_name,
     arm_description: arm.arm_description,
@@ -39,7 +39,7 @@ const maybeConvertArm = (arm: BanditArm, priorType: PriorType, index: number): B
 };
 
 const maybeConvertArms = (arms: BanditArm[] | undefined, priorType: PriorType): BanditArm[] => {
-  return (arms ?? []).map((arm, index) => maybeConvertArm(arm, priorType, index));
+  return (arms ?? []).map((arm) => maybeConvertArm(arm, priorType));
 };
 
 const getDefaultBanditArms = (priorType: PriorType): BanditArm[] => {

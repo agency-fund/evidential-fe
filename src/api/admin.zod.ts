@@ -2840,7 +2840,7 @@ export const createExperimentBodyDesignSpecArmsItemArmNameMax = 100;
 export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOne = 2000;
 
 export const createExperimentBodyDesignSpecArmsMin = 2;
-export const createExperimentBodyDesignSpecArmsMax = 10;
+export const createExperimentBodyDesignSpecArmsMax = 20;
 
 export const createExperimentBodyDesignSpecStrataItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
@@ -2879,7 +2879,7 @@ export const createExperimentBodyDesignSpecArmsItemArmNameMaxOne = 100;
 export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxFour = 2000;
 
 export const createExperimentBodyDesignSpecArmsMinOne = 2;
-export const createExperimentBodyDesignSpecArmsMaxOne = 10;
+export const createExperimentBodyDesignSpecArmsMaxOne = 20;
 
 export const createExperimentBodyDesignSpecStrataItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
@@ -2918,7 +2918,7 @@ export const createExperimentBodyDesignSpecArmsItemArmNameMaxTwo = 100;
 export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxSeven = 2000;
 
 export const createExperimentBodyDesignSpecArmsMinTwo = 2;
-export const createExperimentBodyDesignSpecArmsMaxTwo = 10;
+export const createExperimentBodyDesignSpecArmsMaxTwo = 20;
 
 export const createExperimentBodyDesignSpecContextsItemContextNameMax = 100;
 
@@ -2939,7 +2939,7 @@ export const createExperimentBodyDesignSpecArmsItemArmNameMaxThree = 100;
 export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnezero = 2000;
 
 export const createExperimentBodyDesignSpecArmsMinThree = 2;
-export const createExperimentBodyDesignSpecArmsMaxThree = 10;
+export const createExperimentBodyDesignSpecArmsMaxThree = 20;
 
 export const createExperimentBodyDesignSpecContextsItemContextNameMaxOne = 100;
 
@@ -2960,7 +2960,7 @@ export const createExperimentBodyDesignSpecArmsItemArmNameMaxFour = 100;
 export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
 
 export const createExperimentBodyDesignSpecArmsMinFour = 2;
-export const createExperimentBodyDesignSpecArmsMaxFour = 10;
+export const createExperimentBodyDesignSpecArmsMaxFour = 20;
 
 export const createExperimentBodyDesignSpecContextsItemContextNameMaxTwo = 100;
 
@@ -3926,7 +3926,7 @@ export const createExperimentResponseDesignSpecArmsItemArmNameMax = 100;
 export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOne = 2000;
 
 export const createExperimentResponseDesignSpecArmsMin = 2;
-export const createExperimentResponseDesignSpecArmsMax = 10;
+export const createExperimentResponseDesignSpecArmsMax = 20;
 
 export const createExperimentResponseDesignSpecStrataItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
@@ -3965,7 +3965,7 @@ export const createExperimentResponseDesignSpecArmsItemArmNameMaxOne = 100;
 export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxFour = 2000;
 
 export const createExperimentResponseDesignSpecArmsMinOne = 2;
-export const createExperimentResponseDesignSpecArmsMaxOne = 10;
+export const createExperimentResponseDesignSpecArmsMaxOne = 20;
 
 export const createExperimentResponseDesignSpecStrataItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
@@ -4004,7 +4004,7 @@ export const createExperimentResponseDesignSpecArmsItemArmNameMaxTwo = 100;
 export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxSeven = 2000;
 
 export const createExperimentResponseDesignSpecArmsMinTwo = 2;
-export const createExperimentResponseDesignSpecArmsMaxTwo = 10;
+export const createExperimentResponseDesignSpecArmsMaxTwo = 20;
 
 export const createExperimentResponseDesignSpecContextsItemContextNameMax = 100;
 
@@ -4025,7 +4025,7 @@ export const createExperimentResponseDesignSpecArmsItemArmNameMaxThree = 100;
 export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnezero = 2000;
 
 export const createExperimentResponseDesignSpecArmsMinThree = 2;
-export const createExperimentResponseDesignSpecArmsMaxThree = 10;
+export const createExperimentResponseDesignSpecArmsMaxThree = 20;
 
 export const createExperimentResponseDesignSpecContextsItemContextNameMaxOne = 100;
 
@@ -4046,7 +4046,7 @@ export const createExperimentResponseDesignSpecArmsItemArmNameMaxFour = 100;
 export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
 
 export const createExperimentResponseDesignSpecArmsMinFour = 2;
-export const createExperimentResponseDesignSpecArmsMaxFour = 10;
+export const createExperimentResponseDesignSpecArmsMaxFour = 20;
 
 export const createExperimentResponseDesignSpecContextsItemContextNameMaxTwo = 100;
 
@@ -4063,7 +4063,7 @@ export const createExperimentResponseAssignSummaryArmSizesItemArmArmNameMax = 10
 export const createExperimentResponseAssignSummaryArmSizesItemArmArmDescriptionMaxOne = 2000;
 
 export const createExperimentResponseAssignSummaryArmSizesItemSizeDefault = 0;
-export const createExperimentResponseAssignSummaryArmSizesMaxOne = 10;
+export const createExperimentResponseAssignSummaryArmSizesMaxOne = 20;
 
 export const createExperimentResponseWebhooksDefault = [];
 export const createExperimentResponseDecisionDefault = "";
@@ -5831,7 +5831,7 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNa
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOne = 2000;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMin = 2;
-export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMax = 10;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMax = 20;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecStrataItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
@@ -5870,7 +5870,7 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNa
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxFour = 2000;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinOne = 2;
-export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxOne = 10;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxOne = 20;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecStrataItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
@@ -5909,7 +5909,7 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNa
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxSeven = 2000;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinTwo = 2;
-export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxTwo = 10;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxTwo = 20;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextNameMax = 100;
 
@@ -5930,7 +5930,7 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNa
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOnezero = 2000;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinThree = 2;
-export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxThree = 10;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxThree = 20;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextNameMaxOne = 100;
 
@@ -5951,7 +5951,7 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNa
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinFour = 2;
-export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxFour = 10;
+export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxFour = 20;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextNameMaxTwo = 100;
 
@@ -5968,7 +5968,7 @@ export const listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesIt
 export const listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesItemArmArmDescriptionMaxOne = 2000;
 
 export const listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesItemSizeDefault = 0;
-export const listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesMaxOne = 10;
+export const listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesMaxOne = 20;
 
 export const listOrganizationExperimentsResponseItemsItemWebhooksDefault = [];
 export const listOrganizationExperimentsResponseItemsItemDecisionDefault = "";
@@ -7237,7 +7237,7 @@ export const getExperimentForUiResponseConfigDesignSpecArmsItemArmNameMax = 100;
 export const getExperimentForUiResponseConfigDesignSpecArmsItemArmDescriptionMaxOne = 2000;
 
 export const getExperimentForUiResponseConfigDesignSpecArmsMin = 2;
-export const getExperimentForUiResponseConfigDesignSpecArmsMax = 10;
+export const getExperimentForUiResponseConfigDesignSpecArmsMax = 20;
 
 export const getExperimentForUiResponseConfigDesignSpecStrataItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
@@ -7276,7 +7276,7 @@ export const getExperimentForUiResponseConfigDesignSpecArmsItemArmNameMaxOne = 1
 export const getExperimentForUiResponseConfigDesignSpecArmsItemArmDescriptionMaxFour = 2000;
 
 export const getExperimentForUiResponseConfigDesignSpecArmsMinOne = 2;
-export const getExperimentForUiResponseConfigDesignSpecArmsMaxOne = 10;
+export const getExperimentForUiResponseConfigDesignSpecArmsMaxOne = 20;
 
 export const getExperimentForUiResponseConfigDesignSpecStrataItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
@@ -7315,7 +7315,7 @@ export const getExperimentForUiResponseConfigDesignSpecArmsItemArmNameMaxTwo = 1
 export const getExperimentForUiResponseConfigDesignSpecArmsItemArmDescriptionMaxSeven = 2000;
 
 export const getExperimentForUiResponseConfigDesignSpecArmsMinTwo = 2;
-export const getExperimentForUiResponseConfigDesignSpecArmsMaxTwo = 10;
+export const getExperimentForUiResponseConfigDesignSpecArmsMaxTwo = 20;
 
 export const getExperimentForUiResponseConfigDesignSpecContextsItemContextNameMax = 100;
 
@@ -7336,7 +7336,7 @@ export const getExperimentForUiResponseConfigDesignSpecArmsItemArmNameMaxThree =
 export const getExperimentForUiResponseConfigDesignSpecArmsItemArmDescriptionMaxOnezero = 2000;
 
 export const getExperimentForUiResponseConfigDesignSpecArmsMinThree = 2;
-export const getExperimentForUiResponseConfigDesignSpecArmsMaxThree = 10;
+export const getExperimentForUiResponseConfigDesignSpecArmsMaxThree = 20;
 
 export const getExperimentForUiResponseConfigDesignSpecContextsItemContextNameMaxOne = 100;
 
@@ -7357,7 +7357,7 @@ export const getExperimentForUiResponseConfigDesignSpecArmsItemArmNameMaxFour = 
 export const getExperimentForUiResponseConfigDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
 
 export const getExperimentForUiResponseConfigDesignSpecArmsMinFour = 2;
-export const getExperimentForUiResponseConfigDesignSpecArmsMaxFour = 10;
+export const getExperimentForUiResponseConfigDesignSpecArmsMaxFour = 20;
 
 export const getExperimentForUiResponseConfigDesignSpecContextsItemContextNameMaxTwo = 100;
 
@@ -7374,7 +7374,7 @@ export const getExperimentForUiResponseConfigAssignSummaryArmSizesItemArmArmName
 export const getExperimentForUiResponseConfigAssignSummaryArmSizesItemArmArmDescriptionMaxOne = 2000;
 
 export const getExperimentForUiResponseConfigAssignSummaryArmSizesItemSizeDefault = 0;
-export const getExperimentForUiResponseConfigAssignSummaryArmSizesMaxOne = 10;
+export const getExperimentForUiResponseConfigAssignSummaryArmSizesMaxOne = 20;
 
 export const getExperimentForUiResponseConfigWebhooksDefault = [];
 export const getExperimentForUiResponseConfigDecisionDefault = "";
@@ -8799,7 +8799,7 @@ export const powerCheckBodyDesignSpecArmsItemArmNameMax = 100;
 export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOne = 2000;
 
 export const powerCheckBodyDesignSpecArmsMin = 2;
-export const powerCheckBodyDesignSpecArmsMax = 10;
+export const powerCheckBodyDesignSpecArmsMax = 20;
 
 export const powerCheckBodyDesignSpecStrataItemFieldNameRegExp = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
@@ -8841,7 +8841,7 @@ export const powerCheckBodyDesignSpecArmsItemArmNameMaxOne = 100;
 export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxFour = 2000;
 
 export const powerCheckBodyDesignSpecArmsMinOne = 2;
-export const powerCheckBodyDesignSpecArmsMaxOne = 10;
+export const powerCheckBodyDesignSpecArmsMaxOne = 20;
 
 export const powerCheckBodyDesignSpecStrataItemFieldNameRegExpOne = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
@@ -8883,7 +8883,7 @@ export const powerCheckBodyDesignSpecArmsItemArmNameMaxTwo = 100;
 export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxSeven = 2000;
 
 export const powerCheckBodyDesignSpecArmsMinTwo = 2;
-export const powerCheckBodyDesignSpecArmsMaxTwo = 10;
+export const powerCheckBodyDesignSpecArmsMaxTwo = 20;
 
 export const powerCheckBodyDesignSpecContextsItemContextNameMax = 100;
 
@@ -8904,7 +8904,7 @@ export const powerCheckBodyDesignSpecArmsItemArmNameMaxThree = 100;
 export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOnezero = 2000;
 
 export const powerCheckBodyDesignSpecArmsMinThree = 2;
-export const powerCheckBodyDesignSpecArmsMaxThree = 10;
+export const powerCheckBodyDesignSpecArmsMaxThree = 20;
 
 export const powerCheckBodyDesignSpecContextsItemContextNameMaxOne = 100;
 
@@ -8925,7 +8925,7 @@ export const powerCheckBodyDesignSpecArmsItemArmNameMaxFour = 100;
 export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
 
 export const powerCheckBodyDesignSpecArmsMinFour = 2;
-export const powerCheckBodyDesignSpecArmsMaxFour = 10;
+export const powerCheckBodyDesignSpecArmsMaxFour = 20;
 
 export const powerCheckBodyDesignSpecContextsItemContextNameMaxTwo = 100;
 
@@ -9709,17 +9709,11 @@ export const powerCheckBody = zod.object({
 		])
 		.describe("The type of assignment and experiment design."),
 	table_name: zod
-		.union([zod.string(), zod.null()])
-		.optional()
+		.string()
 		.describe(
-			"Optional table name for ad-hoc power calculations. When provided with primary_key, synthesizes a participant schema instead of looking up from datasource configuration. When set, the participant_type value is ignored.",
+			"Table name for ad-hoc power calculations. Fields are verified against the inspected table.",
 		),
-	primary_key: zod
-		.union([zod.string(), zod.null()])
-		.optional()
-		.describe(
-			"Optional primary key field name. Must be provided together with table_name. When set, the participant_type value is ignored.",
-		),
+	primary_key: zod.string().describe("Primary key field name."),
 });
 
 export const powerCheckResponseAnalysesItemMetricSpecFieldNameRegExp =
