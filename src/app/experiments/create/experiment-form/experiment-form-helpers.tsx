@@ -96,6 +96,7 @@ export function convertToBanditCreateRequest(data: ExperimentFormData): CreateEx
     arm_id: null,
     arm_name: arm.arm_name,
     arm_description: arm.arm_description || '',
+    arm_weight: arm.arm_weight,
     // Populate only the active prior parameter family.
     alpha_init: priorType === 'beta' && arm.alpha_prior !== undefined ? arm.alpha_prior : null,
     beta_init: priorType === 'beta' && arm.beta_prior !== undefined ? arm.beta_prior : null,

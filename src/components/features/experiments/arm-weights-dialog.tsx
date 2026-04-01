@@ -7,9 +7,16 @@ import { Pencil1Icon } from '@radix-ui/react-icons';
 interface ArmWeightsDialogProps {
   arms: Omit<Arm, 'arm_id'>[];
   onWeightsChange: (weights: number[]) => void;
+  disabled?: boolean;
+  button_text?: string;
 }
 
-export function ArmWeightsDialog({ arms, onWeightsChange }: ArmWeightsDialogProps) {
+export function ArmWeightsDialog({
+  arms,
+  onWeightsChange,
+  disabled,
+  button_text = 'Edit Weights',
+}: ArmWeightsDialogProps) {
   const [open, setOpen] = useState(false);
   const [localWeights, setLocalWeights] = useState<string[]>([]);
   const [weightsError, setWeightsError] = useState<string | null>(null);
@@ -69,9 +76,9 @@ export function ArmWeightsDialog({ arms, onWeightsChange }: ArmWeightsDialogProp
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger>
-        <Button size="1" variant="soft">
+        <Button size="1" variant="soft" disabled={disabled}>
           <Pencil1Icon />
-          Edit Weights
+          {button_text}
         </Button>
       </Dialog.Trigger>
       <Dialog.Content

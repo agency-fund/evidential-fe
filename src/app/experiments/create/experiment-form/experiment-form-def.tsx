@@ -358,12 +358,16 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           const priorType = data.bandit.priorType;
           const newArm =
             priorType === 'beta'
-              ? { arm_name: '', arm_description: '', alpha_prior: 1, beta_prior: 1 }
-              : { arm_name: '', arm_description: '', mean_prior: 0, stddev_prior: 1 };
-          return { ...data, bandit: { ...data.bandit, arms: [...arms, newArm] } };
+              ? { arm_name: '', arm_description: '', alpha_prior: undefined, beta_prior: undefined, arm_weight: 0 }
+              : { arm_name: '', arm_description: '', mean_prior: undefined, stddev_prior: undefined, arm_weight: 0 };
+          const newArms = [...arms, newArm];
+          const equalWeight = parseFloat((100 / newArms.length).toFixed(1));
+          return { ...data, bandit: { ...data.bandit, arms: newArms.map((a) => ({ ...a, arm_weight: equalWeight })) } };
         }
         if (msg.type === 'remove-arm') {
-          return { ...data, bandit: { ...data.bandit, arms: arms.filter((_, i) => i !== msg.index) } };
+          const newArms = arms.filter((_, i) => i !== msg.index);
+          const equalWeight = newArms.length > 0 ? parseFloat((100 / newArms.length).toFixed(1)) : 0;
+          return { ...data, bandit: { ...data.bandit, arms: newArms.map((a) => ({ ...a, arm_weight: equalWeight })) } };
         }
         if (msg.type === 'update-arm') {
           const newArms = [...arms];
@@ -384,6 +388,10 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         }
         if (msg.type === 'set-datasource-id') {
           return { ...data, datasourceId: msg.datasourceId };
+        }
+        if (msg.type === 'set-weights') {
+          const newArms = arms.map((arm, i) => ({ ...arm, arm_weight: msg.weights[i] }));
+          return { ...data, bandit: { ...data.bandit, arms: newArms } };
         }
         return data;
       },

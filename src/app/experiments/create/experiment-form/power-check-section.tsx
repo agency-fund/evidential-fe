@@ -83,6 +83,10 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     event.preventDefault();
     setValidationError(null);
 
+    if (!data.tableName || !data.primaryKey || !data.primaryMetric) {
+      return;
+    }
+
     // TODO: reimplement this to be simpler
     try {
       const design_spec = convertToDesignSpec(data);
