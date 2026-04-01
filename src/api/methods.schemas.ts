@@ -521,7 +521,7 @@ export interface BayesABExperimentSpecInput {
 	end_date: string;
 	/**
 	 * @minItems 2
-	 * @maxItems 10
+	 * @maxItems 20
 	 */
 	arms: ArmBandit[];
 	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
@@ -568,7 +568,7 @@ export interface BayesABExperimentSpecOutput {
 	end_date: string;
 	/**
 	 * @minItems 2
-	 * @maxItems 10
+	 * @maxItems 20
 	 */
 	arms: ArmBandit[];
 	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
@@ -713,7 +713,7 @@ export interface CMABExperimentSpecInput {
 	end_date: string;
 	/**
 	 * @minItems 2
-	 * @maxItems 10
+	 * @maxItems 20
 	 */
 	arms: ArmBandit[];
 	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
@@ -760,7 +760,7 @@ export interface CMABExperimentSpecOutput {
 	end_date: string;
 	/**
 	 * @minItems 2
-	 * @maxItems 10
+	 * @maxItems 20
 	 */
 	arms: ArmBandit[];
 	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
@@ -997,14 +997,9 @@ export interface DatasourceSummary {
 }
 
 /**
- * Delete related arm assignments.
+ * Delete related participant assignments.
  */
 export type DeleteExperimentDataRequestAssignments = boolean | null;
-
-/**
- * Delete related draws.
- */
-export type DeleteExperimentDataRequestDraws = boolean | null;
 
 /**
  * Delete related snapshots.
@@ -1015,10 +1010,8 @@ export type DeleteExperimentDataRequestSnapshots = boolean | null;
  * Request to delete specific data associated with an experiment.
  */
 export interface DeleteExperimentDataRequest {
-	/** Delete related arm assignments. */
+	/** Delete related participant assignments. */
 	assignments?: DeleteExperimentDataRequestAssignments;
-	/** Delete related draws. */
-	draws?: DeleteExperimentDataRequestDraws;
 	/** Delete related snapshots. */
 	snapshots?: DeleteExperimentDataRequestSnapshots;
 }
@@ -1834,7 +1827,7 @@ export interface MABExperimentSpecInput {
 	end_date: string;
 	/**
 	 * @minItems 2
-	 * @maxItems 10
+	 * @maxItems 20
 	 */
 	arms: ArmBandit[];
 	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
@@ -1880,7 +1873,7 @@ export interface MABExperimentSpecOutput {
 	end_date: string;
 	/**
 	 * @minItems 2
-	 * @maxItems 10
+	 * @maxItems 20
 	 */
 	arms: ArmBandit[];
 	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
@@ -2089,7 +2082,7 @@ export interface OnlineFrequentistExperimentSpecInput {
 	end_date: string;
 	/**
 	 * @minItems 2
-	 * @maxItems 10
+	 * @maxItems 20
 	 */
 	arms: Arm[];
 	/**
@@ -2166,7 +2159,7 @@ export interface OnlineFrequentistExperimentSpecOutput {
 	end_date: string;
 	/**
 	 * @minItems 2
-	 * @maxItems 10
+	 * @maxItems 20
 	 */
 	arms: Arm[];
 	/**
@@ -2306,22 +2299,12 @@ export interface PostgresDsn {
 	search_path: PostgresDsnSearchPath;
 }
 
-/**
- * Optional table name for ad-hoc power calculations. When provided with primary_key, field metadata is verified against the inspected table.
- */
-export type PowerRequestTableName = string | null;
-
-/**
- * Optional primary key field name. Must be provided together with table_name.
- */
-export type PowerRequestPrimaryKey = string | null;
-
 export interface PowerRequest {
 	design_spec: DesignSpecInput;
-	/** Optional table name for ad-hoc power calculations. When provided with primary_key, field metadata is verified against the inspected table. */
-	table_name?: PowerRequestTableName;
-	/** Optional primary key field name. Must be provided together with table_name. */
-	primary_key?: PowerRequestPrimaryKey;
+	/** Table name for ad-hoc power calculations. Fields are verified against the inspected table. */
+	table_name: string;
+	/** Primary key field name. */
+	primary_key: string;
 }
 
 export interface PowerResponseInput {
@@ -2368,7 +2351,7 @@ export interface PreassignedFrequentistExperimentSpecInput {
 	end_date: string;
 	/**
 	 * @minItems 2
-	 * @maxItems 10
+	 * @maxItems 20
 	 */
 	arms: Arm[];
 	/**
@@ -2443,7 +2426,7 @@ export interface PreassignedFrequentistExperimentSpecOutput {
 	end_date: string;
 	/**
 	 * @minItems 2
-	 * @maxItems 10
+	 * @maxItems 20
 	 */
 	arms: Arm[];
 	/**

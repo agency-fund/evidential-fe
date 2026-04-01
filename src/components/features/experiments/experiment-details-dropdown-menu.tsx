@@ -85,7 +85,7 @@ export function ExperimentDetailsDropdownMenu({ datasourceId, experimentId }: Ex
               <Text as="label" size="2">
                 <Flex gap="2" align="center">
                   <Checkbox
-                    checked={!!deleteDataRequest.draws}
+                    checked={!!deleteDataRequest.assignments}
                     onCheckedChange={(checked) => setDeleteDataRequest((prev) => ({ ...prev, draws: !!checked }))}
                   />
                   Draws - Delete all draws
@@ -125,7 +125,7 @@ export function ExperimentDetailsDropdownMenu({ datasourceId, experimentId }: Ex
               <Button
                 variant="solid"
                 color="red"
-                disabled={!deleteDataRequest.assignments && !deleteDataRequest.draws && !deleteDataRequest.snapshots}
+                disabled={!deleteDataRequest.assignments && !deleteDataRequest.snapshots}
                 loading={isDeletingData}
                 onClick={handleDeleteData}
               >
