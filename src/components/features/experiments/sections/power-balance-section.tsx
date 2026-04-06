@@ -39,60 +39,64 @@ export function PowerBalanceSection({
       }
     >
       <Flex gap="4" direction="row" align="start">
-        <DataList.Root style={{ flex: 1 }}>
-          <DataList.Item>
-            <DataList.Label>
-              <b>Power Parameters</b>
-            </DataList.Label>
-          </DataList.Item>
-          <DataList.Item>
-            <DataList.Label>Confidence</DataList.Label>
-            <DataList.Value>{confidence}%</DataList.Value>
-          </DataList.Item>
-          <DataList.Item>
-            <DataList.Label>Power</DataList.Label>
-            <DataList.Value>{power}%</DataList.Value>
-          </DataList.Item>
-          {showDesiredSampleSize && (
-            <DataList.Item>
-              <DataList.Label>Desired Sample Size</DataList.Label>
-              <DataList.Value>{desiredN ?? 'N/A'}</DataList.Value>
-            </DataList.Item>
-          )}
-          <DataList.Item>
-            <DataList.Label>Actual Sample Size</DataList.Label>
-            <DataList.Value>{assignSummary?.sample_size ?? 'N/A'}</DataList.Value>
-          </DataList.Item>
-        </DataList.Root>
-
-        {balanceCheck ? (
-          <DataList.Root style={{ flex: 1 }}>
+        <Flex flexGrow="1">
+          <DataList.Root>
             <DataList.Item>
               <DataList.Label>
-                <b>Balance Check</b>
+                <b>Power Parameters</b>
               </DataList.Label>
             </DataList.Item>
             <DataList.Item>
-              <DataList.Label>F Statistic</DataList.Label>
-              <DataList.Value>{balanceCheck.f_statistic.toFixed(3)}</DataList.Value>
+              <DataList.Label>Confidence</DataList.Label>
+              <DataList.Value>{confidence}%</DataList.Value>
             </DataList.Item>
             <DataList.Item>
-              <DataList.Label>Numerator DF</DataList.Label>
-              <DataList.Value>{balanceCheck.numerator_df}</DataList.Value>
+              <DataList.Label>Power</DataList.Label>
+              <DataList.Value>{power}%</DataList.Value>
             </DataList.Item>
+            {showDesiredSampleSize && (
+              <DataList.Item>
+                <DataList.Label>Desired Sample Size</DataList.Label>
+                <DataList.Value>{desiredN ?? 'N/A'}</DataList.Value>
+              </DataList.Item>
+            )}
             <DataList.Item>
-              <DataList.Label>Denominator DF</DataList.Label>
-              <DataList.Value>{balanceCheck.denominator_df}</DataList.Value>
-            </DataList.Item>
-            <DataList.Item>
-              <DataList.Label>P-Value</DataList.Label>
-              <DataList.Value>{balanceCheck.p_value.toFixed(3)}</DataList.Value>
-            </DataList.Item>
-            <DataList.Item>
-              <DataList.Label>Balance OK?</DataList.Label>
-              <DataList.Value>{balanceCheck.balance_ok ? 'Yes' : 'No'}</DataList.Value>
+              <DataList.Label>Actual Sample Size</DataList.Label>
+              <DataList.Value>{assignSummary?.sample_size ?? 'N/A'}</DataList.Value>
             </DataList.Item>
           </DataList.Root>
+        </Flex>
+
+        {balanceCheck ? (
+          <Flex flexGrow="1">
+            <DataList.Root>
+              <DataList.Item>
+                <DataList.Label>
+                  <b>Balance Check</b>
+                </DataList.Label>
+              </DataList.Item>
+              <DataList.Item>
+                <DataList.Label>F Statistic</DataList.Label>
+                <DataList.Value>{balanceCheck.f_statistic.toFixed(3)}</DataList.Value>
+              </DataList.Item>
+              <DataList.Item>
+                <DataList.Label>Numerator DF</DataList.Label>
+                <DataList.Value>{balanceCheck.numerator_df}</DataList.Value>
+              </DataList.Item>
+              <DataList.Item>
+                <DataList.Label>Denominator DF</DataList.Label>
+                <DataList.Value>{balanceCheck.denominator_df}</DataList.Value>
+              </DataList.Item>
+              <DataList.Item>
+                <DataList.Label>P-Value</DataList.Label>
+                <DataList.Value>{balanceCheck.p_value.toFixed(3)}</DataList.Value>
+              </DataList.Item>
+              <DataList.Item>
+                <DataList.Label>Balance OK?</DataList.Label>
+                <DataList.Value>{balanceCheck.balance_ok ? 'Yes' : 'No'}</DataList.Value>
+              </DataList.Item>
+            </DataList.Root>
+          </Flex>
         ) : null}
       </Flex>
     </SectionCard>
