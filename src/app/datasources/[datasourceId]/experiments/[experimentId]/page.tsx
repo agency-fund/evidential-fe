@@ -159,10 +159,6 @@ export default function ExperimentViewPage() {
     },
   });
 
-  const haveLiveAnalysisData = isCmabExperiment(experiment?.config)
-    ? analyzeCmabExperimentData !== undefined
-    : analyzeExperimentData !== undefined;
-
   const { isLoading: isLoadingHistory, error: analysisHistoryError } = useListSnapshots(
     organizationId,
     datasourceId,
@@ -180,9 +176,11 @@ export default function ExperimentViewPage() {
           // Do live analysis if there are no snapshots and we don't have live analysis data already. This avoids
           // duplicating a potentially expensive query when useListSnapshots runs.
           if (data.items.length === 0) {
-            if (haveLiveAnalysisData) {
-              // no snapshots, but have (cached) live analysis data, so use that as our selection.
-              handleLiveAnalysisSuccess(analyzeExperimentData!);
+            // No snapshots. First check if we have (cached) live analysis data. If so, use that for display.
+            if (isCmabExperiment(experiment?.config) && analyzeCmabExperimentData !== undefined) {
+              handleLiveAnalysisSuccess(analyzeCmabExperimentData);
+            } else if (analyzeExperimentData !== undefined) {
+              handleLiveAnalysisSuccess(analyzeExperimentData);
             } else {
               await triggerLiveAnalysis();
             }
@@ -220,7 +218,7 @@ export default function ExperimentViewPage() {
           setAnalysisHistory(history);
           // If we're not viewing real data, set the selected analysis to the most recent snapshot
           if (selectedAnalysisState.data === undefined) {
-            setSelectedAnalysisAndMetrics(history[0], selectedMetricName, history);
+            handleSelectedAnalysisAndMetrics(history[0], selectedMetricName, history);
           }
         },
         onError: async () => {
@@ -239,7 +237,7 @@ export default function ExperimentViewPage() {
     },
   });
 
-  const setSelectedAnalysisAndMetrics = (
+  const handleSelectedAnalysisAndMetrics = (
     analysis: AnalysisState,
     forMetricName: string | undefined = undefined,
     historyOverride: AnalysisState[] | undefined = undefined,
@@ -294,16 +292,20 @@ export default function ExperimentViewPage() {
     setLiveAnalysis(analysis);
     // Only update the display if we were previously viewing live data.
     if (selectedAnalysisState.key === 'live') {
-      setSelectedAnalysisAndMetrics(analysis);
+      handleSelectedAnalysisAndMetrics(analysis);
     }
   };
 
   const handleSelectAnalysis = async (key: string) => {
-    const analysis = key === 'live' ? liveAnalysis : analysisHistory.find((opt) => opt.key === key);
-    setSelectedAnalysisAndMetrics(analysis || liveAnalysis);
-    // If we haven't fetched it yet, trigger a live analysis.
-    if (key == 'live' && liveAnalysis.data === undefined) {
-      await triggerLiveAnalysis();
+    if (key === 'live') {
+      // If we haven't fetched it yet, trigger a live analysis.
+      if (liveAnalysis.data === undefined) {
+        await triggerLiveAnalysis();
+      }
+      handleSelectedAnalysisAndMetrics(liveAnalysis);
+    } else {
+      const analysis = analysisHistory.find((opt) => opt.key === key) || liveAnalysis;
+      handleSelectedAnalysisAndMetrics(analysis);
     }
   };
 
@@ -427,7 +429,7 @@ export default function ExperimentViewPage() {
             <>
               <PowerAndBalanceDialog
                 confidence={Math.round((1 - alpha!) * 100)}
-                power={Math.round(power!) * 100}
+                power={Math.round(power! * 100)}
                 desiredN={design_spec.desired_n ?? undefined}
                 assignSummary={assign_summary}
               />
@@ -507,7 +509,7 @@ export default function ExperimentViewPage() {
                           size="1"
                           value={selectedMetricName}
                           onValueChange={(metricName) => {
-                            setSelectedAnalysisAndMetrics(selectedAnalysisState, metricName);
+                            handleSelectedAnalysisAndMetrics(selectedAnalysisState, metricName);
                           }}
                         >
                           <Select.Trigger style={{ height: 18 }} />

@@ -90,7 +90,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     // TODO: reimplement this to be simpler
     try {
       const design_spec = convertToDesignSpec(data);
-      const response = await trigger({ design_spec, table_name: data.tableName!, primary_key: data.primaryKey! });
+      const response = await trigger({ design_spec, table_name: data.tableName, primary_key: data.primaryKey });
       const primary = response.analyses.find((a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name);
 
       dispatch({ type: 'set-power-check-response', response, desiredN: undefined });
