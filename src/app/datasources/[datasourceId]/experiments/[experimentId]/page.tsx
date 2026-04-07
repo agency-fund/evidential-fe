@@ -405,12 +405,12 @@ export default function ExperimentViewPage() {
                   <TableNameBadge tableName={experiment.participant_type.table_name} />
                   <Separator orientation="vertical" />
                 </>
-              ) : experiment.config.participant_type ? (
+              ) : experiment.config.participant_type_deprecated ? (
                 // For backwards compatibility with legacy experiments, show the participant type badge.
                 <>
                   <ParticipantTypeBadge
                     datasourceId={experiment.config.datasource_id}
-                    participantType={experiment.config.participant_type}
+                    participantType={experiment.config.participant_type_deprecated}
                   />
                   <Separator orientation="vertical" />
                 </>

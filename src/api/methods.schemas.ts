@@ -890,11 +890,6 @@ export interface CreateExperimentRequest {
 }
 
 /**
- * (legacy experiments) Persisted participant-type name for backwards compatibility. New experiments should not have this set.
- */
-export type CreateExperimentResponseParticipantType = string | null;
-
-/**
  * The date and time assignments were stopped. Null if assignments are still allowed to be made.
  */
 export type CreateExperimentResponseStoppedAssignmentsAt = string | null;
@@ -916,8 +911,11 @@ export interface CreateExperimentResponse {
 	/** Server-generated ID of the experiment. */
 	experiment_id: string;
 	datasource_id: string;
-	/** (legacy experiments) Persisted participant-type name for backwards compatibility. New experiments should not have this set. */
-	participant_type: CreateExperimentResponseParticipantType;
+	/**
+	 * (legacy experiments) Persisted participant-type name for backwards compatibility. New experiments will have this set to the empty string.
+	 * @maxLength 100
+	 */
+	participant_type_deprecated: string;
 	/** Current state of this experiment. */
 	state: ExperimentState;
 	/** The date and time assignments were stopped. Null if assignments are still allowed to be made. */
@@ -1165,11 +1163,6 @@ export type ExperimentAnalysisResponse =
 	| BanditExperimentAnalysisResponse;
 
 /**
- * (legacy experiments) Persisted participant-type name for backwards compatibility. New experiments should not have this set.
- */
-export type ExperimentConfigParticipantType = string | null;
-
-/**
  * The date and time assignments were stopped. Null if assignments are still allowed to be made.
  */
 export type ExperimentConfigStoppedAssignmentsAt = string | null;
@@ -1191,8 +1184,11 @@ export interface ExperimentConfig {
 	/** Server-generated ID of the experiment. */
 	experiment_id: string;
 	datasource_id: string;
-	/** (legacy experiments) Persisted participant-type name for backwards compatibility. New experiments should not have this set. */
-	participant_type: ExperimentConfigParticipantType;
+	/**
+	 * (legacy experiments) Persisted participant-type name for backwards compatibility. New experiments will have this set to the empty string.
+	 * @maxLength 100
+	 */
+	participant_type_deprecated: string;
 	/** Current state of this experiment. */
 	state: ExperimentState;
 	/** The date and time assignments were stopped. Null if assignments are still allowed to be made. */
@@ -1485,7 +1481,7 @@ export interface GetExperimentAssignmentsResponse {
 }
 
 /**
- * If available, the Participant Type information for this experiment. May not exist if the experiment is not backed by a real datasource.
+ * If available, the Participant Type information for this experiment. This field is null for experiments that only use an 'API Only' datasource.
  */
 export type GetExperimentForUiResponseParticipantType = ParticipantsDef | null;
 
@@ -1494,14 +1490,9 @@ export type GetExperimentForUiResponseParticipantType = ParticipantsDef | null;
  */
 export interface GetExperimentForUiResponse {
 	config: ExperimentConfig;
-	/** If available, the Participant Type information for this experiment. May not exist if the experiment is not backed by a real datasource. */
+	/** If available, the Participant Type information for this experiment. This field is null for experiments that only use an 'API Only' datasource. */
 	participant_type: GetExperimentForUiResponseParticipantType;
 }
-
-/**
- * (legacy experiments) Persisted participant-type name for backwards compatibility. New experiments should not have this set.
- */
-export type GetExperimentResponseParticipantType = string | null;
 
 /**
  * The date and time assignments were stopped. Null if assignments are still allowed to be made.
@@ -1525,8 +1516,11 @@ export interface GetExperimentResponse {
 	/** Server-generated ID of the experiment. */
 	experiment_id: string;
 	datasource_id: string;
-	/** (legacy experiments) Persisted participant-type name for backwards compatibility. New experiments should not have this set. */
-	participant_type: GetExperimentResponseParticipantType;
+	/**
+	 * (legacy experiments) Persisted participant-type name for backwards compatibility. New experiments will have this set to the empty string.
+	 * @maxLength 100
+	 */
+	participant_type_deprecated: string;
 	/** Current state of this experiment. */
 	state: ExperimentState;
 	/** The date and time assignments were stopped. Null if assignments are still allowed to be made. */
@@ -2228,7 +2222,7 @@ export interface ParticipantsDef {
 	fields: FieldDescriptor[];
 	/** Indicates that the schema is determined by an inline schema. */
 	type: "schema";
-	/** The name of the set of participants defined by the filters. This name must be unique within a datasource. */
+	/** The name of the set of participants defined by the filters. This name must be unique within a datasource when not hidden (i.e. not auto-generated). */
 	participant_type: string;
 	/** If true, this participant type is hidden from list_participant_types. Used for auto-generated participant types. */
 	hidden?: boolean;

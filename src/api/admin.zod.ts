@@ -1916,7 +1916,7 @@ export const listParticipantTypesResponse = zod.object({
 					participant_type: zod
 						.string()
 						.describe(
-							"The name of the set of participants defined by the filters. This name must be unique within a datasource.",
+							"The name of the set of participants defined by the filters. This name must be unique within a datasource when not hidden (i.e. not auto-generated).",
 						),
 					hidden: zod
 						.boolean()
@@ -2396,7 +2396,7 @@ export const getParticipantTypeResponse = zod.object({
 			participant_type: zod
 				.string()
 				.describe(
-					"The name of the set of participants defined by the filters. This name must be unique within a datasource.",
+					"The name of the set of participants defined by the filters. This name must be unique within a datasource when not hidden (i.e. not auto-generated).",
 				),
 			hidden: zod
 				.boolean()
@@ -2472,7 +2472,7 @@ export const getParticipantTypeResponse = zod.object({
 			participant_type: zod
 				.string()
 				.describe(
-					"The name of the set of participants defined by the filters. This name must be unique within a datasource.",
+					"The name of the set of participants defined by the filters. This name must be unique within a datasource when not hidden (i.e. not auto-generated).",
 				),
 			hidden: zod
 				.boolean()
@@ -3884,7 +3884,7 @@ export const createExperimentBody = zod.object({
 		),
 });
 
-export const createExperimentResponseParticipantTypeMaxOne = 100;
+export const createExperimentResponseParticipantTypeDeprecatedMax = 100;
 
 export const createExperimentResponseDesignSpecExperimentNameMax = 100;
 
@@ -4037,13 +4037,11 @@ export const createExperimentResponse = zod
 			.string()
 			.describe("Server-generated ID of the experiment."),
 		datasource_id: zod.string(),
-		participant_type: zod
-			.union([
-				zod.string().max(createExperimentResponseParticipantTypeMaxOne),
-				zod.null(),
-			])
+		participant_type_deprecated: zod
+			.string()
+			.max(createExperimentResponseParticipantTypeDeprecatedMax)
 			.describe(
-				"(legacy experiments) Persisted participant-type name for backwards compatibility. New experiments should not have this set.",
+				"(legacy experiments) Persisted participant-type name for backwards compatibility. New experiments will have this set to the empty string.",
 			),
 		state: zod
 			.enum(["designing", "assigned", "abandoned", "committed", "aborted"])
@@ -5770,7 +5768,7 @@ export const listOrganizationExperimentsParams = zod.object({
 	organization_id: zod.string(),
 });
 
-export const listOrganizationExperimentsResponseItemsItemParticipantTypeMaxOne = 100;
+export const listOrganizationExperimentsResponseItemsItemParticipantTypeDeprecatedMax = 100;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMax = 100;
 
@@ -5925,17 +5923,13 @@ export const listOrganizationExperimentsResponse = zod.object({
 					.string()
 					.describe("Server-generated ID of the experiment."),
 				datasource_id: zod.string(),
-				participant_type: zod
-					.union([
-						zod
-							.string()
-							.max(
-								listOrganizationExperimentsResponseItemsItemParticipantTypeMaxOne,
-							),
-						zod.null(),
-					])
+				participant_type_deprecated: zod
+					.string()
+					.max(
+						listOrganizationExperimentsResponseItemsItemParticipantTypeDeprecatedMax,
+					)
 					.describe(
-						"(legacy experiments) Persisted participant-type name for backwards compatibility. New experiments should not have this set.",
+						"(legacy experiments) Persisted participant-type name for backwards compatibility. New experiments will have this set to the empty string.",
 					),
 				state: zod
 					.enum(["designing", "assigned", "abandoned", "committed", "aborted"])
@@ -7155,7 +7149,7 @@ export const getExperimentForUiParams = zod.object({
 	experiment_id: zod.string(),
 });
 
-export const getExperimentForUiResponseConfigParticipantTypeMaxOne = 100;
+export const getExperimentForUiResponseConfigParticipantTypeDeprecatedMax = 100;
 
 export const getExperimentForUiResponseConfigDesignSpecExperimentNameMax = 100;
 
@@ -7317,15 +7311,11 @@ export const getExperimentForUiResponse = zod
 					.string()
 					.describe("Server-generated ID of the experiment."),
 				datasource_id: zod.string(),
-				participant_type: zod
-					.union([
-						zod
-							.string()
-							.max(getExperimentForUiResponseConfigParticipantTypeMaxOne),
-						zod.null(),
-					])
+				participant_type_deprecated: zod
+					.string()
+					.max(getExperimentForUiResponseConfigParticipantTypeDeprecatedMax)
 					.describe(
-						"(legacy experiments) Persisted participant-type name for backwards compatibility. New experiments should not have this set.",
+						"(legacy experiments) Persisted participant-type name for backwards compatibility. New experiments will have this set to the empty string.",
 					),
 				state: zod
 					.enum(["designing", "assigned", "abandoned", "committed", "aborted"])
@@ -8547,7 +8537,7 @@ export const getExperimentForUiResponse = zod
 						participant_type: zod
 							.string()
 							.describe(
-								"The name of the set of participants defined by the filters. This name must be unique within a datasource.",
+								"The name of the set of participants defined by the filters. This name must be unique within a datasource when not hidden (i.e. not auto-generated).",
 							),
 						hidden: zod
 							.boolean()
@@ -8562,7 +8552,7 @@ export const getExperimentForUiResponse = zod
 				zod.null(),
 			])
 			.describe(
-				"If available, the Participant Type information for this experiment. May not exist if the experiment is not backed by a real datasource.",
+				"If available, the Participant Type information for this experiment. This field is null for experiments that only use an 'API Only' datasource.",
 			),
 	})
 	.describe("Experiment configuration and participant type information.");
