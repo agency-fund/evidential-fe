@@ -780,6 +780,19 @@ export interface CMABExperimentSpecOutput {
 }
 
 /**
+ * Contains the OIDC authorization code and PKCE verifier for the token exchange.
+ */
+export interface CallbackRequest {
+	code: string;
+	/**
+	 * @minLength 43
+	 * @maxLength 128
+	 * @pattern ^[A-Za-z0-9._~-]+$
+	 */
+	code_verifier: string;
+}
+
+/**
  * Contains the credentials the SPA will use for interacting with the Admin API.
 
 This is only returned when the SPA has successfully completed the OIDC PKCE flow.
