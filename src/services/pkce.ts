@@ -9,11 +9,13 @@ const base64urlEncode = (buffer: ArrayBuffer | Uint8Array) =>
     .replace(/\//g, '_')
     .replace(/=+$/, '');
 
-const createCodeVerifier = () => {
-  const array = new Uint8Array(56);
+const createBase64UrlToken = (bytes: number): string => {
+  const array = new Uint8Array(bytes);
   crypto.getRandomValues(array);
   return base64urlEncode(array);
 };
+
+const createCodeVerifier = () => createBase64UrlToken(56);
 
 const createCodeChallenge = async (codeVerifier: string) => {
   const encoder = new TextEncoder();
@@ -22,6 +24,9 @@ const createCodeChallenge = async (codeVerifier: string) => {
   return base64urlEncode(digest);
 };
 
+const createState = () => createBase64UrlToken(32);
+
+const createNonce = () => createBase64UrlToken(32);
 /**
  * Generates a login URL given a PKCE code challenge.
  *
@@ -29,7 +34,8 @@ const createCodeChallenge = async (codeVerifier: string) => {
  * https://developers.google.com/identity/openid-connect/openid-connect#sendauthrequest
  * https://developers.google.com/identity/openid-connect/openid-connect#authenticationuriparameters
  */
-const createGoogleLoginUrl = (code_challenge: string) => {
+
+const createGoogleLoginUrl = (code_challenge: string, state: string, nonce: string) => {
   if (!OIDC_CLIENT_ID) {
     throw new Error('NEXT_PUBLIC_XNGIN_GOOGLE_CLIENT_ID is not set.');
   }
@@ -40,9 +46,11 @@ const createGoogleLoginUrl = (code_challenge: string) => {
     client_id: OIDC_CLIENT_ID,
     code_challenge: code_challenge,
     code_challenge_method: 'S256',
+    nonce: nonce,
     redirect_uri: OIDC_REDIRECT_URI,
     response_type: 'code',
     scope: 'openid email',
+    state: state,
   };
   const url = new URL(GOOGLE_AUTHORIZATION_ENDPOINT);
   url.search = new URLSearchParams(params).toString();
@@ -52,14 +60,16 @@ const createGoogleLoginUrl = (code_challenge: string) => {
 export async function generatePkceLoginInfo() {
   const codeVerifier = createCodeVerifier();
   const codeChallenge = await createCodeChallenge(codeVerifier);
-  return { codeVerifier, loginUrl: createGoogleLoginUrl(codeChallenge) };
+  const state = createState();
+  const nonce = createNonce();
+  return { codeVerifier, state, nonce, loginUrl: createGoogleLoginUrl(codeChallenge, state, nonce) };
 }
 
-export async function exchangeCodeForTokens(authCode: string, codeVerifier: string) {
+export async function exchangeCodeForTokens(authCode: string, codeVerifier: string, nonce: string) {
   const response = await fetch(`${OIDC_BASE_URL}/callback`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code: authCode, code_verifier: codeVerifier }),
+    body: JSON.stringify({ code: authCode, code_verifier: codeVerifier, nonce }),
   });
   return await response.json();
 }

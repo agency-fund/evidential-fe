@@ -2,6 +2,7 @@
 
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { z } from 'zod';
 import { exchangeCodeForTokens, generatePkceLoginInfo } from '@/services/pkce';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { useAuthStorage } from '@/providers/use-auth-storage';
@@ -10,7 +11,7 @@ import { useCustomEventListener } from '@/providers/use-custom-event-handler';
 import { getLogoutUrl } from '@/api/admin';
 
 export const API_401_EVENT = 'api_returned_401';
-const CODE_VERIFIER_KEY = 'code_verifier';
+const PENDING_AUTH_KEY = 'pending_auth';
 
 // User satisfied IDP and has been invited to the application.
 interface AuthenticatedState {
@@ -31,6 +32,14 @@ interface UnauthenticatedState {
 
 type AuthContext = AuthenticatedState | UnauthenticatedState;
 
+const PendingAuthSchema = z.object({
+  codeVerifier: z.string(),
+  state: z.string(),
+  nonce: z.string(),
+});
+
+type PendingAuth = z.infer<typeof PendingAuthSchema>;
+
 const GoogleAuthContext = createContext<AuthContext | null>(null);
 
 export const useAuth = () => {
@@ -50,16 +59,35 @@ const checkCallerIdentity = async (sessionToken: string) => {
   });
 };
 
+const getPendingAuth = (): PendingAuth | null => {
+  const item = sessionStorage.getItem(PENDING_AUTH_KEY);
+  if (item === null) {
+    return null;
+  }
+  try {
+    const result = PendingAuthSchema.safeParse(JSON.parse(item));
+    return result.success ? result.data : null;
+  } catch {
+    return null;
+  }
+};
+
+const setPendingAuth = (pendingAuth: PendingAuth) =>
+  sessionStorage.setItem(PENDING_AUTH_KEY, JSON.stringify(pendingAuth));
+
+const clearPendingAuth = () => sessionStorage.removeItem(PENDING_AUTH_KEY);
+
 export default function GoogleAuthProvider({ children }: PropsWithChildren) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [user, setUser] = useAuthStorage();
   const [fetching, setFetching] = useState<boolean>(false);
-  const isGoogleLoginRedirect = user === null && searchParams.has('code') && searchParams.has('scope');
+  const isGoogleLoginRedirect =
+    user === null && searchParams.has('code') && searchParams.has('scope') && searchParams.has('state');
   const [userIsMissingInvite, setUserIsMissingInvite] = useState(false);
 
   const logout = useCallback(async () => {
-    localStorage.removeItem(CODE_VERIFIER_KEY);
+    clearPendingAuth();
     if (user?.sessionToken) {
       try {
         await fetch(new URL(getLogoutUrl(), API_BASE_URL), {
@@ -77,8 +105,8 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
   useCustomEventListener(API_401_EVENT, logout);
 
   const startLogin = useCallback(async () => {
-    const { codeVerifier, loginUrl } = await generatePkceLoginInfo();
-    localStorage.setItem(CODE_VERIFIER_KEY, codeVerifier);
+    const { codeVerifier, state, nonce, loginUrl } = await generatePkceLoginInfo();
+    setPendingAuth({ codeVerifier, state, nonce });
     router.push(loginUrl);
   }, [router]);
 
@@ -86,12 +114,22 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
     if (!isGoogleLoginRedirect) {
       return;
     }
+    const pendingAuth = getPendingAuth();
+    const code = searchParams.get('code');
+    const state = searchParams.get('state');
+    if (!pendingAuth || code === null || state === null) {
+      return;
+    }
     (async () => {
+      if (state !== pendingAuth.state) {
+        console.log('state mismatch');
+        await logout();
+        return;
+      }
       setFetching(true);
       try {
-        const codeVerifier = localStorage.getItem(CODE_VERIFIER_KEY);
-        const tokens = await exchangeCodeForTokens(searchParams.get('code') as string, codeVerifier!);
-        localStorage.removeItem(CODE_VERIFIER_KEY);
+        const tokens = await exchangeCodeForTokens(code, pendingAuth.codeVerifier, pendingAuth.nonce);
+        clearPendingAuth();
         const newToken = tokens.session_token ?? null;
         if (newToken === null) {
           console.log('exchangeCodeForTokens failed to return a usable token');
