@@ -56,6 +56,10 @@ export async function generatePkceLoginInfo() {
 }
 
 export async function exchangeCodeForTokens(authCode: string, codeVerifier: string) {
-  const response = await fetch(`${OIDC_BASE_URL}/callback?code=${authCode}&code_verifier=${codeVerifier}`);
+  const response = await fetch(`${OIDC_BASE_URL}/callback`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code: authCode, code_verifier: codeVerifier }),
+  });
   return await response.json();
 }
