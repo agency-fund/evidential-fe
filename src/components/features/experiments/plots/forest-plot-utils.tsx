@@ -80,7 +80,7 @@ export const isBanditAnalysis = (
 /**
  * Helper to safely extract alpha and power from frequentist experiment design specs
  *
- * @returns obj with alpha & power values from the exp design. Values are undefined if not a frequentist experiment.
+ * @returns obj with alpha & power values in [0,1] from the exp design. Values are undefined if not a frequentist experiment.
  */
 export const getAlphaAndPower = (
   experiment: GetExperimentResponse | undefined,

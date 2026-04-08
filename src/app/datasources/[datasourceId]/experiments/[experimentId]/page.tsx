@@ -72,6 +72,7 @@ import {
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { TableNameBadge } from '@/components/features/participants/table-name-badge';
 import { TargetingDialog } from '@/components/features/experiments/targeting-dialog';
+import { PowerAndBalanceDialog } from '@/components/features/experiments/power-and-balance-dialog';
 
 const SNAPSHOT_ERROR_ALERT_THRESHOLD_MS = 8 * 60 * 60 * 1000;
 
@@ -158,10 +159,6 @@ export default function ExperimentViewPage() {
     },
   });
 
-  const haveAnalysisData = isCmabExperiment(experiment?.config)
-    ? analyzeCmabExperimentData !== undefined
-    : analyzeExperimentData !== undefined;
-
   const { isLoading: isLoadingHistory, error: analysisHistoryError } = useListSnapshots(
     organizationId,
     datasourceId,
@@ -178,8 +175,15 @@ export default function ExperimentViewPage() {
 
           // Do live analysis if there are no snapshots and we don't have live analysis data already. This avoids
           // duplicating a potentially expensive query when useListSnapshots runs.
-          if (data.items.length === 0 && !haveAnalysisData) {
-            await triggerLiveAnalysis();
+          if (data.items.length === 0) {
+            // No snapshots. First check if we have (cached) live analysis data. If so, use that for display.
+            if (isCmabExperiment(experiment?.config) && analyzeCmabExperimentData !== undefined) {
+              handleLiveAnalysisSuccess(analyzeCmabExperimentData);
+            } else if (analyzeExperimentData !== undefined) {
+              handleLiveAnalysisSuccess(analyzeExperimentData);
+            } else {
+              await triggerLiveAnalysis();
+            }
             return;
           }
 
@@ -214,7 +218,7 @@ export default function ExperimentViewPage() {
           setAnalysisHistory(history);
           // If we're not viewing real data, set the selected analysis to the most recent snapshot
           if (selectedAnalysisState.data === undefined) {
-            setSelectedAnalysisAndMetrics(history[0], selectedMetricName, history);
+            handleSelectedAnalysisAndMetrics(history[0], selectedMetricName, history);
           }
         },
         onError: async () => {
@@ -233,7 +237,7 @@ export default function ExperimentViewPage() {
     },
   });
 
-  const setSelectedAnalysisAndMetrics = (
+  const handleSelectedAnalysisAndMetrics = (
     analysis: AnalysisState,
     forMetricName: string | undefined = undefined,
     historyOverride: AnalysisState[] | undefined = undefined,
@@ -288,16 +292,20 @@ export default function ExperimentViewPage() {
     setLiveAnalysis(analysis);
     // Only update the display if we were previously viewing live data.
     if (selectedAnalysisState.key === 'live') {
-      setSelectedAnalysisAndMetrics(analysis);
+      handleSelectedAnalysisAndMetrics(analysis);
     }
   };
 
   const handleSelectAnalysis = async (key: string) => {
-    const analysis = key === 'live' ? liveAnalysis : analysisHistory.find((opt) => opt.key === key);
-    setSelectedAnalysisAndMetrics(analysis || liveAnalysis);
-    // If we haven't fetched it yet, trigger a live analysis.
-    if (key == 'live' && liveAnalysis.data === undefined) {
-      await triggerLiveAnalysis();
+    if (key === 'live') {
+      // If we haven't fetched it yet, trigger a live analysis.
+      if (liveAnalysis.data === undefined) {
+        await triggerLiveAnalysis();
+      }
+      handleSelectedAnalysisAndMetrics(liveAnalysis);
+    } else {
+      const analysis = analysisHistory.find((opt) => opt.key === key) || liveAnalysis;
+      handleSelectedAnalysisAndMetrics(analysis);
     }
   };
 
@@ -393,14 +401,20 @@ export default function ExperimentViewPage() {
           ) : (
             <>
               {experiment.participant_type?.hidden && experiment.participant_type?.table_name ? (
-                <TableNameBadge tableName={experiment.participant_type.table_name} />
-              ) : (
-                <ParticipantTypeBadge
-                  datasourceId={experiment.config.datasource_id}
-                  participantType={experiment.config.design_spec.participant_type}
-                />
-              )}
-              <Separator orientation="vertical" />
+                <>
+                  <TableNameBadge tableName={experiment.participant_type.table_name} />
+                  <Separator orientation="vertical" />
+                </>
+              ) : experiment.config.participant_type_deprecated ? (
+                // For backwards compatibility with legacy experiments, show the participant type badge.
+                <>
+                  <ParticipantTypeBadge
+                    datasourceId={experiment.config.datasource_id}
+                    participantType={experiment.config.participant_type_deprecated}
+                  />
+                  <Separator orientation="vertical" />
+                </>
+              ) : null}
             </>
           )}
           <>
@@ -411,6 +425,17 @@ export default function ExperimentViewPage() {
             />
             <Separator orientation="vertical" />
           </>
+          {isFrequentistSpec(design_spec) && (
+            <>
+              <PowerAndBalanceDialog
+                confidence={Math.round((1 - alpha!) * 100)}
+                power={Math.round(power! * 100)}
+                desiredN={design_spec.desired_n ?? undefined}
+                assignSummary={assign_summary}
+              />
+              <Separator orientation="vertical" />
+            </>
+          )}
           <Flex align="center" gap="2">
             <FileTextIcon />
             <EditableTextField
@@ -484,7 +509,7 @@ export default function ExperimentViewPage() {
                           size="1"
                           value={selectedMetricName}
                           onValueChange={(metricName) => {
-                            setSelectedAnalysisAndMetrics(selectedAnalysisState, metricName);
+                            handleSelectedAnalysisAndMetrics(selectedAnalysisState, metricName);
                           }}
                         >
                           <Select.Trigger style={{ height: 18 }} />
