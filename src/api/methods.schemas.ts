@@ -772,7 +772,7 @@ export interface CMABExperimentSpecOutput {
 }
 
 /**
- * Contains the OIDC authorization code and PKCE verifier for the token exchange.
+ * Contains the OIDC authorization code, PKCE verifier, and nonce for the token exchange.
  */
 export interface CallbackRequest {
 	code: string;
@@ -782,6 +782,11 @@ export interface CallbackRequest {
 	 * @pattern ^[A-Za-z0-9._~-]+$
 	 */
 	code_verifier: string;
+	/**
+	 * @minLength 8
+	 * @maxLength 128
+	 */
+	nonce: string;
 }
 
 /**
