@@ -271,28 +271,37 @@ export function IntegrationGuideDialog({
                           return (
                             <DataList.Item key={armId}>
                               <DataList.Label>
-                                <Flex direction="column">
-                                  <Text weight="medium">{arm.arm_name}</Text>
+                                <Flex direction="column" gap="1">
+                                  <Text size="2" weight="medium" mt="2">
+                                    {arm.arm_name}
+                                  </Text>
                                   <Text size="1" color="gray">
                                     {armId}
                                   </Text>
                                 </Flex>
                               </DataList.Label>
                               <DataList.Value>
-                                <Select.Root
-                                  value={armJourneyDraft[armId] ?? ''}
-                                  onValueChange={(val) => setArmJourneyDraft((s) => ({ ...s, [armId]: val }))}
-                                  disabled={!hasJourneys}
-                                >
-                                  <Select.Trigger placeholder="Select a journey..." />
-                                  <Select.Content position="popper">
-                                    {journeyEntries.map(([name, uuid]) => (
-                                      <Select.Item key={uuid} value={uuid}>
-                                        {name}
-                                      </Select.Item>
-                                    ))}
-                                  </Select.Content>
-                                </Select.Root>
+                                <Flex direction="column">
+                                  <Select.Root
+                                    value={armJourneyDraft[armId] ?? ''}
+                                    onValueChange={(val) => setArmJourneyDraft((s) => ({ ...s, [armId]: val }))}
+                                    disabled={!hasJourneys}
+                                  >
+                                    <Select.Trigger placeholder="Select a journey..." />
+                                    <Select.Content position="popper">
+                                      {journeyEntries.map(([name, uuid]) => (
+                                        <Select.Item key={uuid} value={uuid}>
+                                          {name}
+                                        </Select.Item>
+                                      ))}
+                                    </Select.Content>
+                                  </Select.Root>
+                                  {armJourneyDraft[armId] && (
+                                    <Text size="1" color="gray">
+                                      {armJourneyDraft[armId]}
+                                    </Text>
+                                  )}
+                                </Flex>
                               </DataList.Value>
                             </DataList.Item>
                           );
