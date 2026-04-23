@@ -119,7 +119,7 @@ export default function ExperimentViewPage() {
         if (
           isBanditSpec(expConfig.design_spec) &&
           expConfig.design_spec.contexts &&
-          cmabAnalysisRequest.context_inputs.length === 0
+          (cmabAnalysisRequest.context_inputs?.length ?? 0) === 0
         ) {
           const contextInputs = expConfig.design_spec.contexts
             .filter((ctx) => ctx.context_id !== undefined)
@@ -546,11 +546,11 @@ export default function ExperimentViewPage() {
                       <Text>{(experiment.config.design_spec as MABExperimentSpecOutput).reward_type}</Text>
                     </Flex>
                   </Badge>
-                  {cmabAnalysisRequest.context_inputs.length > 0 && (
+                  {(cmabAnalysisRequest.context_inputs?.length ?? 0) > 0 && (
                     <ContextConfigBox
                       analysisKey={selectedAnalysisState.key}
                       contexts={(experiment.config.design_spec as CMABExperimentSpecOutput).contexts || []}
-                      contextValues={cmabAnalysisRequest.context_inputs}
+                      contextValues={cmabAnalysisRequest.context_inputs ?? []}
                       onUpdate={handleUpdateCmabContextValue}
                     />
                   )}
