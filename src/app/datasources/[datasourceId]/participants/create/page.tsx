@@ -5,7 +5,7 @@ import {
   getListParticipantTypesKey,
   useCreateParticipantType,
   useInspectDatasource,
-  useInspectTableInDatasource,
+  inspectTableInDatasource,
 } from '@/api/admin';
 import { FieldDescriptor, FieldMetadata } from '@/api/methods.schemas';
 import { Box, Button, Flex, Grid, Heading, IconButton, Text, TextField } from '@radix-ui/themes';
@@ -100,23 +100,9 @@ export default function CreateParticipantTypePage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const {
-    data: tableData,
-    isLoading: loadingTableData,
-    error: tableError,
-  } = useInspectTableInDatasource(
-    datasourceId,
-    formData.table_name,
-    { refresh },
-    {
-      swr: {
-        enabled: formData.table_name !== '',
-        revalidateIfStale: false,
-        revalidateOnFocus: false,
-        revalidateOnReconnect: false,
-      },
-    },
-  );
+  const [loadingTableData, setLoadingTableData] = useState(false);
+  const [tableError, setTableError] = useState<any>(null);
+  const [uniqueIdCandidates, setUniqueIdCandidates] = useState<string[]>([]);
 
   // Handle click outside to close dropdown
   useEffect(() => {
@@ -132,33 +118,12 @@ export default function CreateParticipantTypePage() {
     };
   }, []);
 
-  // TODO: This useEffect can be replaced with event handlers.
-  useEffect(() => {
-    if (tableData === undefined) {
-      return;
-    }
-    const recommended_id =
-      tableData.detected_unique_id_fields.length > 0 ? tableData.detected_unique_id_fields[0] : null;
 
-    const initialFields = tableData.fields.map(
-      (field: FieldMetadata): FieldDescriptor => ({
-        is_unique_id: field.field_name === recommended_id,
-        is_strata: false,
-        is_filter: false,
-        is_metric: false,
-        ...field,
-      }),
-    );
-
-    const sortedFields = [...initialFields].sort(makeFieldDescriptorComparator(tableData.detected_unique_id_fields));
-    setFormData((prev) => ({ ...prev, fields: sortedFields }));
-  }, [tableData]);
 
   const filteredTables =
     datasourceData?.tables.filter((table: string) => table.toLowerCase().includes(searchQuery.toLowerCase())) || [];
-  const uniqueIdCandidates = tableData ? tableData.detected_unique_id_fields : [];
 
-  const updateSelectedTable = (table: string) => {
+  const updateSelectedTable = async (table: string) => {
     setFormData((prev) => ({
       ...prev,
       table_name: table,
@@ -168,6 +133,35 @@ export default function CreateParticipantTypePage() {
     setSearchQuery(table);
     setIsDropdownOpen(false);
     reset();
+
+    if (!table) return;
+
+    setLoadingTableData(true);
+    setTableError(null);
+    try {
+      const data = await inspectTableInDatasource(datasourceId, table, { refresh });
+      
+      const recommended_id =
+        data.detected_unique_id_fields.length > 0 ? data.detected_unique_id_fields[0] : null;
+
+      const initialFields = data.fields.map(
+        (field: FieldMetadata): FieldDescriptor => ({
+          is_unique_id: field.field_name === recommended_id,
+          is_strata: false,
+          is_filter: false,
+          is_metric: false,
+          ...field,
+        }),
+      );
+
+      const sortedFields = [...initialFields].sort(makeFieldDescriptorComparator(data.detected_unique_id_fields));
+      setFormData((prev) => ({ ...prev, fields: sortedFields }));
+      setUniqueIdCandidates(data.detected_unique_id_fields);
+    } catch (e) {
+      setTableError(e);
+    } finally {
+      setLoadingTableData(false);
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
