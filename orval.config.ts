@@ -21,7 +21,7 @@ export default defineConfig({
       target: 'openapi.json',
       filters: {
         mode: 'include',
-        tags: ['Admin'],
+        tags: ['Admin', 'Admin: Third-Party Tools Integrations'],
       },
     },
     hooks: {

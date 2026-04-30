@@ -320,11 +320,13 @@ export const getSnapshotResponse = zod
 														),
 													post_pred_mean: zod
 														.number()
-														.describe("Prior predictive mean for this arm."),
+														.describe(
+															"Posterior predictive mean for this arm.",
+														),
 													post_pred_stdev: zod
 														.number()
 														.describe(
-															"Prior predictive standard deviation for this arm.",
+															"Posterior predictive standard deviation for this arm.",
 														),
 													post_pred_ci_upper: zod
 														.number()
@@ -735,11 +737,13 @@ export const listSnapshotsResponse = zod.object({
 														),
 													post_pred_mean: zod
 														.number()
-														.describe("Prior predictive mean for this arm."),
+														.describe(
+															"Posterior predictive mean for this arm.",
+														),
 													post_pred_stdev: zod
 														.number()
 														.describe(
-															"Prior predictive standard deviation for this arm.",
+															"Posterior predictive standard deviation for this arm.",
 														),
 													post_pred_ci_upper: zod
 														.number()
@@ -2167,7 +2171,7 @@ export const inspectParticipantTypesResponse = zod
 								zod
 									.enum(["includes", "excludes", "between"])
 									.describe(
-										"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+										"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
 									),
 							)
 							.min(1)
@@ -2227,7 +2231,7 @@ export const inspectParticipantTypesResponse = zod
 								zod
 									.enum(["includes", "excludes", "between"])
 									.describe(
-										"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+										"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
 									),
 							)
 							.min(1)
@@ -3078,7 +3082,7 @@ export const createExperimentBody = zod.object({
 									relation: zod
 										.enum(["includes", "excludes", "between"])
 										.describe(
-											"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+											"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
 										),
 									value: zod.union([
 										zod.array(zod.union([zod.number(), zod.null()])),
@@ -3088,7 +3092,7 @@ export const createExperimentBody = zod.object({
 									]),
 								})
 								.describe(
-									'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+									'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 								),
 						)
 						.max(createExperimentBodyDesignSpecFiltersMax)
@@ -3240,7 +3244,7 @@ export const createExperimentBody = zod.object({
 									relation: zod
 										.enum(["includes", "excludes", "between"])
 										.describe(
-											"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+											"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
 										),
 									value: zod.union([
 										zod.array(zod.union([zod.number(), zod.null()])),
@@ -3250,7 +3254,7 @@ export const createExperimentBody = zod.object({
 									]),
 								})
 								.describe(
-									'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+									'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 								),
 						)
 						.max(createExperimentBodyDesignSpecFiltersMaxOne)
@@ -3785,6 +3789,22 @@ export const createExperimentBody = zod.object({
 											.describe(
 												"The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n.",
 											),
+										icc: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Intracluster correlation coefficient for cluster-randomized designs.",
+											),
+										avg_cluster_size: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Average number of individuals per cluster."),
+										cv: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Coefficient of variation in cluster sizes (0 = equal sizes).",
+											),
 									})
 									.describe(
 										"Defines a metric to measure in an experiment with its baseline stats.",
@@ -3856,6 +3876,34 @@ export const createExperimentBody = zod.object({
 									])
 									.optional()
 									.describe("Human friendly message about the above results."),
+								num_clusters_total: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe("Total number of clusters needed across all arms"),
+								clusters_per_arm: zod
+									.union([zod.array(zod.number()), zod.null()])
+									.optional()
+									.describe(
+										"Number of clusters needed for each arm (one entry per arm)",
+									),
+								n_per_arm: zod
+									.union([zod.array(zod.number()), zod.null()])
+									.optional()
+									.describe(
+										"Number of participants for each arm (one entry per arm)",
+									),
+								design_effect: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe(
+										"Design effect (DEFF) - clustering penalty multiplier",
+									),
+								effective_sample_size: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe(
+										"Effective sample size accounting for clustering (total_n / DEFF)",
+									),
 							})
 							.describe("Describes analysis results of a single metric."),
 					)
@@ -4180,7 +4228,7 @@ export const createExperimentResponse = zod
 										relation: zod
 											.enum(["includes", "excludes", "between"])
 											.describe(
-												"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+												"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
 											),
 										value: zod.union([
 											zod.array(zod.union([zod.number(), zod.null()])),
@@ -4190,7 +4238,7 @@ export const createExperimentResponse = zod
 										]),
 									})
 									.describe(
-										'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+										'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 									),
 							)
 							.max(createExperimentResponseDesignSpecFiltersMax)
@@ -4346,7 +4394,7 @@ export const createExperimentResponse = zod
 										relation: zod
 											.enum(["includes", "excludes", "between"])
 											.describe(
-												"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+												"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
 											),
 										value: zod.union([
 											zod.array(zod.union([zod.number(), zod.null()])),
@@ -4356,7 +4404,7 @@ export const createExperimentResponse = zod
 										]),
 									})
 									.describe(
-										'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+										'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 									),
 							)
 							.max(createExperimentResponseDesignSpecFiltersMaxOne)
@@ -4908,6 +4956,22 @@ export const createExperimentResponse = zod
 											.describe(
 												"The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n.",
 											),
+										icc: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Intracluster correlation coefficient for cluster-randomized designs.",
+											),
+										avg_cluster_size: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Average number of individuals per cluster."),
+										cv: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Coefficient of variation in cluster sizes (0 = equal sizes).",
+											),
 									})
 									.describe(
 										"Defines a metric to measure in an experiment with its baseline stats.",
@@ -4979,6 +5043,34 @@ export const createExperimentResponse = zod
 									])
 									.optional()
 									.describe("Human friendly message about the above results."),
+								num_clusters_total: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe("Total number of clusters needed across all arms"),
+								clusters_per_arm: zod
+									.union([zod.array(zod.number()), zod.null()])
+									.optional()
+									.describe(
+										"Number of clusters needed for each arm (one entry per arm)",
+									),
+								n_per_arm: zod
+									.union([zod.array(zod.number()), zod.null()])
+									.optional()
+									.describe(
+										"Number of participants for each arm (one entry per arm)",
+									),
+								design_effect: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe(
+										"Design effect (DEFF) - clustering penalty multiplier",
+									),
+								effective_sample_size: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe(
+										"Effective sample size accounting for clustering (total_n / DEFF)",
+									),
 							})
 							.describe("Describes analysis results of a single metric."),
 					)
@@ -5375,11 +5467,11 @@ export const analyzeExperimentResponse = zod
 									),
 								post_pred_mean: zod
 									.number()
-									.describe("Prior predictive mean for this arm."),
+									.describe("Posterior predictive mean for this arm."),
 								post_pred_stdev: zod
 									.number()
 									.describe(
-										"Prior predictive standard deviation for this arm.",
+										"Posterior predictive standard deviation for this arm.",
 									),
 								post_pred_ci_upper: zod
 									.number()
@@ -5433,16 +5525,19 @@ export const analyzeCmabExperimentBody = zod
 			.literal("cmab_assignment")
 			.default(analyzeCmabExperimentBodyTypeDefault),
 		context_inputs: zod
-			.array(
-				zod
-					.object({
-						context_id: zod
-							.string()
-							.describe("Unique identifier for the context."),
-						context_value: zod.number().describe("Value of the context"),
-					})
-					.describe("Pydantic model for a context input"),
-			)
+			.union([
+				zod.array(
+					zod
+						.object({
+							context_id: zod
+								.string()
+								.describe("Unique identifier for the context."),
+							context_value: zod.number().describe("Value of the context"),
+						})
+						.describe("Pydantic model for a context input"),
+				),
+				zod.null(),
+			])
 			.describe(
 				"\n            List of context values for the assignment.\n            Must include exactly the same number contexts defined in the experiment.\n            The values are matched to the experiment's contexts by context_id, not by position in the list.\n            Each context_id must correspond to one of the IDs of the contexts defined in the experiment.\n            Can be None, when simply retrieving pre-existing assignments; must have valid inputs otherwise.\n            ",
 			),
@@ -5704,11 +5799,11 @@ export const analyzeCmabExperimentResponse = zod
 									),
 								post_pred_mean: zod
 									.number()
-									.describe("Prior predictive mean for this arm."),
+									.describe("Posterior predictive mean for this arm."),
 								post_pred_stdev: zod
 									.number()
 									.describe(
-										"Prior predictive standard deviation for this arm.",
+										"Posterior predictive standard deviation for this arm.",
 									),
 								post_pred_ci_upper: zod
 									.number()
@@ -6088,7 +6183,7 @@ export const listOrganizationExperimentsResponse = zod.object({
 												relation: zod
 													.enum(["includes", "excludes", "between"])
 													.describe(
-														"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+														"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
 													),
 												value: zod.union([
 													zod.array(zod.union([zod.number(), zod.null()])),
@@ -6098,7 +6193,7 @@ export const listOrganizationExperimentsResponse = zod.object({
 												]),
 											})
 											.describe(
-												'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+												'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 											),
 									)
 									.max(
@@ -6294,7 +6389,7 @@ export const listOrganizationExperimentsResponse = zod.object({
 												relation: zod
 													.enum(["includes", "excludes", "between"])
 													.describe(
-														"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+														"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
 													),
 												value: zod.union([
 													zod.array(zod.union([zod.number(), zod.null()])),
@@ -6304,7 +6399,7 @@ export const listOrganizationExperimentsResponse = zod.object({
 												]),
 											})
 											.describe(
-												'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+												'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 											),
 									)
 									.max(
@@ -6935,6 +7030,24 @@ export const listOrganizationExperimentsResponse = zod.object({
 													.describe(
 														"The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n.",
 													),
+												icc: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Intracluster correlation coefficient for cluster-randomized designs.",
+													),
+												avg_cluster_size: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Average number of individuals per cluster.",
+													),
+												cv: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Coefficient of variation in cluster sizes (0 = equal sizes).",
+													),
 											})
 											.describe(
 												"Defines a metric to measure in an experiment with its baseline stats.",
@@ -7007,6 +7120,36 @@ export const listOrganizationExperimentsResponse = zod.object({
 											.optional()
 											.describe(
 												"Human friendly message about the above results.",
+											),
+										num_clusters_total: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Total number of clusters needed across all arms",
+											),
+										clusters_per_arm: zod
+											.union([zod.array(zod.number()), zod.null()])
+											.optional()
+											.describe(
+												"Number of clusters needed for each arm (one entry per arm)",
+											),
+										n_per_arm: zod
+											.union([zod.array(zod.number()), zod.null()])
+											.optional()
+											.describe(
+												"Number of participants for each arm (one entry per arm)",
+											),
+										design_effect: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Design effect (DEFF) - clustering penalty multiplier",
+											),
+										effective_sample_size: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Effective sample size accounting for clustering (total_n / DEFF)",
 											),
 									})
 									.describe("Describes analysis results of a single metric."),
@@ -7466,7 +7609,7 @@ export const getExperimentForUiResponse = zod
 												relation: zod
 													.enum(["includes", "excludes", "between"])
 													.describe(
-														"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+														"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
 													),
 												value: zod.union([
 													zod.array(zod.union([zod.number(), zod.null()])),
@@ -7476,7 +7619,7 @@ export const getExperimentForUiResponse = zod
 												]),
 											})
 											.describe(
-												'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+												'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 											),
 									)
 									.max(getExperimentForUiResponseConfigDesignSpecFiltersMax)
@@ -7650,7 +7793,7 @@ export const getExperimentForUiResponse = zod
 												relation: zod
 													.enum(["includes", "excludes", "between"])
 													.describe(
-														"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+														"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
 													),
 												value: zod.union([
 													zod.array(zod.union([zod.number(), zod.null()])),
@@ -7660,7 +7803,7 @@ export const getExperimentForUiResponse = zod
 												]),
 											})
 											.describe(
-												'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+												'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 											),
 									)
 									.max(getExperimentForUiResponseConfigDesignSpecFiltersMaxOne)
@@ -8269,6 +8412,24 @@ export const getExperimentForUiResponse = zod
 													.describe(
 														"The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n.",
 													),
+												icc: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Intracluster correlation coefficient for cluster-randomized designs.",
+													),
+												avg_cluster_size: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Average number of individuals per cluster.",
+													),
+												cv: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Coefficient of variation in cluster sizes (0 = equal sizes).",
+													),
 											})
 											.describe(
 												"Defines a metric to measure in an experiment with its baseline stats.",
@@ -8341,6 +8502,36 @@ export const getExperimentForUiResponse = zod
 											.optional()
 											.describe(
 												"Human friendly message about the above results.",
+											),
+										num_clusters_total: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Total number of clusters needed across all arms",
+											),
+										clusters_per_arm: zod
+											.union([zod.array(zod.number()), zod.null()])
+											.optional()
+											.describe(
+												"Number of clusters needed for each arm (one entry per arm)",
+											),
+										n_per_arm: zod
+											.union([zod.array(zod.number()), zod.null()])
+											.optional()
+											.describe(
+												"Number of participants for each arm (one entry per arm)",
+											),
+										design_effect: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Design effect (DEFF) - clustering penalty multiplier",
+											),
+										effective_sample_size: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Effective sample size accounting for clustering (total_n / DEFF)",
 											),
 									})
 									.describe("Describes analysis results of a single metric."),
@@ -8927,7 +9118,7 @@ export const powerCheckBody = zod.object({
 									relation: zod
 										.enum(["includes", "excludes", "between"])
 										.describe(
-											"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+											"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
 										),
 									value: zod.union([
 										zod.array(zod.union([zod.number(), zod.null()])),
@@ -8937,7 +9128,7 @@ export const powerCheckBody = zod.object({
 									]),
 								})
 								.describe(
-									'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+									'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 								),
 						)
 						.max(powerCheckBodyDesignSpecFiltersMax)
@@ -9089,7 +9280,7 @@ export const powerCheckBody = zod.object({
 									relation: zod
 										.enum(["includes", "excludes", "between"])
 										.describe(
-											"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided\nvalues will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV\nfields (i.e. experiment_ids), the match will fail if any of the provided values are present\nin the value, but nulls are unsupported.\n\nBETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.",
+											"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
 										),
 									value: zod.union([
 										zod.array(zod.union([zod.number(), zod.null()])),
@@ -9099,7 +9290,7 @@ export const powerCheckBody = zod.object({
 									]),
 								})
 								.describe(
-									'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Special Handling for Comma-Separated Fields\n\nWhen the filter name ends in "experiment_ids", the filter is interpreted as follows:\n\n| Value | Filter         | Result   |\n|-------|----------------|----------|\n| "a,b" | INCLUDES ["a"] | Match    |\n| "a,b" | INCLUDES ["d"] | No match |\n| "a,b" | EXCLUDES ["d"] | Match    |\n| "a,b" | EXCLUDES ["b"] | No match |\n\nNote: The BETWEEN relation is not supported for comma-separated values.\n\nNote: CSV field comparisons are case-insensitive.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+									'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 								),
 						)
 						.max(powerCheckBodyDesignSpecFiltersMaxOne)
@@ -9642,6 +9833,22 @@ export const powerCheckResponse = zod.object({
 								.describe(
 									"The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n.",
 								),
+							icc: zod
+								.union([zod.number(), zod.null()])
+								.optional()
+								.describe(
+									"Intracluster correlation coefficient for cluster-randomized designs.",
+								),
+							avg_cluster_size: zod
+								.union([zod.number(), zod.null()])
+								.optional()
+								.describe("Average number of individuals per cluster."),
+							cv: zod
+								.union([zod.number(), zod.null()])
+								.optional()
+								.describe(
+									"Coefficient of variation in cluster sizes (0 = equal sizes).",
+								),
 						})
 						.describe(
 							"Defines a metric to measure in an experiment with its baseline stats.",
@@ -9709,6 +9916,32 @@ export const powerCheckResponse = zod.object({
 						])
 						.optional()
 						.describe("Human friendly message about the above results."),
+					num_clusters_total: zod
+						.union([zod.number(), zod.null()])
+						.optional()
+						.describe("Total number of clusters needed across all arms"),
+					clusters_per_arm: zod
+						.union([zod.array(zod.number()), zod.null()])
+						.optional()
+						.describe(
+							"Number of clusters needed for each arm (one entry per arm)",
+						),
+					n_per_arm: zod
+						.union([zod.array(zod.number()), zod.null()])
+						.optional()
+						.describe(
+							"Number of participants for each arm (one entry per arm)",
+						),
+					design_effect: zod
+						.union([zod.number(), zod.null()])
+						.optional()
+						.describe("Design effect (DEFF) - clustering penalty multiplier"),
+					effective_sample_size: zod
+						.union([zod.number(), zod.null()])
+						.optional()
+						.describe(
+							"Effective sample size accounting for clustering (total_n / DEFF)",
+						),
 				})
 				.describe("Describes analysis results of a single metric."),
 		)

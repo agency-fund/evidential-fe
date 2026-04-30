@@ -445,9 +445,9 @@ export interface BanditArmAnalysis {
 	prior_pred_ci_upper: number;
 	/** Prior predictive lower bound of 95% confidence interval for this arm. */
 	prior_pred_ci_lower: number;
-	/** Prior predictive mean for this arm. */
+	/** Posterior predictive mean for this arm. */
 	post_pred_mean: number;
-	/** Prior predictive standard deviation for this arm. */
+	/** Posterior predictive standard deviation for this arm. */
 	post_pred_stdev: number;
 	/** Posterior predictive upper bound of 95% confidence interval for this arm. */
 	post_pred_ci_upper: number;
@@ -652,6 +652,17 @@ export interface BqDsnOutput {
 }
 
 /**
+ * 
+            List of context values for the assignment.
+            Must include exactly the same number contexts defined in the experiment.
+            The values are matched to the experiment's contexts by context_id, not by position in the list.
+            Each context_id must correspond to one of the IDs of the contexts defined in the experiment.
+            Can be None, when simply retrieving pre-existing assignments; must have valid inputs otherwise.
+            
+ */
+export type CMABContextInputRequestContextInputs = ContextInput[] | null;
+
+/**
  * Request model for creating a new CMAB assignment or a CMAB experiment analysis.
 
 When submitting context values for a CMAB experiment, the following rules apply:
@@ -674,7 +685,7 @@ export interface CMABContextInputRequest {
             Each context_id must correspond to one of the IDs of the contexts defined in the experiment.
             Can be None, when simply retrieving pre-existing assignments; must have valid inputs otherwise.
              */
-	context_inputs: ContextInput[];
+	context_inputs: CMABContextInputRequestContextInputs;
 }
 
 export type CMABExperimentSpecInputExperimentType =
@@ -1088,6 +1099,21 @@ export type DesignSpecMetricAvailableNonnullN = number | null;
 export type DesignSpecMetricAvailableN = number | null;
 
 /**
+ * Intracluster correlation coefficient for cluster-randomized designs.
+ */
+export type DesignSpecMetricIcc = number | null;
+
+/**
+ * Average number of individuals per cluster.
+ */
+export type DesignSpecMetricAvgClusterSize = number | null;
+
+/**
+ * Coefficient of variation in cluster sizes (0 = equal sizes).
+ */
+export type DesignSpecMetricCv = number | null;
+
+/**
  * Defines a metric to measure in an experiment with its baseline stats.
  */
 export interface DesignSpecMetric {
@@ -1107,6 +1133,12 @@ export interface DesignSpecMetric {
 	available_nonnull_n?: DesignSpecMetricAvailableNonnullN;
 	/** The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n. */
 	available_n?: DesignSpecMetricAvailableN;
+	/** Intracluster correlation coefficient for cluster-randomized designs. */
+	icc?: DesignSpecMetricIcc;
+	/** Average number of individuals per cluster. */
+	avg_cluster_size?: DesignSpecMetricAvgClusterSize;
+	/** Coefficient of variation in cluster sizes (0 = equal sizes). */
+	cv?: DesignSpecMetricCv;
 }
 
 /**
@@ -1323,21 +1355,6 @@ When the relation is BETWEEN, we allow for up to 3 values to support the special
 including null in addition to the values in the between range via an OR IS NULL clause, as
 indicated by a 3rd value of None. Any other 3rd value is invalid.
 
-## Special Handling for Comma-Separated Fields
-
-When the filter name ends in "experiment_ids", the filter is interpreted as follows:
-
-| Value | Filter         | Result   |
-|-------|----------------|----------|
-| "a,b" | INCLUDES ["a"] | Match    |
-| "a,b" | INCLUDES ["d"] | No match |
-| "a,b" | EXCLUDES ["d"] | Match    |
-| "a,b" | EXCLUDES ["b"] | No match |
-
-Note: The BETWEEN relation is not supported for comma-separated values.
-
-Note: CSV field comparisons are case-insensitive.
-
 ## Handling of DATE, DATETIME and TIMESTAMP values
 
 DATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.
@@ -1381,21 +1398,6 @@ String comparisons are case-sensitive.
 When the relation is BETWEEN, we allow for up to 3 values to support the special case of
 including null in addition to the values in the between range via an OR IS NULL clause, as
 indicated by a 3rd value of None. Any other 3rd value is invalid.
-
-## Special Handling for Comma-Separated Fields
-
-When the filter name ends in "experiment_ids", the filter is interpreted as follows:
-
-| Value | Filter         | Result   |
-|-------|----------------|----------|
-| "a,b" | INCLUDES ["a"] | Match    |
-| "a,b" | INCLUDES ["d"] | No match |
-| "a,b" | EXCLUDES ["d"] | Match    |
-| "a,b" | EXCLUDES ["b"] | No match |
-
-Note: The BETWEEN relation is not supported for comma-separated values.
-
-Note: CSV field comparisons are case-insensitive.
 
 ## Handling of DATE, DATETIME and TIMESTAMP values
 
@@ -1692,6 +1694,42 @@ export interface GetStrataResponseElement {
 	description: string;
 }
 
+/**
+ * Mapping of experiment arm IDs to Turn.io journey IDs. This configures which Turn.io journey each arm corresponds to for experiments that integrate with Turn.io.
+ */
+export type GetTurnArmJourneyMappingResponseArmToJourneys = {
+	[key: string]: string;
+};
+
+/**
+ * Response describing the mapping between experiment arms and Turn.io journeys.
+ */
+export interface GetTurnArmJourneyMappingResponse {
+	/** Mapping of experiment arm IDs to Turn.io journey IDs. This configures which Turn.io journey each arm corresponds to for experiments that integrate with Turn.io. */
+	arm_to_journeys: GetTurnArmJourneyMappingResponseArmToJourneys;
+}
+
+/**
+ * Response describing an organization's Turn.io connection.
+ */
+export interface GetTurnConnectionResponse {
+	/** The last 4 characters of the configured Turn.io API token, shown so admins can identify which token is currently configured without exposing the full secret. */
+	token_preview: string;
+}
+
+/**
+ * Mapping of journey names to their corresponding IDs, retrieved from the Turn API. This allows admins to reference specific journeys when configuring experiments that integrate with Turn.io.
+ */
+export type GetTurnJourneysResponseJourneys = { [key: string]: string };
+
+/**
+ * Response describing an organization's Turn.io journeys.
+ */
+export interface GetTurnJourneysResponse {
+	/** Mapping of journey names to their corresponding IDs, retrieved from the Turn API. This allows admins to reference specific journeys when configuring experiments that integrate with Turn.io. */
+	journeys: GetTurnJourneysResponseJourneys;
+}
+
 export interface HTTPExceptionError {
 	detail: string;
 }
@@ -1936,6 +1974,31 @@ export type MetricPowerAnalysisInputPctChangePossible = number | null;
 export type MetricPowerAnalysisInputMsg = MetricPowerAnalysisMessage | null;
 
 /**
+ * Total number of clusters needed across all arms
+ */
+export type MetricPowerAnalysisInputNumClustersTotal = number | null;
+
+/**
+ * Number of clusters needed for each arm (one entry per arm)
+ */
+export type MetricPowerAnalysisInputClustersPerArm = number[] | null;
+
+/**
+ * Number of participants for each arm (one entry per arm)
+ */
+export type MetricPowerAnalysisInputNPerArm = number[] | null;
+
+/**
+ * Design effect (DEFF) - clustering penalty multiplier
+ */
+export type MetricPowerAnalysisInputDesignEffect = number | null;
+
+/**
+ * Effective sample size accounting for clustering (total_n / DEFF)
+ */
+export type MetricPowerAnalysisInputEffectiveSampleSize = number | null;
+
+/**
  * Describes analysis results of a single metric.
  */
 export interface MetricPowerAnalysisInput {
@@ -1950,6 +2013,16 @@ export interface MetricPowerAnalysisInput {
 	pct_change_possible?: MetricPowerAnalysisInputPctChangePossible;
 	/** Human friendly message about the above results. */
 	msg?: MetricPowerAnalysisInputMsg;
+	/** Total number of clusters needed across all arms */
+	num_clusters_total?: MetricPowerAnalysisInputNumClustersTotal;
+	/** Number of clusters needed for each arm (one entry per arm) */
+	clusters_per_arm?: MetricPowerAnalysisInputClustersPerArm;
+	/** Number of participants for each arm (one entry per arm) */
+	n_per_arm?: MetricPowerAnalysisInputNPerArm;
+	/** Design effect (DEFF) - clustering penalty multiplier */
+	design_effect?: MetricPowerAnalysisInputDesignEffect;
+	/** Effective sample size accounting for clustering (total_n / DEFF) */
+	effective_sample_size?: MetricPowerAnalysisInputEffectiveSampleSize;
 }
 
 /**
@@ -1978,6 +2051,31 @@ export type MetricPowerAnalysisOutputPctChangePossible = number | null;
 export type MetricPowerAnalysisOutputMsg = MetricPowerAnalysisMessage | null;
 
 /**
+ * Total number of clusters needed across all arms
+ */
+export type MetricPowerAnalysisOutputNumClustersTotal = number | null;
+
+/**
+ * Number of clusters needed for each arm (one entry per arm)
+ */
+export type MetricPowerAnalysisOutputClustersPerArm = number[] | null;
+
+/**
+ * Number of participants for each arm (one entry per arm)
+ */
+export type MetricPowerAnalysisOutputNPerArm = number[] | null;
+
+/**
+ * Design effect (DEFF) - clustering penalty multiplier
+ */
+export type MetricPowerAnalysisOutputDesignEffect = number | null;
+
+/**
+ * Effective sample size accounting for clustering (total_n / DEFF)
+ */
+export type MetricPowerAnalysisOutputEffectiveSampleSize = number | null;
+
+/**
  * Describes analysis results of a single metric.
  */
 export interface MetricPowerAnalysisOutput {
@@ -1992,6 +2090,16 @@ export interface MetricPowerAnalysisOutput {
 	pct_change_possible?: MetricPowerAnalysisOutputPctChangePossible;
 	/** Human friendly message about the above results. */
 	msg?: MetricPowerAnalysisOutputMsg;
+	/** Total number of clusters needed across all arms */
+	num_clusters_total?: MetricPowerAnalysisOutputNumClustersTotal;
+	/** Number of clusters needed for each arm (one entry per arm) */
+	clusters_per_arm?: MetricPowerAnalysisOutputClustersPerArm;
+	/** Number of participants for each arm (one entry per arm) */
+	n_per_arm?: MetricPowerAnalysisOutputNPerArm;
+	/** Design effect (DEFF) - clustering penalty multiplier */
+	design_effect?: MetricPowerAnalysisOutputDesignEffect;
+	/** Effective sample size accounting for clustering (total_n / DEFF) */
+	effective_sample_size?: MetricPowerAnalysisOutputEffectiveSampleSize;
 }
 
 export type MetricPowerAnalysisMessageValuesAnyOf = {
@@ -2534,15 +2642,12 @@ export interface RedshiftDsn {
  * Defines operators for filtering values.
 
 INCLUDES matches when the value matches any of the provided values, including null if explicitly
-specified. For CSV fields (i.e. experiment_ids), any value in the CSV that matches the provided
-values will match, but nulls are unsupported. This is equivalent to NOT(EXCLUDES(values)).
+specified. This is equivalent to NOT(EXCLUDES(values)).
 
 EXCLUDES matches when the value does not match any of the provided values, including null if
-explicitly specified. If null is not explicitly excluded, we include nulls in the result.  CSV
-fields (i.e. experiment_ids), the match will fail if any of the provided values are present
-in the value, but nulls are unsupported.
+explicitly specified. If null is not explicitly excluded, we include nulls in the result.
 
-BETWEEN matches when the value is between the two provided values (inclusive). Not allowed for CSV fields.
+BETWEEN matches when the value is between the two provided values (inclusive).
  */
 export type Relation = (typeof Relation)[keyof typeof Relation];
 
@@ -2559,6 +2664,32 @@ export const Relation = {
 export interface RevealedStr {
 	type?: "revealed";
 	value: string;
+}
+
+/**
+ * Request to create or update an organization's Turn.io connection.
+ */
+export interface SetConnectionToTurnRequest {
+	/**
+	 * The Turn.io API token used to authenticate calls to the Turn API on behalf of the organization.
+	 * @minLength 335
+	 */
+	turn_api_token: string;
+}
+
+/**
+ * Mapping of experiment arm IDs to Turn.io journey IDs. This configures which Turn.io journey each arm corresponds to for experiments that integrate with Turn.io.
+ */
+export type SetTurnArmJourneyMappingRequestArmToJourneys = {
+	[key: string]: string;
+};
+
+/**
+ * Request to create or update the mapping between experiment arms and Turn.io journeys.
+ */
+export interface SetTurnArmJourneyMappingRequest {
+	/** Mapping of experiment arm IDs to Turn.io journey IDs. This configures which Turn.io journey each arm corresponds to for experiments that integrate with Turn.io. */
+	arm_to_journeys: SetTurnArmJourneyMappingRequestArmToJourneys;
 }
 
 export type SnapshotDetailsAnyOf = { [key: string]: unknown };
@@ -2654,6 +2785,17 @@ export interface TableDeleted {
 }
 
 export type TableDiff = ColumnDeleted | FieldChangedType | TableDeleted;
+
+export type TurnConfigResponseArmJourneyMap = { [key: string]: string };
+
+/**
+ * Describes the configuration for Turn.io Evidential App.
+ */
+export interface TurnConfigResponse {
+	experiment_id: string;
+	experiment_name: string;
+	arm_journey_map: TurnConfigResponseArmJourneyMap;
+}
 
 export type UpdateArmRequestName = string | null;
 
@@ -2940,6 +3082,27 @@ export type AnalyzeExperimentParams = {
 };
 
 export type DeleteExperimentParams = {
+	/**
+	 * If true, return a 204 even if the resource does not exist.
+	 */
+	allow_missing?: boolean;
+};
+
+export type GetOrganizationTurnConnectionParams = {
+	/**
+	 * If true, return a 200 with null body if the resource does not exist.
+	 */
+	allow_missing?: boolean;
+};
+
+export type DeleteTurnConnectionFromOrganizationParams = {
+	/**
+	 * If true, return a 204 even if the resource does not exist.
+	 */
+	allow_missing?: boolean;
+};
+
+export type DeleteTurnArmJourneyMappingParams = {
 	/**
 	 * If true, return a 204 even if the resource does not exist.
 	 */
