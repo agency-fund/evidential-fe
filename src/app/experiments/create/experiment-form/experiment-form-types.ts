@@ -72,10 +72,11 @@ export type MetricWithMDE = {
 };
 
 // Define the type alias using imported types
-export function isFreqExperimentType(type: string): boolean {
+export function isFreqExperimentType(type: string | undefined): boolean {
   return (
-    type in PreassignedFrequentistExperimentSpecInputExperimentType ||
-    type in OnlineFrequentistExperimentSpecInputExperimentType
+    !!type &&
+    (type in PreassignedFrequentistExperimentSpecInputExperimentType ||
+      type in OnlineFrequentistExperimentSpecInputExperimentType)
   );
 }
 
