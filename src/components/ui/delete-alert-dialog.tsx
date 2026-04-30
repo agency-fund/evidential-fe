@@ -1,6 +1,7 @@
 'use client';
 import { AlertDialog, Button, Flex, Text, TextField } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
+import { GenericErrorCallout } from './generic-error';
 
 /**
  * A reusable delete confirmation dialog that requires users to type "delete" to confirm. Implemented via Radix
@@ -53,6 +54,7 @@ type BaseDeleteAlertDialogProps = {
   trigger: () => Promise<void>;
   /** Loading state for the delete button. This should be true when an API request is outstanding. */
   loading?: boolean;
+  error?: Error | null;
 };
 
 type UncontrolledDeleteAlertDialogProps = BaseDeleteAlertDialogProps & {
@@ -78,6 +80,7 @@ export function DeleteAlertDialog({
   children,
   trigger,
   loading,
+  error,
   renderTrigger,
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
@@ -85,6 +88,7 @@ export function DeleteAlertDialog({
   const [confirmation, setConfirmation] = useState<{ dialog: 'closed' } | { dialog: 'open'; text: string }>({
     dialog: 'closed',
   });
+  const [errorDismissed, setErrorDismissed] = useState<boolean>(true);
 
   const isControlled = controlledOpen !== undefined;
 
@@ -104,10 +108,16 @@ export function DeleteAlertDialog({
   const isConfirmed = confirmation.dialog === 'open' && confirmation.text === 'delete';
 
   const handleConfirm = async () => {
-    await trigger();
-    setConfirmation({ dialog: 'closed' });
-    if (isControlled) {
-      controlledOnOpenChange?.(false);
+    setErrorDismissed(false);
+    try {
+      await trigger();
+      setErrorDismissed(true);
+      setConfirmation({ dialog: 'closed' });
+      if (isControlled) {
+        controlledOnOpenChange?.(false);
+      }
+    } catch {
+      // Parent's `error` prop will populate; keep dialog open.
     }
   };
 
@@ -149,9 +159,13 @@ export function DeleteAlertDialog({
           <TextField.Root
             value={confirmation.dialog === 'open' ? confirmation.text : ''}
             autoFocus={true}
-            onChange={(e) => setConfirmation({ dialog: 'open', text: e.target.value })}
+            onChange={(e) => {
+              setErrorDismissed(true);
+              setConfirmation({ dialog: 'open', text: e.target.value });
+            }}
             placeholder="delete"
           />
+          {!errorDismissed && error && <GenericErrorCallout title={`Failed: ${title}`} error={error} />}
         </Flex>
 
         <Flex gap="3" mt="4" justify="end">

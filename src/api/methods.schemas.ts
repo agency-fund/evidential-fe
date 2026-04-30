@@ -1099,6 +1099,21 @@ export type DesignSpecMetricAvailableNonnullN = number | null;
 export type DesignSpecMetricAvailableN = number | null;
 
 /**
+ * Intracluster correlation coefficient for cluster-randomized designs.
+ */
+export type DesignSpecMetricIcc = number | null;
+
+/**
+ * Average number of individuals per cluster.
+ */
+export type DesignSpecMetricAvgClusterSize = number | null;
+
+/**
+ * Coefficient of variation in cluster sizes (0 = equal sizes).
+ */
+export type DesignSpecMetricCv = number | null;
+
+/**
  * Defines a metric to measure in an experiment with its baseline stats.
  */
 export interface DesignSpecMetric {
@@ -1118,6 +1133,12 @@ export interface DesignSpecMetric {
 	available_nonnull_n?: DesignSpecMetricAvailableNonnullN;
 	/** The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n. */
 	available_n?: DesignSpecMetricAvailableN;
+	/** Intracluster correlation coefficient for cluster-randomized designs. */
+	icc?: DesignSpecMetricIcc;
+	/** Average number of individuals per cluster. */
+	avg_cluster_size?: DesignSpecMetricAvgClusterSize;
+	/** Coefficient of variation in cluster sizes (0 = equal sizes). */
+	cv?: DesignSpecMetricCv;
 }
 
 /**
@@ -1953,6 +1974,31 @@ export type MetricPowerAnalysisInputPctChangePossible = number | null;
 export type MetricPowerAnalysisInputMsg = MetricPowerAnalysisMessage | null;
 
 /**
+ * Total number of clusters needed across all arms
+ */
+export type MetricPowerAnalysisInputNumClustersTotal = number | null;
+
+/**
+ * Number of clusters needed for each arm (one entry per arm)
+ */
+export type MetricPowerAnalysisInputClustersPerArm = number[] | null;
+
+/**
+ * Number of participants for each arm (one entry per arm)
+ */
+export type MetricPowerAnalysisInputNPerArm = number[] | null;
+
+/**
+ * Design effect (DEFF) - clustering penalty multiplier
+ */
+export type MetricPowerAnalysisInputDesignEffect = number | null;
+
+/**
+ * Effective sample size accounting for clustering (total_n / DEFF)
+ */
+export type MetricPowerAnalysisInputEffectiveSampleSize = number | null;
+
+/**
  * Describes analysis results of a single metric.
  */
 export interface MetricPowerAnalysisInput {
@@ -1967,6 +2013,16 @@ export interface MetricPowerAnalysisInput {
 	pct_change_possible?: MetricPowerAnalysisInputPctChangePossible;
 	/** Human friendly message about the above results. */
 	msg?: MetricPowerAnalysisInputMsg;
+	/** Total number of clusters needed across all arms */
+	num_clusters_total?: MetricPowerAnalysisInputNumClustersTotal;
+	/** Number of clusters needed for each arm (one entry per arm) */
+	clusters_per_arm?: MetricPowerAnalysisInputClustersPerArm;
+	/** Number of participants for each arm (one entry per arm) */
+	n_per_arm?: MetricPowerAnalysisInputNPerArm;
+	/** Design effect (DEFF) - clustering penalty multiplier */
+	design_effect?: MetricPowerAnalysisInputDesignEffect;
+	/** Effective sample size accounting for clustering (total_n / DEFF) */
+	effective_sample_size?: MetricPowerAnalysisInputEffectiveSampleSize;
 }
 
 /**
@@ -1995,6 +2051,31 @@ export type MetricPowerAnalysisOutputPctChangePossible = number | null;
 export type MetricPowerAnalysisOutputMsg = MetricPowerAnalysisMessage | null;
 
 /**
+ * Total number of clusters needed across all arms
+ */
+export type MetricPowerAnalysisOutputNumClustersTotal = number | null;
+
+/**
+ * Number of clusters needed for each arm (one entry per arm)
+ */
+export type MetricPowerAnalysisOutputClustersPerArm = number[] | null;
+
+/**
+ * Number of participants for each arm (one entry per arm)
+ */
+export type MetricPowerAnalysisOutputNPerArm = number[] | null;
+
+/**
+ * Design effect (DEFF) - clustering penalty multiplier
+ */
+export type MetricPowerAnalysisOutputDesignEffect = number | null;
+
+/**
+ * Effective sample size accounting for clustering (total_n / DEFF)
+ */
+export type MetricPowerAnalysisOutputEffectiveSampleSize = number | null;
+
+/**
  * Describes analysis results of a single metric.
  */
 export interface MetricPowerAnalysisOutput {
@@ -2009,6 +2090,16 @@ export interface MetricPowerAnalysisOutput {
 	pct_change_possible?: MetricPowerAnalysisOutputPctChangePossible;
 	/** Human friendly message about the above results. */
 	msg?: MetricPowerAnalysisOutputMsg;
+	/** Total number of clusters needed across all arms */
+	num_clusters_total?: MetricPowerAnalysisOutputNumClustersTotal;
+	/** Number of clusters needed for each arm (one entry per arm) */
+	clusters_per_arm?: MetricPowerAnalysisOutputClustersPerArm;
+	/** Number of participants for each arm (one entry per arm) */
+	n_per_arm?: MetricPowerAnalysisOutputNPerArm;
+	/** Design effect (DEFF) - clustering penalty multiplier */
+	design_effect?: MetricPowerAnalysisOutputDesignEffect;
+	/** Effective sample size accounting for clustering (total_n / DEFF) */
+	effective_sample_size?: MetricPowerAnalysisOutputEffectiveSampleSize;
 }
 
 export type MetricPowerAnalysisMessageValuesAnyOf = {

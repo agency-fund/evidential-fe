@@ -60,8 +60,15 @@ export function IntegrationGuideDialog({
     isLoading: isLoadingJourneys,
   } = useGetOrganizationTurnJourneys(organizationId, { swr: { enabled: turnSectionEnabled } });
 
-  const { data: mappingData, error: mappingError } = useGetTurnArmJourneyMapping(datasourceId, experimentId, {
-    swr: { enabled: turnSectionEnabled },
+  const { error: mappingError } = useGetTurnArmJourneyMapping(datasourceId, experimentId, {
+    swr: {
+      enabled: turnSectionEnabled,
+      onSuccess: (data) => {
+        if (data?.arm_to_journeys) {
+          setArmJourneyDraft(data.arm_to_journeys);
+        }
+      },
+    },
   });
   const mappingNotFound = mappingError instanceof ApiError && mappingError.response.status === 404;
 
@@ -71,18 +78,13 @@ export function IntegrationGuideDialog({
     error: saveError,
   } = useSetTurnArmJourneyMapping(datasourceId, experimentId);
 
-  useEffect(() => {
-    if (!turnSectionEnabled) return;
+  const handleOpenCollapsible = (next: boolean) => {
+    setShowTurnConfig(next);
+    if (!next) return;
     setArmJourneyDraft({});
     void mutate(getGetOrganizationTurnJourneysKey(organizationId));
     void mutate(getGetTurnArmJourneyMappingKey(datasourceId, experimentId));
-  }, [turnSectionEnabled, organizationId, datasourceId, experimentId]);
-
-  useEffect(() => {
-    if (mappingData?.arm_to_journeys) {
-      setArmJourneyDraft(mappingData.arm_to_journeys);
-    }
-  }, [mappingData]);
+  };
 
   const handleSaveMapping = async () => {
     await triggerSaveMapping({ arm_to_journeys: armJourneyDraft });
@@ -220,7 +222,7 @@ export function IntegrationGuideDialog({
             <Card>
               <Collapsible.Root
                 open={showTurnConfig}
-                onOpenChange={setShowTurnConfig}
+                onOpenChange={handleOpenCollapsible}
                 disabled={isLoadingTurnConnection || noTurnConnection}
               >
                 <Flex direction="column" gap="2">

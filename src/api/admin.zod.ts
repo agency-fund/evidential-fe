@@ -3789,6 +3789,22 @@ export const createExperimentBody = zod.object({
 											.describe(
 												"The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n.",
 											),
+										icc: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Intracluster correlation coefficient for cluster-randomized designs.",
+											),
+										avg_cluster_size: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Average number of individuals per cluster."),
+										cv: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Coefficient of variation in cluster sizes (0 = equal sizes).",
+											),
 									})
 									.describe(
 										"Defines a metric to measure in an experiment with its baseline stats.",
@@ -3860,6 +3876,34 @@ export const createExperimentBody = zod.object({
 									])
 									.optional()
 									.describe("Human friendly message about the above results."),
+								num_clusters_total: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe("Total number of clusters needed across all arms"),
+								clusters_per_arm: zod
+									.union([zod.array(zod.number()), zod.null()])
+									.optional()
+									.describe(
+										"Number of clusters needed for each arm (one entry per arm)",
+									),
+								n_per_arm: zod
+									.union([zod.array(zod.number()), zod.null()])
+									.optional()
+									.describe(
+										"Number of participants for each arm (one entry per arm)",
+									),
+								design_effect: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe(
+										"Design effect (DEFF) - clustering penalty multiplier",
+									),
+								effective_sample_size: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe(
+										"Effective sample size accounting for clustering (total_n / DEFF)",
+									),
 							})
 							.describe("Describes analysis results of a single metric."),
 					)
@@ -4912,6 +4956,22 @@ export const createExperimentResponse = zod
 											.describe(
 												"The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n.",
 											),
+										icc: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Intracluster correlation coefficient for cluster-randomized designs.",
+											),
+										avg_cluster_size: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Average number of individuals per cluster."),
+										cv: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Coefficient of variation in cluster sizes (0 = equal sizes).",
+											),
 									})
 									.describe(
 										"Defines a metric to measure in an experiment with its baseline stats.",
@@ -4983,6 +5043,34 @@ export const createExperimentResponse = zod
 									])
 									.optional()
 									.describe("Human friendly message about the above results."),
+								num_clusters_total: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe("Total number of clusters needed across all arms"),
+								clusters_per_arm: zod
+									.union([zod.array(zod.number()), zod.null()])
+									.optional()
+									.describe(
+										"Number of clusters needed for each arm (one entry per arm)",
+									),
+								n_per_arm: zod
+									.union([zod.array(zod.number()), zod.null()])
+									.optional()
+									.describe(
+										"Number of participants for each arm (one entry per arm)",
+									),
+								design_effect: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe(
+										"Design effect (DEFF) - clustering penalty multiplier",
+									),
+								effective_sample_size: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe(
+										"Effective sample size accounting for clustering (total_n / DEFF)",
+									),
 							})
 							.describe("Describes analysis results of a single metric."),
 					)
@@ -6942,6 +7030,24 @@ export const listOrganizationExperimentsResponse = zod.object({
 													.describe(
 														"The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n.",
 													),
+												icc: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Intracluster correlation coefficient for cluster-randomized designs.",
+													),
+												avg_cluster_size: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Average number of individuals per cluster.",
+													),
+												cv: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Coefficient of variation in cluster sizes (0 = equal sizes).",
+													),
 											})
 											.describe(
 												"Defines a metric to measure in an experiment with its baseline stats.",
@@ -7014,6 +7120,36 @@ export const listOrganizationExperimentsResponse = zod.object({
 											.optional()
 											.describe(
 												"Human friendly message about the above results.",
+											),
+										num_clusters_total: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Total number of clusters needed across all arms",
+											),
+										clusters_per_arm: zod
+											.union([zod.array(zod.number()), zod.null()])
+											.optional()
+											.describe(
+												"Number of clusters needed for each arm (one entry per arm)",
+											),
+										n_per_arm: zod
+											.union([zod.array(zod.number()), zod.null()])
+											.optional()
+											.describe(
+												"Number of participants for each arm (one entry per arm)",
+											),
+										design_effect: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Design effect (DEFF) - clustering penalty multiplier",
+											),
+										effective_sample_size: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Effective sample size accounting for clustering (total_n / DEFF)",
 											),
 									})
 									.describe("Describes analysis results of a single metric."),
@@ -8276,6 +8412,24 @@ export const getExperimentForUiResponse = zod
 													.describe(
 														"The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n.",
 													),
+												icc: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Intracluster correlation coefficient for cluster-randomized designs.",
+													),
+												avg_cluster_size: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Average number of individuals per cluster.",
+													),
+												cv: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Coefficient of variation in cluster sizes (0 = equal sizes).",
+													),
 											})
 											.describe(
 												"Defines a metric to measure in an experiment with its baseline stats.",
@@ -8348,6 +8502,36 @@ export const getExperimentForUiResponse = zod
 											.optional()
 											.describe(
 												"Human friendly message about the above results.",
+											),
+										num_clusters_total: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Total number of clusters needed across all arms",
+											),
+										clusters_per_arm: zod
+											.union([zod.array(zod.number()), zod.null()])
+											.optional()
+											.describe(
+												"Number of clusters needed for each arm (one entry per arm)",
+											),
+										n_per_arm: zod
+											.union([zod.array(zod.number()), zod.null()])
+											.optional()
+											.describe(
+												"Number of participants for each arm (one entry per arm)",
+											),
+										design_effect: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Design effect (DEFF) - clustering penalty multiplier",
+											),
+										effective_sample_size: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Effective sample size accounting for clustering (total_n / DEFF)",
 											),
 									})
 									.describe("Describes analysis results of a single metric."),
@@ -9649,6 +9833,22 @@ export const powerCheckResponse = zod.object({
 								.describe(
 									"The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n.",
 								),
+							icc: zod
+								.union([zod.number(), zod.null()])
+								.optional()
+								.describe(
+									"Intracluster correlation coefficient for cluster-randomized designs.",
+								),
+							avg_cluster_size: zod
+								.union([zod.number(), zod.null()])
+								.optional()
+								.describe("Average number of individuals per cluster."),
+							cv: zod
+								.union([zod.number(), zod.null()])
+								.optional()
+								.describe(
+									"Coefficient of variation in cluster sizes (0 = equal sizes).",
+								),
 						})
 						.describe(
 							"Defines a metric to measure in an experiment with its baseline stats.",
@@ -9716,6 +9916,32 @@ export const powerCheckResponse = zod.object({
 						])
 						.optional()
 						.describe("Human friendly message about the above results."),
+					num_clusters_total: zod
+						.union([zod.number(), zod.null()])
+						.optional()
+						.describe("Total number of clusters needed across all arms"),
+					clusters_per_arm: zod
+						.union([zod.array(zod.number()), zod.null()])
+						.optional()
+						.describe(
+							"Number of clusters needed for each arm (one entry per arm)",
+						),
+					n_per_arm: zod
+						.union([zod.array(zod.number()), zod.null()])
+						.optional()
+						.describe(
+							"Number of participants for each arm (one entry per arm)",
+						),
+					design_effect: zod
+						.union([zod.number(), zod.null()])
+						.optional()
+						.describe("Design effect (DEFF) - clustering penalty multiplier"),
+					effective_sample_size: zod
+						.union([zod.number(), zod.null()])
+						.optional()
+						.describe(
+							"Effective sample size accounting for clustering (total_n / DEFF)",
+						),
 				})
 				.describe("Describes analysis results of a single metric."),
 		)

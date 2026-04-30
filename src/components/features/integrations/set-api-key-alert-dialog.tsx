@@ -1,43 +1,32 @@
 'use client';
 
+import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { AlertDialog, Button, Flex, Spinner, TextField } from '@radix-ui/themes';
+import { s } from 'motion/react-client';
 import { useEffect, useState } from 'react';
+import { set } from 'zod';
 
 type SetApiKeyAlertDialogProps = {
   trigger: (newApiKey: string) => Promise<void>;
   loading?: boolean;
+  error?: Error | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
-export function SetApiKeyAlertDialog({
-  trigger,
-  loading,
-  open: controlledOpen,
-  onOpenChange: controlledOnOpenChange,
-}: SetApiKeyAlertDialogProps) {
-  const [confirmation, setConfirmation] = useState<{ dialog: 'closed' } | { dialog: 'open'; text: string }>({
-    dialog: 'closed',
-  });
-
-  useEffect(() => {
-    if (controlledOpen && confirmation.dialog === 'closed') {
-      setConfirmation({ dialog: 'open', text: '' });
-    } else if (!controlledOpen && confirmation.dialog === 'open') {
-      setConfirmation({ dialog: 'closed' });
-    }
-  }, [controlledOpen, confirmation.dialog]);
-
-  const isOpen = controlledOpen;
-  const isConfirmed = confirmation.dialog === 'open' && confirmation.text !== '';
+export function SetApiKeyAlertDialog({ trigger, loading, error, open, onOpenChange }: SetApiKeyAlertDialogProps) {
+  const [apiKey, setApiKey] = useState<string>('');
+  const [errorDismissed, setErrorDismissed] = useState<boolean>(true);
 
   const handleConfirm = async () => {
-    const apiKey = confirmation.dialog === 'open' ? confirmation.text : '';
+    setErrorDismissed(false);
     try {
       await trigger(apiKey);
-    } finally {
-      setConfirmation({ dialog: 'closed' });
-      controlledOnOpenChange(false);
+      setErrorDismissed(true);
+      setApiKey('');
+      onOpenChange(false);
+    } catch {
+      // SWR populates the `error` prop; keep dialog open so the user sees it.
     }
   };
 
@@ -45,19 +34,16 @@ export function SetApiKeyAlertDialog({
     if (loading) {
       return;
     }
-    controlledOnOpenChange(open);
-    if (open) {
-      setConfirmation({ dialog: 'open', text: '' });
-    } else {
-      setConfirmation({ dialog: 'closed' });
-    }
+    setApiKey('');
+    onOpenChange(open);
+    setErrorDismissed(true);
   };
 
   return (
-    <AlertDialog.Root open={isOpen} onOpenChange={handleOpenChange}>
+    <AlertDialog.Root open={open} onOpenChange={handleOpenChange}>
       <AlertDialog.Content
         onKeyDown={async (e) => {
-          if (e.key === 'Enter' && isConfirmed && !loading) {
+          if (e.key === 'Enter' && apiKey !== '' && !loading) {
             e.preventDefault();
             await handleConfirm();
           }
@@ -68,13 +54,17 @@ export function SetApiKeyAlertDialog({
 
         <Flex direction={'column'} mt={'4'}>
           <TextField.Root
-            value={confirmation.dialog === 'open' ? confirmation.text : ''}
+            value={apiKey}
             autoFocus={true}
-            onChange={(e) => setConfirmation({ dialog: 'open', text: e.target.value })}
+            onChange={(e) => {
+              setErrorDismissed(true);
+              setApiKey(e.target.value.trim());
+            }}
             placeholder="your-335-character-api-key"
             type="password"
             disabled={loading}
           />
+          {!errorDismissed && error && <GenericErrorCallout title="Error Setting API Key" error={error} />}
         </Flex>
 
         <Flex gap="3" mt="4" justify="end">
@@ -87,10 +77,10 @@ export function SetApiKeyAlertDialog({
             <Button
               variant="solid"
               color="blue"
-              disabled={!isConfirmed || loading}
+              disabled={apiKey === '' || loading}
               onClick={async (e) => {
                 e.preventDefault();
-                if (!isConfirmed || loading) {
+                if (apiKey === '' || loading) {
                   return;
                 }
                 await handleConfirm();

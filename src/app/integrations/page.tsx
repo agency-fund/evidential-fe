@@ -6,35 +6,35 @@ import {
   useSetOrganizationTurnConnection,
   useGetOrganizationTurnConnection,
   useDeleteTurnConnectionFromOrganization,
+  getGetOrganizationTurnConnectionKey,
 } from '@/api/admin-third-party-tools-integrations';
 import { Box, Heading, Flex, Spinner, Text, Button } from '@radix-ui/themes';
 import { DeleteAlertDialog } from '@/components/ui/delete-alert-dialog';
-import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { SetApiKeyAlertDialog } from '@/components/features/integrations/api-key-dialog';
+import { SetApiKeyAlertDialog } from '@/components/features/integrations/set-api-key-alert-dialog';
 
 export default function IntegrationsPage() {
   const organizationCtx = useCurrentOrganization();
   const organizationId = organizationCtx?.current.id || '';
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openSetApiKeyDialog, setOpenSetApiKeyDialog] = useState(false);
+  const turnConnectionGetKey = getGetOrganizationTurnConnectionKey(organizationId, { allow_missing: true });
 
-  const {
-    data: turnConnectionData,
-    isLoading: isTurnConnectionLoadingData,
-    mutate: mutateTurnConnection,
-  } = useGetOrganizationTurnConnection(organizationId, { allow_missing: true });
+  const { data: turnConnectionData, isLoading: isTurnConnectionLoadingData } = useGetOrganizationTurnConnection(
+    organizationId,
+    { allow_missing: true },
+  );
   const {
     trigger: deleteTurnConnection,
     isMutating: isDeletingTurnConnection,
     error: deleteError,
-  } = useDeleteTurnConnectionFromOrganization(organizationId);
+  } = useDeleteTurnConnectionFromOrganization(organizationId, undefined, { swr: { swrKey: turnConnectionGetKey } });
   const {
     trigger: setTurnConnection,
     isMutating: isSettingTurnConnection,
     error: setError,
   } = useSetOrganizationTurnConnection(organizationId, {
     swr: {
-      onSuccess: () => mutateTurnConnection(),
+      swrKey: turnConnectionGetKey,
     },
   });
 
@@ -45,7 +45,6 @@ export default function IntegrationsPage() {
   };
   const handleDeleteTurnConnection = async () => {
     await deleteTurnConnection();
-    await mutateTurnConnection();
   };
 
   return (
@@ -76,12 +75,11 @@ export default function IntegrationsPage() {
               Add API Key
             </Button>
           )}
-          {setError && <GenericErrorCallout title="Failed to set Turn.io API key" error={setError as Error} />}
-          {deleteError && <GenericErrorCallout title="Failed to delete Turn.io API key" error={deleteError as Error} />}
 
           <SetApiKeyAlertDialog
             trigger={handleAddOrRotateTurnConnection}
             loading={isSettingTurnConnection}
+            error={setError}
             open={openSetApiKeyDialog}
             onOpenChange={setOpenSetApiKeyDialog}
           />
@@ -91,6 +89,7 @@ export default function IntegrationsPage() {
             description="Are you sure you want to delete the Turn.io API key? This will disable our integration with Turn.io until a new API key is added."
             trigger={handleDeleteTurnConnection}
             loading={isDeletingTurnConnection}
+            error={deleteError}
             open={openDeleteDialog}
             onOpenChange={setOpenDeleteDialog}
           ></DeleteAlertDialog>
