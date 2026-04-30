@@ -8,6 +8,7 @@ import {
   useDeleteTurnConnectionFromOrganization,
   getGetOrganizationTurnConnectionKey,
 } from '@/api/admin-third-party-tools-integrations';
+import { mutate } from 'swr';
 import { Box, Heading, Flex, Spinner, Text, Button } from '@radix-ui/themes';
 import { DeleteAlertDialog } from '@/components/ui/delete-alert-dialog';
 import { SetApiKeyAlertDialog } from '@/components/features/integrations/set-api-key-alert-dialog';
@@ -27,14 +28,16 @@ export default function IntegrationsPage() {
     trigger: deleteTurnConnection,
     isMutating: isDeletingTurnConnection,
     error: deleteError,
-  } = useDeleteTurnConnectionFromOrganization(organizationId, undefined, { swr: { swrKey: turnConnectionGetKey } });
+  } = useDeleteTurnConnectionFromOrganization(organizationId, undefined, {
+    swr: { onSuccess: () => mutate(turnConnectionGetKey) },
+  });
   const {
     trigger: setTurnConnection,
     isMutating: isSettingTurnConnection,
     error: setError,
   } = useSetOrganizationTurnConnection(organizationId, {
     swr: {
-      swrKey: turnConnectionGetKey,
+      onSuccess: () => mutate(turnConnectionGetKey),
     },
   });
 
