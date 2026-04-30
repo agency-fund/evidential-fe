@@ -5,9 +5,11 @@ import {
   CMABExperimentSpecOutput,
   ContextType,
   DesignSpecOutput,
+  ExperimentConfig,
   GetExperimentResponse,
   GetMetricsResponseElement,
   MABExperimentSpecInput,
+  MABExperimentSpecInputExperimentType,
   MABExperimentSpecOutput,
   OnlineFrequentistExperimentSpecInputExperimentType,
   OnlineFrequentistExperimentSpecOutput,
@@ -90,7 +92,13 @@ export const isBanditSpec = (
 ): spec is MABExperimentSpecOutput | CMABExperimentSpecOutput | BayesABExperimentSpecOutput =>
   !!spec && isBanditExperimentType(spec.experiment_type);
 
-export const isCmabExperiment = (experiment: GetExperimentResponse | undefined): boolean =>
-  !!experiment && experiment.design_spec.experiment_type === CMABExperimentSpecInputExperimentType.cmab_online;
+export function isCmabSpec(spec: DesignSpecOutput | undefined): spec is CMABExperimentSpecOutput {
+  return !!spec && spec.experiment_type === CMABExperimentSpecInputExperimentType.cmab_online;
+}
+
+export const isCmabExperiment = (experiment: GetExperimentResponse | ExperimentConfig | undefined): boolean =>
+  !!experiment && isCmabSpec(experiment.design_spec);
+
 export const isBanditExperimentType = (experimentType?: string): experimentType is BanditExperimentType =>
-  experimentType === 'mab_online' || experimentType === 'cmab_online';
+  experimentType === MABExperimentSpecInputExperimentType.mab_online ||
+  experimentType === CMABExperimentSpecInputExperimentType.cmab_online;

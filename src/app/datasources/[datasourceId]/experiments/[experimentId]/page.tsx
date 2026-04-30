@@ -68,6 +68,7 @@ import { ContextConfigBox } from '@/components/features/experiments/context-conf
 import {
   isBanditSpec,
   isCmabExperiment,
+  isCmabSpec,
   isFrequentistSpec,
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { TableNameBadge } from '@/components/features/participants/table-name-badge';
@@ -101,6 +102,7 @@ export default function ExperimentViewPage() {
     type: 'cmab_assignment',
     context_inputs: [],
   });
+  const cmabContextInputs = cmabAnalysisRequest.context_inputs ?? [];
 
   // Track the min/max CI bounds across a recent window of snapshots for more stable forest plot display.
   const [ciBounds, setCiBounds] = useState<[number | undefined, number | undefined]>([undefined, undefined]);
@@ -116,11 +118,7 @@ export default function ExperimentViewPage() {
         const expConfig = expForUi.config;
         // Only initialize context input ids for CMAB experiments if they are not already set.
         // Should only need to set this once for an experiment, as they are fixed at design time.
-        if (
-          isBanditSpec(expConfig.design_spec) &&
-          expConfig.design_spec.contexts &&
-          cmabAnalysisRequest.context_inputs.length === 0
-        ) {
+        if (isCmabSpec(expConfig.design_spec) && expConfig.design_spec.contexts && cmabContextInputs.length === 0) {
           const contextInputs = expConfig.design_spec.contexts
             .filter((ctx) => ctx.context_id !== undefined)
             .map((ctx) => ({ context_id: ctx.context_id!, context_value: 0.0 }));
@@ -546,11 +544,11 @@ export default function ExperimentViewPage() {
                       <Text>{(experiment.config.design_spec as MABExperimentSpecOutput).reward_type}</Text>
                     </Flex>
                   </Badge>
-                  {cmabAnalysisRequest.context_inputs.length > 0 && (
+                  {cmabContextInputs.length > 0 && (
                     <ContextConfigBox
                       analysisKey={selectedAnalysisState.key}
                       contexts={(experiment.config.design_spec as CMABExperimentSpecOutput).contexts || []}
-                      contextValues={cmabAnalysisRequest.context_inputs}
+                      contextValues={cmabContextInputs}
                       onUpdate={handleUpdateCmabContextValue}
                     />
                   )}
