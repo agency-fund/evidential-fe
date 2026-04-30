@@ -94,6 +94,7 @@ export function IntegrationGuideDialog({
 
   const journeyEntries = journeysData ? Object.entries(journeysData.journeys) : [];
   const hasJourneys = journeyEntries.length > 0;
+  const dontShowJourneysList = journeysError || (mappingError && !mappingNotFound) || !hasJourneys; // If there's an error or no journeys, don't show the dropdown list (but still show the section and any errors)
 
   return (
     <>
@@ -256,59 +257,64 @@ export function IntegrationGuideDialog({
                       <Dialog.Description size="3" weight="bold">
                         Turn.io Arm → Journey Mapping
                       </Dialog.Description>
-                      {journeysError && (
-                        <GenericErrorCallout title="Error loading Turn journeys" error={journeysError} />
-                      )}
-                      {mappingError && !mappingNotFound && (
-                        <GenericErrorCallout title="Error loading existing mapping" error={mappingError} />
-                      )}
-                      {!isLoadingJourneys && journeysData && !hasJourneys && (
-                        <Callout.Root color="gray">
-                          <Callout.Text>No journeys found in your Turn workspace.</Callout.Text>
-                        </Callout.Root>
-                      )}
-                      <DataList.Root>
-                        {arms.map((arm) => {
-                          const armId = arm.arm_id ?? '';
-                          return (
-                            <DataList.Item key={armId}>
-                              <DataList.Label>
-                                <Flex direction="column" gap="1">
-                                  <Text size="2" weight="medium" mt="2">
-                                    {arm.arm_name}
-                                  </Text>
-                                  <Text size="1" color="gray">
-                                    {armId}
-                                  </Text>
-                                </Flex>
-                              </DataList.Label>
-                              <DataList.Value>
-                                <Flex direction="column">
-                                  <Select.Root
-                                    value={armJourneyDraft[armId] ?? ''}
-                                    onValueChange={(val) => setArmJourneyDraft((s) => ({ ...s, [armId]: val }))}
-                                    disabled={!hasJourneys}
-                                  >
-                                    <Select.Trigger placeholder="Select a journey..." />
-                                    <Select.Content position="popper">
-                                      {journeyEntries.map(([name, uuid]) => (
-                                        <Select.Item key={uuid} value={uuid}>
-                                          {name}
-                                        </Select.Item>
-                                      ))}
-                                    </Select.Content>
-                                  </Select.Root>
-                                  {armJourneyDraft[armId] && (
-                                    <Text size="1" color="gray">
-                                      {armJourneyDraft[armId]}
+                      {dontShowJourneysList ? (
+                        <>
+                          {journeysError && (
+                            <GenericErrorCallout title="Error loading Turn journeys" error={journeysError} />
+                          )}
+                          {mappingError && !mappingNotFound && (
+                            <GenericErrorCallout title="Error loading existing mapping" error={mappingError} />
+                          )}
+                          {!isLoadingJourneys && journeysData && !hasJourneys && (
+                            <Callout.Root color="gray">
+                              <Callout.Text>No journeys found in your Turn workspace.</Callout.Text>
+                            </Callout.Root>
+                          )}
+                        </>
+                      ) : (
+                        <DataList.Root>
+                          {arms.map((arm) => {
+                            const armId = arm.arm_id ?? '';
+                            return (
+                              <DataList.Item key={armId}>
+                                <DataList.Label>
+                                  <Flex direction="column" gap="1">
+                                    <Text size="2" weight="medium" mt="2">
+                                      {arm.arm_name}
                                     </Text>
-                                  )}
-                                </Flex>
-                              </DataList.Value>
-                            </DataList.Item>
-                          );
-                        })}
-                      </DataList.Root>
+                                    <Text size="1" color="gray">
+                                      {armId}
+                                    </Text>
+                                  </Flex>
+                                </DataList.Label>
+                                <DataList.Value>
+                                  <Flex direction="column">
+                                    <Select.Root
+                                      value={armJourneyDraft[armId] ?? ''}
+                                      onValueChange={(val) => setArmJourneyDraft((s) => ({ ...s, [armId]: val }))}
+                                      disabled={!hasJourneys}
+                                    >
+                                      <Select.Trigger placeholder="Select a journey..." />
+                                      <Select.Content position="popper">
+                                        {journeyEntries.map(([name, uuid]) => (
+                                          <Select.Item key={uuid} value={uuid}>
+                                            {name}
+                                          </Select.Item>
+                                        ))}
+                                      </Select.Content>
+                                    </Select.Root>
+                                    {armJourneyDraft[armId] && (
+                                      <Text size="1" color="gray">
+                                        {armJourneyDraft[armId]}
+                                      </Text>
+                                    )}
+                                  </Flex>
+                                </DataList.Value>
+                              </DataList.Item>
+                            );
+                          })}
+                        </DataList.Root>
+                      )}
                       {saveError && <GenericErrorCallout title="Error saving mapping" error={saveError} />}
                       <Flex justify="end">
                         <Button onClick={handleSaveMapping} loading={isSavingMapping}>
