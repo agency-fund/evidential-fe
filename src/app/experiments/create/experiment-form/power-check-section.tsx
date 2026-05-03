@@ -232,21 +232,23 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                           )}
                         </DataList.Value>
                       </DataList.Item>
-                      <DataList.Item>
-                        <DataList.Label>Available (non-null)</DataList.Label>
-                        <DataList.Value>
-                          {primaryPower.metric_spec.available_nonnull_n == null ? (
-                            '?'
-                          ) : primaryPower.metric_spec.available_nonnull_n === 0 ||
-                            primaryPower.metric_spec.available_nonnull_n < (primaryPower.target_n ?? 0) ||
-                            primaryPower.metric_spec.available_nonnull_n <
-                              (primaryPower.metric_spec.available_n ?? 0) ? (
-                            <Text color="orange">{primaryPower.metric_spec.available_nonnull_n}</Text>
-                          ) : (
-                            primaryPower.metric_spec.available_nonnull_n
-                          )}
-                        </DataList.Value>
-                      </DataList.Item>
+                      {primaryPower.metric_spec.available_nonnull_n !== primaryPower.metric_spec.available_n && (
+                        <DataList.Item>
+                          <DataList.Label>Available (non-null)</DataList.Label>
+                          <DataList.Value>
+                            {primaryPower.metric_spec.available_nonnull_n == null ? (
+                              '?'
+                            ) : primaryPower.metric_spec.available_nonnull_n === 0 ||
+                              primaryPower.metric_spec.available_nonnull_n < (primaryPower.target_n ?? 0) ||
+                              primaryPower.metric_spec.available_nonnull_n <
+                                (primaryPower.metric_spec.available_n ?? 0) ? (
+                              <Text color="orange">{primaryPower.metric_spec.available_nonnull_n}</Text>
+                            ) : (
+                              primaryPower.metric_spec.available_nonnull_n
+                            )}
+                          </DataList.Value>
+                        </DataList.Item>
+                      )}
                       {primaryPower.pct_change_possible !== null && primaryPower.pct_change_possible !== undefined && (
                         <DataList.Item>
                           <DataList.Label>MME</DataList.Label>
@@ -341,9 +343,9 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                   </RadioCards.Item>
                   <RadioCards.Item
                     value={PowerCheckOption.USE_ALL_NON_NULL_SAMPLES}
-                    disabled={nonNullSamples === undefined || nonNullSamples === 0}
+                    disabled={allSamples === undefined || allSamples === 0}
                   >
-                    Use all available non-null samples: {nonNullSamples}
+                    Use all available samples: {allSamples ?? 'N/A'}
                   </RadioCards.Item>
                   <RadioCards.Item
                     value={PowerCheckOption.ENTER_OWN}
