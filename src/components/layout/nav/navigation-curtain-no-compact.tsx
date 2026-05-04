@@ -4,7 +4,7 @@ import { Box, Flex, Tooltip } from '@radix-ui/themes';
 import { useAuth } from '@/providers/auth-provider';
 import { usePathname } from 'next/navigation';
 import { useCurrentOrganization } from '@/providers/organization-provider';
-import { GearIcon, LightningBoltIcon } from '@radix-ui/react-icons';
+import { GearIcon, LightningBoltIcon, Link2Icon } from '@radix-ui/react-icons';
 import * as NavigationMenu from '@radix-ui/react-navigation-menu';
 import { NavLink } from '@/components/layout/nav/nav-link';
 
@@ -24,7 +24,10 @@ export const NavigationBarNoCompact = () => {
 
   if (!isAuthenticated || org === null) return null;
 
-  const mainNavItems = [{ label: 'Experiments', href: '/', icon: LightningBoltIcon }];
+  const mainNavItems = [
+    { label: 'Experiments', href: '/', icon: LightningBoltIcon },
+    { label: 'Integrations', href: '/integrations', icon: Link2Icon },
+  ];
 
   const utilityNavItems = [{ label: 'Settings', href: `/organizations/${org.current.id}`, icon: GearIcon }];
 

@@ -3191,3 +3191,24 @@ export type DeleteExperimentParams = {
 	 */
 	allow_missing?: boolean;
 };
+
+export type GetOrganizationTurnConnectionParams = {
+	/**
+	 * If true, return a 200 with null body if the resource does not exist.
+	 */
+	allow_missing?: boolean;
+};
+
+export type DeleteTurnConnectionFromOrganizationParams = {
+	/**
+	 * If true, return a 204 even if the resource does not exist.
+	 */
+	allow_missing?: boolean;
+};
+
+export type DeleteTurnArmJourneyMappingParams = {
+	/**
+	 * If true, return a 204 even if the resource does not exist.
+	 */
+	allow_missing?: boolean;
+};
