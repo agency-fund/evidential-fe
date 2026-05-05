@@ -5,13 +5,10 @@ import { MetricBuilder, MetricBuilderAction } from '@/components/features/experi
 import { FilterBuilder } from '@/components/features/experiments/querybuilder/filter-builder';
 import { StrataBuilder } from '@/components/features/experiments/strata-builder';
 import { useCreateExperiment, useInspectTableInDatasource } from '@/api/admin';
-import { CreateExperimentResponse, FilterInput, PowerResponseOutput } from '@/api/methods.schemas';
+import { CreateExperimentResponse, FieldMetadata, FilterInput, PowerResponseOutput } from '@/api/methods.schemas';
 import { PowerCheckSection } from './power-check-section';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
-import {
-  convertToFrequentistDesignSpec,
-  filterFormStrata,
-} from '@/app/experiments/create/experiment-form/experiment-form-helpers';
+import { convertToFrequentistDesignSpec } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import { createExperimentBody } from '@/api/admin.zod';
 import { ErrorType } from '@/services/orval-fetch';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -19,7 +16,7 @@ import { GenericErrorCallout } from '@/components/ui/generic-error';
 export type ExperimentFreqStackScreenMessage =
   | MetricBuilderAction
   | { type: 'set-filters'; filters: FilterInput[] }
-  | { type: 'set-strata'; strata: string[] }
+  | { type: 'set-strata'; strata: FieldMetadata[] }
   | { type: 'set-confidence'; value: string }
   | { type: 'set-power'; value: string }
   | { type: 'set-power-check-response'; response: PowerResponseOutput; desiredN?: number }
@@ -80,15 +77,19 @@ export const ExperimentFreqStackScreen = ({
     },
   );
 
-  const fields = tableData?.fields ?? [];
+  const allTableFields = tableData?.fields ?? [];
 
   // Filter numeric and boolean fields for metrics
-  const metricFields = fields.filter((f) =>
+  const metricFields = allTableFields.filter((f) =>
     ['integer', 'bigint', 'double precision', 'numeric', 'boolean'].includes(f.data_type),
   );
   // Primary key is not a valid stratum so filter it out in both options and selection (just in case)
-  const availableStrata = fields.filter((field) => field.field_name !== data.primaryKey);
-  const selectedStrata = (filterFormStrata(data.strata, data.primaryKey) ?? []).map((s) => s.fieldName);
+  const availableStrata = allTableFields
+    .filter((field) => field.field_name !== data.primaryKey)
+    .toSorted((a, b) => a.field_name.localeCompare(b.field_name));
+  const selectedStrata = (data.strata ?? [])
+    .map((s) => availableStrata.find((f) => f.field_name === s.fieldName))
+    .filter((f): f is FieldMetadata => Boolean(f));
 
   const nextEnabled = isNextEnabled(data);
 
@@ -123,7 +124,7 @@ export const ExperimentFreqStackScreen = ({
         </Heading>
         <Card>
           <FilterBuilder
-            availableFields={fields}
+            availableFields={allTableFields}
             initialFilters={data.filters ?? []}
             onChange={(filters) => dispatch({ type: 'set-filters', filters })}
           />

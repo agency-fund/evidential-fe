@@ -499,7 +499,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           return {
             ...data,
             strata: filterFormStrata(
-              msg.strata.map((fieldName) => ({ fieldName })),
+              msg.strata.map((field) => ({ fieldName: field.field_name })),
               data.primaryKey,
             ),
           };
