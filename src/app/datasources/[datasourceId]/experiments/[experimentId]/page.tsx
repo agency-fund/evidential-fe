@@ -394,13 +394,11 @@ export default function ExperimentViewPage() {
         <Flex gap="4" align="center">
           <ExperimentTypeBadge type={design_spec.experiment_type} />
           <Separator orientation="vertical" />
-          {isBanditSpec(experiment.config.design_spec) ? (
-            <></>
-          ) : (
+          {isFrequentistSpec(design_spec) && (
             <>
-              {experiment.participant_type?.hidden && experiment.participant_type?.table_name ? (
+              {design_spec.table_name ? (
                 <>
-                  <TableNameBadge tableName={experiment.participant_type.table_name} />
+                  <TableNameBadge tableName={design_spec.table_name} />
                   <Separator orientation="vertical" />
                 </>
               ) : experiment.config.participant_type_deprecated ? (
