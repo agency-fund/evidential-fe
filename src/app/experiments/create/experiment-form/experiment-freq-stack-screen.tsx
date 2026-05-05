@@ -8,7 +8,10 @@ import { useCreateExperiment, useInspectTableInDatasource } from '@/api/admin';
 import { CreateExperimentResponse, FilterInput, PowerResponseOutput } from '@/api/methods.schemas';
 import { PowerCheckSection } from './power-check-section';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
-import { convertToFrequentistDesignSpec } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
+import {
+  convertToFrequentistDesignSpec,
+  filterStrata,
+} from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import { createExperimentBody } from '@/api/admin.zod';
 import { ErrorType } from '@/services/orval-fetch';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -83,6 +86,9 @@ export const ExperimentFreqStackScreen = ({
   const metricFields = fields.filter((f) =>
     ['integer', 'bigint', 'double precision', 'numeric', 'boolean'].includes(f.data_type),
   );
+  // Primary key is not a valid stratum so filter it out in both options and selection (just in case)
+  const availableStrata = fields.filter((field) => field.field_name !== data.primaryKey);
+  const selectedStrata = (filterStrata(data.strata, data.primaryKey) ?? []).map((s) => s.fieldName);
 
   const nextEnabled = isNextEnabled(data);
 
@@ -128,8 +134,8 @@ export const ExperimentFreqStackScreen = ({
         </Heading>
         <Card>
           <StrataBuilder
-            availableStrata={fields}
-            selectedStrata={data.strata?.map((s) => s.fieldName) ?? []}
+            availableStrata={availableStrata}
+            selectedStrata={selectedStrata}
             onStrataChange={(strata) => dispatch({ type: 'set-strata', strata })}
           />
         </Card>
