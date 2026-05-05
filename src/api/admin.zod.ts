@@ -2844,11 +2844,6 @@ export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOne = 2000;
 export const createExperimentBodyDesignSpecArmsMin = 2;
 export const createExperimentBodyDesignSpecArmsMax = 20;
 
-export const createExperimentBodyDesignSpecTableNameMax = 100;
-
-export const createExperimentBodyDesignSpecPrimaryKeyRegExp = new RegExp(
-	"^[a-zA-Z_][a-zA-Z0-9_]*$",
-);
 export const createExperimentBodyDesignSpecStrataItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyDesignSpecStrataMax = 150;
@@ -2886,11 +2881,6 @@ export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxFour = 2000;
 export const createExperimentBodyDesignSpecArmsMinOne = 2;
 export const createExperimentBodyDesignSpecArmsMaxOne = 20;
 
-export const createExperimentBodyDesignSpecTableNameMaxOne = 100;
-
-export const createExperimentBodyDesignSpecPrimaryKeyRegExpOne = new RegExp(
-	"^[a-zA-Z_][a-zA-Z0-9_]*$",
-);
 export const createExperimentBodyDesignSpecStrataItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyDesignSpecStrataMaxOne = 150;
@@ -2982,826 +2972,764 @@ export const createExperimentBody = zod.object({
 	design_spec: zod
 		.union([
 			zod
-				.union([
-					zod
-						.object({
-							experiment_type: zod.enum(["freq_preassigned"]),
-							experiment_name: zod
+				.object({
+					experiment_type: zod.enum(["freq_preassigned"]),
+					experiment_name: zod
+						.string()
+						.max(createExperimentBodyDesignSpecExperimentNameMax),
+					description: zod
+						.string()
+						.max(createExperimentBodyDesignSpecDescriptionMax),
+					design_url: zod
+						.union([
+							zod
 								.string()
-								.max(createExperimentBodyDesignSpecExperimentNameMax),
-							description: zod
-								.string()
-								.max(createExperimentBodyDesignSpecDescriptionMax),
-							design_url: zod
-								.union([
-									zod
-										.string()
-										.url()
-										.min(1)
-										.max(createExperimentBodyDesignSpecDesignUrlMaxOne),
-									zod.null(),
-								])
-								.optional()
-								.describe(
-									"Optional URL to a more detailed experiment design doc.",
-								),
-							start_date: zod.string().datetime({}),
-							end_date: zod.string().datetime({}),
-							arms: zod
-								.array(
-									zod
-										.object({
-											arm_id: zod
-												.union([zod.string(), zod.null()])
-												.optional()
-												.describe(
-													"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-												),
-											arm_name: zod
-												.string()
-												.max(createExperimentBodyDesignSpecArmsItemArmNameMax),
-											arm_description: zod
-												.union([
-													zod
-														.string()
-														.max(
-															createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOne,
-														),
-													zod.null(),
-												])
-												.optional(),
-											arm_weight: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe(
-													"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-												),
-										})
-										.describe("Describes an experiment treatment arm."),
-								)
-								.min(createExperimentBodyDesignSpecArmsMin)
-								.max(createExperimentBodyDesignSpecArmsMax),
-							table_name: zod
-								.string()
-								.max(createExperimentBodyDesignSpecTableNameMax)
-								.describe(
-									"Datasource table used to resolve participant field metadata.",
-								),
-							primary_key: zod
-								.string()
-								.regex(createExperimentBodyDesignSpecPrimaryKeyRegExp)
-								.describe(
-									"Column name in table_name that uniquely identifies each participant.",
-								),
-							strata: zod
-								.array(
-									zod
-										.object({
-											field_name: zod
-												.string()
-												.regex(
-													createExperimentBodyDesignSpecStrataItemFieldNameRegExp,
-												),
-										})
-										.describe("Describes a variable used for stratification."),
-								)
-								.max(createExperimentBodyDesignSpecStrataMax)
-								.describe("Optional fields to use for stratified assignment."),
-							metrics: zod
-								.array(
-									zod
-										.object({
-											field_name: zod
-												.string()
-												.regex(
-													createExperimentBodyDesignSpecMetricsItemFieldNameRegExp,
-												),
-											metric_pct_change: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe(
-													"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
-												),
-											metric_target: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe(
-													"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
-												),
-										})
-										.describe(
-											"Defines a request to look up baseline stats for a metric to measure in an experiment.",
-										),
-								)
+								.url()
 								.min(1)
-								.max(createExperimentBodyDesignSpecMetricsMax)
-								.describe("Primary and optional secondary metrics to target."),
-							filters: zod
-								.array(
-									zod
-										.object({
-											field_name: zod
-												.string()
-												.regex(
-													createExperimentBodyDesignSpecFiltersItemFieldNameRegExp,
-												),
-											relation: zod
-												.enum(["includes", "excludes", "between"])
-												.describe(
-													"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
-												),
-											value: zod.union([
-												zod.array(zod.union([zod.number(), zod.null()])),
-												zod.array(zod.union([zod.number(), zod.null()])),
-												zod.array(zod.union([zod.string(), zod.null()])),
-												zod.array(zod.union([zod.boolean(), zod.null()])),
-											]),
-										})
+								.max(createExperimentBodyDesignSpecDesignUrlMaxOne),
+							zod.null(),
+						])
+						.optional()
+						.describe("Optional URL to a more detailed experiment design doc."),
+					start_date: zod.string().datetime({}),
+					end_date: zod.string().datetime({}),
+					arms: zod
+						.array(
+							zod
+								.object({
+									arm_id: zod
+										.union([zod.string(), zod.null()])
+										.optional()
 										.describe(
-											'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+											"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 										),
-								)
-								.max(createExperimentBodyDesignSpecFiltersMax)
-								.describe(
-									"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
-								),
-							desired_n: zod
-								.union([zod.number(), zod.null()])
-								.optional()
-								.describe(
-									"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
-								),
-							power: zod
-								.number()
-								.min(createExperimentBodyDesignSpecPowerMin)
-								.max(createExperimentBodyDesignSpecPowerMax)
-								.default(createExperimentBodyDesignSpecPowerDefault)
-								.describe(
-									"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
-								),
-							alpha: zod
-								.number()
-								.min(createExperimentBodyDesignSpecAlphaMin)
-								.max(createExperimentBodyDesignSpecAlphaMax)
-								.default(createExperimentBodyDesignSpecAlphaDefault)
-								.describe(
-									"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
-								),
-							fstat_thresh: zod
-								.number()
-								.min(createExperimentBodyDesignSpecFstatThreshMin)
-								.max(createExperimentBodyDesignSpecFstatThreshMax)
-								.default(createExperimentBodyDesignSpecFstatThreshDefault)
-								.describe(
-									'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
-								),
-						})
-						.describe(
-							"Use this type to randomly select and assign from existing participants at design time with\nfrequentist A/B experiments.",
-						),
-					zod
-						.object({
-							experiment_type: zod.enum(["freq_online"]),
-							experiment_name: zod
-								.string()
-								.max(createExperimentBodyDesignSpecExperimentNameMaxOne),
-							description: zod
-								.string()
-								.max(createExperimentBodyDesignSpecDescriptionMaxOne),
-							design_url: zod
-								.union([
-									zod
+									arm_name: zod
 										.string()
-										.url()
-										.min(1)
-										.max(createExperimentBodyDesignSpecDesignUrlMaxFour),
-									zod.null(),
-								])
-								.optional()
-								.describe(
-									"Optional URL to a more detailed experiment design doc.",
-								),
-							start_date: zod.string().datetime({}),
-							end_date: zod.string().datetime({}),
-							arms: zod
-								.array(
-									zod
-										.object({
-											arm_id: zod
-												.union([zod.string(), zod.null()])
-												.optional()
-												.describe(
-													"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-												),
-											arm_name: zod
+										.max(createExperimentBodyDesignSpecArmsItemArmNameMax),
+									arm_description: zod
+										.union([
+											zod
 												.string()
 												.max(
-													createExperimentBodyDesignSpecArmsItemArmNameMaxOne,
+													createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOne,
 												),
-											arm_description: zod
-												.union([
-													zod
-														.string()
-														.max(
-															createExperimentBodyDesignSpecArmsItemArmDescriptionMaxFour,
-														),
-													zod.null(),
-												])
-												.optional(),
-											arm_weight: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe(
-													"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-												),
-										})
-										.describe("Describes an experiment treatment arm."),
-								)
-								.min(createExperimentBodyDesignSpecArmsMinOne)
-								.max(createExperimentBodyDesignSpecArmsMaxOne),
-							table_name: zod
-								.string()
-								.max(createExperimentBodyDesignSpecTableNameMaxOne)
-								.describe(
-									"Datasource table used to resolve participant field metadata.",
-								),
-							primary_key: zod
-								.string()
-								.regex(createExperimentBodyDesignSpecPrimaryKeyRegExpOne)
-								.describe(
-									"Column name in table_name that uniquely identifies each participant.",
-								),
-							strata: zod
-								.array(
-									zod
-										.object({
-											field_name: zod
-												.string()
-												.regex(
-													createExperimentBodyDesignSpecStrataItemFieldNameRegExpOne,
-												),
-										})
-										.describe("Describes a variable used for stratification."),
-								)
-								.max(createExperimentBodyDesignSpecStrataMaxOne)
-								.describe("Optional fields to use for stratified assignment."),
-							metrics: zod
-								.array(
-									zod
-										.object({
-											field_name: zod
-												.string()
-												.regex(
-													createExperimentBodyDesignSpecMetricsItemFieldNameRegExpOne,
-												),
-											metric_pct_change: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe(
-													"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
-												),
-											metric_target: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe(
-													"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
-												),
-										})
+											zod.null(),
+										])
+										.optional(),
+									arm_weight: zod
+										.union([zod.number(), zod.null()])
+										.optional()
 										.describe(
-											"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+											"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
 										),
-								)
-								.min(1)
-								.max(createExperimentBodyDesignSpecMetricsMaxOne)
-								.describe("Primary and optional secondary metrics to target."),
-							filters: zod
-								.array(
-									zod
-										.object({
-											field_name: zod
-												.string()
-												.regex(
-													createExperimentBodyDesignSpecFiltersItemFieldNameRegExpOne,
-												),
-											relation: zod
-												.enum(["includes", "excludes", "between"])
-												.describe(
-													"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
-												),
-											value: zod.union([
-												zod.array(zod.union([zod.number(), zod.null()])),
-												zod.array(zod.union([zod.number(), zod.null()])),
-												zod.array(zod.union([zod.string(), zod.null()])),
-												zod.array(zod.union([zod.boolean(), zod.null()])),
-											]),
-										})
+								})
+								.describe("Describes an experiment treatment arm."),
+						)
+						.min(createExperimentBodyDesignSpecArmsMin)
+						.max(createExperimentBodyDesignSpecArmsMax),
+					strata: zod
+						.array(
+							zod
+								.object({
+									field_name: zod
+										.string()
+										.regex(
+											createExperimentBodyDesignSpecStrataItemFieldNameRegExp,
+										),
+								})
+								.describe("Describes a variable used for stratification."),
+						)
+						.max(createExperimentBodyDesignSpecStrataMax)
+						.describe("Optional fields to use for stratified assignment."),
+					metrics: zod
+						.array(
+							zod
+								.object({
+									field_name: zod
+										.string()
+										.regex(
+											createExperimentBodyDesignSpecMetricsItemFieldNameRegExp,
+										),
+									metric_pct_change: zod
+										.union([zod.number(), zod.null()])
+										.optional()
 										.describe(
-											'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+											"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
 										),
-								)
-								.max(createExperimentBodyDesignSpecFiltersMaxOne)
+									metric_target: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+										),
+								})
 								.describe(
-									"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
+									"Defines a request to look up baseline stats for a metric to measure in an experiment.",
 								),
-							desired_n: zod
-								.union([zod.number(), zod.null()])
-								.optional()
+						)
+						.min(1)
+						.max(createExperimentBodyDesignSpecMetricsMax)
+						.describe("Primary and optional secondary metrics to target."),
+					filters: zod
+						.array(
+							zod
+								.object({
+									field_name: zod
+										.string()
+										.regex(
+											createExperimentBodyDesignSpecFiltersItemFieldNameRegExp,
+										),
+									relation: zod
+										.enum(["includes", "excludes", "between"])
+										.describe(
+											"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
+										),
+									value: zod.union([
+										zod.array(zod.union([zod.number(), zod.null()])),
+										zod.array(zod.union([zod.number(), zod.null()])),
+										zod.array(zod.union([zod.string(), zod.null()])),
+										zod.array(zod.union([zod.boolean(), zod.null()])),
+									]),
+								})
 								.describe(
-									"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+									'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 								),
-							power: zod
-								.number()
-								.min(createExperimentBodyDesignSpecPowerMinOne)
-								.max(createExperimentBodyDesignSpecPowerMaxOne)
-								.default(createExperimentBodyDesignSpecPowerDefaultOne)
-								.describe(
-									"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
-								),
-							alpha: zod
-								.number()
-								.min(createExperimentBodyDesignSpecAlphaMinOne)
-								.max(createExperimentBodyDesignSpecAlphaMaxOne)
-								.default(createExperimentBodyDesignSpecAlphaDefaultOne)
-								.describe(
-									"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
-								),
-							fstat_thresh: zod
-								.number()
-								.min(createExperimentBodyDesignSpecFstatThreshMinOne)
-								.max(createExperimentBodyDesignSpecFstatThreshMaxOne)
-								.default(createExperimentBodyDesignSpecFstatThreshDefaultOne)
-								.describe(
-									'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
-								),
-						})
+						)
+						.max(createExperimentBodyDesignSpecFiltersMax)
 						.describe(
-							"Use this type to randomly assign participants into arms during live experiment execution with\nfrequentist A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+							"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 						),
-				])
-				.describe("The specific type of frequentist experiment design."),
+					desired_n: zod
+						.union([zod.number(), zod.null()])
+						.optional()
+						.describe(
+							"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+						),
+					power: zod
+						.number()
+						.min(createExperimentBodyDesignSpecPowerMin)
+						.max(createExperimentBodyDesignSpecPowerMax)
+						.default(createExperimentBodyDesignSpecPowerDefault)
+						.describe(
+							"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
+						),
+					alpha: zod
+						.number()
+						.min(createExperimentBodyDesignSpecAlphaMin)
+						.max(createExperimentBodyDesignSpecAlphaMax)
+						.default(createExperimentBodyDesignSpecAlphaDefault)
+						.describe(
+							"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
+						),
+					fstat_thresh: zod
+						.number()
+						.min(createExperimentBodyDesignSpecFstatThreshMin)
+						.max(createExperimentBodyDesignSpecFstatThreshMax)
+						.default(createExperimentBodyDesignSpecFstatThreshDefault)
+						.describe(
+							'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
+						),
+				})
+				.describe(
+					"Use this type to randomly select and assign from existing participants at design time with\nfrequentist A/B experiments.",
+				),
 			zod
-				.union([
-					zod
-						.object({
-							experiment_type: zod.enum(["mab_online"]),
-							experiment_name: zod
+				.object({
+					experiment_type: zod.enum(["freq_online"]),
+					experiment_name: zod
+						.string()
+						.max(createExperimentBodyDesignSpecExperimentNameMaxOne),
+					description: zod
+						.string()
+						.max(createExperimentBodyDesignSpecDescriptionMaxOne),
+					design_url: zod
+						.union([
+							zod
 								.string()
-								.max(createExperimentBodyDesignSpecExperimentNameMaxTwo),
-							description: zod
-								.string()
-								.max(createExperimentBodyDesignSpecDescriptionMaxTwo),
-							design_url: zod
-								.union([
-									zod
+								.url()
+								.min(1)
+								.max(createExperimentBodyDesignSpecDesignUrlMaxFour),
+							zod.null(),
+						])
+						.optional()
+						.describe("Optional URL to a more detailed experiment design doc."),
+					start_date: zod.string().datetime({}),
+					end_date: zod.string().datetime({}),
+					arms: zod
+						.array(
+							zod
+								.object({
+									arm_id: zod
+										.union([zod.string(), zod.null()])
+										.optional()
+										.describe(
+											"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										),
+									arm_name: zod
 										.string()
-										.url()
-										.min(1)
-										.max(createExperimentBodyDesignSpecDesignUrlMaxSeven),
-									zod.null(),
-								])
-								.optional()
+										.max(createExperimentBodyDesignSpecArmsItemArmNameMaxOne),
+									arm_description: zod
+										.union([
+											zod
+												.string()
+												.max(
+													createExperimentBodyDesignSpecArmsItemArmDescriptionMaxFour,
+												),
+											zod.null(),
+										])
+										.optional(),
+									arm_weight: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+										),
+								})
+								.describe("Describes an experiment treatment arm."),
+						)
+						.min(createExperimentBodyDesignSpecArmsMinOne)
+						.max(createExperimentBodyDesignSpecArmsMaxOne),
+					strata: zod
+						.array(
+							zod
+								.object({
+									field_name: zod
+										.string()
+										.regex(
+											createExperimentBodyDesignSpecStrataItemFieldNameRegExpOne,
+										),
+								})
+								.describe("Describes a variable used for stratification."),
+						)
+						.max(createExperimentBodyDesignSpecStrataMaxOne)
+						.describe("Optional fields to use for stratified assignment."),
+					metrics: zod
+						.array(
+							zod
+								.object({
+									field_name: zod
+										.string()
+										.regex(
+											createExperimentBodyDesignSpecMetricsItemFieldNameRegExpOne,
+										),
+									metric_pct_change: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+										),
+									metric_target: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+										),
+								})
 								.describe(
-									"Optional URL to a more detailed experiment design doc.",
+									"Defines a request to look up baseline stats for a metric to measure in an experiment.",
 								),
-							start_date: zod.string().datetime({}),
-							end_date: zod.string().datetime({}),
-							arms: zod
+						)
+						.min(1)
+						.max(createExperimentBodyDesignSpecMetricsMaxOne)
+						.describe("Primary and optional secondary metrics to target."),
+					filters: zod
+						.array(
+							zod
+								.object({
+									field_name: zod
+										.string()
+										.regex(
+											createExperimentBodyDesignSpecFiltersItemFieldNameRegExpOne,
+										),
+									relation: zod
+										.enum(["includes", "excludes", "between"])
+										.describe(
+											"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
+										),
+									value: zod.union([
+										zod.array(zod.union([zod.number(), zod.null()])),
+										zod.array(zod.union([zod.number(), zod.null()])),
+										zod.array(zod.union([zod.string(), zod.null()])),
+										zod.array(zod.union([zod.boolean(), zod.null()])),
+									]),
+								})
+								.describe(
+									'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+								),
+						)
+						.max(createExperimentBodyDesignSpecFiltersMaxOne)
+						.describe(
+							"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
+						),
+					desired_n: zod
+						.union([zod.number(), zod.null()])
+						.optional()
+						.describe(
+							"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+						),
+					power: zod
+						.number()
+						.min(createExperimentBodyDesignSpecPowerMinOne)
+						.max(createExperimentBodyDesignSpecPowerMaxOne)
+						.default(createExperimentBodyDesignSpecPowerDefaultOne)
+						.describe(
+							"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
+						),
+					alpha: zod
+						.number()
+						.min(createExperimentBodyDesignSpecAlphaMinOne)
+						.max(createExperimentBodyDesignSpecAlphaMaxOne)
+						.default(createExperimentBodyDesignSpecAlphaDefaultOne)
+						.describe(
+							"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
+						),
+					fstat_thresh: zod
+						.number()
+						.min(createExperimentBodyDesignSpecFstatThreshMinOne)
+						.max(createExperimentBodyDesignSpecFstatThreshMaxOne)
+						.default(createExperimentBodyDesignSpecFstatThreshDefaultOne)
+						.describe(
+							'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
+						),
+				})
+				.describe(
+					"Use this type to randomly assign participants into arms during live experiment execution with\nfrequentist A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+				),
+			zod
+				.object({
+					experiment_type: zod.enum(["mab_online"]),
+					experiment_name: zod
+						.string()
+						.max(createExperimentBodyDesignSpecExperimentNameMaxTwo),
+					description: zod
+						.string()
+						.max(createExperimentBodyDesignSpecDescriptionMaxTwo),
+					design_url: zod
+						.union([
+							zod
+								.string()
+								.url()
+								.min(1)
+								.max(createExperimentBodyDesignSpecDesignUrlMaxSeven),
+							zod.null(),
+						])
+						.optional()
+						.describe("Optional URL to a more detailed experiment design doc."),
+					start_date: zod.string().datetime({}),
+					end_date: zod.string().datetime({}),
+					arms: zod
+						.array(
+							zod
+								.object({
+									arm_id: zod
+										.union([zod.string(), zod.null()])
+										.optional()
+										.describe(
+											"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										),
+									arm_name: zod
+										.string()
+										.max(createExperimentBodyDesignSpecArmsItemArmNameMaxTwo),
+									arm_description: zod
+										.union([
+											zod
+												.string()
+												.max(
+													createExperimentBodyDesignSpecArmsItemArmDescriptionMaxSeven,
+												),
+											zod.null(),
+										])
+										.optional(),
+									arm_weight: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+										),
+									alpha_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Initial alpha parameter for Beta prior"),
+									beta_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Initial beta parameter for Beta prior"),
+									mu_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Initial mean parameter for Normal prior"),
+									sigma_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Initial standard deviation parameter for Normal prior",
+										),
+									alpha: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Updated alpha parameter for Beta prior"),
+									beta: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Updated beta parameter for Beta prior"),
+									mu: zod
+										.union([zod.array(zod.number()), zod.null()])
+										.optional()
+										.describe("Updated mean vector for Normal prior"),
+									covariance: zod
+										.union([zod.array(zod.array(zod.number())), zod.null()])
+										.optional()
+										.describe("Updated covariance matrix for Normal prior"),
+								})
+								.describe(
+									"Describes an experiment arm for bandit experiments.",
+								),
+						)
+						.min(createExperimentBodyDesignSpecArmsMinTwo)
+						.max(createExperimentBodyDesignSpecArmsMaxTwo),
+					contexts: zod
+						.union([
+							zod
 								.array(
 									zod
 										.object({
-											arm_id: zod
+											context_id: zod
 												.union([zod.string(), zod.null()])
 												.optional()
 												.describe(
-													"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+													"Unique identifier for the context, you should NOT set this when creating a new context.",
 												),
-											arm_name: zod
+											context_name: zod
 												.string()
 												.max(
-													createExperimentBodyDesignSpecArmsItemArmNameMaxTwo,
+													createExperimentBodyDesignSpecContextsItemContextNameMax,
 												),
-											arm_description: zod
+											context_description: zod
 												.union([
 													zod
 														.string()
 														.max(
-															createExperimentBodyDesignSpecArmsItemArmDescriptionMaxSeven,
+															createExperimentBodyDesignSpecContextsItemContextDescriptionMaxOne,
 														),
 													zod.null(),
 												])
 												.optional(),
-											arm_weight: zod
-												.union([zod.number(), zod.null()])
+											value_type: zod
+												.enum(["binary", "real-valued"])
 												.optional()
-												.describe(
-													"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-												),
-											alpha_init: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Initial alpha parameter for Beta prior"),
-											beta_init: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Initial beta parameter for Beta prior"),
-											mu_init: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Initial mean parameter for Normal prior"),
-											sigma_init: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe(
-													"Initial standard deviation parameter for Normal prior",
-												),
-											alpha: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Updated alpha parameter for Beta prior"),
-											beta: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Updated beta parameter for Beta prior"),
-											mu: zod
-												.union([zod.array(zod.number()), zod.null()])
-												.optional()
-												.describe("Updated mean vector for Normal prior"),
-											covariance: zod
-												.union([zod.array(zod.array(zod.number())), zod.null()])
-												.optional()
-												.describe("Updated covariance matrix for Normal prior"),
+												.describe("Enum for the type of context."),
 										})
-										.describe(
-											"Describes an experiment arm for bandit experiments.",
-										),
+										.describe("Pydantic model for context of the experiment."),
 								)
-								.min(createExperimentBodyDesignSpecArmsMinTwo)
-								.max(createExperimentBodyDesignSpecArmsMaxTwo),
-							contexts: zod
-								.union([
-									zod
-										.array(
-											zod
-												.object({
-													context_id: zod
-														.union([zod.string(), zod.null()])
-														.optional()
-														.describe(
-															"Unique identifier for the context, you should NOT set this when creating a new context.",
-														),
-													context_name: zod
-														.string()
-														.max(
-															createExperimentBodyDesignSpecContextsItemContextNameMax,
-														),
-													context_description: zod
-														.union([
-															zod
-																.string()
-																.max(
-																	createExperimentBodyDesignSpecContextsItemContextDescriptionMaxOne,
-																),
-															zod.null(),
-														])
-														.optional(),
-													value_type: zod
-														.enum(["binary", "real-valued"])
-														.optional()
-														.describe("Enum for the type of context."),
-												})
-												.describe(
-													"Pydantic model for context of the experiment.",
-												),
-										)
-										.max(createExperimentBodyDesignSpecContextsMaxOne),
-									zod.null(),
-								])
-								.optional()
-								.describe(
-									"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
-								),
-							prior_type: zod
-								.enum(["beta", "normal"])
-								.optional()
-								.describe("Enum for the prior distribution of the arm."),
-							reward_type: zod
-								.enum(["binary", "real-valued"])
-								.optional()
-								.describe(
-									"Enum for the likelihood distribution of the reward.",
-								),
-						})
+								.max(createExperimentBodyDesignSpecContextsMaxOne),
+							zod.null(),
+						])
+						.optional()
 						.describe(
-							"Use this type to randomly assign participants into arms during live experiment execution with MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+							"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 						),
-					zod
-						.object({
-							experiment_type: zod.enum(["cmab_online"]),
-							experiment_name: zod
+					prior_type: zod
+						.enum(["beta", "normal"])
+						.optional()
+						.describe("Enum for the prior distribution of the arm."),
+					reward_type: zod
+						.enum(["binary", "real-valued"])
+						.optional()
+						.describe("Enum for the likelihood distribution of the reward."),
+				})
+				.describe(
+					"Use this type to randomly assign participants into arms during live experiment execution with MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+				),
+			zod
+				.object({
+					experiment_type: zod.enum(["cmab_online"]),
+					experiment_name: zod
+						.string()
+						.max(createExperimentBodyDesignSpecExperimentNameMaxThree),
+					description: zod
+						.string()
+						.max(createExperimentBodyDesignSpecDescriptionMaxThree),
+					design_url: zod
+						.union([
+							zod
 								.string()
-								.max(createExperimentBodyDesignSpecExperimentNameMaxThree),
-							description: zod
-								.string()
-								.max(createExperimentBodyDesignSpecDescriptionMaxThree),
-							design_url: zod
-								.union([
-									zod
+								.url()
+								.min(1)
+								.max(createExperimentBodyDesignSpecDesignUrlMaxOnezero),
+							zod.null(),
+						])
+						.optional()
+						.describe("Optional URL to a more detailed experiment design doc."),
+					start_date: zod.string().datetime({}),
+					end_date: zod.string().datetime({}),
+					arms: zod
+						.array(
+							zod
+								.object({
+									arm_id: zod
+										.union([zod.string(), zod.null()])
+										.optional()
+										.describe(
+											"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										),
+									arm_name: zod
 										.string()
-										.url()
-										.min(1)
-										.max(createExperimentBodyDesignSpecDesignUrlMaxOnezero),
-									zod.null(),
-								])
-								.optional()
+										.max(createExperimentBodyDesignSpecArmsItemArmNameMaxThree),
+									arm_description: zod
+										.union([
+											zod
+												.string()
+												.max(
+													createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnezero,
+												),
+											zod.null(),
+										])
+										.optional(),
+									arm_weight: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+										),
+									alpha_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Initial alpha parameter for Beta prior"),
+									beta_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Initial beta parameter for Beta prior"),
+									mu_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Initial mean parameter for Normal prior"),
+									sigma_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Initial standard deviation parameter for Normal prior",
+										),
+									alpha: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Updated alpha parameter for Beta prior"),
+									beta: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Updated beta parameter for Beta prior"),
+									mu: zod
+										.union([zod.array(zod.number()), zod.null()])
+										.optional()
+										.describe("Updated mean vector for Normal prior"),
+									covariance: zod
+										.union([zod.array(zod.array(zod.number())), zod.null()])
+										.optional()
+										.describe("Updated covariance matrix for Normal prior"),
+								})
 								.describe(
-									"Optional URL to a more detailed experiment design doc.",
+									"Describes an experiment arm for bandit experiments.",
 								),
-							start_date: zod.string().datetime({}),
-							end_date: zod.string().datetime({}),
-							arms: zod
+						)
+						.min(createExperimentBodyDesignSpecArmsMinThree)
+						.max(createExperimentBodyDesignSpecArmsMaxThree),
+					contexts: zod
+						.union([
+							zod
 								.array(
 									zod
 										.object({
-											arm_id: zod
+											context_id: zod
 												.union([zod.string(), zod.null()])
 												.optional()
 												.describe(
-													"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+													"Unique identifier for the context, you should NOT set this when creating a new context.",
 												),
-											arm_name: zod
+											context_name: zod
 												.string()
 												.max(
-													createExperimentBodyDesignSpecArmsItemArmNameMaxThree,
+													createExperimentBodyDesignSpecContextsItemContextNameMaxOne,
 												),
-											arm_description: zod
+											context_description: zod
 												.union([
 													zod
 														.string()
 														.max(
-															createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnezero,
+															createExperimentBodyDesignSpecContextsItemContextDescriptionMaxFour,
 														),
 													zod.null(),
 												])
 												.optional(),
-											arm_weight: zod
-												.union([zod.number(), zod.null()])
+											value_type: zod
+												.enum(["binary", "real-valued"])
 												.optional()
-												.describe(
-													"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-												),
-											alpha_init: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Initial alpha parameter for Beta prior"),
-											beta_init: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Initial beta parameter for Beta prior"),
-											mu_init: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Initial mean parameter for Normal prior"),
-											sigma_init: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe(
-													"Initial standard deviation parameter for Normal prior",
-												),
-											alpha: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Updated alpha parameter for Beta prior"),
-											beta: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Updated beta parameter for Beta prior"),
-											mu: zod
-												.union([zod.array(zod.number()), zod.null()])
-												.optional()
-												.describe("Updated mean vector for Normal prior"),
-											covariance: zod
-												.union([zod.array(zod.array(zod.number())), zod.null()])
-												.optional()
-												.describe("Updated covariance matrix for Normal prior"),
+												.describe("Enum for the type of context."),
 										})
-										.describe(
-											"Describes an experiment arm for bandit experiments.",
-										),
+										.describe("Pydantic model for context of the experiment."),
 								)
-								.min(createExperimentBodyDesignSpecArmsMinThree)
-								.max(createExperimentBodyDesignSpecArmsMaxThree),
-							contexts: zod
-								.union([
-									zod
-										.array(
-											zod
-												.object({
-													context_id: zod
-														.union([zod.string(), zod.null()])
-														.optional()
-														.describe(
-															"Unique identifier for the context, you should NOT set this when creating a new context.",
-														),
-													context_name: zod
-														.string()
-														.max(
-															createExperimentBodyDesignSpecContextsItemContextNameMaxOne,
-														),
-													context_description: zod
-														.union([
-															zod
-																.string()
-																.max(
-																	createExperimentBodyDesignSpecContextsItemContextDescriptionMaxFour,
-																),
-															zod.null(),
-														])
-														.optional(),
-													value_type: zod
-														.enum(["binary", "real-valued"])
-														.optional()
-														.describe("Enum for the type of context."),
-												})
-												.describe(
-													"Pydantic model for context of the experiment.",
-												),
-										)
-										.max(createExperimentBodyDesignSpecContextsMaxFour),
-									zod.null(),
-								])
-								.optional()
-								.describe(
-									"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
-								),
-							prior_type: zod
-								.enum(["beta", "normal"])
-								.optional()
-								.describe("Enum for the prior distribution of the arm."),
-							reward_type: zod
-								.enum(["binary", "real-valued"])
-								.optional()
-								.describe(
-									"Enum for the likelihood distribution of the reward.",
-								),
-						})
+								.max(createExperimentBodyDesignSpecContextsMaxFour),
+							zod.null(),
+						])
+						.optional()
 						.describe(
-							"Use this type to randomly assign participants into arms during live experiment execution with\ncontextual MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+							"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 						),
-					zod
-						.object({
-							experiment_type: zod.enum(["bayes_ab_online"]),
-							experiment_name: zod
+					prior_type: zod
+						.enum(["beta", "normal"])
+						.optional()
+						.describe("Enum for the prior distribution of the arm."),
+					reward_type: zod
+						.enum(["binary", "real-valued"])
+						.optional()
+						.describe("Enum for the likelihood distribution of the reward."),
+				})
+				.describe(
+					"Use this type to randomly assign participants into arms during live experiment execution with\ncontextual MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+				),
+			zod
+				.object({
+					experiment_type: zod.enum(["bayes_ab_online"]),
+					experiment_name: zod
+						.string()
+						.max(createExperimentBodyDesignSpecExperimentNameMaxFour),
+					description: zod
+						.string()
+						.max(createExperimentBodyDesignSpecDescriptionMaxFour),
+					design_url: zod
+						.union([
+							zod
 								.string()
-								.max(createExperimentBodyDesignSpecExperimentNameMaxFour),
-							description: zod
-								.string()
-								.max(createExperimentBodyDesignSpecDescriptionMaxFour),
-							design_url: zod
-								.union([
-									zod
+								.url()
+								.min(1)
+								.max(createExperimentBodyDesignSpecDesignUrlMaxOnethree),
+							zod.null(),
+						])
+						.optional()
+						.describe("Optional URL to a more detailed experiment design doc."),
+					start_date: zod.string().datetime({}),
+					end_date: zod.string().datetime({}),
+					arms: zod
+						.array(
+							zod
+								.object({
+									arm_id: zod
+										.union([zod.string(), zod.null()])
+										.optional()
+										.describe(
+											"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										),
+									arm_name: zod
 										.string()
-										.url()
-										.min(1)
-										.max(createExperimentBodyDesignSpecDesignUrlMaxOnethree),
-									zod.null(),
-								])
-								.optional()
+										.max(createExperimentBodyDesignSpecArmsItemArmNameMaxFour),
+									arm_description: zod
+										.union([
+											zod
+												.string()
+												.max(
+													createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnethree,
+												),
+											zod.null(),
+										])
+										.optional(),
+									arm_weight: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+										),
+									alpha_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Initial alpha parameter for Beta prior"),
+									beta_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Initial beta parameter for Beta prior"),
+									mu_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Initial mean parameter for Normal prior"),
+									sigma_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Initial standard deviation parameter for Normal prior",
+										),
+									alpha: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Updated alpha parameter for Beta prior"),
+									beta: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Updated beta parameter for Beta prior"),
+									mu: zod
+										.union([zod.array(zod.number()), zod.null()])
+										.optional()
+										.describe("Updated mean vector for Normal prior"),
+									covariance: zod
+										.union([zod.array(zod.array(zod.number())), zod.null()])
+										.optional()
+										.describe("Updated covariance matrix for Normal prior"),
+								})
 								.describe(
-									"Optional URL to a more detailed experiment design doc.",
+									"Describes an experiment arm for bandit experiments.",
 								),
-							start_date: zod.string().datetime({}),
-							end_date: zod.string().datetime({}),
-							arms: zod
+						)
+						.min(createExperimentBodyDesignSpecArmsMinFour)
+						.max(createExperimentBodyDesignSpecArmsMaxFour),
+					contexts: zod
+						.union([
+							zod
 								.array(
 									zod
 										.object({
-											arm_id: zod
+											context_id: zod
 												.union([zod.string(), zod.null()])
 												.optional()
 												.describe(
-													"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+													"Unique identifier for the context, you should NOT set this when creating a new context.",
 												),
-											arm_name: zod
+											context_name: zod
 												.string()
 												.max(
-													createExperimentBodyDesignSpecArmsItemArmNameMaxFour,
+													createExperimentBodyDesignSpecContextsItemContextNameMaxTwo,
 												),
-											arm_description: zod
+											context_description: zod
 												.union([
 													zod
 														.string()
 														.max(
-															createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnethree,
+															createExperimentBodyDesignSpecContextsItemContextDescriptionMaxSeven,
 														),
 													zod.null(),
 												])
 												.optional(),
-											arm_weight: zod
-												.union([zod.number(), zod.null()])
+											value_type: zod
+												.enum(["binary", "real-valued"])
 												.optional()
-												.describe(
-													"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-												),
-											alpha_init: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Initial alpha parameter for Beta prior"),
-											beta_init: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Initial beta parameter for Beta prior"),
-											mu_init: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Initial mean parameter for Normal prior"),
-											sigma_init: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe(
-													"Initial standard deviation parameter for Normal prior",
-												),
-											alpha: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Updated alpha parameter for Beta prior"),
-											beta: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Updated beta parameter for Beta prior"),
-											mu: zod
-												.union([zod.array(zod.number()), zod.null()])
-												.optional()
-												.describe("Updated mean vector for Normal prior"),
-											covariance: zod
-												.union([zod.array(zod.array(zod.number())), zod.null()])
-												.optional()
-												.describe("Updated covariance matrix for Normal prior"),
+												.describe("Enum for the type of context."),
 										})
-										.describe(
-											"Describes an experiment arm for bandit experiments.",
-										),
+										.describe("Pydantic model for context of the experiment."),
 								)
-								.min(createExperimentBodyDesignSpecArmsMinFour)
-								.max(createExperimentBodyDesignSpecArmsMaxFour),
-							contexts: zod
-								.union([
-									zod
-										.array(
-											zod
-												.object({
-													context_id: zod
-														.union([zod.string(), zod.null()])
-														.optional()
-														.describe(
-															"Unique identifier for the context, you should NOT set this when creating a new context.",
-														),
-													context_name: zod
-														.string()
-														.max(
-															createExperimentBodyDesignSpecContextsItemContextNameMaxTwo,
-														),
-													context_description: zod
-														.union([
-															zod
-																.string()
-																.max(
-																	createExperimentBodyDesignSpecContextsItemContextDescriptionMaxSeven,
-																),
-															zod.null(),
-														])
-														.optional(),
-													value_type: zod
-														.enum(["binary", "real-valued"])
-														.optional()
-														.describe("Enum for the type of context."),
-												})
-												.describe(
-													"Pydantic model for context of the experiment.",
-												),
-										)
-										.max(createExperimentBodyDesignSpecContextsMaxSeven),
-									zod.null(),
-								])
-								.optional()
-								.describe(
-									"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
-								),
-							prior_type: zod
-								.enum(["beta", "normal"])
-								.optional()
-								.describe("Enum for the prior distribution of the arm."),
-							reward_type: zod
-								.enum(["binary", "real-valued"])
-								.optional()
-								.describe(
-									"Enum for the likelihood distribution of the reward.",
-								),
-						})
+								.max(createExperimentBodyDesignSpecContextsMaxSeven),
+							zod.null(),
+						])
+						.optional()
 						.describe(
-							"Use this type to randomly assign participants into arms during live experiment execution with\nBayesian A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+							"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 						),
-				])
-				.describe("The specific type of bandit experiment design."),
+					prior_type: zod
+						.enum(["beta", "normal"])
+						.optional()
+						.describe("Enum for the prior distribution of the arm."),
+					reward_type: zod
+						.enum(["binary", "real-valued"])
+						.optional()
+						.describe("Enum for the likelihood distribution of the reward."),
+				})
+				.describe(
+					"Use this type to randomly assign participants into arms during live experiment execution with\nBayesian A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+				),
 		])
 		.describe("The type of assignment and experiment design."),
 	power_analyses: zod
@@ -3990,6 +3918,18 @@ export const createExperimentBody = zod.object({
 		.describe(
 			"List of webhook IDs to associate with this experiment. When the experiment is committed, these webhooks will be triggered with experiment details. Must contain unique values.",
 		),
+	table_name: zod
+		.union([zod.string(), zod.null()])
+		.optional()
+		.describe(
+			"Optional table name for creating experiments without a pre-registered participant type. When provided with primary_key, inspects the datasource table to derive experiment field metadata.",
+		),
+	primary_key: zod
+		.union([zod.string(), zod.null()])
+		.optional()
+		.describe(
+			"Optional primary key field name. Must be provided together with table_name.",
+		),
 });
 
 export const createExperimentResponseParticipantTypeDeprecatedMax = 100;
@@ -4007,11 +3947,6 @@ export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOne = 20
 export const createExperimentResponseDesignSpecArmsMin = 2;
 export const createExperimentResponseDesignSpecArmsMax = 20;
 
-export const createExperimentResponseDesignSpecTableNameMax = 100;
-
-export const createExperimentResponseDesignSpecPrimaryKeyRegExp = new RegExp(
-	"^[a-zA-Z_][a-zA-Z0-9_]*$",
-);
 export const createExperimentResponseDesignSpecStrataItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentResponseDesignSpecStrataMax = 150;
@@ -4049,11 +3984,6 @@ export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxFour = 2
 export const createExperimentResponseDesignSpecArmsMinOne = 2;
 export const createExperimentResponseDesignSpecArmsMaxOne = 20;
 
-export const createExperimentResponseDesignSpecTableNameMaxOne = 100;
-
-export const createExperimentResponseDesignSpecPrimaryKeyRegExpOne = new RegExp(
-	"^[a-zA-Z_][a-zA-Z0-9_]*$",
-);
 export const createExperimentResponseDesignSpecStrataItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentResponseDesignSpecStrataMaxOne = 150;
@@ -4184,863 +4114,790 @@ export const createExperimentResponse = zod
 		design_spec: zod
 			.union([
 				zod
-					.union([
-						zod
-							.object({
-								experiment_type: zod.enum(["freq_preassigned"]),
-								experiment_name: zod
+					.object({
+						experiment_type: zod.enum(["freq_preassigned"]),
+						experiment_name: zod
+							.string()
+							.max(createExperimentResponseDesignSpecExperimentNameMax),
+						description: zod
+							.string()
+							.max(createExperimentResponseDesignSpecDescriptionMax),
+						design_url: zod
+							.union([
+								zod
 									.string()
-									.max(createExperimentResponseDesignSpecExperimentNameMax),
-								description: zod
-									.string()
-									.max(createExperimentResponseDesignSpecDescriptionMax),
-								design_url: zod
-									.union([
-										zod
+									.url()
+									.min(1)
+									.max(createExperimentResponseDesignSpecDesignUrlMaxOne),
+								zod.null(),
+							])
+							.optional()
+							.describe(
+								"Optional URL to a more detailed experiment design doc.",
+							),
+						start_date: zod.string().datetime({}),
+						end_date: zod.string().datetime({}),
+						arms: zod
+							.array(
+								zod
+									.object({
+										arm_id: zod
+											.union([zod.string(), zod.null()])
+											.optional()
+											.describe(
+												"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+											),
+										arm_name: zod
 											.string()
-											.url()
-											.min(1)
-											.max(createExperimentResponseDesignSpecDesignUrlMaxOne),
-										zod.null(),
-									])
-									.optional()
-									.describe(
-										"Optional URL to a more detailed experiment design doc.",
-									),
-								start_date: zod.string().datetime({}),
-								end_date: zod.string().datetime({}),
-								arms: zod
-									.array(
-										zod
-											.object({
-												arm_id: zod
-													.union([zod.string(), zod.null()])
-													.optional()
-													.describe(
-														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-													),
-												arm_name: zod
+											.max(
+												createExperimentResponseDesignSpecArmsItemArmNameMax,
+											),
+										arm_description: zod
+											.union([
+												zod
 													.string()
 													.max(
-														createExperimentResponseDesignSpecArmsItemArmNameMax,
+														createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOne,
 													),
-												arm_description: zod
-													.union([
-														zod
-															.string()
-															.max(
-																createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOne,
-															),
-														zod.null(),
-													])
-													.optional(),
-												arm_weight: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-													),
-											})
-											.describe("Describes an experiment treatment arm."),
-									)
-									.min(createExperimentResponseDesignSpecArmsMin)
-									.max(createExperimentResponseDesignSpecArmsMax),
-								table_name: zod
-									.string()
-									.max(createExperimentResponseDesignSpecTableNameMax)
-									.describe(
-										"Datasource table used to resolve participant field metadata.",
-									),
-								primary_key: zod
-									.string()
-									.regex(createExperimentResponseDesignSpecPrimaryKeyRegExp)
-									.describe(
-										"Column name in table_name that uniquely identifies each participant.",
-									),
-								strata: zod
-									.array(
-										zod
-											.object({
-												field_name: zod
-													.string()
-													.regex(
-														createExperimentResponseDesignSpecStrataItemFieldNameRegExp,
-													),
-											})
+												zod.null(),
+											])
+											.optional(),
+										arm_weight: zod
+											.union([zod.number(), zod.null()])
+											.optional()
 											.describe(
-												"Describes a variable used for stratification.",
+												"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
 											),
-									)
-									.max(createExperimentResponseDesignSpecStrataMax)
-									.describe(
-										"Optional fields to use for stratified assignment.",
-									),
-								metrics: zod
-									.array(
-										zod
-											.object({
-												field_name: zod
-													.string()
-													.regex(
-														createExperimentResponseDesignSpecMetricsItemFieldNameRegExp,
-													),
-												metric_pct_change: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
-													),
-												metric_target: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
-													),
-											})
-											.describe(
-												"Defines a request to look up baseline stats for a metric to measure in an experiment.",
-											),
-									)
-									.min(1)
-									.max(createExperimentResponseDesignSpecMetricsMax)
-									.describe(
-										"Primary and optional secondary metrics to target.",
-									),
-								filters: zod
-									.array(
-										zod
-											.object({
-												field_name: zod
-													.string()
-													.regex(
-														createExperimentResponseDesignSpecFiltersItemFieldNameRegExp,
-													),
-												relation: zod
-													.enum(["includes", "excludes", "between"])
-													.describe(
-														"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
-													),
-												value: zod.union([
-													zod.array(zod.union([zod.number(), zod.null()])),
-													zod.array(zod.union([zod.number(), zod.null()])),
-													zod.array(zod.union([zod.string(), zod.null()])),
-													zod.array(zod.union([zod.boolean(), zod.null()])),
-												]),
-											})
-											.describe(
-												'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
-											),
-									)
-									.max(createExperimentResponseDesignSpecFiltersMax)
-									.describe(
-										"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
-									),
-								desired_n: zod
-									.union([zod.number(), zod.null()])
-									.optional()
-									.describe(
-										"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
-									),
-								power: zod
-									.number()
-									.min(createExperimentResponseDesignSpecPowerMin)
-									.max(createExperimentResponseDesignSpecPowerMax)
-									.default(createExperimentResponseDesignSpecPowerDefault)
-									.describe(
-										"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
-									),
-								alpha: zod
-									.number()
-									.min(createExperimentResponseDesignSpecAlphaMin)
-									.max(createExperimentResponseDesignSpecAlphaMax)
-									.default(createExperimentResponseDesignSpecAlphaDefault)
-									.describe(
-										"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
-									),
-								fstat_thresh: zod
-									.number()
-									.min(createExperimentResponseDesignSpecFstatThreshMin)
-									.max(createExperimentResponseDesignSpecFstatThreshMax)
-									.default(createExperimentResponseDesignSpecFstatThreshDefault)
-									.describe(
-										'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
-									),
-							})
-							.describe(
-								"Use this type to randomly select and assign from existing participants at design time with\nfrequentist A/B experiments.",
-							),
-						zod
-							.object({
-								experiment_type: zod.enum(["freq_online"]),
-								experiment_name: zod
-									.string()
-									.max(createExperimentResponseDesignSpecExperimentNameMaxOne),
-								description: zod
-									.string()
-									.max(createExperimentResponseDesignSpecDescriptionMaxOne),
-								design_url: zod
-									.union([
-										zod
+									})
+									.describe("Describes an experiment treatment arm."),
+							)
+							.min(createExperimentResponseDesignSpecArmsMin)
+							.max(createExperimentResponseDesignSpecArmsMax),
+						strata: zod
+							.array(
+								zod
+									.object({
+										field_name: zod
 											.string()
-											.url()
-											.min(1)
-											.max(createExperimentResponseDesignSpecDesignUrlMaxFour),
-										zod.null(),
-									])
-									.optional()
-									.describe(
-										"Optional URL to a more detailed experiment design doc.",
-									),
-								start_date: zod.string().datetime({}),
-								end_date: zod.string().datetime({}),
-								arms: zod
-									.array(
-										zod
-											.object({
-												arm_id: zod
-													.union([zod.string(), zod.null()])
-													.optional()
-													.describe(
-														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-													),
-												arm_name: zod
-													.string()
-													.max(
-														createExperimentResponseDesignSpecArmsItemArmNameMaxOne,
-													),
-												arm_description: zod
-													.union([
-														zod
-															.string()
-															.max(
-																createExperimentResponseDesignSpecArmsItemArmDescriptionMaxFour,
-															),
-														zod.null(),
-													])
-													.optional(),
-												arm_weight: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-													),
-											})
-											.describe("Describes an experiment treatment arm."),
-									)
-									.min(createExperimentResponseDesignSpecArmsMinOne)
-									.max(createExperimentResponseDesignSpecArmsMaxOne),
-								table_name: zod
-									.string()
-									.max(createExperimentResponseDesignSpecTableNameMaxOne)
-									.describe(
-										"Datasource table used to resolve participant field metadata.",
-									),
-								primary_key: zod
-									.string()
-									.regex(createExperimentResponseDesignSpecPrimaryKeyRegExpOne)
-									.describe(
-										"Column name in table_name that uniquely identifies each participant.",
-									),
-								strata: zod
-									.array(
-										zod
-											.object({
-												field_name: zod
-													.string()
-													.regex(
-														createExperimentResponseDesignSpecStrataItemFieldNameRegExpOne,
-													),
-											})
-											.describe(
-												"Describes a variable used for stratification.",
+											.regex(
+												createExperimentResponseDesignSpecStrataItemFieldNameRegExp,
 											),
-									)
-									.max(createExperimentResponseDesignSpecStrataMaxOne)
-									.describe(
-										"Optional fields to use for stratified assignment.",
-									),
-								metrics: zod
-									.array(
-										zod
-											.object({
-												field_name: zod
-													.string()
-													.regex(
-														createExperimentResponseDesignSpecMetricsItemFieldNameRegExpOne,
-													),
-												metric_pct_change: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
-													),
-												metric_target: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
-													),
-											})
-											.describe(
-												"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+									})
+									.describe("Describes a variable used for stratification."),
+							)
+							.max(createExperimentResponseDesignSpecStrataMax)
+							.describe("Optional fields to use for stratified assignment."),
+						metrics: zod
+							.array(
+								zod
+									.object({
+										field_name: zod
+											.string()
+											.regex(
+												createExperimentResponseDesignSpecMetricsItemFieldNameRegExp,
 											),
-									)
-									.min(1)
-									.max(createExperimentResponseDesignSpecMetricsMaxOne)
-									.describe(
-										"Primary and optional secondary metrics to target.",
-									),
-								filters: zod
-									.array(
-										zod
-											.object({
-												field_name: zod
-													.string()
-													.regex(
-														createExperimentResponseDesignSpecFiltersItemFieldNameRegExpOne,
-													),
-												relation: zod
-													.enum(["includes", "excludes", "between"])
-													.describe(
-														"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
-													),
-												value: zod.union([
-													zod.array(zod.union([zod.number(), zod.null()])),
-													zod.array(zod.union([zod.number(), zod.null()])),
-													zod.array(zod.union([zod.string(), zod.null()])),
-													zod.array(zod.union([zod.boolean(), zod.null()])),
-												]),
-											})
+										metric_pct_change: zod
+											.union([zod.number(), zod.null()])
+											.optional()
 											.describe(
-												'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+												"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
 											),
-									)
-									.max(createExperimentResponseDesignSpecFiltersMaxOne)
+										metric_target: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+											),
+									})
 									.describe(
-										"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
+										"Defines a request to look up baseline stats for a metric to measure in an experiment.",
 									),
-								desired_n: zod
-									.union([zod.number(), zod.null()])
-									.optional()
+							)
+							.min(1)
+							.max(createExperimentResponseDesignSpecMetricsMax)
+							.describe("Primary and optional secondary metrics to target."),
+						filters: zod
+							.array(
+								zod
+									.object({
+										field_name: zod
+											.string()
+											.regex(
+												createExperimentResponseDesignSpecFiltersItemFieldNameRegExp,
+											),
+										relation: zod
+											.enum(["includes", "excludes", "between"])
+											.describe(
+												"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
+											),
+										value: zod.union([
+											zod.array(zod.union([zod.number(), zod.null()])),
+											zod.array(zod.union([zod.number(), zod.null()])),
+											zod.array(zod.union([zod.string(), zod.null()])),
+											zod.array(zod.union([zod.boolean(), zod.null()])),
+										]),
+									})
 									.describe(
-										"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+										'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
 									),
-								power: zod
-									.number()
-									.min(createExperimentResponseDesignSpecPowerMinOne)
-									.max(createExperimentResponseDesignSpecPowerMaxOne)
-									.default(createExperimentResponseDesignSpecPowerDefaultOne)
-									.describe(
-										"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
-									),
-								alpha: zod
-									.number()
-									.min(createExperimentResponseDesignSpecAlphaMinOne)
-									.max(createExperimentResponseDesignSpecAlphaMaxOne)
-									.default(createExperimentResponseDesignSpecAlphaDefaultOne)
-									.describe(
-										"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
-									),
-								fstat_thresh: zod
-									.number()
-									.min(createExperimentResponseDesignSpecFstatThreshMinOne)
-									.max(createExperimentResponseDesignSpecFstatThreshMaxOne)
-									.default(
-										createExperimentResponseDesignSpecFstatThreshDefaultOne,
-									)
-									.describe(
-										'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
-									),
-							})
+							)
+							.max(createExperimentResponseDesignSpecFiltersMax)
 							.describe(
-								"Use this type to randomly assign participants into arms during live experiment execution with\nfrequentist A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+								"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 							),
-					])
-					.describe("The specific type of frequentist experiment design."),
+						desired_n: zod
+							.union([zod.number(), zod.null()])
+							.optional()
+							.describe(
+								"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+							),
+						power: zod
+							.number()
+							.min(createExperimentResponseDesignSpecPowerMin)
+							.max(createExperimentResponseDesignSpecPowerMax)
+							.default(createExperimentResponseDesignSpecPowerDefault)
+							.describe(
+								"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
+							),
+						alpha: zod
+							.number()
+							.min(createExperimentResponseDesignSpecAlphaMin)
+							.max(createExperimentResponseDesignSpecAlphaMax)
+							.default(createExperimentResponseDesignSpecAlphaDefault)
+							.describe(
+								"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
+							),
+						fstat_thresh: zod
+							.number()
+							.min(createExperimentResponseDesignSpecFstatThreshMin)
+							.max(createExperimentResponseDesignSpecFstatThreshMax)
+							.default(createExperimentResponseDesignSpecFstatThreshDefault)
+							.describe(
+								'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
+							),
+					})
+					.describe(
+						"Use this type to randomly select and assign from existing participants at design time with\nfrequentist A/B experiments.",
+					),
 				zod
-					.union([
-						zod
-							.object({
-								experiment_type: zod.enum(["mab_online"]),
-								experiment_name: zod
+					.object({
+						experiment_type: zod.enum(["freq_online"]),
+						experiment_name: zod
+							.string()
+							.max(createExperimentResponseDesignSpecExperimentNameMaxOne),
+						description: zod
+							.string()
+							.max(createExperimentResponseDesignSpecDescriptionMaxOne),
+						design_url: zod
+							.union([
+								zod
 									.string()
-									.max(createExperimentResponseDesignSpecExperimentNameMaxTwo),
-								description: zod
-									.string()
-									.max(createExperimentResponseDesignSpecDescriptionMaxTwo),
-								design_url: zod
-									.union([
-										zod
-											.string()
-											.url()
-											.min(1)
-											.max(createExperimentResponseDesignSpecDesignUrlMaxSeven),
-										zod.null(),
-									])
-									.optional()
-									.describe(
-										"Optional URL to a more detailed experiment design doc.",
-									),
-								start_date: zod.string().datetime({}),
-								end_date: zod.string().datetime({}),
-								arms: zod
-									.array(
-										zod
-											.object({
-												arm_id: zod
-													.union([zod.string(), zod.null()])
-													.optional()
-													.describe(
-														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-													),
-												arm_name: zod
-													.string()
-													.max(
-														createExperimentResponseDesignSpecArmsItemArmNameMaxTwo,
-													),
-												arm_description: zod
-													.union([
-														zod
-															.string()
-															.max(
-																createExperimentResponseDesignSpecArmsItemArmDescriptionMaxSeven,
-															),
-														zod.null(),
-													])
-													.optional(),
-												arm_weight: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-													),
-												alpha_init: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Initial alpha parameter for Beta prior"),
-												beta_init: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Initial beta parameter for Beta prior"),
-												mu_init: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Initial mean parameter for Normal prior"),
-												sigma_init: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Initial standard deviation parameter for Normal prior",
-													),
-												alpha: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Updated alpha parameter for Beta prior"),
-												beta: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Updated beta parameter for Beta prior"),
-												mu: zod
-													.union([zod.array(zod.number()), zod.null()])
-													.optional()
-													.describe("Updated mean vector for Normal prior"),
-												covariance: zod
-													.union([
-														zod.array(zod.array(zod.number())),
-														zod.null(),
-													])
-													.optional()
-													.describe(
-														"Updated covariance matrix for Normal prior",
-													),
-											})
-											.describe(
-												"Describes an experiment arm for bandit experiments.",
-											),
-									)
-									.min(createExperimentResponseDesignSpecArmsMinTwo)
-									.max(createExperimentResponseDesignSpecArmsMaxTwo),
-								contexts: zod
-									.union([
-										zod
-											.array(
-												zod
-													.object({
-														context_id: zod
-															.union([zod.string(), zod.null()])
-															.optional()
-															.describe(
-																"Unique identifier for the context, you should NOT set this when creating a new context.",
-															),
-														context_name: zod
-															.string()
-															.max(
-																createExperimentResponseDesignSpecContextsItemContextNameMax,
-															),
-														context_description: zod
-															.union([
-																zod
-																	.string()
-																	.max(
-																		createExperimentResponseDesignSpecContextsItemContextDescriptionMaxOne,
-																	),
-																zod.null(),
-															])
-															.optional(),
-														value_type: zod
-															.enum(["binary", "real-valued"])
-															.optional()
-															.describe("Enum for the type of context."),
-													})
-													.describe(
-														"Pydantic model for context of the experiment.",
-													),
-											)
-											.max(createExperimentResponseDesignSpecContextsMaxOne),
-										zod.null(),
-									])
-									.optional()
-									.describe(
-										"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
-									),
-								prior_type: zod
-									.enum(["beta", "normal"])
-									.optional()
-									.describe("Enum for the prior distribution of the arm."),
-								reward_type: zod
-									.enum(["binary", "real-valued"])
-									.optional()
-									.describe(
-										"Enum for the likelihood distribution of the reward.",
-									),
-							})
+									.url()
+									.min(1)
+									.max(createExperimentResponseDesignSpecDesignUrlMaxFour),
+								zod.null(),
+							])
+							.optional()
 							.describe(
-								"Use this type to randomly assign participants into arms during live experiment execution with MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+								"Optional URL to a more detailed experiment design doc.",
 							),
-						zod
-							.object({
-								experiment_type: zod.enum(["cmab_online"]),
-								experiment_name: zod
-									.string()
-									.max(
-										createExperimentResponseDesignSpecExperimentNameMaxThree,
-									),
-								description: zod
-									.string()
-									.max(createExperimentResponseDesignSpecDescriptionMaxThree),
-								design_url: zod
-									.union([
-										zod
+						start_date: zod.string().datetime({}),
+						end_date: zod.string().datetime({}),
+						arms: zod
+							.array(
+								zod
+									.object({
+										arm_id: zod
+											.union([zod.string(), zod.null()])
+											.optional()
+											.describe(
+												"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+											),
+										arm_name: zod
 											.string()
-											.url()
-											.min(1)
 											.max(
-												createExperimentResponseDesignSpecDesignUrlMaxOnezero,
+												createExperimentResponseDesignSpecArmsItemArmNameMaxOne,
 											),
-										zod.null(),
-									])
-									.optional()
-									.describe(
-										"Optional URL to a more detailed experiment design doc.",
-									),
-								start_date: zod.string().datetime({}),
-								end_date: zod.string().datetime({}),
-								arms: zod
-									.array(
-										zod
-											.object({
-												arm_id: zod
-													.union([zod.string(), zod.null()])
-													.optional()
-													.describe(
-														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-													),
-												arm_name: zod
+										arm_description: zod
+											.union([
+												zod
 													.string()
 													.max(
-														createExperimentResponseDesignSpecArmsItemArmNameMaxThree,
+														createExperimentResponseDesignSpecArmsItemArmDescriptionMaxFour,
 													),
-												arm_description: zod
-													.union([
-														zod
-															.string()
-															.max(
-																createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnezero,
-															),
-														zod.null(),
-													])
-													.optional(),
-												arm_weight: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-													),
-												alpha_init: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Initial alpha parameter for Beta prior"),
-												beta_init: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Initial beta parameter for Beta prior"),
-												mu_init: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Initial mean parameter for Normal prior"),
-												sigma_init: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Initial standard deviation parameter for Normal prior",
-													),
-												alpha: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Updated alpha parameter for Beta prior"),
-												beta: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Updated beta parameter for Beta prior"),
-												mu: zod
-													.union([zod.array(zod.number()), zod.null()])
-													.optional()
-													.describe("Updated mean vector for Normal prior"),
-												covariance: zod
-													.union([
-														zod.array(zod.array(zod.number())),
-														zod.null(),
-													])
-													.optional()
-													.describe(
-														"Updated covariance matrix for Normal prior",
-													),
-											})
+												zod.null(),
+											])
+											.optional(),
+										arm_weight: zod
+											.union([zod.number(), zod.null()])
+											.optional()
 											.describe(
-												"Describes an experiment arm for bandit experiments.",
+												"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
 											),
-									)
-									.min(createExperimentResponseDesignSpecArmsMinThree)
-									.max(createExperimentResponseDesignSpecArmsMaxThree),
-								contexts: zod
-									.union([
-										zod
-											.array(
-												zod
-													.object({
-														context_id: zod
-															.union([zod.string(), zod.null()])
-															.optional()
-															.describe(
-																"Unique identifier for the context, you should NOT set this when creating a new context.",
-															),
-														context_name: zod
-															.string()
-															.max(
-																createExperimentResponseDesignSpecContextsItemContextNameMaxOne,
-															),
-														context_description: zod
-															.union([
-																zod
-																	.string()
-																	.max(
-																		createExperimentResponseDesignSpecContextsItemContextDescriptionMaxFour,
-																	),
-																zod.null(),
-															])
-															.optional(),
-														value_type: zod
-															.enum(["binary", "real-valued"])
-															.optional()
-															.describe("Enum for the type of context."),
-													})
-													.describe(
-														"Pydantic model for context of the experiment.",
-													),
-											)
-											.max(createExperimentResponseDesignSpecContextsMaxFour),
-										zod.null(),
-									])
-									.optional()
-									.describe(
-										"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
-									),
-								prior_type: zod
-									.enum(["beta", "normal"])
-									.optional()
-									.describe("Enum for the prior distribution of the arm."),
-								reward_type: zod
-									.enum(["binary", "real-valued"])
-									.optional()
-									.describe(
-										"Enum for the likelihood distribution of the reward.",
-									),
-							})
-							.describe(
-								"Use this type to randomly assign participants into arms during live experiment execution with\ncontextual MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
-							),
-						zod
-							.object({
-								experiment_type: zod.enum(["bayes_ab_online"]),
-								experiment_name: zod
-									.string()
-									.max(createExperimentResponseDesignSpecExperimentNameMaxFour),
-								description: zod
-									.string()
-									.max(createExperimentResponseDesignSpecDescriptionMaxFour),
-								design_url: zod
-									.union([
-										zod
+									})
+									.describe("Describes an experiment treatment arm."),
+							)
+							.min(createExperimentResponseDesignSpecArmsMinOne)
+							.max(createExperimentResponseDesignSpecArmsMaxOne),
+						strata: zod
+							.array(
+								zod
+									.object({
+										field_name: zod
 											.string()
-											.url()
-											.min(1)
-											.max(
-												createExperimentResponseDesignSpecDesignUrlMaxOnethree,
+											.regex(
+												createExperimentResponseDesignSpecStrataItemFieldNameRegExpOne,
 											),
-										zod.null(),
-									])
-									.optional()
+									})
+									.describe("Describes a variable used for stratification."),
+							)
+							.max(createExperimentResponseDesignSpecStrataMaxOne)
+							.describe("Optional fields to use for stratified assignment."),
+						metrics: zod
+							.array(
+								zod
+									.object({
+										field_name: zod
+											.string()
+											.regex(
+												createExperimentResponseDesignSpecMetricsItemFieldNameRegExpOne,
+											),
+										metric_pct_change: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+											),
+										metric_target: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+											),
+									})
 									.describe(
-										"Optional URL to a more detailed experiment design doc.",
+										"Defines a request to look up baseline stats for a metric to measure in an experiment.",
 									),
-								start_date: zod.string().datetime({}),
-								end_date: zod.string().datetime({}),
-								arms: zod
+							)
+							.min(1)
+							.max(createExperimentResponseDesignSpecMetricsMaxOne)
+							.describe("Primary and optional secondary metrics to target."),
+						filters: zod
+							.array(
+								zod
+									.object({
+										field_name: zod
+											.string()
+											.regex(
+												createExperimentResponseDesignSpecFiltersItemFieldNameRegExpOne,
+											),
+										relation: zod
+											.enum(["includes", "excludes", "between"])
+											.describe(
+												"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
+											),
+										value: zod.union([
+											zod.array(zod.union([zod.number(), zod.null()])),
+											zod.array(zod.union([zod.number(), zod.null()])),
+											zod.array(zod.union([zod.string(), zod.null()])),
+											zod.array(zod.union([zod.boolean(), zod.null()])),
+										]),
+									})
+									.describe(
+										'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+									),
+							)
+							.max(createExperimentResponseDesignSpecFiltersMaxOne)
+							.describe(
+								"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
+							),
+						desired_n: zod
+							.union([zod.number(), zod.null()])
+							.optional()
+							.describe(
+								"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+							),
+						power: zod
+							.number()
+							.min(createExperimentResponseDesignSpecPowerMinOne)
+							.max(createExperimentResponseDesignSpecPowerMaxOne)
+							.default(createExperimentResponseDesignSpecPowerDefaultOne)
+							.describe(
+								"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
+							),
+						alpha: zod
+							.number()
+							.min(createExperimentResponseDesignSpecAlphaMinOne)
+							.max(createExperimentResponseDesignSpecAlphaMaxOne)
+							.default(createExperimentResponseDesignSpecAlphaDefaultOne)
+							.describe(
+								"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
+							),
+						fstat_thresh: zod
+							.number()
+							.min(createExperimentResponseDesignSpecFstatThreshMinOne)
+							.max(createExperimentResponseDesignSpecFstatThreshMaxOne)
+							.default(createExperimentResponseDesignSpecFstatThreshDefaultOne)
+							.describe(
+								'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
+							),
+					})
+					.describe(
+						"Use this type to randomly assign participants into arms during live experiment execution with\nfrequentist A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+					),
+				zod
+					.object({
+						experiment_type: zod.enum(["mab_online"]),
+						experiment_name: zod
+							.string()
+							.max(createExperimentResponseDesignSpecExperimentNameMaxTwo),
+						description: zod
+							.string()
+							.max(createExperimentResponseDesignSpecDescriptionMaxTwo),
+						design_url: zod
+							.union([
+								zod
+									.string()
+									.url()
+									.min(1)
+									.max(createExperimentResponseDesignSpecDesignUrlMaxSeven),
+								zod.null(),
+							])
+							.optional()
+							.describe(
+								"Optional URL to a more detailed experiment design doc.",
+							),
+						start_date: zod.string().datetime({}),
+						end_date: zod.string().datetime({}),
+						arms: zod
+							.array(
+								zod
+									.object({
+										arm_id: zod
+											.union([zod.string(), zod.null()])
+											.optional()
+											.describe(
+												"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+											),
+										arm_name: zod
+											.string()
+											.max(
+												createExperimentResponseDesignSpecArmsItemArmNameMaxTwo,
+											),
+										arm_description: zod
+											.union([
+												zod
+													.string()
+													.max(
+														createExperimentResponseDesignSpecArmsItemArmDescriptionMaxSeven,
+													),
+												zod.null(),
+											])
+											.optional(),
+										arm_weight: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+											),
+										alpha_init: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Initial alpha parameter for Beta prior"),
+										beta_init: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Initial beta parameter for Beta prior"),
+										mu_init: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Initial mean parameter for Normal prior"),
+										sigma_init: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Initial standard deviation parameter for Normal prior",
+											),
+										alpha: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Updated alpha parameter for Beta prior"),
+										beta: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Updated beta parameter for Beta prior"),
+										mu: zod
+											.union([zod.array(zod.number()), zod.null()])
+											.optional()
+											.describe("Updated mean vector for Normal prior"),
+										covariance: zod
+											.union([zod.array(zod.array(zod.number())), zod.null()])
+											.optional()
+											.describe("Updated covariance matrix for Normal prior"),
+									})
+									.describe(
+										"Describes an experiment arm for bandit experiments.",
+									),
+							)
+							.min(createExperimentResponseDesignSpecArmsMinTwo)
+							.max(createExperimentResponseDesignSpecArmsMaxTwo),
+						contexts: zod
+							.union([
+								zod
 									.array(
 										zod
 											.object({
-												arm_id: zod
+												context_id: zod
 													.union([zod.string(), zod.null()])
 													.optional()
 													.describe(
-														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+														"Unique identifier for the context, you should NOT set this when creating a new context.",
 													),
-												arm_name: zod
+												context_name: zod
 													.string()
 													.max(
-														createExperimentResponseDesignSpecArmsItemArmNameMaxFour,
+														createExperimentResponseDesignSpecContextsItemContextNameMax,
 													),
-												arm_description: zod
+												context_description: zod
 													.union([
 														zod
 															.string()
 															.max(
-																createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnethree,
+																createExperimentResponseDesignSpecContextsItemContextDescriptionMaxOne,
 															),
 														zod.null(),
 													])
 													.optional(),
-												arm_weight: zod
-													.union([zod.number(), zod.null()])
+												value_type: zod
+													.enum(["binary", "real-valued"])
 													.optional()
-													.describe(
-														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-													),
-												alpha_init: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Initial alpha parameter for Beta prior"),
-												beta_init: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Initial beta parameter for Beta prior"),
-												mu_init: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Initial mean parameter for Normal prior"),
-												sigma_init: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Initial standard deviation parameter for Normal prior",
-													),
-												alpha: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Updated alpha parameter for Beta prior"),
-												beta: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Updated beta parameter for Beta prior"),
-												mu: zod
-													.union([zod.array(zod.number()), zod.null()])
-													.optional()
-													.describe("Updated mean vector for Normal prior"),
-												covariance: zod
-													.union([
-														zod.array(zod.array(zod.number())),
-														zod.null(),
-													])
-													.optional()
-													.describe(
-														"Updated covariance matrix for Normal prior",
-													),
+													.describe("Enum for the type of context."),
 											})
 											.describe(
-												"Describes an experiment arm for bandit experiments.",
+												"Pydantic model for context of the experiment.",
 											),
 									)
-									.min(createExperimentResponseDesignSpecArmsMinFour)
-									.max(createExperimentResponseDesignSpecArmsMaxFour),
-								contexts: zod
-									.union([
-										zod
-											.array(
+									.max(createExperimentResponseDesignSpecContextsMaxOne),
+								zod.null(),
+							])
+							.optional()
+							.describe(
+								"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+							),
+						prior_type: zod
+							.enum(["beta", "normal"])
+							.optional()
+							.describe("Enum for the prior distribution of the arm."),
+						reward_type: zod
+							.enum(["binary", "real-valued"])
+							.optional()
+							.describe("Enum for the likelihood distribution of the reward."),
+					})
+					.describe(
+						"Use this type to randomly assign participants into arms during live experiment execution with MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+					),
+				zod
+					.object({
+						experiment_type: zod.enum(["cmab_online"]),
+						experiment_name: zod
+							.string()
+							.max(createExperimentResponseDesignSpecExperimentNameMaxThree),
+						description: zod
+							.string()
+							.max(createExperimentResponseDesignSpecDescriptionMaxThree),
+						design_url: zod
+							.union([
+								zod
+									.string()
+									.url()
+									.min(1)
+									.max(createExperimentResponseDesignSpecDesignUrlMaxOnezero),
+								zod.null(),
+							])
+							.optional()
+							.describe(
+								"Optional URL to a more detailed experiment design doc.",
+							),
+						start_date: zod.string().datetime({}),
+						end_date: zod.string().datetime({}),
+						arms: zod
+							.array(
+								zod
+									.object({
+										arm_id: zod
+											.union([zod.string(), zod.null()])
+											.optional()
+											.describe(
+												"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+											),
+										arm_name: zod
+											.string()
+											.max(
+												createExperimentResponseDesignSpecArmsItemArmNameMaxThree,
+											),
+										arm_description: zod
+											.union([
 												zod
-													.object({
-														context_id: zod
-															.union([zod.string(), zod.null()])
-															.optional()
-															.describe(
-																"Unique identifier for the context, you should NOT set this when creating a new context.",
-															),
-														context_name: zod
+													.string()
+													.max(
+														createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnezero,
+													),
+												zod.null(),
+											])
+											.optional(),
+										arm_weight: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+											),
+										alpha_init: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Initial alpha parameter for Beta prior"),
+										beta_init: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Initial beta parameter for Beta prior"),
+										mu_init: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Initial mean parameter for Normal prior"),
+										sigma_init: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Initial standard deviation parameter for Normal prior",
+											),
+										alpha: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Updated alpha parameter for Beta prior"),
+										beta: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Updated beta parameter for Beta prior"),
+										mu: zod
+											.union([zod.array(zod.number()), zod.null()])
+											.optional()
+											.describe("Updated mean vector for Normal prior"),
+										covariance: zod
+											.union([zod.array(zod.array(zod.number())), zod.null()])
+											.optional()
+											.describe("Updated covariance matrix for Normal prior"),
+									})
+									.describe(
+										"Describes an experiment arm for bandit experiments.",
+									),
+							)
+							.min(createExperimentResponseDesignSpecArmsMinThree)
+							.max(createExperimentResponseDesignSpecArmsMaxThree),
+						contexts: zod
+							.union([
+								zod
+									.array(
+										zod
+											.object({
+												context_id: zod
+													.union([zod.string(), zod.null()])
+													.optional()
+													.describe(
+														"Unique identifier for the context, you should NOT set this when creating a new context.",
+													),
+												context_name: zod
+													.string()
+													.max(
+														createExperimentResponseDesignSpecContextsItemContextNameMaxOne,
+													),
+												context_description: zod
+													.union([
+														zod
 															.string()
 															.max(
-																createExperimentResponseDesignSpecContextsItemContextNameMaxTwo,
+																createExperimentResponseDesignSpecContextsItemContextDescriptionMaxFour,
 															),
-														context_description: zod
-															.union([
-																zod
-																	.string()
-																	.max(
-																		createExperimentResponseDesignSpecContextsItemContextDescriptionMaxSeven,
-																	),
-																zod.null(),
-															])
-															.optional(),
-														value_type: zod
-															.enum(["binary", "real-valued"])
-															.optional()
-															.describe("Enum for the type of context."),
-													})
-													.describe(
-														"Pydantic model for context of the experiment.",
-													),
-											)
-											.max(createExperimentResponseDesignSpecContextsMaxSeven),
-										zod.null(),
-									])
-									.optional()
-									.describe(
-										"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
-									),
-								prior_type: zod
-									.enum(["beta", "normal"])
-									.optional()
-									.describe("Enum for the prior distribution of the arm."),
-								reward_type: zod
-									.enum(["binary", "real-valued"])
-									.optional()
-									.describe(
-										"Enum for the likelihood distribution of the reward.",
-									),
-							})
+														zod.null(),
+													])
+													.optional(),
+												value_type: zod
+													.enum(["binary", "real-valued"])
+													.optional()
+													.describe("Enum for the type of context."),
+											})
+											.describe(
+												"Pydantic model for context of the experiment.",
+											),
+									)
+									.max(createExperimentResponseDesignSpecContextsMaxFour),
+								zod.null(),
+							])
+							.optional()
 							.describe(
-								"Use this type to randomly assign participants into arms during live experiment execution with\nBayesian A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+								"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 							),
-					])
-					.describe("The specific type of bandit experiment design."),
+						prior_type: zod
+							.enum(["beta", "normal"])
+							.optional()
+							.describe("Enum for the prior distribution of the arm."),
+						reward_type: zod
+							.enum(["binary", "real-valued"])
+							.optional()
+							.describe("Enum for the likelihood distribution of the reward."),
+					})
+					.describe(
+						"Use this type to randomly assign participants into arms during live experiment execution with\ncontextual MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+					),
+				zod
+					.object({
+						experiment_type: zod.enum(["bayes_ab_online"]),
+						experiment_name: zod
+							.string()
+							.max(createExperimentResponseDesignSpecExperimentNameMaxFour),
+						description: zod
+							.string()
+							.max(createExperimentResponseDesignSpecDescriptionMaxFour),
+						design_url: zod
+							.union([
+								zod
+									.string()
+									.url()
+									.min(1)
+									.max(createExperimentResponseDesignSpecDesignUrlMaxOnethree),
+								zod.null(),
+							])
+							.optional()
+							.describe(
+								"Optional URL to a more detailed experiment design doc.",
+							),
+						start_date: zod.string().datetime({}),
+						end_date: zod.string().datetime({}),
+						arms: zod
+							.array(
+								zod
+									.object({
+										arm_id: zod
+											.union([zod.string(), zod.null()])
+											.optional()
+											.describe(
+												"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+											),
+										arm_name: zod
+											.string()
+											.max(
+												createExperimentResponseDesignSpecArmsItemArmNameMaxFour,
+											),
+										arm_description: zod
+											.union([
+												zod
+													.string()
+													.max(
+														createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnethree,
+													),
+												zod.null(),
+											])
+											.optional(),
+										arm_weight: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+											),
+										alpha_init: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Initial alpha parameter for Beta prior"),
+										beta_init: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Initial beta parameter for Beta prior"),
+										mu_init: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Initial mean parameter for Normal prior"),
+										sigma_init: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Initial standard deviation parameter for Normal prior",
+											),
+										alpha: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Updated alpha parameter for Beta prior"),
+										beta: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Updated beta parameter for Beta prior"),
+										mu: zod
+											.union([zod.array(zod.number()), zod.null()])
+											.optional()
+											.describe("Updated mean vector for Normal prior"),
+										covariance: zod
+											.union([zod.array(zod.array(zod.number())), zod.null()])
+											.optional()
+											.describe("Updated covariance matrix for Normal prior"),
+									})
+									.describe(
+										"Describes an experiment arm for bandit experiments.",
+									),
+							)
+							.min(createExperimentResponseDesignSpecArmsMinFour)
+							.max(createExperimentResponseDesignSpecArmsMaxFour),
+						contexts: zod
+							.union([
+								zod
+									.array(
+										zod
+											.object({
+												context_id: zod
+													.union([zod.string(), zod.null()])
+													.optional()
+													.describe(
+														"Unique identifier for the context, you should NOT set this when creating a new context.",
+													),
+												context_name: zod
+													.string()
+													.max(
+														createExperimentResponseDesignSpecContextsItemContextNameMaxTwo,
+													),
+												context_description: zod
+													.union([
+														zod
+															.string()
+															.max(
+																createExperimentResponseDesignSpecContextsItemContextDescriptionMaxSeven,
+															),
+														zod.null(),
+													])
+													.optional(),
+												value_type: zod
+													.enum(["binary", "real-valued"])
+													.optional()
+													.describe("Enum for the type of context."),
+											})
+											.describe(
+												"Pydantic model for context of the experiment.",
+											),
+									)
+									.max(createExperimentResponseDesignSpecContextsMaxSeven),
+								zod.null(),
+							])
+							.optional()
+							.describe(
+								"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+							),
+						prior_type: zod
+							.enum(["beta", "normal"])
+							.optional()
+							.describe("Enum for the prior distribution of the arm."),
+						reward_type: zod
+							.enum(["binary", "real-valued"])
+							.optional()
+							.describe("Enum for the likelihood distribution of the reward."),
+					})
+					.describe(
+						"Use this type to randomly assign participants into arms during live experiment execution with\nBayesian A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+					),
 			])
 			.describe("The type of assignment and experiment design."),
 		power_analyses: zod.union([
@@ -6021,10 +5878,6 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDe
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMin = 2;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMax = 20;
 
-export const listOrganizationExperimentsResponseItemsItemDesignSpecTableNameMax = 100;
-
-export const listOrganizationExperimentsResponseItemsItemDesignSpecPrimaryKeyRegExp =
-	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const listOrganizationExperimentsResponseItemsItemDesignSpecStrataItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const listOrganizationExperimentsResponseItemsItemDesignSpecStrataMax = 150;
@@ -6062,10 +5915,6 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDe
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinOne = 2;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxOne = 20;
 
-export const listOrganizationExperimentsResponseItemsItemDesignSpecTableNameMaxOne = 100;
-
-export const listOrganizationExperimentsResponseItemsItemDesignSpecPrimaryKeyRegExpOne =
-	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const listOrganizationExperimentsResponseItemsItemDesignSpecStrataItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const listOrganizationExperimentsResponseItemsItemDesignSpecStrataMaxOne = 150;
@@ -6200,997 +6049,927 @@ export const listOrganizationExperimentsResponse = zod.object({
 				design_spec: zod
 					.union([
 						zod
-							.union([
-								zod
-									.object({
-										experiment_type: zod.enum(["freq_preassigned"]),
-										experiment_name: zod
+							.object({
+								experiment_type: zod.enum(["freq_preassigned"]),
+								experiment_name: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMax,
+									),
+								description: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMax,
+									),
+								design_url: zod
+									.union([
+										zod
 											.string()
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMax,
-											),
-										description: zod
-											.string()
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMax,
-											),
-										design_url: zod
-											.union([
-												zod
-													.string()
-													.url()
-													.min(1)
-													.max(
-														listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxOne,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional URL to a more detailed experiment design doc.",
-											),
-										start_date: zod.string().datetime({}),
-										end_date: zod.string().datetime({}),
-										arms: zod
-											.array(
-												zod
-													.object({
-														arm_id: zod
-															.union([zod.string(), zod.null()])
-															.optional()
-															.describe(
-																"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-															),
-														arm_name: zod
-															.string()
-															.max(
-																listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMax,
-															),
-														arm_description: zod
-															.union([
-																zod
-																	.string()
-																	.max(
-																		listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOne,
-																	),
-																zod.null(),
-															])
-															.optional(),
-														arm_weight: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-															),
-													})
-													.describe("Describes an experiment treatment arm."),
-											)
-											.min(
-												listOrganizationExperimentsResponseItemsItemDesignSpecArmsMin,
-											)
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecArmsMax,
-											),
-										table_name: zod
-											.string()
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecTableNameMax,
-											)
-											.describe(
-												"Datasource table used to resolve participant field metadata.",
-											),
-										primary_key: zod
-											.string()
-											.regex(
-												listOrganizationExperimentsResponseItemsItemDesignSpecPrimaryKeyRegExp,
-											)
-											.describe(
-												"Column name in table_name that uniquely identifies each participant.",
-											),
-										strata: zod
-											.array(
-												zod
-													.object({
-														field_name: zod
-															.string()
-															.regex(
-																listOrganizationExperimentsResponseItemsItemDesignSpecStrataItemFieldNameRegExp,
-															),
-													})
-													.describe(
-														"Describes a variable used for stratification.",
-													),
-											)
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecStrataMax,
-											)
-											.describe(
-												"Optional fields to use for stratified assignment.",
-											),
-										metrics: zod
-											.array(
-												zod
-													.object({
-														field_name: zod
-															.string()
-															.regex(
-																listOrganizationExperimentsResponseItemsItemDesignSpecMetricsItemFieldNameRegExp,
-															),
-														metric_pct_change: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
-															),
-														metric_target: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
-															),
-													})
-													.describe(
-														"Defines a request to look up baseline stats for a metric to measure in an experiment.",
-													),
-											)
+											.url()
 											.min(1)
 											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecMetricsMax,
-											)
-											.describe(
-												"Primary and optional secondary metrics to target.",
+												listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxOne,
 											),
-										filters: zod
-											.array(
-												zod
-													.object({
-														field_name: zod
-															.string()
-															.regex(
-																listOrganizationExperimentsResponseItemsItemDesignSpecFiltersItemFieldNameRegExp,
-															),
-														relation: zod
-															.enum(["includes", "excludes", "between"])
-															.describe(
-																"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
-															),
-														value: zod.union([
-															zod.array(zod.union([zod.number(), zod.null()])),
-															zod.array(zod.union([zod.number(), zod.null()])),
-															zod.array(zod.union([zod.string(), zod.null()])),
-															zod.array(zod.union([zod.boolean(), zod.null()])),
-														]),
-													})
-													.describe(
-														'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
-													),
-											)
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecFiltersMax,
-											)
-											.describe(
-												"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
-											),
-										desired_n: zod
-											.union([zod.number(), zod.null()])
-											.optional()
-											.describe(
-												"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
-											),
-										power: zod
-											.number()
-											.min(
-												listOrganizationExperimentsResponseItemsItemDesignSpecPowerMin,
-											)
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecPowerMax,
-											)
-											.default(
-												listOrganizationExperimentsResponseItemsItemDesignSpecPowerDefault,
-											)
-											.describe(
-												"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
-											),
-										alpha: zod
-											.number()
-											.min(
-												listOrganizationExperimentsResponseItemsItemDesignSpecAlphaMin,
-											)
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecAlphaMax,
-											)
-											.default(
-												listOrganizationExperimentsResponseItemsItemDesignSpecAlphaDefault,
-											)
-											.describe(
-												"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
-											),
-										fstat_thresh: zod
-											.number()
-											.min(
-												listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMin,
-											)
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMax,
-											)
-											.default(
-												listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshDefault,
-											)
-											.describe(
-												'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
-											),
-									})
+										zod.null(),
+									])
+									.optional()
 									.describe(
-										"Use this type to randomly select and assign from existing participants at design time with\nfrequentist A/B experiments.",
+										"Optional URL to a more detailed experiment design doc.",
 									),
-								zod
-									.object({
-										experiment_type: zod.enum(["freq_online"]),
-										experiment_name: zod
-											.string()
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxOne,
-											),
-										description: zod
-											.string()
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxOne,
-											),
-										design_url: zod
-											.union([
-												zod
-													.string()
-													.url()
-													.min(1)
-													.max(
-														listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxFour,
+								start_date: zod.string().datetime({}),
+								end_date: zod.string().datetime({}),
+								arms: zod
+									.array(
+										zod
+											.object({
+												arm_id: zod
+													.union([zod.string(), zod.null()])
+													.optional()
+													.describe(
+														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional URL to a more detailed experiment design doc.",
-											),
-										start_date: zod.string().datetime({}),
-										end_date: zod.string().datetime({}),
-										arms: zod
-											.array(
-												zod
-													.object({
-														arm_id: zod
-															.union([zod.string(), zod.null()])
-															.optional()
-															.describe(
-																"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-															),
-														arm_name: zod
+												arm_name: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMax,
+													),
+												arm_description: zod
+													.union([
+														zod
 															.string()
 															.max(
-																listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxOne,
+																listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOne,
 															),
-														arm_description: zod
-															.union([
-																zod
-																	.string()
-																	.max(
-																		listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxFour,
-																	),
-																zod.null(),
-															])
-															.optional(),
-														arm_weight: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-															),
-													})
-													.describe("Describes an experiment treatment arm."),
-											)
-											.min(
-												listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinOne,
-											)
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxOne,
-											),
-										table_name: zod
-											.string()
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecTableNameMaxOne,
-											)
-											.describe(
-												"Datasource table used to resolve participant field metadata.",
-											),
-										primary_key: zod
-											.string()
-											.regex(
-												listOrganizationExperimentsResponseItemsItemDesignSpecPrimaryKeyRegExpOne,
-											)
-											.describe(
-												"Column name in table_name that uniquely identifies each participant.",
-											),
-										strata: zod
-											.array(
-												zod
-													.object({
-														field_name: zod
-															.string()
-															.regex(
-																listOrganizationExperimentsResponseItemsItemDesignSpecStrataItemFieldNameRegExpOne,
-															),
-													})
+														zod.null(),
+													])
+													.optional(),
+												arm_weight: zod
+													.union([zod.number(), zod.null()])
+													.optional()
 													.describe(
-														"Describes a variable used for stratification.",
+														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
 													),
-											)
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecStrataMaxOne,
-											)
-											.describe(
-												"Optional fields to use for stratified assignment.",
-											),
-										metrics: zod
-											.array(
-												zod
-													.object({
-														field_name: zod
-															.string()
-															.regex(
-																listOrganizationExperimentsResponseItemsItemDesignSpecMetricsItemFieldNameRegExpOne,
-															),
-														metric_pct_change: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
-															),
-														metric_target: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
-															),
-													})
-													.describe(
-														"Defines a request to look up baseline stats for a metric to measure in an experiment.",
-													),
-											)
-											.min(1)
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecMetricsMaxOne,
-											)
-											.describe(
-												"Primary and optional secondary metrics to target.",
-											),
-										filters: zod
-											.array(
-												zod
-													.object({
-														field_name: zod
-															.string()
-															.regex(
-																listOrganizationExperimentsResponseItemsItemDesignSpecFiltersItemFieldNameRegExpOne,
-															),
-														relation: zod
-															.enum(["includes", "excludes", "between"])
-															.describe(
-																"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
-															),
-														value: zod.union([
-															zod.array(zod.union([zod.number(), zod.null()])),
-															zod.array(zod.union([zod.number(), zod.null()])),
-															zod.array(zod.union([zod.string(), zod.null()])),
-															zod.array(zod.union([zod.boolean(), zod.null()])),
-														]),
-													})
-													.describe(
-														'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
-													),
-											)
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecFiltersMaxOne,
-											)
-											.describe(
-												"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
-											),
-										desired_n: zod
-											.union([zod.number(), zod.null()])
-											.optional()
-											.describe(
-												"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
-											),
-										power: zod
-											.number()
-											.min(
-												listOrganizationExperimentsResponseItemsItemDesignSpecPowerMinOne,
-											)
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecPowerMaxOne,
-											)
-											.default(
-												listOrganizationExperimentsResponseItemsItemDesignSpecPowerDefaultOne,
-											)
-											.describe(
-												"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
-											),
-										alpha: zod
-											.number()
-											.min(
-												listOrganizationExperimentsResponseItemsItemDesignSpecAlphaMinOne,
-											)
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecAlphaMaxOne,
-											)
-											.default(
-												listOrganizationExperimentsResponseItemsItemDesignSpecAlphaDefaultOne,
-											)
-											.describe(
-												"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
-											),
-										fstat_thresh: zod
-											.number()
-											.min(
-												listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMinOne,
-											)
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMaxOne,
-											)
-											.default(
-												listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshDefaultOne,
-											)
-											.describe(
-												'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
-											),
-									})
-									.describe(
-										"Use this type to randomly assign participants into arms during live experiment execution with\nfrequentist A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+											})
+											.describe("Describes an experiment treatment arm."),
+									)
+									.min(
+										listOrganizationExperimentsResponseItemsItemDesignSpecArmsMin,
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecArmsMax,
 									),
-							])
-							.describe("The specific type of frequentist experiment design."),
+								strata: zod
+									.array(
+										zod
+											.object({
+												field_name: zod
+													.string()
+													.regex(
+														listOrganizationExperimentsResponseItemsItemDesignSpecStrataItemFieldNameRegExp,
+													),
+											})
+											.describe(
+												"Describes a variable used for stratification.",
+											),
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecStrataMax,
+									)
+									.describe(
+										"Optional fields to use for stratified assignment.",
+									),
+								metrics: zod
+									.array(
+										zod
+											.object({
+												field_name: zod
+													.string()
+													.regex(
+														listOrganizationExperimentsResponseItemsItemDesignSpecMetricsItemFieldNameRegExp,
+													),
+												metric_pct_change: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+													),
+												metric_target: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+													),
+											})
+											.describe(
+												"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+											),
+									)
+									.min(1)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecMetricsMax,
+									)
+									.describe(
+										"Primary and optional secondary metrics to target.",
+									),
+								filters: zod
+									.array(
+										zod
+											.object({
+												field_name: zod
+													.string()
+													.regex(
+														listOrganizationExperimentsResponseItemsItemDesignSpecFiltersItemFieldNameRegExp,
+													),
+												relation: zod
+													.enum(["includes", "excludes", "between"])
+													.describe(
+														"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
+													),
+												value: zod.union([
+													zod.array(zod.union([zod.number(), zod.null()])),
+													zod.array(zod.union([zod.number(), zod.null()])),
+													zod.array(zod.union([zod.string(), zod.null()])),
+													zod.array(zod.union([zod.boolean(), zod.null()])),
+												]),
+											})
+											.describe(
+												'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+											),
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecFiltersMax,
+									)
+									.describe(
+										"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
+									),
+								desired_n: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe(
+										"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+									),
+								power: zod
+									.number()
+									.min(
+										listOrganizationExperimentsResponseItemsItemDesignSpecPowerMin,
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecPowerMax,
+									)
+									.default(
+										listOrganizationExperimentsResponseItemsItemDesignSpecPowerDefault,
+									)
+									.describe(
+										"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
+									),
+								alpha: zod
+									.number()
+									.min(
+										listOrganizationExperimentsResponseItemsItemDesignSpecAlphaMin,
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecAlphaMax,
+									)
+									.default(
+										listOrganizationExperimentsResponseItemsItemDesignSpecAlphaDefault,
+									)
+									.describe(
+										"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
+									),
+								fstat_thresh: zod
+									.number()
+									.min(
+										listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMin,
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMax,
+									)
+									.default(
+										listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshDefault,
+									)
+									.describe(
+										'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
+									),
+							})
+							.describe(
+								"Use this type to randomly select and assign from existing participants at design time with\nfrequentist A/B experiments.",
+							),
 						zod
-							.union([
-								zod
-									.object({
-										experiment_type: zod.enum(["mab_online"]),
-										experiment_name: zod
+							.object({
+								experiment_type: zod.enum(["freq_online"]),
+								experiment_name: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxOne,
+									),
+								description: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxOne,
+									),
+								design_url: zod
+									.union([
+										zod
 											.string()
+											.url()
+											.min(1)
 											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxTwo,
+												listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxFour,
 											),
-										description: zod
-											.string()
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxTwo,
-											),
-										design_url: zod
-											.union([
-												zod
-													.string()
-													.url()
-													.min(1)
-													.max(
-														listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxSeven,
+										zod.null(),
+									])
+									.optional()
+									.describe(
+										"Optional URL to a more detailed experiment design doc.",
+									),
+								start_date: zod.string().datetime({}),
+								end_date: zod.string().datetime({}),
+								arms: zod
+									.array(
+										zod
+											.object({
+												arm_id: zod
+													.union([zod.string(), zod.null()])
+													.optional()
+													.describe(
+														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 													),
-												zod.null(),
-											])
-											.optional()
+												arm_name: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxOne,
+													),
+												arm_description: zod
+													.union([
+														zod
+															.string()
+															.max(
+																listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxFour,
+															),
+														zod.null(),
+													])
+													.optional(),
+												arm_weight: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+													),
+											})
+											.describe("Describes an experiment treatment arm."),
+									)
+									.min(
+										listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinOne,
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxOne,
+									),
+								strata: zod
+									.array(
+										zod
+											.object({
+												field_name: zod
+													.string()
+													.regex(
+														listOrganizationExperimentsResponseItemsItemDesignSpecStrataItemFieldNameRegExpOne,
+													),
+											})
 											.describe(
-												"Optional URL to a more detailed experiment design doc.",
+												"Describes a variable used for stratification.",
 											),
-										start_date: zod.string().datetime({}),
-										end_date: zod.string().datetime({}),
-										arms: zod
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecStrataMaxOne,
+									)
+									.describe(
+										"Optional fields to use for stratified assignment.",
+									),
+								metrics: zod
+									.array(
+										zod
+											.object({
+												field_name: zod
+													.string()
+													.regex(
+														listOrganizationExperimentsResponseItemsItemDesignSpecMetricsItemFieldNameRegExpOne,
+													),
+												metric_pct_change: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+													),
+												metric_target: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+													),
+											})
+											.describe(
+												"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+											),
+									)
+									.min(1)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecMetricsMaxOne,
+									)
+									.describe(
+										"Primary and optional secondary metrics to target.",
+									),
+								filters: zod
+									.array(
+										zod
+											.object({
+												field_name: zod
+													.string()
+													.regex(
+														listOrganizationExperimentsResponseItemsItemDesignSpecFiltersItemFieldNameRegExpOne,
+													),
+												relation: zod
+													.enum(["includes", "excludes", "between"])
+													.describe(
+														"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
+													),
+												value: zod.union([
+													zod.array(zod.union([zod.number(), zod.null()])),
+													zod.array(zod.union([zod.number(), zod.null()])),
+													zod.array(zod.union([zod.string(), zod.null()])),
+													zod.array(zod.union([zod.boolean(), zod.null()])),
+												]),
+											})
+											.describe(
+												'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+											),
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecFiltersMaxOne,
+									)
+									.describe(
+										"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
+									),
+								desired_n: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe(
+										"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+									),
+								power: zod
+									.number()
+									.min(
+										listOrganizationExperimentsResponseItemsItemDesignSpecPowerMinOne,
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecPowerMaxOne,
+									)
+									.default(
+										listOrganizationExperimentsResponseItemsItemDesignSpecPowerDefaultOne,
+									)
+									.describe(
+										"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
+									),
+								alpha: zod
+									.number()
+									.min(
+										listOrganizationExperimentsResponseItemsItemDesignSpecAlphaMinOne,
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecAlphaMaxOne,
+									)
+									.default(
+										listOrganizationExperimentsResponseItemsItemDesignSpecAlphaDefaultOne,
+									)
+									.describe(
+										"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
+									),
+								fstat_thresh: zod
+									.number()
+									.min(
+										listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMinOne,
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshMaxOne,
+									)
+									.default(
+										listOrganizationExperimentsResponseItemsItemDesignSpecFstatThreshDefaultOne,
+									)
+									.describe(
+										'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
+									),
+							})
+							.describe(
+								"Use this type to randomly assign participants into arms during live experiment execution with\nfrequentist A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+							),
+						zod
+							.object({
+								experiment_type: zod.enum(["mab_online"]),
+								experiment_name: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxTwo,
+									),
+								description: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxTwo,
+									),
+								design_url: zod
+									.union([
+										zod
+											.string()
+											.url()
+											.min(1)
+											.max(
+												listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxSeven,
+											),
+										zod.null(),
+									])
+									.optional()
+									.describe(
+										"Optional URL to a more detailed experiment design doc.",
+									),
+								start_date: zod.string().datetime({}),
+								end_date: zod.string().datetime({}),
+								arms: zod
+									.array(
+										zod
+											.object({
+												arm_id: zod
+													.union([zod.string(), zod.null()])
+													.optional()
+													.describe(
+														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+													),
+												arm_name: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxTwo,
+													),
+												arm_description: zod
+													.union([
+														zod
+															.string()
+															.max(
+																listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxSeven,
+															),
+														zod.null(),
+													])
+													.optional(),
+												arm_weight: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+													),
+												alpha_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Initial alpha parameter for Beta prior"),
+												beta_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Initial beta parameter for Beta prior"),
+												mu_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Initial mean parameter for Normal prior"),
+												sigma_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Initial standard deviation parameter for Normal prior",
+													),
+												alpha: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Updated alpha parameter for Beta prior"),
+												beta: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Updated beta parameter for Beta prior"),
+												mu: zod
+													.union([zod.array(zod.number()), zod.null()])
+													.optional()
+													.describe("Updated mean vector for Normal prior"),
+												covariance: zod
+													.union([
+														zod.array(zod.array(zod.number())),
+														zod.null(),
+													])
+													.optional()
+													.describe(
+														"Updated covariance matrix for Normal prior",
+													),
+											})
+											.describe(
+												"Describes an experiment arm for bandit experiments.",
+											),
+									)
+									.min(
+										listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinTwo,
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxTwo,
+									),
+								contexts: zod
+									.union([
+										zod
 											.array(
 												zod
 													.object({
-														arm_id: zod
+														context_id: zod
 															.union([zod.string(), zod.null()])
 															.optional()
 															.describe(
-																"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+																"Unique identifier for the context, you should NOT set this when creating a new context.",
 															),
-														arm_name: zod
+														context_name: zod
 															.string()
 															.max(
-																listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxTwo,
+																listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextNameMax,
 															),
-														arm_description: zod
+														context_description: zod
 															.union([
 																zod
 																	.string()
 																	.max(
-																		listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxSeven,
+																		listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextDescriptionMaxOne,
 																	),
 																zod.null(),
 															])
 															.optional(),
-														arm_weight: zod
-															.union([zod.number(), zod.null()])
+														value_type: zod
+															.enum(["binary", "real-valued"])
 															.optional()
-															.describe(
-																"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-															),
-														alpha_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial alpha parameter for Beta prior",
-															),
-														beta_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial beta parameter for Beta prior",
-															),
-														mu_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial mean parameter for Normal prior",
-															),
-														sigma_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial standard deviation parameter for Normal prior",
-															),
-														alpha: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Updated alpha parameter for Beta prior",
-															),
-														beta: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Updated beta parameter for Beta prior",
-															),
-														mu: zod
-															.union([zod.array(zod.number()), zod.null()])
-															.optional()
-															.describe("Updated mean vector for Normal prior"),
-														covariance: zod
-															.union([
-																zod.array(zod.array(zod.number())),
-																zod.null(),
-															])
-															.optional()
-															.describe(
-																"Updated covariance matrix for Normal prior",
-															),
+															.describe("Enum for the type of context."),
 													})
 													.describe(
-														"Describes an experiment arm for bandit experiments.",
+														"Pydantic model for context of the experiment.",
 													),
-											)
-											.min(
-												listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinTwo,
 											)
 											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxTwo,
+												listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxOne,
 											),
-										contexts: zod
-											.union([
-												zod
-													.array(
-														zod
-															.object({
-																context_id: zod
-																	.union([zod.string(), zod.null()])
-																	.optional()
-																	.describe(
-																		"Unique identifier for the context, you should NOT set this when creating a new context.",
-																	),
-																context_name: zod
-																	.string()
-																	.max(
-																		listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextNameMax,
-																	),
-																context_description: zod
-																	.union([
-																		zod
-																			.string()
-																			.max(
-																				listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextDescriptionMaxOne,
-																			),
-																		zod.null(),
-																	])
-																	.optional(),
-																value_type: zod
-																	.enum(["binary", "real-valued"])
-																	.optional()
-																	.describe("Enum for the type of context."),
-															})
-															.describe(
-																"Pydantic model for context of the experiment.",
-															),
-													)
-													.max(
-														listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxOne,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
-											),
-										prior_type: zod
-											.enum(["beta", "normal"])
-											.optional()
-											.describe("Enum for the prior distribution of the arm."),
-										reward_type: zod
-											.enum(["binary", "real-valued"])
-											.optional()
-											.describe(
-												"Enum for the likelihood distribution of the reward.",
-											),
-									})
+										zod.null(),
+									])
+									.optional()
 									.describe(
-										"Use this type to randomly assign participants into arms during live experiment execution with MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+										"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 									),
-								zod
-									.object({
-										experiment_type: zod.enum(["cmab_online"]),
-										experiment_name: zod
+								prior_type: zod
+									.enum(["beta", "normal"])
+									.optional()
+									.describe("Enum for the prior distribution of the arm."),
+								reward_type: zod
+									.enum(["binary", "real-valued"])
+									.optional()
+									.describe(
+										"Enum for the likelihood distribution of the reward.",
+									),
+							})
+							.describe(
+								"Use this type to randomly assign participants into arms during live experiment execution with MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+							),
+						zod
+							.object({
+								experiment_type: zod.enum(["cmab_online"]),
+								experiment_name: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxThree,
+									),
+								description: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxThree,
+									),
+								design_url: zod
+									.union([
+										zod
 											.string()
+											.url()
+											.min(1)
 											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxThree,
+												listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxOnezero,
 											),
-										description: zod
-											.string()
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxThree,
-											),
-										design_url: zod
-											.union([
-												zod
-													.string()
-													.url()
-													.min(1)
-													.max(
-														listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxOnezero,
+										zod.null(),
+									])
+									.optional()
+									.describe(
+										"Optional URL to a more detailed experiment design doc.",
+									),
+								start_date: zod.string().datetime({}),
+								end_date: zod.string().datetime({}),
+								arms: zod
+									.array(
+										zod
+											.object({
+												arm_id: zod
+													.union([zod.string(), zod.null()])
+													.optional()
+													.describe(
+														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 													),
-												zod.null(),
-											])
-											.optional()
+												arm_name: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxThree,
+													),
+												arm_description: zod
+													.union([
+														zod
+															.string()
+															.max(
+																listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOnezero,
+															),
+														zod.null(),
+													])
+													.optional(),
+												arm_weight: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+													),
+												alpha_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Initial alpha parameter for Beta prior"),
+												beta_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Initial beta parameter for Beta prior"),
+												mu_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Initial mean parameter for Normal prior"),
+												sigma_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Initial standard deviation parameter for Normal prior",
+													),
+												alpha: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Updated alpha parameter for Beta prior"),
+												beta: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Updated beta parameter for Beta prior"),
+												mu: zod
+													.union([zod.array(zod.number()), zod.null()])
+													.optional()
+													.describe("Updated mean vector for Normal prior"),
+												covariance: zod
+													.union([
+														zod.array(zod.array(zod.number())),
+														zod.null(),
+													])
+													.optional()
+													.describe(
+														"Updated covariance matrix for Normal prior",
+													),
+											})
 											.describe(
-												"Optional URL to a more detailed experiment design doc.",
+												"Describes an experiment arm for bandit experiments.",
 											),
-										start_date: zod.string().datetime({}),
-										end_date: zod.string().datetime({}),
-										arms: zod
+									)
+									.min(
+										listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinThree,
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxThree,
+									),
+								contexts: zod
+									.union([
+										zod
 											.array(
 												zod
 													.object({
-														arm_id: zod
+														context_id: zod
 															.union([zod.string(), zod.null()])
 															.optional()
 															.describe(
-																"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+																"Unique identifier for the context, you should NOT set this when creating a new context.",
 															),
-														arm_name: zod
+														context_name: zod
 															.string()
 															.max(
-																listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxThree,
+																listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextNameMaxOne,
 															),
-														arm_description: zod
+														context_description: zod
 															.union([
 																zod
 																	.string()
 																	.max(
-																		listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOnezero,
+																		listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextDescriptionMaxFour,
 																	),
 																zod.null(),
 															])
 															.optional(),
-														arm_weight: zod
-															.union([zod.number(), zod.null()])
+														value_type: zod
+															.enum(["binary", "real-valued"])
 															.optional()
-															.describe(
-																"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-															),
-														alpha_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial alpha parameter for Beta prior",
-															),
-														beta_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial beta parameter for Beta prior",
-															),
-														mu_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial mean parameter for Normal prior",
-															),
-														sigma_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial standard deviation parameter for Normal prior",
-															),
-														alpha: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Updated alpha parameter for Beta prior",
-															),
-														beta: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Updated beta parameter for Beta prior",
-															),
-														mu: zod
-															.union([zod.array(zod.number()), zod.null()])
-															.optional()
-															.describe("Updated mean vector for Normal prior"),
-														covariance: zod
-															.union([
-																zod.array(zod.array(zod.number())),
-																zod.null(),
-															])
-															.optional()
-															.describe(
-																"Updated covariance matrix for Normal prior",
-															),
+															.describe("Enum for the type of context."),
 													})
 													.describe(
-														"Describes an experiment arm for bandit experiments.",
+														"Pydantic model for context of the experiment.",
 													),
-											)
-											.min(
-												listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinThree,
 											)
 											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxThree,
+												listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxFour,
 											),
-										contexts: zod
-											.union([
-												zod
-													.array(
-														zod
-															.object({
-																context_id: zod
-																	.union([zod.string(), zod.null()])
-																	.optional()
-																	.describe(
-																		"Unique identifier for the context, you should NOT set this when creating a new context.",
-																	),
-																context_name: zod
-																	.string()
-																	.max(
-																		listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextNameMaxOne,
-																	),
-																context_description: zod
-																	.union([
-																		zod
-																			.string()
-																			.max(
-																				listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextDescriptionMaxFour,
-																			),
-																		zod.null(),
-																	])
-																	.optional(),
-																value_type: zod
-																	.enum(["binary", "real-valued"])
-																	.optional()
-																	.describe("Enum for the type of context."),
-															})
-															.describe(
-																"Pydantic model for context of the experiment.",
-															),
-													)
-													.max(
-														listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxFour,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
-											),
-										prior_type: zod
-											.enum(["beta", "normal"])
-											.optional()
-											.describe("Enum for the prior distribution of the arm."),
-										reward_type: zod
-											.enum(["binary", "real-valued"])
-											.optional()
-											.describe(
-												"Enum for the likelihood distribution of the reward.",
-											),
-									})
+										zod.null(),
+									])
+									.optional()
 									.describe(
-										"Use this type to randomly assign participants into arms during live experiment execution with\ncontextual MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+										"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 									),
-								zod
-									.object({
-										experiment_type: zod.enum(["bayes_ab_online"]),
-										experiment_name: zod
+								prior_type: zod
+									.enum(["beta", "normal"])
+									.optional()
+									.describe("Enum for the prior distribution of the arm."),
+								reward_type: zod
+									.enum(["binary", "real-valued"])
+									.optional()
+									.describe(
+										"Enum for the likelihood distribution of the reward.",
+									),
+							})
+							.describe(
+								"Use this type to randomly assign participants into arms during live experiment execution with\ncontextual MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+							),
+						zod
+							.object({
+								experiment_type: zod.enum(["bayes_ab_online"]),
+								experiment_name: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxFour,
+									),
+								description: zod
+									.string()
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxFour,
+									),
+								design_url: zod
+									.union([
+										zod
 											.string()
+											.url()
+											.min(1)
 											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxFour,
+												listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxOnethree,
 											),
-										description: zod
-											.string()
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxFour,
-											),
-										design_url: zod
-											.union([
-												zod
-													.string()
-													.url()
-													.min(1)
-													.max(
-														listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxOnethree,
+										zod.null(),
+									])
+									.optional()
+									.describe(
+										"Optional URL to a more detailed experiment design doc.",
+									),
+								start_date: zod.string().datetime({}),
+								end_date: zod.string().datetime({}),
+								arms: zod
+									.array(
+										zod
+											.object({
+												arm_id: zod
+													.union([zod.string(), zod.null()])
+													.optional()
+													.describe(
+														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 													),
-												zod.null(),
-											])
-											.optional()
+												arm_name: zod
+													.string()
+													.max(
+														listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxFour,
+													),
+												arm_description: zod
+													.union([
+														zod
+															.string()
+															.max(
+																listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOnethree,
+															),
+														zod.null(),
+													])
+													.optional(),
+												arm_weight: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+													),
+												alpha_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Initial alpha parameter for Beta prior"),
+												beta_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Initial beta parameter for Beta prior"),
+												mu_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Initial mean parameter for Normal prior"),
+												sigma_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Initial standard deviation parameter for Normal prior",
+													),
+												alpha: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Updated alpha parameter for Beta prior"),
+												beta: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Updated beta parameter for Beta prior"),
+												mu: zod
+													.union([zod.array(zod.number()), zod.null()])
+													.optional()
+													.describe("Updated mean vector for Normal prior"),
+												covariance: zod
+													.union([
+														zod.array(zod.array(zod.number())),
+														zod.null(),
+													])
+													.optional()
+													.describe(
+														"Updated covariance matrix for Normal prior",
+													),
+											})
 											.describe(
-												"Optional URL to a more detailed experiment design doc.",
+												"Describes an experiment arm for bandit experiments.",
 											),
-										start_date: zod.string().datetime({}),
-										end_date: zod.string().datetime({}),
-										arms: zod
+									)
+									.min(
+										listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinFour,
+									)
+									.max(
+										listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxFour,
+									),
+								contexts: zod
+									.union([
+										zod
 											.array(
 												zod
 													.object({
-														arm_id: zod
+														context_id: zod
 															.union([zod.string(), zod.null()])
 															.optional()
 															.describe(
-																"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+																"Unique identifier for the context, you should NOT set this when creating a new context.",
 															),
-														arm_name: zod
+														context_name: zod
 															.string()
 															.max(
-																listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxFour,
+																listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextNameMaxTwo,
 															),
-														arm_description: zod
+														context_description: zod
 															.union([
 																zod
 																	.string()
 																	.max(
-																		listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOnethree,
+																		listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextDescriptionMaxSeven,
 																	),
 																zod.null(),
 															])
 															.optional(),
-														arm_weight: zod
-															.union([zod.number(), zod.null()])
+														value_type: zod
+															.enum(["binary", "real-valued"])
 															.optional()
-															.describe(
-																"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-															),
-														alpha_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial alpha parameter for Beta prior",
-															),
-														beta_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial beta parameter for Beta prior",
-															),
-														mu_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial mean parameter for Normal prior",
-															),
-														sigma_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial standard deviation parameter for Normal prior",
-															),
-														alpha: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Updated alpha parameter for Beta prior",
-															),
-														beta: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Updated beta parameter for Beta prior",
-															),
-														mu: zod
-															.union([zod.array(zod.number()), zod.null()])
-															.optional()
-															.describe("Updated mean vector for Normal prior"),
-														covariance: zod
-															.union([
-																zod.array(zod.array(zod.number())),
-																zod.null(),
-															])
-															.optional()
-															.describe(
-																"Updated covariance matrix for Normal prior",
-															),
+															.describe("Enum for the type of context."),
 													})
 													.describe(
-														"Describes an experiment arm for bandit experiments.",
+														"Pydantic model for context of the experiment.",
 													),
-											)
-											.min(
-												listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinFour,
 											)
 											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxFour,
+												listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxSeven,
 											),
-										contexts: zod
-											.union([
-												zod
-													.array(
-														zod
-															.object({
-																context_id: zod
-																	.union([zod.string(), zod.null()])
-																	.optional()
-																	.describe(
-																		"Unique identifier for the context, you should NOT set this when creating a new context.",
-																	),
-																context_name: zod
-																	.string()
-																	.max(
-																		listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextNameMaxTwo,
-																	),
-																context_description: zod
-																	.union([
-																		zod
-																			.string()
-																			.max(
-																				listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextDescriptionMaxSeven,
-																			),
-																		zod.null(),
-																	])
-																	.optional(),
-																value_type: zod
-																	.enum(["binary", "real-valued"])
-																	.optional()
-																	.describe("Enum for the type of context."),
-															})
-															.describe(
-																"Pydantic model for context of the experiment.",
-															),
-													)
-													.max(
-														listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxSeven,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
-											),
-										prior_type: zod
-											.enum(["beta", "normal"])
-											.optional()
-											.describe("Enum for the prior distribution of the arm."),
-										reward_type: zod
-											.enum(["binary", "real-valued"])
-											.optional()
-											.describe(
-												"Enum for the likelihood distribution of the reward.",
-											),
-									})
+										zod.null(),
+									])
+									.optional()
 									.describe(
-										"Use this type to randomly assign participants into arms during live experiment execution with\nBayesian A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+										"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 									),
-							])
-							.describe("The specific type of bandit experiment design."),
+								prior_type: zod
+									.enum(["beta", "normal"])
+									.optional()
+									.describe("Enum for the prior distribution of the arm."),
+								reward_type: zod
+									.enum(["binary", "real-valued"])
+									.optional()
+									.describe(
+										"Enum for the likelihood distribution of the reward.",
+									),
+							})
+							.describe(
+								"Use this type to randomly assign participants into arms during live experiment execution with\nBayesian A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+							),
 					])
 					.describe("The type of assignment and experiment design."),
 				power_analyses: zod.union([
@@ -7528,10 +7307,6 @@ export const getExperimentForUiResponseConfigDesignSpecArmsItemArmDescriptionMax
 export const getExperimentForUiResponseConfigDesignSpecArmsMin = 2;
 export const getExperimentForUiResponseConfigDesignSpecArmsMax = 20;
 
-export const getExperimentForUiResponseConfigDesignSpecTableNameMax = 100;
-
-export const getExperimentForUiResponseConfigDesignSpecPrimaryKeyRegExp =
-	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentForUiResponseConfigDesignSpecStrataItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentForUiResponseConfigDesignSpecStrataMax = 150;
@@ -7569,10 +7344,6 @@ export const getExperimentForUiResponseConfigDesignSpecArmsItemArmDescriptionMax
 export const getExperimentForUiResponseConfigDesignSpecArmsMinOne = 2;
 export const getExperimentForUiResponseConfigDesignSpecArmsMaxOne = 20;
 
-export const getExperimentForUiResponseConfigDesignSpecTableNameMaxOne = 100;
-
-export const getExperimentForUiResponseConfigDesignSpecPrimaryKeyRegExpOne =
-	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentForUiResponseConfigDesignSpecStrataItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentForUiResponseConfigDesignSpecStrataMaxOne = 150;
@@ -7712,975 +7483,875 @@ export const getExperimentForUiResponse = zod
 				design_spec: zod
 					.union([
 						zod
-							.union([
-								zod
-									.object({
-										experiment_type: zod.enum(["freq_preassigned"]),
-										experiment_name: zod
-											.string()
-											.max(
-												getExperimentForUiResponseConfigDesignSpecExperimentNameMax,
-											),
-										description: zod
-											.string()
-											.max(
-												getExperimentForUiResponseConfigDesignSpecDescriptionMax,
-											),
-										design_url: zod
-											.union([
-												zod
-													.string()
-													.url()
-													.min(1)
-													.max(
-														getExperimentForUiResponseConfigDesignSpecDesignUrlMaxOne,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional URL to a more detailed experiment design doc.",
-											),
-										start_date: zod.string().datetime({}),
-										end_date: zod.string().datetime({}),
-										arms: zod
-											.array(
-												zod
-													.object({
-														arm_id: zod
-															.union([zod.string(), zod.null()])
-															.optional()
-															.describe(
-																"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-															),
-														arm_name: zod
-															.string()
-															.max(
-																getExperimentForUiResponseConfigDesignSpecArmsItemArmNameMax,
-															),
-														arm_description: zod
-															.union([
-																zod
-																	.string()
-																	.max(
-																		getExperimentForUiResponseConfigDesignSpecArmsItemArmDescriptionMaxOne,
-																	),
-																zod.null(),
-															])
-															.optional(),
-														arm_weight: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-															),
-													})
-													.describe("Describes an experiment treatment arm."),
-											)
-											.min(getExperimentForUiResponseConfigDesignSpecArmsMin)
-											.max(getExperimentForUiResponseConfigDesignSpecArmsMax),
-										table_name: zod
-											.string()
-											.max(
-												getExperimentForUiResponseConfigDesignSpecTableNameMax,
-											)
-											.describe(
-												"Datasource table used to resolve participant field metadata.",
-											),
-										primary_key: zod
-											.string()
-											.regex(
-												getExperimentForUiResponseConfigDesignSpecPrimaryKeyRegExp,
-											)
-											.describe(
-												"Column name in table_name that uniquely identifies each participant.",
-											),
-										strata: zod
-											.array(
-												zod
-													.object({
-														field_name: zod
-															.string()
-															.regex(
-																getExperimentForUiResponseConfigDesignSpecStrataItemFieldNameRegExp,
-															),
-													})
-													.describe(
-														"Describes a variable used for stratification.",
-													),
-											)
-											.max(getExperimentForUiResponseConfigDesignSpecStrataMax)
-											.describe(
-												"Optional fields to use for stratified assignment.",
-											),
-										metrics: zod
-											.array(
-												zod
-													.object({
-														field_name: zod
-															.string()
-															.regex(
-																getExperimentForUiResponseConfigDesignSpecMetricsItemFieldNameRegExp,
-															),
-														metric_pct_change: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
-															),
-														metric_target: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
-															),
-													})
-													.describe(
-														"Defines a request to look up baseline stats for a metric to measure in an experiment.",
-													),
-											)
-											.min(1)
-											.max(getExperimentForUiResponseConfigDesignSpecMetricsMax)
-											.describe(
-												"Primary and optional secondary metrics to target.",
-											),
-										filters: zod
-											.array(
-												zod
-													.object({
-														field_name: zod
-															.string()
-															.regex(
-																getExperimentForUiResponseConfigDesignSpecFiltersItemFieldNameRegExp,
-															),
-														relation: zod
-															.enum(["includes", "excludes", "between"])
-															.describe(
-																"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
-															),
-														value: zod.union([
-															zod.array(zod.union([zod.number(), zod.null()])),
-															zod.array(zod.union([zod.number(), zod.null()])),
-															zod.array(zod.union([zod.string(), zod.null()])),
-															zod.array(zod.union([zod.boolean(), zod.null()])),
-														]),
-													})
-													.describe(
-														'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
-													),
-											)
-											.max(getExperimentForUiResponseConfigDesignSpecFiltersMax)
-											.describe(
-												"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
-											),
-										desired_n: zod
-											.union([zod.number(), zod.null()])
-											.optional()
-											.describe(
-												"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
-											),
-										power: zod
-											.number()
-											.min(getExperimentForUiResponseConfigDesignSpecPowerMin)
-											.max(getExperimentForUiResponseConfigDesignSpecPowerMax)
-											.default(
-												getExperimentForUiResponseConfigDesignSpecPowerDefault,
-											)
-											.describe(
-												"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
-											),
-										alpha: zod
-											.number()
-											.min(getExperimentForUiResponseConfigDesignSpecAlphaMin)
-											.max(getExperimentForUiResponseConfigDesignSpecAlphaMax)
-											.default(
-												getExperimentForUiResponseConfigDesignSpecAlphaDefault,
-											)
-											.describe(
-												"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
-											),
-										fstat_thresh: zod
-											.number()
-											.min(
-												getExperimentForUiResponseConfigDesignSpecFstatThreshMin,
-											)
-											.max(
-												getExperimentForUiResponseConfigDesignSpecFstatThreshMax,
-											)
-											.default(
-												getExperimentForUiResponseConfigDesignSpecFstatThreshDefault,
-											)
-											.describe(
-												'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
-											),
-									})
-									.describe(
-										"Use this type to randomly select and assign from existing participants at design time with\nfrequentist A/B experiments.",
+							.object({
+								experiment_type: zod.enum(["freq_preassigned"]),
+								experiment_name: zod
+									.string()
+									.max(
+										getExperimentForUiResponseConfigDesignSpecExperimentNameMax,
 									),
-								zod
-									.object({
-										experiment_type: zod.enum(["freq_online"]),
-										experiment_name: zod
+								description: zod
+									.string()
+									.max(
+										getExperimentForUiResponseConfigDesignSpecDescriptionMax,
+									),
+								design_url: zod
+									.union([
+										zod
 											.string()
-											.max(
-												getExperimentForUiResponseConfigDesignSpecExperimentNameMaxOne,
-											),
-										description: zod
-											.string()
-											.max(
-												getExperimentForUiResponseConfigDesignSpecDescriptionMaxOne,
-											),
-										design_url: zod
-											.union([
-												zod
-													.string()
-													.url()
-													.min(1)
-													.max(
-														getExperimentForUiResponseConfigDesignSpecDesignUrlMaxFour,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional URL to a more detailed experiment design doc.",
-											),
-										start_date: zod.string().datetime({}),
-										end_date: zod.string().datetime({}),
-										arms: zod
-											.array(
-												zod
-													.object({
-														arm_id: zod
-															.union([zod.string(), zod.null()])
-															.optional()
-															.describe(
-																"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-															),
-														arm_name: zod
-															.string()
-															.max(
-																getExperimentForUiResponseConfigDesignSpecArmsItemArmNameMaxOne,
-															),
-														arm_description: zod
-															.union([
-																zod
-																	.string()
-																	.max(
-																		getExperimentForUiResponseConfigDesignSpecArmsItemArmDescriptionMaxFour,
-																	),
-																zod.null(),
-															])
-															.optional(),
-														arm_weight: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-															),
-													})
-													.describe("Describes an experiment treatment arm."),
-											)
-											.min(getExperimentForUiResponseConfigDesignSpecArmsMinOne)
-											.max(
-												getExperimentForUiResponseConfigDesignSpecArmsMaxOne,
-											),
-										table_name: zod
-											.string()
-											.max(
-												getExperimentForUiResponseConfigDesignSpecTableNameMaxOne,
-											)
-											.describe(
-												"Datasource table used to resolve participant field metadata.",
-											),
-										primary_key: zod
-											.string()
-											.regex(
-												getExperimentForUiResponseConfigDesignSpecPrimaryKeyRegExpOne,
-											)
-											.describe(
-												"Column name in table_name that uniquely identifies each participant.",
-											),
-										strata: zod
-											.array(
-												zod
-													.object({
-														field_name: zod
-															.string()
-															.regex(
-																getExperimentForUiResponseConfigDesignSpecStrataItemFieldNameRegExpOne,
-															),
-													})
-													.describe(
-														"Describes a variable used for stratification.",
-													),
-											)
-											.max(
-												getExperimentForUiResponseConfigDesignSpecStrataMaxOne,
-											)
-											.describe(
-												"Optional fields to use for stratified assignment.",
-											),
-										metrics: zod
-											.array(
-												zod
-													.object({
-														field_name: zod
-															.string()
-															.regex(
-																getExperimentForUiResponseConfigDesignSpecMetricsItemFieldNameRegExpOne,
-															),
-														metric_pct_change: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
-															),
-														metric_target: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
-															),
-													})
-													.describe(
-														"Defines a request to look up baseline stats for a metric to measure in an experiment.",
-													),
-											)
+											.url()
 											.min(1)
 											.max(
-												getExperimentForUiResponseConfigDesignSpecMetricsMaxOne,
-											)
-											.describe(
-												"Primary and optional secondary metrics to target.",
+												getExperimentForUiResponseConfigDesignSpecDesignUrlMaxOne,
 											),
-										filters: zod
-											.array(
-												zod
-													.object({
-														field_name: zod
-															.string()
-															.regex(
-																getExperimentForUiResponseConfigDesignSpecFiltersItemFieldNameRegExpOne,
-															),
-														relation: zod
-															.enum(["includes", "excludes", "between"])
-															.describe(
-																"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
-															),
-														value: zod.union([
-															zod.array(zod.union([zod.number(), zod.null()])),
-															zod.array(zod.union([zod.number(), zod.null()])),
-															zod.array(zod.union([zod.string(), zod.null()])),
-															zod.array(zod.union([zod.boolean(), zod.null()])),
-														]),
-													})
-													.describe(
-														'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
-													),
-											)
-											.max(
-												getExperimentForUiResponseConfigDesignSpecFiltersMaxOne,
-											)
-											.describe(
-												"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
-											),
-										desired_n: zod
-											.union([zod.number(), zod.null()])
-											.optional()
-											.describe(
-												"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
-											),
-										power: zod
-											.number()
-											.min(
-												getExperimentForUiResponseConfigDesignSpecPowerMinOne,
-											)
-											.max(
-												getExperimentForUiResponseConfigDesignSpecPowerMaxOne,
-											)
-											.default(
-												getExperimentForUiResponseConfigDesignSpecPowerDefaultOne,
-											)
-											.describe(
-												"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
-											),
-										alpha: zod
-											.number()
-											.min(
-												getExperimentForUiResponseConfigDesignSpecAlphaMinOne,
-											)
-											.max(
-												getExperimentForUiResponseConfigDesignSpecAlphaMaxOne,
-											)
-											.default(
-												getExperimentForUiResponseConfigDesignSpecAlphaDefaultOne,
-											)
-											.describe(
-												"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
-											),
-										fstat_thresh: zod
-											.number()
-											.min(
-												getExperimentForUiResponseConfigDesignSpecFstatThreshMinOne,
-											)
-											.max(
-												getExperimentForUiResponseConfigDesignSpecFstatThreshMaxOne,
-											)
-											.default(
-												getExperimentForUiResponseConfigDesignSpecFstatThreshDefaultOne,
-											)
-											.describe(
-												'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
-											),
-									})
+										zod.null(),
+									])
+									.optional()
 									.describe(
-										"Use this type to randomly assign participants into arms during live experiment execution with\nfrequentist A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+										"Optional URL to a more detailed experiment design doc.",
 									),
-							])
-							.describe("The specific type of frequentist experiment design."),
+								start_date: zod.string().datetime({}),
+								end_date: zod.string().datetime({}),
+								arms: zod
+									.array(
+										zod
+											.object({
+												arm_id: zod
+													.union([zod.string(), zod.null()])
+													.optional()
+													.describe(
+														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+													),
+												arm_name: zod
+													.string()
+													.max(
+														getExperimentForUiResponseConfigDesignSpecArmsItemArmNameMax,
+													),
+												arm_description: zod
+													.union([
+														zod
+															.string()
+															.max(
+																getExperimentForUiResponseConfigDesignSpecArmsItemArmDescriptionMaxOne,
+															),
+														zod.null(),
+													])
+													.optional(),
+												arm_weight: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+													),
+											})
+											.describe("Describes an experiment treatment arm."),
+									)
+									.min(getExperimentForUiResponseConfigDesignSpecArmsMin)
+									.max(getExperimentForUiResponseConfigDesignSpecArmsMax),
+								strata: zod
+									.array(
+										zod
+											.object({
+												field_name: zod
+													.string()
+													.regex(
+														getExperimentForUiResponseConfigDesignSpecStrataItemFieldNameRegExp,
+													),
+											})
+											.describe(
+												"Describes a variable used for stratification.",
+											),
+									)
+									.max(getExperimentForUiResponseConfigDesignSpecStrataMax)
+									.describe(
+										"Optional fields to use for stratified assignment.",
+									),
+								metrics: zod
+									.array(
+										zod
+											.object({
+												field_name: zod
+													.string()
+													.regex(
+														getExperimentForUiResponseConfigDesignSpecMetricsItemFieldNameRegExp,
+													),
+												metric_pct_change: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+													),
+												metric_target: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+													),
+											})
+											.describe(
+												"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+											),
+									)
+									.min(1)
+									.max(getExperimentForUiResponseConfigDesignSpecMetricsMax)
+									.describe(
+										"Primary and optional secondary metrics to target.",
+									),
+								filters: zod
+									.array(
+										zod
+											.object({
+												field_name: zod
+													.string()
+													.regex(
+														getExperimentForUiResponseConfigDesignSpecFiltersItemFieldNameRegExp,
+													),
+												relation: zod
+													.enum(["includes", "excludes", "between"])
+													.describe(
+														"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
+													),
+												value: zod.union([
+													zod.array(zod.union([zod.number(), zod.null()])),
+													zod.array(zod.union([zod.number(), zod.null()])),
+													zod.array(zod.union([zod.string(), zod.null()])),
+													zod.array(zod.union([zod.boolean(), zod.null()])),
+												]),
+											})
+											.describe(
+												'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+											),
+									)
+									.max(getExperimentForUiResponseConfigDesignSpecFiltersMax)
+									.describe(
+										"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
+									),
+								desired_n: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe(
+										"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+									),
+								power: zod
+									.number()
+									.min(getExperimentForUiResponseConfigDesignSpecPowerMin)
+									.max(getExperimentForUiResponseConfigDesignSpecPowerMax)
+									.default(
+										getExperimentForUiResponseConfigDesignSpecPowerDefault,
+									)
+									.describe(
+										"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
+									),
+								alpha: zod
+									.number()
+									.min(getExperimentForUiResponseConfigDesignSpecAlphaMin)
+									.max(getExperimentForUiResponseConfigDesignSpecAlphaMax)
+									.default(
+										getExperimentForUiResponseConfigDesignSpecAlphaDefault,
+									)
+									.describe(
+										"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
+									),
+								fstat_thresh: zod
+									.number()
+									.min(getExperimentForUiResponseConfigDesignSpecFstatThreshMin)
+									.max(getExperimentForUiResponseConfigDesignSpecFstatThreshMax)
+									.default(
+										getExperimentForUiResponseConfigDesignSpecFstatThreshDefault,
+									)
+									.describe(
+										'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
+									),
+							})
+							.describe(
+								"Use this type to randomly select and assign from existing participants at design time with\nfrequentist A/B experiments.",
+							),
 						zod
-							.union([
-								zod
-									.object({
-										experiment_type: zod.enum(["mab_online"]),
-										experiment_name: zod
+							.object({
+								experiment_type: zod.enum(["freq_online"]),
+								experiment_name: zod
+									.string()
+									.max(
+										getExperimentForUiResponseConfigDesignSpecExperimentNameMaxOne,
+									),
+								description: zod
+									.string()
+									.max(
+										getExperimentForUiResponseConfigDesignSpecDescriptionMaxOne,
+									),
+								design_url: zod
+									.union([
+										zod
 											.string()
+											.url()
+											.min(1)
 											.max(
-												getExperimentForUiResponseConfigDesignSpecExperimentNameMaxTwo,
+												getExperimentForUiResponseConfigDesignSpecDesignUrlMaxFour,
 											),
-										description: zod
-											.string()
-											.max(
-												getExperimentForUiResponseConfigDesignSpecDescriptionMaxTwo,
-											),
-										design_url: zod
-											.union([
-												zod
-													.string()
-													.url()
-													.min(1)
-													.max(
-														getExperimentForUiResponseConfigDesignSpecDesignUrlMaxSeven,
+										zod.null(),
+									])
+									.optional()
+									.describe(
+										"Optional URL to a more detailed experiment design doc.",
+									),
+								start_date: zod.string().datetime({}),
+								end_date: zod.string().datetime({}),
+								arms: zod
+									.array(
+										zod
+											.object({
+												arm_id: zod
+													.union([zod.string(), zod.null()])
+													.optional()
+													.describe(
+														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 													),
-												zod.null(),
-											])
-											.optional()
+												arm_name: zod
+													.string()
+													.max(
+														getExperimentForUiResponseConfigDesignSpecArmsItemArmNameMaxOne,
+													),
+												arm_description: zod
+													.union([
+														zod
+															.string()
+															.max(
+																getExperimentForUiResponseConfigDesignSpecArmsItemArmDescriptionMaxFour,
+															),
+														zod.null(),
+													])
+													.optional(),
+												arm_weight: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+													),
+											})
+											.describe("Describes an experiment treatment arm."),
+									)
+									.min(getExperimentForUiResponseConfigDesignSpecArmsMinOne)
+									.max(getExperimentForUiResponseConfigDesignSpecArmsMaxOne),
+								strata: zod
+									.array(
+										zod
+											.object({
+												field_name: zod
+													.string()
+													.regex(
+														getExperimentForUiResponseConfigDesignSpecStrataItemFieldNameRegExpOne,
+													),
+											})
 											.describe(
-												"Optional URL to a more detailed experiment design doc.",
+												"Describes a variable used for stratification.",
 											),
-										start_date: zod.string().datetime({}),
-										end_date: zod.string().datetime({}),
-										arms: zod
+									)
+									.max(getExperimentForUiResponseConfigDesignSpecStrataMaxOne)
+									.describe(
+										"Optional fields to use for stratified assignment.",
+									),
+								metrics: zod
+									.array(
+										zod
+											.object({
+												field_name: zod
+													.string()
+													.regex(
+														getExperimentForUiResponseConfigDesignSpecMetricsItemFieldNameRegExpOne,
+													),
+												metric_pct_change: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.",
+													),
+												metric_target: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+													),
+											})
+											.describe(
+												"Defines a request to look up baseline stats for a metric to measure in an experiment.",
+											),
+									)
+									.min(1)
+									.max(getExperimentForUiResponseConfigDesignSpecMetricsMaxOne)
+									.describe(
+										"Primary and optional secondary metrics to target.",
+									),
+								filters: zod
+									.array(
+										zod
+											.object({
+												field_name: zod
+													.string()
+													.regex(
+														getExperimentForUiResponseConfigDesignSpecFiltersItemFieldNameRegExpOne,
+													),
+												relation: zod
+													.enum(["includes", "excludes", "between"])
+													.describe(
+														"Defines operators for filtering values.\n\nINCLUDES matches when the value matches any of the provided values, including null if explicitly\nspecified. This is equivalent to NOT(EXCLUDES(values)).\n\nEXCLUDES matches when the value does not match any of the provided values, including null if\nexplicitly specified. If null is not explicitly excluded, we include nulls in the result.\n\nBETWEEN matches when the value is between the two provided values (inclusive).",
+													),
+												value: zod.union([
+													zod.array(zod.union([zod.number(), zod.null()])),
+													zod.array(zod.union([zod.number(), zod.null()])),
+													zod.array(zod.union([zod.string(), zod.null()])),
+													zod.array(zod.union([zod.boolean(), zod.null()])),
+												]),
+											})
+											.describe(
+												'Defines criteria for filtering rows by value.\n\n## Examples\n\n| Relation | Value             | logical Result                                    |\n|----------|-------------------|---------------------------------------------------|\n| INCLUDES | [None]            | Match when `x IS NULL`                            |\n| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |\n| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |\n| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |\n| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |\n| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |\n| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |\n| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |\n| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |\n| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |\n| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |\n| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |\n\nString comparisons are case-sensitive.\n\n## Special Handling for BETWEEN support of including NULL\n\nWhen the relation is BETWEEN, we allow for up to 3 values to support the special case of\nincluding null in addition to the values in the between range via an OR IS NULL clause, as\nindicated by a 3rd value of None. Any other 3rd value is invalid.\n\n## Handling of DATE, DATETIME and TIMESTAMP values\n\nDATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.\n\nValues must be expressed as ISO8601 datetime strings compatible with Python\'s datetime.fromisoformat()\n(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).\n\nIf a timezone is provided, it must be UTC.',
+											),
+									)
+									.max(getExperimentForUiResponseConfigDesignSpecFiltersMaxOne)
+									.describe(
+										"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
+									),
+								desired_n: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe(
+										"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+									),
+								power: zod
+									.number()
+									.min(getExperimentForUiResponseConfigDesignSpecPowerMinOne)
+									.max(getExperimentForUiResponseConfigDesignSpecPowerMaxOne)
+									.default(
+										getExperimentForUiResponseConfigDesignSpecPowerDefaultOne,
+									)
+									.describe(
+										"The chance of detecting a real non-null effect, i.e. 1 - false negative rate.",
+									),
+								alpha: zod
+									.number()
+									.min(getExperimentForUiResponseConfigDesignSpecAlphaMinOne)
+									.max(getExperimentForUiResponseConfigDesignSpecAlphaMaxOne)
+									.default(
+										getExperimentForUiResponseConfigDesignSpecAlphaDefaultOne,
+									)
+									.describe(
+										"The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.",
+									),
+								fstat_thresh: zod
+									.number()
+									.min(
+										getExperimentForUiResponseConfigDesignSpecFstatThreshMinOne,
+									)
+									.max(
+										getExperimentForUiResponseConfigDesignSpecFstatThreshMaxOne,
+									)
+									.default(
+										getExperimentForUiResponseConfigDesignSpecFstatThreshDefaultOne,
+									)
+									.describe(
+										'Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".',
+									),
+							})
+							.describe(
+								"Use this type to randomly assign participants into arms during live experiment execution with\nfrequentist A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+							),
+						zod
+							.object({
+								experiment_type: zod.enum(["mab_online"]),
+								experiment_name: zod
+									.string()
+									.max(
+										getExperimentForUiResponseConfigDesignSpecExperimentNameMaxTwo,
+									),
+								description: zod
+									.string()
+									.max(
+										getExperimentForUiResponseConfigDesignSpecDescriptionMaxTwo,
+									),
+								design_url: zod
+									.union([
+										zod
+											.string()
+											.url()
+											.min(1)
+											.max(
+												getExperimentForUiResponseConfigDesignSpecDesignUrlMaxSeven,
+											),
+										zod.null(),
+									])
+									.optional()
+									.describe(
+										"Optional URL to a more detailed experiment design doc.",
+									),
+								start_date: zod.string().datetime({}),
+								end_date: zod.string().datetime({}),
+								arms: zod
+									.array(
+										zod
+											.object({
+												arm_id: zod
+													.union([zod.string(), zod.null()])
+													.optional()
+													.describe(
+														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+													),
+												arm_name: zod
+													.string()
+													.max(
+														getExperimentForUiResponseConfigDesignSpecArmsItemArmNameMaxTwo,
+													),
+												arm_description: zod
+													.union([
+														zod
+															.string()
+															.max(
+																getExperimentForUiResponseConfigDesignSpecArmsItemArmDescriptionMaxSeven,
+															),
+														zod.null(),
+													])
+													.optional(),
+												arm_weight: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+													),
+												alpha_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Initial alpha parameter for Beta prior"),
+												beta_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Initial beta parameter for Beta prior"),
+												mu_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Initial mean parameter for Normal prior"),
+												sigma_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Initial standard deviation parameter for Normal prior",
+													),
+												alpha: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Updated alpha parameter for Beta prior"),
+												beta: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Updated beta parameter for Beta prior"),
+												mu: zod
+													.union([zod.array(zod.number()), zod.null()])
+													.optional()
+													.describe("Updated mean vector for Normal prior"),
+												covariance: zod
+													.union([
+														zod.array(zod.array(zod.number())),
+														zod.null(),
+													])
+													.optional()
+													.describe(
+														"Updated covariance matrix for Normal prior",
+													),
+											})
+											.describe(
+												"Describes an experiment arm for bandit experiments.",
+											),
+									)
+									.min(getExperimentForUiResponseConfigDesignSpecArmsMinTwo)
+									.max(getExperimentForUiResponseConfigDesignSpecArmsMaxTwo),
+								contexts: zod
+									.union([
+										zod
 											.array(
 												zod
 													.object({
-														arm_id: zod
+														context_id: zod
 															.union([zod.string(), zod.null()])
 															.optional()
 															.describe(
-																"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+																"Unique identifier for the context, you should NOT set this when creating a new context.",
 															),
-														arm_name: zod
+														context_name: zod
 															.string()
 															.max(
-																getExperimentForUiResponseConfigDesignSpecArmsItemArmNameMaxTwo,
+																getExperimentForUiResponseConfigDesignSpecContextsItemContextNameMax,
 															),
-														arm_description: zod
+														context_description: zod
 															.union([
 																zod
 																	.string()
 																	.max(
-																		getExperimentForUiResponseConfigDesignSpecArmsItemArmDescriptionMaxSeven,
+																		getExperimentForUiResponseConfigDesignSpecContextsItemContextDescriptionMaxOne,
 																	),
 																zod.null(),
 															])
 															.optional(),
-														arm_weight: zod
-															.union([zod.number(), zod.null()])
+														value_type: zod
+															.enum(["binary", "real-valued"])
 															.optional()
-															.describe(
-																"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-															),
-														alpha_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial alpha parameter for Beta prior",
-															),
-														beta_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial beta parameter for Beta prior",
-															),
-														mu_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial mean parameter for Normal prior",
-															),
-														sigma_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial standard deviation parameter for Normal prior",
-															),
-														alpha: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Updated alpha parameter for Beta prior",
-															),
-														beta: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Updated beta parameter for Beta prior",
-															),
-														mu: zod
-															.union([zod.array(zod.number()), zod.null()])
-															.optional()
-															.describe("Updated mean vector for Normal prior"),
-														covariance: zod
-															.union([
-																zod.array(zod.array(zod.number())),
-																zod.null(),
-															])
-															.optional()
-															.describe(
-																"Updated covariance matrix for Normal prior",
-															),
+															.describe("Enum for the type of context."),
 													})
 													.describe(
-														"Describes an experiment arm for bandit experiments.",
+														"Pydantic model for context of the experiment.",
 													),
 											)
-											.min(getExperimentForUiResponseConfigDesignSpecArmsMinTwo)
 											.max(
-												getExperimentForUiResponseConfigDesignSpecArmsMaxTwo,
+												getExperimentForUiResponseConfigDesignSpecContextsMaxOne,
 											),
-										contexts: zod
-											.union([
-												zod
-													.array(
-														zod
-															.object({
-																context_id: zod
-																	.union([zod.string(), zod.null()])
-																	.optional()
-																	.describe(
-																		"Unique identifier for the context, you should NOT set this when creating a new context.",
-																	),
-																context_name: zod
-																	.string()
-																	.max(
-																		getExperimentForUiResponseConfigDesignSpecContextsItemContextNameMax,
-																	),
-																context_description: zod
-																	.union([
-																		zod
-																			.string()
-																			.max(
-																				getExperimentForUiResponseConfigDesignSpecContextsItemContextDescriptionMaxOne,
-																			),
-																		zod.null(),
-																	])
-																	.optional(),
-																value_type: zod
-																	.enum(["binary", "real-valued"])
-																	.optional()
-																	.describe("Enum for the type of context."),
-															})
-															.describe(
-																"Pydantic model for context of the experiment.",
-															),
-													)
-													.max(
-														getExperimentForUiResponseConfigDesignSpecContextsMaxOne,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
-											),
-										prior_type: zod
-											.enum(["beta", "normal"])
-											.optional()
-											.describe("Enum for the prior distribution of the arm."),
-										reward_type: zod
-											.enum(["binary", "real-valued"])
-											.optional()
-											.describe(
-												"Enum for the likelihood distribution of the reward.",
-											),
-									})
+										zod.null(),
+									])
+									.optional()
 									.describe(
-										"Use this type to randomly assign participants into arms during live experiment execution with MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+										"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 									),
-								zod
-									.object({
-										experiment_type: zod.enum(["cmab_online"]),
-										experiment_name: zod
+								prior_type: zod
+									.enum(["beta", "normal"])
+									.optional()
+									.describe("Enum for the prior distribution of the arm."),
+								reward_type: zod
+									.enum(["binary", "real-valued"])
+									.optional()
+									.describe(
+										"Enum for the likelihood distribution of the reward.",
+									),
+							})
+							.describe(
+								"Use this type to randomly assign participants into arms during live experiment execution with MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+							),
+						zod
+							.object({
+								experiment_type: zod.enum(["cmab_online"]),
+								experiment_name: zod
+									.string()
+									.max(
+										getExperimentForUiResponseConfigDesignSpecExperimentNameMaxThree,
+									),
+								description: zod
+									.string()
+									.max(
+										getExperimentForUiResponseConfigDesignSpecDescriptionMaxThree,
+									),
+								design_url: zod
+									.union([
+										zod
 											.string()
+											.url()
+											.min(1)
 											.max(
-												getExperimentForUiResponseConfigDesignSpecExperimentNameMaxThree,
+												getExperimentForUiResponseConfigDesignSpecDesignUrlMaxOnezero,
 											),
-										description: zod
-											.string()
-											.max(
-												getExperimentForUiResponseConfigDesignSpecDescriptionMaxThree,
-											),
-										design_url: zod
-											.union([
-												zod
-													.string()
-													.url()
-													.min(1)
-													.max(
-														getExperimentForUiResponseConfigDesignSpecDesignUrlMaxOnezero,
+										zod.null(),
+									])
+									.optional()
+									.describe(
+										"Optional URL to a more detailed experiment design doc.",
+									),
+								start_date: zod.string().datetime({}),
+								end_date: zod.string().datetime({}),
+								arms: zod
+									.array(
+										zod
+											.object({
+												arm_id: zod
+													.union([zod.string(), zod.null()])
+													.optional()
+													.describe(
+														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 													),
-												zod.null(),
-											])
-											.optional()
+												arm_name: zod
+													.string()
+													.max(
+														getExperimentForUiResponseConfigDesignSpecArmsItemArmNameMaxThree,
+													),
+												arm_description: zod
+													.union([
+														zod
+															.string()
+															.max(
+																getExperimentForUiResponseConfigDesignSpecArmsItemArmDescriptionMaxOnezero,
+															),
+														zod.null(),
+													])
+													.optional(),
+												arm_weight: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+													),
+												alpha_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Initial alpha parameter for Beta prior"),
+												beta_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Initial beta parameter for Beta prior"),
+												mu_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Initial mean parameter for Normal prior"),
+												sigma_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Initial standard deviation parameter for Normal prior",
+													),
+												alpha: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Updated alpha parameter for Beta prior"),
+												beta: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Updated beta parameter for Beta prior"),
+												mu: zod
+													.union([zod.array(zod.number()), zod.null()])
+													.optional()
+													.describe("Updated mean vector for Normal prior"),
+												covariance: zod
+													.union([
+														zod.array(zod.array(zod.number())),
+														zod.null(),
+													])
+													.optional()
+													.describe(
+														"Updated covariance matrix for Normal prior",
+													),
+											})
 											.describe(
-												"Optional URL to a more detailed experiment design doc.",
+												"Describes an experiment arm for bandit experiments.",
 											),
-										start_date: zod.string().datetime({}),
-										end_date: zod.string().datetime({}),
-										arms: zod
+									)
+									.min(getExperimentForUiResponseConfigDesignSpecArmsMinThree)
+									.max(getExperimentForUiResponseConfigDesignSpecArmsMaxThree),
+								contexts: zod
+									.union([
+										zod
 											.array(
 												zod
 													.object({
-														arm_id: zod
+														context_id: zod
 															.union([zod.string(), zod.null()])
 															.optional()
 															.describe(
-																"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+																"Unique identifier for the context, you should NOT set this when creating a new context.",
 															),
-														arm_name: zod
+														context_name: zod
 															.string()
 															.max(
-																getExperimentForUiResponseConfigDesignSpecArmsItemArmNameMaxThree,
+																getExperimentForUiResponseConfigDesignSpecContextsItemContextNameMaxOne,
 															),
-														arm_description: zod
+														context_description: zod
 															.union([
 																zod
 																	.string()
 																	.max(
-																		getExperimentForUiResponseConfigDesignSpecArmsItemArmDescriptionMaxOnezero,
+																		getExperimentForUiResponseConfigDesignSpecContextsItemContextDescriptionMaxFour,
 																	),
 																zod.null(),
 															])
 															.optional(),
-														arm_weight: zod
-															.union([zod.number(), zod.null()])
+														value_type: zod
+															.enum(["binary", "real-valued"])
 															.optional()
-															.describe(
-																"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-															),
-														alpha_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial alpha parameter for Beta prior",
-															),
-														beta_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial beta parameter for Beta prior",
-															),
-														mu_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial mean parameter for Normal prior",
-															),
-														sigma_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial standard deviation parameter for Normal prior",
-															),
-														alpha: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Updated alpha parameter for Beta prior",
-															),
-														beta: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Updated beta parameter for Beta prior",
-															),
-														mu: zod
-															.union([zod.array(zod.number()), zod.null()])
-															.optional()
-															.describe("Updated mean vector for Normal prior"),
-														covariance: zod
-															.union([
-																zod.array(zod.array(zod.number())),
-																zod.null(),
-															])
-															.optional()
-															.describe(
-																"Updated covariance matrix for Normal prior",
-															),
+															.describe("Enum for the type of context."),
 													})
 													.describe(
-														"Describes an experiment arm for bandit experiments.",
+														"Pydantic model for context of the experiment.",
 													),
-											)
-											.min(
-												getExperimentForUiResponseConfigDesignSpecArmsMinThree,
 											)
 											.max(
-												getExperimentForUiResponseConfigDesignSpecArmsMaxThree,
+												getExperimentForUiResponseConfigDesignSpecContextsMaxFour,
 											),
-										contexts: zod
-											.union([
-												zod
-													.array(
-														zod
-															.object({
-																context_id: zod
-																	.union([zod.string(), zod.null()])
-																	.optional()
-																	.describe(
-																		"Unique identifier for the context, you should NOT set this when creating a new context.",
-																	),
-																context_name: zod
-																	.string()
-																	.max(
-																		getExperimentForUiResponseConfigDesignSpecContextsItemContextNameMaxOne,
-																	),
-																context_description: zod
-																	.union([
-																		zod
-																			.string()
-																			.max(
-																				getExperimentForUiResponseConfigDesignSpecContextsItemContextDescriptionMaxFour,
-																			),
-																		zod.null(),
-																	])
-																	.optional(),
-																value_type: zod
-																	.enum(["binary", "real-valued"])
-																	.optional()
-																	.describe("Enum for the type of context."),
-															})
-															.describe(
-																"Pydantic model for context of the experiment.",
-															),
-													)
-													.max(
-														getExperimentForUiResponseConfigDesignSpecContextsMaxFour,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
-											),
-										prior_type: zod
-											.enum(["beta", "normal"])
-											.optional()
-											.describe("Enum for the prior distribution of the arm."),
-										reward_type: zod
-											.enum(["binary", "real-valued"])
-											.optional()
-											.describe(
-												"Enum for the likelihood distribution of the reward.",
-											),
-									})
+										zod.null(),
+									])
+									.optional()
 									.describe(
-										"Use this type to randomly assign participants into arms during live experiment execution with\ncontextual MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+										"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 									),
-								zod
-									.object({
-										experiment_type: zod.enum(["bayes_ab_online"]),
-										experiment_name: zod
+								prior_type: zod
+									.enum(["beta", "normal"])
+									.optional()
+									.describe("Enum for the prior distribution of the arm."),
+								reward_type: zod
+									.enum(["binary", "real-valued"])
+									.optional()
+									.describe(
+										"Enum for the likelihood distribution of the reward.",
+									),
+							})
+							.describe(
+								"Use this type to randomly assign participants into arms during live experiment execution with\ncontextual MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+							),
+						zod
+							.object({
+								experiment_type: zod.enum(["bayes_ab_online"]),
+								experiment_name: zod
+									.string()
+									.max(
+										getExperimentForUiResponseConfigDesignSpecExperimentNameMaxFour,
+									),
+								description: zod
+									.string()
+									.max(
+										getExperimentForUiResponseConfigDesignSpecDescriptionMaxFour,
+									),
+								design_url: zod
+									.union([
+										zod
 											.string()
+											.url()
+											.min(1)
 											.max(
-												getExperimentForUiResponseConfigDesignSpecExperimentNameMaxFour,
+												getExperimentForUiResponseConfigDesignSpecDesignUrlMaxOnethree,
 											),
-										description: zod
-											.string()
-											.max(
-												getExperimentForUiResponseConfigDesignSpecDescriptionMaxFour,
-											),
-										design_url: zod
-											.union([
-												zod
-													.string()
-													.url()
-													.min(1)
-													.max(
-														getExperimentForUiResponseConfigDesignSpecDesignUrlMaxOnethree,
+										zod.null(),
+									])
+									.optional()
+									.describe(
+										"Optional URL to a more detailed experiment design doc.",
+									),
+								start_date: zod.string().datetime({}),
+								end_date: zod.string().datetime({}),
+								arms: zod
+									.array(
+										zod
+											.object({
+												arm_id: zod
+													.union([zod.string(), zod.null()])
+													.optional()
+													.describe(
+														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
 													),
-												zod.null(),
-											])
-											.optional()
+												arm_name: zod
+													.string()
+													.max(
+														getExperimentForUiResponseConfigDesignSpecArmsItemArmNameMaxFour,
+													),
+												arm_description: zod
+													.union([
+														zod
+															.string()
+															.max(
+																getExperimentForUiResponseConfigDesignSpecArmsItemArmDescriptionMaxOnethree,
+															),
+														zod.null(),
+													])
+													.optional(),
+												arm_weight: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+													),
+												alpha_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Initial alpha parameter for Beta prior"),
+												beta_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Initial beta parameter for Beta prior"),
+												mu_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Initial mean parameter for Normal prior"),
+												sigma_init: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Initial standard deviation parameter for Normal prior",
+													),
+												alpha: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Updated alpha parameter for Beta prior"),
+												beta: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe("Updated beta parameter for Beta prior"),
+												mu: zod
+													.union([zod.array(zod.number()), zod.null()])
+													.optional()
+													.describe("Updated mean vector for Normal prior"),
+												covariance: zod
+													.union([
+														zod.array(zod.array(zod.number())),
+														zod.null(),
+													])
+													.optional()
+													.describe(
+														"Updated covariance matrix for Normal prior",
+													),
+											})
 											.describe(
-												"Optional URL to a more detailed experiment design doc.",
+												"Describes an experiment arm for bandit experiments.",
 											),
-										start_date: zod.string().datetime({}),
-										end_date: zod.string().datetime({}),
-										arms: zod
+									)
+									.min(getExperimentForUiResponseConfigDesignSpecArmsMinFour)
+									.max(getExperimentForUiResponseConfigDesignSpecArmsMaxFour),
+								contexts: zod
+									.union([
+										zod
 											.array(
 												zod
 													.object({
-														arm_id: zod
+														context_id: zod
 															.union([zod.string(), zod.null()])
 															.optional()
 															.describe(
-																"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+																"Unique identifier for the context, you should NOT set this when creating a new context.",
 															),
-														arm_name: zod
+														context_name: zod
 															.string()
 															.max(
-																getExperimentForUiResponseConfigDesignSpecArmsItemArmNameMaxFour,
+																getExperimentForUiResponseConfigDesignSpecContextsItemContextNameMaxTwo,
 															),
-														arm_description: zod
+														context_description: zod
 															.union([
 																zod
 																	.string()
 																	.max(
-																		getExperimentForUiResponseConfigDesignSpecArmsItemArmDescriptionMaxOnethree,
+																		getExperimentForUiResponseConfigDesignSpecContextsItemContextDescriptionMaxSeven,
 																	),
 																zod.null(),
 															])
 															.optional(),
-														arm_weight: zod
-															.union([zod.number(), zod.null()])
+														value_type: zod
+															.enum(["binary", "real-valued"])
 															.optional()
-															.describe(
-																"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-															),
-														alpha_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial alpha parameter for Beta prior",
-															),
-														beta_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial beta parameter for Beta prior",
-															),
-														mu_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial mean parameter for Normal prior",
-															),
-														sigma_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial standard deviation parameter for Normal prior",
-															),
-														alpha: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Updated alpha parameter for Beta prior",
-															),
-														beta: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Updated beta parameter for Beta prior",
-															),
-														mu: zod
-															.union([zod.array(zod.number()), zod.null()])
-															.optional()
-															.describe("Updated mean vector for Normal prior"),
-														covariance: zod
-															.union([
-																zod.array(zod.array(zod.number())),
-																zod.null(),
-															])
-															.optional()
-															.describe(
-																"Updated covariance matrix for Normal prior",
-															),
+															.describe("Enum for the type of context."),
 													})
 													.describe(
-														"Describes an experiment arm for bandit experiments.",
+														"Pydantic model for context of the experiment.",
 													),
-											)
-											.min(
-												getExperimentForUiResponseConfigDesignSpecArmsMinFour,
 											)
 											.max(
-												getExperimentForUiResponseConfigDesignSpecArmsMaxFour,
+												getExperimentForUiResponseConfigDesignSpecContextsMaxSeven,
 											),
-										contexts: zod
-											.union([
-												zod
-													.array(
-														zod
-															.object({
-																context_id: zod
-																	.union([zod.string(), zod.null()])
-																	.optional()
-																	.describe(
-																		"Unique identifier for the context, you should NOT set this when creating a new context.",
-																	),
-																context_name: zod
-																	.string()
-																	.max(
-																		getExperimentForUiResponseConfigDesignSpecContextsItemContextNameMaxTwo,
-																	),
-																context_description: zod
-																	.union([
-																		zod
-																			.string()
-																			.max(
-																				getExperimentForUiResponseConfigDesignSpecContextsItemContextDescriptionMaxSeven,
-																			),
-																		zod.null(),
-																	])
-																	.optional(),
-																value_type: zod
-																	.enum(["binary", "real-valued"])
-																	.optional()
-																	.describe("Enum for the type of context."),
-															})
-															.describe(
-																"Pydantic model for context of the experiment.",
-															),
-													)
-													.max(
-														getExperimentForUiResponseConfigDesignSpecContextsMaxSeven,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
-											),
-										prior_type: zod
-											.enum(["beta", "normal"])
-											.optional()
-											.describe("Enum for the prior distribution of the arm."),
-										reward_type: zod
-											.enum(["binary", "real-valued"])
-											.optional()
-											.describe(
-												"Enum for the likelihood distribution of the reward.",
-											),
-									})
+										zod.null(),
+									])
+									.optional()
 									.describe(
-										"Use this type to randomly assign participants into arms during live experiment execution with\nBayesian A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+										"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 									),
-							])
-							.describe("The specific type of bandit experiment design."),
+								prior_type: zod
+									.enum(["beta", "normal"])
+									.optional()
+									.describe("Enum for the prior distribution of the arm."),
+								reward_type: zod
+									.enum(["binary", "real-valued"])
+									.optional()
+									.describe(
+										"Enum for the likelihood distribution of the reward.",
+									),
+							})
+							.describe(
+								"Use this type to randomly assign participants into arms during live experiment execution with\nBayesian A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+							),
 					])
 					.describe("The type of assignment and experiment design."),
 				power_analyses: zod.union([
@@ -9217,11 +8888,6 @@ export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOne = 2000;
 export const powerCheckBodyDesignSpecArmsMin = 2;
 export const powerCheckBodyDesignSpecArmsMax = 20;
 
-export const powerCheckBodyDesignSpecTableNameMax = 100;
-
-export const powerCheckBodyDesignSpecPrimaryKeyRegExp = new RegExp(
-	"^[a-zA-Z_][a-zA-Z0-9_]*$",
-);
 export const powerCheckBodyDesignSpecStrataItemFieldNameRegExp = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
@@ -9262,11 +8928,6 @@ export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxFour = 2000;
 export const powerCheckBodyDesignSpecArmsMinOne = 2;
 export const powerCheckBodyDesignSpecArmsMaxOne = 20;
 
-export const powerCheckBodyDesignSpecTableNameMaxOne = 100;
-
-export const powerCheckBodyDesignSpecPrimaryKeyRegExpOne = new RegExp(
-	"^[a-zA-Z_][a-zA-Z0-9_]*$",
-);
 export const powerCheckBodyDesignSpecStrataItemFieldNameRegExpOne = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
@@ -9293,6 +8954,63 @@ export const powerCheckBodyDesignSpecAlphaMaxOne = 1;
 export const powerCheckBodyDesignSpecFstatThreshDefaultOne = 0.6;
 export const powerCheckBodyDesignSpecFstatThreshMinOne = 0;
 export const powerCheckBodyDesignSpecFstatThreshMaxOne = 1;
+
+export const powerCheckBodyDesignSpecExperimentNameMaxTwo = 100;
+
+export const powerCheckBodyDesignSpecDescriptionMaxTwo = 2000;
+
+export const powerCheckBodyDesignSpecDesignUrlMaxSeven = 500;
+
+export const powerCheckBodyDesignSpecArmsItemArmNameMaxTwo = 100;
+
+export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxSeven = 2000;
+
+export const powerCheckBodyDesignSpecArmsMinTwo = 2;
+export const powerCheckBodyDesignSpecArmsMaxTwo = 20;
+
+export const powerCheckBodyDesignSpecContextsItemContextNameMax = 100;
+
+export const powerCheckBodyDesignSpecContextsItemContextDescriptionMaxOne = 2000;
+
+export const powerCheckBodyDesignSpecContextsMaxOne = 150;
+
+export const powerCheckBodyDesignSpecExperimentNameMaxThree = 100;
+
+export const powerCheckBodyDesignSpecDescriptionMaxThree = 2000;
+
+export const powerCheckBodyDesignSpecDesignUrlMaxOnezero = 500;
+
+export const powerCheckBodyDesignSpecArmsItemArmNameMaxThree = 100;
+
+export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOnezero = 2000;
+
+export const powerCheckBodyDesignSpecArmsMinThree = 2;
+export const powerCheckBodyDesignSpecArmsMaxThree = 20;
+
+export const powerCheckBodyDesignSpecContextsItemContextNameMaxOne = 100;
+
+export const powerCheckBodyDesignSpecContextsItemContextDescriptionMaxFour = 2000;
+
+export const powerCheckBodyDesignSpecContextsMaxFour = 150;
+
+export const powerCheckBodyDesignSpecExperimentNameMaxFour = 100;
+
+export const powerCheckBodyDesignSpecDescriptionMaxFour = 2000;
+
+export const powerCheckBodyDesignSpecDesignUrlMaxOnethree = 500;
+
+export const powerCheckBodyDesignSpecArmsItemArmNameMaxFour = 100;
+
+export const powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
+
+export const powerCheckBodyDesignSpecArmsMinFour = 2;
+export const powerCheckBodyDesignSpecArmsMaxFour = 20;
+
+export const powerCheckBodyDesignSpecContextsItemContextNameMaxTwo = 100;
+
+export const powerCheckBodyDesignSpecContextsItemContextDescriptionMaxSeven = 2000;
+
+export const powerCheckBodyDesignSpecContextsMaxSeven = 150;
 
 export const powerCheckBody = zod.object({
 	design_spec: zod
@@ -9351,18 +9069,6 @@ export const powerCheckBody = zod.object({
 						)
 						.min(powerCheckBodyDesignSpecArmsMin)
 						.max(powerCheckBodyDesignSpecArmsMax),
-					table_name: zod
-						.string()
-						.max(powerCheckBodyDesignSpecTableNameMax)
-						.describe(
-							"Datasource table used to resolve participant field metadata.",
-						),
-					primary_key: zod
-						.string()
-						.regex(powerCheckBodyDesignSpecPrimaryKeyRegExp)
-						.describe(
-							"Column name in table_name that uniquely identifies each participant.",
-						),
 					strata: zod
 						.array(
 							zod
@@ -9519,18 +9225,6 @@ export const powerCheckBody = zod.object({
 						)
 						.min(powerCheckBodyDesignSpecArmsMinOne)
 						.max(powerCheckBodyDesignSpecArmsMaxOne),
-					table_name: zod
-						.string()
-						.max(powerCheckBodyDesignSpecTableNameMaxOne)
-						.describe(
-							"Datasource table used to resolve participant field metadata.",
-						),
-					primary_key: zod
-						.string()
-						.regex(powerCheckBodyDesignSpecPrimaryKeyRegExpOne)
-						.describe(
-							"Column name in table_name that uniquely identifies each participant.",
-						),
 					strata: zod
 						.array(
 							zod
@@ -9637,8 +9331,449 @@ export const powerCheckBody = zod.object({
 				.describe(
 					"Use this type to randomly assign participants into arms during live experiment execution with\nfrequentist A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
 				),
+			zod
+				.object({
+					experiment_type: zod.enum(["mab_online"]),
+					experiment_name: zod
+						.string()
+						.max(powerCheckBodyDesignSpecExperimentNameMaxTwo),
+					description: zod
+						.string()
+						.max(powerCheckBodyDesignSpecDescriptionMaxTwo),
+					design_url: zod
+						.union([
+							zod
+								.string()
+								.url()
+								.min(1)
+								.max(powerCheckBodyDesignSpecDesignUrlMaxSeven),
+							zod.null(),
+						])
+						.optional()
+						.describe("Optional URL to a more detailed experiment design doc."),
+					start_date: zod.string().datetime({}),
+					end_date: zod.string().datetime({}),
+					arms: zod
+						.array(
+							zod
+								.object({
+									arm_id: zod
+										.union([zod.string(), zod.null()])
+										.optional()
+										.describe(
+											"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										),
+									arm_name: zod
+										.string()
+										.max(powerCheckBodyDesignSpecArmsItemArmNameMaxTwo),
+									arm_description: zod
+										.union([
+											zod
+												.string()
+												.max(
+													powerCheckBodyDesignSpecArmsItemArmDescriptionMaxSeven,
+												),
+											zod.null(),
+										])
+										.optional(),
+									arm_weight: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+										),
+									alpha_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Initial alpha parameter for Beta prior"),
+									beta_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Initial beta parameter for Beta prior"),
+									mu_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Initial mean parameter for Normal prior"),
+									sigma_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Initial standard deviation parameter for Normal prior",
+										),
+									alpha: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Updated alpha parameter for Beta prior"),
+									beta: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Updated beta parameter for Beta prior"),
+									mu: zod
+										.union([zod.array(zod.number()), zod.null()])
+										.optional()
+										.describe("Updated mean vector for Normal prior"),
+									covariance: zod
+										.union([zod.array(zod.array(zod.number())), zod.null()])
+										.optional()
+										.describe("Updated covariance matrix for Normal prior"),
+								})
+								.describe(
+									"Describes an experiment arm for bandit experiments.",
+								),
+						)
+						.min(powerCheckBodyDesignSpecArmsMinTwo)
+						.max(powerCheckBodyDesignSpecArmsMaxTwo),
+					contexts: zod
+						.union([
+							zod
+								.array(
+									zod
+										.object({
+											context_id: zod
+												.union([zod.string(), zod.null()])
+												.optional()
+												.describe(
+													"Unique identifier for the context, you should NOT set this when creating a new context.",
+												),
+											context_name: zod
+												.string()
+												.max(
+													powerCheckBodyDesignSpecContextsItemContextNameMax,
+												),
+											context_description: zod
+												.union([
+													zod
+														.string()
+														.max(
+															powerCheckBodyDesignSpecContextsItemContextDescriptionMaxOne,
+														),
+													zod.null(),
+												])
+												.optional(),
+											value_type: zod
+												.enum(["binary", "real-valued"])
+												.optional()
+												.describe("Enum for the type of context."),
+										})
+										.describe("Pydantic model for context of the experiment."),
+								)
+								.max(powerCheckBodyDesignSpecContextsMaxOne),
+							zod.null(),
+						])
+						.optional()
+						.describe(
+							"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+						),
+					prior_type: zod
+						.enum(["beta", "normal"])
+						.optional()
+						.describe("Enum for the prior distribution of the arm."),
+					reward_type: zod
+						.enum(["binary", "real-valued"])
+						.optional()
+						.describe("Enum for the likelihood distribution of the reward."),
+				})
+				.describe(
+					"Use this type to randomly assign participants into arms during live experiment execution with MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+				),
+			zod
+				.object({
+					experiment_type: zod.enum(["cmab_online"]),
+					experiment_name: zod
+						.string()
+						.max(powerCheckBodyDesignSpecExperimentNameMaxThree),
+					description: zod
+						.string()
+						.max(powerCheckBodyDesignSpecDescriptionMaxThree),
+					design_url: zod
+						.union([
+							zod
+								.string()
+								.url()
+								.min(1)
+								.max(powerCheckBodyDesignSpecDesignUrlMaxOnezero),
+							zod.null(),
+						])
+						.optional()
+						.describe("Optional URL to a more detailed experiment design doc."),
+					start_date: zod.string().datetime({}),
+					end_date: zod.string().datetime({}),
+					arms: zod
+						.array(
+							zod
+								.object({
+									arm_id: zod
+										.union([zod.string(), zod.null()])
+										.optional()
+										.describe(
+											"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										),
+									arm_name: zod
+										.string()
+										.max(powerCheckBodyDesignSpecArmsItemArmNameMaxThree),
+									arm_description: zod
+										.union([
+											zod
+												.string()
+												.max(
+													powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOnezero,
+												),
+											zod.null(),
+										])
+										.optional(),
+									arm_weight: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+										),
+									alpha_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Initial alpha parameter for Beta prior"),
+									beta_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Initial beta parameter for Beta prior"),
+									mu_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Initial mean parameter for Normal prior"),
+									sigma_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Initial standard deviation parameter for Normal prior",
+										),
+									alpha: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Updated alpha parameter for Beta prior"),
+									beta: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Updated beta parameter for Beta prior"),
+									mu: zod
+										.union([zod.array(zod.number()), zod.null()])
+										.optional()
+										.describe("Updated mean vector for Normal prior"),
+									covariance: zod
+										.union([zod.array(zod.array(zod.number())), zod.null()])
+										.optional()
+										.describe("Updated covariance matrix for Normal prior"),
+								})
+								.describe(
+									"Describes an experiment arm for bandit experiments.",
+								),
+						)
+						.min(powerCheckBodyDesignSpecArmsMinThree)
+						.max(powerCheckBodyDesignSpecArmsMaxThree),
+					contexts: zod
+						.union([
+							zod
+								.array(
+									zod
+										.object({
+											context_id: zod
+												.union([zod.string(), zod.null()])
+												.optional()
+												.describe(
+													"Unique identifier for the context, you should NOT set this when creating a new context.",
+												),
+											context_name: zod
+												.string()
+												.max(
+													powerCheckBodyDesignSpecContextsItemContextNameMaxOne,
+												),
+											context_description: zod
+												.union([
+													zod
+														.string()
+														.max(
+															powerCheckBodyDesignSpecContextsItemContextDescriptionMaxFour,
+														),
+													zod.null(),
+												])
+												.optional(),
+											value_type: zod
+												.enum(["binary", "real-valued"])
+												.optional()
+												.describe("Enum for the type of context."),
+										})
+										.describe("Pydantic model for context of the experiment."),
+								)
+								.max(powerCheckBodyDesignSpecContextsMaxFour),
+							zod.null(),
+						])
+						.optional()
+						.describe(
+							"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+						),
+					prior_type: zod
+						.enum(["beta", "normal"])
+						.optional()
+						.describe("Enum for the prior distribution of the arm."),
+					reward_type: zod
+						.enum(["binary", "real-valued"])
+						.optional()
+						.describe("Enum for the likelihood distribution of the reward."),
+				})
+				.describe(
+					"Use this type to randomly assign participants into arms during live experiment execution with\ncontextual MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+				),
+			zod
+				.object({
+					experiment_type: zod.enum(["bayes_ab_online"]),
+					experiment_name: zod
+						.string()
+						.max(powerCheckBodyDesignSpecExperimentNameMaxFour),
+					description: zod
+						.string()
+						.max(powerCheckBodyDesignSpecDescriptionMaxFour),
+					design_url: zod
+						.union([
+							zod
+								.string()
+								.url()
+								.min(1)
+								.max(powerCheckBodyDesignSpecDesignUrlMaxOnethree),
+							zod.null(),
+						])
+						.optional()
+						.describe("Optional URL to a more detailed experiment design doc."),
+					start_date: zod.string().datetime({}),
+					end_date: zod.string().datetime({}),
+					arms: zod
+						.array(
+							zod
+								.object({
+									arm_id: zod
+										.union([zod.string(), zod.null()])
+										.optional()
+										.describe(
+											"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
+										),
+									arm_name: zod
+										.string()
+										.max(powerCheckBodyDesignSpecArmsItemArmNameMaxFour),
+									arm_description: zod
+										.union([
+											zod
+												.string()
+												.max(
+													powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOnethree,
+												),
+											zod.null(),
+										])
+										.optional(),
+									arm_weight: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
+										),
+									alpha_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Initial alpha parameter for Beta prior"),
+									beta_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Initial beta parameter for Beta prior"),
+									mu_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Initial mean parameter for Normal prior"),
+									sigma_init: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Initial standard deviation parameter for Normal prior",
+										),
+									alpha: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Updated alpha parameter for Beta prior"),
+									beta: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Updated beta parameter for Beta prior"),
+									mu: zod
+										.union([zod.array(zod.number()), zod.null()])
+										.optional()
+										.describe("Updated mean vector for Normal prior"),
+									covariance: zod
+										.union([zod.array(zod.array(zod.number())), zod.null()])
+										.optional()
+										.describe("Updated covariance matrix for Normal prior"),
+								})
+								.describe(
+									"Describes an experiment arm for bandit experiments.",
+								),
+						)
+						.min(powerCheckBodyDesignSpecArmsMinFour)
+						.max(powerCheckBodyDesignSpecArmsMaxFour),
+					contexts: zod
+						.union([
+							zod
+								.array(
+									zod
+										.object({
+											context_id: zod
+												.union([zod.string(), zod.null()])
+												.optional()
+												.describe(
+													"Unique identifier for the context, you should NOT set this when creating a new context.",
+												),
+											context_name: zod
+												.string()
+												.max(
+													powerCheckBodyDesignSpecContextsItemContextNameMaxTwo,
+												),
+											context_description: zod
+												.union([
+													zod
+														.string()
+														.max(
+															powerCheckBodyDesignSpecContextsItemContextDescriptionMaxSeven,
+														),
+													zod.null(),
+												])
+												.optional(),
+											value_type: zod
+												.enum(["binary", "real-valued"])
+												.optional()
+												.describe("Enum for the type of context."),
+										})
+										.describe("Pydantic model for context of the experiment."),
+								)
+								.max(powerCheckBodyDesignSpecContextsMaxSeven),
+							zod.null(),
+						])
+						.optional()
+						.describe(
+							"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+						),
+					prior_type: zod
+						.enum(["beta", "normal"])
+						.optional()
+						.describe("Enum for the prior distribution of the arm."),
+					reward_type: zod
+						.enum(["binary", "real-valued"])
+						.optional()
+						.describe("Enum for the likelihood distribution of the reward."),
+				})
+				.describe(
+					"Use this type to randomly assign participants into arms during live experiment execution with\nBayesian A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
+				),
 		])
-		.describe("The specific type of frequentist experiment design."),
+		.describe("The type of assignment and experiment design."),
+	table_name: zod
+		.string()
+		.describe(
+			"Table name for ad-hoc power calculations. Fields are verified against the inspected table.",
+		),
+	primary_key: zod.string().describe("Primary key field name."),
 });
 
 export const powerCheckResponseAnalysesItemMetricSpecFieldNameRegExp =

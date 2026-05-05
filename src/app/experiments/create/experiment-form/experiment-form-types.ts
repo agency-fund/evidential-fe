@@ -5,11 +5,9 @@ import {
   CMABExperimentSpecOutput,
   ContextType,
   DesignSpecOutput,
-  ExperimentConfig,
   GetExperimentResponse,
   GetMetricsResponseElement,
   MABExperimentSpecInput,
-  MABExperimentSpecInputExperimentType,
   MABExperimentSpecOutput,
   OnlineFrequentistExperimentSpecInputExperimentType,
   OnlineFrequentistExperimentSpecOutput,
@@ -74,11 +72,10 @@ export type MetricWithMDE = {
 };
 
 // Define the type alias using imported types
-export function isFreqExperimentType(type: string | undefined): boolean {
+export function isFreqExperimentType(type: string): boolean {
   return (
-    !!type &&
-    (type in PreassignedFrequentistExperimentSpecInputExperimentType ||
-      type in OnlineFrequentistExperimentSpecInputExperimentType)
+    type in PreassignedFrequentistExperimentSpecInputExperimentType ||
+    type in OnlineFrequentistExperimentSpecInputExperimentType
   );
 }
 
@@ -92,13 +89,7 @@ export const isBanditSpec = (
 ): spec is MABExperimentSpecOutput | CMABExperimentSpecOutput | BayesABExperimentSpecOutput =>
   !!spec && isBanditExperimentType(spec.experiment_type);
 
-export function isCmabSpec(spec: DesignSpecOutput | undefined): spec is CMABExperimentSpecOutput {
-  return !!spec && spec.experiment_type === CMABExperimentSpecInputExperimentType.cmab_online;
-}
-
-export const isCmabExperiment = (experiment: GetExperimentResponse | ExperimentConfig | undefined): boolean =>
-  !!experiment && isCmabSpec(experiment.design_spec);
-
+export const isCmabExperiment = (experiment: GetExperimentResponse | undefined): boolean =>
+  !!experiment && experiment.design_spec.experiment_type === CMABExperimentSpecInputExperimentType.cmab_online;
 export const isBanditExperimentType = (experimentType?: string): experimentType is BanditExperimentType =>
-  experimentType === MABExperimentSpecInputExperimentType.mab_online ||
-  experimentType === CMABExperimentSpecInputExperimentType.cmab_online;
+  experimentType === 'mab_online' || experimentType === 'cmab_online';

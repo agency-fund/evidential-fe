@@ -2,7 +2,7 @@
 import { Button, Callout, Card, DataList, Dialog, Flex, Select, Text } from '@radix-ui/themes';
 import { ChevronDownIcon, ChevronRightIcon, FileIcon, GearIcon, PlusIcon } from '@radix-ui/react-icons';
 import { Collapsible } from 'radix-ui';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { mutate } from 'swr';
 import { Arm, Context } from '@/api/methods.schemas';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
