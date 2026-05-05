@@ -55,8 +55,6 @@ export function TargetingDialog({ designSpec, participantType, webhookIds }: Tar
     }),
   );
 
-  const primaryKey = participantType?.fields.find((field) => field.is_unique_id)?.field_name;
-
   const toMetricDisplay = (fieldName: string, mdePct: number | null | undefined): MetricDisplay => {
     const dataType = fieldTypeByName.get(fieldName) ?? DataType.unknown;
     return {
@@ -90,8 +88,8 @@ export function TargetingDialog({ designSpec, participantType, webhookIds }: Tar
               {isFrequentistSpec(designSpec) && (
                 <>
                   <DatasourceTargetingSection
-                    tableName={participantType?.table_name}
-                    primaryKey={primaryKey}
+                    tableName={designSpec.table_name}
+                    primaryKey={designSpec.primary_key}
                     filters={designSpec.filters}
                   />
                   <MetricsSection

@@ -19,11 +19,10 @@ import { CheckCircledIcon, CrossCircledIcon, LightningBoltIcon } from '@radix-ui
 import { ExperimentFormData } from './experiment-form-def';
 import { ExperimentFreqStackScreenMessage } from './experiment-freq-stack-screen';
 import { usePowerCheck } from '@/api/admin';
-import { convertToDesignSpec } from './experiment-form-helpers';
+import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ZodError } from 'zod';
 import { useState } from 'react';
-import { prettyJSON } from '@/services/json-utils';
 import { SectionCard } from '@/components/ui/cards/section-card';
 
 enum PowerCheckOption {
@@ -89,8 +88,8 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
     // TODO: reimplement this to be simpler
     try {
-      const design_spec = convertToDesignSpec(data);
-      const response = await trigger({ design_spec, table_name: data.tableName, primary_key: data.primaryKey });
+      const design_spec = convertToFrequentistDesignSpec(data);
+      const response = await trigger({ design_spec });
       const primary = response.analyses.find((a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name);
 
       dispatch({ type: 'set-power-check-response', response, desiredN: undefined });
@@ -172,7 +171,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
           {error && (
             <Flex align="center" gap="2">
-              <GenericErrorCallout title={'Power check failed'} message={error ? prettyJSON(error) : 'unknown'} />
+              <GenericErrorCallout title={'Power check failed'} error={error} />
             </Flex>
           )}
 

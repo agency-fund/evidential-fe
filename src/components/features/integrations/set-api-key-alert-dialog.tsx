@@ -2,9 +2,7 @@
 
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { AlertDialog, Button, Flex, Spinner, TextField } from '@radix-ui/themes';
-import { s } from 'motion/react-client';
-import { useEffect, useState } from 'react';
-import { set } from 'zod';
+import { useState } from 'react';
 
 type SetApiKeyAlertDialogProps = {
   trigger: (newApiKey: string) => Promise<void>;
