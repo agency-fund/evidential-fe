@@ -201,49 +201,51 @@ export function Combobox<TOption = string, TKey extends React.Key = string>({
         </Box>
       </Popover.Trigger>
 
-      <Popover.Content
-        side="bottom"
-        align="start"
-        sideOffset={4}
-        style={{ minWidth: 'var(--radix-popover-trigger-width)', padding: 0 }}
-        onOpenAutoFocus={(e) => e.preventDefault()}
-        onCloseAutoFocus={(e) => e.preventDefault()}
-      >
-        <ScrollArea scrollbars="vertical" style={{ maxHeight }}>
-          {filteredOptions.length === 0 ? (
-            <Flex p="3" justify="center">
-              <Text size="2" color="gray">
-                {noMatchText}
-              </Text>
-            </Flex>
-          ) : (
-            <Flex direction="column">
-              {filteredOptions.map((option, index) => {
-                const isHighlighted = index === popoverHighlightedIndex;
-                return (
-                  <Box
-                    key={getKeyForOption(option)}
-                    ref={(el) => {
-                      popoverItemRefs.current[index] = el;
-                    }}
-                    onClick={() => handleSelect(option)}
-                    onMouseEnter={() => setPopoverHighlightedIndex(index)}
-                    onPointerDown={(e) => e.preventDefault()}
-                    py="2"
-                    px="3"
-                    style={{
-                      cursor: 'pointer',
-                      backgroundColor: isHighlighted ? 'var(--gray-3)' : undefined,
-                    }}
-                  >
-                    {renderDropdownRow({ option, isHighlighted, index })}
-                  </Box>
-                );
-              })}
-            </Flex>
-          )}
-        </ScrollArea>
-      </Popover.Content>
+      {isPopoverOpen && !disabled && (
+        <Popover.Content
+          side="bottom"
+          align="start"
+          sideOffset={4}
+          style={{ minWidth: 'var(--radix-popover-trigger-width)', padding: 0 }}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          onCloseAutoFocus={(e) => e.preventDefault()}
+        >
+          <ScrollArea scrollbars="vertical" style={{ maxHeight }}>
+            {filteredOptions.length === 0 ? (
+              <Flex p="3" justify="center">
+                <Text size="2" color="gray">
+                  {noMatchText}
+                </Text>
+              </Flex>
+            ) : (
+              <Flex direction="column">
+                {filteredOptions.map((option, index) => {
+                  const isHighlighted = index === popoverHighlightedIndex;
+                  return (
+                    <Box
+                      key={getKeyForOption(option)}
+                      ref={(el) => {
+                        popoverItemRefs.current[index] = el;
+                      }}
+                      onClick={() => handleSelect(option)}
+                      onMouseEnter={() => setPopoverHighlightedIndex(index)}
+                      onPointerDown={(e) => e.preventDefault()}
+                      py="2"
+                      px="3"
+                      style={{
+                        cursor: 'pointer',
+                        backgroundColor: isHighlighted ? 'var(--gray-3)' : undefined,
+                      }}
+                    >
+                      {renderDropdownRow({ option, isHighlighted, index })}
+                    </Box>
+                  );
+                })}
+              </Flex>
+            )}
+          </ScrollArea>
+        </Popover.Content>
+      )}
     </Popover.Root>
   );
 }
