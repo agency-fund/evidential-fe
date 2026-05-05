@@ -43,6 +43,94 @@ export interface AddWebhookToOrganizationResponse {
 	auth_token: AddWebhookToOrganizationResponseAuthToken;
 }
 
+export type AnyBanditDesignSpecInputExperimentType =
+	(typeof AnyBanditDesignSpecInputExperimentType)[keyof typeof AnyBanditDesignSpecInputExperimentType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const AnyBanditDesignSpecInputExperimentType = {
+	bayes_ab_online: "bayes_ab_online",
+	cmab_online: "cmab_online",
+	mab_online: "mab_online",
+} as const;
+
+/**
+ * The specific type of bandit experiment design.
+ */
+export type AnyBanditDesignSpecInput =
+	| (MABExperimentSpecInput & {
+			experiment_type: AnyBanditDesignSpecInputExperimentType;
+	  })
+	| (CMABExperimentSpecInput & {
+			experiment_type: AnyBanditDesignSpecInputExperimentType;
+	  })
+	| (BayesABExperimentSpecInput & {
+			experiment_type: AnyBanditDesignSpecInputExperimentType;
+	  });
+
+export type AnyBanditDesignSpecOutputExperimentType =
+	(typeof AnyBanditDesignSpecOutputExperimentType)[keyof typeof AnyBanditDesignSpecOutputExperimentType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const AnyBanditDesignSpecOutputExperimentType = {
+	bayes_ab_online: "bayes_ab_online",
+	cmab_online: "cmab_online",
+	mab_online: "mab_online",
+} as const;
+
+/**
+ * The specific type of bandit experiment design.
+ */
+export type AnyBanditDesignSpecOutput =
+	| (MABExperimentSpecOutput & {
+			experiment_type: AnyBanditDesignSpecOutputExperimentType;
+	  })
+	| (CMABExperimentSpecOutput & {
+			experiment_type: AnyBanditDesignSpecOutputExperimentType;
+	  })
+	| (BayesABExperimentSpecOutput & {
+			experiment_type: AnyBanditDesignSpecOutputExperimentType;
+	  });
+
+export type AnyFrequentistDesignSpecInputExperimentType =
+	(typeof AnyFrequentistDesignSpecInputExperimentType)[keyof typeof AnyFrequentistDesignSpecInputExperimentType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const AnyFrequentistDesignSpecInputExperimentType = {
+	freq_online: "freq_online",
+	freq_preassigned: "freq_preassigned",
+} as const;
+
+/**
+ * The specific type of frequentist experiment design.
+ */
+export type AnyFrequentistDesignSpecInput =
+	| (PreassignedFrequentistExperimentSpecInput & {
+			experiment_type: AnyFrequentistDesignSpecInputExperimentType;
+	  })
+	| (OnlineFrequentistExperimentSpecInput & {
+			experiment_type: AnyFrequentistDesignSpecInputExperimentType;
+	  });
+
+export type AnyFrequentistDesignSpecOutputExperimentType =
+	(typeof AnyFrequentistDesignSpecOutputExperimentType)[keyof typeof AnyFrequentistDesignSpecOutputExperimentType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const AnyFrequentistDesignSpecOutputExperimentType = {
+	freq_online: "freq_online",
+	freq_preassigned: "freq_preassigned",
+} as const;
+
+/**
+ * The specific type of frequentist experiment design.
+ */
+export type AnyFrequentistDesignSpecOutput =
+	| (PreassignedFrequentistExperimentSpecOutput & {
+			experiment_type: AnyFrequentistDesignSpecOutputExperimentType;
+	  })
+	| (OnlineFrequentistExperimentSpecOutput & {
+			experiment_type: AnyFrequentistDesignSpecOutputExperimentType;
+	  });
+
 export interface ApiKeySummary {
 	/** @maxLength 64 */
 	id: string;
@@ -897,25 +985,11 @@ export interface CreateDatasourceResponse {
 
 export type CreateExperimentRequestPowerAnalyses = PowerResponseInput | null;
 
-/**
- * Optional table name for creating experiments without a pre-registered participant type. When provided with primary_key, inspects the datasource table to derive experiment field metadata.
- */
-export type CreateExperimentRequestTableName = string | null;
-
-/**
- * Optional primary key field name. Must be provided together with table_name.
- */
-export type CreateExperimentRequestPrimaryKey = string | null;
-
 export interface CreateExperimentRequest {
 	design_spec: DesignSpecInput;
 	power_analyses?: CreateExperimentRequestPowerAnalyses;
 	/** List of webhook IDs to associate with this experiment. When the experiment is committed, these webhooks will be triggered with experiment details. Must contain unique values. */
 	webhooks?: string[];
-	/** Optional table name for creating experiments without a pre-registered participant type. When provided with primary_key, inspects the datasource table to derive experiment field metadata. */
-	table_name?: CreateExperimentRequestTableName;
-	/** Optional primary key field name. Must be provided together with table_name. */
-	primary_key?: CreateExperimentRequestPrimaryKey;
 }
 
 /**
@@ -1047,21 +1121,15 @@ export interface DeleteExperimentDataRequest {
  * The type of assignment and experiment design.
  */
 export type DesignSpecInput =
-	| PreassignedFrequentistExperimentSpecInput
-	| OnlineFrequentistExperimentSpecInput
-	| MABExperimentSpecInput
-	| CMABExperimentSpecInput
-	| BayesABExperimentSpecInput;
+	| AnyFrequentistDesignSpecInput
+	| AnyBanditDesignSpecInput;
 
 /**
  * The type of assignment and experiment design.
  */
 export type DesignSpecOutput =
-	| PreassignedFrequentistExperimentSpecOutput
-	| OnlineFrequentistExperimentSpecOutput
-	| MABExperimentSpecOutput
-	| CMABExperimentSpecOutput
-	| BayesABExperimentSpecOutput;
+	| AnyFrequentistDesignSpecOutput
+	| AnyBanditDesignSpecOutput;
 
 /**
  * Percent change target relative to the metric_baseline.
@@ -2206,6 +2274,16 @@ export interface OnlineFrequentistExperimentSpecInput {
 	 */
 	arms: Arm[];
 	/**
+	 * Datasource table used to resolve participant field metadata.
+	 * @maxLength 100
+	 */
+	table_name: string;
+	/**
+	 * Column name in table_name that uniquely identifies each participant.
+	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
+	 */
+	primary_key: string;
+	/**
 	 * Optional fields to use for stratified assignment.
 	 * @maxItems 150
 	 */
@@ -2282,6 +2360,16 @@ export interface OnlineFrequentistExperimentSpecOutput {
 	 * @maxItems 20
 	 */
 	arms: Arm[];
+	/**
+	 * Datasource table used to resolve participant field metadata.
+	 * @maxLength 100
+	 */
+	table_name: string;
+	/**
+	 * Column name in table_name that uniquely identifies each participant.
+	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
+	 */
+	primary_key: string;
 	/**
 	 * Optional fields to use for stratified assignment.
 	 * @maxItems 150
@@ -2420,11 +2508,7 @@ export interface PostgresDsn {
 }
 
 export interface PowerRequest {
-	design_spec: DesignSpecInput;
-	/** Table name for ad-hoc power calculations. Fields are verified against the inspected table. */
-	table_name: string;
-	/** Primary key field name. */
-	primary_key: string;
+	design_spec: AnyFrequentistDesignSpecInput;
 }
 
 export interface PowerResponseInput {
@@ -2474,6 +2558,16 @@ export interface PreassignedFrequentistExperimentSpecInput {
 	 * @maxItems 20
 	 */
 	arms: Arm[];
+	/**
+	 * Datasource table used to resolve participant field metadata.
+	 * @maxLength 100
+	 */
+	table_name: string;
+	/**
+	 * Column name in table_name that uniquely identifies each participant.
+	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
+	 */
+	primary_key: string;
 	/**
 	 * Optional fields to use for stratified assignment.
 	 * @maxItems 150
@@ -2549,6 +2643,16 @@ export interface PreassignedFrequentistExperimentSpecOutput {
 	 * @maxItems 20
 	 */
 	arms: Arm[];
+	/**
+	 * Datasource table used to resolve participant field metadata.
+	 * @maxLength 100
+	 */
+	table_name: string;
+	/**
+	 * Column name in table_name that uniquely identifies each participant.
+	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
+	 */
+	primary_key: string;
 	/**
 	 * Optional fields to use for stratified assignment.
 	 * @maxItems 150
