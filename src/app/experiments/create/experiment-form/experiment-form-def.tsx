@@ -33,6 +33,7 @@ import { ExperimentsSummarizeFreqScreen } from '@/app/experiments/create/experim
 import {
   getReasonableEndDate,
   getReasonableStartDate,
+  filterFormStrata,
 } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import {
   createDefaultBanditParams,
@@ -45,7 +46,7 @@ import {
   BanditParams,
   isBanditExperimentType,
   MetricWithMDE,
-  Stratum,
+  FormStratum,
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
 
 export type ExperimentType = Exclude<DesignSpecInput['experiment_type'], BayesABExperimentSpecInputExperimentType>;
@@ -73,7 +74,7 @@ export type ExperimentFormData = {
   filters?: FilterInput[];
   // Cache of available filter fields (and their data types) for lookup/display/search
   availableFilterFields?: GetFiltersResponseElement[];
-  strata?: Stratum[];
+  strata?: FormStratum[];
   // These next 2 Experiment Parameters are strings to allow for empty values,
   // which should be converted to numbers when making power or experiment creation requests.
   confidence?: string;
@@ -262,7 +263,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             primaryMetric: shouldClearDependents ? undefined : data.primaryMetric,
             secondaryMetrics: shouldClearDependents ? undefined : data.secondaryMetrics,
             filters: shouldClearDependents ? undefined : data.filters,
-            strata: shouldClearDependents ? undefined : data.strata,
+            strata: shouldClearDependents ? undefined : filterFormStrata(data.strata, msg.primaryKey),
 
             // Changing datasource should clear power check
             powerCheckResponse: undefined,
@@ -495,7 +496,13 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
 
         // Strata builder
         if (msg.type === 'set-strata') {
-          return { ...data, strata: msg.strata.map((fieldName) => ({ fieldName })) };
+          return {
+            ...data,
+            strata: filterFormStrata(
+              msg.strata.map((fieldName) => ({ fieldName })),
+              data.primaryKey,
+            ),
+          };
         }
 
         // Power check - changing confidence/power invalidates power check response

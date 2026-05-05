@@ -64,7 +64,7 @@ export type BanditParams =
       contexts: Context[];
     };
 
-export type Stratum = {
+export type FormStratum = {
   fieldName: string;
 };
 
