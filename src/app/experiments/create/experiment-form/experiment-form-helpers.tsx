@@ -15,13 +15,13 @@ import { ExperimentFormData } from './experiment-form-def';
 import { getCanonicalRewardType } from '@/app/experiments/create/experiment-form/experiment-bandit-helpers';
 import { isFreqExperimentType, isFrequentistSpec } from './experiment-form-types';
 
-/** Drops strata whose field matches the field to remove. Use e.g. to filter out the experiment's primary key. */
-export function filterFormStrata(
-  strata: Stratum[] | undefined,
-  fieldToRemove: string | undefined,
-): Stratum[] | undefined {
-  if (!fieldToRemove || !strata?.length) return strata;
-  return strata.filter((s) => s.field_name !== fieldToRemove);
+/** Drops entries whose `field_name` matches `fieldNameToRemove` (e.g. exclude the primary key from stratum lists). */
+export function removeFieldByName<T extends { field_name: string }>(
+  fields: T[] | undefined,
+  fieldNameToRemove: string | undefined,
+): T[] | undefined {
+  if (!fieldNameToRemove || !fields?.length) return fields;
+  return fields.filter((f) => f.field_name !== fieldNameToRemove);
 }
 
 export const getReasonableStartDate = (): string => {
@@ -77,7 +77,9 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
     });
   });
 
-  const strata: Stratum[] = filterFormStrata(data.strata, data.primaryKey) ?? [];
+  const strata: Stratum[] = (removeFieldByName(data.strata, data.primaryKey) ?? []).map((f) => ({
+    field_name: f.field_name,
+  }));
 
   const commonFields = {
     experiment_name: data.name,

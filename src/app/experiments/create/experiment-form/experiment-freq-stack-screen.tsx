@@ -8,7 +8,10 @@ import { useCreateExperiment, useInspectTableInDatasource } from '@/api/admin';
 import { CreateExperimentResponse, FieldMetadata, FilterInput, PowerResponseOutput } from '@/api/methods.schemas';
 import { PowerCheckSection } from './power-check-section';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
-import { convertToFrequentistDesignSpec } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
+import {
+  convertToFrequentistDesignSpec,
+  removeFieldByName,
+} from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import { createExperimentBody } from '@/api/admin.zod';
 import { ErrorType } from '@/services/orval-fetch';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -83,10 +86,11 @@ export const ExperimentFreqStackScreen = ({
   const metricFields = allTableFields.filter((f) =>
     ['integer', 'bigint', 'double precision', 'numeric', 'boolean'].includes(f.data_type),
   );
-  // Primary key is not a valid stratum so filter it out in both options and selection (just in case)
-  const availableStrata = allTableFields
-    .filter((field) => field.field_name !== data.primaryKey)
-    .toSorted((a, b) => a.field_name.localeCompare(b.field_name));
+  // Exclude primary key from stratum options.
+  const availableStrata = (removeFieldByName(allTableFields, data.primaryKey) ?? []).toSorted((a, b) =>
+    a.field_name.localeCompare(b.field_name),
+  );
+  // Reconfirm that the selected strata are still valid options and filter out any undefines if not.
   const selectedStrata = (data.strata ?? [])
     .map((s) => availableStrata.find((f) => f.field_name === s.field_name))
     .filter((f): f is FieldMetadata => Boolean(f));
