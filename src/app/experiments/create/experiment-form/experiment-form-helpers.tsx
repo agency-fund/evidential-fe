@@ -1,9 +1,9 @@
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 import { z } from 'zod';
 import {
+  AnyFrequentistDesignSpecInput,
   CMABExperimentSpecInputExperimentType,
   CreateExperimentRequest,
-  DesignSpecInput,
   DesignSpecMetricRequest,
   MABExperimentSpecInputExperimentType,
   OnlineFrequentistExperimentSpecInputExperimentType,
@@ -13,6 +13,7 @@ import {
 import { createExperimentBody } from '@/api/admin.zod';
 import { ExperimentFormData } from './experiment-form-def';
 import { getCanonicalRewardType } from '@/app/experiments/create/experiment-form/experiment-bandit-helpers';
+import { isFreqExperimentType, isFrequentistSpec } from './experiment-form-types';
 
 export const getReasonableStartDate = (): string => {
   const date = new Date();
@@ -41,7 +42,14 @@ const zodNumberFromForm = (configure?: (num: z.ZodNumber) => z.ZodNumber) =>
 
 const zodMde = zodNumberFromForm((num) => num.int().safe().min(0).max(100));
 
-export function convertToDesignSpec(data: ExperimentFormData): DesignSpecInput {
+export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFrequentistDesignSpecInput {
+  if (!isFreqExperimentType(data.experimentType)) {
+    throw new Error('Frequentist configuration is required.');
+  }
+  if (!data.name || !data.tableName || !data.primaryKey) {
+    throw new Error('Experiment name, table name, and primary key are all required.');
+  }
+
   const metrics: DesignSpecMetricRequest[] = [];
 
   if (data.primaryMetric?.metric.field_name) {
@@ -63,12 +71,14 @@ export function convertToDesignSpec(data: ExperimentFormData): DesignSpecInput {
   const strata: Stratum[] = (data.strata ?? []).map((s) => ({ field_name: s.fieldName }));
 
   const commonFields = {
-    experiment_name: data.name!,
+    experiment_name: data.name,
     description: data.hypothesis ?? '',
     design_url: data.designUrl ?? null,
     start_date: new Date(Date.parse(data.startDate!)).toISOString(),
     end_date: new Date(Date.parse(data.endDate!)).toISOString(),
     arms: (data.arms ?? []).map((arm) => ({ ...arm, arm_id: null })),
+    table_name: data.tableName,
+    primary_key: data.primaryKey,
     strata,
     metrics,
     filters: data.filters ?? [],
@@ -76,12 +86,17 @@ export function convertToDesignSpec(data: ExperimentFormData): DesignSpecInput {
     alpha: data.confidence ? 1 - Number(data.confidence) / 100.0 : 0.05,
   };
 
-  return createExperimentBody.strict().parse({
+  const spec = createExperimentBody.strict().parse({
     design_spec: {
       ...commonFields,
       experiment_type: data.experimentType,
     },
   }).design_spec;
+
+  if (!isFrequentistSpec(spec)) {
+    throw new Error('Frequentist configuration is required.');
+  }
+  return spec;
 }
 
 export function convertToBanditCreateRequest(data: ExperimentFormData): CreateExperimentRequest {

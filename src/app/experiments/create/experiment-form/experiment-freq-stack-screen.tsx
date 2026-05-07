@@ -8,7 +8,7 @@ import { useCreateExperiment, useInspectTableInDatasource } from '@/api/admin';
 import { CreateExperimentResponse, FilterInput, PowerResponseOutput } from '@/api/methods.schemas';
 import { PowerCheckSection } from './power-check-section';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
-import { convertToDesignSpec } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
+import { convertToFrequentistDesignSpec } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import { createExperimentBody } from '@/api/admin.zod';
 import { ErrorType } from '@/services/orval-fetch';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -87,12 +87,10 @@ export const ExperimentFreqStackScreen = ({
   const nextEnabled = isNextEnabled(data);
 
   const handleCreate = async () => {
-    const designSpec = convertToDesignSpec(data);
+    const designSpec = convertToFrequentistDesignSpec(data);
     const createExperimentRequest = createExperimentBody.strict().parse({
       design_spec: designSpec,
       power_analyses: data.powerCheckResponse,
-      primary_key: data.primaryKey,
-      table_name: data.tableName,
       webhooks: data.selectedWebhookIds && data.selectedWebhookIds.length > 0 ? data.selectedWebhookIds : [],
     });
     console.log('converted', createExperimentRequest);
