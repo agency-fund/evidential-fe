@@ -14,6 +14,7 @@ import {
   FilterInput,
   GetFiltersResponseElement,
   PowerResponseOutput,
+  Stratum,
 } from '@/api/methods.schemas';
 import { abandonExperiment } from '@/api/admin';
 import { ExperimentSelectDatasourceScreen } from '@/app/experiments/create/experiment-form/experiment-select-datasource-screen';
@@ -46,7 +47,6 @@ import {
   BanditParams,
   isBanditExperimentType,
   MetricWithMDE,
-  FormStratum,
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
 
 export type ExperimentType = Exclude<DesignSpecInput['experiment_type'], BayesABExperimentSpecInputExperimentType>;
@@ -74,7 +74,7 @@ export type ExperimentFormData = {
   filters?: FilterInput[];
   // Cache of available filter fields (and their data types) for lookup/display/search
   availableFilterFields?: GetFiltersResponseElement[];
-  strata?: FormStratum[];
+  strata?: Stratum[];
   // These next 2 Experiment Parameters are strings to allow for empty values,
   // which should be converted to numbers when making power or experiment creation requests.
   confidence?: string;
@@ -499,7 +499,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           return {
             ...data,
             strata: filterFormStrata(
-              msg.strata.map((field) => ({ fieldName: field.field_name })),
+              msg.strata.map((field) => ({ field_name: field.field_name })),
               data.primaryKey,
             ),
           };

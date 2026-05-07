@@ -88,7 +88,7 @@ export const ExperimentFreqStackScreen = ({
     .filter((field) => field.field_name !== data.primaryKey)
     .toSorted((a, b) => a.field_name.localeCompare(b.field_name));
   const selectedStrata = (data.strata ?? [])
-    .map((s) => availableStrata.find((f) => f.field_name === s.fieldName))
+    .map((s) => availableStrata.find((f) => f.field_name === s.field_name))
     .filter((f): f is FieldMetadata => Boolean(f));
 
   const nextEnabled = isNextEnabled(data);
