@@ -75,7 +75,7 @@ export function StrataBuilder({ availableStrata, selectedStrata, onStrataChange 
             options={comboboxOptions}
             getDisplayTextForOption={getSearchTextFromOption}
             getKeyForOption={getSearchTextFromOption}
-            placeholder="Search strata..."
+            placeholder="Search fields..."
             noMatchText="No available strata"
             dropdownRow={({ option }) => <StrataComboboxRow stratum={option} />}
             disabled={comboboxOptions.length === 0 || hasReachedStrataLimit}
