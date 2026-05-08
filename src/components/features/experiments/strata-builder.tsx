@@ -41,13 +41,12 @@ export function StrataBuilder({ availableStrata, selectedStrata, onStrataChange 
 
   const handleStrataAdd = (value: string, fieldName?: string) => {
     setSearchText(value);
-    // Prevent adding beyond the limit, duplicate adds, and adding unavailable fields.
+    // Prevent adding beyond the limit and adding unavailable fields.
     if (!fieldName || hasReachedStrataLimit) return;
-    if (selectedStrata.some((s) => s.field_name === fieldName)) return;
-    const added = comboboxOptions.find((f) => f.field_name === fieldName);
-    if (!added) return;
+    const toAdd = comboboxOptions.find((f) => f.field_name === fieldName);
+    if (!toAdd) return;
 
-    onStrataChange([...selectedStrata, added]);
+    onStrataChange([...selectedStrata, toAdd]);
     setSearchText('');
   };
 
