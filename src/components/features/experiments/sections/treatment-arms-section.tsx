@@ -121,7 +121,6 @@ export function TreatmentArmsSection({ response, onEdit }: TreatmentArmsSectionP
     );
   }
 
-  // Frequentist experiment display
   return (
     <SectionCard
       title="Treatment Arms"
