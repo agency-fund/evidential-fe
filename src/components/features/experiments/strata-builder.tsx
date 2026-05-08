@@ -56,39 +56,37 @@ export function StrataBuilder({ availableStrata, selectedStrata, onStrataChange 
 
   return availableStrata.length === 0 ? (
     <Text color="gray" size="2">
-      No strata available for this participant type.
+      No fields available to use as strata for this table.
     </Text>
   ) : (
     <Flex direction="column" gap="3" overflowX="auto">
       <Text size="2" color="gray">
         Select strata fields for balanced randomization of participants across experiment arms.
       </Text>
-      <Flex direction="column" gap="2">
-        <Flex gap="2" align="center">
-          <Text as="label" size="2" weight="bold">
-            Add strata:
+      <Flex gap="2" align="center">
+        <Text as="label" size="2" weight="bold">
+          Add strata:
+        </Text>
+        <Combobox<FieldMetadata>
+          value={searchText}
+          onChange={handleStrataAdd}
+          options={comboboxOptions}
+          getDisplayTextForOption={getSearchTextFromOption}
+          getKeyForOption={getSearchTextFromOption}
+          placeholder="Search fields..."
+          noMatchText="No available strata"
+          dropdownRow={({ option }) => <StrataComboboxRow stratum={option} />}
+          disabled={comboboxOptions.length === 0 || hasReachedStrataLimit}
+        />
+        {hasReachedStrataLimit && (
+          <Text color="red" size="2">
+            You may specify no more than {MAX_STRATA_COUNT} strata in the experiment.
           </Text>
-          <Combobox<FieldMetadata>
-            value={searchText}
-            onChange={handleStrataAdd}
-            options={comboboxOptions}
-            getDisplayTextForOption={getSearchTextFromOption}
-            getKeyForOption={getSearchTextFromOption}
-            placeholder="Search fields..."
-            noMatchText="No available strata"
-            dropdownRow={({ option }) => <StrataComboboxRow stratum={option} />}
-            disabled={comboboxOptions.length === 0 || hasReachedStrataLimit}
-          />
-          {hasReachedStrataLimit && (
-            <Text color="red" size="2">
-              You may specify no more than {MAX_STRATA_COUNT} strata in the experiment.
-            </Text>
-          )}
-        </Flex>
+        )}
       </Flex>
 
       {selectedStrata.length > 0 && (
-        <Box width="50%">
+        <Box maxWidth="50%">
           <Table.Root layout="fixed">
             <Table.Header>
               <Table.Row>
@@ -113,7 +111,7 @@ export function StrataBuilder({ availableStrata, selectedStrata, onStrataChange 
                       <FieldDataCard
                         field={stratum}
                         trigger={
-                          <Flex gap="2" align="center">
+                          <Flex gap="2" align="center" wrap="wrap">
                             <Text>{stratum.field_name}</Text>
                             <DataTypeBadge type={stratum.data_type} />
                           </Flex>

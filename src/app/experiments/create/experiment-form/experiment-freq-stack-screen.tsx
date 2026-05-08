@@ -87,10 +87,10 @@ export const ExperimentFreqStackScreen = ({
     ['integer', 'bigint', 'double precision', 'numeric', 'boolean'].includes(f.data_type),
   );
   // Exclude primary key from stratum options.
-  const availableStrata = (removeFieldByName(allTableFields, data.primaryKey) ?? []).toSorted((a, b) =>
+  const availableStrata = removeFieldByName(allTableFields, data.primaryKey).toSorted((a, b) =>
     a.field_name.localeCompare(b.field_name),
   );
-  // Reconfirm that the selected strata are still valid options and filter out any undefines if not.
+  // Reconfirm that the selected strata are still valid options and filter out any undefined if not.
   const selectedStrata = (data.strata ?? [])
     .map((s) => availableStrata.find((f) => f.field_name === s.field_name))
     .filter((f): f is FieldMetadata => Boolean(f));

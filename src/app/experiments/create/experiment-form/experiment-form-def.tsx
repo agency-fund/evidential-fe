@@ -494,7 +494,10 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           return { ...data, filters: msg.filters, powerCheckResponse: undefined, desiredN: undefined };
         }
 
-        // Strata builder
+        // Strata builder -
+        // Does NOT invalidate power check for now as we don't currently incorporate strata in
+        // analysis.  When we do, we should also look to incorporate them as covariates in the power
+        // analysis, and if so invalidate here as well.
         if (msg.type === 'set-strata') {
           return {
             ...data,
