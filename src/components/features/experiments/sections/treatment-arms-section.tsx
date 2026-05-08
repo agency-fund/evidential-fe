@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge, Button, Flex, Separator, Text } from '@radix-ui/themes';
+import { Badge, Button, DataList, Dialog, Flex, Separator, Text } from '@radix-ui/themes';
 import { Pencil2Icon, PersonIcon } from '@radix-ui/react-icons';
 import {
   ArmBandit,
@@ -22,7 +22,46 @@ interface TreatmentArmsSectionProps {
   response: CreateExperimentResponse;
   onEdit?: () => void;
 }
+function BalanceCheckDialog({ assignSummary }: { assignSummary: CreateExperimentResponse['assign_summary'] }) {
+  const balanceCheck = assignSummary?.balance_check;
+  if (!balanceCheck) return null;
 
+  return (
+    <Dialog.Root>
+      <Dialog.Trigger>
+        <Badge style={{ cursor: 'pointer' }}>Balance Check</Badge>
+      </Dialog.Trigger>
+      <Dialog.Content maxWidth="400px">
+        <Dialog.Title>Balance Check</Dialog.Title>
+        <DataList.Root>
+          <DataList.Item>
+            <DataList.Label>F Statistic</DataList.Label>
+            <DataList.Value>{balanceCheck.f_statistic.toFixed(3)}</DataList.Value>
+          </DataList.Item>
+          <DataList.Item>
+            <DataList.Label>Numerator DF</DataList.Label>
+            <DataList.Value>{balanceCheck.numerator_df}</DataList.Value>
+          </DataList.Item>
+          <DataList.Item>
+            <DataList.Label>Denominator DF</DataList.Label>
+            <DataList.Value>{balanceCheck.denominator_df}</DataList.Value>
+          </DataList.Item>
+          <DataList.Item>
+            <DataList.Label>P-Value</DataList.Label>
+            <DataList.Value>{balanceCheck.p_value.toFixed(3)}</DataList.Value>
+          </DataList.Item>
+          <DataList.Item>
+            <DataList.Label>Balance OK?</DataList.Label>
+            <DataList.Value>{balanceCheck.balance_ok ? 'Yes' : 'No'}</DataList.Value>
+          </DataList.Item>
+        </DataList.Root>
+        <Dialog.Close>
+          <Button mt="4" variant="soft">Close</Button>
+        </Dialog.Close>
+      </Dialog.Content>
+    </Dialog.Root>
+  );
+}
 export function TreatmentArmsSection({ response, onEdit }: TreatmentArmsSectionProps) {
   const designSpec = response.design_spec;
   const arms = designSpec.arms;
@@ -87,12 +126,15 @@ export function TreatmentArmsSection({ response, onEdit }: TreatmentArmsSectionP
     <SectionCard
       title="Treatment Arms"
       headerRight={
-        onEdit ? (
-          <Button size="1" onClick={onEdit}>
-            <Pencil2Icon />
-            Edit
-          </Button>
-        ) : undefined
+        <Flex align="center" gap="2">
+          <BalanceCheckDialog assignSummary={assignSummary} />
+          {onEdit && (
+            <Button size="1" onClick={onEdit}>
+              <Pencil2Icon />
+              Edit
+            </Button>
+          )}
+        </Flex>
       }
     >
       <Flex direction="column" gap="4">
