@@ -11,6 +11,7 @@ import {
   ContextType,
   CreateExperimentResponse,
   DesignSpecInput,
+  FieldMetadata,
   FilterInput,
   GetFiltersResponseElement,
   PowerResponseOutput,
@@ -33,6 +34,7 @@ import { ExperimentsSummarizeFreqScreen } from '@/app/experiments/create/experim
 import {
   getReasonableEndDate,
   getReasonableStartDate,
+  removeFieldByName,
 } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import {
   createDefaultBanditParams,
@@ -45,7 +47,6 @@ import {
   BanditParams,
   isBanditExperimentType,
   MetricWithMDE,
-  Stratum,
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
 
 export type ExperimentType = Exclude<DesignSpecInput['experiment_type'], BayesABExperimentSpecInputExperimentType>;
@@ -73,7 +74,7 @@ export type ExperimentFormData = {
   filters?: FilterInput[];
   // Cache of available filter fields (and their data types) for lookup/display/search
   availableFilterFields?: GetFiltersResponseElement[];
-  strata?: Stratum[];
+  strata?: FieldMetadata[];
   // These next 2 Experiment Parameters are strings to allow for empty values,
   // which should be converted to numbers when making power or experiment creation requests.
   confidence?: string;
@@ -262,7 +263,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             primaryMetric: shouldClearDependents ? undefined : data.primaryMetric,
             secondaryMetrics: shouldClearDependents ? undefined : data.secondaryMetrics,
             filters: shouldClearDependents ? undefined : data.filters,
-            strata: shouldClearDependents ? undefined : data.strata,
+            strata: shouldClearDependents ? undefined : removeFieldByName(data.strata, msg.primaryKey),
 
             // Changing datasource should clear power check
             powerCheckResponse: undefined,
@@ -493,9 +494,15 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           return { ...data, filters: msg.filters, powerCheckResponse: undefined, desiredN: undefined };
         }
 
-        // Strata builder
+        // Strata builder -
+        // Does NOT invalidate power check for now as we don't currently incorporate strata in
+        // analysis.  When we do, we should also look to incorporate them as covariates in the power
+        // analysis, and if so invalidate here as well.
         if (msg.type === 'set-strata') {
-          return { ...data, strata: msg.strata.map((fieldName) => ({ fieldName })) };
+          return {
+            ...data,
+            strata: removeFieldByName(msg.strata, data.primaryKey),
+          };
         }
 
         // Power check - changing confidence/power invalidates power check response

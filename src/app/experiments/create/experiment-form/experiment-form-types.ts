@@ -64,10 +64,6 @@ export type BanditParams =
       contexts: Context[];
     };
 
-export type Stratum = {
-  fieldName: string;
-};
-
 export type MetricWithMDE = {
   metric: GetMetricsResponseElement;
   mde: string; // desired minimum detectable effect as a percentage of the metric's baseline value
