@@ -39,7 +39,7 @@ const isNextEnabled = (data: ExperimentFormData) => {
     // Must have run power check for pre-assigned frequentist experiment
     if (!data.powerCheckResponse) return false;
     // Must have selected a sample size for pre-assigned frequentist experiment
-    if (data.desiredN === undefined) return false;
+    if (data.desiredN === undefined || data.desiredN === 0) return false;
   }
   return true;
 };
