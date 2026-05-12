@@ -61,9 +61,7 @@ export const ExperimentFreqStackScreen = ({
   });
   const { trigger: triggerCreate, isMutating: triggerLoading } = useCreateExperiment(
     data.datasourceId!,
-    {
-      desired_n: data.desiredN,
-    },
+    undefined,
     {
       swr: {
         onSuccess: async (response) => {
