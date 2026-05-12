@@ -2816,15 +2816,9 @@ export const createExperimentParams = zod.object({
 	datasource_id: zod.string(),
 });
 
-export const createExperimentQueryDesiredNMinOne = 0;
-
 export const createExperimentQueryStratifyOnMetricsDefault = true;
 
 export const createExperimentQueryParams = zod.object({
-	desired_n: zod
-		.union([zod.number().min(createExperimentQueryDesiredNMinOne), zod.null()])
-		.optional()
-		.describe("Number of participants to assign."),
 	stratify_on_metrics: zod
 		.boolean()
 		.default(createExperimentQueryStratifyOnMetricsDefault)
@@ -2860,6 +2854,8 @@ export const createExperimentBodyDesignSpecMetricsMax = 150;
 export const createExperimentBodyDesignSpecFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyDesignSpecFiltersMax = 20;
+
+export const createExperimentBodyDesignSpecDesiredNMinOne = 0;
 
 export const createExperimentBodyDesignSpecPowerDefault = 0.8;
 export const createExperimentBodyDesignSpecPowerMin = 0;
@@ -2903,6 +2899,8 @@ export const createExperimentBodyDesignSpecFiltersItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyDesignSpecFiltersMaxOne = 20;
 
+export const createExperimentBodyDesignSpecDesiredNMinFour = 0;
+
 export const createExperimentBodyDesignSpecPowerDefaultOne = 0.8;
 export const createExperimentBodyDesignSpecPowerMinOne = 0;
 export const createExperimentBodyDesignSpecPowerMaxOne = 1;
@@ -2934,6 +2932,8 @@ export const createExperimentBodyDesignSpecContextsItemContextDescriptionMaxOne 
 
 export const createExperimentBodyDesignSpecContextsMaxOne = 150;
 
+export const createExperimentBodyDesignSpecDesiredNMinSeven = 0;
+
 export const createExperimentBodyDesignSpecExperimentNameMaxThree = 100;
 
 export const createExperimentBodyDesignSpecDescriptionMaxThree = 2000;
@@ -2953,6 +2953,8 @@ export const createExperimentBodyDesignSpecContextsItemContextDescriptionMaxFour
 
 export const createExperimentBodyDesignSpecContextsMaxFour = 150;
 
+export const createExperimentBodyDesignSpecDesiredNMinOnezero = 0;
+
 export const createExperimentBodyDesignSpecExperimentNameMaxFour = 100;
 
 export const createExperimentBodyDesignSpecDescriptionMaxFour = 2000;
@@ -2971,6 +2973,8 @@ export const createExperimentBodyDesignSpecContextsItemContextNameMaxTwo = 100;
 export const createExperimentBodyDesignSpecContextsItemContextDescriptionMaxSeven = 2000;
 
 export const createExperimentBodyDesignSpecContextsMaxSeven = 150;
+
+export const createExperimentBodyDesignSpecDesiredNMinOnethree = 0;
 
 export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
@@ -3126,10 +3130,15 @@ export const createExperimentBody = zod.object({
 									"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 								),
 							desired_n: zod
-								.union([zod.number(), zod.null()])
+								.union([
+									zod
+										.number()
+										.min(createExperimentBodyDesignSpecDesiredNMinOne),
+									zod.null(),
+								])
 								.optional()
 								.describe(
-									"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+									"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 								),
 							power: zod
 								.number()
@@ -3304,10 +3313,15 @@ export const createExperimentBody = zod.object({
 									"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 								),
 							desired_n: zod
-								.union([zod.number(), zod.null()])
+								.union([
+									zod
+										.number()
+										.min(createExperimentBodyDesignSpecDesiredNMinFour),
+									zod.null(),
+								])
 								.optional()
 								.describe(
-									"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+									"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 								),
 							power: zod
 								.number()
@@ -3480,6 +3494,17 @@ export const createExperimentBody = zod.object({
 								.describe(
 									"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 								),
+							desired_n: zod
+								.union([
+									zod
+										.number()
+										.min(createExperimentBodyDesignSpecDesiredNMinSeven),
+									zod.null(),
+								])
+								.optional()
+								.describe(
+									"Optional desired trial count used to initialize stored bandit n_trials.",
+								),
 							prior_type: zod
 								.enum(["beta", "normal"])
 								.optional()
@@ -3632,6 +3657,17 @@ export const createExperimentBody = zod.object({
 								.optional()
 								.describe(
 									"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+								),
+							desired_n: zod
+								.union([
+									zod
+										.number()
+										.min(createExperimentBodyDesignSpecDesiredNMinOnezero),
+									zod.null(),
+								])
+								.optional()
+								.describe(
+									"Optional desired trial count used to initialize stored bandit n_trials.",
 								),
 							prior_type: zod
 								.enum(["beta", "normal"])
@@ -3786,6 +3822,17 @@ export const createExperimentBody = zod.object({
 								.describe(
 									"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 								),
+							desired_n: zod
+								.union([
+									zod
+										.number()
+										.min(createExperimentBodyDesignSpecDesiredNMinOnethree),
+									zod.null(),
+								])
+								.optional()
+								.describe(
+									"Optional desired trial count used to initialize stored bandit n_trials.",
+								),
 							prior_type: zod
 								.enum(["beta", "normal"])
 								.optional()
@@ -3904,6 +3951,12 @@ export const createExperimentBody = zod.object({
 									.optional()
 									.describe(
 										"If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.",
+									),
+								pct_change_with_desired_n: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe(
+										"The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).",
 									),
 								msg: zod
 									.union([
@@ -4024,6 +4077,8 @@ export const createExperimentResponseDesignSpecFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentResponseDesignSpecFiltersMax = 20;
 
+export const createExperimentResponseDesignSpecDesiredNMinOne = 0;
+
 export const createExperimentResponseDesignSpecPowerDefault = 0.8;
 export const createExperimentResponseDesignSpecPowerMin = 0;
 export const createExperimentResponseDesignSpecPowerMax = 1;
@@ -4066,6 +4121,8 @@ export const createExperimentResponseDesignSpecFiltersItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentResponseDesignSpecFiltersMaxOne = 20;
 
+export const createExperimentResponseDesignSpecDesiredNMinFour = 0;
+
 export const createExperimentResponseDesignSpecPowerDefaultOne = 0.8;
 export const createExperimentResponseDesignSpecPowerMinOne = 0;
 export const createExperimentResponseDesignSpecPowerMaxOne = 1;
@@ -4097,6 +4154,8 @@ export const createExperimentResponseDesignSpecContextsItemContextDescriptionMax
 
 export const createExperimentResponseDesignSpecContextsMaxOne = 150;
 
+export const createExperimentResponseDesignSpecDesiredNMinSeven = 0;
+
 export const createExperimentResponseDesignSpecExperimentNameMaxThree = 100;
 
 export const createExperimentResponseDesignSpecDescriptionMaxThree = 2000;
@@ -4116,6 +4175,8 @@ export const createExperimentResponseDesignSpecContextsItemContextDescriptionMax
 
 export const createExperimentResponseDesignSpecContextsMaxFour = 150;
 
+export const createExperimentResponseDesignSpecDesiredNMinOnezero = 0;
+
 export const createExperimentResponseDesignSpecExperimentNameMaxFour = 100;
 
 export const createExperimentResponseDesignSpecDescriptionMaxFour = 2000;
@@ -4134,6 +4195,8 @@ export const createExperimentResponseDesignSpecContextsItemContextNameMaxTwo = 1
 export const createExperimentResponseDesignSpecContextsItemContextDescriptionMaxSeven = 2000;
 
 export const createExperimentResponseDesignSpecContextsMaxSeven = 150;
+
+export const createExperimentResponseDesignSpecDesiredNMinOnethree = 0;
 
 export const createExperimentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
@@ -4336,10 +4399,15 @@ export const createExperimentResponse = zod
 										"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 									),
 								desired_n: zod
-									.union([zod.number(), zod.null()])
+									.union([
+										zod
+											.number()
+											.min(createExperimentResponseDesignSpecDesiredNMinOne),
+										zod.null(),
+									])
 									.optional()
 									.describe(
-										"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+										"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 									),
 								power: zod
 									.number()
@@ -4520,10 +4588,15 @@ export const createExperimentResponse = zod
 										"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 									),
 								desired_n: zod
-									.union([zod.number(), zod.null()])
+									.union([
+										zod
+											.number()
+											.min(createExperimentResponseDesignSpecDesiredNMinFour),
+										zod.null(),
+									])
 									.optional()
 									.describe(
-										"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+										"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 									),
 								power: zod
 									.number()
@@ -4703,6 +4776,17 @@ export const createExperimentResponse = zod
 									.describe(
 										"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 									),
+								desired_n: zod
+									.union([
+										zod
+											.number()
+											.min(createExperimentResponseDesignSpecDesiredNMinSeven),
+										zod.null(),
+									])
+									.optional()
+									.describe(
+										"Optional desired trial count used to initialize stored bandit n_trials.",
+									),
 								prior_type: zod
 									.enum(["beta", "normal"])
 									.optional()
@@ -4865,6 +4949,19 @@ export const createExperimentResponse = zod
 									.describe(
 										"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 									),
+								desired_n: zod
+									.union([
+										zod
+											.number()
+											.min(
+												createExperimentResponseDesignSpecDesiredNMinOnezero,
+											),
+										zod.null(),
+									])
+									.optional()
+									.describe(
+										"Optional desired trial count used to initialize stored bandit n_trials.",
+									),
 								prior_type: zod
 									.enum(["beta", "normal"])
 									.optional()
@@ -5025,6 +5122,19 @@ export const createExperimentResponse = zod
 									.describe(
 										"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 									),
+								desired_n: zod
+									.union([
+										zod
+											.number()
+											.min(
+												createExperimentResponseDesignSpecDesiredNMinOnethree,
+											),
+										zod.null(),
+									])
+									.optional()
+									.describe(
+										"Optional desired trial count used to initialize stored bandit n_trials.",
+									),
 								prior_type: zod
 									.enum(["beta", "normal"])
 									.optional()
@@ -5142,6 +5252,12 @@ export const createExperimentResponse = zod
 									.optional()
 									.describe(
 										"If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.",
+									),
+								pct_change_with_desired_n: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe(
+										"The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).",
 									),
 								msg: zod
 									.union([
@@ -6037,6 +6153,8 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecFiltersItemFi
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const listOrganizationExperimentsResponseItemsItemDesignSpecFiltersMax = 20;
 
+export const listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinOne = 0;
+
 export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerDefault = 0.8;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerMin = 0;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerMax = 1;
@@ -6078,6 +6196,8 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecFiltersItemFi
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const listOrganizationExperimentsResponseItemsItemDesignSpecFiltersMaxOne = 20;
 
+export const listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinFour = 0;
+
 export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerDefaultOne = 0.8;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerMinOne = 0;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerMaxOne = 1;
@@ -6109,6 +6229,8 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemC
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxOne = 150;
 
+export const listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinSeven = 0;
+
 export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxThree = 100;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxThree = 2000;
@@ -6128,6 +6250,8 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemC
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxFour = 150;
 
+export const listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinOnezero = 0;
+
 export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxFour = 100;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxFour = 2000;
@@ -6146,6 +6270,8 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemC
 export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextDescriptionMaxSeven = 2000;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxSeven = 150;
+
+export const listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinOnethree = 0;
 
 export const listOrganizationExperimentsResponseItemsItemPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
@@ -6372,10 +6498,17 @@ export const listOrganizationExperimentsResponse = zod.object({
 												"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 											),
 										desired_n: zod
-											.union([zod.number(), zod.null()])
+											.union([
+												zod
+													.number()
+													.min(
+														listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinOne,
+													),
+												zod.null(),
+											])
 											.optional()
 											.describe(
-												"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+												"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 											),
 										power: zod
 											.number()
@@ -6594,10 +6727,17 @@ export const listOrganizationExperimentsResponse = zod.object({
 												"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 											),
 										desired_n: zod
-											.union([zod.number(), zod.null()])
+											.union([
+												zod
+													.number()
+													.min(
+														listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinFour,
+													),
+												zod.null(),
+											])
 											.optional()
 											.describe(
-												"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+												"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 											),
 										power: zod
 											.number()
@@ -6815,6 +6955,19 @@ export const listOrganizationExperimentsResponse = zod.object({
 											.describe(
 												"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 											),
+										desired_n: zod
+											.union([
+												zod
+													.number()
+													.min(
+														listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinSeven,
+													),
+												zod.null(),
+											])
+											.optional()
+											.describe(
+												"Optional desired trial count used to initialize stored bandit n_trials.",
+											),
 										prior_type: zod
 											.enum(["beta", "normal"])
 											.optional()
@@ -6994,6 +7147,19 @@ export const listOrganizationExperimentsResponse = zod.object({
 											.optional()
 											.describe(
 												"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+											),
+										desired_n: zod
+											.union([
+												zod
+													.number()
+													.min(
+														listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinOnezero,
+													),
+												zod.null(),
+											])
+											.optional()
+											.describe(
+												"Optional desired trial count used to initialize stored bandit n_trials.",
 											),
 										prior_type: zod
 											.enum(["beta", "normal"])
@@ -7175,6 +7341,19 @@ export const listOrganizationExperimentsResponse = zod.object({
 											.describe(
 												"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 											),
+										desired_n: zod
+											.union([
+												zod
+													.number()
+													.min(
+														listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinOnethree,
+													),
+												zod.null(),
+											])
+											.optional()
+											.describe(
+												"Optional desired trial count used to initialize stored bandit n_trials.",
+											),
 										prior_type: zod
 											.enum(["beta", "normal"])
 											.optional()
@@ -7296,6 +7475,12 @@ export const listOrganizationExperimentsResponse = zod.object({
 											.optional()
 											.describe(
 												"If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.",
+											),
+										pct_change_with_desired_n: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).",
 											),
 										msg: zod
 											.union([
@@ -7544,6 +7729,8 @@ export const getExperimentForUiResponseConfigDesignSpecFiltersItemFieldNameRegEx
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentForUiResponseConfigDesignSpecFiltersMax = 20;
 
+export const getExperimentForUiResponseConfigDesignSpecDesiredNMinOne = 0;
+
 export const getExperimentForUiResponseConfigDesignSpecPowerDefault = 0.8;
 export const getExperimentForUiResponseConfigDesignSpecPowerMin = 0;
 export const getExperimentForUiResponseConfigDesignSpecPowerMax = 1;
@@ -7585,6 +7772,8 @@ export const getExperimentForUiResponseConfigDesignSpecFiltersItemFieldNameRegEx
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentForUiResponseConfigDesignSpecFiltersMaxOne = 20;
 
+export const getExperimentForUiResponseConfigDesignSpecDesiredNMinFour = 0;
+
 export const getExperimentForUiResponseConfigDesignSpecPowerDefaultOne = 0.8;
 export const getExperimentForUiResponseConfigDesignSpecPowerMinOne = 0;
 export const getExperimentForUiResponseConfigDesignSpecPowerMaxOne = 1;
@@ -7616,6 +7805,8 @@ export const getExperimentForUiResponseConfigDesignSpecContextsItemContextDescri
 
 export const getExperimentForUiResponseConfigDesignSpecContextsMaxOne = 150;
 
+export const getExperimentForUiResponseConfigDesignSpecDesiredNMinSeven = 0;
+
 export const getExperimentForUiResponseConfigDesignSpecExperimentNameMaxThree = 100;
 
 export const getExperimentForUiResponseConfigDesignSpecDescriptionMaxThree = 2000;
@@ -7635,6 +7826,8 @@ export const getExperimentForUiResponseConfigDesignSpecContextsItemContextDescri
 
 export const getExperimentForUiResponseConfigDesignSpecContextsMaxFour = 150;
 
+export const getExperimentForUiResponseConfigDesignSpecDesiredNMinOnezero = 0;
+
 export const getExperimentForUiResponseConfigDesignSpecExperimentNameMaxFour = 100;
 
 export const getExperimentForUiResponseConfigDesignSpecDescriptionMaxFour = 2000;
@@ -7653,6 +7846,8 @@ export const getExperimentForUiResponseConfigDesignSpecContextsItemContextNameMa
 export const getExperimentForUiResponseConfigDesignSpecContextsItemContextDescriptionMaxSeven = 2000;
 
 export const getExperimentForUiResponseConfigDesignSpecContextsMaxSeven = 150;
+
+export const getExperimentForUiResponseConfigDesignSpecDesiredNMinOnethree = 0;
 
 export const getExperimentForUiResponseConfigPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
@@ -7874,10 +8069,17 @@ export const getExperimentForUiResponse = zod
 												"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 											),
 										desired_n: zod
-											.union([zod.number(), zod.null()])
+											.union([
+												zod
+													.number()
+													.min(
+														getExperimentForUiResponseConfigDesignSpecDesiredNMinOne,
+													),
+												zod.null(),
+											])
 											.optional()
 											.describe(
-												"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+												"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 											),
 										power: zod
 											.number()
@@ -8086,10 +8288,17 @@ export const getExperimentForUiResponse = zod
 												"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 											),
 										desired_n: zod
-											.union([zod.number(), zod.null()])
+											.union([
+												zod
+													.number()
+													.min(
+														getExperimentForUiResponseConfigDesignSpecDesiredNMinFour,
+													),
+												zod.null(),
+											])
 											.optional()
 											.describe(
-												"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+												"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 											),
 										power: zod
 											.number()
@@ -8305,6 +8514,19 @@ export const getExperimentForUiResponse = zod
 											.describe(
 												"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 											),
+										desired_n: zod
+											.union([
+												zod
+													.number()
+													.min(
+														getExperimentForUiResponseConfigDesignSpecDesiredNMinSeven,
+													),
+												zod.null(),
+											])
+											.optional()
+											.describe(
+												"Optional desired trial count used to initialize stored bandit n_trials.",
+											),
 										prior_type: zod
 											.enum(["beta", "normal"])
 											.optional()
@@ -8484,6 +8706,19 @@ export const getExperimentForUiResponse = zod
 											.optional()
 											.describe(
 												"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
+											),
+										desired_n: zod
+											.union([
+												zod
+													.number()
+													.min(
+														getExperimentForUiResponseConfigDesignSpecDesiredNMinOnezero,
+													),
+												zod.null(),
+											])
+											.optional()
+											.describe(
+												"Optional desired trial count used to initialize stored bandit n_trials.",
 											),
 										prior_type: zod
 											.enum(["beta", "normal"])
@@ -8665,6 +8900,19 @@ export const getExperimentForUiResponse = zod
 											.describe(
 												"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 											),
+										desired_n: zod
+											.union([
+												zod
+													.number()
+													.min(
+														getExperimentForUiResponseConfigDesignSpecDesiredNMinOnethree,
+													),
+												zod.null(),
+											])
+											.optional()
+											.describe(
+												"Optional desired trial count used to initialize stored bandit n_trials.",
+											),
 										prior_type: zod
 											.enum(["beta", "normal"])
 											.optional()
@@ -8786,6 +9034,12 @@ export const getExperimentForUiResponse = zod
 											.optional()
 											.describe(
 												"If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.",
+											),
+										pct_change_with_desired_n: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).",
 											),
 										msg: zod
 											.union([
@@ -9237,6 +9491,8 @@ export const powerCheckBodyDesignSpecFiltersItemFieldNameRegExp = new RegExp(
 );
 export const powerCheckBodyDesignSpecFiltersMax = 20;
 
+export const powerCheckBodyDesignSpecDesiredNMinOne = 0;
+
 export const powerCheckBodyDesignSpecPowerDefault = 0.8;
 export const powerCheckBodyDesignSpecPowerMin = 0;
 export const powerCheckBodyDesignSpecPowerMax = 1;
@@ -9281,6 +9537,8 @@ export const powerCheckBodyDesignSpecFiltersItemFieldNameRegExpOne = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
 export const powerCheckBodyDesignSpecFiltersMaxOne = 20;
+
+export const powerCheckBodyDesignSpecDesiredNMinFour = 0;
 
 export const powerCheckBodyDesignSpecPowerDefaultOne = 0.8;
 export const powerCheckBodyDesignSpecPowerMinOne = 0;
@@ -9430,10 +9688,13 @@ export const powerCheckBody = zod.object({
 							"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 						),
 					desired_n: zod
-						.union([zod.number(), zod.null()])
+						.union([
+							zod.number().min(powerCheckBodyDesignSpecDesiredNMinOne),
+							zod.null(),
+						])
 						.optional()
 						.describe(
-							"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+							"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 						),
 					power: zod
 						.number()
@@ -9604,10 +9865,13 @@ export const powerCheckBody = zod.object({
 							"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 						),
 					desired_n: zod
-						.union([zod.number(), zod.null()])
+						.union([
+							zod.number().min(powerCheckBodyDesignSpecDesiredNMinFour),
+							zod.null(),
+						])
 						.optional()
 						.describe(
-							"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+							"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 						),
 					power: zod
 						.number()
@@ -9739,6 +10003,12 @@ export const powerCheckResponse = zod.object({
 						.optional()
 						.describe(
 							"If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.",
+						),
+					pct_change_with_desired_n: zod
+						.union([zod.number(), zod.null()])
+						.optional()
+						.describe(
+							"The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).",
 						),
 					msg: zod
 						.union([

@@ -592,6 +592,11 @@ export type BayesABExperimentSpecInputDesignUrl = string | null;
 export type BayesABExperimentSpecInputContexts = Context[] | null;
 
 /**
+ * Optional desired trial count used to initialize stored bandit n_trials.
+ */
+export type BayesABExperimentSpecInputDesiredN = number | null;
+
+/**
  * Use this type to randomly assign participants into arms during live experiment execution with
 Bayesian A/B experiments.
 
@@ -614,6 +619,8 @@ export interface BayesABExperimentSpecInput {
 	arms: ArmBandit[];
 	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
 	contexts?: BayesABExperimentSpecInputContexts;
+	/** Optional desired trial count used to initialize stored bandit n_trials. */
+	desired_n?: BayesABExperimentSpecInputDesiredN;
 	/** The type of prior distribution for the arms. */
 	prior_type?: PriorTypes;
 	/** The type of reward we observe from the experiment. */
@@ -639,6 +646,11 @@ export type BayesABExperimentSpecOutputDesignUrl = string | null;
 export type BayesABExperimentSpecOutputContexts = Context[] | null;
 
 /**
+ * Optional desired trial count used to initialize stored bandit n_trials.
+ */
+export type BayesABExperimentSpecOutputDesiredN = number | null;
+
+/**
  * Use this type to randomly assign participants into arms during live experiment execution with
 Bayesian A/B experiments.
 
@@ -661,6 +673,8 @@ export interface BayesABExperimentSpecOutput {
 	arms: ArmBandit[];
 	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
 	contexts?: BayesABExperimentSpecOutputContexts;
+	/** Optional desired trial count used to initialize stored bandit n_trials. */
+	desired_n?: BayesABExperimentSpecOutputDesiredN;
 	/** The type of prior distribution for the arms. */
 	prior_type?: PriorTypes;
 	/** The type of reward we observe from the experiment. */
@@ -795,6 +809,11 @@ export type CMABExperimentSpecInputDesignUrl = string | null;
 export type CMABExperimentSpecInputContexts = Context[] | null;
 
 /**
+ * Optional desired trial count used to initialize stored bandit n_trials.
+ */
+export type CMABExperimentSpecInputDesiredN = number | null;
+
+/**
  * Use this type to randomly assign participants into arms during live experiment execution with
 contextual MAB experiments.
 
@@ -817,6 +836,8 @@ export interface CMABExperimentSpecInput {
 	arms: ArmBandit[];
 	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
 	contexts?: CMABExperimentSpecInputContexts;
+	/** Optional desired trial count used to initialize stored bandit n_trials. */
+	desired_n?: CMABExperimentSpecInputDesiredN;
 	/** The type of prior distribution for the arms. */
 	prior_type?: PriorTypes;
 	/** The type of reward we observe from the experiment. */
@@ -842,6 +863,11 @@ export type CMABExperimentSpecOutputDesignUrl = string | null;
 export type CMABExperimentSpecOutputContexts = Context[] | null;
 
 /**
+ * Optional desired trial count used to initialize stored bandit n_trials.
+ */
+export type CMABExperimentSpecOutputDesiredN = number | null;
+
+/**
  * Use this type to randomly assign participants into arms during live experiment execution with
 contextual MAB experiments.
 
@@ -864,6 +890,8 @@ export interface CMABExperimentSpecOutput {
 	arms: ArmBandit[];
 	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
 	contexts?: CMABExperimentSpecOutputContexts;
+	/** Optional desired trial count used to initialize stored bandit n_trials. */
+	desired_n?: CMABExperimentSpecOutputDesiredN;
 	/** The type of prior distribution for the arms. */
 	prior_type?: PriorTypes;
 	/** The type of reward we observe from the experiment. */
@@ -1929,6 +1957,11 @@ export type MABExperimentSpecInputDesignUrl = string | null;
 export type MABExperimentSpecInputContexts = Context[] | null;
 
 /**
+ * Optional desired trial count used to initialize stored bandit n_trials.
+ */
+export type MABExperimentSpecInputDesiredN = number | null;
+
+/**
  * Use this type to randomly assign participants into arms during live experiment execution with MAB experiments.
 
 For example, you may wish to experiment on new users. Assignments are issued via API request.
@@ -1950,6 +1983,8 @@ export interface MABExperimentSpecInput {
 	arms: ArmBandit[];
 	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
 	contexts?: MABExperimentSpecInputContexts;
+	/** Optional desired trial count used to initialize stored bandit n_trials. */
+	desired_n?: MABExperimentSpecInputDesiredN;
 	/** The type of prior distribution for the arms. */
 	prior_type?: PriorTypes;
 	/** The type of reward we observe from the experiment. */
@@ -1975,6 +2010,11 @@ export type MABExperimentSpecOutputDesignUrl = string | null;
 export type MABExperimentSpecOutputContexts = Context[] | null;
 
 /**
+ * Optional desired trial count used to initialize stored bandit n_trials.
+ */
+export type MABExperimentSpecOutputDesiredN = number | null;
+
+/**
  * Use this type to randomly assign participants into arms during live experiment execution with MAB experiments.
 
 For example, you may wish to experiment on new users. Assignments are issued via API request.
@@ -1996,6 +2036,8 @@ export interface MABExperimentSpecOutput {
 	arms: ArmBandit[];
 	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
 	contexts?: MABExperimentSpecOutputContexts;
+	/** Optional desired trial count used to initialize stored bandit n_trials. */
+	desired_n?: MABExperimentSpecOutputDesiredN;
 	/** The type of prior distribution for the arms. */
 	prior_type?: PriorTypes;
 	/** The type of reward we observe from the experiment. */
@@ -2035,6 +2077,11 @@ export type MetricPowerAnalysisInputTargetPossible = number | null;
  * If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.
  */
 export type MetricPowerAnalysisInputPctChangePossible = number | null;
+
+/**
+ * The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).
+ */
+export type MetricPowerAnalysisInputPctChangeWithDesiredN = number | null;
 
 /**
  * Human friendly message about the above results.
@@ -2079,6 +2126,8 @@ export interface MetricPowerAnalysisInput {
 	target_possible?: MetricPowerAnalysisInputTargetPossible;
 	/** If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change. */
 	pct_change_possible?: MetricPowerAnalysisInputPctChangePossible;
+	/** The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs). */
+	pct_change_with_desired_n?: MetricPowerAnalysisInputPctChangeWithDesiredN;
 	/** Human friendly message about the above results. */
 	msg?: MetricPowerAnalysisInputMsg;
 	/** Total number of clusters needed across all arms */
@@ -2112,6 +2161,11 @@ export type MetricPowerAnalysisOutputTargetPossible = number | null;
  * If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.
  */
 export type MetricPowerAnalysisOutputPctChangePossible = number | null;
+
+/**
+ * The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).
+ */
+export type MetricPowerAnalysisOutputPctChangeWithDesiredN = number | null;
 
 /**
  * Human friendly message about the above results.
@@ -2156,6 +2210,8 @@ export interface MetricPowerAnalysisOutput {
 	target_possible?: MetricPowerAnalysisOutputTargetPossible;
 	/** If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change. */
 	pct_change_possible?: MetricPowerAnalysisOutputPctChangePossible;
+	/** The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs). */
+	pct_change_with_desired_n?: MetricPowerAnalysisOutputPctChangeWithDesiredN;
 	/** Human friendly message about the above results. */
 	msg?: MetricPowerAnalysisOutputMsg;
 	/** Total number of clusters needed across all arms */
@@ -2248,7 +2304,7 @@ export const OnlineFrequentistExperimentSpecInputExperimentType = {
 export type OnlineFrequentistExperimentSpecInputDesignUrl = string | null;
 
 /**
- * Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.
+ * Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.
  */
 export type OnlineFrequentistExperimentSpecInputDesiredN = number | null;
 
@@ -2299,7 +2355,7 @@ export interface OnlineFrequentistExperimentSpecInput {
 	 * @maxItems 20
 	 */
 	filters: FilterInput[];
-	/** Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size. */
+	/** Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.  */
 	desired_n?: OnlineFrequentistExperimentSpecInputDesiredN;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
@@ -2335,7 +2391,7 @@ export const OnlineFrequentistExperimentSpecOutputExperimentType = {
 export type OnlineFrequentistExperimentSpecOutputDesignUrl = string | null;
 
 /**
- * Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.
+ * Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.
  */
 export type OnlineFrequentistExperimentSpecOutputDesiredN = number | null;
 
@@ -2386,7 +2442,7 @@ export interface OnlineFrequentistExperimentSpecOutput {
 	 * @maxItems 20
 	 */
 	filters: FilterOutput[];
-	/** Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size. */
+	/** Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.  */
 	desired_n?: OnlineFrequentistExperimentSpecOutputDesiredN;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
@@ -2535,7 +2591,7 @@ export const PreassignedFrequentistExperimentSpecInputExperimentType = {
 export type PreassignedFrequentistExperimentSpecInputDesignUrl = string | null;
 
 /**
- * Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.
+ * Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.
  */
 export type PreassignedFrequentistExperimentSpecInputDesiredN = number | null;
 
@@ -2584,7 +2640,7 @@ export interface PreassignedFrequentistExperimentSpecInput {
 	 * @maxItems 20
 	 */
 	filters: FilterInput[];
-	/** Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size. */
+	/** Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.  */
 	desired_n?: PreassignedFrequentistExperimentSpecInputDesiredN;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
@@ -2620,7 +2676,7 @@ export const PreassignedFrequentistExperimentSpecOutputExperimentType = {
 export type PreassignedFrequentistExperimentSpecOutputDesignUrl = string | null;
 
 /**
- * Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.
+ * Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.
  */
 export type PreassignedFrequentistExperimentSpecOutputDesiredN = number | null;
 
@@ -2669,7 +2725,7 @@ export interface PreassignedFrequentistExperimentSpecOutput {
 	 * @maxItems 20
 	 */
 	filters: FilterOutput[];
-	/** Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size. */
+	/** Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.  */
 	desired_n?: PreassignedFrequentistExperimentSpecOutputDesiredN;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
@@ -3168,10 +3224,6 @@ export type DeleteApiKeyParams = {
 };
 
 export type CreateExperimentParams = {
-	/**
-	 * Number of participants to assign.
-	 */
-	desired_n?: number | null;
 	/**
 	 * Whether to also stratify on metrics during assignment.
 	 */
