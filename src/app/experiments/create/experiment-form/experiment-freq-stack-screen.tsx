@@ -59,21 +59,17 @@ export const ExperimentFreqStackScreen = ({
   const { data: tableData } = useInspectTableInDatasource(data.datasourceId ?? '', data.tableName ?? '', {
     refresh: false,
   });
-  const { trigger: triggerCreate, isMutating: triggerLoading } = useCreateExperiment(
-    data.datasourceId!,
-    undefined,
-    {
-      swr: {
-        onSuccess: async (response) => {
-          dispatch({ type: 'set-create-response', response: response });
-          navigateNext();
-        },
-        onError: async (response) => {
-          dispatch({ type: 'set-create-error', response: response });
-        },
+  const { trigger: triggerCreate, isMutating: triggerLoading } = useCreateExperiment(data.datasourceId!, undefined, {
+    swr: {
+      onSuccess: async (response) => {
+        dispatch({ type: 'set-create-response', response: response });
+        navigateNext();
+      },
+      onError: async (response) => {
+        dispatch({ type: 'set-create-error', response: response });
       },
     },
-  );
+  });
 
   const fields = tableData?.fields ?? [];
 
