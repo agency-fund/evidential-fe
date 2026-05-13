@@ -1220,6 +1220,21 @@ export type DesignSpecMetricRequestMetricPctChange = number | null;
 export type DesignSpecMetricRequestMetricTarget = number | null;
 
 /**
+ * Intracluster correlation coefficient for cluster-randomized designs. (Manually added; not regenerated yet from PR #163 BE.)
+ */
+export type DesignSpecMetricRequestIcc = number | null;
+
+/**
+ * Average number of individuals per cluster. (Manually added; not regenerated yet from PR #163 BE.)
+ */
+export type DesignSpecMetricRequestAvgClusterSize = number | null;
+
+/**
+ * Coefficient of variation in cluster sizes (0 = equal sizes). (Manually added; not regenerated yet from PR #163 BE.)
+ */
+export type DesignSpecMetricRequestCv = number | null;
+
+/**
  * Defines a request to look up baseline stats for a metric to measure in an experiment.
  */
 export interface DesignSpecMetricRequest {
@@ -1229,6 +1244,12 @@ export interface DesignSpecMetricRequest {
 	metric_pct_change?: DesignSpecMetricRequestMetricPctChange;
 	/** Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change. */
 	metric_target?: DesignSpecMetricRequestMetricTarget;
+	/** Intracluster correlation coefficient for cluster-randomized designs. */
+	icc?: DesignSpecMetricRequestIcc;
+	/** Average number of individuals per cluster. */
+	avg_cluster_size?: DesignSpecMetricRequestAvgClusterSize;
+	/** Coefficient of variation in cluster sizes (0 = equal sizes). */
+	cv?: DesignSpecMetricRequestCv;
 }
 
 /**
@@ -2301,6 +2322,8 @@ export interface OnlineFrequentistExperimentSpecInput {
 	filters: FilterInput[];
 	/** Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size. */
 	desired_n?: OnlineFrequentistExperimentSpecInputDesiredN;
+	/** Column name in table_name that identifies the cluster each participant belongs to. Set this to use cluster randomization. (Manually added; not regenerated yet from PR #163 BE.) */
+	cluster_column?: string | null;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
@@ -2388,6 +2411,8 @@ export interface OnlineFrequentistExperimentSpecOutput {
 	filters: FilterOutput[];
 	/** Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size. */
 	desired_n?: OnlineFrequentistExperimentSpecOutputDesiredN;
+	/** Column name in table_name that identifies the cluster each participant belongs to. Set this to use cluster randomization. (Manually added; not regenerated yet from PR #163 BE.) */
+	cluster_column?: string | null;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
@@ -2586,6 +2611,8 @@ export interface PreassignedFrequentistExperimentSpecInput {
 	filters: FilterInput[];
 	/** Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size. */
 	desired_n?: PreassignedFrequentistExperimentSpecInputDesiredN;
+	/** Column name in table_name that identifies the cluster each participant belongs to. Set this to use cluster randomization. (Manually added; not regenerated yet from PR #163 BE.) */
+	cluster_column?: string | null;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
@@ -2671,6 +2698,8 @@ export interface PreassignedFrequentistExperimentSpecOutput {
 	filters: FilterOutput[];
 	/** Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size. */
 	desired_n?: PreassignedFrequentistExperimentSpecOutputDesiredN;
+	/** Column name in table_name that identifies the cluster each participant belongs to. Set this to use cluster randomization. (Manually added; not regenerated yet from PR #163 BE.) */
+	cluster_column?: string | null;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
