@@ -28,48 +28,45 @@
 // variant from methods.schemas.ts can be passed without TS griping about
 // missing fields on bandit types.
 type LooseDesignSpec = {
-	cluster_column?: string | null;
-	metrics?: Array<{
-		icc?: number | null;
-		cv?: number | null;
-		avg_cluster_size?: number | null;
-	} | null> | null;
+  cluster_column?: string | null;
+  metrics?: Array<{
+    icc?: number | null;
+    cv?: number | null;
+    avg_cluster_size?: number | null;
+  } | null> | null;
 };
 
 type LoosePowerAnalyses = {
-	analyses?: Array<{
-		metric_spec?: {
-			icc?: number | null;
-			cv?: number | null;
-			avg_cluster_size?: number | null;
-		} | null;
-		num_clusters_total?: number | null;
-		clusters_per_arm?: number[] | null;
-		design_effect?: number | null;
-	} | null> | null;
+  analyses?: Array<{
+    metric_spec?: {
+      icc?: number | null;
+      cv?: number | null;
+      avg_cluster_size?: number | null;
+    } | null;
+    num_clusters_total?: number | null;
+    clusters_per_arm?: number[] | null;
+    design_effect?: number | null;
+  } | null> | null;
 };
 
 /** Returns true if the experiment has any cluster signal on the design spec or stored power analyses. */
-export function isClusterDesign(
-	designSpec: unknown,
-	powerAnalyses: unknown,
-): boolean {
-	const ds = (designSpec ?? undefined) as LooseDesignSpec | undefined;
-	const pa = (powerAnalyses ?? undefined) as LoosePowerAnalyses | undefined;
-	if (ds?.cluster_column) return true;
-	const firstAnalysis = pa?.analyses?.[0];
-	if (firstAnalysis?.num_clusters_total != null) return true;
-	if (firstAnalysis?.metric_spec?.icc != null) return true;
-	if (firstAnalysis?.design_effect != null) return true;
-	const firstMetric = ds?.metrics?.[0];
-	if (firstMetric?.icc != null) return true;
-	return false;
+export function isClusterDesign(designSpec: unknown, powerAnalyses: unknown): boolean {
+  const ds = (designSpec ?? undefined) as LooseDesignSpec | undefined;
+  const pa = (powerAnalyses ?? undefined) as LoosePowerAnalyses | undefined;
+  if (ds?.cluster_column) return true;
+  const firstAnalysis = pa?.analyses?.[0];
+  if (firstAnalysis?.num_clusters_total != null) return true;
+  if (firstAnalysis?.metric_spec?.icc != null) return true;
+  if (firstAnalysis?.design_effect != null) return true;
+  const firstMetric = ds?.metrics?.[0];
+  if (firstMetric?.icc != null) return true;
+  return false;
 }
 
 /** Returns the cluster column field name from design spec or null when not persisted. */
 export function getClusterColumn(designSpec: unknown): string | null {
-	const ds = (designSpec ?? undefined) as LooseDesignSpec | undefined;
-	return ds?.cluster_column ?? null;
+  const ds = (designSpec ?? undefined) as LooseDesignSpec | undefined;
+  return ds?.cluster_column ?? null;
 }
 
 /**
@@ -77,23 +74,20 @@ export function getClusterColumn(designSpec: unknown): string | null {
  * Returns null if no cluster stats are available anywhere.
  */
 export function getPrimaryMetricClusterStats(
-	designSpec: unknown,
-	powerAnalyses: unknown,
+  designSpec: unknown,
+  powerAnalyses: unknown,
 ): {
-	icc: number | null;
-	cv: number | null;
-	avg_cluster_size: number | null;
+  icc: number | null;
+  cv: number | null;
+  avg_cluster_size: number | null;
 } | null {
-	const ds = (designSpec ?? undefined) as LooseDesignSpec | undefined;
-	const pa = (powerAnalyses ?? undefined) as LoosePowerAnalyses | undefined;
-	const firstMetric = ds?.metrics?.[0];
-	const firstAnalysisMetric = pa?.analyses?.[0]?.metric_spec;
-	const icc = firstMetric?.icc ?? firstAnalysisMetric?.icc ?? null;
-	const cv = firstMetric?.cv ?? firstAnalysisMetric?.cv ?? null;
-	const avg =
-		firstMetric?.avg_cluster_size ??
-		firstAnalysisMetric?.avg_cluster_size ??
-		null;
-	if (icc == null && cv == null && avg == null) return null;
-	return { icc, cv, avg_cluster_size: avg };
+  const ds = (designSpec ?? undefined) as LooseDesignSpec | undefined;
+  const pa = (powerAnalyses ?? undefined) as LoosePowerAnalyses | undefined;
+  const firstMetric = ds?.metrics?.[0];
+  const firstAnalysisMetric = pa?.analyses?.[0]?.metric_spec;
+  const icc = firstMetric?.icc ?? firstAnalysisMetric?.icc ?? null;
+  const cv = firstMetric?.cv ?? firstAnalysisMetric?.cv ?? null;
+  const avg = firstMetric?.avg_cluster_size ?? firstAnalysisMetric?.avg_cluster_size ?? null;
+  if (icc == null && cv == null && avg == null) return null;
+  return { icc, cv, avg_cluster_size: avg };
 }

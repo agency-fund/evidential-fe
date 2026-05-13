@@ -1,143 +1,128 @@
-"use client";
+'use client';
 
-import { useCommitExperiment } from "@/api/admin";
+import { useCommitExperiment } from '@/api/admin';
+import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
 import {
-	ExperimentFormData,
-	ExperimentScreenId,
-} from "@/app/experiments/create/experiment-form/experiment-form-def";
-import {
-	ExperimentConfirmationDisplay,
-	ExperimentConfirmationDisplayProps,
-} from "@/components/features/experiments/experiment-confirmation-display";
-import { NavigationButtons } from "@/components/features/experiments/navigation-buttons";
-import { GenericErrorCallout } from "@/components/ui/generic-error";
-import { ErrorType } from "@/services/orval-fetch";
-import { InfoCircledIcon } from "@radix-ui/react-icons";
-import { Callout, Flex } from "@radix-ui/themes";
-import { useRouter } from "next/navigation";
+  ExperimentConfirmationDisplay,
+  ExperimentConfirmationDisplayProps,
+} from '@/components/features/experiments/experiment-confirmation-display';
+import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
+import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { ErrorType } from '@/services/orval-fetch';
+import { InfoCircledIcon } from '@radix-ui/react-icons';
+import { Callout, Flex } from '@radix-ui/themes';
+import { useRouter } from 'next/navigation';
 
 // The "Edit" buttons on the confirmation screen are temporarily disabled pending further UX effort.
 const FEATURE_EDIT_BUTTONS_ENABLED = false;
 
 type EditTargets = {
-	metadata?: ExperimentScreenId;
-	treatmentArms?: ExperimentScreenId;
-	datasource?: ExperimentScreenId;
-	filters?: ExperimentScreenId;
-	outcomesPrior?: ExperimentScreenId;
-	contexts?: ExperimentScreenId;
-	metrics?: ExperimentScreenId;
-	powerBalance?: ExperimentScreenId;
+  metadata?: ExperimentScreenId;
+  treatmentArms?: ExperimentScreenId;
+  datasource?: ExperimentScreenId;
+  filters?: ExperimentScreenId;
+  outcomesPrior?: ExperimentScreenId;
+  contexts?: ExperimentScreenId;
+  metrics?: ExperimentScreenId;
+  powerBalance?: ExperimentScreenId;
 };
 
 interface ExperimentsSummarizeScreenBaseProps {
-	data: ExperimentFormData;
-	navigatePrev: () => void;
-	navigateTo: (screenId: ExperimentScreenId) => void;
-	onCommitError: (response: ErrorType<unknown>) => void;
-	infoCalloutText: React.ReactNode;
-	editTargets: EditTargets;
-	frequentistInfo?: Pick<
-		ExperimentConfirmationDisplayProps,
-		"metrics" | "desiredN" | "cluster"
-	>;
+  data: ExperimentFormData;
+  navigatePrev: () => void;
+  navigateTo: (screenId: ExperimentScreenId) => void;
+  onCommitError: (response: ErrorType<unknown>) => void;
+  infoCalloutText: React.ReactNode;
+  editTargets: EditTargets;
+  frequentistInfo?: Pick<ExperimentConfirmationDisplayProps, 'metrics' | 'desiredN' | 'cluster'>;
 }
 
 export function ExperimentsSummarizeScreenBase({
-	data,
-	navigatePrev,
-	navigateTo,
-	onCommitError,
-	infoCalloutText,
-	editTargets,
-	frequentistInfo,
+  data,
+  navigatePrev,
+  navigateTo,
+  onCommitError,
+  infoCalloutText,
+  editTargets,
+  frequentistInfo,
 }: ExperimentsSummarizeScreenBaseProps) {
-	const router = useRouter();
+  const router = useRouter();
 
-	const experimentId = data.createExperimentResponse?.experiment_id ?? "";
-	const datasourceId = data.datasourceId ?? "";
+  const experimentId = data.createExperimentResponse?.experiment_id ?? '';
+  const datasourceId = data.datasourceId ?? '';
 
-	const { trigger: triggerCommit, isMutating: commitLoading } =
-		useCommitExperiment(datasourceId, experimentId, {
-			swr: {
-				onSuccess: () => {
-					router.push("/experiments");
-				},
-				onError: async (response: ErrorType<unknown>) => {
-					onCommitError(response);
-				},
-			},
-		});
+  const { trigger: triggerCommit, isMutating: commitLoading } = useCommitExperiment(datasourceId, experimentId, {
+    swr: {
+      onSuccess: () => {
+        router.push('/experiments');
+      },
+      onError: async (response: ErrorType<unknown>) => {
+        onCommitError(response);
+      },
+    },
+  });
 
-	const handleCommit = async () => {
-		if (!datasourceId || !experimentId) return;
-		try {
-			await triggerCommit();
-		} catch {
-			// Error handled by onError callback
-		}
-	};
+  const handleCommit = async () => {
+    if (!datasourceId || !experimentId) return;
+    try {
+      await triggerCommit();
+    } catch {
+      // Error handled by onError callback
+    }
+  };
 
-	const toEditHandler = FEATURE_EDIT_BUTTONS_ENABLED
-		? (target?: ExperimentScreenId) =>
-				target ? () => navigateTo(target) : undefined
-		: () => undefined;
+  const toEditHandler = FEATURE_EDIT_BUTTONS_ENABLED
+    ? (target?: ExperimentScreenId) => (target ? () => navigateTo(target) : undefined)
+    : () => undefined;
 
-	if (data.commitError) {
-		return (
-			<>
-				<Flex direction="column" gap="3">
-					<GenericErrorCallout
-						title="Failed to create experiment"
-						error={data.commitError}
-					/>
-				</Flex>
-				<NavigationButtons
-					onPrev={navigatePrev}
-					onNext={() => {}}
-					nextDisabled
-				/>
-			</>
-		);
-	}
+  if (data.commitError) {
+    return (
+      <>
+        <Flex direction="column" gap="3">
+          <GenericErrorCallout title="Failed to create experiment" error={data.commitError} />
+        </Flex>
+        <NavigationButtons onPrev={navigatePrev} onNext={() => {}} nextDisabled />
+      </>
+    );
+  }
 
-	return (
-		<>
-			<Flex direction="column" gap="4">
-				{data.createExperimentResponse !== undefined && (
-					<>
-						<ExperimentConfirmationDisplay
-							response={data.createExperimentResponse}
-							tableName={data.tableName}
-							primaryKey={data.primaryKey}
-							metrics={frequentistInfo?.metrics}
-							desiredN={frequentistInfo?.desiredN}
-							cluster={frequentistInfo?.cluster}
-							onEditMetadata={toEditHandler(editTargets.metadata)}
-							onEditTreatmentArms={toEditHandler(editTargets.treatmentArms)}
-							onEditDatasource={toEditHandler(editTargets.datasource)}
-							onEditFilters={toEditHandler(editTargets.filters)}
-							onEditOutcomesPrior={toEditHandler(editTargets.outcomesPrior)}
-							onEditContexts={toEditHandler(editTargets.contexts)}
-							onEditMetrics={toEditHandler(editTargets.metrics)}
-							onEditPowerBalance={toEditHandler(editTargets.powerBalance)}
-						/>
-						<Callout.Root>
-							<Callout.Icon>
-								<InfoCircledIcon />
-							</Callout.Icon>
-							<Callout.Text>{infoCalloutText}</Callout.Text>
-						</Callout.Root>
-					</>
-				)}
-			</Flex>
-			<NavigationButtons
-				onPrev={navigatePrev} // navigatePrev will handle abandonment
-				onNext={handleCommit}
-				nextDisabled={!data.createExperimentResponse}
-				nextLoading={commitLoading}
-				nextLabel="Save Experiment"
-			/>
-		</>
-	);
+  return (
+    <>
+      <Flex direction="column" gap="4">
+        {data.createExperimentResponse !== undefined && (
+          <>
+            <ExperimentConfirmationDisplay
+              response={data.createExperimentResponse}
+              tableName={data.tableName}
+              primaryKey={data.primaryKey}
+              metrics={frequentistInfo?.metrics}
+              desiredN={frequentistInfo?.desiredN}
+              cluster={frequentistInfo?.cluster}
+              onEditMetadata={toEditHandler(editTargets.metadata)}
+              onEditTreatmentArms={toEditHandler(editTargets.treatmentArms)}
+              onEditDatasource={toEditHandler(editTargets.datasource)}
+              onEditFilters={toEditHandler(editTargets.filters)}
+              onEditOutcomesPrior={toEditHandler(editTargets.outcomesPrior)}
+              onEditContexts={toEditHandler(editTargets.contexts)}
+              onEditMetrics={toEditHandler(editTargets.metrics)}
+              onEditPowerBalance={toEditHandler(editTargets.powerBalance)}
+            />
+            <Callout.Root>
+              <Callout.Icon>
+                <InfoCircledIcon />
+              </Callout.Icon>
+              <Callout.Text>{infoCalloutText}</Callout.Text>
+            </Callout.Root>
+          </>
+        )}
+      </Flex>
+      <NavigationButtons
+        onPrev={navigatePrev} // navigatePrev will handle abandonment
+        onNext={handleCommit}
+        nextDisabled={!data.createExperimentResponse}
+        nextLoading={commitLoading}
+        nextLabel="Save Experiment"
+      />
+    </>
+  );
 }
