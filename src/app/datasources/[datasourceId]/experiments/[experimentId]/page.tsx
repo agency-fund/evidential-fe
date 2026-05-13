@@ -96,7 +96,7 @@ export default function ExperimentViewPage() {
   });
   // The key of the selected analysis to display ('live' or a snapshot ID) in the Forest Plot.
   const [selectedAnalysisKey, setSelectedAnalysisKey] = useState<AnalysisState['key'] | null>(null);
-  const [selectedMetricName, setSelectedMetricName] = useState<string>('unknown');
+  const [selectedMetricName, setSelectedMetricName] = useState<string | null>(null);
   const [cmabAnalysisRequest, setCmabAnalysisRequest] = useState<CMABContextInputRequest>({
     type: 'cmab_assignment',
     context_inputs: [],
@@ -269,6 +269,7 @@ export default function ExperimentViewPage() {
   // Using this key, we derive the displayed analysis for the Forest Plot:
   // selected analysis > first historical analysis > live.
   const activeAnalysisKey = selectedAnalysisKey ?? analysisHistory[0]?.key ?? 'live';
+
   // And if the selected key is stale, try to fall back to the first again else live.
   const selectedAnalysisState: AnalysisState =
     activeAnalysisKey === 'live'
@@ -283,15 +284,31 @@ export default function ExperimentViewPage() {
   // Now look up the last selected metric's analysis from the selected state.
   const selectedMetricAnalysis: MetricAnalysis | null = (() => {
     if (!selectedMetricAnalyses) return null;
-    // The fallback to the first metric should not actually happen in practice, but just in case.
+
+    const selectedMetric = selectedMetricAnalyses.find((metric) => metric.metric_name === selectedMetricName);
+    if (selectedMetric) return selectedMetric;
+
+    // Fall back to the first metric available in the selected state; possible when
+    // selectedMetricName is null to start.
+    return selectedMetricAnalyses[0] || null;
+  })();
+
+  // Fallback metric name to use as the active metric if there even were no metric analyses
+  // available, as can happen when viewing 'live' data that has not been fetched yet.
+  const fallbackMetricName = (() => {
+    const historicalMetricAnalyses = isFrequentistAnalysis(analysisHistory[0]?.data)
+      ? analysisHistory[0].data.metric_analyses
+      : null;
+    const liveMetricAnalyses = isFrequentistAnalysis(liveAnalysis.data) ? liveAnalysis.data.metric_analyses : null;
     return (
-      selectedMetricAnalyses.find((metric) => metric.metric_name === selectedMetricName) ||
-      selectedMetricAnalyses[0] ||
-      null
+      selectedMetricAnalyses?.[0]?.metric_name ??
+      historicalMetricAnalyses?.[0]?.metric_name ??
+      liveMetricAnalyses?.[0]?.metric_name ??
+      undefined
     );
   })();
 
-  const activeMetricName = selectedMetricAnalysis?.metric_name || 'unknown';
+  const activeMetricName = selectedMetricAnalysis?.metric_name ?? fallbackMetricName;
 
   // Track the min/max CI bounds across a recent window of snapshots for a more stable forest plot display.
   const ciBounds: [number | undefined, number | undefined] = (() => {
@@ -480,7 +497,7 @@ export default function ExperimentViewPage() {
                       {selectedMetricAnalyses && selectedMetricAnalyses.length > 1 ? (
                         <Select.Root
                           size="1"
-                          value={activeMetricName}
+                          value={activeMetricName ?? undefined}
                           onValueChange={(metricName) => {
                             setSelectedMetricName(metricName);
                           }}
@@ -497,7 +514,7 @@ export default function ExperimentViewPage() {
                           </Select.Content>
                         </Select.Root>
                       ) : (
-                        <Text>{activeMetricName}</Text>
+                        <Text>{activeMetricName ?? 'Unknown Metric'}</Text>
                       )}
                     </Flex>
                   </Badge>
@@ -646,7 +663,11 @@ export default function ExperimentViewPage() {
 
                     {selectedAnalysisState.data && (
                       <ForestPlot
-                        effectSizes={selectedAnalysisState.effectSizesByMetric?.get(activeMetricName)}
+                        effectSizes={
+                          activeMetricName
+                            ? selectedAnalysisState.effectSizesByMetric?.get(activeMetricName)
+                            : undefined
+                        }
                         banditEffects={selectedAnalysisState.banditEffects}
                         minX={ciBounds[0]}
                         maxX={ciBounds[1]}
