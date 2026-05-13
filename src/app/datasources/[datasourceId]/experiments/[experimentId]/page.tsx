@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { mutate } from 'swr';
@@ -96,6 +96,7 @@ export default function ExperimentViewPage() {
   });
   // which analysis we're actually displaying (live or a snapshot)
   const [selectedAnalysisState, setSelectedAnalysisState] = useState<AnalysisState>(liveAnalysis);
+  const selectedAnalysisKeyRef = useRef<AnalysisState['key']>(liveAnalysis.key);
   const [selectedMetricAnalysis, setSelectedMetricAnalysis] = useState<MetricAnalysis | null>(null);
   const [selectedMetricName, setSelectedMetricName] = useState<string>('unknown');
   const [cmabAnalysisRequest, setCmabAnalysisRequest] = useState<CMABContextInputRequest>({
@@ -240,6 +241,7 @@ export default function ExperimentViewPage() {
     forMetricName: string | undefined = undefined,
     historyOverride: AnalysisState[] | undefined = undefined,
   ) => {
+    selectedAnalysisKeyRef.current = analysis.key;
     setSelectedAnalysisState(analysis);
     if (!isFrequentistAnalysis(analysis.data)) {
       setSelectedMetricAnalysis(null);
@@ -288,8 +290,8 @@ export default function ExperimentViewPage() {
       banditEffects: precomputeBanditEffects(analysisData),
     };
     setLiveAnalysis(analysis);
-    // Only update the display if we were previously viewing live data.
-    if (selectedAnalysisState.key === 'live') {
+    // Use a ref so async success handlers don't rely on a stale selectedAnalysisState closure.
+    if (selectedAnalysisKeyRef.current === 'live') {
       handleSelectedAnalysisAndMetrics(analysis);
     }
   };
@@ -298,7 +300,9 @@ export default function ExperimentViewPage() {
     if (key === 'live') {
       // If we haven't fetched it yet, trigger a live analysis.
       if (liveAnalysis.data === undefined) {
+        selectedAnalysisKeyRef.current = 'live';
         await triggerLiveAnalysis();
+        return;
       }
       handleSelectedAnalysisAndMetrics(liveAnalysis);
     } else {
