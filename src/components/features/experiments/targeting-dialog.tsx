@@ -35,11 +35,18 @@ interface TargetingDialogProps {
 	powerAnalyses?: {
 		analyses?: Array<{
 			metric_spec?: {
+				field_name?: string | null;
 				icc?: number | null;
 				cv?: number | null;
 				avg_cluster_size?: number | null;
 			} | null;
 			num_clusters_total?: number | null;
+			/**
+			 * Achievable MDE for the committed sample size, as a fraction (e.g.
+			 * 0.078 for 7.8%). Populated when the user picked a non-recommended
+			 * N at create time; null otherwise.
+			 */
+			pct_change_possible?: number | null;
 		} | null> | null;
 	} | null;
 }
@@ -86,6 +93,20 @@ export function TargetingDialog({
 		}),
 	);
 
+	// Lookup of achievable MDE by metric field_name, sourced from the stored
+	// power_analyses. When the experiment was created with a non-recommended
+	// sample size, the BE writes pct_change_possible into the saved analysis.
+	// For experiments that committed to the recommended size this stays
+	// undefined and MdeBadge will render Target MDE alone.
+	const achievableByField = new Map<string, number | null>();
+	for (const analysis of powerAnalyses?.analyses ?? []) {
+		const fieldName = analysis?.metric_spec?.field_name;
+		if (!fieldName) continue;
+		const pct = analysis?.pct_change_possible;
+		if (pct == null || !Number.isFinite(pct)) continue;
+		achievableByField.set(fieldName, pct * 100);
+	}
+
 	const toMetricDisplay = (
 		fieldName: string,
 		mdePct: number | null | undefined,
@@ -95,6 +116,7 @@ export function TargetingDialog({
 			field_name: fieldName,
 			data_type: dataType,
 			mde: toMdePercent(mdePct),
+			achievable: achievableByField.get(fieldName) ?? null,
 		};
 	};
 

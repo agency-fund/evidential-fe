@@ -437,6 +437,25 @@ export default function ExperimentViewPage() {
 		mdePct = (selectedMetricAnalysis.metric.metric_pct_change * 100).toFixed(1);
 	}
 
+	// Achievable MDE: pulled from the saved power_analyses for the selected
+	// metric. Populated when the user picked a sample size other than the
+	// recommended minimum (the BE's MDE-mode response carries
+	// pct_change_possible alongside the committed N). For experiments that
+	// committed to the recommended size, this stays null and the badge just
+	// shows Target MDE as before.
+	let achievableMdePct: string | null = null;
+	if (selectedMetricAnalysis?.metric?.field_name) {
+		const savedAnalysis = power_analyses?.analyses?.find(
+			(a) =>
+				a.metric_spec.field_name ===
+				selectedMetricAnalysis.metric.field_name,
+		);
+		const pctPossible = savedAnalysis?.pct_change_possible;
+		if (pctPossible != null && Number.isFinite(pctPossible)) {
+			achievableMdePct = (pctPossible * 100).toFixed(2);
+		}
+	}
+
 	const { timeseriesData, armMetadata, minDate, maxDate } =
 		transformAnalysisForForestTimeseriesPlot(
 			analysisHistory,
@@ -564,6 +583,12 @@ export default function ExperimentViewPage() {
 								power={Math.round(power! * 100)}
 								desiredN={design_spec.desired_n ?? undefined}
 								assignSummary={assign_summary}
+								designEffect={
+									power_analyses?.analyses?.[0]?.design_effect ?? null
+								}
+								numClustersTotal={
+									power_analyses?.analyses?.[0]?.num_clusters_total ?? null
+								}
 							/>
 							<Separator orientation="vertical" />
 						</>
@@ -712,7 +737,7 @@ export default function ExperimentViewPage() {
 											)}
 										</Flex>
 									</Badge>
-									<MdeBadge value={mdePct} />
+									<MdeBadge value={mdePct} achievable={achievableMdePct} />
 									{/* Issue #217: show ICC pill for cluster-randomized experiments. */}
 									<IccBadge
 										value={

@@ -82,13 +82,47 @@ function RunPowerCheckButton({
 export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 	const { trigger, isMutating, error } = usePowerCheck(data.datasourceId!);
 	const [validationError, setValidationError] = useState<ZodError | null>(null);
-	const [powerCheckTarget, setPowerCheckTarget] = useState<
-		number | undefined
-	>();
-	const [nonNullSamples, setNonNullSamples] = useState<number | undefined>();
-	const [allSamples, setAllSamples] = useState<number | undefined>();
+
+	// Derived from the saved power-check response. We deliberately do NOT
+	// hold these as useState — that's what caused the "0 participants /
+	// undefined samples" bug when navigating away to the Summary screen and
+	// hitting Back: the component remounts, useState resets to undefined,
+	// but data.powerCheckResponse (form state) persists, so the displays
+	// went out of sync with the underlying data. Computing them from the
+	// response makes them survive remounts for free.
+	const primaryFromSaved = data.powerCheckResponse?.analyses.find(
+		(a) =>
+			a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
+	);
+	const powerCheckTarget: number | undefined =
+		primaryFromSaved?.target_n ?? undefined;
+	const nonNullSamples: number | undefined =
+		primaryFromSaved?.metric_spec.available_nonnull_n ?? undefined;
+	const allSamples: number | undefined =
+		primaryFromSaved?.metric_spec.available_n ?? undefined;
+
+	// selectedSampleOption is the radio's local UI state. We seed it lazily
+	// (once, on mount) from data.desiredN compared against the saved
+	// target/non-null sizes so the user's previous choice survives
+	// navigating away and back. After mount, it's driven by user clicks /
+	// handlePowerCheck like before — keeping it as state lets the user
+	// click "Custom" without immediately committing a desiredN.
 	const [selectedSampleOption, setSelectedSampleOption] =
-		useState<PowerCheckOption>(PowerCheckOption.USE_POWER_CHECK);
+		useState<PowerCheckOption>(() => {
+			if (!data.powerCheckResponse) return PowerCheckOption.USE_POWER_CHECK;
+			const primary = data.powerCheckResponse.analyses.find(
+				(a) =>
+					a.metric_spec.field_name ===
+					data.primaryMetric?.metric.field_name,
+			);
+			const target = primary?.target_n ?? undefined;
+			const nonNull = primary?.metric_spec.available_nonnull_n ?? undefined;
+			if (data.desiredN === undefined) return PowerCheckOption.NONE;
+			if (data.desiredN === target) return PowerCheckOption.USE_POWER_CHECK;
+			if (data.desiredN === nonNull)
+				return PowerCheckOption.USE_ALL_NON_NULL_SAMPLES;
+			return PowerCheckOption.ENTER_OWN;
+		});
 
 	// Issue #217: cluster experiments show "clusters first, participants underneath".
 	const isClusterExperiment =
@@ -108,8 +142,36 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 	// derived sibling value (and the participants value to set-chosen-n) after
 	// they stop typing.
 	const avgClusterSize = Number(data.clusterAvgSize ?? "");
-	const [clustersInput, setClustersInput] = useState("");
-	const [participantsInput, setParticipantsInput] = useState("");
+
+	// Lazy-init the Custom inputs from data.desiredN so a previously-entered
+	// custom value survives navigating to Summary and clicking Back. Only
+	// seed when desiredN is set AND it doesn't match the recommended or
+	// max-available size (those are handled by the other two radio cards).
+	const initialCustomFromState = (() => {
+		if (data.desiredN === undefined) return { clusters: "", participants: "" };
+		const primary = data.powerCheckResponse?.analyses.find(
+			(a) =>
+				a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
+		);
+		const target = primary?.target_n ?? undefined;
+		const nonNull = primary?.metric_spec.available_nonnull_n ?? undefined;
+		if (data.desiredN === target || data.desiredN === nonNull) {
+			return { clusters: "", participants: "" };
+		}
+		const participants = String(data.desiredN);
+		const clusters =
+			Number.isFinite(avgClusterSize) && avgClusterSize > 0
+				? String(Math.ceil(data.desiredN / avgClusterSize))
+				: "";
+		return { clusters, participants };
+	})();
+
+	const [clustersInput, setClustersInput] = useState<string>(
+		initialCustomFromState.clusters,
+	);
+	const [participantsInput, setParticipantsInput] = useState<string>(
+		initialCustomFromState.participants,
+	);
 	// Which field the user is actively editing; used to avoid feedback loops
 	// when the debounce timer writes the derived value into the other field.
 	const editingRef = useRef<"clusters" | "participants" | null>(null);
@@ -152,6 +214,98 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
 	const { enabled } = isPowerCheckButtonEnabled(isMutating, data); // TODO: present reason field
 
+	// Achievable MDE recompute: when the user picks Max-available or Custom, fire
+	// a fresh power-check call with desired_n included in the design spec. The BE
+	// switches to MDE mode and returns the achievable MDE plus the cluster split
+	// for the chosen N. The result is stored on form state so it can be (a) shown
+	// inline next to the radio option and (b) persisted as the experiment's
+	// power_analyses at save time. Custom typing is already debounced upstream
+	// (set-chosen-n only fires after 500ms), so this effect only sees the final
+	// committed value.
+	const [isRecomputingMde, setIsRecomputingMde] = useState(false);
+	useEffect(() => {
+		// Recompute only makes sense when the user has chosen a non-recommended
+		// sample size. For "Use minimum sample required" the original
+		// powerCheckResponse already carries the right answer (achievable MDE
+		// equals the user's target MDE by construction).
+		if (data.desiredN === undefined) return;
+		if (selectedSampleOption === PowerCheckOption.USE_POWER_CHECK) return;
+		if (selectedSampleOption === PowerCheckOption.NONE) return;
+		if (data.desiredN === powerCheckTarget) return;
+		if (!data.tableName || !data.primaryKey || !data.primaryMetric) return;
+
+		let cancelled = false;
+		setIsRecomputingMde(true);
+		// `void` here intentionally discards the promise — the IIFE manages its
+		// own lifecycle via the `cancelled` flag and the cleanup function below.
+		void (async () => {
+			try {
+				const design_spec = convertToFrequentistDesignSpec(data);
+				const response = await trigger({ design_spec });
+				if (cancelled) return;
+				dispatch({
+					type: "set-achievable-power-check-response",
+					response,
+				});
+			} catch {
+				// Swallow: if the recompute fails the inline display just doesn't
+				// show an achievable MDE. Validation issues are already surfaced
+				// by the manual Run-Power-Check flow on the same page.
+			} finally {
+				if (!cancelled) setIsRecomputingMde(false);
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [data.desiredN, selectedSampleOption, powerCheckTarget]);
+
+	// Read the achievable MDE for the primary metric (cluster-aware fields are
+	// populated by solve_for_mde_cluster on the BE; for non-cluster experiments
+	// pct_change_possible is still populated, so this works for both).
+	const achievablePrimary = data.achievablePowerCheckResponse?.analyses.find(
+		(a) =>
+			a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
+	);
+	const achievablePctChange = achievablePrimary?.pct_change_possible ?? null;
+
+	// Target MDE the user requested (string from the form, expressed as a
+	// percent). Used as the "achievable MDE" for the recommended option, since
+	// by construction the recommended sample size hits the target exactly.
+	const targetMdeStr = data.primaryMetric?.mde;
+	const targetMdePctNum =
+		targetMdeStr !== undefined && targetMdeStr !== ""
+			? Number(targetMdeStr)
+			: null;
+
+	/** One-line "Achievable MDE: X%" annotation, sized to fit under a radio card.
+	 * Blue mirrors how Target MDE is shown on the saved-experiment Analysis bar
+	 * — same statistical concept, different perspective. Green stays reserved
+	 * for cluster counts (clusters/participants colorway) to keep that signal
+	 * unambiguous. Loading stays gray so users can tell "computing" from a real
+	 * value at a glance. */
+	const renderAchievableMdeLine = (
+		pctChange: number | null | undefined,
+		opts: { loading?: boolean; note?: string } = {},
+	) => {
+		if (opts.loading) {
+			return (
+				<Text size="1" color="gray">
+					Achievable MDE: computing…
+				</Text>
+			);
+		}
+		if (pctChange == null) return null;
+		const pct = (pctChange * 100).toFixed(2);
+		return (
+			<Text size="1" color="blue">
+				Achievable MDE: <strong>{pct}%</strong>
+				{opts.note ? ` ${opts.note}` : ""}
+			</Text>
+		);
+	};
+
 	const handlePowerCheck = async (
 		event: React.MouseEvent<HTMLButtonElement>,
 	) => {
@@ -176,9 +330,9 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 				response,
 				desiredN: undefined,
 			});
-			setPowerCheckTarget(primary?.target_n ?? undefined);
-			setNonNullSamples(primary?.metric_spec.available_nonnull_n ?? 0);
-			setAllSamples(primary?.metric_spec.available_n ?? 0);
+			// powerCheckTarget / nonNullSamples / allSamples are derived from
+			// data.powerCheckResponse now (see top of component), so the dispatch
+			// above is enough — no separate setters needed.
 			if (primary?.sufficient_n) {
 				setSelectedSampleOption(PowerCheckOption.USE_POWER_CHECK);
 				dispatch({
@@ -583,9 +737,23 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 													{(powerCheckTarget ?? 0).toLocaleString()}{" "}
 													participants
 												</Text>
+												{/* The recommended size is by definition the
+													minimum N that achieves the target MDE, so
+													achievable MDE = target MDE here. We render the
+													same line shape as Max/Custom for consistency. */}
+												{renderAchievableMdeLine(
+													targetMdePctNum != null ? targetMdePctNum / 100 : null,
+													{ note: "(matches your Target MDE)" },
+												)}
 											</Flex>
 										) : (
-											`Use minimum sample required: ${powerCheckTarget ?? "N/A"}`
+											<Flex direction="column" align="start">
+												<Text>{`Use minimum sample required: ${powerCheckTarget ?? "N/A"}`}</Text>
+												{renderAchievableMdeLine(
+													targetMdePctNum != null ? targetMdePctNum / 100 : null,
+													{ note: "(matches your Target MDE)" },
+												)}
+											</Flex>
 										)}
 									</RadioCards.Item>
 									<RadioCards.Item
@@ -600,17 +768,53 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 											<Flex direction="column" align="start">
 												<Text>Use all available non-null:</Text>
 												<Text color="green" weight="bold">
-													{Math.floor(
-														nonNullSamples / Number(data.clusterAvgSize),
+													{/* Use the BE's clusters total ONLY when this is
+														the currently-selected option (otherwise
+														achievablePrimary is for a different N, e.g.
+														whatever the user typed in Custom). Otherwise
+														compute from nonNullSamples/avg_cluster_size. */}
+													{(selectedSampleOption ===
+														PowerCheckOption.USE_ALL_NON_NULL_SAMPLES &&
+													achievablePrimary?.num_clusters_total != null
+														? achievablePrimary.num_clusters_total
+														: Math.floor(
+																nonNullSamples / Number(data.clusterAvgSize),
+															)
 													).toLocaleString()}{" "}
 													clusters
 												</Text>
 												<Text size="1" color="gray">
 													{nonNullSamples.toLocaleString()} participants
 												</Text>
+												{renderAchievableMdeLine(
+													selectedSampleOption ===
+														PowerCheckOption.USE_ALL_NON_NULL_SAMPLES
+														? achievablePctChange
+														: null,
+													{
+														loading:
+															selectedSampleOption ===
+																PowerCheckOption.USE_ALL_NON_NULL_SAMPLES &&
+															isRecomputingMde,
+													},
+												)}
 											</Flex>
 										) : (
-											`Use all available non-null samples: ${nonNullSamples}`
+											<Flex direction="column" align="start">
+												<Text>{`Use all available non-null samples: ${nonNullSamples}`}</Text>
+												{renderAchievableMdeLine(
+													selectedSampleOption ===
+														PowerCheckOption.USE_ALL_NON_NULL_SAMPLES
+														? achievablePctChange
+														: null,
+													{
+														loading:
+															selectedSampleOption ===
+																PowerCheckOption.USE_ALL_NON_NULL_SAMPLES &&
+															isRecomputingMde,
+													},
+												)}
+											</Flex>
 										)}
 									</RadioCards.Item>
 									<RadioCards.Item
@@ -679,6 +883,18 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 																}}
 															/>
 														</Flex>
+														{renderAchievableMdeLine(
+															selectedSampleOption ===
+																PowerCheckOption.ENTER_OWN
+																? achievablePctChange
+																: null,
+															{
+																loading:
+																	selectedSampleOption ===
+																		PowerCheckOption.ENTER_OWN &&
+																	isRecomputingMde,
+															},
+														)}
 													</Flex>
 												</div>
 											) : (
@@ -699,6 +915,18 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 														}
 														placeholder="Type your own desired #."
 													/>
+													{renderAchievableMdeLine(
+														selectedSampleOption ===
+															PowerCheckOption.ENTER_OWN
+															? achievablePctChange
+															: null,
+														{
+															loading:
+																selectedSampleOption ===
+																	PowerCheckOption.ENTER_OWN &&
+																isRecomputingMde,
+														},
+													)}
 												</div>
 											)}
 										</Flex>

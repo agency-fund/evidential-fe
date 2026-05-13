@@ -11,9 +11,20 @@ interface PowerAndBalanceDialogProps {
   power: number;
   desiredN?: number;
   assignSummary: AssignSummary | null | undefined;
+  /** Design effect (DEFF) from the power analysis — cluster experiments only. */
+  designEffect?: number | null;
+  /** Total clusters needed across all arms — cluster experiments only. */
+  numClustersTotal?: number | null;
 }
 
-export function PowerAndBalanceDialog({ confidence, power, desiredN, assignSummary }: PowerAndBalanceDialogProps) {
+export function PowerAndBalanceDialog({
+  confidence,
+  power,
+  desiredN,
+  assignSummary,
+  designEffect,
+  numClustersTotal,
+}: PowerAndBalanceDialogProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -33,6 +44,14 @@ export function PowerAndBalanceDialog({ confidence, power, desiredN, assignSumma
               desiredN={desiredN}
               assignSummary={assignSummary}
               showTitle={false}
+              // Hide the Desired Sample Size row on the saved experiment view:
+              // for preassigned experiments, "Desired" equals "Actual" by
+              // construction, so the row just duplicates information. Desired
+              // is still shown on the create-flow Summary page where the
+              // distinction is meaningful (the user is deciding).
+              showDesiredSampleSize={false}
+              designEffect={designEffect}
+              numClustersTotal={numClustersTotal}
             />
           </Box>
           <Flex gap="3" justify="end">

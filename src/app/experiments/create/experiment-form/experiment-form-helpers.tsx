@@ -110,6 +110,13 @@ export function convertToFrequentistDesignSpec(
 		filters: data.filters ?? [],
 		power: data.power ? Number(data.power) / 100.0 : 0.8,
 		alpha: data.confidence ? 1 - Number(data.confidence) / 100.0 : 0.05,
+		// When the user has chosen a sample size (Use max-available or Custom on
+		// the Power Analysis page), pass it through to the BE. The BE then runs
+		// the power analysis in MDE mode and returns the achievable MDE plus the
+		// cluster split that corresponds to the chosen N. Without this, the saved
+		// experiment would carry the original recommended-size power analysis
+		// even when the user picked a different N.
+		...(data.desiredN !== undefined ? { desired_n: data.desiredN } : {}),
 	};
 
 	// The FE-only "freq_cluster_preassigned" type is submitted to the BE as a

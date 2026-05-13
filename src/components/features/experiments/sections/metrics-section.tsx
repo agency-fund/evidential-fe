@@ -11,6 +11,14 @@ export interface MetricDisplay {
 	field_name: string;
 	data_type: DataType;
 	mde: string | number;
+	/**
+	 * Optional achievable MDE for the experiment's committed sample size, as a
+	 * percent number (e.g. 7.8 for 7.8%). Render alongside the target MDE so
+	 * reviewers can see what effect the saved N is actually powered to detect.
+	 * Caller is responsible for omitting it when achievable == target (e.g. the
+	 * user picked the recommended sample size).
+	 */
+	achievable?: string | number | null;
 }
 
 export interface MetricsSectionProps {
@@ -68,7 +76,11 @@ export function MetricsSection({
 								<Text>{metrics.primary.field_name}</Text>
 								<Flex direction={"row"} gap={"3"}>
 									<DataTypeBadge type={metrics.primary.data_type} />
-									<MdeBadge value={metrics.primary.mde} size="1" />
+									<MdeBadge
+									value={metrics.primary.mde}
+									achievable={metrics.primary.achievable}
+									size="1"
+								/>
 								</Flex>
 							</Flex>
 						) : (
@@ -91,7 +103,11 @@ export function MetricsSection({
 										<Text>{metric.field_name}</Text>
 										<Flex direction={"row"} gap={"3"}>
 											<DataTypeBadge type={metric.data_type} />
-											<MdeBadge value={metric.mde} size="1" />
+											<MdeBadge
+												value={metric.mde}
+												achievable={metric.achievable}
+												size="1"
+											/>
 										</Flex>
 									</Flex>
 								))}

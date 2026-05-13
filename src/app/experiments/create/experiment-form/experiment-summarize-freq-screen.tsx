@@ -29,18 +29,34 @@ export const ExperimentsSummarizeFreqScreen = ({
 		data.experimentType === "freq_cluster_preassigned";
 	const isClusterExperiment =
 		data.experimentType === "freq_cluster_preassigned";
+	// Look up the achievable MDE for a metric from the MDE-mode power-check
+	// response. Returns null when the user picked the recommended sample size
+	// (no achievable response was computed) or when the BE didn't return a
+	// pct_change_possible — in which case the target MDE is the right thing
+	// to show alone.
+	const achievableFor = (fieldName: string): number | null => {
+		const analyses = data.achievablePowerCheckResponse?.analyses ?? [];
+		const match = analyses.find(
+			(a) => a.metric_spec.field_name === fieldName,
+		);
+		const pct = match?.pct_change_possible;
+		if (pct == null || !Number.isFinite(pct)) return null;
+		return pct * 100;
+	};
 	const metrics: ExperimentConfirmationDisplayProps["metrics"] = {
 		primary: data.primaryMetric
 			? {
 					field_name: data.primaryMetric.metric.field_name,
 					data_type: data.primaryMetric.metric.data_type,
 					mde: data.primaryMetric.mde,
+					achievable: achievableFor(data.primaryMetric.metric.field_name),
 				}
 			: undefined,
 		secondary: (data.secondaryMetrics ?? []).map((m) => ({
 			field_name: m.metric.field_name,
 			data_type: m.metric.data_type,
 			mde: m.mde,
+			achievable: achievableFor(m.metric.field_name),
 		})),
 	};
 	const cluster = isClusterExperiment && data.clusterField

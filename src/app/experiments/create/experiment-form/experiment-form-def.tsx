@@ -99,6 +99,15 @@ export type ExperimentFormData = {
 	// Populated when user clicks "Power Check" on DesignForm
 	desiredN?: number;
 	powerCheckResponse?: PowerResponseOutput;
+	// Populated when the user picks "Use max available" or types a Custom N
+	// on the Power Analysis page. This is the MDE-mode power-check response for
+	// the chosen sample size — it carries the achievable MDE plus a cluster
+	// split that matches `desiredN`. We keep it separate from
+	// `powerCheckResponse` because the "Use minimum sample required" radio
+	// still needs the original sample-size-mode response to show the recommended
+	// cluster count. At save time, prefer this over `powerCheckResponse` so the
+	// saved experiment reflects the user's chosen N.
+	achievablePowerCheckResponse?: PowerResponseOutput;
 	createExperimentResponse?: CreateExperimentResponse;
 	createExperimentError?: ErrorType<unknown>;
 
@@ -701,11 +710,25 @@ export const ExperimentForm: WizardForm<
 					return {
 						...data,
 						powerCheckResponse: msg.response,
+						// Running a fresh power check invalidates any previously
+						// computed achievable-MDE response — it was tied to a stale
+						// design spec / chosen N.
+						achievablePowerCheckResponse: undefined,
 						desiredN: msg.desiredN,
 					};
 				}
+				if (msg.type === "set-achievable-power-check-response") {
+					return { ...data, achievablePowerCheckResponse: msg.response };
+				}
 				if (msg.type === "set-chosen-n") {
-					return { ...data, desiredN: msg.value };
+					// Switching options (e.g. back to recommended) invalidates the
+					// achievable response so the inline display doesn't show a stale
+					// MDE for a different N.
+					return {
+						...data,
+						desiredN: msg.value,
+						achievablePowerCheckResponse: undefined,
+					};
 				}
 				if (msg.type === "set-create-error") {
 					return {

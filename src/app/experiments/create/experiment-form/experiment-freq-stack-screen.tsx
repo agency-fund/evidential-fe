@@ -49,6 +49,13 @@ export type ExperimentFreqStackScreenMessage =
 			response: PowerResponseOutput;
 			desiredN?: number;
 	  }
+	| {
+			// MDE-mode recompute fired when the user picks Max/Custom on the Power
+			// Analysis page. Carries the achievable-MDE response for the chosen N
+			// (separate from the recommended-size response in powerCheckResponse).
+			type: "set-achievable-power-check-response";
+			response: PowerResponseOutput | undefined;
+	  }
 	| { type: "set-create-response"; response: CreateExperimentResponse }
 	| { type: "set-create-error"; response: ErrorType<unknown> }
 	| { type: "set-chosen-n"; value: number | undefined };
@@ -224,9 +231,17 @@ export const ExperimentFreqStackScreen = ({
 
 	const handleCreate = async () => {
 		const designSpec = convertToFrequentistDesignSpec(data);
+		// Prefer the MDE-mode "achievable" response when the user picked
+		// Max-available or Custom on the Power Analysis page. It carries the
+		// cluster split and achievable MDE for the chosen N, which is what
+		// should be persisted on the saved experiment. When the user stuck with
+		// the recommended size, achievablePowerCheckResponse is undefined and we
+		// fall back to the original sample-size-mode response.
+		const powerAnalysesToSave =
+			data.achievablePowerCheckResponse ?? data.powerCheckResponse;
 		const createExperimentRequest = createExperimentBody.strict().parse({
 			design_spec: designSpec,
-			power_analyses: data.powerCheckResponse,
+			power_analyses: powerAnalysesToSave,
 			webhooks:
 				data.selectedWebhookIds && data.selectedWebhookIds.length > 0
 					? data.selectedWebhookIds
