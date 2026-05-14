@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Box, Callout, Card, Flex, Text } from '@radix-ui/themes';
+import { Box, Callout, Card, Flex, Heading, Text } from '@radix-ui/themes';
 import {
   CartesianGrid,
   Legend,
@@ -160,113 +160,118 @@ export default function ForestTimeseriesPlot({
       : [allDateTicks[0] - minWidth / 2, allDateTicks[0] + minWidth / 2];
 
   return (
-    <Box height={`${height}px`} overflowY="clip" overflowX="auto">
-      <ResponsiveContainer height="100%" minWidth={`${minWidth}px`}>
-        <LineChart data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            dataKey="dateTimestampMs"
-            type="number"
-            domain={domainXAxis}
-            ticks={allDateTicks}
-            style={COMMON_AXIS_STYLE}
-            // WARNING: If we offset the axis with padding, we need to also factor in the reduced
-            // plot width in the lines and CIs! Arguably a bug in recharts' useOffset hook?
-            padding={{ left: 0, right: 0 }}
-            interval="preserveStartEnd"
-            angle={-30}
-            textAnchor="end"
-            height={40}
-            tickFormatter={(timestamp) => {
-              const date = new Date(timestamp);
-              return formatDateUtcYYYYMMDD(date);
-            }}
-          />
-          <YAxis
-            domain={[minY, maxY]}
-            style={COMMON_AXIS_STYLE}
-            tickFormatter={(value) =>
-              // Show <= 2 decimal places only for values < 10
-              Math.abs(value) >= 10 || value === 0
-                ? value.toFixed()
-                : Math.abs(value) >= 1
-                  ? value.toFixed(1)
-                  : value.toFixed(2)
-            }
-          />
-          <Tooltip
-            content={(props) => (
-              <CustomTimeseriesTooltip {...props} armMetadata={armMetadata} selectedArmId={selectedArmId} />
-            )}
-          />
-          <Legend
-            wrapperStyle={{
-              position: 'fixed', // 1. Break it out of the chart's flow
-              left: '50%', // 2. Position it relative to the viewport
-              transform: 'translateX(-50%)', // 3. Center it based on its own width
-              zIndex: 1000, // 4. Ensure it's above other page content
-              cursor: 'pointer',
-              // Allow the legend to wrap to multiple lines if the text is too long:
-              whiteSpace: 'normal',
-              width: '100%',
-              paddingBottom: '20px',
-            }}
-            formatter={(value) => {
-              // value is the name passed to the line, i.e. the arm id
-              const index = armMetadata.findIndex((arm) => arm.id === value);
-              const arm = armMetadata[index];
-              const textColorEnum = getArmColorEnumForText(index, arm.isBaseline);
-              const selected = arm.name === selectedArmName;
+    <Flex direction="column" gap="3">
+      <Heading size="2" align="center" mt="5">
+        Historical Means
+      </Heading>
+      <Box height={`${height}px`} overflowY="clip" overflowX="auto">
+        <ResponsiveContainer height="100%" minWidth={`${minWidth}px`}>
+          <LineChart data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="dateTimestampMs"
+              type="number"
+              domain={domainXAxis}
+              ticks={allDateTicks}
+              style={COMMON_AXIS_STYLE}
+              // WARNING: If we offset the axis with padding, we need to also factor in the reduced
+              // plot width in the lines and CIs! Arguably a bug in recharts' useOffset hook?
+              padding={{ left: 0, right: 0 }}
+              interval="preserveStartEnd"
+              angle={-30}
+              textAnchor="end"
+              height={40}
+              tickFormatter={(timestamp) => {
+                const date = new Date(timestamp);
+                return formatDateUtcYYYYMMDD(date);
+              }}
+            />
+            <YAxis
+              domain={[minY, maxY]}
+              style={COMMON_AXIS_STYLE}
+              tickFormatter={(value) =>
+                // Show <= 2 decimal places only for values < 10
+                Math.abs(value) >= 10 || value === 0
+                  ? value.toFixed()
+                  : Math.abs(value) >= 1
+                    ? value.toFixed(1)
+                    : value.toFixed(2)
+              }
+            />
+            <Tooltip
+              content={(props) => (
+                <CustomTimeseriesTooltip {...props} armMetadata={armMetadata} selectedArmId={selectedArmId} />
+              )}
+            />
+            <Legend
+              wrapperStyle={{
+                position: 'fixed', // 1. Break it out of the chart's flow
+                left: '50%', // 2. Position it relative to the viewport
+                transform: 'translateX(-50%)', // 3. Center it based on its own width
+                zIndex: 1000, // 4. Ensure it's above other page content
+                cursor: 'pointer',
+                // Allow the legend to wrap to multiple lines if the text is too long:
+                whiteSpace: 'normal',
+                width: '100%',
+                paddingBottom: '20px',
+              }}
+              formatter={(value) => {
+                // value is the name passed to the line, i.e. the arm id
+                const index = armMetadata.findIndex((arm) => arm.id === value);
+                const arm = armMetadata[index];
+                const textColorEnum = getArmColorEnumForText(index, arm.isBaseline);
+                const selected = arm.name === selectedArmName;
+                return (
+                  <Text size="3" weight={selected ? 'bold' : 'regular'} color={textColorEnum} key={arm.id}>
+                    {arm.name}
+                  </Text>
+                );
+              }}
+              onClick={(data) => {
+                setSelectedArmId(data.value ?? null);
+              }}
+            />
+
+            {/* Render jittered line segments with dots for each arm */}
+            {armMetadata.map((armInfo, index) => {
+              const selected = selectedArmId === armInfo.id;
+              // Always emphasize dots (use true for isSelected in getArmColor)
+              const baseDotColor = getArmColor(index, armInfo.isBaseline, true);
+              const fillDotColor = getColorWithSignificance(baseDotColor, Significance.No, selected);
               return (
-                <Text size="3" weight={selected ? 'bold' : 'regular'} color={textColorEnum} key={arm.id}>
-                  {arm.name}
-                </Text>
+                <JitteredLine
+                  key={`line_${armInfo.id}`}
+                  data={armPointsMap.get(armInfo.id) || []}
+                  dataKey="dateTimestampMs"
+                  xDomain={domainXAxis}
+                  jitterOffset={calculateJitterOffset(index, armMetadata.length)}
+                  color={getArmColor(index, armInfo.isBaseline, selected)}
+                  name={armInfo.id}
+                  showDots
+                  dotConfig={{ fill: fillDotColor, stroke: baseDotColor }}
+                  activeDotConfig={{ fill: fillDotColor, stroke: baseDotColor }}
+                  onPointClick={(tsDataPoint) => handlePointClick(armInfo.id, tsDataPoint.key)}
+                />
               );
-            }}
-            onClick={(data) => {
-              setSelectedArmId(data.value ?? null);
-            }}
-          />
+            })}
 
-          {/* Render jittered line segments with dots for each arm */}
-          {armMetadata.map((armInfo, index) => {
-            const selected = selectedArmId === armInfo.id;
-            // Always emphasize dots (use true for isSelected in getArmColor)
-            const baseDotColor = getArmColor(index, armInfo.isBaseline, true);
-            const fillDotColor = getColorWithSignificance(baseDotColor, Significance.No, selected);
-            return (
-              <JitteredLine
-                key={`line_${armInfo.id}`}
-                data={armPointsMap.get(armInfo.id) || []}
-                dataKey="dateTimestampMs"
-                xDomain={domainXAxis}
-                jitterOffset={calculateJitterOffset(index, armMetadata.length)}
-                color={getArmColor(index, armInfo.isBaseline, selected)}
-                name={armInfo.id}
-                showDots
-                dotConfig={{ fill: fillDotColor, stroke: baseDotColor }}
-                activeDotConfig={{ fill: fillDotColor, stroke: baseDotColor }}
-                onPointClick={(tsDataPoint) => handlePointClick(armInfo.id, tsDataPoint.key)}
-              />
-            );
-          })}
-
-          {/* Render confidence intervals for each arm */}
-          {armMetadata.map((armInfo, index) => {
-            const selected = selectedArmId === armInfo.id;
-            return (
-              <ConfidenceInterval
-                key={`ci_${armInfo.id}`}
-                chartData={chartData}
-                armId={armInfo.id}
-                baseColor={getArmColor(index, armInfo.isBaseline, selected)}
-                jitterOffset={calculateJitterOffset(index, armMetadata.length)}
-                onClick={(tsDataPoint) => handlePointClick(armInfo.id, tsDataPoint.key)}
-              />
-            );
-          })}
-        </LineChart>
-      </ResponsiveContainer>
-    </Box>
+            {/* Render confidence intervals for each arm */}
+            {armMetadata.map((armInfo, index) => {
+              const selected = selectedArmId === armInfo.id;
+              return (
+                <ConfidenceInterval
+                  key={`ci_${armInfo.id}`}
+                  chartData={chartData}
+                  armId={armInfo.id}
+                  baseColor={getArmColor(index, armInfo.isBaseline, selected)}
+                  jitterOffset={calculateJitterOffset(index, armMetadata.length)}
+                  onClick={(tsDataPoint) => handlePointClick(armInfo.id, tsDataPoint.key)}
+                />
+              );
+            })}
+          </LineChart>
+        </ResponsiveContainer>
+      </Box>
+    </Flex>
   );
 }
