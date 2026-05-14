@@ -7,7 +7,6 @@ import {
 import { ExperimentTypeScreen } from '@/app/experiments/create/experiment-form/experiment-type-screen';
 import {
   Arm,
-  BayesABExperimentSpecInputExperimentType,
   ContextType,
   CreateExperimentResponse,
   DesignSpecInput,
@@ -49,7 +48,7 @@ import {
   MetricWithMDE,
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
 
-export type ExperimentType = Exclude<DesignSpecInput['experiment_type'], BayesABExperimentSpecInputExperimentType>;
+export type ExperimentType = DesignSpecInput['experiment_type'];
 
 // Defines the entirety of the editable data collected via this wizard flow.
 export type ExperimentFormData = {

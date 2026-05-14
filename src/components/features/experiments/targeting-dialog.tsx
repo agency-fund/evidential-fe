@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Box, Button, Dialog, Flex } from '@radix-ui/themes';
 import {
-  BayesABExperimentSpecOutput,
   CMABExperimentSpecOutput,
   DataType,
   DesignSpecOutput,
@@ -30,12 +29,8 @@ const isFrequentistSpec = (
 ): spec is OnlineFrequentistExperimentSpecOutput | PreassignedFrequentistExperimentSpecOutput =>
   spec.experiment_type === 'freq_online' || spec.experiment_type === 'freq_preassigned';
 
-const isBanditSpec = (
-  spec: DesignSpecOutput,
-): spec is MABExperimentSpecOutput | CMABExperimentSpecOutput | BayesABExperimentSpecOutput =>
-  spec.experiment_type === 'mab_online' ||
-  spec.experiment_type === 'cmab_online' ||
-  spec.experiment_type === 'bayes_ab_online';
+const isBanditSpec = (spec: DesignSpecOutput): spec is MABExperimentSpecOutput | CMABExperimentSpecOutput =>
+  spec.experiment_type === 'mab_online' || spec.experiment_type === 'cmab_online';
 
 const isCmabSpec = (spec: DesignSpecOutput): spec is CMABExperimentSpecOutput => spec.experiment_type === 'cmab_online';
 
