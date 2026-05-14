@@ -11,10 +11,10 @@ const compat = new FlatCompat({
 
 /** @type { import("eslint").Linter.Config[] } */
 const eslintConfig = [
-  ...compat.extends('next/core-web-vitals', 'next/typescript', 'prettier'),
   {
-    ignores: ['src/api/**/*'],
+    ignores: ['.next/**', 'next-env.d.ts', 'src/api/**/*', 'orval.config.ts'],
   },
+  ...compat.extends('next/core-web-vitals', 'next/typescript', 'prettier'),
   {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
