@@ -1,5 +1,9 @@
 'use client';
 
+import { usePowerCheck } from '@/api/admin';
+import { SectionCard } from '@/components/ui/cards/section-card';
+import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { CheckCircledIcon, CrossCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import {
   Badge,
   Button,
@@ -15,15 +19,11 @@ import {
   Text,
   TextField,
 } from '@radix-ui/themes';
-import { CheckCircledIcon, CrossCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
-import { ExperimentFormData } from './experiment-form-def';
-import { ExperimentFreqStackScreenMessage } from './experiment-freq-stack-screen';
-import { usePowerCheck } from '@/api/admin';
-import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
-import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { useEffect, useRef, useState } from 'react';
 import { ZodError } from 'zod';
-import { useState } from 'react';
-import { SectionCard } from '@/components/ui/cards/section-card';
+import { ExperimentFormData } from './experiment-form-def';
+import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
+import { ExperimentFreqStackScreenMessage } from './experiment-freq-stack-screen';
 
 enum PowerCheckOption {
   USE_POWER_CHECK = 'use_power_check',
@@ -71,12 +71,205 @@ function RunPowerCheckButton({ enabled, onClick, loading }: PowerCheckButtonProp
 export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const { trigger, isMutating, error } = usePowerCheck(data.datasourceId!);
   const [validationError, setValidationError] = useState<ZodError | null>(null);
-  const [powerCheckTarget, setPowerCheckTarget] = useState<number | undefined>();
-  const [nonNullSamples, setNonNullSamples] = useState<number | undefined>();
-  const [allSamples, setAllSamples] = useState<number | undefined>();
-  const [selectedSampleOption, setSelectedSampleOption] = useState<PowerCheckOption>(PowerCheckOption.USE_POWER_CHECK);
+
+  // Derived from the saved power-check response. We deliberately do NOT
+  // hold these as useState — that's what caused the "0 participants /
+  // undefined samples" bug when navigating away to the Summary screen and
+  // hitting Back: the component remounts, useState resets to undefined,
+  // but data.powerCheckResponse (form state) persists, so the displays
+  // went out of sync with the underlying data. Computing them from the
+  // response makes them survive remounts for free.
+  const primaryFromSaved = data.powerCheckResponse?.analyses.find(
+    (a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
+  );
+  const powerCheckTarget: number | undefined = primaryFromSaved?.target_n ?? undefined;
+  const nonNullSamples: number | undefined = primaryFromSaved?.metric_spec.available_nonnull_n ?? undefined;
+  const allSamples: number | undefined = primaryFromSaved?.metric_spec.available_n ?? undefined;
+
+  // selectedSampleOption is the radio's local UI state. We seed it lazily
+  // (once, on mount) from data.desiredN compared against the saved
+  // target/non-null sizes so the user's previous choice survives
+  // navigating away and back. After mount, it's driven by user clicks /
+  // handlePowerCheck like before — keeping it as state lets the user
+  // click "Custom" without immediately committing a desiredN.
+  const [selectedSampleOption, setSelectedSampleOption] = useState<PowerCheckOption>(() => {
+    if (!data.powerCheckResponse) return PowerCheckOption.USE_POWER_CHECK;
+    const primary = data.powerCheckResponse.analyses.find(
+      (a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
+    );
+    const target = primary?.target_n ?? undefined;
+    const nonNull = primary?.metric_spec.available_nonnull_n ?? undefined;
+    if (data.desiredN === undefined) return PowerCheckOption.NONE;
+    if (data.desiredN === target) return PowerCheckOption.USE_POWER_CHECK;
+    if (data.desiredN === nonNull) return PowerCheckOption.USE_ALL_NON_NULL_SAMPLES;
+    return PowerCheckOption.ENTER_OWN;
+  });
+
+  // Issue #217: cluster experiments show "clusters first, participants underneath".
+  const isClusterExperiment = data.experimentType === 'freq_cluster_preassigned';
+  // CV > 0.5 triggers a high-variability warning per the issue mockups.
+  const cvNum = Number(data.clusterCv ?? '');
+  const hasHighVariability =
+    isClusterExperiment && data.clusterCv !== undefined && data.clusterCv !== '' && !Number.isNaN(cvNum) && cvNum > 0.5;
+
+  // Issue #217: linked Clusters ↔ Participants inputs on the custom-N option,
+  // with a 0.5s debounce that auto-fills the other field. We track each input
+  // as a string so the user can type freely; the debounce timer commits the
+  // derived sibling value (and the participants value to set-chosen-n) after
+  // they stop typing.
+  const avgClusterSize = Number(data.clusterAvgSize ?? '');
+
+  // Lazy-init the Custom inputs from data.desiredN so a previously-entered
+  // custom value survives navigating to Summary and clicking Back. Only
+  // seed when desiredN is set AND it doesn't match the recommended or
+  // max-available size (those are handled by the other two radio cards).
+  const initialCustomFromState = (() => {
+    if (data.desiredN === undefined) return { clusters: '', participants: '' };
+    const primary = data.powerCheckResponse?.analyses.find(
+      (a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
+    );
+    const target = primary?.target_n ?? undefined;
+    const nonNull = primary?.metric_spec.available_nonnull_n ?? undefined;
+    if (data.desiredN === target || data.desiredN === nonNull) {
+      return { clusters: '', participants: '' };
+    }
+    const participants = String(data.desiredN);
+    const clusters =
+      Number.isFinite(avgClusterSize) && avgClusterSize > 0 ? String(Math.ceil(data.desiredN / avgClusterSize)) : '';
+    return { clusters, participants };
+  })();
+
+  const [clustersInput, setClustersInput] = useState<string>(initialCustomFromState.clusters);
+  const [participantsInput, setParticipantsInput] = useState<string>(initialCustomFromState.participants);
+  // Which field the user is actively editing; used to avoid feedback loops
+  // when the debounce timer writes the derived value into the other field.
+  const editingRef = useRef<'clusters' | 'participants' | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!isClusterExperiment) return;
+    if (debounceRef.current !== null) clearTimeout(debounceRef.current);
+    const which = editingRef.current;
+    if (which === null) return;
+    debounceRef.current = setTimeout(() => {
+      if (!Number.isFinite(avgClusterSize) || avgClusterSize <= 0) return;
+      if (which === 'clusters') {
+        const n = Number(clustersInput);
+        if (!Number.isFinite(n) || n <= 0) {
+          setParticipantsInput('');
+          dispatch({ type: 'set-chosen-n', value: undefined });
+          return;
+        }
+        const participants = Math.round(n * avgClusterSize);
+        setParticipantsInput(String(participants));
+        dispatch({ type: 'set-chosen-n', value: participants });
+      } else {
+        const n = Number(participantsInput);
+        if (!Number.isFinite(n) || n <= 0) {
+          setClustersInput('');
+          dispatch({ type: 'set-chosen-n', value: undefined });
+          return;
+        }
+        setClustersInput(String(Math.ceil(n / avgClusterSize)));
+        dispatch({ type: 'set-chosen-n', value: n });
+      }
+      editingRef.current = null;
+    }, 500);
+    return () => {
+      if (debounceRef.current !== null) clearTimeout(debounceRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clustersInput, participantsInput, avgClusterSize, isClusterExperiment]);
 
   const { enabled } = isPowerCheckButtonEnabled(isMutating, data); // TODO: present reason field
+
+  // Achievable MDE recompute: when the user picks Max-available or Custom, fire
+  // a fresh power-check call with desired_n included in the design spec. The BE
+  // switches to MDE mode and returns the achievable MDE plus the cluster split
+  // for the chosen N. The result is stored on form state so it can be (a) shown
+  // inline next to the radio option and (b) persisted as the experiment's
+  // power_analyses at save time. Custom typing is already debounced upstream
+  // (set-chosen-n only fires after 500ms), so this effect only sees the final
+  // committed value.
+  const [isRecomputingMde, setIsRecomputingMde] = useState(false);
+  useEffect(() => {
+    // Recompute only makes sense when the user has chosen a non-recommended
+    // sample size. For "Use minimum sample required" the original
+    // powerCheckResponse already carries the right answer (achievable MDE
+    // equals the user's target MDE by construction).
+    if (data.desiredN === undefined) return;
+    if (selectedSampleOption === PowerCheckOption.USE_POWER_CHECK) return;
+    if (selectedSampleOption === PowerCheckOption.NONE) return;
+    if (data.desiredN === powerCheckTarget) return;
+    if (!data.tableName || !data.primaryKey || !data.primaryMetric) return;
+
+    let cancelled = false;
+    setIsRecomputingMde(true);
+    // `void` here intentionally discards the promise — the IIFE manages its
+    // own lifecycle via the `cancelled` flag and the cleanup function below.
+    void (async () => {
+      try {
+        const design_spec = convertToFrequentistDesignSpec(data);
+        const response = await trigger({ design_spec });
+        if (cancelled) return;
+        dispatch({
+          type: 'set-achievable-power-check-response',
+          response,
+        });
+      } catch {
+        // Swallow: if the recompute fails the inline display just doesn't
+        // show an achievable MDE. Validation issues are already surfaced
+        // by the manual Run-Power-Check flow on the same page.
+      } finally {
+        if (!cancelled) setIsRecomputingMde(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.desiredN, selectedSampleOption, powerCheckTarget]);
+
+  // Read the achievable MDE for the primary metric (cluster-aware fields are
+  // populated by solve_for_mde_cluster on the BE; for non-cluster experiments
+  // pct_change_possible is still populated, so this works for both).
+  const achievablePrimary = data.achievablePowerCheckResponse?.analyses.find(
+    (a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
+  );
+  const achievablePctChange = achievablePrimary?.pct_change_possible ?? null;
+
+  // Target MDE the user requested (string from the form, expressed as a
+  // percent). Used as the "achievable MDE" for the recommended option, since
+  // by construction the recommended sample size hits the target exactly.
+  const targetMdeStr = data.primaryMetric?.mde;
+  const targetMdePctNum = targetMdeStr !== undefined && targetMdeStr !== '' ? Number(targetMdeStr) : null;
+
+  /** One-line "Achievable MDE: X%" annotation, sized to fit under a radio card.
+   * Blue mirrors how Target MDE is shown on the saved-experiment Analysis bar
+   * — same statistical concept, different perspective. Green stays reserved
+   * for cluster counts (clusters/participants colorway) to keep that signal
+   * unambiguous. Loading stays gray so users can tell "computing" from a real
+   * value at a glance. */
+  const renderAchievableMdeLine = (
+    pctChange: number | null | undefined,
+    opts: { loading?: boolean; note?: string } = {},
+  ) => {
+    if (opts.loading) {
+      return (
+        <Text size="1" color="gray">
+          Achievable MDE: computing…
+        </Text>
+      );
+    }
+    if (pctChange == null) return null;
+    const pct = (pctChange * 100).toFixed(2);
+    return (
+      <Text size="1" color="blue">
+        Achievable MDE: <strong>{pct}%</strong>
+        {opts.note ? ` ${opts.note}` : ''}
+      </Text>
+    );
+  };
 
   const handlePowerCheck = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -92,13 +285,20 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
       const response = await trigger({ design_spec });
       const primary = response.analyses.find((a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name);
 
-      dispatch({ type: 'set-power-check-response', response, desiredN: undefined });
-      setPowerCheckTarget(primary?.target_n ?? undefined);
-      setNonNullSamples(primary?.metric_spec.available_nonnull_n ?? 0);
-      setAllSamples(primary?.metric_spec.available_n ?? 0);
+      dispatch({
+        type: 'set-power-check-response',
+        response,
+        desiredN: undefined,
+      });
+      // powerCheckTarget / nonNullSamples / allSamples are derived from
+      // data.powerCheckResponse now (see top of component), so the dispatch
+      // above is enough — no separate setters needed.
       if (primary?.sufficient_n) {
         setSelectedSampleOption(PowerCheckOption.USE_POWER_CHECK);
-        dispatch({ type: 'set-chosen-n', value: primary?.target_n ?? undefined });
+        dispatch({
+          type: 'set-chosen-n',
+          value: primary?.target_n ?? undefined,
+        });
       } else {
         setSelectedSampleOption(PowerCheckOption.NONE);
       }
@@ -188,11 +388,30 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
             <Callout.Root color={primaryPower.sufficient_n ? 'green' : 'red'}>
               <Callout.Icon>{primaryPower.sufficient_n ? <CheckCircledIcon /> : <CrossCircledIcon />}</Callout.Icon>
               <Callout.Text>
-                {primaryPower.msg?.msg ||
+                {isClusterExperiment && primaryPower.num_clusters_total != null ? (
+                  <>
+                    There are{' '}
+                    <strong>{(primaryPower.metric_spec.available_n ?? 0).toLocaleString()} participants</strong>{' '}
+                    available. A minimum of <strong>{primaryPower.num_clusters_total.toLocaleString()} clusters</strong>{' '}
+                    ({(primaryPower.target_n ?? 0).toLocaleString()} participants) are needed to meet your design specs.{' '}
+                    {primaryPower.sufficient_n ? 'There are enough units available.' : 'Insufficient units available.'}
+                  </>
+                ) : (
+                  primaryPower.msg?.msg ||
                   (primaryPower.sufficient_n
-                    ? `The experiment has sufficient power.`
-                    : `The experiment does not have sufficient power.`)}
+                    ? 'The experiment has sufficient power.'
+                    : 'The experiment does not have sufficient power.')
+                )}
               </Callout.Text>
+              {/* Issue #217: CV > 0.5 warning nested inside the success/result box. */}
+              {hasHighVariability && (
+                <Callout.Root color="amber" mt="2">
+                  <Callout.Text>
+                    ⚠ CV = {data.clusterCv}: cluster size variability is high. The cluster count estimate may be
+                    unreliable.
+                  </Callout.Text>
+                </Callout.Root>
+              )}
             </Callout.Root>
           )}
 
@@ -215,17 +434,43 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                       </DataList.Item>
                       <DataList.Item>
                         <DataList.Label>Required</DataList.Label>
-                        <DataList.Value>{primaryPower.target_n || '?'}</DataList.Value>
+                        <DataList.Value>
+                          {isClusterExperiment && primaryPower.num_clusters_total != null ? (
+                            <Flex direction="column" align="end">
+                              <Text color="green" weight="bold">
+                                {primaryPower.num_clusters_total.toLocaleString()} clusters
+                              </Text>
+                              <Text size="1" color="gray">
+                                {(primaryPower.target_n ?? 0).toLocaleString()} participants
+                              </Text>
+                            </Flex>
+                          ) : (
+                            primaryPower.target_n || '?'
+                          )}
+                        </DataList.Value>
                       </DataList.Item>
                       <DataList.Item>
                         <DataList.Label>Available</DataList.Label>
                         <DataList.Value>
-                          {' '}
-                          {primaryPower.metric_spec.available_n == null ? (
+                          {isClusterExperiment &&
+                          data.clusterAvgSize !== '' &&
+                          primaryPower.metric_spec.available_n != null ? (
+                            <Flex direction="column" align="end">
+                              <Text color="green" weight="bold">
+                                {Math.floor(
+                                  primaryPower.metric_spec.available_n / Number(data.clusterAvgSize),
+                                ).toLocaleString()}{' '}
+                                clusters
+                              </Text>
+                              <Text size="1" color="gray">
+                                {primaryPower.metric_spec.available_n.toLocaleString()} participants
+                              </Text>
+                            </Flex>
+                          ) : primaryPower.metric_spec.available_n == null ? (
                             '?'
                           ) : primaryPower.metric_spec.available_n === 0 ||
                             primaryPower.metric_spec.available_n < (primaryPower.target_n ?? 0) ? (
-                            <span color="crimson">{primaryPower.metric_spec.available_n}</span>
+                            <Text color="crimson">{primaryPower.metric_spec.available_n}</Text>
                           ) : (
                             primaryPower.metric_spec.available_n
                           )}
@@ -234,7 +479,21 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                       <DataList.Item>
                         <DataList.Label>Available (non-null)</DataList.Label>
                         <DataList.Value>
-                          {primaryPower.metric_spec.available_nonnull_n == null ? (
+                          {isClusterExperiment &&
+                          data.clusterAvgSize !== '' &&
+                          primaryPower.metric_spec.available_nonnull_n != null ? (
+                            <Flex direction="column" align="end">
+                              <Text color="green" weight="bold">
+                                {Math.floor(
+                                  primaryPower.metric_spec.available_nonnull_n / Number(data.clusterAvgSize),
+                                ).toLocaleString()}{' '}
+                                clusters
+                              </Text>
+                              <Text size="1" color="gray">
+                                {primaryPower.metric_spec.available_nonnull_n.toLocaleString()} participants
+                              </Text>
+                            </Flex>
+                          ) : primaryPower.metric_spec.available_nonnull_n == null ? (
                             '?'
                           ) : primaryPower.metric_spec.available_nonnull_n === 0 ||
                             primaryPower.metric_spec.available_nonnull_n < (primaryPower.target_n ?? 0) ||
@@ -248,7 +507,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                       </DataList.Item>
                       {primaryPower.pct_change_possible !== null && primaryPower.pct_change_possible !== undefined && (
                         <DataList.Item>
-                          <DataList.Label>MME</DataList.Label>
+                          <DataList.Label>Target MDE</DataList.Label>
                           <DataList.Value>{(primaryPower.pct_change_possible * 100).toFixed(4)}%</DataList.Value>
                         </DataList.Item>
                       )}
@@ -336,35 +595,162 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                     value={PowerCheckOption.USE_POWER_CHECK}
                     disabled={powerCheckTarget === undefined || powerCheckTarget === 0}
                   >
-                    Use minimum sample required: {powerCheckTarget ?? 'N/A'}
+                    {isClusterExperiment && primaryPower?.num_clusters_total != null ? (
+                      <Flex direction="column" align="start">
+                        <Text>Use minimum sample required:</Text>
+                        <Text color="green" weight="bold">
+                          {primaryPower.num_clusters_total.toLocaleString()} clusters
+                        </Text>
+                        <Text size="1" color="gray">
+                          {(powerCheckTarget ?? 0).toLocaleString()} participants
+                        </Text>
+                        {/* The recommended size is by definition the
+													minimum N that achieves the target MDE, so
+													achievable MDE = target MDE here. We render the
+													same line shape as Max/Custom for consistency. */}
+                        {renderAchievableMdeLine(targetMdePctNum != null ? targetMdePctNum / 100 : null, {
+                          note: '(matches your Target MDE)',
+                        })}
+                      </Flex>
+                    ) : (
+                      <Flex direction="column" align="start">
+                        <Text>{`Use minimum sample required: ${powerCheckTarget ?? 'N/A'}`}</Text>
+                        {renderAchievableMdeLine(targetMdePctNum != null ? targetMdePctNum / 100 : null, {
+                          note: '(matches your Target MDE)',
+                        })}
+                      </Flex>
+                    )}
                   </RadioCards.Item>
                   <RadioCards.Item
                     value={PowerCheckOption.USE_ALL_NON_NULL_SAMPLES}
                     disabled={nonNullSamples === undefined || nonNullSamples === 0}
                   >
-                    Use all available non-null samples: {nonNullSamples}
+                    {isClusterExperiment && data.clusterAvgSize !== '' && nonNullSamples != null ? (
+                      <Flex direction="column" align="start">
+                        <Text>Use all available non-null:</Text>
+                        <Text color="green" weight="bold">
+                          {/* Use the BE's clusters total ONLY when this is
+														the currently-selected option (otherwise
+														achievablePrimary is for a different N, e.g.
+														whatever the user typed in Custom). Otherwise
+														compute from nonNullSamples/avg_cluster_size. */}
+                          {(selectedSampleOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES &&
+                          achievablePrimary?.num_clusters_total != null
+                            ? achievablePrimary.num_clusters_total
+                            : Math.floor(nonNullSamples / Number(data.clusterAvgSize))
+                          ).toLocaleString()}{' '}
+                          clusters
+                        </Text>
+                        <Text size="1" color="gray">
+                          {nonNullSamples.toLocaleString()} participants
+                        </Text>
+                        {renderAchievableMdeLine(
+                          selectedSampleOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES
+                            ? achievablePctChange
+                            : null,
+                          {
+                            loading:
+                              selectedSampleOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES && isRecomputingMde,
+                          },
+                        )}
+                      </Flex>
+                    ) : (
+                      <Flex direction="column" align="start">
+                        <Text>{`Use all available non-null samples: ${nonNullSamples}`}</Text>
+                        {renderAchievableMdeLine(
+                          selectedSampleOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES
+                            ? achievablePctChange
+                            : null,
+                          {
+                            loading:
+                              selectedSampleOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES && isRecomputingMde,
+                          },
+                        )}
+                      </Flex>
+                    )}
                   </RadioCards.Item>
                   <RadioCards.Item
                     value={PowerCheckOption.ENTER_OWN}
                     disabled={allSamples === undefined || allSamples === 0}
                   >
-                    <Flex align="center" direction={'row'} gap="2">
-                      <span>Use custom sample size:</span>
-                      <div style={{ pointerEvents: 'auto' }}>
-                        <TextField.Root
-                          style={{ width: '250px' }}
-                          size="2"
-                          type="number"
-                          max={allSamples ?? undefined}
-                          onChange={(e) =>
-                            dispatch({
-                              type: 'set-chosen-n',
-                              value: e.target.value === '' ? undefined : Number(e.target.value),
-                            })
-                          }
-                          placeholder="Type your own desired #."
-                        />
-                      </div>
+                    <Flex align="start" direction={isClusterExperiment ? 'column' : 'row'} gap="2" wrap="wrap">
+                      <span style={{ paddingTop: '4px' }}>Use custom sample size:</span>
+                      {isClusterExperiment ? (
+                        <div style={{ pointerEvents: 'auto', width: '100%' }}>
+                          <Flex direction="column" gap="2">
+                            <Flex direction="column" gap="1">
+                              <Text size="1" color="gray" style={{ textTransform: 'uppercase' }}>
+                                Clusters
+                              </Text>
+                              <TextField.Root
+                                style={{ width: '180px' }}
+                                size="2"
+                                type="number"
+                                min={0}
+                                value={clustersInput}
+                                placeholder={
+                                  primaryPower?.num_clusters_total != null
+                                    ? `e.g. ${primaryPower.num_clusters_total}`
+                                    : '# clusters'
+                                }
+                                onChange={(e) => {
+                                  editingRef.current = 'clusters';
+                                  setClustersInput(e.target.value);
+                                }}
+                              />
+                            </Flex>
+                            <Flex direction="column" gap="1">
+                              <Text size="1" color="gray" style={{ textTransform: 'uppercase' }}>
+                                Participants
+                              </Text>
+                              <TextField.Root
+                                style={{ width: '180px' }}
+                                size="2"
+                                type="number"
+                                max={allSamples ?? undefined}
+                                value={participantsInput}
+                                placeholder={
+                                  primaryPower?.target_n != null
+                                    ? `e.g. ${primaryPower.target_n.toLocaleString()}`
+                                    : '# participants'
+                                }
+                                onChange={(e) => {
+                                  editingRef.current = 'participants';
+                                  setParticipantsInput(e.target.value);
+                                }}
+                              />
+                            </Flex>
+                            {renderAchievableMdeLine(
+                              selectedSampleOption === PowerCheckOption.ENTER_OWN ? achievablePctChange : null,
+                              {
+                                loading: selectedSampleOption === PowerCheckOption.ENTER_OWN && isRecomputingMde,
+                              },
+                            )}
+                          </Flex>
+                        </div>
+                      ) : (
+                        <div style={{ pointerEvents: 'auto' }}>
+                          <TextField.Root
+                            style={{ width: '250px' }}
+                            size="2"
+                            type="number"
+                            max={allSamples ?? undefined}
+                            onChange={(e) =>
+                              dispatch({
+                                type: 'set-chosen-n',
+                                value: e.target.value === '' ? undefined : Number(e.target.value),
+                              })
+                            }
+                            placeholder="Type your own desired #."
+                          />
+                          {renderAchievableMdeLine(
+                            selectedSampleOption === PowerCheckOption.ENTER_OWN ? achievablePctChange : null,
+                            {
+                              loading: selectedSampleOption === PowerCheckOption.ENTER_OWN && isRecomputingMde,
+                            },
+                          )}
+                        </div>
+                      )}
                     </Flex>
                   </RadioCards.Item>
                 </Flex>

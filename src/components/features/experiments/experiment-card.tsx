@@ -1,20 +1,22 @@
 'use client';
-import { Card, Flex, Heading, IconButton, Separator, Text, Tooltip } from '@radix-ui/themes';
-import { CalendarIcon, EyeOpenIcon, FileTextIcon, LightningBoltIcon } from '@radix-ui/react-icons';
-import { ExperimentActionsMenu } from '@/components/features/experiments/experiment-actions-menu';
+import { Impact } from '@/api/methods.schemas';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
-import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
-import { ExperimentStatusBadge } from '@/components/features/experiments/experiment-status-badge';
+import { ExperimentActionsMenu } from '@/components/features/experiments/experiment-actions-menu';
 import { ExperimentImpactBadge } from '@/components/features/experiments/experiment-impact-badge';
+import { ExperimentStatusBadge } from '@/components/features/experiments/experiment-status-badge';
+import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import type { ExperimentStatus } from '@/components/features/experiments/types';
 import { formatIsoDateLocal } from '@/services/date-utils';
+import { CalendarIcon, EyeOpenIcon, FileTextIcon, LightningBoltIcon } from '@radix-ui/react-icons';
+import { Card, Flex, Heading, IconButton, Separator, Text, Tooltip } from '@radix-ui/themes';
 import Link from 'next/link';
-import { Impact } from '@/api/methods.schemas';
 
 interface ExperimentCardProps {
   title: string;
   hypothesis: string;
   type: string;
+  /** Whether the experiment is cluster-randomized (issue #217). */
+  isCluster?: boolean;
   startDate: string;
   endDate: string;
   status: ExperimentStatus;
@@ -30,6 +32,7 @@ export function ExperimentCard({
   title,
   hypothesis,
   type,
+  isCluster,
   startDate,
   endDate,
   status,
@@ -77,7 +80,7 @@ export function ExperimentCard({
           </Flex>
 
           <Flex align="center" gap="2">
-            <ExperimentTypeBadge type={type} />
+            <ExperimentTypeBadge type={type} isCluster={isCluster} />
             <Separator orientation="vertical" />
             <ExperimentImpactBadge impact={impact} />
           </Flex>

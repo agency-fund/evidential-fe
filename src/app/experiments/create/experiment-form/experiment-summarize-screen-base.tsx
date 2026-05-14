@@ -1,17 +1,17 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { Callout, Flex } from '@radix-ui/themes';
-import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { useCommitExperiment } from '@/api/admin';
-import { ErrorType } from '@/services/orval-fetch';
-import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
+import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
 import {
   ExperimentConfirmationDisplay,
   ExperimentConfirmationDisplayProps,
 } from '@/components/features/experiments/experiment-confirmation-display';
-import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
+import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
+import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { ErrorType } from '@/services/orval-fetch';
+import { InfoCircledIcon } from '@radix-ui/react-icons';
+import { Callout, Flex } from '@radix-ui/themes';
+import { useRouter } from 'next/navigation';
 
 // The "Edit" buttons on the confirmation screen are temporarily disabled pending further UX effort.
 const FEATURE_EDIT_BUTTONS_ENABLED = false;
@@ -34,7 +34,7 @@ interface ExperimentsSummarizeScreenBaseProps {
   onCommitError: (response: ErrorType<unknown>) => void;
   infoCalloutText: React.ReactNode;
   editTargets: EditTargets;
-  frequentistInfo?: Pick<ExperimentConfirmationDisplayProps, 'metrics' | 'desiredN'>;
+  frequentistInfo?: Pick<ExperimentConfirmationDisplayProps, 'metrics' | 'desiredN' | 'cluster'>;
 }
 
 export function ExperimentsSummarizeScreenBase({
@@ -97,6 +97,7 @@ export function ExperimentsSummarizeScreenBase({
               primaryKey={data.primaryKey}
               metrics={frequentistInfo?.metrics}
               desiredN={frequentistInfo?.desiredN}
+              cluster={frequentistInfo?.cluster}
               onEditMetadata={toEditHandler(editTargets.metadata)}
               onEditTreatmentArms={toEditHandler(editTargets.treatmentArms)}
               onEditDatasource={toEditHandler(editTargets.datasource)}

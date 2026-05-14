@@ -1,18 +1,4 @@
 'use client';
-import { useState } from 'react';
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
-import { mutate } from 'swr';
-import { Badge, Box, Flex, Heading, Select, Separator, Tabs, Text, Tooltip } from '@radix-ui/themes';
-import {
-  ActivityLogIcon,
-  CalendarIcon,
-  CodeIcon,
-  ExclamationTriangleIcon,
-  FileTextIcon,
-  InfoCircledIcon,
-  PersonIcon,
-} from '@radix-ui/react-icons';
 import {
   getGetExperimentForUiKey,
   useAnalyzeCmabExperiment,
@@ -30,6 +16,24 @@ import {
   MetricAnalysis,
   Snapshot,
 } from '@/api/methods.schemas';
+import {
+  isBanditSpec,
+  isCmabExperiment,
+  isCmabSpec,
+  isFrequentistSpec,
+} from '@/app/experiments/create/experiment-form/experiment-form-types';
+import { ArmsAndAllocationsTable } from '@/components/features/experiments/arms-and-allocations-table';
+import { ContextConfigBox } from '@/components/features/experiments/context-config-box';
+import { DecisionAndImpactSection } from '@/components/features/experiments/decision-and-impact-section';
+import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
+import { ExperimentCompletionCallout } from '@/components/features/experiments/experiment-completion-callout';
+import { ExperimentDetailsDropdownMenu } from '@/components/features/experiments/experiment-details-dropdown-menu';
+import { ExperimentStatusBadge } from '@/components/features/experiments/experiment-status-badge';
+import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
+import { IntegrationGuideDialog } from '@/components/features/experiments/integration-guide-dialog';
+import { isClusterDesign } from '@/components/features/experiments/cluster-detection';
+import { IccBadge } from '@/components/features/experiments/icc-badge';
+import { MdeBadge } from '@/components/features/experiments/mde-badge';
 import { ForestPlot } from '@/components/features/experiments/plots/forest-plot';
 import {
   AnalysisState,
@@ -42,38 +46,36 @@ import {
   transformAnalysisForForestTimeseriesPlot,
 } from '@/components/features/experiments/plots/forest-plot-utils';
 import ForestTimeseriesPlot from '@/components/features/experiments/plots/forest-timeseries-plot';
-import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
-import { ExperimentStatusBadge } from '@/components/features/experiments/experiment-status-badge';
-import { MdeBadge } from '@/components/features/experiments/mde-badge';
-import { ArmsAndAllocationsTable } from '@/components/features/experiments/arms-and-allocations-table';
-import { IntegrationGuideDialog } from '@/components/features/experiments/integration-guide-dialog';
-import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
-import { ExperimentDetailsDropdownMenu } from '@/components/features/experiments/experiment-details-dropdown-menu';
-import { DecisionAndImpactSection } from '@/components/features/experiments/decision-and-impact-section';
-import { ExperimentCompletionCallout } from '@/components/features/experiments/experiment-completion-callout';
+import { PowerAndBalanceDialog } from '@/components/features/experiments/power-and-balance-dialog';
+import { TargetingDialog } from '@/components/features/experiments/targeting-dialog';
 import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
-import { XSpinner } from '@/components/ui/x-spinner';
-import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { TableNameBadge } from '@/components/features/participants/table-name-badge';
 import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
 import { SectionCard } from '@/components/ui/cards/section-card';
-import { EditableTextField } from '@/components/ui/inputs/editable-text-field';
+import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { EditableDateField } from '@/components/ui/inputs/editable-date-field';
 import { EditableTextArea } from '@/components/ui/inputs/editable-text-area';
+import { EditableTextField } from '@/components/ui/inputs/editable-text-field';
 import { ReadMoreText } from '@/components/ui/read-more-text';
+import { XSpinner } from '@/components/ui/x-spinner';
 import { useCurrentOrganization } from '@/providers/organization-provider';
-import { prettyJSON } from '@/services/json-utils';
-import { getExperimentStatus } from '@/services/experiment-utils';
 import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date-utils';
-import { ContextConfigBox } from '@/components/features/experiments/context-config-box';
+import { getExperimentStatus } from '@/services/experiment-utils';
+import { prettyJSON } from '@/services/json-utils';
 import {
-  isBanditSpec,
-  isCmabExperiment,
-  isCmabSpec,
-  isFrequentistSpec,
-} from '@/app/experiments/create/experiment-form/experiment-form-types';
-import { TableNameBadge } from '@/components/features/participants/table-name-badge';
-import { TargetingDialog } from '@/components/features/experiments/targeting-dialog';
-import { PowerAndBalanceDialog } from '@/components/features/experiments/power-and-balance-dialog';
+  ActivityLogIcon,
+  CalendarIcon,
+  CodeIcon,
+  ExclamationTriangleIcon,
+  FileTextIcon,
+  InfoCircledIcon,
+  PersonIcon,
+} from '@radix-ui/react-icons';
+import { Badge, Box, Flex, Heading, Select, Separator, Tabs, Text, Tooltip } from '@radix-ui/themes';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useState } from 'react';
+import { mutate } from 'swr';
 
 const SNAPSHOT_ERROR_ALERT_THRESHOLD_MS = 8 * 60 * 60 * 1000;
 
@@ -169,8 +171,14 @@ export default function ExperimentViewPage() {
         if (isCmabSpec(expConfig.design_spec) && expConfig.design_spec.contexts && cmabContextInputs.length === 0) {
           const contextInputs = expConfig.design_spec.contexts
             .filter((ctx) => ctx.context_id !== undefined)
-            .map((ctx) => ({ context_id: ctx.context_id!, context_value: 0.0 }));
-          setCmabAnalysisRequest({ ...cmabAnalysisRequest, context_inputs: contextInputs });
+            .map((ctx) => ({
+              context_id: ctx.context_id!,
+              context_value: 0.0,
+            }));
+          setCmabAnalysisRequest({
+            ...cmabAnalysisRequest,
+            context_inputs: contextInputs,
+          });
         }
       },
     },
@@ -310,7 +318,10 @@ export default function ExperimentViewPage() {
 
   const handleUpdateCmabContextValue = async (key: string, context_inputs: ContextInput[]) => {
     if (key === 'live') {
-      const updatedRequest = { ...cmabAnalysisRequest, context_inputs: context_inputs };
+      const updatedRequest = {
+        ...cmabAnalysisRequest,
+        context_inputs: context_inputs,
+      };
       setCmabAnalysisRequest(updatedRequest);
       await triggerLiveAnalysis(updatedRequest);
     } else {
@@ -359,7 +370,7 @@ export default function ExperimentViewPage() {
     return <Text>No experiment data found</Text>;
   }
 
-  const { design_spec, assign_summary, decision, impact } = experiment.config;
+  const { design_spec, assign_summary, decision, impact, power_analyses } = experiment.config;
   const { alpha, power } = getAlphaAndPower(experiment.config); // undefined for non-frequentist experiments
   const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
   const isFrequentistExperiment = isFrequentistSpec(design_spec);
@@ -369,6 +380,23 @@ export default function ExperimentViewPage() {
   let mdePct: string | null = null;
   if (selectedMetricAnalysis?.metric?.metric_pct_change) {
     mdePct = (selectedMetricAnalysis.metric.metric_pct_change * 100).toFixed(1);
+  }
+
+  // Achievable MDE: pulled from the saved power_analyses for the selected
+  // metric. Populated when the user picked a sample size other than the
+  // recommended minimum (the BE's MDE-mode response carries
+  // pct_change_possible alongside the committed N). For experiments that
+  // committed to the recommended size, this stays null and the badge just
+  // shows Target MDE as before.
+  let achievableMdePct: string | null = null;
+  if (selectedMetricAnalysis?.metric?.field_name) {
+    const savedAnalysis = power_analyses?.analyses?.find(
+      (a) => a.metric_spec.field_name === selectedMetricAnalysis.metric.field_name,
+    );
+    const pctPossible = savedAnalysis?.pct_change_possible;
+    if (pctPossible != null && Number.isFinite(pctPossible)) {
+      achievableMdePct = (pctPossible * 100).toFixed(2);
+    }
   }
 
   const { timeseriesData, armMetadata, minDate, maxDate } = transformAnalysisForForestTimeseriesPlot(
@@ -415,7 +443,30 @@ export default function ExperimentViewPage() {
           <ExperimentStatusBadge status={getExperimentStatus(start_date, end_date)} />
         </Flex>
         <Flex gap="4" align="center">
-          <ExperimentTypeBadge type={design_spec.experiment_type} />
+          <ExperimentTypeBadge
+            type={design_spec.experiment_type}
+            isCluster={isClusterDesign(design_spec, power_analyses)}
+          />
+          {isClusterDesign(design_spec, power_analyses) && (
+            <>
+              <Separator orientation="vertical" />
+              <Tooltip
+                content={`Cluster ID: ${
+                  (design_spec as { cluster_column?: string | null }).cluster_column ?? '(persisted in power analysis)'
+                }${
+                  power_analyses?.analyses?.[0]?.num_clusters_total != null
+                    ? ` — ${power_analyses.analyses[0].num_clusters_total.toLocaleString()} clusters needed across all arms`
+                    : ''
+                }`}
+              >
+                <Badge size="2">
+                  {power_analyses?.analyses?.[0]?.num_clusters_total != null
+                    ? `${power_analyses.analyses[0].num_clusters_total.toLocaleString()} clusters`
+                    : 'Cluster'}
+                </Badge>
+              </Tooltip>
+            </>
+          )}
           <Separator orientation="vertical" />
           {isFrequentistSpec(design_spec) && (
             <>
@@ -441,6 +492,7 @@ export default function ExperimentViewPage() {
               designSpec={design_spec}
               participantType={experiment.participant_type}
               webhookIds={experiment.config.webhooks ?? []}
+              powerAnalyses={power_analyses}
             />
             <Separator orientation="vertical" />
           </>
@@ -451,6 +503,8 @@ export default function ExperimentViewPage() {
                 power={Math.round(power! * 100)}
                 desiredN={design_spec.desired_n ?? undefined}
                 assignSummary={assign_summary}
+                designEffect={power_analyses?.analyses?.[0]?.design_effect ?? null}
+                numClustersTotal={power_analyses?.analyses?.[0]?.num_clusters_total ?? null}
               />
               <Separator orientation="vertical" />
             </>
@@ -485,33 +539,57 @@ export default function ExperimentViewPage() {
         </SectionCard>
 
         {/* Arms & Allocations Section */}
-        {assign_summary && (
-          <SectionCard
-            headerLeft={
-              <Flex gap="3" align="center">
-                <Heading size="3">Arms & Allocations</Heading>
-                <DownloadAssignmentsCsvButton
-                  datasourceId={experiment.config.datasource_id}
+        {assign_summary &&
+          (() => {
+            // Issue #217: derive cluster totals for the header and per-arm
+            // counts for the table from the stored power_analyses.
+            // We use the primary metric's analysis since cluster counts are
+            // the same across all arms / metrics for a given cluster spec.
+            const isClusterExperiment = isClusterDesign(design_spec, power_analyses);
+            const primaryAnalysis = power_analyses?.analyses?.[0];
+            const numClustersTotal = primaryAnalysis?.num_clusters_total ?? null;
+            const clustersPerArm = primaryAnalysis?.clusters_per_arm ?? null;
+            // Map per-arm cluster counts onto arm_ids in the design spec's order.
+            const clustersByArmId =
+              isClusterExperiment && clustersPerArm
+                ? Object.fromEntries(arms.map((arm, i) => [arm.arm_id ?? `arm-${i}`, clustersPerArm[i] ?? 0]))
+                : undefined;
+            return (
+              <SectionCard
+                headerLeft={
+                  <Flex gap="3" align="center">
+                    <Heading size="3">Arms & Allocations</Heading>
+                    <DownloadAssignmentsCsvButton
+                      datasourceId={experiment.config.datasource_id}
+                      experimentId={experimentId}
+                    />
+                  </Flex>
+                }
+                headerRight={
+                  <Flex gap="2" align="center">
+                    {isClusterExperiment && numClustersTotal !== null && (
+                      <Badge color="green">
+                        <Text size="2">{numClustersTotal.toLocaleString()} clusters</Text>
+                      </Badge>
+                    )}
+                    <Badge>
+                      <PersonIcon />
+                      <Text size="2">{assign_summary.sample_size.toLocaleString()} participants</Text>
+                    </Badge>
+                  </Flex>
+                }
+              >
+                <ArmsAndAllocationsTable
+                  datasourceId={datasourceId}
                   experimentId={experimentId}
+                  arms={arms}
+                  sampleSize={assign_summary.sample_size}
+                  armSizes={assign_summary.arm_sizes}
+                  clustersByArmId={clustersByArmId}
                 />
-              </Flex>
-            }
-            headerRight={
-              <Badge>
-                <PersonIcon />
-                <Text size="2">{assign_summary.sample_size.toLocaleString()} participants</Text>
-              </Badge>
-            }
-          >
-            <ArmsAndAllocationsTable
-              datasourceId={datasourceId}
-              experimentId={experimentId}
-              arms={arms}
-              sampleSize={assign_summary.sample_size}
-              armSizes={assign_summary.arm_sizes}
-            />
-          </SectionCard>
-        )}
+              </SectionCard>
+            );
+          })()}
 
         {/* Analysis Section */}
         <SectionCard
@@ -547,7 +625,11 @@ export default function ExperimentViewPage() {
                       )}
                     </Flex>
                   </Badge>
-                  <MdeBadge value={mdePct} />
+                  <MdeBadge value={mdePct} achievable={achievableMdePct} />
+                  {/* Issue #217: show ICC pill for cluster-randomized experiments. */}
+                  <IccBadge
+                    value={(selectedMetricAnalysis?.metric as { icc?: number | null } | undefined)?.icc ?? null}
+                  />
                 </Flex>
               ) : isBanditAnalysis(selectedAnalysisState.data) &&
                 selectedAnalysisState.banditEffects &&

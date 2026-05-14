@@ -1,6 +1,5 @@
 'use client';
 
-import { Flex, Grid } from '@radix-ui/themes';
 import {
   CMABExperimentSpecOutput,
   CreateExperimentResponse,
@@ -9,13 +8,14 @@ import {
   OnlineFrequentistExperimentSpecOutput,
   PreassignedFrequentistExperimentSpecOutput,
 } from '@/api/methods.schemas';
-import { MetricDisplay, MetricsSection } from '@/components/features/experiments/sections/metrics-section';
-import { ExperimentDescriptionSection } from '@/components/features/experiments/sections/experiment-description-section';
-import { TreatmentArmsSection } from '@/components/features/experiments/sections/treatment-arms-section';
 import { ContextsSection } from '@/components/features/experiments/sections/contexts-section';
 import { DatasourceTargetingSection } from '@/components/features/experiments/sections/datasource-targeting-section';
-import { PowerBalanceSection } from '@/components/features/experiments/sections/power-balance-section';
+import { ExperimentDescriptionSection } from '@/components/features/experiments/sections/experiment-description-section';
+import { MetricDisplay, MetricsSection } from '@/components/features/experiments/sections/metrics-section';
 import { OutcomesPriorSection } from '@/components/features/experiments/sections/outcomes-prior-section';
+import { PowerBalanceSection } from '@/components/features/experiments/sections/power-balance-section';
+import { TreatmentArmsSection } from '@/components/features/experiments/sections/treatment-arms-section';
+import { Flex, Grid } from '@radix-ui/themes';
 
 // Type guard to check if design spec is frequentist (has alpha, power, filters, strata)
 function isFrequentistSpec(
@@ -52,6 +52,17 @@ export interface ExperimentConfirmationDisplayProps {
     secondary?: MetricDisplay[];
   };
   desiredN?: number;
+  /**
+   * Cluster randomization parameters for the new "Cluster Preassigned A/B
+   * Testing" type (issue #217). Set only when the experiment is cluster-
+   * randomized; rendered under the Metrics section.
+   */
+  cluster?: {
+    field_name: string;
+    icc: string | number;
+    cv: string | number;
+    avg_cluster_size: string | number;
+  };
   onEditMetadata?: () => void;
   onEditTreatmentArms?: () => void;
   onEditDatasource?: () => void;
@@ -70,6 +81,7 @@ export function ExperimentConfirmationDisplay({
   primaryKey,
   metrics,
   desiredN,
+  cluster,
   onEditMetadata,
   onEditTreatmentArms,
   onEditDatasource,
@@ -121,7 +133,7 @@ export function ExperimentConfirmationDisplay({
               onEditDatasource={onEditDatasource}
               onEditFilters={onEditFilters}
             />
-            <MetricsSection metrics={metrics} strata={strata} onEdit={onEditMetrics} />
+            <MetricsSection metrics={metrics} strata={strata} onEdit={onEditMetrics} cluster={cluster} />
             {isFreqPreassigned && (
               <PowerBalanceSection
                 confidence={confidence}
@@ -129,6 +141,8 @@ export function ExperimentConfirmationDisplay({
                 desiredN={desiredN}
                 assignSummary={response.assign_summary}
                 onEdit={onEditPowerBalance}
+                designEffect={response.power_analyses?.analyses?.[0]?.design_effect ?? null}
+                numClustersTotal={response.power_analyses?.analyses?.[0]?.num_clusters_total ?? null}
               />
             )}
           </>

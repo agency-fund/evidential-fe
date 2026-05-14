@@ -1,10 +1,4 @@
-// Form data types
-import { packScreen, WizardForm } from '@/services/wizard/wizard-types';
-import {
-  ExperimentMetadataMessages,
-  ExperimentMetadataScreen,
-} from '@/app/experiments/create/experiment-form/experiment-metadata-screen';
-import { ExperimentTypeScreen } from '@/app/experiments/create/experiment-form/experiment-type-screen';
+import { abandonExperiment } from '@/api/admin';
 import {
   Arm,
   BayesABExperimentSpecInputExperimentType,
@@ -16,40 +10,54 @@ import {
   GetFiltersResponseElement,
   PowerResponseOutput,
 } from '@/api/methods.schemas';
-import { abandonExperiment } from '@/api/admin';
-import { ExperimentSelectDatasourceScreen } from '@/app/experiments/create/experiment-form/experiment-select-datasource-screen';
-import { ExperimentSelectBinaryOrRealOutcomes } from '@/app/experiments/create/experiment-form/experiment-select-binary-or-real-outcomes';
-import {
-  ExperimentDescribeArmsMessage,
-  ExperimentDescribeArmsScreen,
-} from '@/app/experiments/create/experiment-form/experiment-describe-arms-screen';
-import { ExperimentDescribeContextsScreen } from '@/app/experiments/create/experiment-form/experiment-describe-contexts-screen';
-import { ExperimentDescribeBanditArmsScreen } from '@/app/experiments/create/experiment-form/experiment-describe-bandit-arms-screen';
-import { ExperimentsSummarizeBanditScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-bandit-screen';
-import {
-  ExperimentFreqStackScreen,
-  ExperimentFreqStackScreenMessage,
-} from '@/app/experiments/create/experiment-form/experiment-freq-stack-screen';
-import { ExperimentsSummarizeFreqScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-freq-screen';
-import {
-  getReasonableEndDate,
-  getReasonableStartDate,
-  removeFieldByName,
-} from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import {
   createDefaultBanditParams,
   toBanditParamsForExperimentType,
   toCmabBanditParams,
   toMabBanditParams,
 } from '@/app/experiments/create/experiment-form/experiment-bandit-helpers';
-import { ErrorType } from '@/services/orval-fetch';
+import {
+  ExperimentDescribeArmsMessage,
+  ExperimentDescribeArmsScreen,
+} from '@/app/experiments/create/experiment-form/experiment-describe-arms-screen';
+import { ExperimentDescribeBanditArmsScreen } from '@/app/experiments/create/experiment-form/experiment-describe-bandit-arms-screen';
+import { ExperimentDescribeContextsScreen } from '@/app/experiments/create/experiment-form/experiment-describe-contexts-screen';
+import {
+  getReasonableEndDate,
+  getReasonableStartDate,
+  removeFieldByName,
+} from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import {
   BanditParams,
-  isBanditExperimentType,
   MetricWithMDE,
+  isBanditExperimentType,
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
+import {
+  ExperimentFreqStackScreen,
+  ExperimentFreqStackScreenMessage,
+} from '@/app/experiments/create/experiment-form/experiment-freq-stack-screen';
+import {
+  ExperimentMetadataMessages,
+  ExperimentMetadataScreen,
+} from '@/app/experiments/create/experiment-form/experiment-metadata-screen';
+import { ExperimentSelectBinaryOrRealOutcomes } from '@/app/experiments/create/experiment-form/experiment-select-binary-or-real-outcomes';
+import { ExperimentSelectDatasourceScreen } from '@/app/experiments/create/experiment-form/experiment-select-datasource-screen';
+import { ExperimentsSummarizeBanditScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-bandit-screen';
+import { ExperimentsSummarizeFreqScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-freq-screen';
+import { ExperimentTypeScreen } from '@/app/experiments/create/experiment-form/experiment-type-screen';
+import { ErrorType } from '@/services/orval-fetch';
+// Form data types
+import { WizardForm, packScreen } from '@/services/wizard/wizard-types';
 
-export type ExperimentType = Exclude<DesignSpecInput['experiment_type'], BayesABExperimentSpecInputExperimentType>;
+/**
+ * ExperimentType in the FE wizard. Includes the FE-only
+ * "freq_cluster_preassigned" variant on top of the BE's enum values; that
+ * variant is translated to "freq_preassigned" + cluster_column at submit time
+ * (see convertToFrequentistDesignSpec).
+ */
+export type ExperimentType =
+  | Exclude<DesignSpecInput['experiment_type'], BayesABExperimentSpecInputExperimentType>
+  | 'freq_cluster_preassigned';
 
 // Defines the entirety of the editable data collected via this wizard flow.
 export type ExperimentFormData = {
@@ -75,6 +83,15 @@ export type ExperimentFormData = {
   // Cache of available filter fields (and their data types) for lookup/display/search
   availableFilterFields?: GetFiltersResponseElement[];
   strata?: FieldMetadata[];
+  // Randomization mode for issue #217. Undefined treated as 'strata' for backwards compat.
+  randomizationType?: 'strata' | 'cluster';
+  // Selected cluster ID field when randomizationType === 'cluster'.
+  clusterField?: FieldMetadata;
+  // Manual ICC / CV / avg cluster size inputs. Strings to allow empty values;
+  // converted to numbers when building the design spec.
+  clusterIcc?: string;
+  clusterCv?: string;
+  clusterAvgSize?: string;
   // These next 2 Experiment Parameters are strings to allow for empty values,
   // which should be converted to numbers when making power or experiment creation requests.
   confidence?: string;
@@ -82,6 +99,15 @@ export type ExperimentFormData = {
   // Populated when user clicks "Power Check" on DesignForm
   desiredN?: number;
   powerCheckResponse?: PowerResponseOutput;
+  // Populated when the user picks "Use max available" or types a Custom N
+  // on the Power Analysis page. This is the MDE-mode power-check response for
+  // the chosen sample size — it carries the achievable MDE plus a cluster
+  // split that matches `desiredN`. We keep it separate from
+  // `powerCheckResponse` because the "Use minimum sample required" radio
+  // still needs the original sample-size-mode response to show the recommended
+  // cluster count. At save time, prefer this over `powerCheckResponse` so the
+  // saved experiment reflects the user's chosen N.
+  achievablePowerCheckResponse?: PowerResponseOutput;
   createExperimentResponse?: CreateExperimentResponse;
   createExperimentError?: ErrorType<unknown>;
 
@@ -100,7 +126,11 @@ export type ExperimentFormData = {
 };
 
 const isFreq = (experimentType: ExperimentType) => {
-  return experimentType === 'freq_online' || experimentType === 'freq_preassigned';
+  return (
+    experimentType === 'freq_online' ||
+    experimentType === 'freq_preassigned' ||
+    experimentType === 'freq_cluster_preassigned'
+  );
 };
 
 const isCmab = (experimentType: ExperimentType) => {
@@ -307,13 +337,19 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         if (msg.type === 'add-context') {
           return {
             ...data,
-            bandit: { ...data.bandit, contexts: [...contexts, { name: '', description: '', type: 'real-valued' }] },
+            bandit: {
+              ...data.bandit,
+              contexts: [...contexts, { name: '', description: '', type: 'real-valued' }],
+            },
           };
         }
         if (msg.type === 'remove-context') {
           return {
             ...data,
-            bandit: { ...data.bandit, contexts: contexts.filter((_, i) => i !== msg.index) },
+            bandit: {
+              ...data.bandit,
+              contexts: contexts.filter((_, i) => i !== msg.index),
+            },
           };
         }
         if (msg.type === 'update-context') {
@@ -327,7 +363,10 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
               newContexts[msg.index] = { ...ctx, description: msg.value };
               break;
             case 'type':
-              newContexts[msg.index] = { ...ctx, type: msg.value as ContextType };
+              newContexts[msg.index] = {
+                ...ctx,
+                type: msg.value as ContextType,
+              };
               break;
           }
           return { ...data, bandit: { ...data.bandit, contexts: newContexts } };
@@ -359,20 +398,47 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           const priorType = data.bandit.priorType;
           const newArm =
             priorType === 'beta'
-              ? { arm_name: '', arm_description: '', alpha_prior: undefined, beta_prior: undefined, arm_weight: 0 }
-              : { arm_name: '', arm_description: '', mean_prior: undefined, stddev_prior: undefined, arm_weight: 0 };
+              ? {
+                  arm_name: '',
+                  arm_description: '',
+                  alpha_prior: undefined,
+                  beta_prior: undefined,
+                  arm_weight: 0,
+                }
+              : {
+                  arm_name: '',
+                  arm_description: '',
+                  mean_prior: undefined,
+                  stddev_prior: undefined,
+                  arm_weight: 0,
+                };
           const newArms = [...arms, newArm];
           const equalWeight = parseFloat((100 / newArms.length).toFixed(1));
-          return { ...data, bandit: { ...data.bandit, arms: newArms.map((a) => ({ ...a, arm_weight: equalWeight })) } };
+          return {
+            ...data,
+            bandit: {
+              ...data.bandit,
+              arms: newArms.map((a) => ({ ...a, arm_weight: equalWeight })),
+            },
+          };
         }
         if (msg.type === 'remove-arm') {
           const newArms = arms.filter((_, i) => i !== msg.index);
           const equalWeight = newArms.length > 0 ? parseFloat((100 / newArms.length).toFixed(1)) : 0;
-          return { ...data, bandit: { ...data.bandit, arms: newArms.map((a) => ({ ...a, arm_weight: equalWeight })) } };
+          return {
+            ...data,
+            bandit: {
+              ...data.bandit,
+              arms: newArms.map((a) => ({ ...a, arm_weight: equalWeight })),
+            },
+          };
         }
         if (msg.type === 'update-arm') {
           const newArms = [...arms];
-          newArms[msg.index] = { ...newArms[msg.index], [msg.field]: msg.value };
+          newArms[msg.index] = {
+            ...newArms[msg.index],
+            [msg.field]: msg.value,
+          };
           return { ...data, bandit: { ...data.bandit, arms: newArms } };
         }
         if (msg.type === 'set-create-response') {
@@ -385,13 +451,20 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           };
         }
         if (msg.type === 'set-create-error') {
-          return { ...data, createExperimentError: msg.response, createExperimentResponse: undefined };
+          return {
+            ...data,
+            createExperimentError: msg.response,
+            createExperimentResponse: undefined,
+          };
         }
         if (msg.type === 'set-datasource-id') {
           return { ...data, datasourceId: msg.datasourceId };
         }
         if (msg.type === 'set-weights') {
-          const newArms = arms.map((arm, i) => ({ ...arm, arm_weight: msg.weights[i] }));
+          const newArms = arms.map((arm, i) => ({
+            ...arm,
+            arm_weight: msg.weights[i],
+          }));
           return { ...data, bandit: { ...data.bandit, arms: newArms } };
         }
         return data;
@@ -409,10 +482,16 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         if (msg.type === 'add-arm') {
           const newArm =
             arms.length === 0
-              ? { arm_name: 'Control', arm_description: 'Arm 1 will be used as baseline for comparison.' }
+              ? {
+                  arm_name: 'Control',
+                  arm_description: 'Arm 1 will be used as baseline for comparison.',
+                }
               : { arm_name: '', arm_description: '' };
           // Reset weights when adding
-          const newArms = [...arms, newArm].map((a) => ({ ...a, arm_weight: undefined }));
+          const newArms = [...arms, newArm].map((a) => ({
+            ...a,
+            arm_weight: undefined,
+          }));
           return { ...data, arms: newArms };
         }
 
@@ -424,12 +503,18 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
 
         if (msg.type === 'update-arm') {
           const newArms = [...arms];
-          newArms[msg.index] = { ...newArms[msg.index], [msg.field]: msg.value };
+          newArms[msg.index] = {
+            ...newArms[msg.index],
+            [msg.field]: msg.value,
+          };
           return { ...data, arms: newArms };
         }
 
         if (msg.type === 'set-weights') {
-          const newArms = arms.map((arm, i) => ({ ...arm, arm_weight: msg.weights[i] }));
+          const newArms = arms.map((arm, i) => ({
+            ...arm,
+            arm_weight: msg.weights[i],
+          }));
           return { ...data, arms: newArms };
         }
 
@@ -443,7 +528,12 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       reducer: (data, msg: ExperimentFreqStackScreenMessage) => {
         // Metric builder actions - all metric changes invalidate power check
         if (msg.type === 'primary-metric-select') {
-          return { ...data, primaryMetric: msg.primaryMetric, powerCheckResponse: undefined, desiredN: undefined };
+          return {
+            ...data,
+            primaryMetric: msg.primaryMetric,
+            powerCheckResponse: undefined,
+            desiredN: undefined,
+          };
         }
         if (msg.type === 'primary-metric-deselect') {
           return {
@@ -491,7 +581,12 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
 
         // Filter builder - filter changes invalidate power check
         if (msg.type === 'set-filters') {
-          return { ...data, filters: msg.filters, powerCheckResponse: undefined, desiredN: undefined };
+          return {
+            ...data,
+            filters: msg.filters,
+            powerCheckResponse: undefined,
+            desiredN: undefined,
+          };
         }
 
         // Strata builder -
@@ -505,21 +600,97 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           };
         }
 
+        // Randomization toggle & cluster builder (issue #217).
+        // Any change to cluster inputs invalidates the previous power-check result
+        // because clustering meaningfully changes the required sample size.
+        if (msg.type === 'set-randomization-type') {
+          return {
+            ...data,
+            randomizationType: msg.value,
+            powerCheckResponse: undefined,
+            desiredN: undefined,
+          };
+        }
+        if (msg.type === 'set-cluster-field') {
+          return {
+            ...data,
+            clusterField: msg.field,
+            powerCheckResponse: undefined,
+            desiredN: undefined,
+          };
+        }
+        if (msg.type === 'set-cluster-icc') {
+          return {
+            ...data,
+            clusterIcc: msg.value,
+            powerCheckResponse: undefined,
+            desiredN: undefined,
+          };
+        }
+        if (msg.type === 'set-cluster-cv') {
+          return {
+            ...data,
+            clusterCv: msg.value,
+            powerCheckResponse: undefined,
+            desiredN: undefined,
+          };
+        }
+        if (msg.type === 'set-cluster-avg-size') {
+          return {
+            ...data,
+            clusterAvgSize: msg.value,
+            powerCheckResponse: undefined,
+            desiredN: undefined,
+          };
+        }
+
         // Power check - changing confidence/power invalidates power check response
         if (msg.type === 'set-confidence') {
-          return { ...data, confidence: msg.value, powerCheckResponse: undefined, desiredN: undefined };
+          return {
+            ...data,
+            confidence: msg.value,
+            powerCheckResponse: undefined,
+            desiredN: undefined,
+          };
         }
         if (msg.type === 'set-power') {
-          return { ...data, power: msg.value, powerCheckResponse: undefined, desiredN: undefined };
+          return {
+            ...data,
+            power: msg.value,
+            powerCheckResponse: undefined,
+            desiredN: undefined,
+          };
         }
         if (msg.type === 'set-power-check-response') {
-          return { ...data, powerCheckResponse: msg.response, desiredN: msg.desiredN };
+          return {
+            ...data,
+            powerCheckResponse: msg.response,
+            // Running a fresh power check invalidates any previously
+            // computed achievable-MDE response — it was tied to a stale
+            // design spec / chosen N.
+            achievablePowerCheckResponse: undefined,
+            desiredN: msg.desiredN,
+          };
+        }
+        if (msg.type === 'set-achievable-power-check-response') {
+          return { ...data, achievablePowerCheckResponse: msg.response };
         }
         if (msg.type === 'set-chosen-n') {
-          return { ...data, desiredN: msg.value };
+          // Switching options (e.g. back to recommended) invalidates the
+          // achievable response so the inline display doesn't show a stale
+          // MDE for a different N.
+          return {
+            ...data,
+            desiredN: msg.value,
+            achievablePowerCheckResponse: undefined,
+          };
         }
         if (msg.type === 'set-create-error') {
-          return { ...data, createExperimentError: msg.response, createExperimentResponse: undefined };
+          return {
+            ...data,
+            createExperimentError: msg.response,
+            createExperimentResponse: undefined,
+          };
         }
         if (msg.type === 'set-create-response') {
           return {

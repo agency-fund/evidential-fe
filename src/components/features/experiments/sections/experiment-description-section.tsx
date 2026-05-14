@@ -1,16 +1,17 @@
 'use client';
 
-import { Button, DataList, Flex, Text } from '@radix-ui/themes';
-import { Pencil2Icon } from '@radix-ui/react-icons';
-import NextLink from 'next/link';
+import { useListOrganizationWebhooks } from '@/api/admin';
 import { CreateExperimentResponse } from '@/api/methods.schemas';
+import { ExperimentTypeOptions } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
+import { isClusterDesign } from '@/components/features/experiments/cluster-detection';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { ReadMoreText } from '@/components/ui/read-more-text';
-import { formatIsoDateLocal } from '@/services/date-utils';
-import { useListOrganizationWebhooks } from '@/api/admin';
-import { useCurrentOrganization } from '@/providers/organization-provider';
-import { ExperimentTypeOptions } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import { XSpinner } from '@/components/ui/x-spinner';
+import { useCurrentOrganization } from '@/providers/organization-provider';
+import { formatIsoDateLocal } from '@/services/date-utils';
+import { Pencil2Icon } from '@radix-ui/react-icons';
+import { Button, DataList, Flex, Text } from '@radix-ui/themes';
+import NextLink from 'next/link';
 
 interface ExperimentDescriptionSectionProps {
   response: CreateExperimentResponse;
@@ -26,8 +27,14 @@ export function ExperimentDescriptionSection({ response, onEdit }: ExperimentDes
     swr: { enabled: !!organizationId },
   });
   const selectedWebhooks = webhooksData?.items?.filter((webhook) => webhookIds.includes(webhook.id)) ?? [];
-  const experimentTypeTitle =
-    ExperimentTypeOptions.find((v) => v.value == designSpec.experiment_type)?.title ?? designSpec.experiment_type;
+  // Cluster experiments are stored as freq_preassigned on the BE (the FE-only
+  // "freq_cluster_preassigned" type is translated at submit time). Show the
+  // cluster-flavoured title when this is a cluster experiment so the user
+  // sees what they actually picked on the Type screen.
+  const isCluster = isClusterDesign(designSpec, (response as { power_analyses?: unknown }).power_analyses);
+  const experimentTypeTitle = isCluster
+    ? 'Cluster Preassigned A/B Testing'
+    : (ExperimentTypeOptions.find((v) => v.value == designSpec.experiment_type)?.title ?? designSpec.experiment_type);
   return (
     <SectionCard
       title="Experiment Description"

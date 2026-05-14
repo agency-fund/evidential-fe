@@ -69,14 +69,26 @@ export type MetricWithMDE = {
   mde: string; // desired minimum detectable effect as a percentage of the metric's baseline value
 };
 
+/**
+ * FE-only experiment-type slug for the "Cluster Preassigned A/B Testing" variant.
+ * Submits to the backend as `freq_preassigned` with `cluster_column` set on the
+ * design spec; the BE has no separate enum value for cluster experiments
+ * (PR #163 treats cluster as a parameter on the existing freq_preassigned type).
+ */
+export const FREQ_CLUSTER_PREASSIGNED = 'freq_cluster_preassigned' as const;
+
 // Define the type alias using imported types
 export function isFreqExperimentType(type: string | undefined): boolean {
   return (
     !!type &&
     (type in PreassignedFrequentistExperimentSpecInputExperimentType ||
-      type in OnlineFrequentistExperimentSpecInputExperimentType)
+      type in OnlineFrequentistExperimentSpecInputExperimentType ||
+      type === FREQ_CLUSTER_PREASSIGNED)
   );
 }
+
+/** Returns true when this experiment is the new cluster-preassigned variant. */
+export const isClusterPreassignedType = (type: string | undefined): boolean => type === FREQ_CLUSTER_PREASSIGNED;
 
 export const isFrequentistSpec = (
   spec: DesignSpecOutput | undefined,

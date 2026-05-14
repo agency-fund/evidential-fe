@@ -1,14 +1,15 @@
 'use client';
 
-import Link from 'next/link';
-import { Flex, IconButton, Table, Text, Tooltip } from '@radix-ui/themes';
-import { FileTextIcon } from '@radix-ui/react-icons';
-import { ExperimentStatusBadge } from '@/components/features/experiments/experiment-status-badge';
-import { ExperimentImpactBadge } from '@/components/features/experiments/experiment-impact-badge';
-import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
+import { isClusterDesign } from '@/components/features/experiments/cluster-detection';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
-import { formatIsoDateLocal } from '@/services/date-utils';
+import { ExperimentImpactBadge } from '@/components/features/experiments/experiment-impact-badge';
+import { ExperimentStatusBadge } from '@/components/features/experiments/experiment-status-badge';
+import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import { ExperimentWithStatus } from '@/components/features/experiments/types';
+import { formatIsoDateLocal } from '@/services/date-utils';
+import { FileTextIcon } from '@radix-ui/react-icons';
+import { Flex, IconButton, Table, Text, Tooltip } from '@radix-ui/themes';
+import Link from 'next/link';
 
 interface ExperimentTableRowProps {
   experiment: ExperimentWithStatus;
@@ -46,7 +47,10 @@ export function ExperimentsTableRow({ experiment }: ExperimentTableRowProps) {
           </Flex>
         </Table.Cell>
         <Table.Cell>
-          <ExperimentTypeBadge type={design_spec.experiment_type} />
+          <ExperimentTypeBadge
+            type={design_spec.experiment_type}
+            isCluster={isClusterDesign(design_spec, (experiment as { power_analyses?: unknown }).power_analyses)}
+          />
         </Table.Cell>
         <Table.Cell>
           <Flex gap="2">

@@ -1,11 +1,11 @@
-import { Table, Heading, Badge, Text } from '@radix-ui/themes';
-import { PersonIcon } from '@radix-ui/react-icons';
-import { useUpdateArm, getGetExperimentForUiKey } from '@/api/admin';
+import { getGetExperimentForUiKey, useUpdateArm } from '@/api/admin';
 import { Arm } from '@/api/methods.schemas';
-import { EditableTextField } from '@/components/ui/inputs/editable-text-field';
 import { EditableTextArea } from '@/components/ui/inputs/editable-text-area';
-import { mutate } from 'swr';
+import { EditableTextField } from '@/components/ui/inputs/editable-text-field';
 import { ReadMoreText } from '@/components/ui/read-more-text';
+import { PersonIcon } from '@radix-ui/react-icons';
+import { Badge, Heading, Table, Text } from '@radix-ui/themes';
+import { mutate } from 'swr';
 
 interface ArmsAndAllocationsTableRowProps {
   datasourceId: string;
@@ -13,6 +13,10 @@ interface ArmsAndAllocationsTableRowProps {
   arm: Arm;
   armSize: number;
   percentage: number;
+  /** Cluster count for this arm (cluster-randomized experiments only). */
+  numClusters?: number;
+  /** Whether the parent table is showing the Clusters column. */
+  showClusters?: boolean;
 }
 
 export function ArmsAndAllocationsTableRow({
@@ -21,6 +25,8 @@ export function ArmsAndAllocationsTableRow({
   arm,
   armSize,
   percentage,
+  numClusters,
+  showClusters,
 }: ArmsAndAllocationsTableRowProps) {
   const { trigger: updateArm } = useUpdateArm(datasourceId, experimentId, arm.arm_id!, {
     swr: {
@@ -43,6 +49,17 @@ export function ArmsAndAllocationsTableRow({
           <Text>{armSize.toLocaleString()}</Text>
         </Badge>
       </Table.Cell>
+      {showClusters && (
+        <Table.Cell>
+          {numClusters !== undefined ? (
+            <Badge color="green">
+              <Text>{numClusters.toLocaleString()}</Text>
+            </Badge>
+          ) : (
+            <Text color="gray">—</Text>
+          )}
+        </Table.Cell>
+      )}
       <Table.Cell>
         <Badge>
           <Text>{percentage.toFixed(2)}%</Text>

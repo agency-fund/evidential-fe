@@ -1,5 +1,4 @@
-import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
-import { z } from 'zod';
+import { createExperimentBody } from '@/api/admin.zod';
 import {
   AnyFrequentistDesignSpecInput,
   CMABExperimentSpecInputExperimentType,
@@ -10,9 +9,10 @@ import {
   PreassignedFrequentistExperimentSpecInputExperimentType,
   Stratum,
 } from '@/api/methods.schemas';
-import { createExperimentBody } from '@/api/admin.zod';
-import { ExperimentFormData } from './experiment-form-def';
 import { getCanonicalRewardType } from '@/app/experiments/create/experiment-form/experiment-bandit-helpers';
+import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
+import { z } from 'zod';
+import { ExperimentFormData } from './experiment-form-def';
 import { isFreqExperimentType, isFrequentistSpec } from './experiment-form-types';
 
 /**
@@ -74,7 +74,9 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
   }
 
   (data.secondaryMetrics ?? []).forEach((metric) => {
-    zodMde.parse(metric.mde, { path: ['secondaryMetrics', metric.metric.field_name, 'mde'] });
+    zodMde.parse(metric.mde, {
+      path: ['secondaryMetrics', metric.metric.field_name, 'mde'],
+    });
     metrics.push({
       field_name: metric.metric.field_name,
       metric_pct_change: Number(metric.mde) / 100.0,
@@ -99,18 +101,60 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
     filters: data.filters ?? [],
     power: data.power ? Number(data.power) / 100.0 : 0.8,
     alpha: data.confidence ? 1 - Number(data.confidence) / 100.0 : 0.05,
+    // When the user has chosen a sample size (Use max-available or Custom on
+    // the Power Analysis page), pass it through to the BE. The BE then runs
+    // the power analysis in MDE mode and returns the achievable MDE plus the
+    // cluster split that corresponds to the chosen N. Without this, the saved
+    // experiment would carry the original recommended-size power analysis
+    // even when the user picked a different N.
+    ...(data.desiredN !== undefined ? { desired_n: data.desiredN } : {}),
   };
+
+  // The FE-only "freq_cluster_preassigned" type is submitted to the BE as a
+  // regular "freq_preassigned" experiment with `cluster_column` set on the
+  // design spec (and `icc`/`cv`/`avg_cluster_size` set on each metric). The
+  // BE has no separate enum value for cluster experiments — PR #163 treats
+  // clustering as a parameter on the existing freq_preassigned type.
+  const isClusterExperiment = data.experimentType === 'freq_cluster_preassigned';
+  const wireExperimentType = isClusterExperiment ? 'freq_preassigned' : data.experimentType;
 
   const spec = createExperimentBody.strict().parse({
     design_spec: {
       ...commonFields,
-      experiment_type: data.experimentType,
+      experiment_type: wireExperimentType,
     },
   }).design_spec;
 
   if (!isFrequentistSpec(spec)) {
     throw new Error('Frequentist configuration is required.');
   }
+
+  // Inject cluster fields AFTER strict zod parsing. We do it here rather than
+  // in commonFields because admin.zod.ts hasn't been regenerated to recognize
+  // the cluster fields yet (orval regeneration is currently broken locally).
+  // The backend accepts these fields per PR #163; we sidestep the FE zod
+  // check rather than patch ~50 places in admin.zod.ts. Once orval is fixed
+  // and admin.zod.ts is regenerated, this post-parse injection becomes
+  // unnecessary.
+  if (isClusterExperiment && data.clusterField) {
+    const icc = data.clusterIcc !== undefined && data.clusterIcc !== '' ? Number(data.clusterIcc) : undefined;
+    const cv = data.clusterCv !== undefined && data.clusterCv !== '' ? Number(data.clusterCv) : undefined;
+    const avgClusterSize =
+      data.clusterAvgSize !== undefined && data.clusterAvgSize !== '' ? Number(data.clusterAvgSize) : undefined;
+    // biome-ignore lint/suspicious/noExplicitAny: see comment above re: orval.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const specAny = spec as any;
+    specAny.cluster_column = data.clusterField.field_name;
+    if (icc !== undefined && cv !== undefined && avgClusterSize !== undefined) {
+      specAny.metrics = specAny.metrics.map((m: Record<string, unknown>) => ({
+        ...m,
+        icc,
+        cv,
+        avg_cluster_size: avgClusterSize,
+      }));
+    }
+  }
+
   return spec;
 }
 
@@ -169,6 +213,13 @@ export const ExperimentTypeOptions = [
     badge: 'A/B',
     description:
       'Participants are assigned to experiment arms at design time. Suitable for controlled experiments with fixed sample sizes.',
+  },
+  {
+    value: 'freq_cluster_preassigned' as const,
+    title: 'Cluster Preassigned A/B Testing',
+    badge: 'Cluster',
+    description:
+      'Whole groups of participants (clusters such as schools, villages, or classrooms) are assigned to arms together at design time. Use when the intervention is naturally delivered at the group level.',
   },
   {
     value: OnlineFrequentistExperimentSpecInputExperimentType.freq_online,

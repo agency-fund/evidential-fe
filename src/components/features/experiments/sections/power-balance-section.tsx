@@ -1,9 +1,9 @@
 'use client';
 
-import { Button, DataList, Flex } from '@radix-ui/themes';
-import { Pencil2Icon } from '@radix-ui/react-icons';
 import { AssignSummary } from '@/api/methods.schemas';
 import { SectionCard } from '@/components/ui/cards/section-card';
+import { Pencil2Icon } from '@radix-ui/react-icons';
+import { Button, DataList, Flex, Text } from '@radix-ui/themes';
 
 export interface PowerBalanceSectionProps {
   confidence: number;
@@ -13,6 +13,10 @@ export interface PowerBalanceSectionProps {
   onEdit?: () => void;
   showDesiredSampleSize?: boolean;
   showTitle?: boolean;
+  /** Design effect (DEFF) from the power analysis — cluster experiments only. */
+  designEffect?: number | null;
+  /** Total clusters needed across all arms — cluster experiments only. */
+  numClustersTotal?: number | null;
 }
 
 export function PowerBalanceSection({
@@ -23,6 +27,8 @@ export function PowerBalanceSection({
   onEdit,
   showDesiredSampleSize = true,
   showTitle = true,
+  designEffect,
+  numClustersTotal,
 }: PowerBalanceSectionProps) {
   const balanceCheck = assignSummary?.balance_check;
 
@@ -57,13 +63,45 @@ export function PowerBalanceSection({
             {showDesiredSampleSize && (
               <DataList.Item>
                 <DataList.Label>Desired Sample Size</DataList.Label>
-                <DataList.Value>{desiredN ?? 'N/A'}</DataList.Value>
+                <DataList.Value>
+                  {numClustersTotal != null ? (
+                    <Flex direction="column">
+                      <Text color="green" weight="bold">
+                        {numClustersTotal.toLocaleString()} clusters
+                      </Text>
+                      <Text size="1" color="gray">
+                        {(desiredN ?? 0).toLocaleString()} participants
+                      </Text>
+                    </Flex>
+                  ) : (
+                    (desiredN ?? 'N/A')
+                  )}
+                </DataList.Value>
               </DataList.Item>
             )}
             <DataList.Item>
               <DataList.Label>Actual Sample Size</DataList.Label>
-              <DataList.Value>{assignSummary?.sample_size ?? 'N/A'}</DataList.Value>
+              <DataList.Value>
+                {numClustersTotal != null ? (
+                  <Flex direction="column">
+                    <Text color="green" weight="bold">
+                      {numClustersTotal.toLocaleString()} clusters
+                    </Text>
+                    <Text size="1" color="gray">
+                      {(assignSummary?.sample_size ?? 0).toLocaleString()} participants
+                    </Text>
+                  </Flex>
+                ) : (
+                  (assignSummary?.sample_size ?? 'N/A')
+                )}
+              </DataList.Value>
             </DataList.Item>
+            {designEffect != null && (
+              <DataList.Item>
+                <DataList.Label>DEFF</DataList.Label>
+                <DataList.Value>{designEffect.toFixed(2)}</DataList.Value>
+              </DataList.Item>
+            )}
           </DataList.Root>
         </Flex>
 

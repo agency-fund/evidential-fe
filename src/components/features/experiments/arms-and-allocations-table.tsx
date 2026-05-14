@@ -1,5 +1,5 @@
-import { Table } from '@radix-ui/themes';
 import { Arm, AssignSummaryArmSizes } from '@/api/methods.schemas';
+import { Table } from '@radix-ui/themes';
 import { ArmsAndAllocationsTableRow } from './arms-and-allocations-table-row';
 
 interface ArmsAndAllocationsTableProps {
@@ -8,6 +8,12 @@ interface ArmsAndAllocationsTableProps {
   arms: Arm[];
   sampleSize: number;
   armSizes?: AssignSummaryArmSizes;
+  /**
+   * For cluster-randomized experiments, the number of clusters per arm
+   * (keyed by arm_id). When provided, a Clusters column is shown in green.
+   * Issue #217 mockup ClustersUI3A.
+   */
+  clustersByArmId?: Record<string, number>;
 }
 
 export function ArmsAndAllocationsTable({
@@ -16,17 +22,20 @@ export function ArmsAndAllocationsTable({
   arms,
   sampleSize,
   armSizes,
+  clustersByArmId,
 }: ArmsAndAllocationsTableProps) {
   const sortedArms = [...arms].sort((a, b) => {
     if (!a.arm_id || !b.arm_id) return 0;
     return a.arm_id.localeCompare(b.arm_id);
   });
+  const showClusters = clustersByArmId !== undefined;
   return (
     <Table.Root>
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>Participants</Table.ColumnHeaderCell>
+          {showClusters && <Table.ColumnHeaderCell>Clusters</Table.ColumnHeaderCell>}
           <Table.ColumnHeaderCell>Split</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
         </Table.Row>
@@ -35,6 +44,7 @@ export function ArmsAndAllocationsTable({
         {sortedArms.map((arm) => {
           const armSize = armSizes?.find((a) => a.arm.arm_id === arm.arm_id)?.size || 0;
           const percentage = (armSize / sampleSize) * 100;
+          const numClusters = arm.arm_id ? clustersByArmId?.[arm.arm_id] : undefined;
           return (
             <ArmsAndAllocationsTableRow
               key={arm.arm_id}
@@ -43,6 +53,8 @@ export function ArmsAndAllocationsTable({
               arm={arm}
               armSize={armSize}
               percentage={percentage}
+              numClusters={numClusters}
+              showClusters={showClusters}
             />
           );
         })}

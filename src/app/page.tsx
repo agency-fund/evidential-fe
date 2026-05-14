@@ -1,22 +1,23 @@
 'use client';
-import { useState } from 'react';
-import { useLocalStorage } from '@/providers/use-local-storage';
-import { Flex, Grid, Heading, IconButton, TextField, Tooltip } from '@radix-ui/themes';
-import { DashboardIcon, GearIcon, ListBulletIcon, MagnifyingGlassIcon, ReloadIcon } from '@radix-ui/react-icons';
 import { useListOrganizationDatasources, useListOrganizationExperiments } from '@/api/admin';
-import { XSpinner } from '@/components/ui/x-spinner';
-import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { useCurrentOrganization } from '@/providers/organization-provider';
-import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
-import { useRouter } from 'next/navigation';
-import { NO_DWH_DRIVER, PRODUCT_NAME } from '@/services/constants';
+import { isClusterDesign } from '@/components/features/experiments/cluster-detection';
 import { CreateExperimentButton } from '@/components/features/experiments/create-experiment-button';
 import { ExperimentCard } from '@/components/features/experiments/experiment-card';
-import { ExperimentsTable } from '@/components/features/experiments/experiments-table';
-import { ExperimentStatusFilter } from '@/components/features/experiments/experiment-status-filter';
 import { ExperimentImpactFilter } from '@/components/features/experiments/experiment-impact-filter';
+import { ExperimentStatusFilter } from '@/components/features/experiments/experiment-status-filter';
+import { ExperimentsTable } from '@/components/features/experiments/experiments-table';
 import type { ExperimentStatus, ExperimentWithStatus } from '@/components/features/experiments/types';
+import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
+import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { XSpinner } from '@/components/ui/x-spinner';
+import { useCurrentOrganization } from '@/providers/organization-provider';
+import { useLocalStorage } from '@/providers/use-local-storage';
+import { NO_DWH_DRIVER, PRODUCT_NAME } from '@/services/constants';
 import { getExperimentStatus } from '@/services/experiment-utils';
+import { DashboardIcon, GearIcon, ListBulletIcon, MagnifyingGlassIcon, ReloadIcon } from '@radix-ui/react-icons';
+import { Flex, Grid, Heading, IconButton, TextField, Tooltip } from '@radix-ui/themes';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function Page() {
   const router = useRouter();
@@ -186,6 +187,10 @@ export default function Page() {
                     title={experiment.design_spec.experiment_name}
                     hypothesis={experiment.design_spec.description}
                     type={experiment.design_spec.experiment_type}
+                    isCluster={isClusterDesign(
+                      experiment.design_spec,
+                      (experiment as { power_analyses?: unknown }).power_analyses,
+                    )}
                     startDate={experiment.design_spec.start_date}
                     endDate={experiment.design_spec.end_date}
                     datasourceId={experiment.datasource_id}
