@@ -48,7 +48,6 @@ export type AnyBanditDesignSpecInputExperimentType =
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AnyBanditDesignSpecInputExperimentType = {
-	bayes_ab_online: "bayes_ab_online",
 	cmab_online: "cmab_online",
 	mab_online: "mab_online",
 } as const;
@@ -62,9 +61,6 @@ export type AnyBanditDesignSpecInput =
 	  })
 	| (CMABExperimentSpecInput & {
 			experiment_type: AnyBanditDesignSpecInputExperimentType;
-	  })
-	| (BayesABExperimentSpecInput & {
-			experiment_type: AnyBanditDesignSpecInputExperimentType;
 	  });
 
 export type AnyBanditDesignSpecOutputExperimentType =
@@ -72,7 +68,6 @@ export type AnyBanditDesignSpecOutputExperimentType =
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AnyBanditDesignSpecOutputExperimentType = {
-	bayes_ab_online: "bayes_ab_online",
 	cmab_online: "cmab_online",
 	mab_online: "mab_online",
 } as const;
@@ -85,9 +80,6 @@ export type AnyBanditDesignSpecOutput =
 			experiment_type: AnyBanditDesignSpecOutputExperimentType;
 	  })
 	| (CMABExperimentSpecOutput & {
-			experiment_type: AnyBanditDesignSpecOutputExperimentType;
-	  })
-	| (BayesABExperimentSpecOutput & {
 			experiment_type: AnyBanditDesignSpecOutputExperimentType;
 	  });
 
@@ -573,114 +565,6 @@ export interface BanditExperimentAnalysisResponse {
 	contexts?: BanditExperimentAnalysisResponseContexts;
 }
 
-export type BayesABExperimentSpecInputExperimentType =
-	(typeof BayesABExperimentSpecInputExperimentType)[keyof typeof BayesABExperimentSpecInputExperimentType];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const BayesABExperimentSpecInputExperimentType = {
-	bayes_ab_online: "bayes_ab_online",
-} as const;
-
-/**
- * Optional URL to a more detailed experiment design doc.
- */
-export type BayesABExperimentSpecInputDesignUrl = string | null;
-
-/**
- * Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.
- */
-export type BayesABExperimentSpecInputContexts = Context[] | null;
-
-/**
- * Optional desired trial count used to initialize stored bandit n_trials.
- */
-export type BayesABExperimentSpecInputDesiredN = number | null;
-
-/**
- * Use this type to randomly assign participants into arms during live experiment execution with
-Bayesian A/B experiments.
-
-For example, you may wish to experiment on new users. Assignments are issued via API request.
- */
-export interface BayesABExperimentSpecInput {
-	experiment_type: BayesABExperimentSpecInputExperimentType;
-	/** @maxLength 100 */
-	experiment_name: string;
-	/** @maxLength 2000 */
-	description: string;
-	/** Optional URL to a more detailed experiment design doc. */
-	design_url?: BayesABExperimentSpecInputDesignUrl;
-	start_date: string;
-	end_date: string;
-	/**
-	 * @minItems 2
-	 * @maxItems 20
-	 */
-	arms: ArmBandit[];
-	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
-	contexts?: BayesABExperimentSpecInputContexts;
-	/** Optional desired trial count used to initialize stored bandit n_trials. */
-	desired_n?: BayesABExperimentSpecInputDesiredN;
-	/** The type of prior distribution for the arms. */
-	prior_type?: PriorTypes;
-	/** The type of reward we observe from the experiment. */
-	reward_type?: LikelihoodTypes;
-}
-
-export type BayesABExperimentSpecOutputExperimentType =
-	(typeof BayesABExperimentSpecOutputExperimentType)[keyof typeof BayesABExperimentSpecOutputExperimentType];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const BayesABExperimentSpecOutputExperimentType = {
-	bayes_ab_online: "bayes_ab_online",
-} as const;
-
-/**
- * Optional URL to a more detailed experiment design doc.
- */
-export type BayesABExperimentSpecOutputDesignUrl = string | null;
-
-/**
- * Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.
- */
-export type BayesABExperimentSpecOutputContexts = Context[] | null;
-
-/**
- * Optional desired trial count used to initialize stored bandit n_trials.
- */
-export type BayesABExperimentSpecOutputDesiredN = number | null;
-
-/**
- * Use this type to randomly assign participants into arms during live experiment execution with
-Bayesian A/B experiments.
-
-For example, you may wish to experiment on new users. Assignments are issued via API request.
- */
-export interface BayesABExperimentSpecOutput {
-	experiment_type: BayesABExperimentSpecOutputExperimentType;
-	/** @maxLength 100 */
-	experiment_name: string;
-	/** @maxLength 2000 */
-	description: string;
-	/** Optional URL to a more detailed experiment design doc. */
-	design_url?: BayesABExperimentSpecOutputDesignUrl;
-	start_date: string;
-	end_date: string;
-	/**
-	 * @minItems 2
-	 * @maxItems 20
-	 */
-	arms: ArmBandit[];
-	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
-	contexts?: BayesABExperimentSpecOutputContexts;
-	/** Optional desired trial count used to initialize stored bandit n_trials. */
-	desired_n?: BayesABExperimentSpecOutputDesiredN;
-	/** The type of prior distribution for the arms. */
-	prior_type?: PriorTypes;
-	/** The type of reward we observe from the experiment. */
-	reward_type?: LikelihoodTypes;
-}
-
 export type BqDsnInputType =
 	(typeof BqDsnInputType)[keyof typeof BqDsnInputType];
 
@@ -809,11 +693,6 @@ export type CMABExperimentSpecInputDesignUrl = string | null;
 export type CMABExperimentSpecInputContexts = Context[] | null;
 
 /**
- * Optional desired trial count used to initialize stored bandit n_trials.
- */
-export type CMABExperimentSpecInputDesiredN = number | null;
-
-/**
  * Use this type to randomly assign participants into arms during live experiment execution with
 contextual MAB experiments.
 
@@ -836,8 +715,6 @@ export interface CMABExperimentSpecInput {
 	arms: ArmBandit[];
 	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
 	contexts?: CMABExperimentSpecInputContexts;
-	/** Optional desired trial count used to initialize stored bandit n_trials. */
-	desired_n?: CMABExperimentSpecInputDesiredN;
 	/** The type of prior distribution for the arms. */
 	prior_type?: PriorTypes;
 	/** The type of reward we observe from the experiment. */
@@ -863,11 +740,6 @@ export type CMABExperimentSpecOutputDesignUrl = string | null;
 export type CMABExperimentSpecOutputContexts = Context[] | null;
 
 /**
- * Optional desired trial count used to initialize stored bandit n_trials.
- */
-export type CMABExperimentSpecOutputDesiredN = number | null;
-
-/**
  * Use this type to randomly assign participants into arms during live experiment execution with
 contextual MAB experiments.
 
@@ -890,8 +762,6 @@ export interface CMABExperimentSpecOutput {
 	arms: ArmBandit[];
 	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
 	contexts?: CMABExperimentSpecOutputContexts;
-	/** Optional desired trial count used to initialize stored bandit n_trials. */
-	desired_n?: CMABExperimentSpecOutputDesiredN;
 	/** The type of prior distribution for the arms. */
 	prior_type?: PriorTypes;
 	/** The type of reward we observe from the experiment. */
@@ -1957,11 +1827,6 @@ export type MABExperimentSpecInputDesignUrl = string | null;
 export type MABExperimentSpecInputContexts = Context[] | null;
 
 /**
- * Optional desired trial count used to initialize stored bandit n_trials.
- */
-export type MABExperimentSpecInputDesiredN = number | null;
-
-/**
  * Use this type to randomly assign participants into arms during live experiment execution with MAB experiments.
 
 For example, you may wish to experiment on new users. Assignments are issued via API request.
@@ -1983,8 +1848,6 @@ export interface MABExperimentSpecInput {
 	arms: ArmBandit[];
 	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
 	contexts?: MABExperimentSpecInputContexts;
-	/** Optional desired trial count used to initialize stored bandit n_trials. */
-	desired_n?: MABExperimentSpecInputDesiredN;
 	/** The type of prior distribution for the arms. */
 	prior_type?: PriorTypes;
 	/** The type of reward we observe from the experiment. */
@@ -2010,11 +1873,6 @@ export type MABExperimentSpecOutputDesignUrl = string | null;
 export type MABExperimentSpecOutputContexts = Context[] | null;
 
 /**
- * Optional desired trial count used to initialize stored bandit n_trials.
- */
-export type MABExperimentSpecOutputDesiredN = number | null;
-
-/**
  * Use this type to randomly assign participants into arms during live experiment execution with MAB experiments.
 
 For example, you may wish to experiment on new users. Assignments are issued via API request.
@@ -2036,8 +1894,6 @@ export interface MABExperimentSpecOutput {
 	arms: ArmBandit[];
 	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
 	contexts?: MABExperimentSpecOutputContexts;
-	/** Optional desired trial count used to initialize stored bandit n_trials. */
-	desired_n?: MABExperimentSpecOutputDesiredN;
 	/** The type of prior distribution for the arms. */
 	prior_type?: PriorTypes;
 	/** The type of reward we observe from the experiment. */

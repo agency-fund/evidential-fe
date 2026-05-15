@@ -4,15 +4,29 @@ import { useEffect, useRef, useState } from 'react';
 import { Box, Flex, Popover, ScrollArea, Text, TextField } from '@radix-ui/themes';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 
-// Helper for computing filtered options with a different search text (used in handlers)
+/**
+ * Returns a predicate to filter based on a case-insensitive substring match with the search text.
+ *
+ * `offset` can be used to let a findIndex() scan past some known match to detect non-uniqueness.
+ */
+const makeOptionFilter = <TOption = string,>(
+  searchText: string,
+  getDisplayTextForOption: (option: TOption) => string,
+  offset = 0,
+) => {
+  const lowerSearch = searchText.toLowerCase();
+  return (option: TOption, index: number) =>
+    index >= offset && getDisplayTextForOption(option).toLowerCase().includes(lowerSearch);
+};
+
+/** Filter options down to those whose display contains `text` (both normalized). */
 const filterOptions = <TOption = string,>(
   text: string,
   options: TOption[],
   getDisplayTextForOption: (option: TOption) => string,
 ) => {
   if (!text) return options;
-  const lowerSearch = text.toLowerCase();
-  return options.filter((opt) => getDisplayTextForOption(opt).toLowerCase().includes(lowerSearch));
+  return options.filter(makeOptionFilter(text, getDisplayTextForOption));
 };
 
 export interface DropdownRowProps<TOption> {
@@ -38,14 +52,27 @@ const DefaultComboboxRow = ({ optionText }: DefaultComboboxRowProps) => {
 export interface ComboboxProps<TOption = string, TKey extends React.Key = string> {
   /** The current input value. */
   value: string;
+
   /**
-   * Called on every input change (typing or selection). `value` is the text entered by the user. When the input value
-   * matches a known item's key, `key` will refer to the selected entry. If the entered value does not match an item,
-   * `key` will be undefined.
+   * Called on every input change (typing or selection).
+   *
+   * For selection, `value` is the text of the selected item, `key` the corresponding item's key.
+   *
+   * For typing, `value` is the text typed by the user, while `key` is only set when:
+   *   - exactly one option's display value contains `value` (case-insensitive), AND
+   *   - that option's display value equals `value` (case-sensitive).
+   * Otherwise, `key` is undefined.
+   *
+   * This is designed to prevent inadvertent auto-selection if there were more than one option still
+   * visible given the current search value.  (Note that this is stricter than the filtered
+   * autosuggest behavior, which is a case-insensitive substring match.)
    */
   onChange: (value: string, key?: TKey) => void;
 
-  /** Whether the user's input value should apply as a filter to the selected options. Defaults to true. */
+  /**
+   * Whether the user's input value should apply as a case-insensitive filter to the selected
+   * options. Defaults to true.
+   * */
   shouldFilter?: boolean;
 
   /** The array of items to present */
@@ -102,7 +129,7 @@ export function Combobox<TOption = string, TKey extends React.Key = string>({
   const [popoverHighlightedIndex, setPopoverHighlightedIndex] = useState(-1);
   const popoverItemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Filter options based on input value (case-insensitive)
+  // Filter options based on case-insensitive substring match with the input value
   const filteredOptions = filterOptions(shouldFilter ? value : '', options, getDisplayTextForOption);
 
   // If filteredOptions changes, existing refs and highlight indexes will be potentially stale,
@@ -134,7 +161,14 @@ export function Combobox<TOption = string, TKey extends React.Key = string>({
     if (disabled) return;
     setIsPopoverOpen(true);
     const newValue = e.target.value;
-    const exactMatch = options.find((opt) => getDisplayTextForOption(opt) === newValue);
+    const firstIndex = options.findIndex(makeOptionFilter(newValue, getDisplayTextForOption, 0));
+    const secondIndex =
+      firstIndex === -1 ? -1 : options.findIndex(makeOptionFilter(newValue, getDisplayTextForOption, firstIndex + 1));
+    // Exact match is on the raw texts, not normalized!
+    const exactMatch =
+      firstIndex >= 0 && secondIndex < 0 && getDisplayTextForOption(options[firstIndex]) === newValue
+        ? options[firstIndex]
+        : undefined;
     onChange(newValue, exactMatch ? getKeyForOption(exactMatch) : undefined);
   };
 
@@ -201,49 +235,51 @@ export function Combobox<TOption = string, TKey extends React.Key = string>({
         </Box>
       </Popover.Trigger>
 
-      <Popover.Content
-        side="bottom"
-        align="start"
-        sideOffset={4}
-        style={{ minWidth: 'var(--radix-popover-trigger-width)', padding: 0 }}
-        onOpenAutoFocus={(e) => e.preventDefault()}
-        onCloseAutoFocus={(e) => e.preventDefault()}
-      >
-        <ScrollArea scrollbars="vertical" style={{ maxHeight }}>
-          {filteredOptions.length === 0 ? (
-            <Flex p="3" justify="center">
-              <Text size="2" color="gray">
-                {noMatchText}
-              </Text>
-            </Flex>
-          ) : (
-            <Flex direction="column">
-              {filteredOptions.map((option, index) => {
-                const isHighlighted = index === popoverHighlightedIndex;
-                return (
-                  <Box
-                    key={getKeyForOption(option)}
-                    ref={(el) => {
-                      popoverItemRefs.current[index] = el;
-                    }}
-                    onClick={() => handleSelect(option)}
-                    onMouseEnter={() => setPopoverHighlightedIndex(index)}
-                    onPointerDown={(e) => e.preventDefault()}
-                    py="2"
-                    px="3"
-                    style={{
-                      cursor: 'pointer',
-                      backgroundColor: isHighlighted ? 'var(--gray-3)' : undefined,
-                    }}
-                  >
-                    {renderDropdownRow({ option, isHighlighted, index })}
-                  </Box>
-                );
-              })}
-            </Flex>
-          )}
-        </ScrollArea>
-      </Popover.Content>
+      {isPopoverOpen && !disabled && (
+        <Popover.Content
+          side="bottom"
+          align="start"
+          sideOffset={4}
+          style={{ minWidth: 'var(--radix-popover-trigger-width)', padding: 0 }}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          onCloseAutoFocus={(e) => e.preventDefault()}
+        >
+          <ScrollArea scrollbars="vertical" style={{ maxHeight }}>
+            {filteredOptions.length === 0 ? (
+              <Flex p="3" justify="center">
+                <Text size="2" color="gray">
+                  {noMatchText}
+                </Text>
+              </Flex>
+            ) : (
+              <Flex direction="column">
+                {filteredOptions.map((option, index) => {
+                  const isHighlighted = index === popoverHighlightedIndex;
+                  return (
+                    <Box
+                      key={getKeyForOption(option)}
+                      ref={(el) => {
+                        popoverItemRefs.current[index] = el;
+                      }}
+                      onClick={() => handleSelect(option)}
+                      onMouseEnter={() => setPopoverHighlightedIndex(index)}
+                      onPointerDown={(e) => e.preventDefault()}
+                      py="2"
+                      px="3"
+                      style={{
+                        cursor: 'pointer',
+                        backgroundColor: isHighlighted ? 'var(--gray-3)' : undefined,
+                      }}
+                    >
+                      {renderDropdownRow({ option, isHighlighted, index })}
+                    </Box>
+                  );
+                })}
+              </Flex>
+            )}
+          </ScrollArea>
+        </Popover.Content>
+      )}
     </Popover.Root>
   );
 }

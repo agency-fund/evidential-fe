@@ -1,6 +1,5 @@
 import {
   Arm,
-  BayesABExperimentSpecOutput,
   CMABExperimentSpecInputExperimentType,
   CMABExperimentSpecOutput,
   ContextType,
@@ -64,10 +63,6 @@ export type BanditParams =
       contexts: Context[];
     };
 
-export type Stratum = {
-  fieldName: string;
-};
-
 export type MetricWithMDE = {
   metric: GetMetricsResponseElement;
   mde: string; // desired minimum detectable effect as a percentage of the metric's baseline value
@@ -89,8 +84,7 @@ export const isFrequentistSpec = (
 
 export const isBanditSpec = (
   spec: DesignSpecOutput | undefined,
-): spec is MABExperimentSpecOutput | CMABExperimentSpecOutput | BayesABExperimentSpecOutput =>
-  !!spec && isBanditExperimentType(spec.experiment_type);
+): spec is MABExperimentSpecOutput | CMABExperimentSpecOutput => !!spec && isBanditExperimentType(spec.experiment_type);
 
 export function isCmabSpec(spec: DesignSpecOutput | undefined): spec is CMABExperimentSpecOutput {
   return !!spec && spec.experiment_type === CMABExperimentSpecInputExperimentType.cmab_online;

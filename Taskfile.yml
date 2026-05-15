@@ -64,7 +64,7 @@ tasks:
       if [ $? -eq 0 ]; then
         task lint
       fi
-  lint-next: npx next lint
+  lint-next: npm run lint
   lint-tsc: npx tsc --noemit
   lint:
     deps:

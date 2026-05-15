@@ -413,13 +413,14 @@ export const getColorWithSignificance = (
  */
 export const transformAnalysisForForestTimeseriesPlot = (
   analysisStates: AnalysisState[],
-  metricName: string,
+  metricName: string | undefined,
 ): {
   timeseriesData: TimeSeriesDataPoint[];
   armMetadata: ArmMetadata[];
   minDate: Date;
   maxDate: Date;
 } => {
+  metricName = metricName ?? '';
   const timeseriesData: TimeSeriesDataPoint[] = [];
 
   // Sort by date ascending (oldest to newest)

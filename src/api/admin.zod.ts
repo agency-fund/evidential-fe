@@ -2932,8 +2932,6 @@ export const createExperimentBodyDesignSpecContextsItemContextDescriptionMaxOne 
 
 export const createExperimentBodyDesignSpecContextsMaxOne = 150;
 
-export const createExperimentBodyDesignSpecDesiredNMinSeven = 0;
-
 export const createExperimentBodyDesignSpecExperimentNameMaxThree = 100;
 
 export const createExperimentBodyDesignSpecDescriptionMaxThree = 2000;
@@ -2952,29 +2950,6 @@ export const createExperimentBodyDesignSpecContextsItemContextNameMaxOne = 100;
 export const createExperimentBodyDesignSpecContextsItemContextDescriptionMaxFour = 2000;
 
 export const createExperimentBodyDesignSpecContextsMaxFour = 150;
-
-export const createExperimentBodyDesignSpecDesiredNMinOnezero = 0;
-
-export const createExperimentBodyDesignSpecExperimentNameMaxFour = 100;
-
-export const createExperimentBodyDesignSpecDescriptionMaxFour = 2000;
-
-export const createExperimentBodyDesignSpecDesignUrlMaxOnethree = 500;
-
-export const createExperimentBodyDesignSpecArmsItemArmNameMaxFour = 100;
-
-export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
-
-export const createExperimentBodyDesignSpecArmsMinFour = 2;
-export const createExperimentBodyDesignSpecArmsMaxFour = 20;
-
-export const createExperimentBodyDesignSpecContextsItemContextNameMaxTwo = 100;
-
-export const createExperimentBodyDesignSpecContextsItemContextDescriptionMaxSeven = 2000;
-
-export const createExperimentBodyDesignSpecContextsMaxSeven = 150;
-
-export const createExperimentBodyDesignSpecDesiredNMinOnethree = 0;
 
 export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
@@ -3494,17 +3469,6 @@ export const createExperimentBody = zod.object({
 								.describe(
 									"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 								),
-							desired_n: zod
-								.union([
-									zod
-										.number()
-										.min(createExperimentBodyDesignSpecDesiredNMinSeven),
-									zod.null(),
-								])
-								.optional()
-								.describe(
-									"Optional desired trial count used to initialize stored bandit n_trials.",
-								),
 							prior_type: zod
 								.enum(["beta", "normal"])
 								.optional()
@@ -3658,17 +3622,6 @@ export const createExperimentBody = zod.object({
 								.describe(
 									"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 								),
-							desired_n: zod
-								.union([
-									zod
-										.number()
-										.min(createExperimentBodyDesignSpecDesiredNMinOnezero),
-									zod.null(),
-								])
-								.optional()
-								.describe(
-									"Optional desired trial count used to initialize stored bandit n_trials.",
-								),
 							prior_type: zod
 								.enum(["beta", "normal"])
 								.optional()
@@ -3682,170 +3635,6 @@ export const createExperimentBody = zod.object({
 						})
 						.describe(
 							"Use this type to randomly assign participants into arms during live experiment execution with\ncontextual MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
-						),
-					zod
-						.object({
-							experiment_type: zod.enum(["bayes_ab_online"]),
-							experiment_name: zod
-								.string()
-								.max(createExperimentBodyDesignSpecExperimentNameMaxFour),
-							description: zod
-								.string()
-								.max(createExperimentBodyDesignSpecDescriptionMaxFour),
-							design_url: zod
-								.union([
-									zod
-										.string()
-										.url()
-										.min(1)
-										.max(createExperimentBodyDesignSpecDesignUrlMaxOnethree),
-									zod.null(),
-								])
-								.optional()
-								.describe(
-									"Optional URL to a more detailed experiment design doc.",
-								),
-							start_date: zod.string().datetime({}),
-							end_date: zod.string().datetime({}),
-							arms: zod
-								.array(
-									zod
-										.object({
-											arm_id: zod
-												.union([zod.string(), zod.null()])
-												.optional()
-												.describe(
-													"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-												),
-											arm_name: zod
-												.string()
-												.max(
-													createExperimentBodyDesignSpecArmsItemArmNameMaxFour,
-												),
-											arm_description: zod
-												.union([
-													zod
-														.string()
-														.max(
-															createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnethree,
-														),
-													zod.null(),
-												])
-												.optional(),
-											arm_weight: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe(
-													"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-												),
-											alpha_init: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Initial alpha parameter for Beta prior"),
-											beta_init: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Initial beta parameter for Beta prior"),
-											mu_init: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Initial mean parameter for Normal prior"),
-											sigma_init: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe(
-													"Initial standard deviation parameter for Normal prior",
-												),
-											alpha: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Updated alpha parameter for Beta prior"),
-											beta: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Updated beta parameter for Beta prior"),
-											mu: zod
-												.union([zod.array(zod.number()), zod.null()])
-												.optional()
-												.describe("Updated mean vector for Normal prior"),
-											covariance: zod
-												.union([zod.array(zod.array(zod.number())), zod.null()])
-												.optional()
-												.describe("Updated covariance matrix for Normal prior"),
-										})
-										.describe(
-											"Describes an experiment arm for bandit experiments.",
-										),
-								)
-								.min(createExperimentBodyDesignSpecArmsMinFour)
-								.max(createExperimentBodyDesignSpecArmsMaxFour),
-							contexts: zod
-								.union([
-									zod
-										.array(
-											zod
-												.object({
-													context_id: zod
-														.union([zod.string(), zod.null()])
-														.optional()
-														.describe(
-															"Unique identifier for the context, you should NOT set this when creating a new context.",
-														),
-													context_name: zod
-														.string()
-														.max(
-															createExperimentBodyDesignSpecContextsItemContextNameMaxTwo,
-														),
-													context_description: zod
-														.union([
-															zod
-																.string()
-																.max(
-																	createExperimentBodyDesignSpecContextsItemContextDescriptionMaxSeven,
-																),
-															zod.null(),
-														])
-														.optional(),
-													value_type: zod
-														.enum(["binary", "real-valued"])
-														.optional()
-														.describe("Enum for the type of context."),
-												})
-												.describe(
-													"Pydantic model for context of the experiment.",
-												),
-										)
-										.max(createExperimentBodyDesignSpecContextsMaxSeven),
-									zod.null(),
-								])
-								.optional()
-								.describe(
-									"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
-								),
-							desired_n: zod
-								.union([
-									zod
-										.number()
-										.min(createExperimentBodyDesignSpecDesiredNMinOnethree),
-									zod.null(),
-								])
-								.optional()
-								.describe(
-									"Optional desired trial count used to initialize stored bandit n_trials.",
-								),
-							prior_type: zod
-								.enum(["beta", "normal"])
-								.optional()
-								.describe("Enum for the prior distribution of the arm."),
-							reward_type: zod
-								.enum(["binary", "real-valued"])
-								.optional()
-								.describe(
-									"Enum for the likelihood distribution of the reward.",
-								),
-						})
-						.describe(
-							"Use this type to randomly assign participants into arms during live experiment execution with\nBayesian A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
 						),
 				])
 				.describe("The specific type of bandit experiment design."),
@@ -4154,8 +3943,6 @@ export const createExperimentResponseDesignSpecContextsItemContextDescriptionMax
 
 export const createExperimentResponseDesignSpecContextsMaxOne = 150;
 
-export const createExperimentResponseDesignSpecDesiredNMinSeven = 0;
-
 export const createExperimentResponseDesignSpecExperimentNameMaxThree = 100;
 
 export const createExperimentResponseDesignSpecDescriptionMaxThree = 2000;
@@ -4174,29 +3961,6 @@ export const createExperimentResponseDesignSpecContextsItemContextNameMaxOne = 1
 export const createExperimentResponseDesignSpecContextsItemContextDescriptionMaxFour = 2000;
 
 export const createExperimentResponseDesignSpecContextsMaxFour = 150;
-
-export const createExperimentResponseDesignSpecDesiredNMinOnezero = 0;
-
-export const createExperimentResponseDesignSpecExperimentNameMaxFour = 100;
-
-export const createExperimentResponseDesignSpecDescriptionMaxFour = 2000;
-
-export const createExperimentResponseDesignSpecDesignUrlMaxOnethree = 500;
-
-export const createExperimentResponseDesignSpecArmsItemArmNameMaxFour = 100;
-
-export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
-
-export const createExperimentResponseDesignSpecArmsMinFour = 2;
-export const createExperimentResponseDesignSpecArmsMaxFour = 20;
-
-export const createExperimentResponseDesignSpecContextsItemContextNameMaxTwo = 100;
-
-export const createExperimentResponseDesignSpecContextsItemContextDescriptionMaxSeven = 2000;
-
-export const createExperimentResponseDesignSpecContextsMaxSeven = 150;
-
-export const createExperimentResponseDesignSpecDesiredNMinOnethree = 0;
 
 export const createExperimentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
@@ -4776,17 +4540,6 @@ export const createExperimentResponse = zod
 									.describe(
 										"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 									),
-								desired_n: zod
-									.union([
-										zod
-											.number()
-											.min(createExperimentResponseDesignSpecDesiredNMinSeven),
-										zod.null(),
-									])
-									.optional()
-									.describe(
-										"Optional desired trial count used to initialize stored bandit n_trials.",
-									),
 								prior_type: zod
 									.enum(["beta", "normal"])
 									.optional()
@@ -4949,19 +4702,6 @@ export const createExperimentResponse = zod
 									.describe(
 										"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 									),
-								desired_n: zod
-									.union([
-										zod
-											.number()
-											.min(
-												createExperimentResponseDesignSpecDesiredNMinOnezero,
-											),
-										zod.null(),
-									])
-									.optional()
-									.describe(
-										"Optional desired trial count used to initialize stored bandit n_trials.",
-									),
 								prior_type: zod
 									.enum(["beta", "normal"])
 									.optional()
@@ -4975,179 +4715,6 @@ export const createExperimentResponse = zod
 							})
 							.describe(
 								"Use this type to randomly assign participants into arms during live experiment execution with\ncontextual MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
-							),
-						zod
-							.object({
-								experiment_type: zod.enum(["bayes_ab_online"]),
-								experiment_name: zod
-									.string()
-									.max(createExperimentResponseDesignSpecExperimentNameMaxFour),
-								description: zod
-									.string()
-									.max(createExperimentResponseDesignSpecDescriptionMaxFour),
-								design_url: zod
-									.union([
-										zod
-											.string()
-											.url()
-											.min(1)
-											.max(
-												createExperimentResponseDesignSpecDesignUrlMaxOnethree,
-											),
-										zod.null(),
-									])
-									.optional()
-									.describe(
-										"Optional URL to a more detailed experiment design doc.",
-									),
-								start_date: zod.string().datetime({}),
-								end_date: zod.string().datetime({}),
-								arms: zod
-									.array(
-										zod
-											.object({
-												arm_id: zod
-													.union([zod.string(), zod.null()])
-													.optional()
-													.describe(
-														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-													),
-												arm_name: zod
-													.string()
-													.max(
-														createExperimentResponseDesignSpecArmsItemArmNameMaxFour,
-													),
-												arm_description: zod
-													.union([
-														zod
-															.string()
-															.max(
-																createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnethree,
-															),
-														zod.null(),
-													])
-													.optional(),
-												arm_weight: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-													),
-												alpha_init: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Initial alpha parameter for Beta prior"),
-												beta_init: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Initial beta parameter for Beta prior"),
-												mu_init: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Initial mean parameter for Normal prior"),
-												sigma_init: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Initial standard deviation parameter for Normal prior",
-													),
-												alpha: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Updated alpha parameter for Beta prior"),
-												beta: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Updated beta parameter for Beta prior"),
-												mu: zod
-													.union([zod.array(zod.number()), zod.null()])
-													.optional()
-													.describe("Updated mean vector for Normal prior"),
-												covariance: zod
-													.union([
-														zod.array(zod.array(zod.number())),
-														zod.null(),
-													])
-													.optional()
-													.describe(
-														"Updated covariance matrix for Normal prior",
-													),
-											})
-											.describe(
-												"Describes an experiment arm for bandit experiments.",
-											),
-									)
-									.min(createExperimentResponseDesignSpecArmsMinFour)
-									.max(createExperimentResponseDesignSpecArmsMaxFour),
-								contexts: zod
-									.union([
-										zod
-											.array(
-												zod
-													.object({
-														context_id: zod
-															.union([zod.string(), zod.null()])
-															.optional()
-															.describe(
-																"Unique identifier for the context, you should NOT set this when creating a new context.",
-															),
-														context_name: zod
-															.string()
-															.max(
-																createExperimentResponseDesignSpecContextsItemContextNameMaxTwo,
-															),
-														context_description: zod
-															.union([
-																zod
-																	.string()
-																	.max(
-																		createExperimentResponseDesignSpecContextsItemContextDescriptionMaxSeven,
-																	),
-																zod.null(),
-															])
-															.optional(),
-														value_type: zod
-															.enum(["binary", "real-valued"])
-															.optional()
-															.describe("Enum for the type of context."),
-													})
-													.describe(
-														"Pydantic model for context of the experiment.",
-													),
-											)
-											.max(createExperimentResponseDesignSpecContextsMaxSeven),
-										zod.null(),
-									])
-									.optional()
-									.describe(
-										"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
-									),
-								desired_n: zod
-									.union([
-										zod
-											.number()
-											.min(
-												createExperimentResponseDesignSpecDesiredNMinOnethree,
-											),
-										zod.null(),
-									])
-									.optional()
-									.describe(
-										"Optional desired trial count used to initialize stored bandit n_trials.",
-									),
-								prior_type: zod
-									.enum(["beta", "normal"])
-									.optional()
-									.describe("Enum for the prior distribution of the arm."),
-								reward_type: zod
-									.enum(["binary", "real-valued"])
-									.optional()
-									.describe(
-										"Enum for the likelihood distribution of the reward.",
-									),
-							})
-							.describe(
-								"Use this type to randomly assign participants into arms during live experiment execution with\nBayesian A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
 							),
 					])
 					.describe("The specific type of bandit experiment design."),
@@ -6229,8 +5796,6 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemC
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxOne = 150;
 
-export const listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinSeven = 0;
-
 export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxThree = 100;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxThree = 2000;
@@ -6249,29 +5814,6 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemC
 export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextDescriptionMaxFour = 2000;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxFour = 150;
-
-export const listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinOnezero = 0;
-
-export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxFour = 100;
-
-export const listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxFour = 2000;
-
-export const listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxOnethree = 500;
-
-export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxFour = 100;
-
-export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
-
-export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinFour = 2;
-export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxFour = 20;
-
-export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextNameMaxTwo = 100;
-
-export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextDescriptionMaxSeven = 2000;
-
-export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxSeven = 150;
-
-export const listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinOnethree = 0;
 
 export const listOrganizationExperimentsResponseItemsItemPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
@@ -6955,19 +6497,6 @@ export const listOrganizationExperimentsResponse = zod.object({
 											.describe(
 												"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 											),
-										desired_n: zod
-											.union([
-												zod
-													.number()
-													.min(
-														listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinSeven,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional desired trial count used to initialize stored bandit n_trials.",
-											),
 										prior_type: zod
 											.enum(["beta", "normal"])
 											.optional()
@@ -7148,19 +6677,6 @@ export const listOrganizationExperimentsResponse = zod.object({
 											.describe(
 												"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 											),
-										desired_n: zod
-											.union([
-												zod
-													.number()
-													.min(
-														listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinOnezero,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional desired trial count used to initialize stored bandit n_trials.",
-											),
 										prior_type: zod
 											.enum(["beta", "normal"])
 											.optional()
@@ -7174,199 +6690,6 @@ export const listOrganizationExperimentsResponse = zod.object({
 									})
 									.describe(
 										"Use this type to randomly assign participants into arms during live experiment execution with\ncontextual MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
-									),
-								zod
-									.object({
-										experiment_type: zod.enum(["bayes_ab_online"]),
-										experiment_name: zod
-											.string()
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxFour,
-											),
-										description: zod
-											.string()
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxFour,
-											),
-										design_url: zod
-											.union([
-												zod
-													.string()
-													.url()
-													.min(1)
-													.max(
-														listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxOnethree,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional URL to a more detailed experiment design doc.",
-											),
-										start_date: zod.string().datetime({}),
-										end_date: zod.string().datetime({}),
-										arms: zod
-											.array(
-												zod
-													.object({
-														arm_id: zod
-															.union([zod.string(), zod.null()])
-															.optional()
-															.describe(
-																"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-															),
-														arm_name: zod
-															.string()
-															.max(
-																listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxFour,
-															),
-														arm_description: zod
-															.union([
-																zod
-																	.string()
-																	.max(
-																		listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOnethree,
-																	),
-																zod.null(),
-															])
-															.optional(),
-														arm_weight: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-															),
-														alpha_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial alpha parameter for Beta prior",
-															),
-														beta_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial beta parameter for Beta prior",
-															),
-														mu_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial mean parameter for Normal prior",
-															),
-														sigma_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial standard deviation parameter for Normal prior",
-															),
-														alpha: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Updated alpha parameter for Beta prior",
-															),
-														beta: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Updated beta parameter for Beta prior",
-															),
-														mu: zod
-															.union([zod.array(zod.number()), zod.null()])
-															.optional()
-															.describe("Updated mean vector for Normal prior"),
-														covariance: zod
-															.union([
-																zod.array(zod.array(zod.number())),
-																zod.null(),
-															])
-															.optional()
-															.describe(
-																"Updated covariance matrix for Normal prior",
-															),
-													})
-													.describe(
-														"Describes an experiment arm for bandit experiments.",
-													),
-											)
-											.min(
-												listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinFour,
-											)
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxFour,
-											),
-										contexts: zod
-											.union([
-												zod
-													.array(
-														zod
-															.object({
-																context_id: zod
-																	.union([zod.string(), zod.null()])
-																	.optional()
-																	.describe(
-																		"Unique identifier for the context, you should NOT set this when creating a new context.",
-																	),
-																context_name: zod
-																	.string()
-																	.max(
-																		listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextNameMaxTwo,
-																	),
-																context_description: zod
-																	.union([
-																		zod
-																			.string()
-																			.max(
-																				listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextDescriptionMaxSeven,
-																			),
-																		zod.null(),
-																	])
-																	.optional(),
-																value_type: zod
-																	.enum(["binary", "real-valued"])
-																	.optional()
-																	.describe("Enum for the type of context."),
-															})
-															.describe(
-																"Pydantic model for context of the experiment.",
-															),
-													)
-													.max(
-														listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxSeven,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
-											),
-										desired_n: zod
-											.union([
-												zod
-													.number()
-													.min(
-														listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinOnethree,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional desired trial count used to initialize stored bandit n_trials.",
-											),
-										prior_type: zod
-											.enum(["beta", "normal"])
-											.optional()
-											.describe("Enum for the prior distribution of the arm."),
-										reward_type: zod
-											.enum(["binary", "real-valued"])
-											.optional()
-											.describe(
-												"Enum for the likelihood distribution of the reward.",
-											),
-									})
-									.describe(
-										"Use this type to randomly assign participants into arms during live experiment execution with\nBayesian A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
 									),
 							])
 							.describe("The specific type of bandit experiment design."),
@@ -7805,8 +7128,6 @@ export const getExperimentForUiResponseConfigDesignSpecContextsItemContextDescri
 
 export const getExperimentForUiResponseConfigDesignSpecContextsMaxOne = 150;
 
-export const getExperimentForUiResponseConfigDesignSpecDesiredNMinSeven = 0;
-
 export const getExperimentForUiResponseConfigDesignSpecExperimentNameMaxThree = 100;
 
 export const getExperimentForUiResponseConfigDesignSpecDescriptionMaxThree = 2000;
@@ -7825,29 +7146,6 @@ export const getExperimentForUiResponseConfigDesignSpecContextsItemContextNameMa
 export const getExperimentForUiResponseConfigDesignSpecContextsItemContextDescriptionMaxFour = 2000;
 
 export const getExperimentForUiResponseConfigDesignSpecContextsMaxFour = 150;
-
-export const getExperimentForUiResponseConfigDesignSpecDesiredNMinOnezero = 0;
-
-export const getExperimentForUiResponseConfigDesignSpecExperimentNameMaxFour = 100;
-
-export const getExperimentForUiResponseConfigDesignSpecDescriptionMaxFour = 2000;
-
-export const getExperimentForUiResponseConfigDesignSpecDesignUrlMaxOnethree = 500;
-
-export const getExperimentForUiResponseConfigDesignSpecArmsItemArmNameMaxFour = 100;
-
-export const getExperimentForUiResponseConfigDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
-
-export const getExperimentForUiResponseConfigDesignSpecArmsMinFour = 2;
-export const getExperimentForUiResponseConfigDesignSpecArmsMaxFour = 20;
-
-export const getExperimentForUiResponseConfigDesignSpecContextsItemContextNameMaxTwo = 100;
-
-export const getExperimentForUiResponseConfigDesignSpecContextsItemContextDescriptionMaxSeven = 2000;
-
-export const getExperimentForUiResponseConfigDesignSpecContextsMaxSeven = 150;
-
-export const getExperimentForUiResponseConfigDesignSpecDesiredNMinOnethree = 0;
 
 export const getExperimentForUiResponseConfigPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
@@ -8514,19 +7812,6 @@ export const getExperimentForUiResponse = zod
 											.describe(
 												"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 											),
-										desired_n: zod
-											.union([
-												zod
-													.number()
-													.min(
-														getExperimentForUiResponseConfigDesignSpecDesiredNMinSeven,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional desired trial count used to initialize stored bandit n_trials.",
-											),
 										prior_type: zod
 											.enum(["beta", "normal"])
 											.optional()
@@ -8707,19 +7992,6 @@ export const getExperimentForUiResponse = zod
 											.describe(
 												"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
 											),
-										desired_n: zod
-											.union([
-												zod
-													.number()
-													.min(
-														getExperimentForUiResponseConfigDesignSpecDesiredNMinOnezero,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional desired trial count used to initialize stored bandit n_trials.",
-											),
 										prior_type: zod
 											.enum(["beta", "normal"])
 											.optional()
@@ -8733,199 +8005,6 @@ export const getExperimentForUiResponse = zod
 									})
 									.describe(
 										"Use this type to randomly assign participants into arms during live experiment execution with\ncontextual MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
-									),
-								zod
-									.object({
-										experiment_type: zod.enum(["bayes_ab_online"]),
-										experiment_name: zod
-											.string()
-											.max(
-												getExperimentForUiResponseConfigDesignSpecExperimentNameMaxFour,
-											),
-										description: zod
-											.string()
-											.max(
-												getExperimentForUiResponseConfigDesignSpecDescriptionMaxFour,
-											),
-										design_url: zod
-											.union([
-												zod
-													.string()
-													.url()
-													.min(1)
-													.max(
-														getExperimentForUiResponseConfigDesignSpecDesignUrlMaxOnethree,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional URL to a more detailed experiment design doc.",
-											),
-										start_date: zod.string().datetime({}),
-										end_date: zod.string().datetime({}),
-										arms: zod
-											.array(
-												zod
-													.object({
-														arm_id: zod
-															.union([zod.string(), zod.null()])
-															.optional()
-															.describe(
-																"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-															),
-														arm_name: zod
-															.string()
-															.max(
-																getExperimentForUiResponseConfigDesignSpecArmsItemArmNameMaxFour,
-															),
-														arm_description: zod
-															.union([
-																zod
-																	.string()
-																	.max(
-																		getExperimentForUiResponseConfigDesignSpecArmsItemArmDescriptionMaxOnethree,
-																	),
-																zod.null(),
-															])
-															.optional(),
-														arm_weight: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-															),
-														alpha_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial alpha parameter for Beta prior",
-															),
-														beta_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial beta parameter for Beta prior",
-															),
-														mu_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial mean parameter for Normal prior",
-															),
-														sigma_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial standard deviation parameter for Normal prior",
-															),
-														alpha: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Updated alpha parameter for Beta prior",
-															),
-														beta: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Updated beta parameter for Beta prior",
-															),
-														mu: zod
-															.union([zod.array(zod.number()), zod.null()])
-															.optional()
-															.describe("Updated mean vector for Normal prior"),
-														covariance: zod
-															.union([
-																zod.array(zod.array(zod.number())),
-																zod.null(),
-															])
-															.optional()
-															.describe(
-																"Updated covariance matrix for Normal prior",
-															),
-													})
-													.describe(
-														"Describes an experiment arm for bandit experiments.",
-													),
-											)
-											.min(
-												getExperimentForUiResponseConfigDesignSpecArmsMinFour,
-											)
-											.max(
-												getExperimentForUiResponseConfigDesignSpecArmsMaxFour,
-											),
-										contexts: zod
-											.union([
-												zod
-													.array(
-														zod
-															.object({
-																context_id: zod
-																	.union([zod.string(), zod.null()])
-																	.optional()
-																	.describe(
-																		"Unique identifier for the context, you should NOT set this when creating a new context.",
-																	),
-																context_name: zod
-																	.string()
-																	.max(
-																		getExperimentForUiResponseConfigDesignSpecContextsItemContextNameMaxTwo,
-																	),
-																context_description: zod
-																	.union([
-																		zod
-																			.string()
-																			.max(
-																				getExperimentForUiResponseConfigDesignSpecContextsItemContextDescriptionMaxSeven,
-																			),
-																		zod.null(),
-																	])
-																	.optional(),
-																value_type: zod
-																	.enum(["binary", "real-valued"])
-																	.optional()
-																	.describe("Enum for the type of context."),
-															})
-															.describe(
-																"Pydantic model for context of the experiment.",
-															),
-													)
-													.max(
-														getExperimentForUiResponseConfigDesignSpecContextsMaxSeven,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
-											),
-										desired_n: zod
-											.union([
-												zod
-													.number()
-													.min(
-														getExperimentForUiResponseConfigDesignSpecDesiredNMinOnethree,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional desired trial count used to initialize stored bandit n_trials.",
-											),
-										prior_type: zod
-											.enum(["beta", "normal"])
-											.optional()
-											.describe("Enum for the prior distribution of the arm."),
-										reward_type: zod
-											.enum(["binary", "real-valued"])
-											.optional()
-											.describe(
-												"Enum for the likelihood distribution of the reward.",
-											),
-									})
-									.describe(
-										"Use this type to randomly assign participants into arms during live experiment execution with\nBayesian A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
 									),
 							])
 							.describe("The specific type of bandit experiment design."),
