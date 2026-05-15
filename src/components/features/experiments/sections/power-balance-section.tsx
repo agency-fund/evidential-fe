@@ -24,7 +24,6 @@ export function PowerBalanceSection({
   showDesiredSampleSize = true,
   showTitle = true,
 }: PowerBalanceSectionProps) {
-  const balanceCheck = assignSummary?.balance_check;
 
   return (
     <SectionCard
@@ -66,38 +65,6 @@ export function PowerBalanceSection({
             </DataList.Item>
           </DataList.Root>
         </Flex>
-
-        {balanceCheck ? (
-          <Flex flexGrow="1">
-            <DataList.Root>
-              <DataList.Item>
-                <DataList.Label>
-                  <b>Balance Check</b>
-                </DataList.Label>
-              </DataList.Item>
-              <DataList.Item>
-                <DataList.Label>F Statistic</DataList.Label>
-                <DataList.Value>{balanceCheck.f_statistic.toFixed(3)}</DataList.Value>
-              </DataList.Item>
-              <DataList.Item>
-                <DataList.Label>Numerator DF</DataList.Label>
-                <DataList.Value>{balanceCheck.numerator_df}</DataList.Value>
-              </DataList.Item>
-              <DataList.Item>
-                <DataList.Label>Denominator DF</DataList.Label>
-                <DataList.Value>{balanceCheck.denominator_df}</DataList.Value>
-              </DataList.Item>
-              <DataList.Item>
-                <DataList.Label>P-Value</DataList.Label>
-                <DataList.Value>{balanceCheck.p_value.toFixed(3)}</DataList.Value>
-              </DataList.Item>
-              <DataList.Item>
-                <DataList.Label>Balance OK?</DataList.Label>
-                <DataList.Value>{balanceCheck.balance_ok ? 'Yes' : 'No'}</DataList.Value>
-              </DataList.Item>
-            </DataList.Root>
-          </Flex>
-        ) : null}
       </Flex>
     </SectionCard>
   );
