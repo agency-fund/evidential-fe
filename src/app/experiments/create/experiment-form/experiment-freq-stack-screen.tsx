@@ -42,7 +42,7 @@ const isNextEnabled = (data: ExperimentFormData) => {
     // Must have run power check for pre-assigned frequentist experiment
     if (!data.powerCheckResponse) return false;
     // Must have selected a sample size for pre-assigned frequentist experiment
-    if (data.desiredN === undefined) return false;
+    if (data.desiredN === undefined || data.desiredN === 0) return false;
   }
   return true;
 };
@@ -62,23 +62,17 @@ export const ExperimentFreqStackScreen = ({
   const { data: tableData } = useInspectTableInDatasource(data.datasourceId ?? '', data.tableName ?? '', {
     refresh: false,
   });
-  const { trigger: triggerCreate, isMutating: triggerLoading } = useCreateExperiment(
-    data.datasourceId!,
-    {
-      desired_n: data.desiredN,
-    },
-    {
-      swr: {
-        onSuccess: async (response) => {
-          dispatch({ type: 'set-create-response', response: response });
-          navigateNext();
-        },
-        onError: async (response) => {
-          dispatch({ type: 'set-create-error', response: response });
-        },
+  const { trigger: triggerCreate, isMutating: triggerLoading } = useCreateExperiment(data.datasourceId!, undefined, {
+    swr: {
+      onSuccess: async (response) => {
+        dispatch({ type: 'set-create-response', response: response });
+        navigateNext();
+      },
+      onError: async (response) => {
+        dispatch({ type: 'set-create-error', response: response });
       },
     },
-  );
+  });
 
   const allTableFields = tableData?.fields ?? [];
 

@@ -2816,15 +2816,9 @@ export const createExperimentParams = zod.object({
 	datasource_id: zod.string(),
 });
 
-export const createExperimentQueryDesiredNMinOne = 0;
-
 export const createExperimentQueryStratifyOnMetricsDefault = true;
 
 export const createExperimentQueryParams = zod.object({
-	desired_n: zod
-		.union([zod.number().min(createExperimentQueryDesiredNMinOne), zod.null()])
-		.optional()
-		.describe("Number of participants to assign."),
 	stratify_on_metrics: zod
 		.boolean()
 		.default(createExperimentQueryStratifyOnMetricsDefault)
@@ -2860,6 +2854,8 @@ export const createExperimentBodyDesignSpecMetricsMax = 150;
 export const createExperimentBodyDesignSpecFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyDesignSpecFiltersMax = 20;
+
+export const createExperimentBodyDesignSpecDesiredNMinOne = 0;
 
 export const createExperimentBodyDesignSpecPowerDefault = 0.8;
 export const createExperimentBodyDesignSpecPowerMin = 0;
@@ -2902,6 +2898,8 @@ export const createExperimentBodyDesignSpecMetricsMaxOne = 150;
 export const createExperimentBodyDesignSpecFiltersItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyDesignSpecFiltersMaxOne = 20;
+
+export const createExperimentBodyDesignSpecDesiredNMinFour = 0;
 
 export const createExperimentBodyDesignSpecPowerDefaultOne = 0.8;
 export const createExperimentBodyDesignSpecPowerMinOne = 0;
@@ -3107,10 +3105,15 @@ export const createExperimentBody = zod.object({
 									"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 								),
 							desired_n: zod
-								.union([zod.number(), zod.null()])
+								.union([
+									zod
+										.number()
+										.min(createExperimentBodyDesignSpecDesiredNMinOne),
+									zod.null(),
+								])
 								.optional()
 								.describe(
-									"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+									"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 								),
 							power: zod
 								.number()
@@ -3285,10 +3288,15 @@ export const createExperimentBody = zod.object({
 									"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 								),
 							desired_n: zod
-								.union([zod.number(), zod.null()])
+								.union([
+									zod
+										.number()
+										.min(createExperimentBodyDesignSpecDesiredNMinFour),
+									zod.null(),
+								])
 								.optional()
 								.describe(
-									"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+									"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 								),
 							power: zod
 								.number()
@@ -3733,6 +3741,12 @@ export const createExperimentBody = zod.object({
 									.describe(
 										"If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.",
 									),
+								pct_change_with_desired_n: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe(
+										"The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).",
+									),
 								msg: zod
 									.union([
 										zod
@@ -3852,6 +3866,8 @@ export const createExperimentResponseDesignSpecFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentResponseDesignSpecFiltersMax = 20;
 
+export const createExperimentResponseDesignSpecDesiredNMinOne = 0;
+
 export const createExperimentResponseDesignSpecPowerDefault = 0.8;
 export const createExperimentResponseDesignSpecPowerMin = 0;
 export const createExperimentResponseDesignSpecPowerMax = 1;
@@ -3893,6 +3909,8 @@ export const createExperimentResponseDesignSpecMetricsMaxOne = 150;
 export const createExperimentResponseDesignSpecFiltersItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentResponseDesignSpecFiltersMaxOne = 20;
+
+export const createExperimentResponseDesignSpecDesiredNMinFour = 0;
 
 export const createExperimentResponseDesignSpecPowerDefaultOne = 0.8;
 export const createExperimentResponseDesignSpecPowerMinOne = 0;
@@ -4145,10 +4163,15 @@ export const createExperimentResponse = zod
 										"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 									),
 								desired_n: zod
-									.union([zod.number(), zod.null()])
+									.union([
+										zod
+											.number()
+											.min(createExperimentResponseDesignSpecDesiredNMinOne),
+										zod.null(),
+									])
 									.optional()
 									.describe(
-										"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+										"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 									),
 								power: zod
 									.number()
@@ -4329,10 +4352,15 @@ export const createExperimentResponse = zod
 										"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 									),
 								desired_n: zod
-									.union([zod.number(), zod.null()])
+									.union([
+										zod
+											.number()
+											.min(createExperimentResponseDesignSpecDesiredNMinFour),
+										zod.null(),
+									])
 									.optional()
 									.describe(
-										"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+										"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 									),
 								power: zod
 									.number()
@@ -4791,6 +4819,12 @@ export const createExperimentResponse = zod
 									.optional()
 									.describe(
 										"If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.",
+									),
+								pct_change_with_desired_n: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe(
+										"The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).",
 									),
 								msg: zod
 									.union([
@@ -5686,6 +5720,8 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecFiltersItemFi
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const listOrganizationExperimentsResponseItemsItemDesignSpecFiltersMax = 20;
 
+export const listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinOne = 0;
+
 export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerDefault = 0.8;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerMin = 0;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerMax = 1;
@@ -5726,6 +5762,8 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecMetricsMaxOne
 export const listOrganizationExperimentsResponseItemsItemDesignSpecFiltersItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const listOrganizationExperimentsResponseItemsItemDesignSpecFiltersMaxOne = 20;
+
+export const listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinFour = 0;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerDefaultOne = 0.8;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerMinOne = 0;
@@ -6002,10 +6040,17 @@ export const listOrganizationExperimentsResponse = zod.object({
 												"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 											),
 										desired_n: zod
-											.union([zod.number(), zod.null()])
+											.union([
+												zod
+													.number()
+													.min(
+														listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinOne,
+													),
+												zod.null(),
+											])
 											.optional()
 											.describe(
-												"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+												"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 											),
 										power: zod
 											.number()
@@ -6224,10 +6269,17 @@ export const listOrganizationExperimentsResponse = zod.object({
 												"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 											),
 										desired_n: zod
-											.union([zod.number(), zod.null()])
+											.union([
+												zod
+													.number()
+													.min(
+														listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinFour,
+													),
+												zod.null(),
+											])
 											.optional()
 											.describe(
-												"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+												"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 											),
 										power: zod
 											.number()
@@ -6747,6 +6799,12 @@ export const listOrganizationExperimentsResponse = zod.object({
 											.describe(
 												"If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.",
 											),
+										pct_change_with_desired_n: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).",
+											),
 										msg: zod
 											.union([
 												zod
@@ -6994,6 +7052,8 @@ export const getExperimentForUiResponseConfigDesignSpecFiltersItemFieldNameRegEx
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentForUiResponseConfigDesignSpecFiltersMax = 20;
 
+export const getExperimentForUiResponseConfigDesignSpecDesiredNMinOne = 0;
+
 export const getExperimentForUiResponseConfigDesignSpecPowerDefault = 0.8;
 export const getExperimentForUiResponseConfigDesignSpecPowerMin = 0;
 export const getExperimentForUiResponseConfigDesignSpecPowerMax = 1;
@@ -7034,6 +7094,8 @@ export const getExperimentForUiResponseConfigDesignSpecMetricsMaxOne = 150;
 export const getExperimentForUiResponseConfigDesignSpecFiltersItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentForUiResponseConfigDesignSpecFiltersMaxOne = 20;
+
+export const getExperimentForUiResponseConfigDesignSpecDesiredNMinFour = 0;
 
 export const getExperimentForUiResponseConfigDesignSpecPowerDefaultOne = 0.8;
 export const getExperimentForUiResponseConfigDesignSpecPowerMinOne = 0;
@@ -7305,10 +7367,17 @@ export const getExperimentForUiResponse = zod
 												"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 											),
 										desired_n: zod
-											.union([zod.number(), zod.null()])
+											.union([
+												zod
+													.number()
+													.min(
+														getExperimentForUiResponseConfigDesignSpecDesiredNMinOne,
+													),
+												zod.null(),
+											])
 											.optional()
 											.describe(
-												"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+												"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 											),
 										power: zod
 											.number()
@@ -7517,10 +7586,17 @@ export const getExperimentForUiResponse = zod
 												"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 											),
 										desired_n: zod
-											.union([zod.number(), zod.null()])
+											.union([
+												zod
+													.number()
+													.min(
+														getExperimentForUiResponseConfigDesignSpecDesiredNMinFour,
+													),
+												zod.null(),
+											])
 											.optional()
 											.describe(
-												"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+												"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 											),
 										power: zod
 											.number()
@@ -8038,6 +8114,12 @@ export const getExperimentForUiResponse = zod
 											.describe(
 												"If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.",
 											),
+										pct_change_with_desired_n: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).",
+											),
 										msg: zod
 											.union([
 												zod
@@ -8488,6 +8570,8 @@ export const powerCheckBodyDesignSpecFiltersItemFieldNameRegExp = new RegExp(
 );
 export const powerCheckBodyDesignSpecFiltersMax = 20;
 
+export const powerCheckBodyDesignSpecDesiredNMinOne = 0;
+
 export const powerCheckBodyDesignSpecPowerDefault = 0.8;
 export const powerCheckBodyDesignSpecPowerMin = 0;
 export const powerCheckBodyDesignSpecPowerMax = 1;
@@ -8532,6 +8616,8 @@ export const powerCheckBodyDesignSpecFiltersItemFieldNameRegExpOne = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
 export const powerCheckBodyDesignSpecFiltersMaxOne = 20;
+
+export const powerCheckBodyDesignSpecDesiredNMinFour = 0;
 
 export const powerCheckBodyDesignSpecPowerDefaultOne = 0.8;
 export const powerCheckBodyDesignSpecPowerMinOne = 0;
@@ -8681,10 +8767,13 @@ export const powerCheckBody = zod.object({
 							"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 						),
 					desired_n: zod
-						.union([zod.number(), zod.null()])
+						.union([
+							zod.number().min(powerCheckBodyDesignSpecDesiredNMinOne),
+							zod.null(),
+						])
 						.optional()
 						.describe(
-							"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+							"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 						),
 					power: zod
 						.number()
@@ -8855,10 +8944,13 @@ export const powerCheckBody = zod.object({
 							"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 						),
 					desired_n: zod
-						.union([zod.number(), zod.null()])
+						.union([
+							zod.number().min(powerCheckBodyDesignSpecDesiredNMinFour),
+							zod.null(),
+						])
 						.optional()
 						.describe(
-							"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+							"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 						),
 					power: zod
 						.number()
@@ -8990,6 +9082,12 @@ export const powerCheckResponse = zod.object({
 						.optional()
 						.describe(
 							"If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.",
+						),
+					pct_change_with_desired_n: zod
+						.union([zod.number(), zod.null()])
+						.optional()
+						.describe(
+							"The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).",
 						),
 					msg: zod
 						.union([

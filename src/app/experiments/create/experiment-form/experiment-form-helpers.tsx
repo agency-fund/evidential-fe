@@ -105,6 +105,9 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
     design_spec: {
       ...commonFields,
       experiment_type: data.experimentType,
+      ...(data.experimentType === 'freq_preassigned' && data.desiredN !== undefined
+        ? { desired_n: data.desiredN }
+        : {}),
     },
   }).design_spec;
 
@@ -157,6 +160,7 @@ export function convertToBanditCreateRequest(data: ExperimentFormData): CreateEx
       prior_type: priorType,
       reward_type: canonicalRewardType,
       contexts: standardContexts,
+      desired_n: 0,
     },
     webhooks: data.selectedWebhookIds && data.selectedWebhookIds.length > 0 ? data.selectedWebhookIds : [],
   });

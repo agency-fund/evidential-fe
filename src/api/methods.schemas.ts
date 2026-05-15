@@ -1935,6 +1935,11 @@ export type MetricPowerAnalysisInputTargetPossible = number | null;
 export type MetricPowerAnalysisInputPctChangePossible = number | null;
 
 /**
+ * The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).
+ */
+export type MetricPowerAnalysisInputPctChangeWithDesiredN = number | null;
+
+/**
  * Human friendly message about the above results.
  */
 export type MetricPowerAnalysisInputMsg = MetricPowerAnalysisMessage | null;
@@ -1977,6 +1982,8 @@ export interface MetricPowerAnalysisInput {
 	target_possible?: MetricPowerAnalysisInputTargetPossible;
 	/** If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change. */
 	pct_change_possible?: MetricPowerAnalysisInputPctChangePossible;
+	/** The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs). */
+	pct_change_with_desired_n?: MetricPowerAnalysisInputPctChangeWithDesiredN;
 	/** Human friendly message about the above results. */
 	msg?: MetricPowerAnalysisInputMsg;
 	/** Total number of clusters needed across all arms */
@@ -2010,6 +2017,11 @@ export type MetricPowerAnalysisOutputTargetPossible = number | null;
  * If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.
  */
 export type MetricPowerAnalysisOutputPctChangePossible = number | null;
+
+/**
+ * The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).
+ */
+export type MetricPowerAnalysisOutputPctChangeWithDesiredN = number | null;
 
 /**
  * Human friendly message about the above results.
@@ -2054,6 +2066,8 @@ export interface MetricPowerAnalysisOutput {
 	target_possible?: MetricPowerAnalysisOutputTargetPossible;
 	/** If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change. */
 	pct_change_possible?: MetricPowerAnalysisOutputPctChangePossible;
+	/** The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs). */
+	pct_change_with_desired_n?: MetricPowerAnalysisOutputPctChangeWithDesiredN;
 	/** Human friendly message about the above results. */
 	msg?: MetricPowerAnalysisOutputMsg;
 	/** Total number of clusters needed across all arms */
@@ -2146,7 +2160,7 @@ export const OnlineFrequentistExperimentSpecInputExperimentType = {
 export type OnlineFrequentistExperimentSpecInputDesignUrl = string | null;
 
 /**
- * Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.
+ * Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.
  */
 export type OnlineFrequentistExperimentSpecInputDesiredN = number | null;
 
@@ -2197,7 +2211,7 @@ export interface OnlineFrequentistExperimentSpecInput {
 	 * @maxItems 20
 	 */
 	filters: FilterInput[];
-	/** Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size. */
+	/** Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.  */
 	desired_n?: OnlineFrequentistExperimentSpecInputDesiredN;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
@@ -2233,7 +2247,7 @@ export const OnlineFrequentistExperimentSpecOutputExperimentType = {
 export type OnlineFrequentistExperimentSpecOutputDesignUrl = string | null;
 
 /**
- * Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.
+ * Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.
  */
 export type OnlineFrequentistExperimentSpecOutputDesiredN = number | null;
 
@@ -2284,7 +2298,7 @@ export interface OnlineFrequentistExperimentSpecOutput {
 	 * @maxItems 20
 	 */
 	filters: FilterOutput[];
-	/** Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size. */
+	/** Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.  */
 	desired_n?: OnlineFrequentistExperimentSpecOutputDesiredN;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
@@ -2433,7 +2447,7 @@ export const PreassignedFrequentistExperimentSpecInputExperimentType = {
 export type PreassignedFrequentistExperimentSpecInputDesignUrl = string | null;
 
 /**
- * Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.
+ * Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.
  */
 export type PreassignedFrequentistExperimentSpecInputDesiredN = number | null;
 
@@ -2482,7 +2496,7 @@ export interface PreassignedFrequentistExperimentSpecInput {
 	 * @maxItems 20
 	 */
 	filters: FilterInput[];
-	/** Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size. */
+	/** Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.  */
 	desired_n?: PreassignedFrequentistExperimentSpecInputDesiredN;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
@@ -2518,7 +2532,7 @@ export const PreassignedFrequentistExperimentSpecOutputExperimentType = {
 export type PreassignedFrequentistExperimentSpecOutputDesignUrl = string | null;
 
 /**
- * Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.
+ * Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.
  */
 export type PreassignedFrequentistExperimentSpecOutputDesiredN = number | null;
 
@@ -2567,7 +2581,7 @@ export interface PreassignedFrequentistExperimentSpecOutput {
 	 * @maxItems 20
 	 */
 	filters: FilterOutput[];
-	/** Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size. */
+	/** Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.  */
 	desired_n?: PreassignedFrequentistExperimentSpecOutputDesiredN;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
@@ -3066,10 +3080,6 @@ export type DeleteApiKeyParams = {
 };
 
 export type CreateExperimentParams = {
-	/**
-	 * Number of participants to assign.
-	 */
-	desired_n?: number | null;
 	/**
 	 * Whether to also stratify on metrics during assignment.
 	 */

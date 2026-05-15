@@ -212,22 +212,18 @@ export const ExperimentDescribeBanditArmsScreen = ({
   }
   const datasourceId = datasource?.id ?? '';
 
-  const { trigger: triggerCreate, isMutating: createLoading } = useCreateExperiment(
-    datasourceId,
-    { desired_n: 0 },
-    {
-      swr: {
-        onSuccess: async (response) => {
-          dispatch({ type: 'set-datasource-id', datasourceId: datasourceId });
-          dispatch({ type: 'set-create-response', response });
-          navigateNext();
-        },
-        onError: async (response: ErrorType<unknown>) => {
-          dispatch({ type: 'set-create-error', response });
-        },
+  const { trigger: triggerCreate, isMutating: createLoading } = useCreateExperiment(datasourceId, undefined, {
+    swr: {
+      onSuccess: async (response) => {
+        dispatch({ type: 'set-datasource-id', datasourceId: datasourceId });
+        dispatch({ type: 'set-create-response', response });
+        navigateNext();
+      },
+      onError: async (response: ErrorType<unknown>) => {
+        dispatch({ type: 'set-create-error', response });
       },
     },
-  );
+  });
 
   const [showPriors, setShowPriors] = useState(false);
 
