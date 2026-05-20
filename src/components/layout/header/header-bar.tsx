@@ -73,19 +73,15 @@ export function HeaderBar() {
                     setDropdownOpen('organizations');
                   }}
                 >
-                  <BackpackIcon /> Organizations
+                  <BackpackIcon /> Switch Organization
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator />
               </>
             )}
-            {auth.isPrivileged && (
-              <>
-                <DropdownMenu.Item onClick={() => router.push('/organizations')}>
-                  <GearIcon /> Manage Organizations
-                </DropdownMenu.Item>
-                <DropdownMenu.Separator />
-              </>
-            )}
+            <DropdownMenu.Item onClick={() => router.push('/organizations')}>
+              <GearIcon /> Manage Organizations
+            </DropdownMenu.Item>
+            <DropdownMenu.Separator />
 
             <DropdownMenu.Item asChild>
               <a href={XNGIN_API_DOCS_LINK} target="_blank" rel="noopener noreferrer">
