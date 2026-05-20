@@ -29,6 +29,8 @@ import type {
 	CreateParticipantsTypeRequest,
 	CreateParticipantsTypeResponse,
 	CreateSnapshotResponse,
+	CreateUserRequest,
+	CreateUserResponse,
 	DeleteApiKeyParams,
 	DeleteDatasourceParams,
 	DeleteExperimentDataRequest,
@@ -42,6 +44,7 @@ import type {
 	GetOrganizationResponse,
 	GetParticipantsTypeResponse,
 	GetSnapshotResponse,
+	GetUserResponse,
 	HTTPExceptionError,
 	HTTPValidationError,
 	InspectDatasourceParams,
@@ -55,12 +58,16 @@ import type {
 	ListExperimentsResponse,
 	ListOrganizationEventsParams,
 	ListOrganizationEventsResponse,
+	ListOrganizationsParams,
 	ListOrganizationsResponse,
 	ListParticipantsTypeResponse,
 	ListSnapshotsParams,
 	ListSnapshotsResponse,
+	ListUsersParams,
+	ListUsersResponse,
 	ListWebhooksResponse,
 	MessageError,
+	PatchUserRequest,
 	PowerRequest,
 	PowerResponseOutput,
 	RemoveMemberFromOrganizationParams,
@@ -179,6 +186,354 @@ export const useLogout = <TError = ErrorType<HTTPExceptionError>>(options?: {
 
 	const swrKey = swrOptions?.swrKey ?? getLogoutMutationKey();
 	const swrFn = getLogoutMutationFetcher(requestOptions);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * Creates a User record by email. Privileged users only.
+
+Idempotent: if a user with the given email already exists, the existing user's id is returned
+and nothing else is changed. Newly-created users have `is_privileged=false` and no organization
+memberships. When they next sign in via OIDC, the existing user record is bound to their OIDC
+identity automatically.
+ * @summary Create User
+ */
+export const getCreateUserUrl = () => {
+	return `/v1/m/users`;
+};
+
+export const createUser = async (
+	createUserRequest: CreateUserRequest,
+	options?: RequestInit,
+): Promise<CreateUserResponse> => {
+	return orvalFetch<CreateUserResponse>(getCreateUserUrl(), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(createUserRequest),
+	});
+};
+
+export const getCreateUserMutationFetcher = (
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, { arg }: { arg: CreateUserRequest }) => {
+		return createUser(arg, options);
+	};
+};
+export const getCreateUserMutationKey = () => [`/v1/m/users`] as const;
+
+export type CreateUserMutationResult = NonNullable<
+	Awaited<ReturnType<typeof createUser>>
+>;
+export type CreateUserMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+/**
+ * @summary Create User
+ */
+export const useCreateUser = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(options?: {
+	swr?: SWRMutationConfiguration<
+		Awaited<ReturnType<typeof createUser>>,
+		TError,
+		Key,
+		CreateUserRequest,
+		Awaited<ReturnType<typeof createUser>>
+	> & { swrKey?: string };
+	request?: SecondParameter<typeof orvalFetch>;
+}) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey = swrOptions?.swrKey ?? getCreateUserMutationKey();
+	const swrFn = getCreateUserMutationFetcher(requestOptions);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * Lists users in the system. Privileged users only.
+
+Sorted by email ascending.
+ * @summary List Users
+ */
+export const getListUsersUrl = (params?: ListUsersParams) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/v1/m/users?${stringifiedParams}`
+		: `/v1/m/users`;
+};
+
+export const listUsers = async (
+	params?: ListUsersParams,
+	options?: RequestInit,
+): Promise<ListUsersResponse> => {
+	return orvalFetch<ListUsersResponse>(getListUsersUrl(params), {
+		...options,
+		method: "GET",
+	});
+};
+
+export const getListUsersKey = (params?: ListUsersParams) =>
+	[`/v1/m/users`, ...(params ? [params] : [])] as const;
+
+export type ListUsersQueryResult = NonNullable<
+	Awaited<ReturnType<typeof listUsers>>
+>;
+export type ListUsersQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+/**
+ * @summary List Users
+ */
+export const useListUsers = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	params?: ListUsersParams,
+	options?: {
+		swr?: SWRConfiguration<Awaited<ReturnType<typeof listUsers>>, TError> & {
+			swrKey?: Key;
+			enabled?: boolean;
+		};
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const isEnabled = swrOptions?.enabled !== false;
+	const swrKey =
+		swrOptions?.swrKey ?? (() => (isEnabled ? getListUsersKey(params) : null));
+	const swrFn = () => listUsers(params, requestOptions);
+
+	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
+		swrKey,
+		swrFn,
+		swrOptions,
+	);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * Fetches details for a single user, including the organizations they belong to.
+
+Privileged users only. Each returned organization carries summary counts (number of users,
+number of experiments), matching the shape used on the organizations list page.
+ * @summary Get User
+ */
+export const getGetUserUrl = (userId: string) => {
+	return `/v1/m/users/${userId}`;
+};
+
+export const getUser = async (
+	userId: string,
+	options?: RequestInit,
+): Promise<GetUserResponse> => {
+	return orvalFetch<GetUserResponse>(getGetUserUrl(userId), {
+		...options,
+		method: "GET",
+	});
+};
+
+export const getGetUserKey = (userId: string) =>
+	[`/v1/m/users/${userId}`] as const;
+
+export type GetUserQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getUser>>
+>;
+export type GetUserQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+/**
+ * @summary Get User
+ */
+export const useGetUser = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	userId: string,
+	options?: {
+		swr?: SWRConfiguration<Awaited<ReturnType<typeof getUser>>, TError> & {
+			swrKey?: Key;
+			enabled?: boolean;
+		};
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const isEnabled = swrOptions?.enabled !== false && !!userId;
+	const swrKey =
+		swrOptions?.swrKey ?? (() => (isEnabled ? getGetUserKey(userId) : null));
+	const swrFn = () => getUser(userId, requestOptions);
+
+	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
+		swrKey,
+		swrFn,
+		swrOptions,
+	);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * Updates a user's properties. Privileged users only.
+
+Currently only supports updating `is_privileged`. Revoking privilege from the last privileged
+user in the system is rejected with a 400.
+ * @summary Patch User
+ */
+export const getPatchUserUrl = (userId: string) => {
+	return `/v1/m/users/${userId}`;
+};
+
+export const patchUser = async (
+	userId: string,
+	patchUserRequest: PatchUserRequest,
+	options?: RequestInit,
+): Promise<void> => {
+	return orvalFetch<void>(getPatchUserUrl(userId), {
+		...options,
+		method: "PATCH",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(patchUserRequest),
+	});
+};
+
+export const getPatchUserMutationFetcher = (
+	userId: string,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, { arg }: { arg: PatchUserRequest }) => {
+		return patchUser(userId, arg, options);
+	};
+};
+export const getPatchUserMutationKey = (userId: string) =>
+	[`/v1/m/users/${userId}`] as const;
+
+export type PatchUserMutationResult = NonNullable<
+	Awaited<ReturnType<typeof patchUser>>
+>;
+export type PatchUserMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+/**
+ * @summary Patch User
+ */
+export const usePatchUser = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	userId: string,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof patchUser>>,
+			TError,
+			Key,
+			PatchUserRequest,
+			Awaited<ReturnType<typeof patchUser>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey = swrOptions?.swrKey ?? getPatchUserMutationKey(userId);
+	const swrFn = getPatchUserMutationFetcher(userId, requestOptions);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+/**
+ * Deletes a user. Privileged users only.
+
+Cascades to remove all organization memberships. Rejects deleting yourself, and rejects deleting
+the last privileged user in the system.
+ * @summary Delete User
+ */
+export const getDeleteUserUrl = (userId: string) => {
+	return `/v1/m/users/${userId}`;
+};
+
+export const deleteUser = async (
+	userId: string,
+	options?: RequestInit,
+): Promise<void> => {
+	return orvalFetch<void>(getDeleteUserUrl(userId), {
+		...options,
+		method: "DELETE",
+	});
+};
+
+export const getDeleteUserMutationFetcher = (
+	userId: string,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, __: { arg: Arguments }) => {
+		return deleteUser(userId, options);
+	};
+};
+export const getDeleteUserMutationKey = (userId: string) =>
+	[`/v1/m/users/${userId}`] as const;
+
+export type DeleteUserMutationResult = NonNullable<
+	Awaited<ReturnType<typeof deleteUser>>
+>;
+export type DeleteUserMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+/**
+ * @summary Delete User
+ */
+export const useDeleteUser = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	userId: string,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof deleteUser>>,
+			TError,
+			Key,
+			Arguments,
+			Awaited<ReturnType<typeof deleteUser>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey = swrOptions?.swrKey ?? getDeleteUserMutationKey(userId);
+	const swrFn = getDeleteUserMutationFetcher(userId, requestOptions);
 
 	const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
@@ -631,48 +986,72 @@ export const useCreateSnapshot = <
 	};
 };
 /**
- * Returns a list of organizations that the authenticated user is a member of.
+ * Returns the list of organizations the caller can see, scoped by the `scope` query param.
+
+Sorted by name ascending.
  * @summary List Organizations
  */
-export const getListOrganizationsUrl = () => {
-	return `/v1/m/organizations`;
+export const getListOrganizationsUrl = (params?: ListOrganizationsParams) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/v1/m/organizations?${stringifiedParams}`
+		: `/v1/m/organizations`;
 };
 
 export const listOrganizations = async (
+	params?: ListOrganizationsParams,
 	options?: RequestInit,
 ): Promise<ListOrganizationsResponse> => {
-	return orvalFetch<ListOrganizationsResponse>(getListOrganizationsUrl(), {
-		...options,
-		method: "GET",
-	});
+	return orvalFetch<ListOrganizationsResponse>(
+		getListOrganizationsUrl(params),
+		{
+			...options,
+			method: "GET",
+		},
+	);
 };
 
-export const getListOrganizationsKey = () => [`/v1/m/organizations`] as const;
+export const getListOrganizationsKey = (params?: ListOrganizationsParams) =>
+	[`/v1/m/organizations`, ...(params ? [params] : [])] as const;
 
 export type ListOrganizationsQueryResult = NonNullable<
 	Awaited<ReturnType<typeof listOrganizations>>
 >;
-export type ListOrganizationsQueryError = ErrorType<HTTPExceptionError>;
+export type ListOrganizationsQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
 /**
  * @summary List Organizations
  */
 export const useListOrganizations = <
-	TError = ErrorType<HTTPExceptionError>,
->(options?: {
-	swr?: SWRConfiguration<
-		Awaited<ReturnType<typeof listOrganizations>>,
-		TError
-	> & { swrKey?: Key; enabled?: boolean };
-	request?: SecondParameter<typeof orvalFetch>;
-}) => {
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	params?: ListOrganizationsParams,
+	options?: {
+		swr?: SWRConfiguration<
+			Awaited<ReturnType<typeof listOrganizations>>,
+			TError
+		> & { swrKey?: Key; enabled?: boolean };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
 	const { swr: swrOptions, request: requestOptions } = options ?? {};
 
 	const isEnabled = swrOptions?.enabled !== false;
 	const swrKey =
 		swrOptions?.swrKey ??
-		(() => (isEnabled ? getListOrganizationsKey() : null));
-	const swrFn = () => listOrganizations(requestOptions);
+		(() => (isEnabled ? getListOrganizationsKey(params) : null));
+	const swrFn = () => listOrganizations(params, requestOptions);
 
 	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
 		swrKey,
@@ -688,7 +1067,8 @@ export const useListOrganizations = <
 /**
  * Creates a new organization.
 
-Only privileged users can create organizations.
+Any authenticated user may create an organization. The creator is automatically added as a
+member of the new organization.
  * @summary Create Organizations
  */
 export const getCreateOrganizationsUrl = () => {
@@ -1348,7 +1728,8 @@ export const useAddMemberToOrganization = <
 /**
  * Removes a member from an organization.
 
-The authenticated user must be part of the organization to remove members.
+The authenticated user must be part of the organization to remove members. Privileged users may
+remove members from any organization. A user cannot remove themselves from an organization.
  * @summary Remove Member From Organization
  */
 export const getRemoveMemberFromOrganizationUrl = (

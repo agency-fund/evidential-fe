@@ -960,6 +960,22 @@ export interface CreateSnapshotResponse {
 	id: string;
 }
 
+export interface CreateUserRequest {
+	/**
+	 * The user's email address.
+	 * @maxLength 64
+	 */
+	email: string;
+}
+
+export interface CreateUserResponse {
+	/**
+	 * The user's unique ID.
+	 * @maxLength 64
+	 */
+	id: string;
+}
+
 /**
  * Defines the supported data types for fields in the data source.
  */
@@ -1696,6 +1712,23 @@ export interface GetTurnJourneysResponse {
 	journeys: GetTurnJourneysResponseJourneys;
 }
 
+export interface GetUserResponse {
+	/** The unique ID of the user. */
+	id: string;
+	/** The user's email address. */
+	email: string;
+	/** True if the user is privileged (can manage all users and organizations). */
+	is_privileged: boolean;
+	/** The time the user last logged out. Session tokens issued before this time are invalid. Defaults to the unix epoch if the user has never logged out. */
+	last_logout: string;
+	/** True if the user has logged in at least once. */
+	has_logged_in: boolean;
+	/** The time the user was created or invited. */
+	created_at: string;
+	/** Organizations this user is a member of, each with summary counts. Sorted by name ascending. */
+	organizations: OrganizationListItem[];
+}
+
 export interface HTTPExceptionError {
 	detail: string;
 }
@@ -1781,7 +1814,10 @@ export interface ListOrganizationEventsResponse {
 }
 
 export interface ListOrganizationsResponse {
-	items: OrganizationSummary[];
+	/** Token to retrieve the next page. Empty when no more results. */
+	next_page_token?: string;
+	/** The page of organizations. */
+	items: OrganizationListItem[];
 }
 
 export interface ListParticipantsTypeResponse {
@@ -1802,6 +1838,13 @@ export interface ListSnapshotsResponse {
 	items: Snapshot[];
 	/** The timestamp of the latest snapshot that failed, or null if there have been no snapshot failures. */
 	latest_failure: ListSnapshotsResponseLatestFailure;
+}
+
+export interface ListUsersResponse {
+	/** Token to retrieve the next page. Empty when no more results. */
+	next_page_token?: string;
+	/** The page of users. */
+	items: UserDetail[];
 }
 
 export interface ListWebhooksResponse {
@@ -2320,6 +2363,42 @@ export interface OnlineFrequentistExperimentSpecOutput {
 	fstat_thresh?: number;
 }
 
+/**
+ * Number of users that are members of this organization. Null when the caller did not request stats.
+ */
+export type OrganizationListItemUserCount = number | null;
+
+/**
+ * Number of experiments across all datasources in this organization. Null when the caller did not request stats.
+ */
+export type OrganizationListItemExperimentCount = number | null;
+
+/**
+ * When listed as part of a specific user's memberships, the time that user joined the organization. Null in contexts where the listing is not user-scoped.
+ */
+export type OrganizationListItemJoinedAt = string | null;
+
+export interface OrganizationListItem {
+	/**
+	 * The unique ID of the organization.
+	 * @maxLength 64
+	 */
+	id: string;
+	/**
+	 * The organization's name.
+	 * @maxLength 100
+	 */
+	name: string;
+	/** The time the organization was created. */
+	created_at: string;
+	/** Number of users that are members of this organization. Null when the caller did not request stats. */
+	user_count?: OrganizationListItemUserCount;
+	/** Number of experiments across all datasources in this organization. Null when the caller did not request stats. */
+	experiment_count?: OrganizationListItemExperimentCount;
+	/** When listed as part of a specific user's memberships, the time that user joined the organization. Null in contexts where the listing is not user-scoped. */
+	joined_at?: OrganizationListItemJoinedAt;
+}
+
 export interface OrganizationSummary {
 	/** @maxLength 64 */
 	id: string;
@@ -2372,6 +2451,16 @@ export interface ParticipantsSchemaOutput {
 	table_name: string;
 	/** List of fields available in this table */
 	fields: FieldDescriptor[];
+}
+
+/**
+ * When non-null, sets the user's privileged status. Privileged status is a system-wide flag.
+ */
+export type PatchUserRequestIsPrivileged = boolean | null;
+
+export interface PatchUserRequest {
+	/** When non-null, sets the user's privileged status. Privileged status is a system-wide flag. */
+	is_privileged?: PatchUserRequestIsPrivileged;
 }
 
 export type PostgresDsnType =
@@ -2913,11 +3002,36 @@ export interface UpdateParticipantsTypeResponse {
 	fields?: UpdateParticipantsTypeResponseFields;
 }
 
-export interface UserSummary {
-	/** @maxLength 64 */
+export interface UserDetail {
+	/** The unique ID of the user. */
 	id: string;
-	/** @maxLength 64 */
+	/** The user's email address. */
 	email: string;
+	/** True if the user is privileged (can manage all users and organizations). */
+	is_privileged: boolean;
+	/** The time the user last logged out. Session tokens issued before this time are invalid. Defaults to the unix epoch if the user has never logged out. */
+	last_logout: string;
+	/** True if the user has logged in at least once. */
+	has_logged_in: boolean;
+	/** The time the user was created or invited. */
+	created_at: string;
+	/** Organizations this user is a member of. */
+	organizations: OrganizationSummary[];
+}
+
+export interface UserSummary {
+	/**
+	 * The unique ID of the user.
+	 * @maxLength 64
+	 */
+	id: string;
+	/**
+	 * The user's email address.
+	 * @maxLength 64
+	 */
+	email: string;
+	/** True if the user is privileged (can manage all users and organizations). */
+	is_privileged: boolean;
 }
 
 export type ValidationErrorLocItem = string | number;
@@ -2965,6 +3079,41 @@ export interface XValidationError {
 	type: string;
 }
 
+export type ListUsersParams = {
+	/**
+	 * Optional case-insensitive substring filter on the user's email address.
+	 */
+	email_contains?: string | null;
+	/**
+	 * `all` (default) returns every user in the system. `mine` returns only users that share at least one organization with the caller.
+	 */
+	scope?: ListUsersScope;
+	/**
+	 * Maximum number of items to return per page.
+	 * @minimum 1
+	 * @maximum 100
+	 */
+	page_size?: number;
+	/**
+	 * Token from a previous response to fetch the next page.
+	 */
+	page_token?: string | null;
+	/**
+	 * Number of items to skip after page_token (or from the start when page_token is omitted).
+	 * @minimum 0
+	 */
+	skip?: number;
+};
+
+export type ListUsersScope =
+	(typeof ListUsersScope)[keyof typeof ListUsersScope];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ListUsersScope = {
+	all: "all",
+	mine: "mine",
+} as const;
+
 export type DeleteSnapshotParams = {
 	/**
 	 * If true, return a 204 even if the resource does not exist.
@@ -2993,6 +3142,45 @@ export type ListSnapshotsParams = {
 	 */
 	skip?: number;
 };
+
+export type ListOrganizationsParams = {
+	/**
+	 * `mine` (default) returns organizations the caller is a member of. `all` returns every organization in the system and requires the caller to be privileged.
+	 */
+	scope?: ListOrganizationsScope;
+	/**
+	 * Optional case-insensitive substring filter on the organization's name.
+	 */
+	name_contains?: string | null;
+	/**
+	 * When true, populate `user_count` and `experiment_count` on each item. When false (the default), those fields are returned as null.
+	 */
+	include_stats?: boolean;
+	/**
+	 * Maximum number of items to return per page.
+	 * @minimum 1
+	 * @maximum 100
+	 */
+	page_size?: number;
+	/**
+	 * Token from a previous response to fetch the next page.
+	 */
+	page_token?: string | null;
+	/**
+	 * Number of items to skip after page_token (or from the start when page_token is omitted).
+	 * @minimum 0
+	 */
+	skip?: number;
+};
+
+export type ListOrganizationsScope =
+	(typeof ListOrganizationsScope)[keyof typeof ListOrganizationsScope];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ListOrganizationsScope = {
+	mine: "mine",
+	all: "all",
+} as const;
 
 export type DeleteWebhookFromOrganizationParams = {
 	/**

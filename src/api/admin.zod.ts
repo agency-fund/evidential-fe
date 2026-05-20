@@ -23,6 +23,237 @@ export const callerIdentityResponse = zod
 	);
 
 /**
+ * Creates a User record by email. Privileged users only.
+
+Idempotent: if a user with the given email already exists, the existing user's id is returned
+and nothing else is changed. Newly-created users have `is_privileged=false` and no organization
+memberships. When they next sign in via OIDC, the existing user record is bound to their OIDC
+identity automatically.
+ * @summary Create User
+ */
+export const createUserBodyEmailMax = 64;
+
+export const createUserBody = zod.object({
+	email: zod
+		.string()
+		.max(createUserBodyEmailMax)
+		.describe("The user's email address."),
+});
+
+export const createUserResponseIdMax = 64;
+
+export const createUserResponse = zod.object({
+	id: zod
+		.string()
+		.max(createUserResponseIdMax)
+		.describe("The user's unique ID."),
+});
+
+/**
+ * Lists users in the system. Privileged users only.
+
+Sorted by email ascending.
+ * @summary List Users
+ */
+export const listUsersQueryEmailContainsMaxOne = 64;
+
+export const listUsersQueryScopeDefault = "all";
+export const listUsersQueryPageSizeDefault = 20;
+export const listUsersQueryPageSizeMax = 100;
+
+export const listUsersQuerySkipDefault = 0;
+export const listUsersQuerySkipMin = 0;
+
+export const listUsersQueryParams = zod.object({
+	email_contains: zod
+		.union([zod.string().max(listUsersQueryEmailContainsMaxOne), zod.null()])
+		.optional()
+		.describe(
+			"Optional case-insensitive substring filter on the user's email address.",
+		),
+	scope: zod
+		.enum(["all", "mine"])
+		.default(listUsersQueryScopeDefault)
+		.describe(
+			"`all` (default) returns every user in the system. `mine` returns only users that share at least one organization with the caller.",
+		),
+	page_size: zod
+		.number()
+		.min(1)
+		.max(listUsersQueryPageSizeMax)
+		.default(listUsersQueryPageSizeDefault)
+		.describe("Maximum number of items to return per page."),
+	page_token: zod
+		.union([zod.string(), zod.null()])
+		.optional()
+		.describe("Token from a previous response to fetch the next page."),
+	skip: zod
+		.number()
+		.min(listUsersQuerySkipMin)
+		.optional()
+		.describe(
+			"Number of items to skip after page_token (or from the start when page_token is omitted).",
+		),
+});
+
+export const listUsersResponseNextPageTokenDefault = "";
+export const listUsersResponseItemsItemOrganizationsItemIdMax = 64;
+
+export const listUsersResponseItemsItemOrganizationsItemNameMax = 100;
+
+export const listUsersResponse = zod.object({
+	next_page_token: zod
+		.string()
+		.optional()
+		.describe("Token to retrieve the next page. Empty when no more results."),
+	items: zod
+		.array(
+			zod.object({
+				id: zod.string().describe("The unique ID of the user."),
+				email: zod.string().describe("The user's email address."),
+				is_privileged: zod
+					.boolean()
+					.describe(
+						"True if the user is privileged (can manage all users and organizations).",
+					),
+				last_logout: zod
+					.string()
+					.datetime({})
+					.describe(
+						"The time the user last logged out. Session tokens issued before this time are invalid. Defaults to the unix epoch if the user has never logged out.",
+					),
+				has_logged_in: zod
+					.boolean()
+					.describe("True if the user has logged in at least once."),
+				created_at: zod
+					.string()
+					.datetime({})
+					.describe("The time the user was created or invited."),
+				organizations: zod
+					.array(
+						zod.object({
+							id: zod
+								.string()
+								.max(listUsersResponseItemsItemOrganizationsItemIdMax),
+							name: zod
+								.string()
+								.max(listUsersResponseItemsItemOrganizationsItemNameMax),
+						}),
+					)
+					.describe("Organizations this user is a member of."),
+			}),
+		)
+		.describe("The page of users."),
+});
+
+/**
+ * Fetches details for a single user, including the organizations they belong to.
+
+Privileged users only. Each returned organization carries summary counts (number of users,
+number of experiments), matching the shape used on the organizations list page.
+ * @summary Get User
+ */
+export const getUserParams = zod.object({
+	user_id: zod.string().describe("The ID of the user to fetch."),
+});
+
+export const getUserResponseOrganizationsItemIdMax = 64;
+
+export const getUserResponseOrganizationsItemNameMax = 100;
+
+export const getUserResponse = zod.object({
+	id: zod.string().describe("The unique ID of the user."),
+	email: zod.string().describe("The user's email address."),
+	is_privileged: zod
+		.boolean()
+		.describe(
+			"True if the user is privileged (can manage all users and organizations).",
+		),
+	last_logout: zod
+		.string()
+		.datetime({})
+		.describe(
+			"The time the user last logged out. Session tokens issued before this time are invalid. Defaults to the unix epoch if the user has never logged out.",
+		),
+	has_logged_in: zod
+		.boolean()
+		.describe("True if the user has logged in at least once."),
+	created_at: zod
+		.string()
+		.datetime({})
+		.describe("The time the user was created or invited."),
+	organizations: zod
+		.array(
+			zod.object({
+				id: zod
+					.string()
+					.max(getUserResponseOrganizationsItemIdMax)
+					.describe("The unique ID of the organization."),
+				name: zod
+					.string()
+					.max(getUserResponseOrganizationsItemNameMax)
+					.describe("The organization's name."),
+				created_at: zod
+					.string()
+					.datetime({})
+					.describe("The time the organization was created."),
+				user_count: zod
+					.union([zod.number(), zod.null()])
+					.optional()
+					.describe(
+						"Number of users that are members of this organization. Null when the caller did not request stats.",
+					),
+				experiment_count: zod
+					.union([zod.number(), zod.null()])
+					.optional()
+					.describe(
+						"Number of experiments across all datasources in this organization. Null when the caller did not request stats.",
+					),
+				joined_at: zod
+					.union([zod.string().datetime({}), zod.null()])
+					.optional()
+					.describe(
+						"When listed as part of a specific user's memberships, the time that user joined the organization. Null in contexts where the listing is not user-scoped.",
+					),
+			}),
+		)
+		.describe(
+			"Organizations this user is a member of, each with summary counts. Sorted by name ascending.",
+		),
+});
+
+/**
+ * Updates a user's properties. Privileged users only.
+
+Currently only supports updating `is_privileged`. Revoking privilege from the last privileged
+user in the system is rejected with a 400.
+ * @summary Patch User
+ */
+export const patchUserParams = zod.object({
+	user_id: zod.string().describe("The ID of the user to update."),
+});
+
+export const patchUserBody = zod.object({
+	is_privileged: zod
+		.union([zod.boolean(), zod.null()])
+		.optional()
+		.describe(
+			"When non-null, sets the user's privileged status. Privileged status is a system-wide flag.",
+		),
+});
+
+/**
+ * Deletes a user. Privileged users only.
+
+Cascades to remove all organization memberships. Rejects deleting yourself, and rejects deleting
+the last privileged user in the system.
+ * @summary Delete User
+ */
+export const deleteUserParams = zod.object({
+	user_id: zod.string().describe("The ID of the user to delete."),
+});
+
+/**
  * Fetches a snapshot by ID.
  * @summary Get Snapshot
  */
@@ -813,26 +1044,115 @@ export const createSnapshotResponse = zod.object({
 });
 
 /**
- * Returns a list of organizations that the authenticated user is a member of.
+ * Returns the list of organizations the caller can see, scoped by the `scope` query param.
+
+Sorted by name ascending.
  * @summary List Organizations
  */
+export const listOrganizationsQueryScopeDefault = "mine";
+export const listOrganizationsQueryNameContainsMaxOne = 100;
+
+export const listOrganizationsQueryIncludeStatsDefault = false;
+export const listOrganizationsQueryPageSizeDefault = 20;
+export const listOrganizationsQueryPageSizeMax = 100;
+
+export const listOrganizationsQuerySkipDefault = 0;
+export const listOrganizationsQuerySkipMin = 0;
+
+export const listOrganizationsQueryParams = zod.object({
+	scope: zod
+		.enum(["mine", "all"])
+		.default(listOrganizationsQueryScopeDefault)
+		.describe(
+			"`mine` (default) returns organizations the caller is a member of. `all` returns every organization in the system and requires the caller to be privileged.",
+		),
+	name_contains: zod
+		.union([
+			zod.string().max(listOrganizationsQueryNameContainsMaxOne),
+			zod.null(),
+		])
+		.optional()
+		.describe(
+			"Optional case-insensitive substring filter on the organization's name.",
+		),
+	include_stats: zod
+		.boolean()
+		.optional()
+		.describe(
+			"When true, populate `user_count` and `experiment_count` on each item. When false (the default), those fields are returned as null.",
+		),
+	page_size: zod
+		.number()
+		.min(1)
+		.max(listOrganizationsQueryPageSizeMax)
+		.default(listOrganizationsQueryPageSizeDefault)
+		.describe("Maximum number of items to return per page."),
+	page_token: zod
+		.union([zod.string(), zod.null()])
+		.optional()
+		.describe("Token from a previous response to fetch the next page."),
+	skip: zod
+		.number()
+		.min(listOrganizationsQuerySkipMin)
+		.optional()
+		.describe(
+			"Number of items to skip after page_token (or from the start when page_token is omitted).",
+		),
+});
+
+export const listOrganizationsResponseNextPageTokenDefault = "";
 export const listOrganizationsResponseItemsItemIdMax = 64;
 
 export const listOrganizationsResponseItemsItemNameMax = 100;
 
 export const listOrganizationsResponse = zod.object({
-	items: zod.array(
-		zod.object({
-			id: zod.string().max(listOrganizationsResponseItemsItemIdMax),
-			name: zod.string().max(listOrganizationsResponseItemsItemNameMax),
-		}),
-	),
+	next_page_token: zod
+		.string()
+		.optional()
+		.describe("Token to retrieve the next page. Empty when no more results."),
+	items: zod
+		.array(
+			zod.object({
+				id: zod
+					.string()
+					.max(listOrganizationsResponseItemsItemIdMax)
+					.describe("The unique ID of the organization."),
+				name: zod
+					.string()
+					.max(listOrganizationsResponseItemsItemNameMax)
+					.describe("The organization's name."),
+				created_at: zod
+					.string()
+					.datetime({})
+					.describe("The time the organization was created."),
+				user_count: zod
+					.union([zod.number(), zod.null()])
+					.optional()
+					.describe(
+						"Number of users that are members of this organization. Null when the caller did not request stats.",
+					),
+				experiment_count: zod
+					.union([zod.number(), zod.null()])
+					.optional()
+					.describe(
+						"Number of experiments across all datasources in this organization. Null when the caller did not request stats.",
+					),
+				joined_at: zod
+					.union([zod.string().datetime({}), zod.null()])
+					.optional()
+					.describe(
+						"When listed as part of a specific user's memberships, the time that user joined the organization. Null in contexts where the listing is not user-scoped.",
+					),
+			}),
+		)
+		.describe("The page of organizations."),
 });
 
 /**
  * Creates a new organization.
 
-Only privileged users can create organizations.
+Any authenticated user may create an organization. The creator is automatically added as a
+member of the new organization.
  * @summary Create Organizations
  */
 export const createOrganizationsBodyNameMax = 100;
@@ -1054,7 +1374,8 @@ export const addMemberToOrganizationBody = zod.object({
 /**
  * Removes a member from an organization.
 
-The authenticated user must be part of the organization to remove members.
+The authenticated user must be part of the organization to remove members. Privileged users may
+remove members from any organization. A user cannot remove themselves from an organization.
  * @summary Remove Member From Organization
  */
 export const removeMemberFromOrganizationParams = zod.object({
@@ -1123,8 +1444,19 @@ export const getOrganizationResponse = zod.object({
 	name: zod.string().max(getOrganizationResponseNameMax),
 	users: zod.array(
 		zod.object({
-			id: zod.string().max(getOrganizationResponseUsersItemIdMax),
-			email: zod.string().max(getOrganizationResponseUsersItemEmailMax),
+			id: zod
+				.string()
+				.max(getOrganizationResponseUsersItemIdMax)
+				.describe("The unique ID of the user."),
+			email: zod
+				.string()
+				.max(getOrganizationResponseUsersItemEmailMax)
+				.describe("The user's email address."),
+			is_privileged: zod
+				.boolean()
+				.describe(
+					"True if the user is privileged (can manage all users and organizations).",
+				),
 		}),
 	),
 	datasources: zod.array(
