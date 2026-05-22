@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  BayesABExperimentSpecOutput,
   CMABExperimentSpecOutput,
   DataType,
   DesignSpecOutput,
@@ -55,10 +54,8 @@ const isFrequentistSpec = (
 
 const isBanditSpec = (
   spec: DesignSpecOutput,
-): spec is MABExperimentSpecOutput | CMABExperimentSpecOutput | BayesABExperimentSpecOutput =>
-  spec.experiment_type === 'mab_online' ||
-  spec.experiment_type === 'cmab_online' ||
-  spec.experiment_type === 'bayes_ab_online';
+): spec is MABExperimentSpecOutput | CMABExperimentSpecOutput =>
+  spec.experiment_type === 'mab_online' || spec.experiment_type === 'cmab_online';
 
 const isCmabSpec = (spec: DesignSpecOutput): spec is CMABExperimentSpecOutput => spec.experiment_type === 'cmab_online';
 
@@ -135,13 +132,13 @@ export function TargetingDialog({ designSpec, participantType, webhookIds, power
                     strata={designSpec.strata?.map((stratum) => stratum.field_name) ?? []}
                     cluster={(() => {
                       // Issue #217: surface cluster fields on the Targeting modal.
-                      // The BE on PR #163 does NOT persist cluster_column or the
+                      // The BE on PR #163 does NOT persist cluster_key or the
                       // per-metric icc/cv/avg_cluster_size onto design_spec — but
                       // the per-metric stats ARE preserved inside the stored
                       // power_analyses JSON blob. We read from design_spec when
                       // present (forward-compat) and otherwise fall back.
                       const ds = designSpec as {
-                        cluster_column?: string | null;
+                        cluster_key?: string | null;
                         metrics?: Array<{
                           icc?: number | null;
                           cv?: number | null;
@@ -149,21 +146,17 @@ export function TargetingDialog({ designSpec, participantType, webhookIds, power
                         }>;
                       };
                       const pa = powerAnalyses?.analyses?.[0]?.metric_spec;
-                      const clusterCol = ds.cluster_column;
+                      const clusterKey = ds.cluster_key;
                       const dsMetric = ds.metrics?.[0];
                       const icc = dsMetric?.icc ?? pa?.icc ?? null;
                       const cv = dsMetric?.cv ?? pa?.cv ?? null;
                       const avg = dsMetric?.avg_cluster_size ?? pa?.avg_cluster_size ?? null;
                       // Show cluster block if we have ANY cluster signal.
-                      if (!clusterCol && icc == null && cv == null && avg == null) {
+                      if (!clusterKey && icc == null && cv == null && avg == null) {
                         return undefined;
                       }
                       return {
-                        // Cluster column name isn't persisted by the BE today
-                        // (storage_format_converters.py drops it). Show an em
-                        // dash rather than a confusing parenthetical until the
-                        // BE storage is fixed.
-                        field_name: clusterCol ?? '—',
+                        field_name: clusterKey ?? '—',
                         icc: icc ?? '?',
                         cv: cv ?? '?',
                         avg_cluster_size: avg ?? '?',

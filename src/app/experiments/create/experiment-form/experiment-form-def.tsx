@@ -1,7 +1,6 @@
 import { abandonExperiment } from '@/api/admin';
 import {
   Arm,
-  BayesABExperimentSpecInputExperimentType,
   ContextType,
   CreateExperimentResponse,
   DesignSpecInput,
@@ -55,9 +54,7 @@ import { WizardForm, packScreen } from '@/services/wizard/wizard-types';
  * variant is translated to "freq_preassigned" + cluster_column at submit time
  * (see convertToFrequentistDesignSpec).
  */
-export type ExperimentType =
-  | Exclude<DesignSpecInput['experiment_type'], BayesABExperimentSpecInputExperimentType>
-  | 'freq_cluster_preassigned';
+export type ExperimentType = DesignSpecInput['experiment_type'] | 'freq_cluster_preassigned';
 
 // Defines the entirety of the editable data collected via this wizard flow.
 export type ExperimentFormData = {
@@ -99,15 +96,18 @@ export type ExperimentFormData = {
   // Populated when user clicks "Power Check" on DesignForm
   desiredN?: number;
   powerCheckResponse?: PowerResponseOutput;
-  // Populated when the user picks "Use max available" or types a Custom N
-  // on the Power Analysis page. This is the MDE-mode power-check response for
-  // the chosen sample size — it carries the achievable MDE plus a cluster
-  // split that matches `desiredN`. We keep it separate from
-  // `powerCheckResponse` because the "Use minimum sample required" radio
-  // still needs the original sample-size-mode response to show the recommended
-  // cluster count. At save time, prefer this over `powerCheckResponse` so the
-  // saved experiment reflects the user's chosen N.
-  achievablePowerCheckResponse?: PowerResponseOutput;
+  // Cached MDE-mode power-check responses for the Max-available and Custom
+  // sample-size options on the Power Analysis page. Each is the BE's response
+  // to a power-check call made with `desired_n` set to that option's value.
+  // We cache both so the Achievable MDE annotation on each radio card stays
+  // visible regardless of which option is currently selected — letting the
+  // user compare. At save time the right one is chosen based on the user's
+  // selected option (see handleCreate).
+  achievableMaxPowerCheckResponse?: PowerResponseOutput;
+  achievableCustomPowerCheckResponse?: PowerResponseOutput;
+  // The desired_n the Custom response was computed for. Used to detect when
+  // the user has retyped a new value and the cached response is stale.
+  achievableCustomDesiredN?: number;
   createExperimentResponse?: CreateExperimentResponse;
   createExperimentError?: ErrorType<unknown>;
 
@@ -665,25 +665,29 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           return {
             ...data,
             powerCheckResponse: msg.response,
-            // Running a fresh power check invalidates any previously
-            // computed achievable-MDE response — it was tied to a stale
-            // design spec / chosen N.
-            achievablePowerCheckResponse: undefined,
+            // Running a fresh power check invalidates any cached
+            // achievable-MDE responses — they were tied to a stale design
+            // spec.
+            achievableMaxPowerCheckResponse: undefined,
+            achievableCustomPowerCheckResponse: undefined,
+            achievableCustomDesiredN: undefined,
             desiredN: msg.desiredN,
           };
         }
-        if (msg.type === 'set-achievable-power-check-response') {
-          return { ...data, achievablePowerCheckResponse: msg.response };
+        if (msg.type === 'set-achievable-max-response') {
+          return { ...data, achievableMaxPowerCheckResponse: msg.response };
         }
-        if (msg.type === 'set-chosen-n') {
-          // Switching options (e.g. back to recommended) invalidates the
-          // achievable response so the inline display doesn't show a stale
-          // MDE for a different N.
+        if (msg.type === 'set-achievable-custom-response') {
           return {
             ...data,
-            desiredN: msg.value,
-            achievablePowerCheckResponse: undefined,
+            achievableCustomPowerCheckResponse: msg.response,
+            achievableCustomDesiredN: msg.desiredN,
           };
+        }
+        if (msg.type === 'set-chosen-n') {
+          // Switching options just updates the chosen N — the cached
+          // Max/Custom responses stay so each card keeps its own MDE.
+          return { ...data, desiredN: msg.value };
         }
         if (msg.type === 'set-create-error') {
           return {

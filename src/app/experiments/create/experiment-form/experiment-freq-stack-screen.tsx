@@ -35,11 +35,21 @@ export type ExperimentFreqStackScreenMessage =
       desiredN?: number;
     }
   | {
-      // MDE-mode recompute fired when the user picks Max/Custom on the Power
-      // Analysis page. Carries the achievable-MDE response for the chosen N
-      // (separate from the recommended-size response in powerCheckResponse).
-      type: 'set-achievable-power-check-response';
+      // MDE-mode response for the Max-available sample size. Fired
+      // proactively after the initial Power Check completes so the
+      // achievable-MDE annotation on the Max radio card is visible even
+      // before the user clicks Max.
+      type: 'set-achievable-max-response';
       response: PowerResponseOutput | undefined;
+    }
+  | {
+      // MDE-mode response for the Custom sample-size value the user typed.
+      // Fired (debounced) when the typed value changes; cached so the
+      // Custom card's achievable-MDE line stays visible after the user
+      // switches to another radio.
+      type: 'set-achievable-custom-response';
+      response: PowerResponseOutput;
+      desiredN: number;
     }
   | { type: 'set-create-response'; response: CreateExperimentResponse }
   | { type: 'set-create-error'; response: ErrorType<unknown> }
@@ -100,11 +110,12 @@ export const ExperimentFreqStackScreen = ({
   const { data: tableData } = useInspectTableInDatasource(data.datasourceId ?? '', data.tableName ?? '', {
     refresh: false,
   });
+  // desired_n used to be a query param on createExperiment but the BE moved it
+  // onto design_spec (set by convertToFrequentistDesignSpec when data.desiredN
+  // is defined). No query params are needed here anymore.
   const { trigger: triggerCreate, isMutating: triggerLoading } = useCreateExperiment(
     data.datasourceId!,
-    {
-      desired_n: data.desiredN,
-    },
+    {},
     {
       swr: {
         onSuccess: async (response) => {
@@ -187,13 +198,50 @@ export const ExperimentFreqStackScreen = ({
 
   const handleCreate = async () => {
     const designSpec = convertToFrequentistDesignSpec(data);
-    // Prefer the MDE-mode "achievable" response when the user picked
-    // Max-available or Custom on the Power Analysis page. It carries the
-    // cluster split and achievable MDE for the chosen N, which is what
-    // should be persisted on the saved experiment. When the user stuck with
-    // the recommended size, achievablePowerCheckResponse is undefined and we
-    // fall back to the original sample-size-mode response.
-    const powerAnalysesToSave = data.achievablePowerCheckResponse ?? data.powerCheckResponse;
+    // Pick the achievable response that matches the user's chosen N. If they
+    // picked Custom, use the cached custom response (only when its desired_n
+    // still matches data.desiredN); if Max, the cached max response.
+    // Otherwise fall back to the recommended (sample-size-mode) response.
+    const achievableForChosenN =
+      data.desiredN !== undefined && data.desiredN === data.achievableCustomDesiredN
+        ? data.achievableCustomPowerCheckResponse
+        : data.achievableMaxPowerCheckResponse;
+    let powerAnalysesToSave = achievableForChosenN ?? data.powerCheckResponse;
+
+    // The BE response's num_clusters_total / clusters_per_arm reflect the
+    // MINIMUM required when sufficient_n is true — not the user's chosen N.
+    // Patch them so the saved experiment header / arms section / power-balance
+    // dialog display the cluster count that matches what the user committed to.
+    if (
+      achievableForChosenN &&
+      data.desiredN !== undefined &&
+      data.experimentType === 'freq_cluster_preassigned' &&
+      data.clusterAvgSize !== undefined &&
+      data.clusterAvgSize !== ''
+    ) {
+      const avg = Number(data.clusterAvgSize);
+      const arms = data.arms ?? [];
+      if (Number.isFinite(avg) && avg > 0 && arms.length > 0) {
+        const totalClusters = Math.ceil(data.desiredN / avg);
+        const perArm = Math.floor(totalClusters / arms.length);
+        const remainder = totalClusters - perArm * arms.length;
+        const clustersPerArm = arms.map((_, i) => perArm + (i < remainder ? 1 : 0));
+        const nPerArm = clustersPerArm.map((c) => Math.round(c * avg));
+        powerAnalysesToSave = {
+          ...achievableForChosenN,
+          analyses: achievableForChosenN.analyses.map((a, i) =>
+            i === 0
+              ? {
+                  ...a,
+                  num_clusters_total: totalClusters,
+                  clusters_per_arm: clustersPerArm,
+                  n_per_arm: nPerArm,
+                }
+              : a,
+          ),
+        };
+      }
+    }
     const createExperimentRequest = createExperimentBody.strict().parse({
       design_spec: designSpec,
       power_analyses: powerAnalysesToSave,
@@ -209,7 +257,7 @@ export const ExperimentFreqStackScreen = ({
       // biome-ignore lint/suspicious/noExplicitAny: orval-stripped fields, see comment above.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const reqAny = createExperimentRequest as any;
-      reqAny.design_spec.cluster_column = data.clusterField.field_name;
+      reqAny.design_spec.cluster_key = data.clusterField.field_name;
       const icc = data.clusterIcc !== undefined && data.clusterIcc !== '' ? Number(data.clusterIcc) : undefined;
       const cv = data.clusterCv !== undefined && data.clusterCv !== '' ? Number(data.clusterCv) : undefined;
       const avg =

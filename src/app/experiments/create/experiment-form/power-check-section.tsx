@@ -1,6 +1,7 @@
 'use client';
 
 import { usePowerCheck } from '@/api/admin';
+import { PowerResponseOutput } from '@/api/methods.schemas';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { CheckCircledIcon, CrossCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
@@ -119,23 +120,30 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   // they stop typing.
   const avgClusterSize = Number(data.clusterAvgSize ?? '');
 
-  // Lazy-init the Custom inputs from data.desiredN so a previously-entered
-  // custom value survives navigating to Summary and clicking Back. Only
-  // seed when desiredN is set AND it doesn't match the recommended or
-  // max-available size (those are handled by the other two radio cards).
+  // Lazy-init the Custom inputs so a previously-typed value survives
+  // navigating away (Summary → Back). We prefer the cached
+  // achievableCustomDesiredN because it remembers the user's typed Custom
+  // value even after they switched to another radio (Use minimum / Max).
+  // If that's not set yet, fall back to data.desiredN — but only when it
+  // doesn't match the recommended or max-available value (those belong to
+  // the other radios).
   const initialCustomFromState = (() => {
-    if (data.desiredN === undefined) return { clusters: '', participants: '' };
-    const primary = data.powerCheckResponse?.analyses.find(
-      (a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
-    );
-    const target = primary?.target_n ?? undefined;
-    const nonNull = primary?.metric_spec.available_nonnull_n ?? undefined;
-    if (data.desiredN === target || data.desiredN === nonNull) {
-      return { clusters: '', participants: '' };
+    let customN: number | undefined = data.achievableCustomDesiredN;
+    if (customN === undefined) {
+      if (data.desiredN === undefined) return { clusters: '', participants: '' };
+      const primary = data.powerCheckResponse?.analyses.find(
+        (a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
+      );
+      const target = primary?.target_n ?? undefined;
+      const nonNull = primary?.metric_spec.available_nonnull_n ?? undefined;
+      if (data.desiredN === target || data.desiredN === nonNull) {
+        return { clusters: '', participants: '' };
+      }
+      customN = data.desiredN;
     }
-    const participants = String(data.desiredN);
+    const participants = String(customN);
     const clusters =
-      Number.isFinite(avgClusterSize) && avgClusterSize > 0 ? String(Math.ceil(data.desiredN / avgClusterSize)) : '';
+      Number.isFinite(avgClusterSize) && avgClusterSize > 0 ? String(Math.ceil(customN / avgClusterSize)) : '';
     return { clusters, participants };
   })();
 
@@ -183,60 +191,99 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
   const { enabled } = isPowerCheckButtonEnabled(isMutating, data); // TODO: present reason field
 
-  // Achievable MDE recompute: when the user picks Max-available or Custom, fire
-  // a fresh power-check call with desired_n included in the design spec. The BE
-  // switches to MDE mode and returns the achievable MDE plus the cluster split
-  // for the chosen N. The result is stored on form state so it can be (a) shown
-  // inline next to the radio option and (b) persisted as the experiment's
-  // power_analyses at save time. Custom typing is already debounced upstream
-  // (set-chosen-n only fires after 500ms), so this effect only sees the final
-  // committed value.
-  const [isRecomputingMde, setIsRecomputingMde] = useState(false);
-  useEffect(() => {
-    // Recompute only makes sense when the user has chosen a non-recommended
-    // sample size. For "Use minimum sample required" the original
-    // powerCheckResponse already carries the right answer (achievable MDE
-    // equals the user's target MDE by construction).
-    if (data.desiredN === undefined) return;
-    if (selectedSampleOption === PowerCheckOption.USE_POWER_CHECK) return;
-    if (selectedSampleOption === PowerCheckOption.NONE) return;
-    if (data.desiredN === powerCheckTarget) return;
-    if (!data.tableName || !data.primaryKey || !data.primaryMetric) return;
+  // Two cached achievable-MDE recomputes — one for the Max-available radio and
+  // one for the value typed into Custom. Each is fetched independently and
+  // persists in form state so each card's MDE annotation stays visible even
+  // when the user is on a different radio. Use minimum sample required's
+  // achievable MDE equals the user's target MDE by construction (no call
+  // needed).
+  const [isRecomputingMax, setIsRecomputingMax] = useState(false);
+  const [isRecomputingCustom, setIsRecomputingCustom] = useState(false);
 
+  // Helper to fire a fresh power-check call with `desired_n` set to `n`,
+  // independent of any react state on the parent (so it's safe to call from
+  // two different effects with different desired_n values).
+  const fetchAchievableFor = async (n: number) => {
+    if (!data.tableName || !data.primaryKey || !data.primaryMetric) return undefined;
+    try {
+      const design_spec = convertToFrequentistDesignSpec({ ...data, desiredN: n });
+      return await trigger({ design_spec });
+    } catch {
+      return undefined;
+    }
+  };
+
+  // Max-available recompute: fires once nonNullSamples becomes known after
+  // the initial Power Check. Doesn't depend on which radio is selected.
+  useEffect(() => {
+    if (nonNullSamples === undefined || nonNullSamples <= 0) return;
+    if (data.achievableMaxPowerCheckResponse !== undefined) return;
+    if (!data.tableName || !data.primaryKey || !data.primaryMetric) return;
     let cancelled = false;
-    setIsRecomputingMde(true);
-    // `void` here intentionally discards the promise — the IIFE manages its
-    // own lifecycle via the `cancelled` flag and the cleanup function below.
+    setIsRecomputingMax(true);
     void (async () => {
-      try {
-        const design_spec = convertToFrequentistDesignSpec(data);
-        const response = await trigger({ design_spec });
-        if (cancelled) return;
-        dispatch({
-          type: 'set-achievable-power-check-response',
-          response,
-        });
-      } catch {
-        // Swallow: if the recompute fails the inline display just doesn't
-        // show an achievable MDE. Validation issues are already surfaced
-        // by the manual Run-Power-Check flow on the same page.
-      } finally {
-        if (!cancelled) setIsRecomputingMde(false);
-      }
+      const response = await fetchAchievableFor(nonNullSamples);
+      if (cancelled) return;
+      if (response) dispatch({ type: 'set-achievable-max-response', response });
+      setIsRecomputingMax(false);
     })();
     return () => {
       cancelled = true;
+      setIsRecomputingMax(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.desiredN, selectedSampleOption, powerCheckTarget]);
+  }, [nonNullSamples, data.achievableMaxPowerCheckResponse]);
 
-  // Read the achievable MDE for the primary metric (cluster-aware fields are
-  // populated by solve_for_mde_cluster on the BE; for non-cluster experiments
-  // pct_change_possible is still populated, so this works for both).
-  const achievablePrimary = data.achievablePowerCheckResponse?.analyses.find(
-    (a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
-  );
-  const achievablePctChange = achievablePrimary?.pct_change_possible ?? null;
+  // Custom recompute: fires when the user is on the Custom option and the
+  // typed desired_n differs from the cached one. desiredN itself is already
+  // debounced upstream (set-chosen-n only fires after 500ms typing pause).
+  useEffect(() => {
+    if (selectedSampleOption !== PowerCheckOption.ENTER_OWN) return;
+    if (data.desiredN === undefined) return;
+    if (data.desiredN === data.achievableCustomDesiredN) return;
+    if (data.desiredN === powerCheckTarget) return;
+    if (data.desiredN === nonNullSamples) return;
+    if (!data.tableName || !data.primaryKey || !data.primaryMetric) return;
+    let cancelled = false;
+    const targetN = data.desiredN;
+    setIsRecomputingCustom(true);
+    void (async () => {
+      const response = await fetchAchievableFor(targetN);
+      if (cancelled) return;
+      if (response) {
+        dispatch({ type: 'set-achievable-custom-response', response, desiredN: targetN });
+      }
+      setIsRecomputingCustom(false);
+    })();
+    return () => {
+      cancelled = true;
+      setIsRecomputingCustom(false);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    data.desiredN,
+    selectedSampleOption,
+    data.achievableCustomDesiredN,
+    powerCheckTarget,
+    nonNullSamples,
+  ]);
+
+  // Helper to pull pct_change for the primary metric from any power-check
+  // response. Reads pct_change_with_desired_n first (set by the BE when
+  // desired_n was sufficient) and falls back to pct_change_possible (set in
+  // the MDE-mode-fallback path when desired_n was insufficient).
+  const readAchievablePct = (response: PowerResponseOutput | undefined): number | null => {
+    const primary = response?.analyses.find(
+      (a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
+    );
+    if (!primary) return null;
+    const withDesired = (primary as { pct_change_with_desired_n?: number | null })
+      .pct_change_with_desired_n;
+    if (withDesired != null) return withDesired;
+    return primary.pct_change_possible ?? null;
+  };
+  const maxAchievablePct = readAchievablePct(data.achievableMaxPowerCheckResponse);
+  const customAchievablePct = readAchievablePct(data.achievableCustomPowerCheckResponse);
 
   // Target MDE the user requested (string from the form, expressed as a
   // percent). Used as the "achievable MDE" for the recommended option, since
@@ -321,6 +368,12 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
         dispatch({ type: 'set-chosen-n', value: nonNullSamples });
         break;
       case PowerCheckOption.ENTER_OWN:
+        // If the user had previously typed a value (cached as
+        // achievableCustomDesiredN), restore it so the inputs and desiredN
+        // stay in sync and Next is enabled. Otherwise leave desiredN
+        // undefined so the user can type fresh.
+        dispatch({ type: 'set-chosen-n', value: data.achievableCustomDesiredN });
+        break;
       case PowerCheckOption.NONE:
         dispatch({ type: 'set-chosen-n', value: undefined });
         break;
@@ -632,40 +685,21 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                           {/* Use the BE's clusters total ONLY when this is
 														the currently-selected option (otherwise
 														achievablePrimary is for a different N, e.g.
-														whatever the user typed in Custom). Otherwise
-														compute from nonNullSamples/avg_cluster_size. */}
-                          {(selectedSampleOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES &&
-                          achievablePrimary?.num_clusters_total != null
-                            ? achievablePrimary.num_clusters_total
-                            : Math.floor(nonNullSamples / Number(data.clusterAvgSize))
-                          ).toLocaleString()}{' '}
-                          clusters
+														For Max-available the BE response's num_clusters_total
+														is the MINIMUM required (not the cluster count for
+														desired_n = nonNullSamples), so we always compute it
+														client-side from nonNullSamples/avg_cluster_size. */}
+                          {Math.floor(nonNullSamples / Number(data.clusterAvgSize)).toLocaleString()} clusters
                         </Text>
                         <Text size="1" color="gray">
                           {nonNullSamples.toLocaleString()} participants
                         </Text>
-                        {renderAchievableMdeLine(
-                          selectedSampleOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES
-                            ? achievablePctChange
-                            : null,
-                          {
-                            loading:
-                              selectedSampleOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES && isRecomputingMde,
-                          },
-                        )}
+                        {renderAchievableMdeLine(maxAchievablePct, { loading: isRecomputingMax })}
                       </Flex>
                     ) : (
                       <Flex direction="column" align="start">
                         <Text>{`Use all available non-null samples: ${nonNullSamples}`}</Text>
-                        {renderAchievableMdeLine(
-                          selectedSampleOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES
-                            ? achievablePctChange
-                            : null,
-                          {
-                            loading:
-                              selectedSampleOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES && isRecomputingMde,
-                          },
-                        )}
+                        {renderAchievableMdeLine(maxAchievablePct, { loading: isRecomputingMax })}
                       </Flex>
                     )}
                   </RadioCards.Item>
@@ -720,12 +754,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                                 }}
                               />
                             </Flex>
-                            {renderAchievableMdeLine(
-                              selectedSampleOption === PowerCheckOption.ENTER_OWN ? achievablePctChange : null,
-                              {
-                                loading: selectedSampleOption === PowerCheckOption.ENTER_OWN && isRecomputingMde,
-                              },
-                            )}
+                            {renderAchievableMdeLine(customAchievablePct, { loading: isRecomputingCustom })}
                           </Flex>
                         </div>
                       ) : (
@@ -743,12 +772,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                             }
                             placeholder="Type your own desired #."
                           />
-                          {renderAchievableMdeLine(
-                            selectedSampleOption === PowerCheckOption.ENTER_OWN ? achievablePctChange : null,
-                            {
-                              loading: selectedSampleOption === PowerCheckOption.ENTER_OWN && isRecomputingMde,
-                            },
-                          )}
+                          {renderAchievableMdeLine(customAchievablePct, { loading: isRecomputingCustom })}
                         </div>
                       )}
                     </Flex>

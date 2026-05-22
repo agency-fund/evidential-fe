@@ -214,7 +214,7 @@ export const ExperimentDescribeBanditArmsScreen = ({
 
   const { trigger: triggerCreate, isMutating: createLoading } = useCreateExperiment(
     datasourceId,
-    { desired_n: 0 },
+    {},
     {
       swr: {
         onSuccess: async (response) => {

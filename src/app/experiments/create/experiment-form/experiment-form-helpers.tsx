@@ -144,7 +144,7 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
     // biome-ignore lint/suspicious/noExplicitAny: see comment above re: orval.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const specAny = spec as any;
-    specAny.cluster_column = data.clusterField.field_name;
+    specAny.cluster_key = data.clusterField.field_name;
     if (icc !== undefined && cv !== undefined && avgClusterSize !== undefined) {
       specAny.metrics = specAny.metrics.map((m: Record<string, unknown>) => ({
         ...m,

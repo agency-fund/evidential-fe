@@ -1,6 +1,5 @@
 import {
   Arm,
-  BayesABExperimentSpecOutput,
   CMABExperimentSpecInputExperimentType,
   CMABExperimentSpecOutput,
   ContextType,
@@ -97,7 +96,7 @@ export const isFrequentistSpec = (
 
 export const isBanditSpec = (
   spec: DesignSpecOutput | undefined,
-): spec is MABExperimentSpecOutput | CMABExperimentSpecOutput | BayesABExperimentSpecOutput =>
+): spec is MABExperimentSpecOutput | CMABExperimentSpecOutput =>
   !!spec && isBanditExperimentType(spec.experiment_type);
 
 export function isCmabSpec(spec: DesignSpecOutput | undefined): spec is CMABExperimentSpecOutput {

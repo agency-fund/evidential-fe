@@ -346,7 +346,8 @@ export default function ExperimentViewPage() {
   const { alpha, power } = getAlphaAndPower(experiment.config); // undefined for non-frequentist experiments
   const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
   const isFrequentistExperiment = isFrequentistSpec(design_spec);
-  const contexts = isBanditSpec(design_spec) ? (design_spec.contexts ?? []) : [];
+  // contexts only exist on CMAB; plain MAB has no contexts field.
+  const contexts = isCmabSpec(design_spec) ? (design_spec.contexts ?? []) : [];
 
   const selectedMetricAnalyses =
     selectedAnalysisState.data && 'metric_analyses' in selectedAnalysisState.data
@@ -360,19 +361,22 @@ export default function ExperimentViewPage() {
   }
 
   // Achievable MDE: pulled from the saved power_analyses for the selected
-  // metric. Populated when the user picked a sample size other than the
-  // recommended minimum (the BE's MDE-mode response carries
-  // pct_change_possible alongside the committed N). For experiments that
-  // committed to the recommended size, this stays null and the badge just
-  // shows Target MDE as before.
+  // metric. The BE puts the achievable MDE in pct_change_with_desired_n when
+  // desired_n was sufficient, and in pct_change_possible when not. For
+  // experiments that committed to the recommended size, both stay null and
+  // the badge just shows Target MDE.
   let achievableMdePct: string | null = null;
   if (selectedMetricAnalysis?.metric?.field_name) {
     const savedAnalysis = power_analyses?.analyses?.find(
       (a) => a.metric_spec.field_name === selectedMetricAnalysis.metric.field_name,
     );
-    const pctPossible = savedAnalysis?.pct_change_possible;
-    if (pctPossible != null && Number.isFinite(pctPossible)) {
-      achievableMdePct = (pctPossible * 100).toFixed(2);
+    const pct =
+      (savedAnalysis as { pct_change_with_desired_n?: number | null } | undefined)
+        ?.pct_change_with_desired_n ??
+      savedAnalysis?.pct_change_possible ??
+      null;
+    if (pct != null && Number.isFinite(pct)) {
+      achievableMdePct = (pct * 100).toFixed(2);
     }
   }
 
@@ -429,7 +433,7 @@ export default function ExperimentViewPage() {
               <Separator orientation="vertical" />
               <Tooltip
                 content={`Cluster ID: ${
-                  (design_spec as { cluster_column?: string | null }).cluster_column ?? '(persisted in power analysis)'
+                  (design_spec as { cluster_key?: string | null }).cluster_key ?? '(persisted in power analysis)'
                 }${
                   power_analyses?.analyses?.[0]?.num_clusters_total != null
                     ? ` — ${power_analyses.analyses[0].num_clusters_total.toLocaleString()} clusters needed across all arms`

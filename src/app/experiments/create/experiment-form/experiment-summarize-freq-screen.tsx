@@ -26,9 +26,20 @@ export const ExperimentsSummarizeFreqScreen = ({
   // pct_change_possible — in which case the target MDE is the right thing
   // to show alone.
   const achievableFor = (fieldName: string): number | null => {
-    const analyses = data.achievablePowerCheckResponse?.analyses ?? [];
-    const match = analyses.find((a) => a.metric_spec.field_name === fieldName);
-    const pct = match?.pct_change_possible;
+    // Pick the cached response matching the user's chosen N (Custom takes
+    // priority when its desired_n still matches, otherwise Max).
+    const chosen =
+      data.desiredN !== undefined && data.desiredN === data.achievableCustomDesiredN
+        ? data.achievableCustomPowerCheckResponse
+        : data.achievableMaxPowerCheckResponse;
+    const match = chosen?.analyses.find((a) => a.metric_spec.field_name === fieldName);
+    if (!match) return null;
+    // BE puts achievable MDE in pct_change_with_desired_n when desired_n was
+    // sufficient; falls back to pct_change_possible otherwise.
+    const pct =
+      (match as { pct_change_with_desired_n?: number | null }).pct_change_with_desired_n ??
+      match.pct_change_possible ??
+      null;
     if (pct == null || !Number.isFinite(pct)) return null;
     return pct * 100;
   };
