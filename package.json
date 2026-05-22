@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
+    "@next/bundle-analyzer": "^16.2.6",
     "@types/node": "^22.14.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
