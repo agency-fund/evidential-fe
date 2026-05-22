@@ -1,10 +1,10 @@
 'use client';
-import { getListOrganizationsKey, useCreateOrganizations } from '@/api/admin';
+import { useCreateOrganizations } from '@/api/admin';
 import { useState } from 'react';
 import { Button, Dialog, Flex, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { PlusIcon } from '@radix-ui/react-icons';
-import { mutate } from 'swr';
+import { invalidatePath } from '@/services/swr-cache';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 
 interface FormFields {
@@ -23,7 +23,7 @@ export function CreateOrganizationDialog() {
     swr: {
       onSuccess: async () => {
         handleClose();
-        await mutate(getListOrganizationsKey());
+        await invalidatePath('/v1/m/organizations');
       },
     },
   });
