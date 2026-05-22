@@ -34,4 +34,7 @@ export default withSentryConfig(bundleAnalyzer(nextConfig), {
   disableLogger: true,
   automaticVercelMonitors: false,
   telemetry: false,
+  bundleSizeOptimizations: {
+    excludeTracing: true,
+  },
 });
