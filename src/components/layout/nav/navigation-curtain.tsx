@@ -8,8 +8,6 @@ import { ChevronLeftIcon, GearIcon, HamburgerMenuIcon, LightningBoltIcon } from 
 import { useState } from 'react';
 import * as NavigationMenu from '@radix-ui/react-navigation-menu';
 import { NavLink } from '@/components/layout/nav/nav-link';
-import { MotionBox, MotionNav } from '@/services/motion/motion-utils';
-import { transitions } from '@/services/motion/motion-tokens';
 
 export const NavigationBar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,30 +30,26 @@ export const NavigationBar = () => {
 
   return (
     <NavigationMenu.Root asChild>
-      <MotionNav
-        animate={{ width: isOpen ? 200 : 60 }}
-        transition={transitions.normal}
-        initial={false}
-        layout
+      <nav
         style={{
           display: 'flex',
           height: '100%',
+          width: isOpen ? 200 : 60,
           backgroundColor: 'var(--gray-1)',
           borderRight: '1px solid var(--gray-5)',
           position: 'relative',
           flexShrink: 0,
+          transition: 'width 0.3s ease-in-out',
         }}
       >
         <Flex direction="column" width="100%" p="2" gap="4" height="100%" py="5">
           {/* Toggle Button to open and close nav curtain */}
           <Flex justify={isOpen ? 'end' : 'center'} width="100%">
-            <MotionBox initial={false} layout transition={transitions.normal}>
-              <Tooltip content={isOpen ? 'Collapse navigation' : 'Expand navigation'}>
-                <IconButton onClick={() => setIsOpen((o) => !o)} size="2" variant="ghost" color="gray">
-                  {isOpen ? <ChevronLeftIcon width={20} height={20} /> : <HamburgerMenuIcon width={20} height={20} />}
-                </IconButton>
-              </Tooltip>
-            </MotionBox>
+            <Tooltip content={isOpen ? 'Collapse navigation' : 'Expand navigation'}>
+              <IconButton onClick={() => setIsOpen((o) => !o)} size="2" variant="ghost" color="gray">
+                {isOpen ? <ChevronLeftIcon width={20} height={20} /> : <HamburgerMenuIcon width={20} height={20} />}
+              </IconButton>
+            </Tooltip>
           </Flex>
           <Separator size="4" />
           {/* Top nav links defined in mainNavItems */}
@@ -98,7 +92,7 @@ export const NavigationBar = () => {
             </Flex>
           </NavigationMenu.List>
         </Flex>
-      </MotionNav>
+      </nav>
     </NavigationMenu.Root>
   );
 };

@@ -1,10 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { IconButton, Tooltip } from '@radix-ui/themes';
+import { Box, IconButton, Tooltip } from '@radix-ui/themes';
 import { CheckIcon, CopyIcon } from '@radix-ui/react-icons';
-import { MotionBox } from '@/services/motion/motion-utils';
-import { transitions } from '@/services/motion/motion-tokens';
 
 interface CopyToClipboardProps {
   content: string;
@@ -33,16 +31,28 @@ export function CopyToClipBoard({ content, tooltipContent = 'Copy to clipboard',
   return (
     <Tooltip content={tooltipContent}>
       <IconButton onClick={handleCopy} variant="ghost" size={size} color={copied ? 'green' : undefined}>
-        <MotionBox
-          key={copied ? 'check' : 'copy'}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={transitions.fast}
-          style={{ display: 'flex' }}
-        >
-          {copied ? <CheckIcon width="18" height="18" /> : <CopyIcon width="18" height="18" />}
-        </MotionBox>
+        <Box position="relative" width="18px" height="18px">
+          <Box
+            position="absolute"
+            inset="0"
+            style={{
+              opacity: copied ? 0 : 1,
+              transition: 'opacity 0.15s ease-in-out',
+            }}
+          >
+            <CopyIcon width="18" height="18" />
+          </Box>
+          <Box
+            position="absolute"
+            inset="0"
+            style={{
+              opacity: copied ? 1 : 0,
+              transition: 'opacity 0.15s ease-in-out',
+            }}
+          >
+            <CheckIcon width="18" height="18" />
+          </Box>
+        </Box>
       </IconButton>
     </Tooltip>
   );
