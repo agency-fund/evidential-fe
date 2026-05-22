@@ -99,6 +99,24 @@ export const getSnapshotResponse = zod
 																.describe(
 																	"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
 																),
+															icc: zod
+																.union([zod.number(), zod.null()])
+																.optional()
+																.describe(
+																	"Intracluster correlation coefficient for cluster-randomized designs.",
+																),
+															avg_cluster_size: zod
+																.union([zod.number(), zod.null()])
+																.optional()
+																.describe(
+																	"Average number of individuals per cluster.",
+																),
+															cv: zod
+																.union([zod.number(), zod.null()])
+																.optional()
+																.describe(
+																	"Coefficient of variation in cluster sizes (0 = equal sizes).",
+																),
 														})
 														.describe(
 															"Defines a request to look up baseline stats for a metric to measure in an experiment.",
@@ -515,6 +533,24 @@ export const listSnapshotsResponse = zod.object({
 																.optional()
 																.describe(
 																	"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+																),
+															icc: zod
+																.union([zod.number(), zod.null()])
+																.optional()
+																.describe(
+																	"Intracluster correlation coefficient for cluster-randomized designs.",
+																),
+															avg_cluster_size: zod
+																.union([zod.number(), zod.null()])
+																.optional()
+																.describe(
+																	"Average number of individuals per cluster.",
+																),
+															cv: zod
+																.union([zod.number(), zod.null()])
+																.optional()
+																.describe(
+																	"Coefficient of variation in cluster sizes (0 = equal sizes).",
 																),
 														})
 														.describe(
@@ -2816,15 +2852,9 @@ export const createExperimentParams = zod.object({
 	datasource_id: zod.string(),
 });
 
-export const createExperimentQueryDesiredNMinOne = 0;
-
 export const createExperimentQueryStratifyOnMetricsDefault = true;
 
 export const createExperimentQueryParams = zod.object({
-	desired_n: zod
-		.union([zod.number().min(createExperimentQueryDesiredNMinOne), zod.null()])
-		.optional()
-		.describe("Number of participants to assign."),
 	stratify_on_metrics: zod
 		.boolean()
 		.default(createExperimentQueryStratifyOnMetricsDefault)
@@ -2860,6 +2890,8 @@ export const createExperimentBodyDesignSpecMetricsMax = 150;
 export const createExperimentBodyDesignSpecFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyDesignSpecFiltersMax = 20;
+
+export const createExperimentBodyDesignSpecDesiredNMinOne = 0;
 
 export const createExperimentBodyDesignSpecPowerDefault = 0.8;
 export const createExperimentBodyDesignSpecPowerMin = 0;
@@ -2902,6 +2934,8 @@ export const createExperimentBodyDesignSpecMetricsMaxOne = 150;
 export const createExperimentBodyDesignSpecFiltersItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyDesignSpecFiltersMaxOne = 20;
+
+export const createExperimentBodyDesignSpecDesiredNMinFour = 0;
 
 export const createExperimentBodyDesignSpecPowerDefaultOne = 0.8;
 export const createExperimentBodyDesignSpecPowerMinOne = 0;
@@ -2953,27 +2987,9 @@ export const createExperimentBodyDesignSpecContextsItemContextDescriptionMaxFour
 
 export const createExperimentBodyDesignSpecContextsMaxFour = 150;
 
-export const createExperimentBodyDesignSpecExperimentNameMaxFour = 100;
-
-export const createExperimentBodyDesignSpecDescriptionMaxFour = 2000;
-
-export const createExperimentBodyDesignSpecDesignUrlMaxOnethree = 500;
-
-export const createExperimentBodyDesignSpecArmsItemArmNameMaxFour = 100;
-
-export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
-
-export const createExperimentBodyDesignSpecArmsMinFour = 2;
-export const createExperimentBodyDesignSpecArmsMaxFour = 20;
-
-export const createExperimentBodyDesignSpecContextsItemContextNameMaxTwo = 100;
-
-export const createExperimentBodyDesignSpecContextsItemContextDescriptionMaxSeven = 2000;
-
-export const createExperimentBodyDesignSpecContextsMaxSeven = 150;
-
 export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentBodyPowerAnalysesAnalysesItemMsgHighClusterVariationDefault = false;
 export const createExperimentBodyPowerAnalysesAnalysesMax = 150;
 
 export const createExperimentBodyWebhooksDefault = [];
@@ -3053,6 +3069,12 @@ export const createExperimentBody = zod.object({
 								.describe(
 									"Column name in table_name that uniquely identifies each participant.",
 								),
+							cluster_key: zod
+								.union([zod.string(), zod.null()])
+								.optional()
+								.describe(
+									"Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.",
+								),
 							strata: zod
 								.array(
 									zod
@@ -3087,6 +3109,22 @@ export const createExperimentBody = zod.object({
 												.optional()
 												.describe(
 													"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+												),
+											icc: zod
+												.union([zod.number(), zod.null()])
+												.optional()
+												.describe(
+													"Intracluster correlation coefficient for cluster-randomized designs.",
+												),
+											avg_cluster_size: zod
+												.union([zod.number(), zod.null()])
+												.optional()
+												.describe("Average number of individuals per cluster."),
+											cv: zod
+												.union([zod.number(), zod.null()])
+												.optional()
+												.describe(
+													"Coefficient of variation in cluster sizes (0 = equal sizes).",
 												),
 										})
 										.describe(
@@ -3126,10 +3164,15 @@ export const createExperimentBody = zod.object({
 									"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 								),
 							desired_n: zod
-								.union([zod.number(), zod.null()])
+								.union([
+									zod
+										.number()
+										.min(createExperimentBodyDesignSpecDesiredNMinOne),
+									zod.null(),
+								])
 								.optional()
 								.describe(
-									"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+									"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 								),
 							power: zod
 								.number()
@@ -3231,6 +3274,12 @@ export const createExperimentBody = zod.object({
 								.describe(
 									"Column name in table_name that uniquely identifies each participant.",
 								),
+							cluster_key: zod
+								.union([zod.string(), zod.null()])
+								.optional()
+								.describe(
+									"Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.",
+								),
 							strata: zod
 								.array(
 									zod
@@ -3265,6 +3314,22 @@ export const createExperimentBody = zod.object({
 												.optional()
 												.describe(
 													"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+												),
+											icc: zod
+												.union([zod.number(), zod.null()])
+												.optional()
+												.describe(
+													"Intracluster correlation coefficient for cluster-randomized designs.",
+												),
+											avg_cluster_size: zod
+												.union([zod.number(), zod.null()])
+												.optional()
+												.describe("Average number of individuals per cluster."),
+											cv: zod
+												.union([zod.number(), zod.null()])
+												.optional()
+												.describe(
+													"Coefficient of variation in cluster sizes (0 = equal sizes).",
 												),
 										})
 										.describe(
@@ -3304,10 +3369,15 @@ export const createExperimentBody = zod.object({
 									"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 								),
 							desired_n: zod
-								.union([zod.number(), zod.null()])
+								.union([
+									zod
+										.number()
+										.min(createExperimentBodyDesignSpecDesiredNMinFour),
+									zod.null(),
+								])
 								.optional()
 								.describe(
-									"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+									"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 								),
 							power: zod
 								.number()
@@ -3647,159 +3717,6 @@ export const createExperimentBody = zod.object({
 						.describe(
 							"Use this type to randomly assign participants into arms during live experiment execution with\ncontextual MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
 						),
-					zod
-						.object({
-							experiment_type: zod.enum(["bayes_ab_online"]),
-							experiment_name: zod
-								.string()
-								.max(createExperimentBodyDesignSpecExperimentNameMaxFour),
-							description: zod
-								.string()
-								.max(createExperimentBodyDesignSpecDescriptionMaxFour),
-							design_url: zod
-								.union([
-									zod
-										.string()
-										.url()
-										.min(1)
-										.max(createExperimentBodyDesignSpecDesignUrlMaxOnethree),
-									zod.null(),
-								])
-								.optional()
-								.describe(
-									"Optional URL to a more detailed experiment design doc.",
-								),
-							start_date: zod.string().datetime({}),
-							end_date: zod.string().datetime({}),
-							arms: zod
-								.array(
-									zod
-										.object({
-											arm_id: zod
-												.union([zod.string(), zod.null()])
-												.optional()
-												.describe(
-													"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-												),
-											arm_name: zod
-												.string()
-												.max(
-													createExperimentBodyDesignSpecArmsItemArmNameMaxFour,
-												),
-											arm_description: zod
-												.union([
-													zod
-														.string()
-														.max(
-															createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnethree,
-														),
-													zod.null(),
-												])
-												.optional(),
-											arm_weight: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe(
-													"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-												),
-											alpha_init: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Initial alpha parameter for Beta prior"),
-											beta_init: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Initial beta parameter for Beta prior"),
-											mu_init: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Initial mean parameter for Normal prior"),
-											sigma_init: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe(
-													"Initial standard deviation parameter for Normal prior",
-												),
-											alpha: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Updated alpha parameter for Beta prior"),
-											beta: zod
-												.union([zod.number(), zod.null()])
-												.optional()
-												.describe("Updated beta parameter for Beta prior"),
-											mu: zod
-												.union([zod.array(zod.number()), zod.null()])
-												.optional()
-												.describe("Updated mean vector for Normal prior"),
-											covariance: zod
-												.union([zod.array(zod.array(zod.number())), zod.null()])
-												.optional()
-												.describe("Updated covariance matrix for Normal prior"),
-										})
-										.describe(
-											"Describes an experiment arm for bandit experiments.",
-										),
-								)
-								.min(createExperimentBodyDesignSpecArmsMinFour)
-								.max(createExperimentBodyDesignSpecArmsMaxFour),
-							contexts: zod
-								.union([
-									zod
-										.array(
-											zod
-												.object({
-													context_id: zod
-														.union([zod.string(), zod.null()])
-														.optional()
-														.describe(
-															"Unique identifier for the context, you should NOT set this when creating a new context.",
-														),
-													context_name: zod
-														.string()
-														.max(
-															createExperimentBodyDesignSpecContextsItemContextNameMaxTwo,
-														),
-													context_description: zod
-														.union([
-															zod
-																.string()
-																.max(
-																	createExperimentBodyDesignSpecContextsItemContextDescriptionMaxSeven,
-																),
-															zod.null(),
-														])
-														.optional(),
-													value_type: zod
-														.enum(["binary", "real-valued"])
-														.optional()
-														.describe("Enum for the type of context."),
-												})
-												.describe(
-													"Pydantic model for context of the experiment.",
-												),
-										)
-										.max(createExperimentBodyDesignSpecContextsMaxSeven),
-									zod.null(),
-								])
-								.optional()
-								.describe(
-									"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
-								),
-							prior_type: zod
-								.enum(["beta", "normal"])
-								.optional()
-								.describe("Enum for the prior distribution of the arm."),
-							reward_type: zod
-								.enum(["binary", "real-valued"])
-								.optional()
-								.describe(
-									"Enum for the likelihood distribution of the reward.",
-								),
-						})
-						.describe(
-							"Use this type to randomly assign participants into arms during live experiment execution with\nBayesian A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
-						),
 				])
 				.describe("The specific type of bandit experiment design."),
 		])
@@ -3829,6 +3746,22 @@ export const createExperimentBody = zod.object({
 											.optional()
 											.describe(
 												"Absolute target value = metric_baseline*(1 + metric_pct_change)",
+											),
+										icc: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Intracluster correlation coefficient for cluster-randomized designs.",
+											),
+										avg_cluster_size: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Average number of individuals per cluster."),
+										cv: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Coefficient of variation in cluster sizes (0 = equal sizes).",
 											),
 										metric_type: zod
 											.union([
@@ -3861,22 +3794,6 @@ export const createExperimentBody = zod.object({
 											.describe(
 												"The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n.",
 											),
-										icc: zod
-											.union([zod.number(), zod.null()])
-											.optional()
-											.describe(
-												"Intracluster correlation coefficient for cluster-randomized designs.",
-											),
-										avg_cluster_size: zod
-											.union([zod.number(), zod.null()])
-											.optional()
-											.describe("Average number of individuals per cluster."),
-										cv: zod
-											.union([zod.number(), zod.null()])
-											.optional()
-											.describe(
-												"Coefficient of variation in cluster sizes (0 = equal sizes).",
-											),
 									})
 									.describe(
 										"Defines a metric to measure in an experiment with its baseline stats.",
@@ -3904,6 +3821,12 @@ export const createExperimentBody = zod.object({
 									.optional()
 									.describe(
 										"If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.",
+									),
+								pct_change_with_desired_n: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe(
+										"The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).",
 									),
 								msg: zod
 									.union([
@@ -3940,6 +3863,7 @@ export const createExperimentBody = zod.object({
 														zod.null(),
 													])
 													.optional(),
+												high_cluster_variation: zod.boolean().optional(),
 											})
 											.describe(
 												"Describes interpretation of power analysis results.",
@@ -4024,6 +3948,8 @@ export const createExperimentResponseDesignSpecFiltersItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentResponseDesignSpecFiltersMax = 20;
 
+export const createExperimentResponseDesignSpecDesiredNMinOne = 0;
+
 export const createExperimentResponseDesignSpecPowerDefault = 0.8;
 export const createExperimentResponseDesignSpecPowerMin = 0;
 export const createExperimentResponseDesignSpecPowerMax = 1;
@@ -4065,6 +3991,8 @@ export const createExperimentResponseDesignSpecMetricsMaxOne = 150;
 export const createExperimentResponseDesignSpecFiltersItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentResponseDesignSpecFiltersMaxOne = 20;
+
+export const createExperimentResponseDesignSpecDesiredNMinFour = 0;
 
 export const createExperimentResponseDesignSpecPowerDefaultOne = 0.8;
 export const createExperimentResponseDesignSpecPowerMinOne = 0;
@@ -4116,27 +4044,9 @@ export const createExperimentResponseDesignSpecContextsItemContextDescriptionMax
 
 export const createExperimentResponseDesignSpecContextsMaxFour = 150;
 
-export const createExperimentResponseDesignSpecExperimentNameMaxFour = 100;
-
-export const createExperimentResponseDesignSpecDescriptionMaxFour = 2000;
-
-export const createExperimentResponseDesignSpecDesignUrlMaxOnethree = 500;
-
-export const createExperimentResponseDesignSpecArmsItemArmNameMaxFour = 100;
-
-export const createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
-
-export const createExperimentResponseDesignSpecArmsMinFour = 2;
-export const createExperimentResponseDesignSpecArmsMaxFour = 20;
-
-export const createExperimentResponseDesignSpecContextsItemContextNameMaxTwo = 100;
-
-export const createExperimentResponseDesignSpecContextsItemContextDescriptionMaxSeven = 2000;
-
-export const createExperimentResponseDesignSpecContextsMaxSeven = 150;
-
 export const createExperimentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentResponsePowerAnalysesAnalysesItemMsgHighClusterVariationDefault = false;
 export const createExperimentResponsePowerAnalysesAnalysesMax = 150;
 
 export const createExperimentResponseAssignSummaryArmSizesItemArmArmNameMax = 100;
@@ -4257,6 +4167,12 @@ export const createExperimentResponse = zod
 									.describe(
 										"Column name in table_name that uniquely identifies each participant.",
 									),
+								cluster_key: zod
+									.union([zod.string(), zod.null()])
+									.optional()
+									.describe(
+										"Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.",
+									),
 								strata: zod
 									.array(
 										zod
@@ -4295,6 +4211,24 @@ export const createExperimentResponse = zod
 													.optional()
 													.describe(
 														"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+													),
+												icc: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Intracluster correlation coefficient for cluster-randomized designs.",
+													),
+												avg_cluster_size: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Average number of individuals per cluster.",
+													),
+												cv: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Coefficient of variation in cluster sizes (0 = equal sizes).",
 													),
 											})
 											.describe(
@@ -4336,10 +4270,15 @@ export const createExperimentResponse = zod
 										"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 									),
 								desired_n: zod
-									.union([zod.number(), zod.null()])
+									.union([
+										zod
+											.number()
+											.min(createExperimentResponseDesignSpecDesiredNMinOne),
+										zod.null(),
+									])
 									.optional()
 									.describe(
-										"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+										"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 									),
 								power: zod
 									.number()
@@ -4441,6 +4380,12 @@ export const createExperimentResponse = zod
 									.describe(
 										"Column name in table_name that uniquely identifies each participant.",
 									),
+								cluster_key: zod
+									.union([zod.string(), zod.null()])
+									.optional()
+									.describe(
+										"Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.",
+									),
 								strata: zod
 									.array(
 										zod
@@ -4479,6 +4424,24 @@ export const createExperimentResponse = zod
 													.optional()
 													.describe(
 														"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+													),
+												icc: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Intracluster correlation coefficient for cluster-randomized designs.",
+													),
+												avg_cluster_size: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Average number of individuals per cluster.",
+													),
+												cv: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Coefficient of variation in cluster sizes (0 = equal sizes).",
 													),
 											})
 											.describe(
@@ -4520,10 +4483,15 @@ export const createExperimentResponse = zod
 										"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 									),
 								desired_n: zod
-									.union([zod.number(), zod.null()])
+									.union([
+										zod
+											.number()
+											.min(createExperimentResponseDesignSpecDesiredNMinFour),
+										zod.null(),
+									])
 									.optional()
 									.describe(
-										"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+										"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 									),
 								power: zod
 									.number()
@@ -4879,166 +4847,6 @@ export const createExperimentResponse = zod
 							.describe(
 								"Use this type to randomly assign participants into arms during live experiment execution with\ncontextual MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
 							),
-						zod
-							.object({
-								experiment_type: zod.enum(["bayes_ab_online"]),
-								experiment_name: zod
-									.string()
-									.max(createExperimentResponseDesignSpecExperimentNameMaxFour),
-								description: zod
-									.string()
-									.max(createExperimentResponseDesignSpecDescriptionMaxFour),
-								design_url: zod
-									.union([
-										zod
-											.string()
-											.url()
-											.min(1)
-											.max(
-												createExperimentResponseDesignSpecDesignUrlMaxOnethree,
-											),
-										zod.null(),
-									])
-									.optional()
-									.describe(
-										"Optional URL to a more detailed experiment design doc.",
-									),
-								start_date: zod.string().datetime({}),
-								end_date: zod.string().datetime({}),
-								arms: zod
-									.array(
-										zod
-											.object({
-												arm_id: zod
-													.union([zod.string(), zod.null()])
-													.optional()
-													.describe(
-														"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-													),
-												arm_name: zod
-													.string()
-													.max(
-														createExperimentResponseDesignSpecArmsItemArmNameMaxFour,
-													),
-												arm_description: zod
-													.union([
-														zod
-															.string()
-															.max(
-																createExperimentResponseDesignSpecArmsItemArmDescriptionMaxOnethree,
-															),
-														zod.null(),
-													])
-													.optional(),
-												arm_weight: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-													),
-												alpha_init: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Initial alpha parameter for Beta prior"),
-												beta_init: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Initial beta parameter for Beta prior"),
-												mu_init: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Initial mean parameter for Normal prior"),
-												sigma_init: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Initial standard deviation parameter for Normal prior",
-													),
-												alpha: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Updated alpha parameter for Beta prior"),
-												beta: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe("Updated beta parameter for Beta prior"),
-												mu: zod
-													.union([zod.array(zod.number()), zod.null()])
-													.optional()
-													.describe("Updated mean vector for Normal prior"),
-												covariance: zod
-													.union([
-														zod.array(zod.array(zod.number())),
-														zod.null(),
-													])
-													.optional()
-													.describe(
-														"Updated covariance matrix for Normal prior",
-													),
-											})
-											.describe(
-												"Describes an experiment arm for bandit experiments.",
-											),
-									)
-									.min(createExperimentResponseDesignSpecArmsMinFour)
-									.max(createExperimentResponseDesignSpecArmsMaxFour),
-								contexts: zod
-									.union([
-										zod
-											.array(
-												zod
-													.object({
-														context_id: zod
-															.union([zod.string(), zod.null()])
-															.optional()
-															.describe(
-																"Unique identifier for the context, you should NOT set this when creating a new context.",
-															),
-														context_name: zod
-															.string()
-															.max(
-																createExperimentResponseDesignSpecContextsItemContextNameMaxTwo,
-															),
-														context_description: zod
-															.union([
-																zod
-																	.string()
-																	.max(
-																		createExperimentResponseDesignSpecContextsItemContextDescriptionMaxSeven,
-																	),
-																zod.null(),
-															])
-															.optional(),
-														value_type: zod
-															.enum(["binary", "real-valued"])
-															.optional()
-															.describe("Enum for the type of context."),
-													})
-													.describe(
-														"Pydantic model for context of the experiment.",
-													),
-											)
-											.max(createExperimentResponseDesignSpecContextsMaxSeven),
-										zod.null(),
-									])
-									.optional()
-									.describe(
-										"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
-									),
-								prior_type: zod
-									.enum(["beta", "normal"])
-									.optional()
-									.describe("Enum for the prior distribution of the arm."),
-								reward_type: zod
-									.enum(["binary", "real-valued"])
-									.optional()
-									.describe(
-										"Enum for the likelihood distribution of the reward.",
-									),
-							})
-							.describe(
-								"Use this type to randomly assign participants into arms during live experiment execution with\nBayesian A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
-							),
 					])
 					.describe("The specific type of bandit experiment design."),
 			])
@@ -5067,6 +4875,22 @@ export const createExperimentResponse = zod
 											.optional()
 											.describe(
 												"Absolute target value = metric_baseline*(1 + metric_pct_change)",
+											),
+										icc: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Intracluster correlation coefficient for cluster-randomized designs.",
+											),
+										avg_cluster_size: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Average number of individuals per cluster."),
+										cv: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Coefficient of variation in cluster sizes (0 = equal sizes).",
 											),
 										metric_type: zod
 											.union([
@@ -5099,22 +4923,6 @@ export const createExperimentResponse = zod
 											.describe(
 												"The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n.",
 											),
-										icc: zod
-											.union([zod.number(), zod.null()])
-											.optional()
-											.describe(
-												"Intracluster correlation coefficient for cluster-randomized designs.",
-											),
-										avg_cluster_size: zod
-											.union([zod.number(), zod.null()])
-											.optional()
-											.describe("Average number of individuals per cluster."),
-										cv: zod
-											.union([zod.number(), zod.null()])
-											.optional()
-											.describe(
-												"Coefficient of variation in cluster sizes (0 = equal sizes).",
-											),
 									})
 									.describe(
 										"Defines a metric to measure in an experiment with its baseline stats.",
@@ -5142,6 +4950,12 @@ export const createExperimentResponse = zod
 									.optional()
 									.describe(
 										"If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.",
+									),
+								pct_change_with_desired_n: zod
+									.union([zod.number(), zod.null()])
+									.optional()
+									.describe(
+										"The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).",
 									),
 								msg: zod
 									.union([
@@ -5178,6 +4992,7 @@ export const createExperimentResponse = zod
 														zod.null(),
 													])
 													.optional(),
+												high_cluster_variation: zod.boolean().optional(),
 											})
 											.describe(
 												"Describes interpretation of power analysis results.",
@@ -5399,6 +5214,22 @@ export const analyzeExperimentResponse = zod
 											.optional()
 											.describe(
 												"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+											),
+										icc: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Intracluster correlation coefficient for cluster-randomized designs.",
+											),
+										avg_cluster_size: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Average number of individuals per cluster."),
+										cv: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Coefficient of variation in cluster sizes (0 = equal sizes).",
 											),
 									})
 									.describe(
@@ -5732,6 +5563,22 @@ export const analyzeCmabExperimentResponse = zod
 											.describe(
 												"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
 											),
+										icc: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Intracluster correlation coefficient for cluster-randomized designs.",
+											),
+										avg_cluster_size: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Average number of individuals per cluster."),
+										cv: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Coefficient of variation in cluster sizes (0 = equal sizes).",
+											),
 									})
 									.describe(
 										"Defines a request to look up baseline stats for a metric to measure in an experiment.",
@@ -6037,6 +5884,8 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecFiltersItemFi
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const listOrganizationExperimentsResponseItemsItemDesignSpecFiltersMax = 20;
 
+export const listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinOne = 0;
+
 export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerDefault = 0.8;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerMin = 0;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerMax = 1;
@@ -6077,6 +5926,8 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecMetricsMaxOne
 export const listOrganizationExperimentsResponseItemsItemDesignSpecFiltersItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const listOrganizationExperimentsResponseItemsItemDesignSpecFiltersMaxOne = 20;
+
+export const listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinFour = 0;
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerDefaultOne = 0.8;
 export const listOrganizationExperimentsResponseItemsItemDesignSpecPowerMinOne = 0;
@@ -6128,27 +5979,9 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemC
 
 export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxFour = 150;
 
-export const listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxFour = 100;
-
-export const listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxFour = 2000;
-
-export const listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxOnethree = 500;
-
-export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxFour = 100;
-
-export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
-
-export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinFour = 2;
-export const listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxFour = 20;
-
-export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextNameMaxTwo = 100;
-
-export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextDescriptionMaxSeven = 2000;
-
-export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxSeven = 150;
-
 export const listOrganizationExperimentsResponseItemsItemPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const listOrganizationExperimentsResponseItemsItemPowerAnalysesAnalysesItemMsgHighClusterVariationDefault = false;
 export const listOrganizationExperimentsResponseItemsItemPowerAnalysesAnalysesMax = 150;
 
 export const listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesItemArmArmNameMax = 100;
@@ -6287,6 +6120,12 @@ export const listOrganizationExperimentsResponse = zod.object({
 											.describe(
 												"Column name in table_name that uniquely identifies each participant.",
 											),
+										cluster_key: zod
+											.union([zod.string(), zod.null()])
+											.optional()
+											.describe(
+												"Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.",
+											),
 										strata: zod
 											.array(
 												zod
@@ -6327,6 +6166,24 @@ export const listOrganizationExperimentsResponse = zod.object({
 															.optional()
 															.describe(
 																"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+															),
+														icc: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Intracluster correlation coefficient for cluster-randomized designs.",
+															),
+														avg_cluster_size: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Average number of individuals per cluster.",
+															),
+														cv: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Coefficient of variation in cluster sizes (0 = equal sizes).",
 															),
 													})
 													.describe(
@@ -6372,10 +6229,17 @@ export const listOrganizationExperimentsResponse = zod.object({
 												"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 											),
 										desired_n: zod
-											.union([zod.number(), zod.null()])
+											.union([
+												zod
+													.number()
+													.min(
+														listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinOne,
+													),
+												zod.null(),
+											])
 											.optional()
 											.describe(
-												"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+												"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 											),
 										power: zod
 											.number()
@@ -6509,6 +6373,12 @@ export const listOrganizationExperimentsResponse = zod.object({
 											.describe(
 												"Column name in table_name that uniquely identifies each participant.",
 											),
+										cluster_key: zod
+											.union([zod.string(), zod.null()])
+											.optional()
+											.describe(
+												"Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.",
+											),
 										strata: zod
 											.array(
 												zod
@@ -6549,6 +6419,24 @@ export const listOrganizationExperimentsResponse = zod.object({
 															.optional()
 															.describe(
 																"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+															),
+														icc: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Intracluster correlation coefficient for cluster-randomized designs.",
+															),
+														avg_cluster_size: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Average number of individuals per cluster.",
+															),
+														cv: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Coefficient of variation in cluster sizes (0 = equal sizes).",
 															),
 													})
 													.describe(
@@ -6594,10 +6482,17 @@ export const listOrganizationExperimentsResponse = zod.object({
 												"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 											),
 										desired_n: zod
-											.union([zod.number(), zod.null()])
+											.union([
+												zod
+													.number()
+													.min(
+														listOrganizationExperimentsResponseItemsItemDesignSpecDesiredNMinFour,
+													),
+												zod.null(),
+											])
 											.optional()
 											.describe(
-												"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+												"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 											),
 										power: zod
 											.number()
@@ -7009,186 +6904,6 @@ export const listOrganizationExperimentsResponse = zod.object({
 									.describe(
 										"Use this type to randomly assign participants into arms during live experiment execution with\ncontextual MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
 									),
-								zod
-									.object({
-										experiment_type: zod.enum(["bayes_ab_online"]),
-										experiment_name: zod
-											.string()
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecExperimentNameMaxFour,
-											),
-										description: zod
-											.string()
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecDescriptionMaxFour,
-											),
-										design_url: zod
-											.union([
-												zod
-													.string()
-													.url()
-													.min(1)
-													.max(
-														listOrganizationExperimentsResponseItemsItemDesignSpecDesignUrlMaxOnethree,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional URL to a more detailed experiment design doc.",
-											),
-										start_date: zod.string().datetime({}),
-										end_date: zod.string().datetime({}),
-										arms: zod
-											.array(
-												zod
-													.object({
-														arm_id: zod
-															.union([zod.string(), zod.null()])
-															.optional()
-															.describe(
-																"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-															),
-														arm_name: zod
-															.string()
-															.max(
-																listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmNameMaxFour,
-															),
-														arm_description: zod
-															.union([
-																zod
-																	.string()
-																	.max(
-																		listOrganizationExperimentsResponseItemsItemDesignSpecArmsItemArmDescriptionMaxOnethree,
-																	),
-																zod.null(),
-															])
-															.optional(),
-														arm_weight: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-															),
-														alpha_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial alpha parameter for Beta prior",
-															),
-														beta_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial beta parameter for Beta prior",
-															),
-														mu_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial mean parameter for Normal prior",
-															),
-														sigma_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial standard deviation parameter for Normal prior",
-															),
-														alpha: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Updated alpha parameter for Beta prior",
-															),
-														beta: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Updated beta parameter for Beta prior",
-															),
-														mu: zod
-															.union([zod.array(zod.number()), zod.null()])
-															.optional()
-															.describe("Updated mean vector for Normal prior"),
-														covariance: zod
-															.union([
-																zod.array(zod.array(zod.number())),
-																zod.null(),
-															])
-															.optional()
-															.describe(
-																"Updated covariance matrix for Normal prior",
-															),
-													})
-													.describe(
-														"Describes an experiment arm for bandit experiments.",
-													),
-											)
-											.min(
-												listOrganizationExperimentsResponseItemsItemDesignSpecArmsMinFour,
-											)
-											.max(
-												listOrganizationExperimentsResponseItemsItemDesignSpecArmsMaxFour,
-											),
-										contexts: zod
-											.union([
-												zod
-													.array(
-														zod
-															.object({
-																context_id: zod
-																	.union([zod.string(), zod.null()])
-																	.optional()
-																	.describe(
-																		"Unique identifier for the context, you should NOT set this when creating a new context.",
-																	),
-																context_name: zod
-																	.string()
-																	.max(
-																		listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextNameMaxTwo,
-																	),
-																context_description: zod
-																	.union([
-																		zod
-																			.string()
-																			.max(
-																				listOrganizationExperimentsResponseItemsItemDesignSpecContextsItemContextDescriptionMaxSeven,
-																			),
-																		zod.null(),
-																	])
-																	.optional(),
-																value_type: zod
-																	.enum(["binary", "real-valued"])
-																	.optional()
-																	.describe("Enum for the type of context."),
-															})
-															.describe(
-																"Pydantic model for context of the experiment.",
-															),
-													)
-													.max(
-														listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxSeven,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
-											),
-										prior_type: zod
-											.enum(["beta", "normal"])
-											.optional()
-											.describe("Enum for the prior distribution of the arm."),
-										reward_type: zod
-											.enum(["binary", "real-valued"])
-											.optional()
-											.describe(
-												"Enum for the likelihood distribution of the reward.",
-											),
-									})
-									.describe(
-										"Use this type to randomly assign participants into arms during live experiment execution with\nBayesian A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
-									),
 							])
 							.describe("The specific type of bandit experiment design."),
 					])
@@ -7217,6 +6932,24 @@ export const listOrganizationExperimentsResponse = zod.object({
 													.optional()
 													.describe(
 														"Absolute target value = metric_baseline*(1 + metric_pct_change)",
+													),
+												icc: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Intracluster correlation coefficient for cluster-randomized designs.",
+													),
+												avg_cluster_size: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Average number of individuals per cluster.",
+													),
+												cv: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Coefficient of variation in cluster sizes (0 = equal sizes).",
 													),
 												metric_type: zod
 													.union([
@@ -7251,24 +6984,6 @@ export const listOrganizationExperimentsResponse = zod.object({
 													.describe(
 														"The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n.",
 													),
-												icc: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Intracluster correlation coefficient for cluster-randomized designs.",
-													),
-												avg_cluster_size: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Average number of individuals per cluster.",
-													),
-												cv: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Coefficient of variation in cluster sizes (0 = equal sizes).",
-													),
 											})
 											.describe(
 												"Defines a metric to measure in an experiment with its baseline stats.",
@@ -7296,6 +7011,12 @@ export const listOrganizationExperimentsResponse = zod.object({
 											.optional()
 											.describe(
 												"If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.",
+											),
+										pct_change_with_desired_n: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).",
 											),
 										msg: zod
 											.union([
@@ -7332,6 +7053,7 @@ export const listOrganizationExperimentsResponse = zod.object({
 																zod.null(),
 															])
 															.optional(),
+														high_cluster_variation: zod.boolean().optional(),
 													})
 													.describe(
 														"Describes interpretation of power analysis results.",
@@ -7544,6 +7266,8 @@ export const getExperimentForUiResponseConfigDesignSpecFiltersItemFieldNameRegEx
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentForUiResponseConfigDesignSpecFiltersMax = 20;
 
+export const getExperimentForUiResponseConfigDesignSpecDesiredNMinOne = 0;
+
 export const getExperimentForUiResponseConfigDesignSpecPowerDefault = 0.8;
 export const getExperimentForUiResponseConfigDesignSpecPowerMin = 0;
 export const getExperimentForUiResponseConfigDesignSpecPowerMax = 1;
@@ -7584,6 +7308,8 @@ export const getExperimentForUiResponseConfigDesignSpecMetricsMaxOne = 150;
 export const getExperimentForUiResponseConfigDesignSpecFiltersItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const getExperimentForUiResponseConfigDesignSpecFiltersMaxOne = 20;
+
+export const getExperimentForUiResponseConfigDesignSpecDesiredNMinFour = 0;
 
 export const getExperimentForUiResponseConfigDesignSpecPowerDefaultOne = 0.8;
 export const getExperimentForUiResponseConfigDesignSpecPowerMinOne = 0;
@@ -7635,27 +7361,9 @@ export const getExperimentForUiResponseConfigDesignSpecContextsItemContextDescri
 
 export const getExperimentForUiResponseConfigDesignSpecContextsMaxFour = 150;
 
-export const getExperimentForUiResponseConfigDesignSpecExperimentNameMaxFour = 100;
-
-export const getExperimentForUiResponseConfigDesignSpecDescriptionMaxFour = 2000;
-
-export const getExperimentForUiResponseConfigDesignSpecDesignUrlMaxOnethree = 500;
-
-export const getExperimentForUiResponseConfigDesignSpecArmsItemArmNameMaxFour = 100;
-
-export const getExperimentForUiResponseConfigDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
-
-export const getExperimentForUiResponseConfigDesignSpecArmsMinFour = 2;
-export const getExperimentForUiResponseConfigDesignSpecArmsMaxFour = 20;
-
-export const getExperimentForUiResponseConfigDesignSpecContextsItemContextNameMaxTwo = 100;
-
-export const getExperimentForUiResponseConfigDesignSpecContextsItemContextDescriptionMaxSeven = 2000;
-
-export const getExperimentForUiResponseConfigDesignSpecContextsMaxSeven = 150;
-
 export const getExperimentForUiResponseConfigPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const getExperimentForUiResponseConfigPowerAnalysesAnalysesItemMsgHighClusterVariationDefault = false;
 export const getExperimentForUiResponseConfigPowerAnalysesAnalysesMax = 150;
 
 export const getExperimentForUiResponseConfigAssignSummaryArmSizesItemArmArmNameMax = 100;
@@ -7795,6 +7503,12 @@ export const getExperimentForUiResponse = zod
 											.describe(
 												"Column name in table_name that uniquely identifies each participant.",
 											),
+										cluster_key: zod
+											.union([zod.string(), zod.null()])
+											.optional()
+											.describe(
+												"Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.",
+											),
 										strata: zod
 											.array(
 												zod
@@ -7833,6 +7547,24 @@ export const getExperimentForUiResponse = zod
 															.optional()
 															.describe(
 																"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+															),
+														icc: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Intracluster correlation coefficient for cluster-randomized designs.",
+															),
+														avg_cluster_size: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Average number of individuals per cluster.",
+															),
+														cv: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Coefficient of variation in cluster sizes (0 = equal sizes).",
 															),
 													})
 													.describe(
@@ -7874,10 +7606,17 @@ export const getExperimentForUiResponse = zod
 												"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 											),
 										desired_n: zod
-											.union([zod.number(), zod.null()])
+											.union([
+												zod
+													.number()
+													.min(
+														getExperimentForUiResponseConfigDesignSpecDesiredNMinOne,
+													),
+												zod.null(),
+											])
 											.optional()
 											.describe(
-												"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+												"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 											),
 										power: zod
 											.number()
@@ -8001,6 +7740,12 @@ export const getExperimentForUiResponse = zod
 											.describe(
 												"Column name in table_name that uniquely identifies each participant.",
 											),
+										cluster_key: zod
+											.union([zod.string(), zod.null()])
+											.optional()
+											.describe(
+												"Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.",
+											),
 										strata: zod
 											.array(
 												zod
@@ -8041,6 +7786,24 @@ export const getExperimentForUiResponse = zod
 															.optional()
 															.describe(
 																"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+															),
+														icc: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Intracluster correlation coefficient for cluster-randomized designs.",
+															),
+														avg_cluster_size: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Average number of individuals per cluster.",
+															),
+														cv: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Coefficient of variation in cluster sizes (0 = equal sizes).",
 															),
 													})
 													.describe(
@@ -8086,10 +7849,17 @@ export const getExperimentForUiResponse = zod
 												"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 											),
 										desired_n: zod
-											.union([zod.number(), zod.null()])
+											.union([
+												zod
+													.number()
+													.min(
+														getExperimentForUiResponseConfigDesignSpecDesiredNMinFour,
+													),
+												zod.null(),
+											])
 											.optional()
 											.describe(
-												"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+												"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 											),
 										power: zod
 											.number()
@@ -8499,186 +8269,6 @@ export const getExperimentForUiResponse = zod
 									.describe(
 										"Use this type to randomly assign participants into arms during live experiment execution with\ncontextual MAB experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
 									),
-								zod
-									.object({
-										experiment_type: zod.enum(["bayes_ab_online"]),
-										experiment_name: zod
-											.string()
-											.max(
-												getExperimentForUiResponseConfigDesignSpecExperimentNameMaxFour,
-											),
-										description: zod
-											.string()
-											.max(
-												getExperimentForUiResponseConfigDesignSpecDescriptionMaxFour,
-											),
-										design_url: zod
-											.union([
-												zod
-													.string()
-													.url()
-													.min(1)
-													.max(
-														getExperimentForUiResponseConfigDesignSpecDesignUrlMaxOnethree,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional URL to a more detailed experiment design doc.",
-											),
-										start_date: zod.string().datetime({}),
-										end_date: zod.string().datetime({}),
-										arms: zod
-											.array(
-												zod
-													.object({
-														arm_id: zod
-															.union([zod.string(), zod.null()])
-															.optional()
-															.describe(
-																"ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.",
-															),
-														arm_name: zod
-															.string()
-															.max(
-																getExperimentForUiResponseConfigDesignSpecArmsItemArmNameMaxFour,
-															),
-														arm_description: zod
-															.union([
-																zod
-																	.string()
-																	.max(
-																		getExperimentForUiResponseConfigDesignSpecArmsItemArmDescriptionMaxOnethree,
-																	),
-																zod.null(),
-															])
-															.optional(),
-														arm_weight: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.",
-															),
-														alpha_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial alpha parameter for Beta prior",
-															),
-														beta_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial beta parameter for Beta prior",
-															),
-														mu_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial mean parameter for Normal prior",
-															),
-														sigma_init: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Initial standard deviation parameter for Normal prior",
-															),
-														alpha: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Updated alpha parameter for Beta prior",
-															),
-														beta: zod
-															.union([zod.number(), zod.null()])
-															.optional()
-															.describe(
-																"Updated beta parameter for Beta prior",
-															),
-														mu: zod
-															.union([zod.array(zod.number()), zod.null()])
-															.optional()
-															.describe("Updated mean vector for Normal prior"),
-														covariance: zod
-															.union([
-																zod.array(zod.array(zod.number())),
-																zod.null(),
-															])
-															.optional()
-															.describe(
-																"Updated covariance matrix for Normal prior",
-															),
-													})
-													.describe(
-														"Describes an experiment arm for bandit experiments.",
-													),
-											)
-											.min(
-												getExperimentForUiResponseConfigDesignSpecArmsMinFour,
-											)
-											.max(
-												getExperimentForUiResponseConfigDesignSpecArmsMaxFour,
-											),
-										contexts: zod
-											.union([
-												zod
-													.array(
-														zod
-															.object({
-																context_id: zod
-																	.union([zod.string(), zod.null()])
-																	.optional()
-																	.describe(
-																		"Unique identifier for the context, you should NOT set this when creating a new context.",
-																	),
-																context_name: zod
-																	.string()
-																	.max(
-																		getExperimentForUiResponseConfigDesignSpecContextsItemContextNameMaxTwo,
-																	),
-																context_description: zod
-																	.union([
-																		zod
-																			.string()
-																			.max(
-																				getExperimentForUiResponseConfigDesignSpecContextsItemContextDescriptionMaxSeven,
-																			),
-																		zod.null(),
-																	])
-																	.optional(),
-																value_type: zod
-																	.enum(["binary", "real-valued"])
-																	.optional()
-																	.describe("Enum for the type of context."),
-															})
-															.describe(
-																"Pydantic model for context of the experiment.",
-															),
-													)
-													.max(
-														getExperimentForUiResponseConfigDesignSpecContextsMaxSeven,
-													),
-												zod.null(),
-											])
-											.optional()
-											.describe(
-												"Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.",
-											),
-										prior_type: zod
-											.enum(["beta", "normal"])
-											.optional()
-											.describe("Enum for the prior distribution of the arm."),
-										reward_type: zod
-											.enum(["binary", "real-valued"])
-											.optional()
-											.describe(
-												"Enum for the likelihood distribution of the reward.",
-											),
-									})
-									.describe(
-										"Use this type to randomly assign participants into arms during live experiment execution with\nBayesian A/B experiments.\n\nFor example, you may wish to experiment on new users. Assignments are issued via API request.",
-									),
 							])
 							.describe("The specific type of bandit experiment design."),
 					])
@@ -8707,6 +8297,24 @@ export const getExperimentForUiResponse = zod
 													.optional()
 													.describe(
 														"Absolute target value = metric_baseline*(1 + metric_pct_change)",
+													),
+												icc: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Intracluster correlation coefficient for cluster-randomized designs.",
+													),
+												avg_cluster_size: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Average number of individuals per cluster.",
+													),
+												cv: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Coefficient of variation in cluster sizes (0 = equal sizes).",
 													),
 												metric_type: zod
 													.union([
@@ -8741,24 +8349,6 @@ export const getExperimentForUiResponse = zod
 													.describe(
 														"The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n.",
 													),
-												icc: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Intracluster correlation coefficient for cluster-randomized designs.",
-													),
-												avg_cluster_size: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Average number of individuals per cluster.",
-													),
-												cv: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Coefficient of variation in cluster sizes (0 = equal sizes).",
-													),
 											})
 											.describe(
 												"Defines a metric to measure in an experiment with its baseline stats.",
@@ -8786,6 +8376,12 @@ export const getExperimentForUiResponse = zod
 											.optional()
 											.describe(
 												"If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.",
+											),
+										pct_change_with_desired_n: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).",
 											),
 										msg: zod
 											.union([
@@ -8822,6 +8418,7 @@ export const getExperimentForUiResponse = zod
 																zod.null(),
 															])
 															.optional(),
+														high_cluster_variation: zod.boolean().optional(),
 													})
 													.describe(
 														"Describes interpretation of power analysis results.",
@@ -9237,6 +8834,8 @@ export const powerCheckBodyDesignSpecFiltersItemFieldNameRegExp = new RegExp(
 );
 export const powerCheckBodyDesignSpecFiltersMax = 20;
 
+export const powerCheckBodyDesignSpecDesiredNMinOne = 0;
+
 export const powerCheckBodyDesignSpecPowerDefault = 0.8;
 export const powerCheckBodyDesignSpecPowerMin = 0;
 export const powerCheckBodyDesignSpecPowerMax = 1;
@@ -9281,6 +8880,8 @@ export const powerCheckBodyDesignSpecFiltersItemFieldNameRegExpOne = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
 export const powerCheckBodyDesignSpecFiltersMaxOne = 20;
+
+export const powerCheckBodyDesignSpecDesiredNMinFour = 0;
 
 export const powerCheckBodyDesignSpecPowerDefaultOne = 0.8;
 export const powerCheckBodyDesignSpecPowerMinOne = 0;
@@ -9363,6 +8964,12 @@ export const powerCheckBody = zod.object({
 						.describe(
 							"Column name in table_name that uniquely identifies each participant.",
 						),
+					cluster_key: zod
+						.union([zod.string(), zod.null()])
+						.optional()
+						.describe(
+							"Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.",
+						),
 					strata: zod
 						.array(
 							zod
@@ -9393,6 +9000,22 @@ export const powerCheckBody = zod.object({
 										.optional()
 										.describe(
 											"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+										),
+									icc: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Intracluster correlation coefficient for cluster-randomized designs.",
+										),
+									avg_cluster_size: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Average number of individuals per cluster."),
+									cv: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Coefficient of variation in cluster sizes (0 = equal sizes).",
 										),
 								})
 								.describe(
@@ -9430,10 +9053,13 @@ export const powerCheckBody = zod.object({
 							"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 						),
 					desired_n: zod
-						.union([zod.number(), zod.null()])
+						.union([
+							zod.number().min(powerCheckBodyDesignSpecDesiredNMinOne),
+							zod.null(),
+						])
 						.optional()
 						.describe(
-							"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+							"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 						),
 					power: zod
 						.number()
@@ -9531,6 +9157,12 @@ export const powerCheckBody = zod.object({
 						.describe(
 							"Column name in table_name that uniquely identifies each participant.",
 						),
+					cluster_key: zod
+						.union([zod.string(), zod.null()])
+						.optional()
+						.describe(
+							"Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.",
+						),
 					strata: zod
 						.array(
 							zod
@@ -9565,6 +9197,22 @@ export const powerCheckBody = zod.object({
 										.optional()
 										.describe(
 											"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+										),
+									icc: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Intracluster correlation coefficient for cluster-randomized designs.",
+										),
+									avg_cluster_size: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Average number of individuals per cluster."),
+									cv: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Coefficient of variation in cluster sizes (0 = equal sizes).",
 										),
 								})
 								.describe(
@@ -9604,10 +9252,13 @@ export const powerCheckBody = zod.object({
 							"Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.",
 						),
 					desired_n: zod
-						.union([zod.number(), zod.null()])
+						.union([
+							zod.number().min(powerCheckBodyDesignSpecDesiredNMinFour),
+							zod.null(),
+						])
 						.optional()
 						.describe(
-							"Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.",
+							"Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size. ",
 						),
 					power: zod
 						.number()
@@ -9643,6 +9294,7 @@ export const powerCheckBody = zod.object({
 
 export const powerCheckResponseAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const powerCheckResponseAnalysesItemMsgHighClusterVariationDefault = false;
 export const powerCheckResponseAnalysesMax = 150;
 
 export const powerCheckResponse = zod.object({
@@ -9666,6 +9318,22 @@ export const powerCheckResponse = zod.object({
 								.optional()
 								.describe(
 									"Absolute target value = metric_baseline*(1 + metric_pct_change)",
+								),
+							icc: zod
+								.union([zod.number(), zod.null()])
+								.optional()
+								.describe(
+									"Intracluster correlation coefficient for cluster-randomized designs.",
+								),
+							avg_cluster_size: zod
+								.union([zod.number(), zod.null()])
+								.optional()
+								.describe("Average number of individuals per cluster."),
+							cv: zod
+								.union([zod.number(), zod.null()])
+								.optional()
+								.describe(
+									"Coefficient of variation in cluster sizes (0 = equal sizes).",
 								),
 							metric_type: zod
 								.union([
@@ -9698,22 +9366,6 @@ export const powerCheckResponse = zod.object({
 								.describe(
 									"The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n.",
 								),
-							icc: zod
-								.union([zod.number(), zod.null()])
-								.optional()
-								.describe(
-									"Intracluster correlation coefficient for cluster-randomized designs.",
-								),
-							avg_cluster_size: zod
-								.union([zod.number(), zod.null()])
-								.optional()
-								.describe("Average number of individuals per cluster."),
-							cv: zod
-								.union([zod.number(), zod.null()])
-								.optional()
-								.describe(
-									"Coefficient of variation in cluster sizes (0 = equal sizes).",
-								),
 						})
 						.describe(
 							"Defines a metric to measure in an experiment with its baseline stats.",
@@ -9739,6 +9391,12 @@ export const powerCheckResponse = zod.object({
 						.optional()
 						.describe(
 							"If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.",
+						),
+					pct_change_with_desired_n: zod
+						.union([zod.number(), zod.null()])
+						.optional()
+						.describe(
+							"The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).",
 						),
 					msg: zod
 						.union([
@@ -9773,6 +9431,7 @@ export const powerCheckResponse = zod.object({
 											zod.null(),
 										])
 										.optional(),
+									high_cluster_variation: zod.boolean().optional(),
 								})
 								.describe(
 									"Describes interpretation of power analysis results.",

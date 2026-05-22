@@ -48,7 +48,6 @@ export type AnyBanditDesignSpecInputExperimentType =
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AnyBanditDesignSpecInputExperimentType = {
-	bayes_ab_online: "bayes_ab_online",
 	cmab_online: "cmab_online",
 	mab_online: "mab_online",
 } as const;
@@ -62,9 +61,6 @@ export type AnyBanditDesignSpecInput =
 	  })
 	| (CMABExperimentSpecInput & {
 			experiment_type: AnyBanditDesignSpecInputExperimentType;
-	  })
-	| (BayesABExperimentSpecInput & {
-			experiment_type: AnyBanditDesignSpecInputExperimentType;
 	  });
 
 export type AnyBanditDesignSpecOutputExperimentType =
@@ -72,7 +68,6 @@ export type AnyBanditDesignSpecOutputExperimentType =
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AnyBanditDesignSpecOutputExperimentType = {
-	bayes_ab_online: "bayes_ab_online",
 	cmab_online: "cmab_online",
 	mab_online: "mab_online",
 } as const;
@@ -85,9 +80,6 @@ export type AnyBanditDesignSpecOutput =
 			experiment_type: AnyBanditDesignSpecOutputExperimentType;
 	  })
 	| (CMABExperimentSpecOutput & {
-			experiment_type: AnyBanditDesignSpecOutputExperimentType;
-	  })
-	| (BayesABExperimentSpecOutput & {
 			experiment_type: AnyBanditDesignSpecOutputExperimentType;
 	  });
 
@@ -573,100 +565,6 @@ export interface BanditExperimentAnalysisResponse {
 	contexts?: BanditExperimentAnalysisResponseContexts;
 }
 
-export type BayesABExperimentSpecInputExperimentType =
-	(typeof BayesABExperimentSpecInputExperimentType)[keyof typeof BayesABExperimentSpecInputExperimentType];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const BayesABExperimentSpecInputExperimentType = {
-	bayes_ab_online: "bayes_ab_online",
-} as const;
-
-/**
- * Optional URL to a more detailed experiment design doc.
- */
-export type BayesABExperimentSpecInputDesignUrl = string | null;
-
-/**
- * Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.
- */
-export type BayesABExperimentSpecInputContexts = Context[] | null;
-
-/**
- * Use this type to randomly assign participants into arms during live experiment execution with
-Bayesian A/B experiments.
-
-For example, you may wish to experiment on new users. Assignments are issued via API request.
- */
-export interface BayesABExperimentSpecInput {
-	experiment_type: BayesABExperimentSpecInputExperimentType;
-	/** @maxLength 100 */
-	experiment_name: string;
-	/** @maxLength 2000 */
-	description: string;
-	/** Optional URL to a more detailed experiment design doc. */
-	design_url?: BayesABExperimentSpecInputDesignUrl;
-	start_date: string;
-	end_date: string;
-	/**
-	 * @minItems 2
-	 * @maxItems 20
-	 */
-	arms: ArmBandit[];
-	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
-	contexts?: BayesABExperimentSpecInputContexts;
-	/** The type of prior distribution for the arms. */
-	prior_type?: PriorTypes;
-	/** The type of reward we observe from the experiment. */
-	reward_type?: LikelihoodTypes;
-}
-
-export type BayesABExperimentSpecOutputExperimentType =
-	(typeof BayesABExperimentSpecOutputExperimentType)[keyof typeof BayesABExperimentSpecOutputExperimentType];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const BayesABExperimentSpecOutputExperimentType = {
-	bayes_ab_online: "bayes_ab_online",
-} as const;
-
-/**
- * Optional URL to a more detailed experiment design doc.
- */
-export type BayesABExperimentSpecOutputDesignUrl = string | null;
-
-/**
- * Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.
- */
-export type BayesABExperimentSpecOutputContexts = Context[] | null;
-
-/**
- * Use this type to randomly assign participants into arms during live experiment execution with
-Bayesian A/B experiments.
-
-For example, you may wish to experiment on new users. Assignments are issued via API request.
- */
-export interface BayesABExperimentSpecOutput {
-	experiment_type: BayesABExperimentSpecOutputExperimentType;
-	/** @maxLength 100 */
-	experiment_name: string;
-	/** @maxLength 2000 */
-	description: string;
-	/** Optional URL to a more detailed experiment design doc. */
-	design_url?: BayesABExperimentSpecOutputDesignUrl;
-	start_date: string;
-	end_date: string;
-	/**
-	 * @minItems 2
-	 * @maxItems 20
-	 */
-	arms: ArmBandit[];
-	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
-	contexts?: BayesABExperimentSpecOutputContexts;
-	/** The type of prior distribution for the arms. */
-	prior_type?: PriorTypes;
-	/** The type of reward we observe from the experiment. */
-	reward_type?: LikelihoodTypes;
-}
-
 export type BqDsnInputType =
 	(typeof BqDsnInputType)[keyof typeof BqDsnInputType];
 
@@ -1142,6 +1040,21 @@ export type DesignSpecMetricMetricPctChange = number | null;
 export type DesignSpecMetricMetricTarget = number | null;
 
 /**
+ * Intracluster correlation coefficient for cluster-randomized designs.
+ */
+export type DesignSpecMetricIcc = number | null;
+
+/**
+ * Average number of individuals per cluster.
+ */
+export type DesignSpecMetricAvgClusterSize = number | null;
+
+/**
+ * Coefficient of variation in cluster sizes (0 = equal sizes).
+ */
+export type DesignSpecMetricCv = number | null;
+
+/**
  * Inferred from dwh type.
  */
 export type DesignSpecMetricMetricType = MetricType | null;
@@ -1167,21 +1080,6 @@ export type DesignSpecMetricAvailableNonnullN = number | null;
 export type DesignSpecMetricAvailableN = number | null;
 
 /**
- * Intracluster correlation coefficient for cluster-randomized designs.
- */
-export type DesignSpecMetricIcc = number | null;
-
-/**
- * Average number of individuals per cluster.
- */
-export type DesignSpecMetricAvgClusterSize = number | null;
-
-/**
- * Coefficient of variation in cluster sizes (0 = equal sizes).
- */
-export type DesignSpecMetricCv = number | null;
-
-/**
  * Defines a metric to measure in an experiment with its baseline stats.
  */
 export interface DesignSpecMetric {
@@ -1191,6 +1089,12 @@ export interface DesignSpecMetric {
 	metric_pct_change?: DesignSpecMetricMetricPctChange;
 	/** Absolute target value = metric_baseline*(1 + metric_pct_change) */
 	metric_target?: DesignSpecMetricMetricTarget;
+	/** Intracluster correlation coefficient for cluster-randomized designs. */
+	icc?: DesignSpecMetricIcc;
+	/** Average number of individuals per cluster. */
+	avg_cluster_size?: DesignSpecMetricAvgClusterSize;
+	/** Coefficient of variation in cluster sizes (0 = equal sizes). */
+	cv?: DesignSpecMetricCv;
 	/** Inferred from dwh type. */
 	metric_type?: DesignSpecMetricMetricType;
 	/** Mean of the tracked metric. */
@@ -1201,12 +1105,6 @@ export interface DesignSpecMetric {
 	available_nonnull_n?: DesignSpecMetricAvailableNonnullN;
 	/** The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n. */
 	available_n?: DesignSpecMetricAvailableN;
-	/** Intracluster correlation coefficient for cluster-randomized designs. */
-	icc?: DesignSpecMetricIcc;
-	/** Average number of individuals per cluster. */
-	avg_cluster_size?: DesignSpecMetricAvgClusterSize;
-	/** Coefficient of variation in cluster sizes (0 = equal sizes). */
-	cv?: DesignSpecMetricCv;
 }
 
 /**
@@ -1220,17 +1118,17 @@ export type DesignSpecMetricRequestMetricPctChange = number | null;
 export type DesignSpecMetricRequestMetricTarget = number | null;
 
 /**
- * Intracluster correlation coefficient for cluster-randomized designs. (Manually added; not regenerated yet from PR #163 BE.)
+ * Intracluster correlation coefficient for cluster-randomized designs.
  */
 export type DesignSpecMetricRequestIcc = number | null;
 
 /**
- * Average number of individuals per cluster. (Manually added; not regenerated yet from PR #163 BE.)
+ * Average number of individuals per cluster.
  */
 export type DesignSpecMetricRequestAvgClusterSize = number | null;
 
 /**
- * Coefficient of variation in cluster sizes (0 = equal sizes). (Manually added; not regenerated yet from PR #163 BE.)
+ * Coefficient of variation in cluster sizes (0 = equal sizes).
  */
 export type DesignSpecMetricRequestCv = number | null;
 
@@ -2058,6 +1956,11 @@ export type MetricPowerAnalysisInputTargetPossible = number | null;
 export type MetricPowerAnalysisInputPctChangePossible = number | null;
 
 /**
+ * The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).
+ */
+export type MetricPowerAnalysisInputPctChangeWithDesiredN = number | null;
+
+/**
  * Human friendly message about the above results.
  */
 export type MetricPowerAnalysisInputMsg = MetricPowerAnalysisMessage | null;
@@ -2100,6 +2003,8 @@ export interface MetricPowerAnalysisInput {
 	target_possible?: MetricPowerAnalysisInputTargetPossible;
 	/** If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change. */
 	pct_change_possible?: MetricPowerAnalysisInputPctChangePossible;
+	/** The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs). */
+	pct_change_with_desired_n?: MetricPowerAnalysisInputPctChangeWithDesiredN;
 	/** Human friendly message about the above results. */
 	msg?: MetricPowerAnalysisInputMsg;
 	/** Total number of clusters needed across all arms */
@@ -2133,6 +2038,11 @@ export type MetricPowerAnalysisOutputTargetPossible = number | null;
  * If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.
  */
 export type MetricPowerAnalysisOutputPctChangePossible = number | null;
+
+/**
+ * The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).
+ */
+export type MetricPowerAnalysisOutputPctChangeWithDesiredN = number | null;
 
 /**
  * Human friendly message about the above results.
@@ -2177,6 +2087,8 @@ export interface MetricPowerAnalysisOutput {
 	target_possible?: MetricPowerAnalysisOutputTargetPossible;
 	/** If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change. */
 	pct_change_possible?: MetricPowerAnalysisOutputPctChangePossible;
+	/** The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs). */
+	pct_change_with_desired_n?: MetricPowerAnalysisOutputPctChangeWithDesiredN;
 	/** Human friendly message about the above results. */
 	msg?: MetricPowerAnalysisOutputMsg;
 	/** Total number of clusters needed across all arms */
@@ -2208,6 +2120,7 @@ export interface MetricPowerAnalysisMessage {
 	/** Power analysis result formatted as a template string with curly-braced {} named placeholders. Use with the dictionary of values to support localization of messages. */
 	source_msg: string;
 	values?: MetricPowerAnalysisMessageValues;
+	high_cluster_variation?: boolean;
 }
 
 /**
@@ -2269,7 +2182,12 @@ export const OnlineFrequentistExperimentSpecInputExperimentType = {
 export type OnlineFrequentistExperimentSpecInputDesignUrl = string | null;
 
 /**
- * Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.
+ * Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.
+ */
+export type OnlineFrequentistExperimentSpecInputClusterKey = string | null;
+
+/**
+ * Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.
  */
 export type OnlineFrequentistExperimentSpecInputDesiredN = number | null;
 
@@ -2304,6 +2222,8 @@ export interface OnlineFrequentistExperimentSpecInput {
 	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
 	 */
 	primary_key: string;
+	/** Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized. */
+	cluster_key?: OnlineFrequentistExperimentSpecInputClusterKey;
 	/**
 	 * Optional fields to use for stratified assignment.
 	 * @maxItems 150
@@ -2320,10 +2240,8 @@ export interface OnlineFrequentistExperimentSpecInput {
 	 * @maxItems 20
 	 */
 	filters: FilterInput[];
-	/** Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size. */
+	/** Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.  */
 	desired_n?: OnlineFrequentistExperimentSpecInputDesiredN;
-	/** Column name in table_name that identifies the cluster each participant belongs to. Set this to use cluster randomization. (Manually added; not regenerated yet from PR #163 BE.) */
-	cluster_column?: string | null;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
@@ -2358,7 +2276,12 @@ export const OnlineFrequentistExperimentSpecOutputExperimentType = {
 export type OnlineFrequentistExperimentSpecOutputDesignUrl = string | null;
 
 /**
- * Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.
+ * Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.
+ */
+export type OnlineFrequentistExperimentSpecOutputClusterKey = string | null;
+
+/**
+ * Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.
  */
 export type OnlineFrequentistExperimentSpecOutputDesiredN = number | null;
 
@@ -2393,6 +2316,8 @@ export interface OnlineFrequentistExperimentSpecOutput {
 	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
 	 */
 	primary_key: string;
+	/** Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized. */
+	cluster_key?: OnlineFrequentistExperimentSpecOutputClusterKey;
 	/**
 	 * Optional fields to use for stratified assignment.
 	 * @maxItems 150
@@ -2409,10 +2334,8 @@ export interface OnlineFrequentistExperimentSpecOutput {
 	 * @maxItems 20
 	 */
 	filters: FilterOutput[];
-	/** Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size. */
+	/** Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.  */
 	desired_n?: OnlineFrequentistExperimentSpecOutputDesiredN;
-	/** Column name in table_name that identifies the cluster each participant belongs to. Set this to use cluster randomization. (Manually added; not regenerated yet from PR #163 BE.) */
-	cluster_column?: string | null;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
@@ -2560,7 +2483,12 @@ export const PreassignedFrequentistExperimentSpecInputExperimentType = {
 export type PreassignedFrequentistExperimentSpecInputDesignUrl = string | null;
 
 /**
- * Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.
+ * Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.
+ */
+export type PreassignedFrequentistExperimentSpecInputClusterKey = string | null;
+
+/**
+ * Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.
  */
 export type PreassignedFrequentistExperimentSpecInputDesiredN = number | null;
 
@@ -2593,6 +2521,8 @@ export interface PreassignedFrequentistExperimentSpecInput {
 	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
 	 */
 	primary_key: string;
+	/** Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized. */
+	cluster_key?: PreassignedFrequentistExperimentSpecInputClusterKey;
 	/**
 	 * Optional fields to use for stratified assignment.
 	 * @maxItems 150
@@ -2609,10 +2539,8 @@ export interface PreassignedFrequentistExperimentSpecInput {
 	 * @maxItems 20
 	 */
 	filters: FilterInput[];
-	/** Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size. */
+	/** Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.  */
 	desired_n?: PreassignedFrequentistExperimentSpecInputDesiredN;
-	/** Column name in table_name that identifies the cluster each participant belongs to. Set this to use cluster randomization. (Manually added; not regenerated yet from PR #163 BE.) */
-	cluster_column?: string | null;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
@@ -2647,7 +2575,14 @@ export const PreassignedFrequentistExperimentSpecOutputExperimentType = {
 export type PreassignedFrequentistExperimentSpecOutputDesignUrl = string | null;
 
 /**
- * Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size.
+ * Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.
+ */
+export type PreassignedFrequentistExperimentSpecOutputClusterKey =
+	| string
+	| null;
+
+/**
+ * Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.
  */
 export type PreassignedFrequentistExperimentSpecOutputDesiredN = number | null;
 
@@ -2680,6 +2615,8 @@ export interface PreassignedFrequentistExperimentSpecOutput {
 	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
 	 */
 	primary_key: string;
+	/** Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized. */
+	cluster_key?: PreassignedFrequentistExperimentSpecOutputClusterKey;
 	/**
 	 * Optional fields to use for stratified assignment.
 	 * @maxItems 150
@@ -2696,10 +2633,8 @@ export interface PreassignedFrequentistExperimentSpecOutput {
 	 * @maxItems 20
 	 */
 	filters: FilterOutput[];
-	/** Optional desired sample size for MDE calculation. If provided, calculates minimum detectable effect instead of required sample size. */
+	/** Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.  */
 	desired_n?: PreassignedFrequentistExperimentSpecOutputDesiredN;
-	/** Column name in table_name that identifies the cluster each participant belongs to. Set this to use cluster randomization. (Manually added; not regenerated yet from PR #163 BE.) */
-	cluster_column?: string | null;
 	/**
 	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
@@ -3197,10 +3132,6 @@ export type DeleteApiKeyParams = {
 };
 
 export type CreateExperimentParams = {
-	/**
-	 * Number of participants to assign.
-	 */
-	desired_n?: number | null;
 	/**
 	 * Whether to also stratify on metrics during assignment.
 	 */
