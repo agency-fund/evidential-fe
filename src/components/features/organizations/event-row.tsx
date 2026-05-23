@@ -42,7 +42,7 @@ export function EventRow({ event, organizationId }: { event: EventSummary; organ
           <Table.Cell>
             <Flex gap="2">
               {event.link && (
-                <Tooltip content="View">
+                <Tooltip content="View Experiment">
                   <Link href={event.link} target="_blank" rel="noopener noreferrer">
                     <IconButton variant="soft" color="green">
                       <EyeOpenIcon />
