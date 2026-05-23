@@ -99,6 +99,24 @@ export const getSnapshotResponse = zod
 																.describe(
 																	"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
 																),
+															icc: zod
+																.union([zod.number(), zod.null()])
+																.optional()
+																.describe(
+																	"Intracluster correlation coefficient for cluster-randomized designs.",
+																),
+															avg_cluster_size: zod
+																.union([zod.number(), zod.null()])
+																.optional()
+																.describe(
+																	"Average number of individuals per cluster.",
+																),
+															cv: zod
+																.union([zod.number(), zod.null()])
+																.optional()
+																.describe(
+																	"Coefficient of variation in cluster sizes (0 = equal sizes).",
+																),
 														})
 														.describe(
 															"Defines a request to look up baseline stats for a metric to measure in an experiment.",
@@ -515,6 +533,24 @@ export const listSnapshotsResponse = zod.object({
 																.optional()
 																.describe(
 																	"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+																),
+															icc: zod
+																.union([zod.number(), zod.null()])
+																.optional()
+																.describe(
+																	"Intracluster correlation coefficient for cluster-randomized designs.",
+																),
+															avg_cluster_size: zod
+																.union([zod.number(), zod.null()])
+																.optional()
+																.describe(
+																	"Average number of individuals per cluster.",
+																),
+															cv: zod
+																.union([zod.number(), zod.null()])
+																.optional()
+																.describe(
+																	"Coefficient of variation in cluster sizes (0 = equal sizes).",
 																),
 														})
 														.describe(
@@ -1035,6 +1071,15 @@ export const listOrganizationEventsResponse = zod.object({
 			})
 			.describe("Describes an event."),
 	),
+});
+
+/**
+ * Re-enqueues the outbound webhook task that produced a webhook.sent event.
+ * @summary Resend Organization Event
+ */
+export const resendOrganizationEventParams = zod.object({
+	organization_id: zod.string(),
+	event_id: zod.string(),
 });
 
 /**
@@ -2953,6 +2998,7 @@ export const createExperimentBodyDesignSpecContextsMaxFour = 150;
 
 export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentBodyPowerAnalysesAnalysesItemMsgHighClusterVariationDefault = false;
 export const createExperimentBodyPowerAnalysesAnalysesMax = 150;
 
 export const createExperimentBodyWebhooksDefault = [];
@@ -3032,6 +3078,12 @@ export const createExperimentBody = zod.object({
 								.describe(
 									"Column name in table_name that uniquely identifies each participant.",
 								),
+							cluster_key: zod
+								.union([zod.string(), zod.null()])
+								.optional()
+								.describe(
+									"Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.",
+								),
 							strata: zod
 								.array(
 									zod
@@ -3066,6 +3118,22 @@ export const createExperimentBody = zod.object({
 												.optional()
 												.describe(
 													"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+												),
+											icc: zod
+												.union([zod.number(), zod.null()])
+												.optional()
+												.describe(
+													"Intracluster correlation coefficient for cluster-randomized designs.",
+												),
+											avg_cluster_size: zod
+												.union([zod.number(), zod.null()])
+												.optional()
+												.describe("Average number of individuals per cluster."),
+											cv: zod
+												.union([zod.number(), zod.null()])
+												.optional()
+												.describe(
+													"Coefficient of variation in cluster sizes (0 = equal sizes).",
 												),
 										})
 										.describe(
@@ -3215,6 +3283,12 @@ export const createExperimentBody = zod.object({
 								.describe(
 									"Column name in table_name that uniquely identifies each participant.",
 								),
+							cluster_key: zod
+								.union([zod.string(), zod.null()])
+								.optional()
+								.describe(
+									"Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.",
+								),
 							strata: zod
 								.array(
 									zod
@@ -3249,6 +3323,22 @@ export const createExperimentBody = zod.object({
 												.optional()
 												.describe(
 													"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+												),
+											icc: zod
+												.union([zod.number(), zod.null()])
+												.optional()
+												.describe(
+													"Intracluster correlation coefficient for cluster-randomized designs.",
+												),
+											avg_cluster_size: zod
+												.union([zod.number(), zod.null()])
+												.optional()
+												.describe("Average number of individuals per cluster."),
+											cv: zod
+												.union([zod.number(), zod.null()])
+												.optional()
+												.describe(
+													"Coefficient of variation in cluster sizes (0 = equal sizes).",
 												),
 										})
 										.describe(
@@ -3666,6 +3756,22 @@ export const createExperimentBody = zod.object({
 											.describe(
 												"Absolute target value = metric_baseline*(1 + metric_pct_change)",
 											),
+										icc: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Intracluster correlation coefficient for cluster-randomized designs.",
+											),
+										avg_cluster_size: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Average number of individuals per cluster."),
+										cv: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Coefficient of variation in cluster sizes (0 = equal sizes).",
+											),
 										metric_type: zod
 											.union([
 												zod
@@ -3696,22 +3802,6 @@ export const createExperimentBody = zod.object({
 											.optional()
 											.describe(
 												"The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n.",
-											),
-										icc: zod
-											.union([zod.number(), zod.null()])
-											.optional()
-											.describe(
-												"Intracluster correlation coefficient for cluster-randomized designs.",
-											),
-										avg_cluster_size: zod
-											.union([zod.number(), zod.null()])
-											.optional()
-											.describe("Average number of individuals per cluster."),
-										cv: zod
-											.union([zod.number(), zod.null()])
-											.optional()
-											.describe(
-												"Coefficient of variation in cluster sizes (0 = equal sizes).",
 											),
 									})
 									.describe(
@@ -3782,6 +3872,7 @@ export const createExperimentBody = zod.object({
 														zod.null(),
 													])
 													.optional(),
+												high_cluster_variation: zod.boolean().optional(),
 											})
 											.describe(
 												"Describes interpretation of power analysis results.",
@@ -3964,6 +4055,7 @@ export const createExperimentResponseDesignSpecContextsMaxFour = 150;
 
 export const createExperimentResponsePowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentResponsePowerAnalysesAnalysesItemMsgHighClusterVariationDefault = false;
 export const createExperimentResponsePowerAnalysesAnalysesMax = 150;
 
 export const createExperimentResponseAssignSummaryArmSizesItemArmArmNameMax = 100;
@@ -4084,6 +4176,12 @@ export const createExperimentResponse = zod
 									.describe(
 										"Column name in table_name that uniquely identifies each participant.",
 									),
+								cluster_key: zod
+									.union([zod.string(), zod.null()])
+									.optional()
+									.describe(
+										"Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.",
+									),
 								strata: zod
 									.array(
 										zod
@@ -4122,6 +4220,24 @@ export const createExperimentResponse = zod
 													.optional()
 													.describe(
 														"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+													),
+												icc: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Intracluster correlation coefficient for cluster-randomized designs.",
+													),
+												avg_cluster_size: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Average number of individuals per cluster.",
+													),
+												cv: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Coefficient of variation in cluster sizes (0 = equal sizes).",
 													),
 											})
 											.describe(
@@ -4273,6 +4389,12 @@ export const createExperimentResponse = zod
 									.describe(
 										"Column name in table_name that uniquely identifies each participant.",
 									),
+								cluster_key: zod
+									.union([zod.string(), zod.null()])
+									.optional()
+									.describe(
+										"Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.",
+									),
 								strata: zod
 									.array(
 										zod
@@ -4311,6 +4433,24 @@ export const createExperimentResponse = zod
 													.optional()
 													.describe(
 														"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+													),
+												icc: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Intracluster correlation coefficient for cluster-randomized designs.",
+													),
+												avg_cluster_size: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Average number of individuals per cluster.",
+													),
+												cv: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Coefficient of variation in cluster sizes (0 = equal sizes).",
 													),
 											})
 											.describe(
@@ -4745,6 +4885,22 @@ export const createExperimentResponse = zod
 											.describe(
 												"Absolute target value = metric_baseline*(1 + metric_pct_change)",
 											),
+										icc: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Intracluster correlation coefficient for cluster-randomized designs.",
+											),
+										avg_cluster_size: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Average number of individuals per cluster."),
+										cv: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Coefficient of variation in cluster sizes (0 = equal sizes).",
+											),
 										metric_type: zod
 											.union([
 												zod
@@ -4775,22 +4931,6 @@ export const createExperimentResponse = zod
 											.optional()
 											.describe(
 												"The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n.",
-											),
-										icc: zod
-											.union([zod.number(), zod.null()])
-											.optional()
-											.describe(
-												"Intracluster correlation coefficient for cluster-randomized designs.",
-											),
-										avg_cluster_size: zod
-											.union([zod.number(), zod.null()])
-											.optional()
-											.describe("Average number of individuals per cluster."),
-										cv: zod
-											.union([zod.number(), zod.null()])
-											.optional()
-											.describe(
-												"Coefficient of variation in cluster sizes (0 = equal sizes).",
 											),
 									})
 									.describe(
@@ -4861,6 +5001,7 @@ export const createExperimentResponse = zod
 														zod.null(),
 													])
 													.optional(),
+												high_cluster_variation: zod.boolean().optional(),
 											})
 											.describe(
 												"Describes interpretation of power analysis results.",
@@ -5082,6 +5223,22 @@ export const analyzeExperimentResponse = zod
 											.optional()
 											.describe(
 												"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+											),
+										icc: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Intracluster correlation coefficient for cluster-randomized designs.",
+											),
+										avg_cluster_size: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Average number of individuals per cluster."),
+										cv: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Coefficient of variation in cluster sizes (0 = equal sizes).",
 											),
 									})
 									.describe(
@@ -5414,6 +5571,22 @@ export const analyzeCmabExperimentResponse = zod
 											.optional()
 											.describe(
 												"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+											),
+										icc: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Intracluster correlation coefficient for cluster-randomized designs.",
+											),
+										avg_cluster_size: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe("Average number of individuals per cluster."),
+										cv: zod
+											.union([zod.number(), zod.null()])
+											.optional()
+											.describe(
+												"Coefficient of variation in cluster sizes (0 = equal sizes).",
 											),
 									})
 									.describe(
@@ -5817,6 +5990,7 @@ export const listOrganizationExperimentsResponseItemsItemDesignSpecContextsMaxFo
 
 export const listOrganizationExperimentsResponseItemsItemPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const listOrganizationExperimentsResponseItemsItemPowerAnalysesAnalysesItemMsgHighClusterVariationDefault = false;
 export const listOrganizationExperimentsResponseItemsItemPowerAnalysesAnalysesMax = 150;
 
 export const listOrganizationExperimentsResponseItemsItemAssignSummaryArmSizesItemArmArmNameMax = 100;
@@ -5955,6 +6129,12 @@ export const listOrganizationExperimentsResponse = zod.object({
 											.describe(
 												"Column name in table_name that uniquely identifies each participant.",
 											),
+										cluster_key: zod
+											.union([zod.string(), zod.null()])
+											.optional()
+											.describe(
+												"Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.",
+											),
 										strata: zod
 											.array(
 												zod
@@ -5995,6 +6175,24 @@ export const listOrganizationExperimentsResponse = zod.object({
 															.optional()
 															.describe(
 																"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+															),
+														icc: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Intracluster correlation coefficient for cluster-randomized designs.",
+															),
+														avg_cluster_size: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Average number of individuals per cluster.",
+															),
+														cv: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Coefficient of variation in cluster sizes (0 = equal sizes).",
 															),
 													})
 													.describe(
@@ -6184,6 +6382,12 @@ export const listOrganizationExperimentsResponse = zod.object({
 											.describe(
 												"Column name in table_name that uniquely identifies each participant.",
 											),
+										cluster_key: zod
+											.union([zod.string(), zod.null()])
+											.optional()
+											.describe(
+												"Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.",
+											),
 										strata: zod
 											.array(
 												zod
@@ -6224,6 +6428,24 @@ export const listOrganizationExperimentsResponse = zod.object({
 															.optional()
 															.describe(
 																"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+															),
+														icc: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Intracluster correlation coefficient for cluster-randomized designs.",
+															),
+														avg_cluster_size: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Average number of individuals per cluster.",
+															),
+														cv: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Coefficient of variation in cluster sizes (0 = equal sizes).",
 															),
 													})
 													.describe(
@@ -6720,6 +6942,24 @@ export const listOrganizationExperimentsResponse = zod.object({
 													.describe(
 														"Absolute target value = metric_baseline*(1 + metric_pct_change)",
 													),
+												icc: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Intracluster correlation coefficient for cluster-randomized designs.",
+													),
+												avg_cluster_size: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Average number of individuals per cluster.",
+													),
+												cv: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Coefficient of variation in cluster sizes (0 = equal sizes).",
+													),
 												metric_type: zod
 													.union([
 														zod
@@ -6752,24 +6992,6 @@ export const listOrganizationExperimentsResponse = zod.object({
 													.optional()
 													.describe(
 														"The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n.",
-													),
-												icc: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Intracluster correlation coefficient for cluster-randomized designs.",
-													),
-												avg_cluster_size: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Average number of individuals per cluster.",
-													),
-												cv: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Coefficient of variation in cluster sizes (0 = equal sizes).",
 													),
 											})
 											.describe(
@@ -6840,6 +7062,7 @@ export const listOrganizationExperimentsResponse = zod.object({
 																zod.null(),
 															])
 															.optional(),
+														high_cluster_variation: zod.boolean().optional(),
 													})
 													.describe(
 														"Describes interpretation of power analysis results.",
@@ -7149,6 +7372,7 @@ export const getExperimentForUiResponseConfigDesignSpecContextsMaxFour = 150;
 
 export const getExperimentForUiResponseConfigPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const getExperimentForUiResponseConfigPowerAnalysesAnalysesItemMsgHighClusterVariationDefault = false;
 export const getExperimentForUiResponseConfigPowerAnalysesAnalysesMax = 150;
 
 export const getExperimentForUiResponseConfigAssignSummaryArmSizesItemArmArmNameMax = 100;
@@ -7288,6 +7512,12 @@ export const getExperimentForUiResponse = zod
 											.describe(
 												"Column name in table_name that uniquely identifies each participant.",
 											),
+										cluster_key: zod
+											.union([zod.string(), zod.null()])
+											.optional()
+											.describe(
+												"Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.",
+											),
 										strata: zod
 											.array(
 												zod
@@ -7326,6 +7556,24 @@ export const getExperimentForUiResponse = zod
 															.optional()
 															.describe(
 																"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+															),
+														icc: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Intracluster correlation coefficient for cluster-randomized designs.",
+															),
+														avg_cluster_size: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Average number of individuals per cluster.",
+															),
+														cv: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Coefficient of variation in cluster sizes (0 = equal sizes).",
 															),
 													})
 													.describe(
@@ -7501,6 +7749,12 @@ export const getExperimentForUiResponse = zod
 											.describe(
 												"Column name in table_name that uniquely identifies each participant.",
 											),
+										cluster_key: zod
+											.union([zod.string(), zod.null()])
+											.optional()
+											.describe(
+												"Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.",
+											),
 										strata: zod
 											.array(
 												zod
@@ -7541,6 +7795,24 @@ export const getExperimentForUiResponse = zod
 															.optional()
 															.describe(
 																"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+															),
+														icc: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Intracluster correlation coefficient for cluster-randomized designs.",
+															),
+														avg_cluster_size: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Average number of individuals per cluster.",
+															),
+														cv: zod
+															.union([zod.number(), zod.null()])
+															.optional()
+															.describe(
+																"Coefficient of variation in cluster sizes (0 = equal sizes).",
 															),
 													})
 													.describe(
@@ -8035,6 +8307,24 @@ export const getExperimentForUiResponse = zod
 													.describe(
 														"Absolute target value = metric_baseline*(1 + metric_pct_change)",
 													),
+												icc: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Intracluster correlation coefficient for cluster-randomized designs.",
+													),
+												avg_cluster_size: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Average number of individuals per cluster.",
+													),
+												cv: zod
+													.union([zod.number(), zod.null()])
+													.optional()
+													.describe(
+														"Coefficient of variation in cluster sizes (0 = equal sizes).",
+													),
 												metric_type: zod
 													.union([
 														zod
@@ -8067,24 +8357,6 @@ export const getExperimentForUiResponse = zod
 													.optional()
 													.describe(
 														"The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n.",
-													),
-												icc: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Intracluster correlation coefficient for cluster-randomized designs.",
-													),
-												avg_cluster_size: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Average number of individuals per cluster.",
-													),
-												cv: zod
-													.union([zod.number(), zod.null()])
-													.optional()
-													.describe(
-														"Coefficient of variation in cluster sizes (0 = equal sizes).",
 													),
 											})
 											.describe(
@@ -8155,6 +8427,7 @@ export const getExperimentForUiResponse = zod
 																zod.null(),
 															])
 															.optional(),
+														high_cluster_variation: zod.boolean().optional(),
 													})
 													.describe(
 														"Describes interpretation of power analysis results.",
@@ -8700,6 +8973,12 @@ export const powerCheckBody = zod.object({
 						.describe(
 							"Column name in table_name that uniquely identifies each participant.",
 						),
+					cluster_key: zod
+						.union([zod.string(), zod.null()])
+						.optional()
+						.describe(
+							"Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.",
+						),
 					strata: zod
 						.array(
 							zod
@@ -8730,6 +9009,22 @@ export const powerCheckBody = zod.object({
 										.optional()
 										.describe(
 											"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+										),
+									icc: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Intracluster correlation coefficient for cluster-randomized designs.",
+										),
+									avg_cluster_size: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Average number of individuals per cluster."),
+									cv: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Coefficient of variation in cluster sizes (0 = equal sizes).",
 										),
 								})
 								.describe(
@@ -8871,6 +9166,12 @@ export const powerCheckBody = zod.object({
 						.describe(
 							"Column name in table_name that uniquely identifies each participant.",
 						),
+					cluster_key: zod
+						.union([zod.string(), zod.null()])
+						.optional()
+						.describe(
+							"Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.",
+						),
 					strata: zod
 						.array(
 							zod
@@ -8905,6 +9206,22 @@ export const powerCheckBody = zod.object({
 										.optional()
 										.describe(
 											"Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.",
+										),
+									icc: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Intracluster correlation coefficient for cluster-randomized designs.",
+										),
+									avg_cluster_size: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe("Average number of individuals per cluster."),
+									cv: zod
+										.union([zod.number(), zod.null()])
+										.optional()
+										.describe(
+											"Coefficient of variation in cluster sizes (0 = equal sizes).",
 										),
 								})
 								.describe(
@@ -8986,6 +9303,7 @@ export const powerCheckBody = zod.object({
 
 export const powerCheckResponseAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const powerCheckResponseAnalysesItemMsgHighClusterVariationDefault = false;
 export const powerCheckResponseAnalysesMax = 150;
 
 export const powerCheckResponse = zod.object({
@@ -9009,6 +9327,22 @@ export const powerCheckResponse = zod.object({
 								.optional()
 								.describe(
 									"Absolute target value = metric_baseline*(1 + metric_pct_change)",
+								),
+							icc: zod
+								.union([zod.number(), zod.null()])
+								.optional()
+								.describe(
+									"Intracluster correlation coefficient for cluster-randomized designs.",
+								),
+							avg_cluster_size: zod
+								.union([zod.number(), zod.null()])
+								.optional()
+								.describe("Average number of individuals per cluster."),
+							cv: zod
+								.union([zod.number(), zod.null()])
+								.optional()
+								.describe(
+									"Coefficient of variation in cluster sizes (0 = equal sizes).",
 								),
 							metric_type: zod
 								.union([
@@ -9040,22 +9374,6 @@ export const powerCheckResponse = zod.object({
 								.optional()
 								.describe(
 									"The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n.",
-								),
-							icc: zod
-								.union([zod.number(), zod.null()])
-								.optional()
-								.describe(
-									"Intracluster correlation coefficient for cluster-randomized designs.",
-								),
-							avg_cluster_size: zod
-								.union([zod.number(), zod.null()])
-								.optional()
-								.describe("Average number of individuals per cluster."),
-							cv: zod
-								.union([zod.number(), zod.null()])
-								.optional()
-								.describe(
-									"Coefficient of variation in cluster sizes (0 = equal sizes).",
 								),
 						})
 						.describe(
@@ -9122,6 +9440,7 @@ export const powerCheckResponse = zod.object({
 											zod.null(),
 										])
 										.optional(),
+									high_cluster_variation: zod.boolean().optional(),
 								})
 								.describe(
 									"Describes interpretation of power analysis results.",

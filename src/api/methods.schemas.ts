@@ -1040,6 +1040,21 @@ export type DesignSpecMetricMetricPctChange = number | null;
 export type DesignSpecMetricMetricTarget = number | null;
 
 /**
+ * Intracluster correlation coefficient for cluster-randomized designs.
+ */
+export type DesignSpecMetricIcc = number | null;
+
+/**
+ * Average number of individuals per cluster.
+ */
+export type DesignSpecMetricAvgClusterSize = number | null;
+
+/**
+ * Coefficient of variation in cluster sizes (0 = equal sizes).
+ */
+export type DesignSpecMetricCv = number | null;
+
+/**
  * Inferred from dwh type.
  */
 export type DesignSpecMetricMetricType = MetricType | null;
@@ -1065,21 +1080,6 @@ export type DesignSpecMetricAvailableNonnullN = number | null;
 export type DesignSpecMetricAvailableN = number | null;
 
 /**
- * Intracluster correlation coefficient for cluster-randomized designs.
- */
-export type DesignSpecMetricIcc = number | null;
-
-/**
- * Average number of individuals per cluster.
- */
-export type DesignSpecMetricAvgClusterSize = number | null;
-
-/**
- * Coefficient of variation in cluster sizes (0 = equal sizes).
- */
-export type DesignSpecMetricCv = number | null;
-
-/**
  * Defines a metric to measure in an experiment with its baseline stats.
  */
 export interface DesignSpecMetric {
@@ -1089,6 +1089,12 @@ export interface DesignSpecMetric {
 	metric_pct_change?: DesignSpecMetricMetricPctChange;
 	/** Absolute target value = metric_baseline*(1 + metric_pct_change) */
 	metric_target?: DesignSpecMetricMetricTarget;
+	/** Intracluster correlation coefficient for cluster-randomized designs. */
+	icc?: DesignSpecMetricIcc;
+	/** Average number of individuals per cluster. */
+	avg_cluster_size?: DesignSpecMetricAvgClusterSize;
+	/** Coefficient of variation in cluster sizes (0 = equal sizes). */
+	cv?: DesignSpecMetricCv;
 	/** Inferred from dwh type. */
 	metric_type?: DesignSpecMetricMetricType;
 	/** Mean of the tracked metric. */
@@ -1099,12 +1105,6 @@ export interface DesignSpecMetric {
 	available_nonnull_n?: DesignSpecMetricAvailableNonnullN;
 	/** The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n. */
 	available_n?: DesignSpecMetricAvailableN;
-	/** Intracluster correlation coefficient for cluster-randomized designs. */
-	icc?: DesignSpecMetricIcc;
-	/** Average number of individuals per cluster. */
-	avg_cluster_size?: DesignSpecMetricAvgClusterSize;
-	/** Coefficient of variation in cluster sizes (0 = equal sizes). */
-	cv?: DesignSpecMetricCv;
 }
 
 /**
@@ -1118,6 +1118,21 @@ export type DesignSpecMetricRequestMetricPctChange = number | null;
 export type DesignSpecMetricRequestMetricTarget = number | null;
 
 /**
+ * Intracluster correlation coefficient for cluster-randomized designs.
+ */
+export type DesignSpecMetricRequestIcc = number | null;
+
+/**
+ * Average number of individuals per cluster.
+ */
+export type DesignSpecMetricRequestAvgClusterSize = number | null;
+
+/**
+ * Coefficient of variation in cluster sizes (0 = equal sizes).
+ */
+export type DesignSpecMetricRequestCv = number | null;
+
+/**
  * Defines a request to look up baseline stats for a metric to measure in an experiment.
  */
 export interface DesignSpecMetricRequest {
@@ -1127,6 +1142,12 @@ export interface DesignSpecMetricRequest {
 	metric_pct_change?: DesignSpecMetricRequestMetricPctChange;
 	/** Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change. */
 	metric_target?: DesignSpecMetricRequestMetricTarget;
+	/** Intracluster correlation coefficient for cluster-randomized designs. */
+	icc?: DesignSpecMetricRequestIcc;
+	/** Average number of individuals per cluster. */
+	avg_cluster_size?: DesignSpecMetricRequestAvgClusterSize;
+	/** Coefficient of variation in cluster sizes (0 = equal sizes). */
+	cv?: DesignSpecMetricRequestCv;
 }
 
 /**
@@ -2099,6 +2120,7 @@ export interface MetricPowerAnalysisMessage {
 	/** Power analysis result formatted as a template string with curly-braced {} named placeholders. Use with the dictionary of values to support localization of messages. */
 	source_msg: string;
 	values?: MetricPowerAnalysisMessageValues;
+	high_cluster_variation?: boolean;
 }
 
 /**
@@ -2160,6 +2182,11 @@ export const OnlineFrequentistExperimentSpecInputExperimentType = {
 export type OnlineFrequentistExperimentSpecInputDesignUrl = string | null;
 
 /**
+ * Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.
+ */
+export type OnlineFrequentistExperimentSpecInputClusterKey = string | null;
+
+/**
  * Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.
  */
 export type OnlineFrequentistExperimentSpecInputDesiredN = number | null;
@@ -2195,6 +2222,8 @@ export interface OnlineFrequentistExperimentSpecInput {
 	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
 	 */
 	primary_key: string;
+	/** Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized. */
+	cluster_key?: OnlineFrequentistExperimentSpecInputClusterKey;
 	/**
 	 * Optional fields to use for stratified assignment.
 	 * @maxItems 150
@@ -2247,6 +2276,11 @@ export const OnlineFrequentistExperimentSpecOutputExperimentType = {
 export type OnlineFrequentistExperimentSpecOutputDesignUrl = string | null;
 
 /**
+ * Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.
+ */
+export type OnlineFrequentistExperimentSpecOutputClusterKey = string | null;
+
+/**
  * Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.
  */
 export type OnlineFrequentistExperimentSpecOutputDesiredN = number | null;
@@ -2282,6 +2316,8 @@ export interface OnlineFrequentistExperimentSpecOutput {
 	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
 	 */
 	primary_key: string;
+	/** Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized. */
+	cluster_key?: OnlineFrequentistExperimentSpecOutputClusterKey;
 	/**
 	 * Optional fields to use for stratified assignment.
 	 * @maxItems 150
@@ -2447,6 +2483,11 @@ export const PreassignedFrequentistExperimentSpecInputExperimentType = {
 export type PreassignedFrequentistExperimentSpecInputDesignUrl = string | null;
 
 /**
+ * Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.
+ */
+export type PreassignedFrequentistExperimentSpecInputClusterKey = string | null;
+
+/**
  * Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.
  */
 export type PreassignedFrequentistExperimentSpecInputDesiredN = number | null;
@@ -2480,6 +2521,8 @@ export interface PreassignedFrequentistExperimentSpecInput {
 	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
 	 */
 	primary_key: string;
+	/** Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized. */
+	cluster_key?: PreassignedFrequentistExperimentSpecInputClusterKey;
 	/**
 	 * Optional fields to use for stratified assignment.
 	 * @maxItems 150
@@ -2532,6 +2575,13 @@ export const PreassignedFrequentistExperimentSpecOutputExperimentType = {
 export type PreassignedFrequentistExperimentSpecOutputDesignUrl = string | null;
 
 /**
+ * Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.
+ */
+export type PreassignedFrequentistExperimentSpecOutputClusterKey =
+	| string
+	| null;
+
+/**
  * Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.
  */
 export type PreassignedFrequentistExperimentSpecOutputDesiredN = number | null;
@@ -2565,6 +2615,8 @@ export interface PreassignedFrequentistExperimentSpecOutput {
 	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
 	 */
 	primary_key: string;
+	/** Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized. */
+	cluster_key?: PreassignedFrequentistExperimentSpecOutputClusterKey;
 	/**
 	 * Optional fields to use for stratified assignment.
 	 * @maxItems 150
