@@ -38,6 +38,7 @@ export function EventsTable({ organizationId }: EventsTableProps) {
       swr: {
         keepPreviousData: true,
         enabled: !!organizationId,
+        refreshInterval: 15000,
       },
     },
   );
