@@ -28,13 +28,6 @@ import type { ErrorType } from "@/services/orval-fetch";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
-/**
- * Sets (or rotates) the Turn.io API token for an organization.
-
-Creates a Turn connection for the organization if one does not yet exist, otherwise
-overwrites the existing token. An organization has at most one Turn connection.
- * @summary Set Organization Turn Connection
- */
 export const getSetOrganizationTurnConnectionUrl = (organizationId: string) => {
 	return `/v1/m/integrations/turn-connection/${organizationId}`;
 };
@@ -71,9 +64,6 @@ export type SetOrganizationTurnConnectionMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Set Organization Turn Connection
- */
 export const useSetOrganizationTurnConnection = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -106,13 +96,6 @@ export const useSetOrganizationTurnConnection = <
 		...query,
 	};
 };
-/**
- * Returns a preview of the organization's configured Turn.io API token.
-
-Raises 404 if no Turn connection has been configured for the organization (or if the
-organization does not exist / the user does not have access to it).
- * @summary Get Organization Turn Connection
- */
 export const getGetOrganizationTurnConnectionUrl = (
 	organizationId: string,
 	params?: GetOrganizationTurnConnectionParams,
@@ -162,9 +145,6 @@ export type GetOrganizationTurnConnectionQueryError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Get Organization Turn Connection
- */
 export const useGetOrganizationTurnConnection = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -201,10 +181,6 @@ export const useGetOrganizationTurnConnection = <
 		...query,
 	};
 };
-/**
- * Removes an organization's Turn.io connection.
- * @summary Delete Turn Connection From Organization
- */
 export const getDeleteTurnConnectionFromOrganizationUrl = (
 	organizationId: string,
 	params?: DeleteTurnConnectionFromOrganizationParams,
@@ -267,9 +243,6 @@ export type DeleteTurnConnectionFromOrganizationMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Delete Turn Connection From Organization
- */
 export const useDeleteTurnConnectionFromOrganization = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -304,13 +277,6 @@ export const useDeleteTurnConnectionFromOrganization = <
 		...query,
 	};
 };
-/**
- * Returns a {name: uuid} map of Turn.io journeys available to the organization.
-
-The result is cached on the TurnConnection row and refreshed when older than
-TURN_JOURNEYS_CACHE_TTL_SECONDS, or when the API token is rotated.
- * @summary Get Organization Turn Journeys
- */
 export const getGetOrganizationTurnJourneysUrl = (organizationId: string) => {
 	return `/v1/m/integrations/turn-connection/${organizationId}/journeys`;
 };
@@ -338,9 +304,6 @@ export type GetOrganizationTurnJourneysQueryError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Get Organization Turn Journeys
- */
 export const useGetOrganizationTurnJourneys = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -374,10 +337,6 @@ export const useGetOrganizationTurnJourneys = <
 		...query,
 	};
 };
-/**
- * Adds or updates the mapping from each arm ID of the experiment to a Turn.io Journey ID.
- * @summary Set Turn Arm Journey Mapping
- */
 export const getSetTurnArmJourneyMappingUrl = (
 	datasourceId: string,
 	experimentId: string,
@@ -426,9 +385,6 @@ export type SetTurnArmJourneyMappingMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Set Turn Arm Journey Mapping
- */
 export const useSetTurnArmJourneyMapping = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -463,10 +419,6 @@ export const useSetTurnArmJourneyMapping = <
 		...query,
 	};
 };
-/**
- * Returns the current mapping from each arm ID of the experiment to a Turn.io Journey ID, if it exists.
- * @summary Get Turn Arm Journey Mapping
- */
 export const getGetTurnArmJourneyMappingUrl = (
 	datasourceId: string,
 	experimentId: string,
@@ -503,9 +455,6 @@ export type GetTurnArmJourneyMappingQueryError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Get Turn Arm Journey Mapping
- */
 export const useGetTurnArmJourneyMapping = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -543,10 +492,6 @@ export const useGetTurnArmJourneyMapping = <
 		...query,
 	};
 };
-/**
- * Deletes the mapping from each arm ID of the experiment to a Turn.io Journey ID, if it exists.
- * @summary Delete Turn Arm Journey Mapping
- */
 export const getDeleteTurnArmJourneyMappingUrl = (
 	datasourceId: string,
 	experimentId: string,
@@ -614,9 +559,6 @@ export type DeleteTurnArmJourneyMappingMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Delete Turn Arm Journey Mapping
- */
 export const useDeleteTurnArmJourneyMapping = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
