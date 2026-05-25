@@ -2,7 +2,7 @@
 import { AlertDialog, Button, Flex, IconButton, Tooltip } from '@radix-ui/themes';
 import { ReloadIcon } from '@radix-ui/react-icons';
 import { getListOrganizationEventsKey, useResendOrganizationEvent } from '@/api/admin';
-import { mutate } from 'swr';
+import { invalidatePath } from '@/services/swr-cache';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 
 interface ResendWebhookDialogProps {
@@ -13,11 +13,10 @@ interface ResendWebhookDialogProps {
 }
 
 export function ResendWebhookDialog({ organizationId, eventId, open, onOpenChange }: ResendWebhookDialogProps) {
-  const eventsUrl = getListOrganizationEventsKey(organizationId)[0];
   const { trigger, isMutating, error, reset } = useResendOrganizationEvent(organizationId, eventId, {
     swr: {
       onSuccess: async () => {
-        await mutate((key) => Array.isArray(key) && key[0] === eventsUrl);
+        await invalidatePath(getListOrganizationEventsKey(organizationId)[0]);
         onOpenChange?.(false);
       },
     },
