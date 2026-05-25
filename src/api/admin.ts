@@ -1168,6 +1168,83 @@ export const useListOrganizationEvents = <
 		...query,
 	};
 };
+export const getResendOrganizationEventUrl = (
+	organizationId: string,
+	eventId: string,
+) => {
+	return `/v1/m/organizations/${organizationId}/events/${eventId}/resend`;
+};
+
+export const resendOrganizationEvent = async (
+	organizationId: string,
+	eventId: string,
+	options?: RequestInit,
+): Promise<void> => {
+	return orvalFetch<void>(
+		getResendOrganizationEventUrl(organizationId, eventId),
+		{
+			...options,
+			method: "POST",
+		},
+	);
+};
+
+export const getResendOrganizationEventMutationFetcher = (
+	organizationId: string,
+	eventId: string,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, __: { arg: Arguments }) => {
+		return resendOrganizationEvent(organizationId, eventId, options);
+	};
+};
+export const getResendOrganizationEventMutationKey = (
+	organizationId: string,
+	eventId: string,
+) =>
+	[`/v1/m/organizations/${organizationId}/events/${eventId}/resend`] as const;
+
+export type ResendOrganizationEventMutationResult = NonNullable<
+	Awaited<ReturnType<typeof resendOrganizationEvent>>
+>;
+export type ResendOrganizationEventMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+export const useResendOrganizationEvent = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	organizationId: string,
+	eventId: string,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof resendOrganizationEvent>>,
+			TError,
+			Key,
+			Arguments,
+			Awaited<ReturnType<typeof resendOrganizationEvent>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey =
+		swrOptions?.swrKey ??
+		getResendOrganizationEventMutationKey(organizationId, eventId);
+	const swrFn = getResendOrganizationEventMutationFetcher(
+		organizationId,
+		eventId,
+		requestOptions,
+	);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
 export const getAddMemberToOrganizationUrl = (organizationId: string) => {
 	return `/v1/m/organizations/${organizationId}/members`;
 };

@@ -708,6 +708,16 @@ export type EventSummaryDetailsAnyOf = { [key: string]: unknown };
 
 export type EventSummaryDetails = EventSummaryDetailsAnyOf | null;
 
+export type EventSummaryStatusIcon =
+	(typeof EventSummaryStatusIcon)[keyof typeof EventSummaryStatusIcon];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const EventSummaryStatusIcon = {
+	success: "success",
+	info: "info",
+	failure: "failure",
+} as const;
+
 export interface EventSummary {
 	id: string;
 	created_at: string;
@@ -715,6 +725,7 @@ export interface EventSummary {
 	summary: string;
 	link?: EventSummaryLink;
 	details: EventSummaryDetails;
+	status_icon?: EventSummaryStatusIcon;
 }
 
 export type ExperimentAnalysisResponse =
