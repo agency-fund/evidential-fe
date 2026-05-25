@@ -8,8 +8,8 @@ import { GenericErrorCallout } from '@/components/ui/generic-error';
 interface ResendWebhookDialogProps {
   organizationId: string;
   eventId: string;
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 export function ResendWebhookDialog({ organizationId, eventId, open, onOpenChange }: ResendWebhookDialogProps) {
@@ -17,7 +17,7 @@ export function ResendWebhookDialog({ organizationId, eventId, open, onOpenChang
     swr: {
       onSuccess: async () => {
         await invalidatePath(getListOrganizationEventsKey(organizationId)[0]);
-        onOpenChange?.(false);
+        onOpenChange(false);
       },
     },
   });
@@ -26,7 +26,7 @@ export function ResendWebhookDialog({ organizationId, eventId, open, onOpenChang
     if (!next) {
       reset();
     }
-    onOpenChange?.(next);
+    onOpenChange(next);
   };
 
   return (
