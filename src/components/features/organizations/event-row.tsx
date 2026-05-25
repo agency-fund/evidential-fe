@@ -41,7 +41,7 @@ export function EventRow({ event, organizationId }: { event: EventSummary; organ
           <Table.Cell>{event.summary}</Table.Cell>
           <Table.Cell>
             <Flex gap="2">
-              {event.link && (
+              {event.link ? (
                 <Tooltip content="View Experiment">
                   <Link href={event.link} target="_blank" rel="noopener noreferrer">
                     <IconButton variant="soft" color="green">
@@ -49,15 +49,15 @@ export function EventRow({ event, organizationId }: { event: EventSummary; organ
                     </IconButton>
                   </Link>
                 </Tooltip>
-              )}
-              {event.type === WEBHOOK_SENT_EVENT_TYPE && (
+              ) : null}
+              {event.type === WEBHOOK_SENT_EVENT_TYPE ? (
                 <ResendWebhookDialog
                   organizationId={organizationId}
                   eventId={event.id}
                   open={isResendOpen}
                   onOpenChange={setIsResendOpen}
                 />
-              )}
+              ) : null}
             </Flex>
           </Table.Cell>
         </Table.Row>
@@ -70,22 +70,22 @@ export function EventRow({ event, organizationId }: { event: EventSummary; organ
               <DataList.Value>
                 <Flex align="center" gap="2" justify="between" width="100%">
                   {detail.value(event)}
-                  {detail.copy && (
+                  {detail.copy ? (
                     <CopyToClipBoard content={detail.value(event)} tooltipContent={`Copy ${detail.label}`} />
-                  )}
+                  ) : null}
                 </Flex>
               </DataList.Value>
             </DataList.Item>
           ))}
         </DataList.Root>
 
-        {event.details && (
+        {event.details ? (
           <CodeSnippetCard
             title="Details"
             content={JSON.stringify(event.details, undefined, 2)}
             tooltipContent="Copy details"
           />
-        )}
+        ) : null}
       </HoverCard.Content>
     </HoverCard.Root>
   );
