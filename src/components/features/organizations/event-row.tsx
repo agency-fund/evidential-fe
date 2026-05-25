@@ -5,6 +5,7 @@ import { EventSummary } from '@/api/methods.schemas';
 import Link from 'next/link';
 import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
+import { EventRowStatusIcon } from '@/components/features/organizations/event-row-status-icon';
 import { ResendWebhookDialog } from '@/components/features/organizations/resend-webhook-dialog';
 import { useState } from 'react';
 
@@ -38,7 +39,12 @@ export function EventRow({ event, organizationId }: { event: EventSummary; organ
         <Table.Row style={{ cursor: 'pointer' }}>
           <Table.Cell>{event.type}</Table.Cell>
           <Table.Cell>{new Date(event.created_at).toLocaleString()}</Table.Cell>
-          <Table.Cell>{event.summary}</Table.Cell>
+          <Table.Cell>
+            <Flex align="center" gap="2">
+              <EventRowStatusIcon icon={event.status_icon} />
+              {event.summary}
+            </Flex>
+          </Table.Cell>
           <Table.Cell>
             <Flex gap="2">
               {event.link ? (

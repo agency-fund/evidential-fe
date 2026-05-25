@@ -1175,6 +1175,19 @@ export type EventSummaryDetailsAnyOf = { [key: string]: unknown };
 export type EventSummaryDetails = EventSummaryDetailsAnyOf | null;
 
 /**
+ * Status icon to display for this event.
+ */
+export type EventSummaryStatusIcon =
+	(typeof EventSummaryStatusIcon)[keyof typeof EventSummaryStatusIcon];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const EventSummaryStatusIcon = {
+	success: "success",
+	info: "info",
+	failure: "failure",
+} as const;
+
+/**
  * Describes an event.
  */
 export interface EventSummary {
@@ -1190,6 +1203,8 @@ export interface EventSummary {
 	link?: EventSummaryLink;
 	/** Details */
 	details: EventSummaryDetails;
+	/** Status icon to display for this event. */
+	status_icon?: EventSummaryStatusIcon;
 }
 
 /**

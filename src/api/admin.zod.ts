@@ -1045,6 +1045,7 @@ export const listOrganizationEventsQueryParams = zod.object({
 });
 
 export const listOrganizationEventsResponseNextPageTokenDefault = "";
+export const listOrganizationEventsResponseItemsItemStatusIconDefault = "info";
 
 export const listOrganizationEventsResponse = zod.object({
 	next_page_token: zod
@@ -1068,6 +1069,10 @@ export const listOrganizationEventsResponse = zod.object({
 				details: zod
 					.union([zod.record(zod.string(), zod.unknown()), zod.null()])
 					.describe("Details"),
+				status_icon: zod
+					.enum(["success", "info", "failure"])
+					.default(listOrganizationEventsResponseItemsItemStatusIconDefault)
+					.describe("Status icon to display for this event."),
 			})
 			.describe("Describes an event."),
 	),
