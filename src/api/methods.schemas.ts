@@ -10,36 +10,19 @@ export interface AddMemberToOrganizationRequest {
 
 export interface AddWebhookToOrganizationRequest {
 	type: "experiment.created";
-	/**
-	 * User-friendly name for the webhook. This name is displayed in the UI and helps identify the webhook's purpose.
-	 * @maxLength 100
-	 */
+	/** @maxLength 100 */
 	name: string;
-	/**
-	 * The HTTP or HTTPS URL that will receive webhook notifications when events occur.
-	 * @maxLength 500
-	 */
+	/** @maxLength 500 */
 	url: string;
 }
 
-/**
- * The value of the Webhook-Token: header that will be sent with the request to the configured URL.
- */
 export type AddWebhookToOrganizationResponseAuthToken = string | null;
 
-/**
- * Information on the successfully created webhook.
- */
 export interface AddWebhookToOrganizationResponse {
-	/** The ID of the newly created webhook. */
 	id: string;
-	/** The type of webhook; e.g. experiment.created */
 	type: string;
-	/** User-friendly name for the webhook. */
 	name: string;
-	/** The URL to notify. */
 	url: string;
-	/** The value of the Webhook-Token: header that will be sent with the request to the configured URL. */
 	auth_token: AddWebhookToOrganizationResponseAuthToken;
 }
 
@@ -52,9 +35,6 @@ export const AnyBanditDesignSpecInputExperimentType = {
 	mab_online: "mab_online",
 } as const;
 
-/**
- * The specific type of bandit experiment design.
- */
 export type AnyBanditDesignSpecInput =
 	| (MABExperimentSpecInput & {
 			experiment_type: AnyBanditDesignSpecInputExperimentType;
@@ -72,9 +52,6 @@ export const AnyBanditDesignSpecOutputExperimentType = {
 	mab_online: "mab_online",
 } as const;
 
-/**
- * The specific type of bandit experiment design.
- */
 export type AnyBanditDesignSpecOutput =
 	| (MABExperimentSpecOutput & {
 			experiment_type: AnyBanditDesignSpecOutputExperimentType;
@@ -92,9 +69,6 @@ export const AnyFrequentistDesignSpecInputExperimentType = {
 	freq_preassigned: "freq_preassigned",
 } as const;
 
-/**
- * The specific type of frequentist experiment design.
- */
 export type AnyFrequentistDesignSpecInput =
 	| (PreassignedFrequentistExperimentSpecInput & {
 			experiment_type: AnyFrequentistDesignSpecInputExperimentType;
@@ -112,9 +86,6 @@ export const AnyFrequentistDesignSpecOutputExperimentType = {
 	freq_preassigned: "freq_preassigned",
 } as const;
 
-/**
- * The specific type of frequentist experiment design.
- */
 export type AnyFrequentistDesignSpecOutput =
 	| (PreassignedFrequentistExperimentSpecOutput & {
 			experiment_type: AnyFrequentistDesignSpecOutputExperimentType;
@@ -142,202 +113,101 @@ export const ApiOnlyDsnType = {
 	api_only: "api_only",
 } as const;
 
-/**
- * ApiOnlyDsn describes a datasource where data is included in Evidential API requests.
- */
 export interface ApiOnlyDsn {
 	type: ApiOnlyDsnType;
 }
 
-/**
- * ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
- */
 export type ArmArmId = string | null;
 
 export type ArmArmDescription = string | null;
 
-/**
- * Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.
- */
 export type ArmArmWeight = ArmWeight | null;
 
-/**
- * Describes an experiment treatment arm.
- */
 export interface Arm {
-	/** ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
 	arm_id?: ArmArmId;
 	/** @maxLength 100 */
 	arm_name: string;
 	arm_description?: ArmArmDescription;
-	/** Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100. */
 	arm_weight?: ArmArmWeight;
 }
 
-/**
- * ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
- */
 export type ArmAnalysisArmId = string | null;
 
 export type ArmAnalysisArmDescription = string | null;
 
-/**
- * Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.
- */
 export type ArmAnalysisArmWeight = ArmWeight | null;
 
-/**
- * The p-value indicating statistical significance of the treatment effect. Value may be None if the t-stat is not available, e.g. due to inability to calculate the standard error.
- */
 export type ArmAnalysisPValue = number | null;
 
-/**
- * The t-statistic from the statistical test. If the value is actually NaN, e.g. due to inability to calculate the standard error, we return None.
- */
 export type ArmAnalysisTStat = number | null;
 
-/**
- * The standard error of the treatment effect estimate.
- */
 export type ArmAnalysisStdError = number | null;
 
-/**
- * Confidence interval lower bound for the regression coefficient estimate.
- */
 export type ArmAnalysisCiLower = number | null;
 
-/**
- * Confidence interval upper bound for the regression coefficient estimate.
- */
 export type ArmAnalysisCiUpper = number | null;
 
-/**
- * Confidence interval lower bound for the arm's mean.
- */
 export type ArmAnalysisMeanCiLower = number | null;
 
-/**
- * Confidence interval upper bound for the arm's mean.
- */
 export type ArmAnalysisMeanCiUpper = number | null;
 
 export interface ArmAnalysis {
-	/** ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
 	arm_id?: ArmAnalysisArmId;
 	/** @maxLength 100 */
 	arm_name: string;
 	arm_description?: ArmAnalysisArmDescription;
-	/** Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100. */
 	arm_weight?: ArmAnalysisArmWeight;
-	/** The estimated treatment effect relative to the baseline arm. */
 	estimate: number;
-	/** The p-value indicating statistical significance of the treatment effect. Value may be None if the t-stat is not available, e.g. due to inability to calculate the standard error. */
 	p_value: ArmAnalysisPValue;
-	/** The t-statistic from the statistical test. If the value is actually NaN, e.g. due to inability to calculate the standard error, we return None. */
 	t_stat: ArmAnalysisTStat;
-	/** The standard error of the treatment effect estimate. */
 	std_error: ArmAnalysisStdError;
-	/** Confidence interval lower bound for the regression coefficient estimate. */
 	ci_lower?: ArmAnalysisCiLower;
-	/** Confidence interval upper bound for the regression coefficient estimate. */
 	ci_upper?: ArmAnalysisCiUpper;
-	/** Confidence interval lower bound for the arm's mean. */
 	mean_ci_lower?: ArmAnalysisMeanCiLower;
-	/** Confidence interval upper bound for the arm's mean. */
 	mean_ci_upper?: ArmAnalysisMeanCiUpper;
-	/**
-	 * The number of participants assigned to this arm with missing values (NaNs) for this metric. These rows are excluded from the analysis. -1 indicates arm analysis not available due to all assignments missing outcomes for this metric.
-	 * @minimum -1
-	 */
+	/** @minimum -1 */
 	num_missing_values: number;
-	/** Whether this arm is the baseline/control arm for comparison. */
 	is_baseline: boolean;
 }
 
-/**
- * ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
- */
 export type ArmBanditArmId = string | null;
 
 export type ArmBanditArmDescription = string | null;
 
-/**
- * Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.
- */
 export type ArmBanditArmWeight = ArmWeight | null;
 
-/**
- * Initial alpha parameter for Beta prior
- */
 export type ArmBanditAlphaInit = number | null;
 
-/**
- * Initial beta parameter for Beta prior
- */
 export type ArmBanditBetaInit = number | null;
 
-/**
- * Initial mean parameter for Normal prior
- */
 export type ArmBanditMuInit = number | null;
 
-/**
- * Initial standard deviation parameter for Normal prior
- */
 export type ArmBanditSigmaInit = number | null;
 
-/**
- * Updated alpha parameter for Beta prior
- */
 export type ArmBanditAlpha = number | null;
 
-/**
- * Updated beta parameter for Beta prior
- */
 export type ArmBanditBeta = number | null;
 
-/**
- * Updated mean vector for Normal prior
- */
 export type ArmBanditMu = number[] | null;
 
-/**
- * Updated covariance matrix for Normal prior
- */
 export type ArmBanditCovariance = number[][] | null;
 
-/**
- * Describes an experiment arm for bandit experiments.
- */
 export interface ArmBandit {
-	/** ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
 	arm_id?: ArmBanditArmId;
 	/** @maxLength 100 */
 	arm_name: string;
 	arm_description?: ArmBanditArmDescription;
-	/** Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100. */
 	arm_weight?: ArmBanditArmWeight;
-	/** Initial alpha parameter for Beta prior */
 	alpha_init?: ArmBanditAlphaInit;
-	/** Initial beta parameter for Beta prior */
 	beta_init?: ArmBanditBetaInit;
-	/** Initial mean parameter for Normal prior */
 	mu_init?: ArmBanditMuInit;
-	/** Initial standard deviation parameter for Normal prior */
 	sigma_init?: ArmBanditSigmaInit;
-	/** Updated alpha parameter for Beta prior */
 	alpha?: ArmBanditAlpha;
-	/** Updated beta parameter for Beta prior */
 	beta?: ArmBanditBeta;
-	/** Updated mean vector for Normal prior */
 	mu?: ArmBanditMu;
-	/** Updated covariance matrix for Normal prior */
 	covariance?: ArmBanditCovariance;
 }
 
-/**
- * Describes the number of participants assigned to each arm.
- */
 export interface ArmSize {
 	arm: Arm;
 	size?: number;
@@ -347,191 +217,90 @@ export interface ArmSize {
  */
 export type ArmWeight = number;
 
-/**
- * Balance test results if available. 'online' experiments do not have balance checks.
- */
 export type AssignSummaryBalanceCheck = BalanceCheck | null;
 
-/**
- * For each arm, the number of participants assigned.
- */
 export type AssignSummaryArmSizes = ArmSize[] | null;
 
-/**
- * Key pieces of an AssignResponse without the assignments.
- */
 export interface AssignSummary {
-	/** Balance test results if available. 'online' experiments do not have balance checks. */
 	balance_check?: AssignSummaryBalanceCheck;
-	/** The number of participants across all arms in total. */
 	sample_size: number;
-	/** For each arm, the number of participants assigned. */
 	arm_sizes?: AssignSummaryArmSizes;
 }
 
-/**
- * The date and time the assignment was created.
- */
 export type AssignmentCreatedAt = string | null;
 
-/**
- * List of properties and their values for this participant used for stratification or tracking metrics. If stratification is not used, this will be None.
- */
 export type AssignmentStrata = Strata[] | null;
 
-/**
- * The date and time the outcome was recorded.
- */
 export type AssignmentObservedAt = string | null;
 
-/**
- * The observed outcome for this assignment.
- */
 export type AssignmentOutcome = number | null;
 
-/**
- * List of context values for this assignment. If no contexts are used, this will be None.
- */
 export type AssignmentContextValues = number[] | null;
 
-/**
- * Base class for treatment assignment in experiments.
- */
 export interface Assignment {
-	/** ID of the arm this participant was assigned to. Same as Arm.arm_id. */
 	arm_id: string;
-	/**
-	 * Unique identifier for the participant. This is the primary key for the participant in the data warehouse.
-	 * @maxLength 64
-	 */
+	/** @maxLength 64 */
 	participant_id: string;
-	/**
-	 * The arm this participant was assigned to. Same as Arm.arm_name.
-	 * @maxLength 100
-	 */
+	/** @maxLength 100 */
 	arm_name: string;
-	/** The date and time the assignment was created. */
 	created_at?: AssignmentCreatedAt;
-	/** List of properties and their values for this participant used for stratification or tracking metrics. If stratification is not used, this will be None. */
 	strata?: AssignmentStrata;
-	/** The date and time the outcome was recorded. */
 	observed_at?: AssignmentObservedAt;
-	/** The observed outcome for this assignment. */
 	outcome?: AssignmentOutcome;
-	/** List of context values for this assignment. If no contexts are used, this will be None. */
 	context_values?: AssignmentContextValues;
 }
 
-/**
- * Describes balance test results for treatment assignment.
- */
 export interface BalanceCheck {
-	/** F-statistic testing the overall significance of the model predicting treatment assignment. */
 	f_statistic: number;
-	/** The numerator degrees of freedom for the f-statistic related to number of dependent variables. */
 	numerator_df: number;
-	/** Denominator degrees of freedom related to the number of observations. */
 	denominator_df: number;
-	/** Probability of observing these data if strata do not predict treatment assignment, i.e. our randomization is balanced. */
 	p_value: number;
-	/** Whether the p-value for our observed f_statistic is greater than the f-stat threshold specified in our design specification. (See DesignSpec.fstat_thresh) */
 	balance_ok: boolean;
 }
 
-/**
- * ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence.
- */
 export type BanditArmAnalysisArmId = string | null;
 
 export type BanditArmAnalysisArmDescription = string | null;
 
-/**
- * Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100.
- */
 export type BanditArmAnalysisArmWeight = ArmWeight | null;
 
-/**
- * Initial alpha parameter for Beta prior
- */
 export type BanditArmAnalysisAlphaInit = number | null;
 
-/**
- * Initial beta parameter for Beta prior
- */
 export type BanditArmAnalysisBetaInit = number | null;
 
-/**
- * Initial mean parameter for Normal prior
- */
 export type BanditArmAnalysisMuInit = number | null;
 
-/**
- * Initial standard deviation parameter for Normal prior
- */
 export type BanditArmAnalysisSigmaInit = number | null;
 
-/**
- * Updated alpha parameter for Beta prior
- */
 export type BanditArmAnalysisAlpha = number | null;
 
-/**
- * Updated beta parameter for Beta prior
- */
 export type BanditArmAnalysisBeta = number | null;
 
-/**
- * Updated mean vector for Normal prior
- */
 export type BanditArmAnalysisMu = number[] | null;
 
-/**
- * Updated covariance matrix for Normal prior
- */
 export type BanditArmAnalysisCovariance = number[][] | null;
 
-/**
- * Describes an experiment arm analysis for bandit experiments.
- */
 export interface BanditArmAnalysis {
-	/** ID of the arm. If creating a new experiment (POST /datasources/{datasource_id}/experiments), this is generated for you and made available in the response; you should NOT set this. Only generate ids of your own if using the stateless Experiment Design API as you will do your own persistence. */
 	arm_id?: BanditArmAnalysisArmId;
 	/** @maxLength 100 */
 	arm_name: string;
 	arm_description?: BanditArmAnalysisArmDescription;
-	/** Optional weight for this arm for unequal allocation. Weight must be a float in (0, 100). If provided, all arms must have weights that sum to 100. */
 	arm_weight?: BanditArmAnalysisArmWeight;
-	/** Initial alpha parameter for Beta prior */
 	alpha_init?: BanditArmAnalysisAlphaInit;
-	/** Initial beta parameter for Beta prior */
 	beta_init?: BanditArmAnalysisBetaInit;
-	/** Initial mean parameter for Normal prior */
 	mu_init?: BanditArmAnalysisMuInit;
-	/** Initial standard deviation parameter for Normal prior */
 	sigma_init?: BanditArmAnalysisSigmaInit;
-	/** Updated alpha parameter for Beta prior */
 	alpha?: BanditArmAnalysisAlpha;
-	/** Updated beta parameter for Beta prior */
 	beta?: BanditArmAnalysisBeta;
-	/** Updated mean vector for Normal prior */
 	mu?: BanditArmAnalysisMu;
-	/** Updated covariance matrix for Normal prior */
 	covariance?: BanditArmAnalysisCovariance;
-	/** Prior predictive mean for this arm. */
 	prior_pred_mean: number;
-	/** Prior predictive standard deviation for this arm. */
 	prior_pred_stdev: number;
-	/** Prior predictive upper bound of 95% confidence interval for this arm. */
 	prior_pred_ci_upper: number;
-	/** Prior predictive lower bound of 95% confidence interval for this arm. */
 	prior_pred_ci_lower: number;
-	/** Posterior predictive mean for this arm. */
 	post_pred_mean: number;
-	/** Posterior predictive standard deviation for this arm. */
 	post_pred_stdev: number;
-	/** Posterior predictive upper bound of 95% confidence interval for this arm. */
 	post_pred_ci_upper: number;
-	/** Posterior predictive lower bound of 95% confidence interval for this arm. */
 	post_pred_ci_lower: number;
 }
 
@@ -543,25 +312,14 @@ export const BanditExperimentAnalysisResponseType = {
 	bandit: "bandit",
 } as const;
 
-/**
- * The context values used for the analysis, if applicable.
- */
 export type BanditExperimentAnalysisResponseContexts = number[] | null;
 
-/**
- * Describes changes in arms for a bandit experiment
- */
 export interface BanditExperimentAnalysisResponse {
 	type: BanditExperimentAnalysisResponseType;
-	/** ID of the experiment. */
 	experiment_id: string;
-	/** Contains one analysis per metric targeted by the experiment. */
 	arm_analyses: BanditArmAnalysis[];
-	/** The number of outcomes observed for this experiment. */
 	n_outcomes: number;
-	/** The date and time the experiment analysis was created. */
 	created_at: string;
-	/** The context values used for the analysis, if applicable. */
 	contexts?: BanditExperimentAnalysisResponseContexts;
 }
 
@@ -573,31 +331,22 @@ export const BqDsnInputType = {
 	bigquery: "bigquery",
 } as const;
 
-/**
- * This value must be a GcpServiceAccount when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained.
- */
 export type BqDsnInputCredentials = GcpServiceAccount | Hidden;
 
-/**
- * BqDsn describes a connection to a BigQuery database.
- */
 export interface BqDsnInput {
 	type: BqDsnInputType;
 	/**
-	 * The Google Cloud Project ID containing the dataset.
 	 * @minLength 6
 	 * @maxLength 30
 	 * @pattern ^[a-z0-9-]+$
 	 */
 	project_id: string;
 	/**
-	 * The dataset name.
 	 * @minLength 1
 	 * @maxLength 1024
 	 * @pattern ^[a-zA-Z0-9_]+$
 	 */
 	dataset_id: string;
-	/** This value must be a GcpServiceAccount when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained. */
 	credentials: BqDsnInputCredentials;
 }
 
@@ -609,68 +358,29 @@ export const BqDsnOutputType = {
 	bigquery: "bigquery",
 } as const;
 
-/**
- * This value must be a GcpServiceAccount when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained.
- */
 export type BqDsnOutputCredentials = GcpServiceAccount | Hidden;
 
-/**
- * BqDsn describes a connection to a BigQuery database.
- */
 export interface BqDsnOutput {
 	type: BqDsnOutputType;
 	/**
-	 * The Google Cloud Project ID containing the dataset.
 	 * @minLength 6
 	 * @maxLength 30
 	 * @pattern ^[a-z0-9-]+$
 	 */
 	project_id: string;
 	/**
-	 * The dataset name.
 	 * @minLength 1
 	 * @maxLength 1024
 	 * @pattern ^[a-zA-Z0-9_]+$
 	 */
 	dataset_id: string;
-	/** This value must be a GcpServiceAccount when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained. */
 	credentials: BqDsnOutputCredentials;
 }
 
-/**
- * 
-            List of context values for the assignment.
-            Must include exactly the same number contexts defined in the experiment.
-            The values are matched to the experiment's contexts by context_id, not by position in the list.
-            Each context_id must correspond to one of the IDs of the contexts defined in the experiment.
-            Can be None, when simply retrieving pre-existing assignments; must have valid inputs otherwise.
-            
- */
 export type CMABContextInputRequestContextInputs = ContextInput[] | null;
 
-/**
- * Request model for creating a new CMAB assignment or a CMAB experiment analysis.
-
-When submitting context values for a CMAB experiment, the following rules apply:
-1. Each context_input must reference a valid context_id from the experiment's defined contexts
-2. The order of context_inputs does not need to match the order of contexts in the experiment
-3. You must provide values for all contexts defined in the experiment
-4. Number of input context values must match the number of contexts defined in the experiment
-5. The context value input can be None, but only in the case of retrieving a pre-existing assignment.
-
-Example:
-    If an experiment defines contexts with IDs ["ctx_1", "ctx_2"], your request must include
-    both of these context_ids in the context_inputs list, but they can be in any order.
- */
 export interface CMABContextInputRequest {
 	type?: "cmab_assignment";
-	/** 
-            List of context values for the assignment.
-            Must include exactly the same number contexts defined in the experiment.
-            The values are matched to the experiment's contexts by context_id, not by position in the list.
-            Each context_id must correspond to one of the IDs of the contexts defined in the experiment.
-            Can be None, when simply retrieving pre-existing assignments; must have valid inputs otherwise.
-             */
 	context_inputs: CMABContextInputRequestContextInputs;
 }
 
@@ -682,29 +392,16 @@ export const CMABExperimentSpecInputExperimentType = {
 	cmab_online: "cmab_online",
 } as const;
 
-/**
- * Optional URL to a more detailed experiment design doc.
- */
 export type CMABExperimentSpecInputDesignUrl = string | null;
 
-/**
- * Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.
- */
 export type CMABExperimentSpecInputContexts = Context[] | null;
 
-/**
- * Use this type to randomly assign participants into arms during live experiment execution with
-contextual MAB experiments.
-
-For example, you may wish to experiment on new users. Assignments are issued via API request.
- */
 export interface CMABExperimentSpecInput {
 	experiment_type: CMABExperimentSpecInputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
 	/** @maxLength 2000 */
 	description: string;
-	/** Optional URL to a more detailed experiment design doc. */
 	design_url?: CMABExperimentSpecInputDesignUrl;
 	start_date: string;
 	end_date: string;
@@ -713,11 +410,8 @@ export interface CMABExperimentSpecInput {
 	 * @maxItems 20
 	 */
 	arms: ArmBandit[];
-	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
 	contexts?: CMABExperimentSpecInputContexts;
-	/** The type of prior distribution for the arms. */
 	prior_type?: PriorTypes;
-	/** The type of reward we observe from the experiment. */
 	reward_type?: LikelihoodTypes;
 }
 
@@ -729,29 +423,16 @@ export const CMABExperimentSpecOutputExperimentType = {
 	cmab_online: "cmab_online",
 } as const;
 
-/**
- * Optional URL to a more detailed experiment design doc.
- */
 export type CMABExperimentSpecOutputDesignUrl = string | null;
 
-/**
- * Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.
- */
 export type CMABExperimentSpecOutputContexts = Context[] | null;
 
-/**
- * Use this type to randomly assign participants into arms during live experiment execution with
-contextual MAB experiments.
-
-For example, you may wish to experiment on new users. Assignments are issued via API request.
- */
 export interface CMABExperimentSpecOutput {
 	experiment_type: CMABExperimentSpecOutputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
 	/** @maxLength 2000 */
 	description: string;
-	/** Optional URL to a more detailed experiment design doc. */
 	design_url?: CMABExperimentSpecOutputDesignUrl;
 	start_date: string;
 	end_date: string;
@@ -760,17 +441,11 @@ export interface CMABExperimentSpecOutput {
 	 * @maxItems 20
 	 */
 	arms: ArmBandit[];
-	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
 	contexts?: CMABExperimentSpecOutputContexts;
-	/** The type of prior distribution for the arms. */
 	prior_type?: PriorTypes;
-	/** The type of reward we observe from the experiment. */
 	reward_type?: LikelihoodTypes;
 }
 
-/**
- * Contains the OIDC authorization code, PKCE verifier, and nonce for the token exchange.
- */
 export interface CallbackRequest {
 	code: string;
 	/**
@@ -786,19 +461,10 @@ export interface CallbackRequest {
 	nonce: string;
 }
 
-/**
- * Contains the credentials the SPA will use for interacting with the Admin API.
-
-This is only returned when the SPA has successfully completed the OIDC PKCE flow.
- */
 export interface CallbackResponse {
-	/** Bearer token for use on Admin API endpoints. */
 	session_token: string;
 }
 
-/**
- * Describes the user's identity in a format suitable for use in the frontend.
- */
 export interface CallerIdentity {
 	email: string;
 	iss: string;
@@ -821,39 +487,23 @@ export interface ColumnDeleted {
 	column_name: string;
 }
 
-/**
- * Unique identifier for the context, you should NOT set this when creating a new context.
- */
 export type ContextContextId = string | null;
 
 export type ContextContextDescription = string | null;
 
-/**
- * Pydantic model for context of the experiment.
- */
 export interface Context {
-	/** Unique identifier for the context, you should NOT set this when creating a new context. */
 	context_id?: ContextContextId;
 	/** @maxLength 100 */
 	context_name: string;
 	context_description?: ContextContextDescription;
-	/** Type of value the context can take */
 	value_type?: ContextType;
 }
 
-/**
- * Pydantic model for a context input
- */
 export interface ContextInput {
-	/** Unique identifier for the context. */
 	context_id: string;
-	/** Value of the context */
 	context_value: number;
 }
 
-/**
- * Enum for the type of context.
- */
 export type ContextType = (typeof ContextType)[keyof typeof ContextType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -886,18 +536,11 @@ export type CreateExperimentRequestPowerAnalyses = PowerResponseInput | null;
 export interface CreateExperimentRequest {
 	design_spec: DesignSpecInput;
 	power_analyses?: CreateExperimentRequestPowerAnalyses;
-	/** List of webhook IDs to associate with this experiment. When the experiment is committed, these webhooks will be triggered with experiment details. Must contain unique values. */
 	webhooks?: string[];
 }
 
-/**
- * The date and time assignments were stopped. Null if assignments are still allowed to be made.
- */
 export type CreateExperimentResponseStoppedAssignmentsAt = string | null;
 
-/**
- * The reason assignments were stopped. Null if assignments are still allowed to be made.
- */
 export type CreateExperimentResponseStoppedAssignmentsReason =
 	StopAssignmentReason | null;
 
@@ -905,32 +548,19 @@ export type CreateExperimentResponsePowerAnalyses = PowerResponseOutput | null;
 
 export type CreateExperimentResponseAssignSummary = AssignSummary | null;
 
-/**
- * Same as the request but with ids filled for the experiment and arms, and summary info on the assignment.
- */
 export interface CreateExperimentResponse {
-	/** Server-generated ID of the experiment. */
 	experiment_id: string;
 	datasource_id: string;
-	/**
-	 * (legacy experiments) Persisted participant-type name for backwards compatibility. New experiments will have this set to the empty string.
-	 * @maxLength 100
-	 */
+	/** @maxLength 100 */
 	participant_type_deprecated: string;
-	/** Current state of this experiment. */
 	state: ExperimentState;
-	/** The date and time assignments were stopped. Null if assignments are still allowed to be made. */
 	stopped_assignments_at: CreateExperimentResponseStoppedAssignmentsAt;
-	/** The reason assignments were stopped. Null if assignments are still allowed to be made. */
 	stopped_assignments_reason: CreateExperimentResponseStoppedAssignmentsReason;
 	design_spec: DesignSpecOutput;
 	power_analyses: CreateExperimentResponsePowerAnalyses;
 	assign_summary: CreateExperimentResponseAssignSummary;
-	/** List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed. */
 	webhooks?: string[];
-	/** Record any decision(s) made because of this experiment. Will you launch it, and if so when? Regardless of positive or negative results, how do any learnings inform next steps or future hypotheses? */
 	decision?: string;
-	/** Given the results across your tracked metrics and any other observed effects seen elsewhere, record an overall summary here. Do they agree or reject your hypotheses? Beyond the metrics tracked, did variations affect scalability, cost, feedback, or other aspects? */
 	impact?: Impact;
 }
 
@@ -960,9 +590,6 @@ export interface CreateSnapshotResponse {
 	id: string;
 }
 
-/**
- * Defines the supported data types for fields in the data source.
- */
 export type DataType = (typeof DataType)[keyof typeof DataType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -995,166 +622,79 @@ export interface DatasourceSummary {
 	organization_name: string;
 }
 
-/**
- * Delete related participant assignments.
- */
 export type DeleteExperimentDataRequestAssignments = boolean | null;
 
-/**
- * Delete related snapshots.
- */
 export type DeleteExperimentDataRequestSnapshots = boolean | null;
 
-/**
- * Request to delete specific data associated with an experiment.
- */
 export interface DeleteExperimentDataRequest {
-	/** Delete related participant assignments. */
 	assignments?: DeleteExperimentDataRequestAssignments;
-	/** Delete related snapshots. */
 	snapshots?: DeleteExperimentDataRequestSnapshots;
 }
 
-/**
- * The type of assignment and experiment design.
- */
 export type DesignSpecInput =
 	| AnyFrequentistDesignSpecInput
 	| AnyBanditDesignSpecInput;
 
-/**
- * The type of assignment and experiment design.
- */
 export type DesignSpecOutput =
 	| AnyFrequentistDesignSpecOutput
 	| AnyBanditDesignSpecOutput;
 
-/**
- * Percent change target relative to the metric_baseline.
- */
 export type DesignSpecMetricMetricPctChange = number | null;
 
-/**
- * Absolute target value = metric_baseline*(1 + metric_pct_change)
- */
 export type DesignSpecMetricMetricTarget = number | null;
 
-/**
- * Intracluster correlation coefficient for cluster-randomized designs.
- */
 export type DesignSpecMetricIcc = number | null;
 
-/**
- * Average number of individuals per cluster.
- */
 export type DesignSpecMetricAvgClusterSize = number | null;
 
-/**
- * Coefficient of variation in cluster sizes (0 = equal sizes).
- */
 export type DesignSpecMetricCv = number | null;
 
-/**
- * Inferred from dwh type.
- */
 export type DesignSpecMetricMetricType = MetricType | null;
 
-/**
- * Mean of the tracked metric.
- */
 export type DesignSpecMetricMetricBaseline = number | null;
 
-/**
- * Standard deviation is set only for metric_type.NUMERIC metrics. Must be set for numeric metrics when available_n > 0.
- */
 export type DesignSpecMetricMetricStddev = number | null;
 
-/**
- * The number of participants meeting the filtering criteria with a *non-null* value for this metric.
- */
 export type DesignSpecMetricAvailableNonnullN = number | null;
 
-/**
- * The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n.
- */
 export type DesignSpecMetricAvailableN = number | null;
 
-/**
- * Defines a metric to measure in an experiment with its baseline stats.
- */
 export interface DesignSpecMetric {
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
-	/** Percent change target relative to the metric_baseline. */
 	metric_pct_change?: DesignSpecMetricMetricPctChange;
-	/** Absolute target value = metric_baseline*(1 + metric_pct_change) */
 	metric_target?: DesignSpecMetricMetricTarget;
-	/** Intracluster correlation coefficient for cluster-randomized designs. */
 	icc?: DesignSpecMetricIcc;
-	/** Average number of individuals per cluster. */
 	avg_cluster_size?: DesignSpecMetricAvgClusterSize;
-	/** Coefficient of variation in cluster sizes (0 = equal sizes). */
 	cv?: DesignSpecMetricCv;
-	/** Inferred from dwh type. */
 	metric_type?: DesignSpecMetricMetricType;
-	/** Mean of the tracked metric. */
 	metric_baseline?: DesignSpecMetricMetricBaseline;
-	/** Standard deviation is set only for metric_type.NUMERIC metrics. Must be set for numeric metrics when available_n > 0. */
 	metric_stddev?: DesignSpecMetricMetricStddev;
-	/** The number of participants meeting the filtering criteria with a *non-null* value for this metric. */
 	available_nonnull_n?: DesignSpecMetricAvailableNonnullN;
-	/** The number of participants meeting the filtering criteria regardless of whether or not this metric's value is NULL. NOTE: Assignments are made from the targeted aviailable_n population, so be sure you are ok with participants potentially having this value missing during assignment if available_n != available_nonnull_n. */
 	available_n?: DesignSpecMetricAvailableN;
 }
 
-/**
- * Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target.
- */
 export type DesignSpecMetricRequestMetricPctChange = number | null;
 
-/**
- * Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change.
- */
 export type DesignSpecMetricRequestMetricTarget = number | null;
 
-/**
- * Intracluster correlation coefficient for cluster-randomized designs.
- */
 export type DesignSpecMetricRequestIcc = number | null;
 
-/**
- * Average number of individuals per cluster.
- */
 export type DesignSpecMetricRequestAvgClusterSize = number | null;
 
-/**
- * Coefficient of variation in cluster sizes (0 = equal sizes).
- */
 export type DesignSpecMetricRequestCv = number | null;
 
-/**
- * Defines a request to look up baseline stats for a metric to measure in an experiment.
- */
 export interface DesignSpecMetricRequest {
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
-	/** Specify a meaningful min percent change relative to the metric_baseline you want to detect. Cannot be set if you set metric_target. */
 	metric_pct_change?: DesignSpecMetricRequestMetricPctChange;
-	/** Specify the absolute value you want to detect. Cannot be set if you set metric_pct_change. */
 	metric_target?: DesignSpecMetricRequestMetricTarget;
-	/** Intracluster correlation coefficient for cluster-randomized designs. */
 	icc?: DesignSpecMetricRequestIcc;
-	/** Average number of individuals per cluster. */
 	avg_cluster_size?: DesignSpecMetricRequestAvgClusterSize;
-	/** Coefficient of variation in cluster sizes (0 = equal sizes). */
 	cv?: DesignSpecMetricRequestCv;
 }
 
-/**
- * Describes differences between two participant types.
- */
 export interface Drift {
-	/** List of individual changes detected that might break things. */
 	schema_diff: TableDiff[];
 }
 
@@ -1162,21 +702,12 @@ export type DsnInput = ApiOnlyDsn | PostgresDsn | BqDsnInput | RedshiftDsn;
 
 export type DsnOutput = ApiOnlyDsn | PostgresDsn | BqDsnOutput | RedshiftDsn;
 
-/**
- * A navigable link to related information.
- */
 export type EventSummaryLink = string | null;
 
 export type EventSummaryDetailsAnyOf = { [key: string]: unknown };
 
-/**
- * Details
- */
 export type EventSummaryDetails = EventSummaryDetailsAnyOf | null;
 
-/**
- * Status icon to display for this event.
- */
 export type EventSummaryStatusIcon =
 	(typeof EventSummaryStatusIcon)[keyof typeof EventSummaryStatusIcon];
 
@@ -1187,41 +718,22 @@ export const EventSummaryStatusIcon = {
 	failure: "failure",
 } as const;
 
-/**
- * Describes an event.
- */
 export interface EventSummary {
-	/** The ID of the event. */
 	id: string;
-	/** The time the event was created. */
 	created_at: string;
-	/** The type of event. */
 	type: string;
-	/** Human-readable summary of the event. */
 	summary: string;
-	/** A navigable link to related information. */
 	link?: EventSummaryLink;
-	/** Details */
 	details: EventSummaryDetails;
-	/** Status icon to display for this event. */
 	status_icon?: EventSummaryStatusIcon;
 }
 
-/**
- * The type of experiment analysis response.
- */
 export type ExperimentAnalysisResponse =
 	| FreqExperimentAnalysisResponse
 	| BanditExperimentAnalysisResponse;
 
-/**
- * The date and time assignments were stopped. Null if assignments are still allowed to be made.
- */
 export type ExperimentConfigStoppedAssignmentsAt = string | null;
 
-/**
- * The reason assignments were stopped. Null if assignments are still allowed to be made.
- */
 export type ExperimentConfigStoppedAssignmentsReason =
 	StopAssignmentReason | null;
 
@@ -1229,41 +741,22 @@ export type ExperimentConfigPowerAnalyses = PowerResponseOutput | null;
 
 export type ExperimentConfigAssignSummary = AssignSummary | null;
 
-/**
- * Representation of our stored Experiment information.
- */
 export interface ExperimentConfig {
-	/** Server-generated ID of the experiment. */
 	experiment_id: string;
 	datasource_id: string;
-	/**
-	 * (legacy experiments) Persisted participant-type name for backwards compatibility. New experiments will have this set to the empty string.
-	 * @maxLength 100
-	 */
+	/** @maxLength 100 */
 	participant_type_deprecated: string;
-	/** Current state of this experiment. */
 	state: ExperimentState;
-	/** The date and time assignments were stopped. Null if assignments are still allowed to be made. */
 	stopped_assignments_at: ExperimentConfigStoppedAssignmentsAt;
-	/** The reason assignments were stopped. Null if assignments are still allowed to be made. */
 	stopped_assignments_reason: ExperimentConfigStoppedAssignmentsReason;
 	design_spec: DesignSpecOutput;
 	power_analyses: ExperimentConfigPowerAnalyses;
 	assign_summary: ExperimentConfigAssignSummary;
-	/** List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed. */
 	webhooks?: string[];
-	/** Record any decision(s) made because of this experiment. Will you launch it, and if so when? Regardless of positive or negative results, how do any learnings inform next steps or future hypotheses? */
 	decision?: string;
-	/** Given the results across your tracked metrics and any other observed effects seen elsewhere, record an overall summary here. Do they agree or reject your hypotheses? Beyond the metrics tracked, did variations affect scalability, cost, feedback, or other aspects? */
 	impact?: Impact;
 }
 
-/**
- * Experiment lifecycle states.
-
-note: [starting state], [[terminal state]]
-[DESIGNING]->[ASSIGNED]->{[[ABANDONED]], COMMITTED}->[[ABORTED]]
- */
 export type ExperimentState =
 	(typeof ExperimentState)[keyof typeof ExperimentState];
 
@@ -1300,27 +793,17 @@ export type FieldDescriptorExtraAnyOf = { [key: string]: string };
 export type FieldDescriptorExtra = FieldDescriptorExtraAnyOf | null;
 
 export interface FieldDescriptor {
-	/** Name of the field in the data source */
 	field_name: string;
-	/** The data type of this field */
 	data_type: DataType;
-	/** Human-readable description of the field */
 	description?: string;
-	/** Whether this field uniquely identifies records */
 	is_unique_id?: boolean;
-	/** Whether this field should be used for stratification */
 	is_strata?: boolean;
-	/** Whether this field can be used as a filter */
 	is_filter?: boolean;
-	/** Whether this field can be used as a metric */
 	is_metric?: boolean;
 	/** @deprecated */
 	extra?: FieldDescriptorExtra;
 }
 
-/**
- * Concise summary of fields in the table.
- */
 export interface FieldMetadata {
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
@@ -1329,43 +812,6 @@ export interface FieldMetadata {
 	description: string;
 }
 
-/**
- * Defines criteria for filtering rows by value.
-
-## Examples
-
-| Relation | Value             | logical Result                                    |
-|----------|-------------------|---------------------------------------------------|
-| INCLUDES | [None]            | Match when `x IS NULL`                            |
-| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |
-| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |
-| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |
-| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |
-| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |
-| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |
-| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |
-| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |
-| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |
-| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |
-| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |
-
-String comparisons are case-sensitive.
-
-## Special Handling for BETWEEN support of including NULL
-
-When the relation is BETWEEN, we allow for up to 3 values to support the special case of
-including null in addition to the values in the between range via an OR IS NULL clause, as
-indicated by a 3rd value of None. Any other 3rd value is invalid.
-
-## Handling of DATE, DATETIME and TIMESTAMP values
-
-DATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.
-
-Values must be expressed as ISO8601 datetime strings compatible with Python's datetime.fromisoformat()
-(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).
-
-If a timezone is provided, it must be UTC.
- */
 export interface FilterInput {
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
@@ -1373,43 +819,6 @@ export interface FilterInput {
 	value: FilterValueTypes;
 }
 
-/**
- * Defines criteria for filtering rows by value.
-
-## Examples
-
-| Relation | Value             | logical Result                                    |
-|----------|-------------------|---------------------------------------------------|
-| INCLUDES | [None]            | Match when `x IS NULL`                            |
-| INCLUDES | ["a"]             | Match when `x IN ("a")`                           |
-| INCLUDES | ["a", None]       | Match when `x IS NULL OR x IN ("a")`              |
-| INCLUDES | ["a", "b"]        | Match when `x IN ("a", "b")`                      |
-| EXCLUDES | [None]            | Match `x IS NOT NULL`                             |
-| EXCLUDES | ["a", None]       | Match `x IS NOT NULL AND x NOT IN ("a")`          |
-| EXCLUDES | ["a", "b"]        | Match `x IS NULL OR (x NOT IN ("a", "b"))`        |
-| BETWEEN  | ["a", "z"]        | Match `"a" <= x <= "z"`                           |
-| BETWEEN  | ["a", "z", None]  | Match `"a" <= x <= "z"` or `x IS NULL`            |
-| BETWEEN  | [None, "z"]       | Match `x <= "z"`                                  |
-| BETWEEN  | ["a", None]       | Match `x >= "a"`                                  |
-| BETWEEN  | [None, "a", None] | Match `x <= "a"` or `x IS NULL`                   |
-
-String comparisons are case-sensitive.
-
-## Special Handling for BETWEEN support of including NULL
-
-When the relation is BETWEEN, we allow for up to 3 values to support the special case of
-including null in addition to the values in the between range via an OR IS NULL clause, as
-indicated by a 3rd value of None. Any other 3rd value is invalid.
-
-## Handling of DATE, DATETIME and TIMESTAMP values
-
-DATE, DATETIME or TIMESTAMP-type columns support INCLUDES/EXCLUDES/BETWEEN, similar to numerics.
-
-Values must be expressed as ISO8601 datetime strings compatible with Python's datetime.fromisoformat()
-(https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat).
-
-If a timezone is provided, it must be UTC.
- */
 export interface FilterOutput {
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
@@ -1435,40 +844,25 @@ export const FreqExperimentAnalysisResponseType = {
 	freq: "freq",
 } as const;
 
-/**
- * The number of participants assigned to the experiment across all arms that are not found in the data warehouse when pulling metrics.
- */
 export type FreqExperimentAnalysisResponseNumMissingParticipants =
 	| number
 	| null;
 
-/**
- * Describes the change if any in metrics targeted by an experiment.
- */
 export interface FreqExperimentAnalysisResponse {
 	type: FreqExperimentAnalysisResponseType;
-	/** ID of the experiment. */
 	experiment_id: string;
-	/** Contains one analysis per metric targeted by the experiment. */
 	metric_analyses: MetricAnalysis[];
-	/** The number of participants assigned to the experiment pulled from the dwh across all arms. Metric outcomes are not guaranteed to be present for all participants. */
 	num_participants: number;
-	/** The number of participants assigned to the experiment across all arms that are not found in the data warehouse when pulling metrics. */
 	num_missing_participants?: FreqExperimentAnalysisResponseNumMissingParticipants;
-	/** The date and time the experiment analysis was created. */
 	created_at: string;
 }
 
-/**
- * Describes a Google Cloud Platform service account.
- */
 export interface GcpServiceAccount {
 	type?: "serviceaccountinfo";
 	content: GcpServiceAccountBlob;
 }
 
 /**
- * The service account info in the canonical JSON form. Required fields: type, project_id, private_key_id, private_key, client_email.
  * @minLength 4
  * @maxLength 8000
  */
@@ -1486,44 +880,24 @@ export interface GetDatasourceResponse {
 	organization_name: string;
 }
 
-/**
- * Balance test results if available. 'online' experiments do not have balance checks.
- */
 export type GetExperimentAssignmentsResponseBalanceCheck = BalanceCheck | null;
 
-/**
- * Describes assignments for all participants and balance test results if available.
- */
 export interface GetExperimentAssignmentsResponse {
-	/** Balance test results if available. 'online' experiments do not have balance checks. */
 	balance_check?: GetExperimentAssignmentsResponseBalanceCheck;
 	experiment_id: string;
 	sample_size: number;
 	assignments: Assignment[];
 }
 
-/**
- * If available, the Participant Type information for this experiment. This field is null for experiments that only use an 'API Only' datasource.
- */
 export type GetExperimentForUiResponseParticipantType = ParticipantsDef | null;
 
-/**
- * Experiment configuration and participant type information.
- */
 export interface GetExperimentForUiResponse {
 	config: ExperimentConfig;
-	/** If available, the Participant Type information for this experiment. This field is null for experiments that only use an 'API Only' datasource. */
 	participant_type: GetExperimentForUiResponseParticipantType;
 }
 
-/**
- * The date and time assignments were stopped. Null if assignments are still allowed to be made.
- */
 export type GetExperimentResponseStoppedAssignmentsAt = string | null;
 
-/**
- * The reason assignments were stopped. Null if assignments are still allowed to be made.
- */
 export type GetExperimentResponseStoppedAssignmentsReason =
 	StopAssignmentReason | null;
 
@@ -1531,48 +905,26 @@ export type GetExperimentResponsePowerAnalyses = PowerResponseOutput | null;
 
 export type GetExperimentResponseAssignSummary = AssignSummary | null;
 
-/**
- * An experiment configuration capturing all info at design time when assignment was made.
- */
 export interface GetExperimentResponse {
-	/** Server-generated ID of the experiment. */
 	experiment_id: string;
 	datasource_id: string;
-	/**
-	 * (legacy experiments) Persisted participant-type name for backwards compatibility. New experiments will have this set to the empty string.
-	 * @maxLength 100
-	 */
+	/** @maxLength 100 */
 	participant_type_deprecated: string;
-	/** Current state of this experiment. */
 	state: ExperimentState;
-	/** The date and time assignments were stopped. Null if assignments are still allowed to be made. */
 	stopped_assignments_at: GetExperimentResponseStoppedAssignmentsAt;
-	/** The reason assignments were stopped. Null if assignments are still allowed to be made. */
 	stopped_assignments_reason: GetExperimentResponseStoppedAssignmentsReason;
 	design_spec: DesignSpecOutput;
 	power_analyses: GetExperimentResponsePowerAnalyses;
 	assign_summary: GetExperimentResponseAssignSummary;
-	/** List of webhook IDs associated with this experiment. These webhooks are triggered when the experiment is committed. */
 	webhooks?: string[];
-	/** Record any decision(s) made because of this experiment. Will you launch it, and if so when? Regardless of positive or negative results, how do any learnings inform next steps or future hypotheses? */
 	decision?: string;
-	/** Given the results across your tracked metrics and any other observed effects seen elsewhere, record an overall summary here. Do they agree or reject your hypotheses? Beyond the metrics tracked, did variations affect scalability, cost, feedback, or other aspects? */
 	impact?: Impact;
 }
 
-/**
- * Sorted list of unique values.
- */
 export type GetFiltersResponseDiscreteDistinctValues = string[] | null;
 
-/**
- * Describes a discrete filter variable.
- */
 export interface GetFiltersResponseDiscrete {
-	/**
-	 * Name of the field.
-	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
-	 */
+	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
 	data_type: DataType;
 	/**
@@ -1582,7 +934,6 @@ export interface GetFiltersResponseDiscrete {
 	relations: Relation[];
 	/** @maxLength 2000 */
 	description: string;
-	/** Sorted list of unique values. */
 	distinct_values: GetFiltersResponseDiscreteDistinctValues;
 }
 
@@ -1590,9 +941,6 @@ export type GetFiltersResponseElement =
 	| GetFiltersResponseNumericOrDate
 	| GetFiltersResponseDiscrete;
 
-/**
- * The minimum observed value.
- */
 export type GetFiltersResponseNumericOrDateMin =
 	| string
 	| string
@@ -1600,9 +948,6 @@ export type GetFiltersResponseNumericOrDateMin =
 	| number
 	| null;
 
-/**
- * The maximum observed value.
- */
 export type GetFiltersResponseNumericOrDateMax =
 	| string
 	| string
@@ -1610,14 +955,8 @@ export type GetFiltersResponseNumericOrDateMax =
 	| number
 	| null;
 
-/**
- * Describes a numeric or date filter variable.
- */
 export interface GetFiltersResponseNumericOrDate {
-	/**
-	 * Name of the field.
-	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
-	 */
+	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
 	data_type: DataType;
 	/**
@@ -1627,15 +966,10 @@ export interface GetFiltersResponseNumericOrDate {
 	relations: Relation[];
 	/** @maxLength 2000 */
 	description: string;
-	/** The minimum observed value. */
 	min: GetFiltersResponseNumericOrDateMin;
-	/** The maximum observed value. */
 	max: GetFiltersResponseNumericOrDateMax;
 }
 
-/**
- * Describes a metric.
- */
 export interface GetMetricsResponseElement {
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
@@ -1653,41 +987,24 @@ export interface GetOrganizationResponse {
 	datasources: DatasourceSummary[];
 }
 
-/**
- * Null if no assignment. assignment.strata are not included.
- */
 export type GetParticipantAssignmentResponseAssignment = Assignment | null;
 
-/**
- * Describes assignment for a single <experiment, participant> pair.
- */
 export interface GetParticipantAssignmentResponse {
 	experiment_id: string;
 	participant_id: string;
-	/** Null if no assignment. assignment.strata are not included. */
 	assignment: GetParticipantAssignmentResponseAssignment;
 }
 
 export interface GetParticipantsTypeResponse {
-	/** The currently saved configuration capturing the minimal set of fields possibly used. */
 	current: ParticipantsDef;
-	/** The configuration as implied by the live table schema, merged with current config annotations. */
 	proposed: ParticipantsDef;
-	/** Differences between the current and proposed configurations that might be breaking changes. */
 	drift: Drift;
 }
 
-/**
- * Describes the status and content of a snapshot.
- */
 export interface GetSnapshotResponse {
-	/** The snapshot. */
 	snapshot: Snapshot;
 }
 
-/**
- * Describes a stratification variable.
- */
 export interface GetStrataResponseElement {
 	data_type: DataType;
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
@@ -1696,39 +1013,21 @@ export interface GetStrataResponseElement {
 	description: string;
 }
 
-/**
- * Mapping of experiment arm IDs to Turn.io journey IDs. This configures which Turn.io journey each arm corresponds to for experiments that integrate with Turn.io.
- */
 export type GetTurnArmJourneyMappingResponseArmToJourneys = {
 	[key: string]: string;
 };
 
-/**
- * Response describing the mapping between experiment arms and Turn.io journeys.
- */
 export interface GetTurnArmJourneyMappingResponse {
-	/** Mapping of experiment arm IDs to Turn.io journey IDs. This configures which Turn.io journey each arm corresponds to for experiments that integrate with Turn.io. */
 	arm_to_journeys: GetTurnArmJourneyMappingResponseArmToJourneys;
 }
 
-/**
- * Response describing an organization's Turn.io connection.
- */
 export interface GetTurnConnectionResponse {
-	/** The last 4 characters of the configured Turn.io API token, shown so admins can identify which token is currently configured without exposing the full secret. */
 	token_preview: string;
 }
 
-/**
- * Mapping of journey names to their corresponding IDs, retrieved from the Turn API. This allows admins to reference specific journeys when configuring experiments that integrate with Turn.io.
- */
 export type GetTurnJourneysResponseJourneys = { [key: string]: string };
 
-/**
- * Response describing an organization's Turn.io journeys.
- */
 export interface GetTurnJourneysResponse {
-	/** Mapping of journey names to their corresponding IDs, retrieved from the Turn API. This allows admins to reference specific journeys when configuring experiments that integrate with Turn.io. */
 	journeys: GetTurnJourneysResponseJourneys;
 }
 
@@ -1740,9 +1039,6 @@ export interface HTTPValidationError {
 	detail?: ValidationError[];
 }
 
-/**
- * Hidden represents a credential that is intentionally omitted.
- */
 export const HiddenValue = {
 	type: "hidden",
 } as const;
@@ -1764,30 +1060,18 @@ export interface InspectDatasourceResponse {
 	tables: string[];
 }
 
-/**
- * Describes a table in the datasource.
- */
 export interface InspectDatasourceTableResponse {
-	/** Fields that are primary keys. */
 	primary_key_fields: string[];
-	/** Fields that are possibly candidates for unique IDs. */
 	detected_unique_id_fields: string[];
-	/** Fields in the table. */
 	fields: FieldMetadata[];
 }
 
-/**
- * Describes a participant type's strata, metrics, and filters (including exemplar values).
- */
 export interface InspectParticipantTypesResponse {
 	filters: GetFiltersResponseElement[];
 	metrics: GetMetricsResponseElement[];
 	strata: GetStrataResponseElement[];
 }
 
-/**
- * Enum for the likelihood distribution of the reward.
- */
 export type LikelihoodTypes =
 	(typeof LikelihoodTypes)[keyof typeof LikelihoodTypes];
 
@@ -1802,7 +1086,6 @@ export interface ListApiKeysResponse {
 }
 
 export interface ListDatasourcesResponse {
-	/** Descriptions of the datasources in this organization, ordered in descending order of frequency of use. */
 	items: DatasourceSummary[];
 }
 
@@ -1811,7 +1094,6 @@ export interface ListExperimentsResponse {
 }
 
 export interface ListOrganizationEventsResponse {
-	/** Token to retrieve the next page. Empty when no more results. */
 	next_page_token?: string;
 	items: EventSummary[];
 }
@@ -1821,22 +1103,15 @@ export interface ListOrganizationsResponse {
 }
 
 export interface ListParticipantsTypeResponse {
-	/** List of participant type definitions. */
 	items: ParticipantsDef[];
-	/** True when the datasource has hidden participant types. */
 	has_hidden: boolean;
 }
 
-/**
- * The timestamp of the latest snapshot that failed, or null if there have been no snapshot failures.
- */
 export type ListSnapshotsResponseLatestFailure = string | null;
 
 export interface ListSnapshotsResponse {
-	/** Token to retrieve the next page. Empty when no more results. */
 	next_page_token?: string;
 	items: Snapshot[];
-	/** The timestamp of the latest snapshot that failed, or null if there have been no snapshot failures. */
 	latest_failure: ListSnapshotsResponseLatestFailure;
 }
 
@@ -1852,28 +1127,16 @@ export const MABExperimentSpecInputExperimentType = {
 	mab_online: "mab_online",
 } as const;
 
-/**
- * Optional URL to a more detailed experiment design doc.
- */
 export type MABExperimentSpecInputDesignUrl = string | null;
 
-/**
- * Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.
- */
 export type MABExperimentSpecInputContexts = Context[] | null;
 
-/**
- * Use this type to randomly assign participants into arms during live experiment execution with MAB experiments.
-
-For example, you may wish to experiment on new users. Assignments are issued via API request.
- */
 export interface MABExperimentSpecInput {
 	experiment_type: MABExperimentSpecInputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
 	/** @maxLength 2000 */
 	description: string;
-	/** Optional URL to a more detailed experiment design doc. */
 	design_url?: MABExperimentSpecInputDesignUrl;
 	start_date: string;
 	end_date: string;
@@ -1882,11 +1145,8 @@ export interface MABExperimentSpecInput {
 	 * @maxItems 20
 	 */
 	arms: ArmBandit[];
-	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
 	contexts?: MABExperimentSpecInputContexts;
-	/** The type of prior distribution for the arms. */
 	prior_type?: PriorTypes;
-	/** The type of reward we observe from the experiment. */
 	reward_type?: LikelihoodTypes;
 }
 
@@ -1898,28 +1158,16 @@ export const MABExperimentSpecOutputExperimentType = {
 	mab_online: "mab_online",
 } as const;
 
-/**
- * Optional URL to a more detailed experiment design doc.
- */
 export type MABExperimentSpecOutputDesignUrl = string | null;
 
-/**
- * Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments.
- */
 export type MABExperimentSpecOutputContexts = Context[] | null;
 
-/**
- * Use this type to randomly assign participants into arms during live experiment execution with MAB experiments.
-
-For example, you may wish to experiment on new users. Assignments are issued via API request.
- */
 export interface MABExperimentSpecOutput {
 	experiment_type: MABExperimentSpecOutputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
 	/** @maxLength 2000 */
 	description: string;
-	/** Optional URL to a more detailed experiment design doc. */
 	design_url?: MABExperimentSpecOutputDesignUrl;
 	start_date: string;
 	end_date: string;
@@ -1928,11 +1176,8 @@ export interface MABExperimentSpecOutput {
 	 * @maxItems 20
 	 */
 	arms: ArmBandit[];
-	/** Optional list of contexts that can be used to condition the bandit assignment. Required for contextual bandit experiments. */
 	contexts?: MABExperimentSpecOutputContexts;
-	/** The type of prior distribution for the arms. */
 	prior_type?: PriorTypes;
-	/** The type of reward we observe from the experiment. */
 	reward_type?: LikelihoodTypes;
 }
 
@@ -1940,181 +1185,83 @@ export interface MessageError {
 	message: string;
 }
 
-/**
- * Describes the change in a single metric for each arm of an experiment.
- */
 export interface MetricAnalysis {
 	metric_name: string;
 	metric: DesignSpecMetricRequest;
-	/** The results of the analysis for each arm (coefficient) for this specific metric. */
 	arm_analyses: ArmAnalysis[];
 }
 
-/**
- * Minimum sample size needed to meet the design specs.
- */
 export type MetricPowerAnalysisInputTargetN = number | null;
 
-/**
- * Whether or not there are enough available units to sample from to meet target_n.
- */
 export type MetricPowerAnalysisInputSufficientN = boolean | null;
 
-/**
- * If there is an insufficient sample size to meet the desired metric_target, we report what is possible given the available_n. This value is equivalent to the relative pct_change_possible. This is None when there is a sufficient sample size to detect the desired change.
- */
 export type MetricPowerAnalysisInputTargetPossible = number | null;
 
-/**
- * If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.
- */
 export type MetricPowerAnalysisInputPctChangePossible = number | null;
 
-/**
- * The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).
- */
 export type MetricPowerAnalysisInputPctChangeWithDesiredN = number | null;
 
-/**
- * Human friendly message about the above results.
- */
 export type MetricPowerAnalysisInputMsg = MetricPowerAnalysisMessage | null;
 
-/**
- * Total number of clusters needed across all arms
- */
 export type MetricPowerAnalysisInputNumClustersTotal = number | null;
 
-/**
- * Number of clusters needed for each arm (one entry per arm)
- */
 export type MetricPowerAnalysisInputClustersPerArm = number[] | null;
 
-/**
- * Number of participants for each arm (one entry per arm)
- */
 export type MetricPowerAnalysisInputNPerArm = number[] | null;
 
-/**
- * Design effect (DEFF) - clustering penalty multiplier
- */
 export type MetricPowerAnalysisInputDesignEffect = number | null;
 
-/**
- * Effective sample size accounting for clustering (total_n / DEFF)
- */
 export type MetricPowerAnalysisInputEffectiveSampleSize = number | null;
 
-/**
- * Describes analysis results of a single metric.
- */
 export interface MetricPowerAnalysisInput {
 	metric_spec: DesignSpecMetric;
-	/** Minimum sample size needed to meet the design specs. */
 	target_n?: MetricPowerAnalysisInputTargetN;
-	/** Whether or not there are enough available units to sample from to meet target_n. */
 	sufficient_n?: MetricPowerAnalysisInputSufficientN;
-	/** If there is an insufficient sample size to meet the desired metric_target, we report what is possible given the available_n. This value is equivalent to the relative pct_change_possible. This is None when there is a sufficient sample size to detect the desired change. */
 	target_possible?: MetricPowerAnalysisInputTargetPossible;
-	/** If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change. */
 	pct_change_possible?: MetricPowerAnalysisInputPctChangePossible;
-	/** The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs). */
 	pct_change_with_desired_n?: MetricPowerAnalysisInputPctChangeWithDesiredN;
-	/** Human friendly message about the above results. */
 	msg?: MetricPowerAnalysisInputMsg;
-	/** Total number of clusters needed across all arms */
 	num_clusters_total?: MetricPowerAnalysisInputNumClustersTotal;
-	/** Number of clusters needed for each arm (one entry per arm) */
 	clusters_per_arm?: MetricPowerAnalysisInputClustersPerArm;
-	/** Number of participants for each arm (one entry per arm) */
 	n_per_arm?: MetricPowerAnalysisInputNPerArm;
-	/** Design effect (DEFF) - clustering penalty multiplier */
 	design_effect?: MetricPowerAnalysisInputDesignEffect;
-	/** Effective sample size accounting for clustering (total_n / DEFF) */
 	effective_sample_size?: MetricPowerAnalysisInputEffectiveSampleSize;
 }
 
-/**
- * Minimum sample size needed to meet the design specs.
- */
 export type MetricPowerAnalysisOutputTargetN = number | null;
 
-/**
- * Whether or not there are enough available units to sample from to meet target_n.
- */
 export type MetricPowerAnalysisOutputSufficientN = boolean | null;
 
-/**
- * If there is an insufficient sample size to meet the desired metric_target, we report what is possible given the available_n. This value is equivalent to the relative pct_change_possible. This is None when there is a sufficient sample size to detect the desired change.
- */
 export type MetricPowerAnalysisOutputTargetPossible = number | null;
 
-/**
- * If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change.
- */
 export type MetricPowerAnalysisOutputPctChangePossible = number | null;
 
-/**
- * The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs).
- */
 export type MetricPowerAnalysisOutputPctChangeWithDesiredN = number | null;
 
-/**
- * Human friendly message about the above results.
- */
 export type MetricPowerAnalysisOutputMsg = MetricPowerAnalysisMessage | null;
 
-/**
- * Total number of clusters needed across all arms
- */
 export type MetricPowerAnalysisOutputNumClustersTotal = number | null;
 
-/**
- * Number of clusters needed for each arm (one entry per arm)
- */
 export type MetricPowerAnalysisOutputClustersPerArm = number[] | null;
 
-/**
- * Number of participants for each arm (one entry per arm)
- */
 export type MetricPowerAnalysisOutputNPerArm = number[] | null;
 
-/**
- * Design effect (DEFF) - clustering penalty multiplier
- */
 export type MetricPowerAnalysisOutputDesignEffect = number | null;
 
-/**
- * Effective sample size accounting for clustering (total_n / DEFF)
- */
 export type MetricPowerAnalysisOutputEffectiveSampleSize = number | null;
 
-/**
- * Describes analysis results of a single metric.
- */
 export interface MetricPowerAnalysisOutput {
 	metric_spec: DesignSpecMetric;
-	/** Minimum sample size needed to meet the design specs. */
 	target_n?: MetricPowerAnalysisOutputTargetN;
-	/** Whether or not there are enough available units to sample from to meet target_n. */
 	sufficient_n?: MetricPowerAnalysisOutputSufficientN;
-	/** If there is an insufficient sample size to meet the desired metric_target, we report what is possible given the available_n. This value is equivalent to the relative pct_change_possible. This is None when there is a sufficient sample size to detect the desired change. */
 	target_possible?: MetricPowerAnalysisOutputTargetPossible;
-	/** If there is an insufficient sample size to meet the desired metric_pct_change, we report what is possible given the available_n. This value is equivalent to the absolute target_possible. This is None when there is a sufficient sample size to detect the desired change. */
 	pct_change_possible?: MetricPowerAnalysisOutputPctChangePossible;
-	/** The MDE achievable given design_spec.desired_n, confidence, and power. Only present when design_spec.desired_n is set (frequentist design specs). */
 	pct_change_with_desired_n?: MetricPowerAnalysisOutputPctChangeWithDesiredN;
-	/** Human friendly message about the above results. */
 	msg?: MetricPowerAnalysisOutputMsg;
-	/** Total number of clusters needed across all arms */
 	num_clusters_total?: MetricPowerAnalysisOutputNumClustersTotal;
-	/** Number of clusters needed for each arm (one entry per arm) */
 	clusters_per_arm?: MetricPowerAnalysisOutputClustersPerArm;
-	/** Number of participants for each arm (one entry per arm) */
 	n_per_arm?: MetricPowerAnalysisOutputNPerArm;
-	/** Design effect (DEFF) - clustering penalty multiplier */
 	design_effect?: MetricPowerAnalysisOutputDesignEffect;
-	/** Effective sample size accounting for clustering (total_n / DEFF) */
 	effective_sample_size?: MetricPowerAnalysisOutputEffectiveSampleSize;
 }
 
@@ -2125,22 +1272,14 @@ export type MetricPowerAnalysisMessageValuesAnyOf = {
 export type MetricPowerAnalysisMessageValues =
 	MetricPowerAnalysisMessageValuesAnyOf | null;
 
-/**
- * Describes interpretation of power analysis results.
- */
 export interface MetricPowerAnalysisMessage {
 	type: MetricPowerAnalysisMessageType;
-	/** Main power analysis result stated in human-friendly English. */
 	msg: string;
-	/** Power analysis result formatted as a template string with curly-braced {} named placeholders. Use with the dictionary of values to support localization of messages. */
 	source_msg: string;
 	values?: MetricPowerAnalysisMessageValues;
 	high_cluster_variation?: boolean;
 }
 
-/**
- * Classifies metric power analysis results.
- */
 export type MetricPowerAnalysisMessageType =
 	(typeof MetricPowerAnalysisMessageType)[keyof typeof MetricPowerAnalysisMessageType];
 
@@ -2154,9 +1293,6 @@ export const MetricPowerAnalysisMessageType = {
 	zero_variation: "zero variation",
 } as const;
 
-/**
- * Classifies metrics by their value type.
- */
 export type MetricType = (typeof MetricType)[keyof typeof MetricType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -2165,19 +1301,6 @@ export const MetricType = {
 	numeric: "numeric",
 } as const;
 
-/**
- * Request model for creating a new frequentist online assignment with server-side filtering.
-
-Usage notes:
-1. Currently only used for FREQ_ONLINE experiments.
-2. If the experiment defines no filters, use the corresponding GET endpoint instead.
-3. If an assignment already exists for a given participant, the property list is ignored and assignment returned.
-4. Property names must reference a valid field_name from the experiment's fields.
-5. Property list may be empty.
-6. If a filter is specified but no value is found, it is treated as NULL.
-7. Other differences from the SQL-based filtering logic:
-    - NO support for special experiment_id-based filters.
- */
 export interface OnlineAssignmentWithFiltersRequest {
 	/** List of participant properties to potentially filter against the experiment's filters. */
 	properties: ParticipantProperty[];
@@ -2191,34 +1314,18 @@ export const OnlineFrequentistExperimentSpecInputExperimentType = {
 	freq_online: "freq_online",
 } as const;
 
-/**
- * Optional URL to a more detailed experiment design doc.
- */
 export type OnlineFrequentistExperimentSpecInputDesignUrl = string | null;
 
-/**
- * Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.
- */
 export type OnlineFrequentistExperimentSpecInputClusterKey = string | null;
 
-/**
- * Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.
- */
 export type OnlineFrequentistExperimentSpecInputDesiredN = number | null;
 
-/**
- * Use this type to randomly assign participants into arms during live experiment execution with
-frequentist A/B experiments.
-
-For example, you may wish to experiment on new users. Assignments are issued via API request.
- */
 export interface OnlineFrequentistExperimentSpecInput {
 	experiment_type: OnlineFrequentistExperimentSpecInputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
 	/** @maxLength 2000 */
 	description: string;
-	/** Optional URL to a more detailed experiment design doc. */
 	design_url?: OnlineFrequentistExperimentSpecInputDesignUrl;
 	start_date: string;
 	end_date: string;
@@ -2227,50 +1334,32 @@ export interface OnlineFrequentistExperimentSpecInput {
 	 * @maxItems 20
 	 */
 	arms: Arm[];
-	/**
-	 * Datasource table used to resolve participant field metadata.
-	 * @maxLength 100
-	 */
+	/** @maxLength 100 */
 	table_name: string;
-	/**
-	 * Column name in table_name that uniquely identifies each participant.
-	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
-	 */
+	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	primary_key: string;
-	/** Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized. */
 	cluster_key?: OnlineFrequentistExperimentSpecInputClusterKey;
-	/**
-	 * Optional fields to use for stratified assignment.
-	 * @maxItems 150
-	 */
+	/** @maxItems 150 */
 	strata: Stratum[];
 	/**
-	 * Primary and optional secondary metrics to target.
 	 * @minItems 1
 	 * @maxItems 150
 	 */
 	metrics: DesignSpecMetricRequest[];
-	/**
-	 * Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.
-	 * @maxItems 20
-	 */
+	/** @maxItems 20 */
 	filters: FilterInput[];
-	/** Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.  */
 	desired_n?: OnlineFrequentistExperimentSpecInputDesiredN;
 	/**
-	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
 	 * @maximum 1
 	 */
 	power?: number;
 	/**
-	 * The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.
 	 * @minimum 0
 	 * @maximum 1
 	 */
 	alpha?: number;
 	/**
-	 * Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".
 	 * @minimum 0
 	 * @maximum 1
 	 */
@@ -2285,34 +1374,18 @@ export const OnlineFrequentistExperimentSpecOutputExperimentType = {
 	freq_online: "freq_online",
 } as const;
 
-/**
- * Optional URL to a more detailed experiment design doc.
- */
 export type OnlineFrequentistExperimentSpecOutputDesignUrl = string | null;
 
-/**
- * Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.
- */
 export type OnlineFrequentistExperimentSpecOutputClusterKey = string | null;
 
-/**
- * Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.
- */
 export type OnlineFrequentistExperimentSpecOutputDesiredN = number | null;
 
-/**
- * Use this type to randomly assign participants into arms during live experiment execution with
-frequentist A/B experiments.
-
-For example, you may wish to experiment on new users. Assignments are issued via API request.
- */
 export interface OnlineFrequentistExperimentSpecOutput {
 	experiment_type: OnlineFrequentistExperimentSpecOutputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
 	/** @maxLength 2000 */
 	description: string;
-	/** Optional URL to a more detailed experiment design doc. */
 	design_url?: OnlineFrequentistExperimentSpecOutputDesignUrl;
 	start_date: string;
 	end_date: string;
@@ -2321,50 +1394,32 @@ export interface OnlineFrequentistExperimentSpecOutput {
 	 * @maxItems 20
 	 */
 	arms: Arm[];
-	/**
-	 * Datasource table used to resolve participant field metadata.
-	 * @maxLength 100
-	 */
+	/** @maxLength 100 */
 	table_name: string;
-	/**
-	 * Column name in table_name that uniquely identifies each participant.
-	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
-	 */
+	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	primary_key: string;
-	/** Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized. */
 	cluster_key?: OnlineFrequentistExperimentSpecOutputClusterKey;
-	/**
-	 * Optional fields to use for stratified assignment.
-	 * @maxItems 150
-	 */
+	/** @maxItems 150 */
 	strata: Stratum[];
 	/**
-	 * Primary and optional secondary metrics to target.
 	 * @minItems 1
 	 * @maxItems 150
 	 */
 	metrics: DesignSpecMetricRequest[];
-	/**
-	 * Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.
-	 * @maxItems 20
-	 */
+	/** @maxItems 20 */
 	filters: FilterOutput[];
-	/** Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.  */
 	desired_n?: OnlineFrequentistExperimentSpecOutputDesiredN;
 	/**
-	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
 	 * @maximum 1
 	 */
 	power?: number;
 	/**
-	 * The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.
 	 * @minimum 0
 	 * @maximum 1
 	 */
 	alpha?: number;
 	/**
-	 * Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".
 	 * @minimum 0
 	 * @maximum 1
 	 */
@@ -2378,50 +1433,27 @@ export interface OrganizationSummary {
 	name: string;
 }
 
-/**
- * Properties about a participant that are used to filter the assignment.
- */
 export interface ParticipantProperty {
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
 	value: PropertyValueTypes;
 }
 
-/**
- * Participants are a logical representation of a table in the data warehouse.
-
-Participants are defined by a participant_type, table_name and a schema.
- */
 export interface ParticipantsDef {
-	/** Name of the table in the data warehouse */
 	table_name: string;
-	/** List of fields available in this table */
 	fields: FieldDescriptor[];
-	/** Indicates that the schema is determined by an inline schema. */
 	type: "schema";
-	/** The name of the set of participants defined by the filters. This name must be unique within a datasource when not hidden (i.e. not auto-generated). */
 	participant_type: string;
-	/** If true, this participant type is hidden from list_participant_types. Used for auto-generated participant types. */
 	hidden?: boolean;
 }
 
-/**
- * Represents a single worksheet describing metadata about a type of Participant.
- */
 export interface ParticipantsSchemaInput {
-	/** Name of the table in the data warehouse */
 	table_name: string;
-	/** List of fields available in this table */
 	fields: FieldDescriptor[];
 }
 
-/**
- * Represents a single worksheet describing metadata about a type of Participant.
- */
 export interface ParticipantsSchemaOutput {
-	/** Name of the table in the data warehouse */
 	table_name: string;
-	/** List of fields available in this table */
 	fields: FieldDescriptor[];
 }
 
@@ -2433,9 +1465,6 @@ export const PostgresDsnType = {
 	postgres: "postgres",
 } as const;
 
-/**
- * This value must be a RevealedStr when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained.
- */
 export type PostgresDsnPassword = RevealedStr | Hidden;
 
 export type PostgresDsnSslmode =
@@ -2451,9 +1480,6 @@ export const PostgresDsnSslmode = {
 
 export type PostgresDsnSearchPath = string | null;
 
-/**
- * PostgresDsn describes a connection to a Postgres-compatible database.
- */
 export interface PostgresDsn {
 	type: PostgresDsnType;
 	host: string;
@@ -2463,7 +1489,6 @@ export interface PostgresDsn {
 	 */
 	port: number;
 	user: string;
-	/** This value must be a RevealedStr when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained. */
 	password: PostgresDsnPassword;
 	dbname: string;
 	sslmode: PostgresDsnSslmode;
@@ -2492,32 +1517,18 @@ export const PreassignedFrequentistExperimentSpecInputExperimentType = {
 	freq_preassigned: "freq_preassigned",
 } as const;
 
-/**
- * Optional URL to a more detailed experiment design doc.
- */
 export type PreassignedFrequentistExperimentSpecInputDesignUrl = string | null;
 
-/**
- * Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.
- */
 export type PreassignedFrequentistExperimentSpecInputClusterKey = string | null;
 
-/**
- * Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.
- */
 export type PreassignedFrequentistExperimentSpecInputDesiredN = number | null;
 
-/**
- * Use this type to randomly select and assign from existing participants at design time with
-frequentist A/B experiments.
- */
 export interface PreassignedFrequentistExperimentSpecInput {
 	experiment_type: PreassignedFrequentistExperimentSpecInputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
 	/** @maxLength 2000 */
 	description: string;
-	/** Optional URL to a more detailed experiment design doc. */
 	design_url?: PreassignedFrequentistExperimentSpecInputDesignUrl;
 	start_date: string;
 	end_date: string;
@@ -2526,50 +1537,32 @@ export interface PreassignedFrequentistExperimentSpecInput {
 	 * @maxItems 20
 	 */
 	arms: Arm[];
-	/**
-	 * Datasource table used to resolve participant field metadata.
-	 * @maxLength 100
-	 */
+	/** @maxLength 100 */
 	table_name: string;
-	/**
-	 * Column name in table_name that uniquely identifies each participant.
-	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
-	 */
+	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	primary_key: string;
-	/** Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized. */
 	cluster_key?: PreassignedFrequentistExperimentSpecInputClusterKey;
-	/**
-	 * Optional fields to use for stratified assignment.
-	 * @maxItems 150
-	 */
+	/** @maxItems 150 */
 	strata: Stratum[];
 	/**
-	 * Primary and optional secondary metrics to target.
 	 * @minItems 1
 	 * @maxItems 150
 	 */
 	metrics: DesignSpecMetricRequest[];
-	/**
-	 * Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.
-	 * @maxItems 20
-	 */
+	/** @maxItems 20 */
 	filters: FilterInput[];
-	/** Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.  */
 	desired_n?: PreassignedFrequentistExperimentSpecInputDesiredN;
 	/**
-	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
 	 * @maximum 1
 	 */
 	power?: number;
 	/**
-	 * The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.
 	 * @minimum 0
 	 * @maximum 1
 	 */
 	alpha?: number;
 	/**
-	 * Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".
 	 * @minimum 0
 	 * @maximum 1
 	 */
@@ -2584,34 +1577,20 @@ export const PreassignedFrequentistExperimentSpecOutputExperimentType = {
 	freq_preassigned: "freq_preassigned",
 } as const;
 
-/**
- * Optional URL to a more detailed experiment design doc.
- */
 export type PreassignedFrequentistExperimentSpecOutputDesignUrl = string | null;
 
-/**
- * Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized.
- */
 export type PreassignedFrequentistExperimentSpecOutputClusterKey =
 	| string
 	| null;
 
-/**
- * Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.
- */
 export type PreassignedFrequentistExperimentSpecOutputDesiredN = number | null;
 
-/**
- * Use this type to randomly select and assign from existing participants at design time with
-frequentist A/B experiments.
- */
 export interface PreassignedFrequentistExperimentSpecOutput {
 	experiment_type: PreassignedFrequentistExperimentSpecOutputExperimentType;
 	/** @maxLength 100 */
 	experiment_name: string;
 	/** @maxLength 2000 */
 	description: string;
-	/** Optional URL to a more detailed experiment design doc. */
 	design_url?: PreassignedFrequentistExperimentSpecOutputDesignUrl;
 	start_date: string;
 	end_date: string;
@@ -2620,59 +1599,38 @@ export interface PreassignedFrequentistExperimentSpecOutput {
 	 * @maxItems 20
 	 */
 	arms: Arm[];
-	/**
-	 * Datasource table used to resolve participant field metadata.
-	 * @maxLength 100
-	 */
+	/** @maxLength 100 */
 	table_name: string;
-	/**
-	 * Column name in table_name that uniquely identifies each participant.
-	 * @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$
-	 */
+	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	primary_key: string;
-	/** Column name in table_name that identifies clusters for a cluster-randomized design. When set, per-metric icc, avg_cluster_size, and cv are either supplied on each metric or computed from this column at power_check time. When None, the design is assumed to be individual-randomized. */
 	cluster_key?: PreassignedFrequentistExperimentSpecOutputClusterKey;
-	/**
-	 * Optional fields to use for stratified assignment.
-	 * @maxItems 150
-	 */
+	/** @maxItems 150 */
 	strata: Stratum[];
 	/**
-	 * Primary and optional secondary metrics to target.
 	 * @minItems 1
 	 * @maxItems 150
 	 */
 	metrics: DesignSpecMetricRequest[];
-	/**
-	 * Optional filters that constrain a general eligible audience to a specific subset who can participate in an experiment.
-	 * @maxItems 20
-	 */
+	/** @maxItems 20 */
 	filters: FilterOutput[];
-	/** Used in both power calculations and experiment creation. Required for *creation* of preassigned experiments. Optional for power calculations; if set, calculates minimum detectable effect for the desired size in addition to the min sample size.  */
 	desired_n?: PreassignedFrequentistExperimentSpecOutputDesiredN;
 	/**
-	 * The chance of detecting a real non-null effect, i.e. 1 - false negative rate.
 	 * @minimum 0
 	 * @maximum 1
 	 */
 	power?: number;
 	/**
-	 * The chance of a false positive, i.e. there is no real non-null effect, but we mistakenly think there is one.
 	 * @minimum 0
 	 * @maximum 1
 	 */
 	alpha?: number;
 	/**
-	 * Threshold on the p-value of joint significance in doing the omnibus balance check, above which we declare the data to be "balanced".
 	 * @minimum 0
 	 * @maximum 1
 	 */
 	fstat_thresh?: number;
 }
 
-/**
- * Enum for the prior distribution of the arm.
- */
 export type PriorTypes = (typeof PriorTypes)[keyof typeof PriorTypes];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -2696,16 +1654,10 @@ export const RedshiftDsnType = {
 	redshift: "redshift",
 } as const;
 
-/**
- * This value must be a RevealedStr when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained.
- */
 export type RedshiftDsnPassword = RevealedStr | Hidden;
 
 export type RedshiftDsnSearchPath = string | null;
 
-/**
- * RedshiftDsn describes a connection to a Redshift database.
- */
 export interface RedshiftDsn {
 	type: RedshiftDsnType;
 	host: string;
@@ -2715,23 +1667,11 @@ export interface RedshiftDsn {
 	 */
 	port: number;
 	user: string;
-	/** This value must be a RevealedStr when creating the datasource or when updating a datasource's credentials. It may be a Hidden when updating a datasource. When hidden, the existing credentials are retained. */
 	password: RedshiftDsnPassword;
 	dbname: string;
 	search_path: RedshiftDsnSearchPath;
 }
 
-/**
- * Defines operators for filtering values.
-
-INCLUDES matches when the value matches any of the provided values, including null if explicitly
-specified. This is equivalent to NOT(EXCLUDES(values)).
-
-EXCLUDES matches when the value does not match any of the provided values, including null if
-explicitly specified. If null is not explicitly excluded, we include nulls in the result.
-
-BETWEEN matches when the value is between the two provided values (inclusive).
- */
 export type Relation = (typeof Relation)[keyof typeof Relation];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -2741,72 +1681,40 @@ export const Relation = {
 	between: "between",
 } as const;
 
-/**
- * RevealedStr contains a credential.
- */
 export interface RevealedStr {
 	type?: "revealed";
 	value: string;
 }
 
-/**
- * Request to create or update an organization's Turn.io connection.
- */
 export interface SetConnectionToTurnRequest {
-	/**
-	 * The Turn.io API token used to authenticate calls to the Turn API on behalf of the organization.
-	 * @minLength 335
-	 */
+	/** @minLength 335 */
 	turn_api_token: string;
 }
 
-/**
- * Mapping of experiment arm IDs to Turn.io journey IDs. This configures which Turn.io journey each arm corresponds to for experiments that integrate with Turn.io.
- */
 export type SetTurnArmJourneyMappingRequestArmToJourneys = {
 	[key: string]: string;
 };
 
-/**
- * Request to create or update the mapping between experiment arms and Turn.io journeys.
- */
 export interface SetTurnArmJourneyMappingRequest {
-	/** Mapping of experiment arm IDs to Turn.io journey IDs. This configures which Turn.io journey each arm corresponds to for experiments that integrate with Turn.io. */
 	arm_to_journeys: SetTurnArmJourneyMappingRequestArmToJourneys;
 }
 
 export type SnapshotDetailsAnyOf = { [key: string]: unknown };
 
-/**
- * Additional data about this snapshot.
- */
 export type SnapshotDetails = SnapshotDetailsAnyOf | null;
 
-/**
- * Analysis results as of the updated_at time.
- */
 export type SnapshotData = ExperimentAnalysisResponse | null;
 
 export interface Snapshot {
-	/** The experiment that this snapshot was captured for. */
 	experiment_id: string;
-	/** The unique ID of the snapshot. */
 	id: string;
-	/** The status of the snapshot. When not `success`, data will be null. */
 	status: SnapshotStatus;
-	/** Additional data about this snapshot. */
 	details: SnapshotDetails;
-	/** The time the snapshot was requested. */
 	created_at: string;
-	/** The time the snapshot was acquired. */
 	updated_at: string;
-	/** Analysis results as of the updated_at time. */
 	data: SnapshotData;
 }
 
-/**
- * Describes the status of a snapshot.
- */
 export type SnapshotStatus =
 	(typeof SnapshotStatus)[keyof typeof SnapshotStatus];
 
@@ -2817,9 +1725,6 @@ export const SnapshotStatus = {
 	failed: "failed",
 } as const;
 
-/**
- * The reason assignments were stopped.
- */
 export type StopAssignmentReason =
 	(typeof StopAssignmentReason)[keyof typeof StopAssignmentReason];
 
@@ -2833,18 +1738,12 @@ export const StopAssignmentReason = {
 
 export type StrataStrataValue = string | null;
 
-/**
- * Describes stratification for an experiment participant.
- */
 export interface Strata {
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
 	strata_value?: StrataStrataValue;
 }
 
-/**
- * Describes a variable used for stratification.
- */
 export interface Stratum {
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
@@ -2871,9 +1770,6 @@ export type TableDiff = ColumnDeleted | FieldChangedType | TableDeleted;
 
 export type TurnConfigResponseArmJourneyMap = { [key: string]: string };
 
-/**
- * Describes the configuration for Turn.io Evidential App.
- */
 export interface TurnConfigResponse {
 	experiment_id: string;
 	experiment_name: string;
@@ -2884,17 +1780,11 @@ export type UpdateArmRequestName = string | null;
 
 export type UpdateArmRequestDescription = string | null;
 
-/**
- * Defines the subset of fields that can be updated for an Arm after creation.
- */
 export interface UpdateArmRequest {
 	name?: UpdateArmRequestName;
 	description?: UpdateArmRequestDescription;
 }
 
-/**
- * Describes the outcome of a bandit experiment.
- */
 export interface UpdateBanditArmOutcomeRequest {
 	outcome: number;
 }
@@ -2922,9 +1812,6 @@ export type UpdateExperimentRequestImpact = Impact | null;
 
 export type UpdateExperimentRequestDecision = string | null;
 
-/**
- * Defines the subset of fields that can be updated for an experiment after creation.
- */
 export interface UpdateExperimentRequest {
 	name?: UpdateExperimentRequestName;
 	description?: UpdateExperimentRequestDescription;
@@ -2941,19 +1828,10 @@ export interface UpdateOrganizationRequest {
 	name?: UpdateOrganizationRequestName;
 }
 
-/**
- * Request to update a webhook's name and URL.
- */
 export interface UpdateOrganizationWebhookRequest {
-	/**
-	 * User-friendly name for the webhook. This name is displayed in the UI and helps identify the webhook's purpose.
-	 * @maxLength 100
-	 */
+	/** @maxLength 100 */
 	name: string;
-	/**
-	 * The HTTP or HTTPS URL that will receive webhook notifications when events occur.
-	 * @maxLength 500
-	 */
+	/** @maxLength 500 */
 	url: string;
 }
 
@@ -2999,24 +1877,13 @@ export interface ValidationError {
 	ctx?: ValidationErrorCtx;
 }
 
-/**
- * The value of the Webhook-Token: header that will be sent with the request to the configured URL.
- */
 export type WebhookSummaryAuthToken = string | null;
 
-/**
- * Summarizes a Webhook configuration for an organization.
- */
 export interface WebhookSummary {
-	/** The ID of the webhook. */
 	id: string;
-	/** The type of webhook; e.g. experiment.created */
 	type: string;
-	/** User-friendly name for the webhook. */
 	name: string;
-	/** The URL to notify. */
 	url: string;
-	/** The value of the Webhook-Token: header that will be sent with the request to the configured URL. */
 	auth_token: WebhookSummaryAuthToken;
 }
 
@@ -3033,157 +1900,93 @@ export interface XValidationError {
 }
 
 export type DeleteSnapshotParams = {
-	/**
-	 * If true, return a 204 even if the resource does not exist.
-	 */
 	allow_missing?: boolean;
 };
 
 export type ListSnapshotsParams = {
-	/**
-	 * Filter the returned snapshots to only those of this status. May be specified multiple times.
-	 */
 	status?: SnapshotStatus[] | null;
 	/**
-	 * Maximum number of items to return per page.
 	 * @minimum 1
 	 * @maximum 100
 	 */
 	page_size?: number;
-	/**
-	 * Token from a previous response to fetch the next page.
-	 */
 	page_token?: string | null;
 	/**
-	 * Number of items to skip after page_token (or from the start when page_token is omitted).
 	 * @minimum 0
 	 */
 	skip?: number;
 };
 
 export type DeleteWebhookFromOrganizationParams = {
-	/**
-	 * If true, return a 204 even if the resource does not exist.
-	 */
 	allow_missing?: boolean;
 };
 
 export type ListOrganizationEventsParams = {
 	/**
-	 * Maximum number of items to return per page.
 	 * @minimum 1
 	 * @maximum 100
 	 */
 	page_size?: number;
-	/**
-	 * Token from a previous response to fetch the next page.
-	 */
 	page_token?: string | null;
 	/**
-	 * Number of items to skip after page_token (or from the start when page_token is omitted).
 	 * @minimum 0
 	 */
 	skip?: number;
 };
 
 export type RemoveMemberFromOrganizationParams = {
-	/**
-	 * If true, return a 204 even if the resource does not exist.
-	 */
 	allow_missing?: boolean;
 };
 
 export type CreateDatasourceParams = {
-	/**
-	 * When true, validate datasource connectivity before creation.
-	 */
 	connectivity_check?: boolean;
 };
 
 export type InspectDatasourceParams = {
-	/**
-	 * Refresh the cache.
-	 */
 	refresh?: boolean;
 };
 
 export type InspectTableInDatasourceParams = {
-	/**
-	 * Refresh the cache.
-	 */
 	refresh?: boolean;
 };
 
 export type DeleteDatasourceParams = {
-	/**
-	 * If true, return a 204 even if the resource does not exist.
-	 */
 	allow_missing?: boolean;
 };
 
 export type InspectParticipantTypesParams = {
-	/**
-	 * Refresh the cache.
-	 */
 	refresh?: boolean;
-	/**
-	 * Whether to run expensive metadata queries.
-	 */
 	expensive?: boolean;
 };
 
 export type DeleteParticipantParams = {
-	/**
-	 * If true, return a 204 even if the resource does not exist.
-	 */
 	allow_missing?: boolean;
 };
 
 export type DeleteApiKeyParams = {
-	/**
-	 * If true, return a 204 even if the resource does not exist.
-	 */
 	allow_missing?: boolean;
 };
 
 export type CreateExperimentParams = {
-	/**
-	 * Whether to also stratify on metrics during assignment.
-	 */
 	stratify_on_metrics?: boolean;
 };
 
 export type AnalyzeExperimentParams = {
-	/**
-	 * UUID of the baseline arm. If None, the first design spec arm is used.
-	 */
 	baseline_arm_id?: string | null;
 };
 
 export type DeleteExperimentParams = {
-	/**
-	 * If true, return a 204 even if the resource does not exist.
-	 */
 	allow_missing?: boolean;
 };
 
 export type GetOrganizationTurnConnectionParams = {
-	/**
-	 * If true, return a 200 with null body if the resource does not exist.
-	 */
 	allow_missing?: boolean;
 };
 
 export type DeleteTurnConnectionFromOrganizationParams = {
-	/**
-	 * If true, return a 204 even if the resource does not exist.
-	 */
 	allow_missing?: boolean;
 };
 
 export type DeleteTurnArmJourneyMappingParams = {
-	/**
-	 * If true, return a 204 even if the resource does not exist.
-	 */
 	allow_missing?: boolean;
 };
