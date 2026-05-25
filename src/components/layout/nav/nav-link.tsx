@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Box, Flex, Text, Tooltip } from '@radix-ui/themes';
 import * as NavigationMenu from '@radix-ui/react-navigation-menu';
 import { AccessibleIcon } from '@radix-ui/react-accessible-icon';
+import { transitions } from '@/services/transitions';
 
 export interface NavLinkProps {
   href: string;
@@ -26,7 +27,7 @@ export const NavLink = ({ href, isActive, label, icon: Icon, isOpen }: NavLinkPr
             padding: 'var(--space-2)',
             backgroundColor: isActive ? 'var(--accent-a3)' : 'transparent',
             color: isActive ? 'var(--accent-a11)' : 'var(--gray-11)',
-            transition: 'background-color 0.15s ease-in-out, color 0.15s ease-in-out',
+            transition: `background-color ${transitions.fast}, color ${transitions.fast}`,
           }}
         >
           <Flex align="center" gap="2">
@@ -37,12 +38,13 @@ export const NavLink = ({ href, isActive, label, icon: Icon, isOpen }: NavLinkPr
             </AccessibleIcon>
 
             <Box
+              aria-hidden={!isOpen}
               style={{
                 overflow: 'hidden',
                 whiteSpace: 'nowrap',
                 maxWidth: isOpen ? '200px' : '0px',
                 opacity: isOpen ? 1 : 0,
-                transition: 'max-width 0.3s ease-in-out, opacity 0.3s ease-in-out',
+                transition: `max-width ${transitions.normal}, opacity ${transitions.normal}`,
               }}
             >
               <Text size="3" weight="medium" truncate>

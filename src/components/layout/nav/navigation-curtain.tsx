@@ -8,6 +8,7 @@ import { ChevronLeftIcon, GearIcon, HamburgerMenuIcon, LightningBoltIcon } from 
 import { useState } from 'react';
 import * as NavigationMenu from '@radix-ui/react-navigation-menu';
 import { NavLink } from '@/components/layout/nav/nav-link';
+import { transitions } from '@/services/transitions';
 
 export const NavigationBar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,7 +40,7 @@ export const NavigationBar = () => {
           borderRight: '1px solid var(--gray-5)',
           position: 'relative',
           flexShrink: 0,
-          transition: 'width 0.3s ease-in-out',
+          transition: `width ${transitions.normal}`,
         }}
       >
         <Flex direction="column" width="100%" p="2" gap="4" height="100%" py="5">

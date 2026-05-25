@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Box, IconButton, Tooltip } from '@radix-ui/themes';
 import { CheckIcon, CopyIcon } from '@radix-ui/react-icons';
+import { transitions } from '@/services/transitions';
 
 interface CopyToClipboardProps {
   content: string;
@@ -37,7 +38,7 @@ export function CopyToClipBoard({ content, tooltipContent = 'Copy to clipboard',
             inset="0"
             style={{
               opacity: copied ? 0 : 1,
-              transition: 'opacity 0.15s ease-in-out',
+              transition: `opacity ${transitions.fast}`,
             }}
           >
             <CopyIcon width="18" height="18" />
@@ -47,7 +48,7 @@ export function CopyToClipBoard({ content, tooltipContent = 'Copy to clipboard',
             inset="0"
             style={{
               opacity: copied ? 1 : 0,
-              transition: 'opacity 0.15s ease-in-out',
+              transition: `opacity ${transitions.fast}`,
             }}
           >
             <CheckIcon width="18" height="18" />
