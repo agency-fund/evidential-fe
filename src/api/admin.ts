@@ -79,10 +79,6 @@ import type { ErrorType } from "@/services/orval-fetch";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
-/**
- * Returns basic metadata about the authenticated caller of this method.
- * @summary Caller Identity
- */
 export const getCallerIdentityUrl = () => {
 	return `/v1/m/caller-identity`;
 };
@@ -103,9 +99,6 @@ export type CallerIdentityQueryResult = NonNullable<
 >;
 export type CallerIdentityQueryError = ErrorType<HTTPExceptionError>;
 
-/**
- * @summary Caller Identity
- */
 export const useCallerIdentity = <
 	TError = ErrorType<HTTPExceptionError>,
 >(options?: {
@@ -133,10 +126,6 @@ export const useCallerIdentity = <
 		...query,
 	};
 };
-/**
- * Invalidates all previously created session tokens.
- * @summary Logout
- */
 export const getLogoutUrl = () => {
 	return `/v1/m/logout`;
 };
@@ -162,9 +151,6 @@ export type LogoutMutationResult = NonNullable<
 >;
 export type LogoutMutationError = ErrorType<HTTPExceptionError>;
 
-/**
- * @summary Logout
- */
 export const useLogout = <TError = ErrorType<HTTPExceptionError>>(options?: {
 	swr?: SWRMutationConfiguration<
 		Awaited<ReturnType<typeof logout>>,
@@ -187,10 +173,6 @@ export const useLogout = <TError = ErrorType<HTTPExceptionError>>(options?: {
 		...query,
 	};
 };
-/**
- * Fetches a snapshot by ID.
- * @summary Get Snapshot
- */
 export const getGetSnapshotUrl = (
 	organizationId: string,
 	datasourceId: string,
@@ -233,9 +215,6 @@ export type GetSnapshotQueryError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Get Snapshot
- */
 export const useGetSnapshot = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -287,10 +266,6 @@ export const useGetSnapshot = <
 		...query,
 	};
 };
-/**
- * Deletes a snapshot.
- * @summary Delete Snapshot
- */
 export const getDeleteSnapshotUrl = (
 	organizationId: string,
 	datasourceId: string,
@@ -374,9 +349,6 @@ export type DeleteSnapshotMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Delete Snapshot
- */
 export const useDeleteSnapshot = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -423,10 +395,6 @@ export const useDeleteSnapshot = <
 		...query,
 	};
 };
-/**
- * Lists snapshots for an experiment, ordered by timestamp.
- * @summary List Snapshots
- */
 export const getListSnapshotsUrl = (
 	organizationId: string,
 	datasourceId: string,
@@ -482,9 +450,6 @@ export type ListSnapshotsQueryError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary List Snapshots
- */
 export const useListSnapshots = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -536,12 +501,6 @@ export const useListSnapshots = <
 		...query,
 	};
 };
-/**
- * Request the asynchronous creation of a snapshot for an experiment.
-
-Returns the ID of the snapshot. Poll get_snapshot until the job is completed.
- * @summary Create Snapshot
- */
 export const getCreateSnapshotUrl = (
 	organizationId: string,
 	datasourceId: string,
@@ -591,9 +550,6 @@ export type CreateSnapshotMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Create Snapshot
- */
 export const useCreateSnapshot = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -630,10 +586,6 @@ export const useCreateSnapshot = <
 		...query,
 	};
 };
-/**
- * Returns a list of organizations that the authenticated user is a member of.
- * @summary List Organizations
- */
 export const getListOrganizationsUrl = () => {
 	return `/v1/m/organizations`;
 };
@@ -654,9 +606,6 @@ export type ListOrganizationsQueryResult = NonNullable<
 >;
 export type ListOrganizationsQueryError = ErrorType<HTTPExceptionError>;
 
-/**
- * @summary List Organizations
- */
 export const useListOrganizations = <
 	TError = ErrorType<HTTPExceptionError>,
 >(options?: {
@@ -685,12 +634,6 @@ export const useListOrganizations = <
 		...query,
 	};
 };
-/**
- * Creates a new organization.
-
-Only privileged users can create organizations.
- * @summary Create Organizations
- */
 export const getCreateOrganizationsUrl = () => {
 	return `/v1/m/organizations`;
 };
@@ -724,9 +667,6 @@ export type CreateOrganizationsMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Create Organizations
- */
 export const useCreateOrganizations = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(options?: {
@@ -751,10 +691,6 @@ export const useCreateOrganizations = <
 		...query,
 	};
 };
-/**
- * Adds a Webhook to an organization.
- * @summary Add Webhook To Organization
- */
 export const getAddWebhookToOrganizationUrl = (organizationId: string) => {
 	return `/v1/m/organizations/${organizationId}/webhooks`;
 };
@@ -794,9 +730,6 @@ export type AddWebhookToOrganizationMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Add Webhook To Organization
- */
 export const useAddWebhookToOrganization = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -829,10 +762,6 @@ export const useAddWebhookToOrganization = <
 		...query,
 	};
 };
-/**
- * Lists all the webhooks for an organization.
- * @summary List Organization Webhooks
- */
 export const getListOrganizationWebhooksUrl = (organizationId: string) => {
 	return `/v1/m/organizations/${organizationId}/webhooks`;
 };
@@ -860,9 +789,6 @@ export type ListOrganizationWebhooksQueryError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary List Organization Webhooks
- */
 export const useListOrganizationWebhooks = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -894,10 +820,6 @@ export const useListOrganizationWebhooks = <
 		...query,
 	};
 };
-/**
- * Updates a webhook's name and URL in an organization.
- * @summary Update Organization Webhook
- */
 export const getUpdateOrganizationWebhookUrl = (
 	organizationId: string,
 	webhookId: string,
@@ -943,9 +865,6 @@ export type UpdateOrganizationWebhookMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Update Organization Webhook
- */
 export const useUpdateOrganizationWebhook = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -980,10 +899,6 @@ export const useUpdateOrganizationWebhook = <
 		...query,
 	};
 };
-/**
- * Removes a Webhook from an organization.
- * @summary Delete Webhook From Organization
- */
 export const getDeleteWebhookFromOrganizationUrl = (
 	organizationId: string,
 	webhookId: string,
@@ -1051,9 +966,6 @@ export type DeleteWebhookFromOrganizationMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Delete Webhook From Organization
- */
 export const useDeleteWebhookFromOrganization = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -1094,10 +1006,6 @@ export const useDeleteWebhookFromOrganization = <
 		...query,
 	};
 };
-/**
- * Regenerates the auth token for a webhook in an organization.
- * @summary Regenerate Webhook Auth Token
- */
 export const getRegenerateWebhookAuthTokenUrl = (
 	organizationId: string,
 	webhookId: string,
@@ -1143,9 +1051,6 @@ export type RegenerateWebhookAuthTokenMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Regenerate Webhook Auth Token
- */
 export const useRegenerateWebhookAuthToken = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -1180,10 +1085,6 @@ export const useRegenerateWebhookAuthToken = <
 		...query,
 	};
 };
-/**
- * Returns events in an organization, newest first.
- * @summary List Organization Events
- */
 export const getListOrganizationEventsUrl = (
 	organizationId: string,
 	params?: ListOrganizationEventsParams,
@@ -1233,9 +1134,6 @@ export type ListOrganizationEventsQueryError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary List Organization Events
- */
 export const useListOrganizationEvents = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -1270,12 +1168,6 @@ export const useListOrganizationEvents = <
 		...query,
 	};
 };
-/**
- * Adds a new member to an organization.
-
-The authenticated user must be part of the organization to add members.
- * @summary Add Member To Organization
- */
 export const getAddMemberToOrganizationUrl = (organizationId: string) => {
 	return `/v1/m/organizations/${organizationId}/members`;
 };
@@ -1311,9 +1203,6 @@ export type AddMemberToOrganizationMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Add Member To Organization
- */
 export const useAddMemberToOrganization = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -1345,12 +1234,6 @@ export const useAddMemberToOrganization = <
 		...query,
 	};
 };
-/**
- * Removes a member from an organization.
-
-The authenticated user must be part of the organization to remove members.
- * @summary Remove Member From Organization
- */
 export const getRemoveMemberFromOrganizationUrl = (
 	organizationId: string,
 	userId: string,
@@ -1418,9 +1301,6 @@ export type RemoveMemberFromOrganizationMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Remove Member From Organization
- */
 export const useRemoveMemberFromOrganization = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -1457,13 +1337,6 @@ export const useRemoveMemberFromOrganization = <
 		...query,
 	};
 };
-/**
- * Updates an organization's properties.
-
-The authenticated user must be a member of the organization.
-Currently only supports updating the organization name.
- * @summary Update Organization
- */
 export const getUpdateOrganizationUrl = (organizationId: string) => {
 	return `/v1/m/organizations/${organizationId}`;
 };
@@ -1499,9 +1372,6 @@ export type UpdateOrganizationMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Update Organization
- */
 export const useUpdateOrganization = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -1533,12 +1403,6 @@ export const useUpdateOrganization = <
 		...query,
 	};
 };
-/**
- * Returns detailed information about a specific organization.
-
-The authenticated user must be a member of the organization.
- * @summary Get Organization
- */
 export const getGetOrganizationUrl = (organizationId: string) => {
 	return `/v1/m/organizations/${organizationId}`;
 };
@@ -1566,9 +1430,6 @@ export type GetOrganizationQueryError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Get Organization
- */
 export const useGetOrganization = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -1600,10 +1461,6 @@ export const useGetOrganization = <
 		...query,
 	};
 };
-/**
- * Returns a list of datasources accessible to the authenticated user for an org.
- * @summary List Organization Datasources
- */
 export const getListOrganizationDatasourcesUrl = (organizationId: string) => {
 	return `/v1/m/organizations/${organizationId}/datasources`;
 };
@@ -1631,9 +1488,6 @@ export type ListOrganizationDatasourcesQueryError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary List Organization Datasources
- */
 export const useListOrganizationDatasources = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -1667,10 +1521,6 @@ export const useListOrganizationDatasources = <
 		...query,
 	};
 };
-/**
- * Creates a new datasource for the specified organization.
- * @summary Create Datasource
- */
 export const getCreateDatasourceUrl = (params?: CreateDatasourceParams) => {
 	const normalizedParams = new URLSearchParams();
 
@@ -1719,9 +1569,6 @@ export type CreateDatasourceMutationError = ErrorType<
 	HTTPExceptionError | XHTTPValidationError | MessageError
 >;
 
-/**
- * @summary Create Datasource
- */
 export const useCreateDatasource = <
 	TError = ErrorType<HTTPExceptionError | XHTTPValidationError | MessageError>,
 >(
@@ -1749,9 +1596,6 @@ export const useCreateDatasource = <
 		...query,
 	};
 };
-/**
- * @summary Update Datasource
- */
 export const getUpdateDatasourceUrl = (datasourceId: string) => {
 	return `/v1/m/datasources/${datasourceId}`;
 };
@@ -1787,9 +1631,6 @@ export type UpdateDatasourceMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Update Datasource
- */
 export const useUpdateDatasource = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -1821,10 +1662,6 @@ export const useUpdateDatasource = <
 		...query,
 	};
 };
-/**
- * Returns detailed information about a specific datasource.
- * @summary Get Datasource
- */
 export const getGetDatasourceUrl = (datasourceId: string) => {
 	return `/v1/m/datasources/${datasourceId}`;
 };
@@ -1849,9 +1686,6 @@ export type GetDatasourceQueryError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Get Datasource
- */
 export const useGetDatasource = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -1883,10 +1717,6 @@ export const useGetDatasource = <
 		...query,
 	};
 };
-/**
- * Verifies connectivity to a datasource and returns a list of readable tables.
- * @summary Inspect Datasource
- */
 export const getInspectDatasourceUrl = (
 	datasourceId: string,
 	params?: InspectDatasourceParams,
@@ -1936,9 +1766,6 @@ export type InspectDatasourceQueryError = ErrorType<
 	HTTPExceptionError | MessageError | XHTTPValidationError
 >;
 
-/**
- * @summary Inspect Datasource
- */
 export const useInspectDatasource = <
 	TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>,
 >(
@@ -1971,10 +1798,6 @@ export const useInspectDatasource = <
 		...query,
 	};
 };
-/**
- * Inspects a single table in a datasource and returns a summary of its fields.
- * @summary Inspect Table In Datasource
- */
 export const getInspectTableInDatasourceUrl = (
 	datasourceId: string,
 	tableName: string,
@@ -2027,9 +1850,6 @@ export type InspectTableInDatasourceQueryError = ErrorType<
 	HTTPExceptionError | MessageError | XHTTPValidationError
 >;
 
-/**
- * @summary Inspect Table In Datasource
- */
 export const useInspectTableInDatasource = <
 	TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>,
 >(
@@ -2068,12 +1888,6 @@ export const useInspectTableInDatasource = <
 		...query,
 	};
 };
-/**
- * Deletes a datasource.
-
-The user must be a member of the organization that owns the datasource.
- * @summary Delete Datasource
- */
 export const getDeleteDatasourceUrl = (
 	organizationId: string,
 	datasourceId: string,
@@ -2136,9 +1950,6 @@ export type DeleteDatasourceMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Delete Datasource
- */
 export const useDeleteDatasource = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -2175,9 +1986,6 @@ export const useDeleteDatasource = <
 		...query,
 	};
 };
-/**
- * @summary List Participant Types
- */
 export const getListParticipantTypesUrl = (datasourceId: string) => {
 	return `/v1/m/datasources/${datasourceId}/participants`;
 };
@@ -2205,9 +2013,6 @@ export type ListParticipantTypesQueryError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary List Participant Types
- */
 export const useListParticipantTypes = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -2239,9 +2044,6 @@ export const useListParticipantTypes = <
 		...query,
 	};
 };
-/**
- * @summary Create Participant Type
- */
 export const getCreateParticipantTypeUrl = (datasourceId: string) => {
 	return `/v1/m/datasources/${datasourceId}/participants`;
 };
@@ -2280,9 +2082,6 @@ export type CreateParticipantTypeMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Create Participant Type
- */
 export const useCreateParticipantType = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -2314,11 +2113,6 @@ export const useCreateParticipantType = <
 		...query,
 	};
 };
-/**
- * Returns filter, strata, and metric field metadata for a participant type, including exemplars for
-filter fields.
- * @summary Inspect Participant Types
- */
 export const getInspectParticipantTypesUrl = (
 	datasourceId: string,
 	participantId: string,
@@ -2371,9 +2165,6 @@ export type InspectParticipantTypesQueryError = ErrorType<
 	HTTPExceptionError | MessageError | XHTTPValidationError
 >;
 
-/**
- * @summary Inspect Participant Types
- */
 export const useInspectParticipantTypes = <
 	TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>,
 >(
@@ -2417,9 +2208,6 @@ export const useInspectParticipantTypes = <
 		...query,
 	};
 };
-/**
- * @summary Get Participant Type
- */
 export const getGetParticipantTypeUrl = (
 	datasourceId: string,
 	participantId: string,
@@ -2454,9 +2242,6 @@ export type GetParticipantTypeQueryError = ErrorType<
 	HTTPExceptionError | MessageError | XHTTPValidationError
 >;
 
-/**
- * @summary Get Participant Type
- */
 export const useGetParticipantType = <
 	TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>,
 >(
@@ -2492,9 +2277,6 @@ export const useGetParticipantType = <
 		...query,
 	};
 };
-/**
- * @summary Update Participant Type
- */
 export const getUpdateParticipantTypeUrl = (
 	datasourceId: string,
 	participantId: string,
@@ -2541,9 +2323,6 @@ export type UpdateParticipantTypeMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Update Participant Type
- */
 export const useUpdateParticipantType = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -2578,9 +2357,6 @@ export const useUpdateParticipantType = <
 		...query,
 	};
 };
-/**
- * @summary Delete Participant
- */
 export const getDeleteParticipantUrl = (
 	datasourceId: string,
 	participantId: string,
@@ -2643,9 +2419,6 @@ export type DeleteParticipantMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Delete Participant
- */
 export const useDeleteParticipant = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -2682,10 +2455,6 @@ export const useDeleteParticipant = <
 		...query,
 	};
 };
-/**
- * Returns API keys that have access to the datasource.
- * @summary List Api Keys
- */
 export const getListApiKeysUrl = (datasourceId: string) => {
 	return `/v1/m/datasources/${datasourceId}/apikeys`;
 };
@@ -2710,9 +2479,6 @@ export type ListApiKeysQueryError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary List Api Keys
- */
 export const useListApiKeys = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -2744,12 +2510,6 @@ export const useListApiKeys = <
 		...query,
 	};
 };
-/**
- * Creates an API key for the specified datasource.
-
-The user must belong to the organization that owns the requested datasource.
- * @summary Create Api Key
- */
 export const getCreateApiKeyUrl = (datasourceId: string) => {
 	return `/v1/m/datasources/${datasourceId}/apikeys`;
 };
@@ -2782,9 +2542,6 @@ export type CreateApiKeyMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Create Api Key
- */
 export const useCreateApiKey = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -2812,10 +2569,6 @@ export const useCreateApiKey = <
 		...query,
 	};
 };
-/**
- * Deletes the specified API key.
- * @summary Delete Api Key
- */
 export const getDeleteApiKeyUrl = (
 	datasourceId: string,
 	apiKeyId: string,
@@ -2875,9 +2628,6 @@ export type DeleteApiKeyMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Delete Api Key
- */
 export const useDeleteApiKey = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -2914,10 +2664,6 @@ export const useDeleteApiKey = <
 		...query,
 	};
 };
-/**
- * Creates a new experiment in the specified datasource.
- * @summary Create Experiment
- */
 export const getCreateExperimentUrl = (
 	datasourceId: string,
 	params?: CreateExperimentParams,
@@ -2979,9 +2725,6 @@ export type CreateExperimentMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Create Experiment
- */
 export const useCreateExperiment = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -3015,11 +2758,6 @@ export const useCreateExperiment = <
 		...query,
 	};
 };
-/**
- * For preassigned experiments, and online experiments (except contextual bandits),
-    returns an analysis of the experiment's performance, given datasource and experiment ID.
- * @summary Analyze Experiment
- */
 export const getAnalyzeExperimentUrl = (
 	datasourceId: string,
 	experimentId: string,
@@ -3072,9 +2810,6 @@ export type AnalyzeExperimentQueryError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Analyze Experiment
- */
 export const useAnalyzeExperiment = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -3113,11 +2848,6 @@ export const useAnalyzeExperiment = <
 		...query,
 	};
 };
-/**
- * For contextual bandit experiments, returns an analysis of the experiment's performance,
-    given datasource and experiment ID and context values as input.
- * @summary Analyze Cmab Experiment
- */
 export const getAnalyzeCmabExperimentUrl = (
 	datasourceId: string,
 	experimentId: string,
@@ -3166,9 +2896,6 @@ export type AnalyzeCmabExperimentMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Analyze Cmab Experiment
- */
 export const useAnalyzeCmabExperiment = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -3203,9 +2930,6 @@ export const useAnalyzeCmabExperiment = <
 		...query,
 	};
 };
-/**
- * @summary Commit Experiment
- */
 export const getCommitExperimentUrl = (
 	datasourceId: string,
 	experimentId: string,
@@ -3248,9 +2972,6 @@ export type CommitExperimentMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Commit Experiment
- */
 export const useCommitExperiment = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -3285,9 +3006,6 @@ export const useCommitExperiment = <
 		...query,
 	};
 };
-/**
- * @summary Abandon Experiment
- */
 export const getAbandonExperimentUrl = (
 	datasourceId: string,
 	experimentId: string,
@@ -3330,9 +3048,6 @@ export type AbandonExperimentMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Abandon Experiment
- */
 export const useAbandonExperiment = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -3367,10 +3082,6 @@ export const useAbandonExperiment = <
 		...query,
 	};
 };
-/**
- * Returns a list of experiments in the organization.
- * @summary List Organization Experiments
- */
 export const getListOrganizationExperimentsUrl = (organizationId: string) => {
 	return `/v1/m/organizations/${organizationId}/experiments`;
 };
@@ -3398,9 +3109,6 @@ export type ListOrganizationExperimentsQueryError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary List Organization Experiments
- */
 export const useListOrganizationExperiments = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -3434,10 +3142,6 @@ export const useListOrganizationExperiments = <
 		...query,
 	};
 };
-/**
- * Returns the experiment with the specified ID.
- * @summary Get Experiment For Ui
- */
 export const getGetExperimentForUiUrl = (
 	datasourceId: string,
 	experimentId: string,
@@ -3471,9 +3175,6 @@ export type GetExperimentForUiQueryError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Get Experiment For Ui
- */
 export const useGetExperimentForUi = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -3509,9 +3210,6 @@ export const useGetExperimentForUi = <
 		...query,
 	};
 };
-/**
- * @summary Update Experiment
- */
 export const getUpdateExperimentUrl = (
 	datasourceId: string,
 	experimentId: string,
@@ -3554,9 +3252,6 @@ export type UpdateExperimentMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Update Experiment
- */
 export const useUpdateExperiment = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -3591,10 +3286,6 @@ export const useUpdateExperiment = <
 		...query,
 	};
 };
-/**
- * Deletes the experiment with the specified ID.
- * @summary Delete Experiment
- */
 export const getDeleteExperimentUrl = (
 	datasourceId: string,
 	experimentId: string,
@@ -3657,9 +3348,6 @@ export type DeleteExperimentMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Delete Experiment
- */
 export const useDeleteExperiment = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -3696,9 +3384,6 @@ export const useDeleteExperiment = <
 		...query,
 	};
 };
-/**
- * @summary Export experiment assignments as CSV file; BalanceCheck not included. csv header form: participant_id,arm_id,arm_name,strata_name1,strata_name2,...
- */
 export const getGetExperimentAssignmentsAsCsvForUiUrl = (
 	datasourceId: string,
 	experimentId: string,
@@ -3735,9 +3420,6 @@ export type GetExperimentAssignmentsAsCsvForUiQueryError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Export experiment assignments as CSV file; BalanceCheck not included. csv header form: participant_id,arm_id,arm_name,strata_name1,strata_name2,...
- */
 export const useGetExperimentAssignmentsAsCsvForUi = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -3779,10 +3461,6 @@ export const useGetExperimentAssignmentsAsCsvForUi = <
 		...query,
 	};
 };
-/**
- * Deletes specific data associated with an experiment.
- * @summary Delete Experiment Data
- */
 export const getDeleteExperimentDataUrl = (
 	datasourceId: string,
 	experimentId: string,
@@ -3831,9 +3509,6 @@ export type DeleteExperimentDataMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Delete Experiment Data
- */
 export const useDeleteExperimentData = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -3868,9 +3543,6 @@ export const useDeleteExperimentData = <
 		...query,
 	};
 };
-/**
- * @summary Update Arm
- */
 export const getUpdateArmUrl = (
 	datasourceId: string,
 	experimentId: string,
@@ -3920,9 +3592,6 @@ export type UpdateArmMutationError = ErrorType<
 	HTTPExceptionError | HTTPValidationError
 >;
 
-/**
- * @summary Update Arm
- */
 export const useUpdateArm = <
 	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
 >(
@@ -3959,10 +3628,6 @@ export const useUpdateArm = <
 		...query,
 	};
 };
-/**
- * Performs a power check for the specified datasource.
- * @summary Power Check
- */
 export const getPowerCheckUrl = (datasourceId: string) => {
 	return `/v1/m/datasources/${datasourceId}/power`;
 };
@@ -3998,9 +3663,6 @@ export type PowerCheckMutationError = ErrorType<
 	HTTPExceptionError | MessageError | XHTTPValidationError
 >;
 
-/**
- * @summary Power Check
- */
 export const usePowerCheck = <
 	TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>,
 >(
