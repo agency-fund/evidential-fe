@@ -551,8 +551,6 @@ export type CreateExperimentResponseAssignSummary = AssignSummary | null;
 export interface CreateExperimentResponse {
 	experiment_id: string;
 	datasource_id: string;
-	/** @maxLength 100 */
-	participant_type_deprecated: string;
 	state: ExperimentState;
 	stopped_assignments_at: CreateExperimentResponseStoppedAssignmentsAt;
 	stopped_assignments_reason: CreateExperimentResponseStoppedAssignmentsReason;
@@ -744,8 +742,6 @@ export type ExperimentConfigAssignSummary = AssignSummary | null;
 export interface ExperimentConfig {
 	experiment_id: string;
 	datasource_id: string;
-	/** @maxLength 100 */
-	participant_type_deprecated: string;
 	state: ExperimentState;
 	stopped_assignments_at: ExperimentConfigStoppedAssignmentsAt;
 	stopped_assignments_reason: ExperimentConfigStoppedAssignmentsReason;
@@ -889,11 +885,12 @@ export interface GetExperimentAssignmentsResponse {
 	assignments: Assignment[];
 }
 
-export type GetExperimentForUiResponseParticipantType = ParticipantsDef | null;
+export type GetExperimentForUiResponseExperimentSchema =
+	ParticipantsSchemaOutput | null;
 
 export interface GetExperimentForUiResponse {
 	config: ExperimentConfig;
-	participant_type: GetExperimentForUiResponseParticipantType;
+	experiment_schema: GetExperimentForUiResponseExperimentSchema;
 }
 
 export type GetExperimentResponseStoppedAssignmentsAt = string | null;
@@ -908,8 +905,6 @@ export type GetExperimentResponseAssignSummary = AssignSummary | null;
 export interface GetExperimentResponse {
 	experiment_id: string;
 	datasource_id: string;
-	/** @maxLength 100 */
-	participant_type_deprecated: string;
 	state: ExperimentState;
 	stopped_assignments_at: GetExperimentResponseStoppedAssignmentsAt;
 	stopped_assignments_reason: GetExperimentResponseStoppedAssignmentsReason;
