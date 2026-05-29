@@ -10,7 +10,6 @@ import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
 import { PaginationButtons } from '@/components/ui/pagination/pagination-buttons';
-import { useEffect } from 'react';
 
 interface EventsTableProps {
   organizationId?: string;
@@ -34,8 +33,10 @@ const EVENT_DETAILS = [
   },
 ] as const;
 
-export function EventsTable({ organizationId }: EventsTableProps) {
-  const { reset, ...pagination } = usePagination();
+const getEventsTableKey = ({ organizationId }: EventsTableProps): string => organizationId ?? '';
+
+function EventsTableImpl({ organizationId }: EventsTableProps) {
+  const pagination = usePagination();
 
   const {
     data: eventsData,
@@ -54,10 +55,6 @@ export function EventsTable({ organizationId }: EventsTableProps) {
 
   const events = eventsData?.items || [];
   const nextPageToken = eventsData?.next_page_token || '';
-
-  useEffect(() => {
-    reset();
-  }, [organizationId, reset]);
 
   if (!organizationId) {
     return (
@@ -161,4 +158,8 @@ export function EventsTable({ organizationId }: EventsTableProps) {
       </Flex>
     </Flex>
   );
+}
+
+export function EventsTable(props: EventsTableProps) {
+  return <EventsTableImpl key={getEventsTableKey(props)} {...props} />;
 }
