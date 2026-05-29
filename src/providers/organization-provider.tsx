@@ -5,12 +5,13 @@ import { createContext, PropsWithChildren, useContext, useEffect } from 'react';
 import { useListOrganizations } from '@/api/admin';
 import { useAuth } from '@/providers/auth-provider';
 import { useLocalStorage } from '@/providers/use-local-storage';
-import { Button, Callout, Flex, Text } from '@radix-ui/themes';
+import { Button, Callout, Flex, Heading, Text } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ApiError } from '@/services/orval-fetch';
 import { SUPPORT_EMAIL } from '@/services/constants';
+import { CreateOrganizationDialog } from '@/components/features/organizations/create-organization-dialog';
 
 export const CURRENT_ORG_ID_KEY = 'org_id' as const;
 
@@ -82,7 +83,15 @@ export function OrganizationProvider({ children }: PropsWithChildren) {
 
   const organizations = orgsList.items;
   if (organizations.length === 0) {
-    return <Text>Sorry, you are not a member of any organizations.</Text>;
+    return (
+      <Flex direction="column" gap="3" align="center" py="6">
+        <Heading size="7">Welcome to Evidential.</Heading>
+        <Text size="3" color="gray">
+          Create your first organization to get started.
+        </Text>
+        <CreateOrganizationDialog />
+      </Flex>
+    );
   }
 
   const currentOrgId = orgId ?? organizations[0].id;
