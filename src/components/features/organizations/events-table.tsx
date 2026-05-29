@@ -1,37 +1,16 @@
 'use client';
-import { DataList, Flex, Heading, HoverCard, Table } from '@radix-ui/themes';
+import { Flex, Heading, Table } from '@radix-ui/themes';
 import { useListOrganizationEvents } from '@/api/admin';
-import { EventSummary } from '@/api/methods.schemas';
-import Link from 'next/link';
 import { usePagination } from '@/providers/use-pagination';
-import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
-import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
 import { PaginationButtons } from '@/components/ui/pagination/pagination-buttons';
+import { EventRow } from '@/components/features/organizations/event-row';
 
 interface EventsTableProps {
   organizationId?: string;
 }
-
-const EVENT_DETAILS = [
-  {
-    label: 'Event ID',
-    value: (event: EventSummary) => event.id,
-    copy: true,
-  },
-  {
-    label: 'Timestamp',
-    value: (event: EventSummary) => event.created_at,
-    copy: false,
-  },
-  {
-    label: 'Summary',
-    value: (event: EventSummary) => event.summary,
-    copy: false,
-  },
-] as const;
 
 const getEventsTableKey = ({ organizationId }: EventsTableProps): string => organizationId ?? '';
 
@@ -49,6 +28,7 @@ function EventsTableImpl({ organizationId }: EventsTableProps) {
       swr: {
         keepPreviousData: true,
         enabled: !!organizationId,
+        refreshInterval: 15000,
       },
     },
   );
@@ -102,52 +82,12 @@ function EventsTableImpl({ organizationId }: EventsTableProps) {
               <Table.ColumnHeaderCell>Event Type</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Created At</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Summary</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Link</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {events.map((event) => (
-              <HoverCard.Root key={event.id}>
-                <HoverCard.Trigger>
-                  <Table.Row style={{ cursor: 'pointer' }}>
-                    <Table.Cell>{event.type}</Table.Cell>
-                    <Table.Cell>{new Date(event.created_at).toLocaleString()}</Table.Cell>
-                    <Table.Cell>{event.summary}</Table.Cell>
-                    <Table.Cell>
-                      {event.link && (
-                        <Link href={event.link} target="_blank" rel="noopener noreferrer">
-                          View
-                        </Link>
-                      )}
-                    </Table.Cell>
-                  </Table.Row>
-                </HoverCard.Trigger>
-                <HoverCard.Content>
-                  <DataList.Root>
-                    {EVENT_DETAILS.map((detail) => (
-                      <DataList.Item key={detail.label}>
-                        <DataList.Label>{detail.label}</DataList.Label>
-                        <DataList.Value>
-                          <Flex align="center" gap="2" justify="between" width="100%">
-                            {detail.value(event)}
-                            {detail.copy && (
-                              <CopyToClipBoard content={detail.value(event)} tooltipContent={`Copy ${detail.label}`} />
-                            )}
-                          </Flex>
-                        </DataList.Value>
-                      </DataList.Item>
-                    ))}
-                  </DataList.Root>
-
-                  {event.details && (
-                    <CodeSnippetCard
-                      title="Details"
-                      content={JSON.stringify(event.details, undefined, 2)}
-                      tooltipContent="Copy details"
-                    />
-                  )}
-                </HoverCard.Content>
-              </HoverCard.Root>
+              <EventRow key={event.id} event={event} organizationId={organizationId} />
             ))}
           </Table.Body>
         </Table.Root>

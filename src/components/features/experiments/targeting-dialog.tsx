@@ -8,7 +8,7 @@ import {
   DesignSpecOutput,
   MABExperimentSpecOutput,
   OnlineFrequentistExperimentSpecOutput,
-  ParticipantsDef,
+  ParticipantsSchemaOutput,
   PreassignedFrequentistExperimentSpecOutput,
 } from '@/api/methods.schemas';
 import { MetricDisplay, MetricsSection } from '@/components/features/experiments/sections/metrics-section';
@@ -20,7 +20,7 @@ import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 
 interface TargetingDialogProps {
   designSpec: DesignSpecOutput;
-  participantType: ParticipantsDef | null | undefined;
+  experimentSchema: ParticipantsSchemaOutput | null | undefined;
   webhookIds: string[];
 }
 
@@ -41,11 +41,11 @@ const toMdePercent = (value: number | null | undefined): string => {
   return (value * 100).toFixed(1);
 };
 
-export function TargetingDialog({ designSpec, participantType, webhookIds }: TargetingDialogProps) {
+export function TargetingDialog({ designSpec, experimentSchema, webhookIds }: TargetingDialogProps) {
   const [open, setOpen] = useState(false);
 
   const fieldTypeByName = new Map(
-    (participantType?.fields ?? []).map((field) => {
+    (experimentSchema?.fields ?? []).map((field) => {
       return [field.field_name, field.data_type];
     }),
   );
