@@ -1,7 +1,15 @@
 'use client';
 import { DropdownMenu, Flex, IconButton, Text } from '@radix-ui/themes';
 import { useAuth } from '@/providers/auth-provider';
-import { ArrowLeftIcon, AvatarIcon, BackpackIcon, ExitIcon, GearIcon, RocketIcon } from '@radix-ui/react-icons';
+import {
+  ArrowLeftIcon,
+  AvatarIcon,
+  BackpackIcon,
+  ExitIcon,
+  GearIcon,
+  PersonIcon,
+  RocketIcon,
+} from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
 import { XNGIN_API_DOCS_LINK } from '@/services/constants';
 import { useListOrganizations } from '@/api/admin';
@@ -82,6 +90,19 @@ export function HeaderBar() {
               <GearIcon /> Manage Organizations
             </DropdownMenu.Item>
             <DropdownMenu.Separator />
+            {auth.isPrivileged && (
+              <>
+                <DropdownMenu.Label>
+                  <Text size="1" color="gray">
+                    Administration
+                  </Text>
+                </DropdownMenu.Label>
+                <DropdownMenu.Item onClick={() => router.push('/users')}>
+                  <PersonIcon /> Manage Users
+                </DropdownMenu.Item>
+                <DropdownMenu.Separator />
+              </>
+            )}
 
             <DropdownMenu.Item asChild>
               <a href={XNGIN_API_DOCS_LINK} target="_blank" rel="noopener noreferrer">

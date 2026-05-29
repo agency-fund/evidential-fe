@@ -59,7 +59,7 @@ export default function Page() {
         <RenameOrganizationDialog organizationId={organizationId} currentName={organization.name} />
       </Flex>
 
-      <UsersTable users={organization.users} organizationId={organizationId} />
+      <UsersTable users={organization.users} organizationId={organizationId} organizationName={organization.name} />
 
       <DatasourcesTable datasources={organization.datasources} organizationId={organizationId} />
 
