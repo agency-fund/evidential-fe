@@ -2,7 +2,7 @@
 import { Box, Flex, Table, Text, TextField } from '@radix-ui/themes';
 import { CheckIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useListUsers } from '@/api/admin';
 import { ListUsersScope } from '@/api/methods.schemas';
 import { useDebounced } from '@/providers/use-debounced';
@@ -17,11 +17,7 @@ const formatCreatedAt = (iso: string): string => new Date(iso).toLocaleDateStrin
 export function UsersManagementTable() {
   const [emailQuery, setEmailQuery] = useState('');
   const debouncedEmailQuery = useDebounced(emailQuery, 250);
-  const { reset, ...pagination } = usePagination();
-
-  useEffect(() => {
-    reset();
-  }, [debouncedEmailQuery, reset]);
+  const pagination = usePagination({ resetKey: debouncedEmailQuery });
 
   const { data, isLoading, error } = useListUsers(
     {

@@ -1,7 +1,7 @@
 'use client';
 import { Box, Flex, Heading, IconButton, Switch, Text, TextField, Tooltip } from '@radix-ui/themes';
 import { MagnifyingGlassIcon, QuestionMarkCircledIcon } from '@radix-ui/react-icons';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { useListOrganizations } from '@/api/admin';
 import { ListOrganizationsScope } from '@/api/methods.schemas';
@@ -23,11 +23,7 @@ export default function Page() {
   );
   const [nameQuery, setNameQuery] = useState('');
   const debouncedNameQuery = useDebounced(nameQuery, 250);
-  const { reset, ...pagination } = usePagination();
-
-  useEffect(() => {
-    reset();
-  }, [debouncedNameQuery, reset]);
+  const pagination = usePagination({ resetKey: `${scope}:${debouncedNameQuery}` });
 
   const { data, isLoading, error } = useListOrganizations(
     {
@@ -69,16 +65,15 @@ export default function Page() {
             </TextField.Slot>
           </TextField.Root>
         </Box>
-        {auth.isAuthenticated && auth.isPrivileged && (
+        {canSeeAll && (
           <Flex gap="2" align="center">
             <Text as="label" size="2">
               <Flex gap="2" align="center">
                 <Switch
                   checked={scope === ListOrganizationsScope.all}
-                  onCheckedChange={(checked) => {
-                    setScope(checked ? ListOrganizationsScope.all : ListOrganizationsScope.mine);
-                    reset();
-                  }}
+                  onCheckedChange={(checked) =>
+                    setScope(checked ? ListOrganizationsScope.all : ListOrganizationsScope.mine)
+                  }
                 />
                 Show all organizations
               </Flex>
