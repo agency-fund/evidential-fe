@@ -1,11 +1,8 @@
 'use client';
 import { ScreenProps } from '@/services/wizard/wizard-types';
 import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
-import { Box, Button, Flex, Separator, Text, TextArea, TextField } from '@radix-ui/themes';
+import { Box, Flex, Separator, Text, TextArea, TextField } from '@radix-ui/themes';
 import { SelectWebhooksSection } from '@/app/experiments/create/experiment-form/select-webhooks-section';
-import { Collapsible } from 'radix-ui';
-import { ChevronDownIcon, ChevronRightIcon } from '@radix-ui/react-icons';
-import { useState } from 'react';
 
 export type ExperimentMetadataMessages =
   | { type: 'set-name'; value: string }
@@ -19,8 +16,6 @@ export const ExperimentMetadataScreen = ({
   data,
   dispatch,
 }: ScreenProps<ExperimentFormData, ExperimentMetadataMessages, ExperimentScreenId>) => {
-  const [webhooksOpen, setWebhooksOpen] = useState(false);
-
   return (
     <Flex direction="column" gap={'3'}>
       <Box>
@@ -82,21 +77,10 @@ export const ExperimentMetadataScreen = ({
 
       <Separator size="4" my="3" />
 
-      <Collapsible.Root open={webhooksOpen} onOpenChange={setWebhooksOpen}>
-        <Collapsible.Trigger asChild>
-          <Button variant={'ghost'} style={{ backgroundColor: 'unset' }}>
-            <>{webhooksOpen ? <ChevronDownIcon /> : <ChevronRightIcon />}Advanced: Webhooks</>
-          </Button>
-        </Collapsible.Trigger>
-        <Collapsible.Content asChild>
-          <Flex direction={'column'} gap={'3'} ml={'20px'}>
-            <SelectWebhooksSection
-              selectedWebhookIds={data.selectedWebhookIds ?? []}
-              onWebhookIdsChange={(ids) => dispatch({ type: 'set-webhook-ids', value: ids })}
-            />
-          </Flex>
-        </Collapsible.Content>
-      </Collapsible.Root>
+      <SelectWebhooksSection
+        selectedWebhookIds={data.selectedWebhookIds ?? []}
+        onWebhookIdsChange={(ids) => dispatch({ type: 'set-webhook-ids', value: ids })}
+      />
     </Flex>
   );
 };
