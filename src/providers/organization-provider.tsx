@@ -35,11 +35,14 @@ export function OrganizationProvider({ children }: PropsWithChildren) {
     data: orgsList,
     isLoading,
     error,
-  } = useListOrganizations({
-    swr: {
-      enabled: auth.isAuthenticated,
+  } = useListOrganizations(
+    { page_size: 100 },
+    {
+      swr: {
+        enabled: auth.isAuthenticated,
+      },
     },
-  });
+  );
   const [orgId, setOrgId] = useLocalStorage<string>(CURRENT_ORG_ID_KEY);
 
   // If the localstorage org_id refers to an org that the user doesn't have access to, update it to be the first one

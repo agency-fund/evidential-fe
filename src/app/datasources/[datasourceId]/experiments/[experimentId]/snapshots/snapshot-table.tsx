@@ -1,18 +1,13 @@
 'use client';
-import { Badge, Button, Code, Flex, Select, Table, Text } from '@radix-ui/themes';
+import { Badge, Code, Flex, Table, Text } from '@radix-ui/themes';
 
 import { useListSnapshots } from '@/api/admin';
 import { Snapshot, SnapshotDetails, SnapshotStatus } from '@/api/methods.schemas';
+import { usePagination } from '@/providers/use-pagination';
 import { Preformatted } from '@/components/ui/preformatted';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { XSpinner } from '@/components/ui/x-spinner';
-import { ChevronLeftIcon, ChevronRightIcon } from '@radix-ui/react-icons';
-import { useState } from 'react';
-
-const DEFAULT_PAGE_SIZE = '10';
-const PAGE_SIZE_OPTIONS = ['10', '50', '100'] as const;
-
-type SnapshotPageSize = (typeof PAGE_SIZE_OPTIONS)[number];
+import { PaginationButtons } from '@/components/ui/pagination/pagination-buttons';
 
 const formatDuration = (createdAt: string, updatedAt: string): string => {
   const created = new Date(createdAt);
@@ -57,9 +52,6 @@ interface SnapshotTableProps {
   emptyMessage?: string;
 }
 
-const isSnapshotPageSize = (value: string): value is SnapshotPageSize =>
-  PAGE_SIZE_OPTIONS.includes(value as SnapshotPageSize);
-
 const getSnapshotTableKey = ({ organizationId, datasourceId, experimentId, status }: SnapshotTableProps): string =>
   `${status}:${organizationId ?? ''}:${datasourceId ?? ''}:${experimentId ?? ''}`;
 
@@ -71,10 +63,7 @@ function SnapshotTableImpl({
   showDetails = false,
   emptyMessage = 'No snapshots',
 }: SnapshotTableProps) {
-  const [snapshotPageTokens, setSnapshotPageTokens] = useState<string[]>(['']);
-  const [snapshotPageSize, setSnapshotPageSize] = useState<SnapshotPageSize>(DEFAULT_PAGE_SIZE);
-
-  const currentPageToken = snapshotPageTokens[snapshotPageTokens.length - 1];
+  const pagination = usePagination();
 
   const {
     data: snapshotsData,
@@ -84,7 +73,7 @@ function SnapshotTableImpl({
     organizationId ?? '',
     datasourceId ?? '',
     experimentId ?? '',
-    { status: [status], page_size: Number(snapshotPageSize), page_token: currentPageToken },
+    { status: [status], page_size: pagination.pageSize, page_token: pagination.currentPageToken },
     {
       swr: {
         keepPreviousData: true,
@@ -95,36 +84,6 @@ function SnapshotTableImpl({
 
   const snapshots = snapshotsData?.items ?? [];
   const nextPageToken = snapshotsData?.next_page_token || '';
-
-  const canGoToPreviousPage = snapshotPageTokens.length > 1 && !isLoading;
-  const canGoToNextPage = !!nextPageToken && !isLoading;
-
-  const goToPreviousPage = () => {
-    setSnapshotPageTokens((previousTokens) => {
-      if (previousTokens.length <= 1) {
-        return previousTokens;
-      }
-
-      return previousTokens.slice(0, -1);
-    });
-  };
-
-  const goToNextPage = () => {
-    if (!nextPageToken) {
-      return;
-    }
-
-    setSnapshotPageTokens((previousTokens) => [...previousTokens, nextPageToken]);
-  };
-
-  const setPageSize = (value: string) => {
-    if (!isSnapshotPageSize(value)) {
-      return;
-    }
-
-    setSnapshotPageSize(value);
-    setSnapshotPageTokens(['']);
-  };
 
   if (!organizationId || !datasourceId || !experimentId) {
     return (
@@ -186,38 +145,7 @@ function SnapshotTableImpl({
       </Table.Root>
 
       <Flex justify="end" gap="2">
-        <Select.Root value={snapshotPageSize} onValueChange={setPageSize} size="1">
-          <Select.Trigger />
-          <Select.Content position="popper">
-            {PAGE_SIZE_OPTIONS.map((option) => (
-              <Select.Item key={option} value={option}>
-                {option}
-              </Select.Item>
-            ))}
-          </Select.Content>
-        </Select.Root>
-        <Button
-          size="1"
-          variant="soft"
-          color="gray"
-          onClick={goToPreviousPage}
-          disabled={!canGoToPreviousPage}
-          loading={isLoading}
-        >
-          <ChevronLeftIcon />
-          Prev
-        </Button>
-        <Button
-          size="1"
-          variant="soft"
-          color="gray"
-          onClick={goToNextPage}
-          disabled={!canGoToNextPage}
-          loading={isLoading}
-        >
-          Next
-          <ChevronRightIcon />
-        </Button>
+        <PaginationButtons pagination={pagination} isLoading={isLoading} nextPageToken={nextPageToken} />
       </Flex>
     </Flex>
   );

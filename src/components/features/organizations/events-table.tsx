@@ -1,31 +1,21 @@
 'use client';
-import { Button, Flex, Heading, Select, Table } from '@radix-ui/themes';
+import { Flex, Heading, Table } from '@radix-ui/themes';
 import { useListOrganizationEvents } from '@/api/admin';
-import { ChevronLeftIcon, ChevronRightIcon } from '@radix-ui/react-icons';
+import { usePagination } from '@/providers/use-pagination';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
+import { PaginationButtons } from '@/components/ui/pagination/pagination-buttons';
 import { EventRow } from '@/components/features/organizations/event-row';
-import { useEffect, useState } from 'react';
-
-const DEFAULT_EVENTS_PAGE_SIZE = '10';
-const EVENTS_PAGE_SIZE_OPTIONS = ['10', '50', '100'] as const;
-
-type EventsPageSize = (typeof EVENTS_PAGE_SIZE_OPTIONS)[number];
 
 interface EventsTableProps {
   organizationId?: string;
 }
 
-const isEventsPageSize = (value: string): value is EventsPageSize => {
-  return EVENTS_PAGE_SIZE_OPTIONS.includes(value as EventsPageSize);
-};
+const getEventsTableKey = ({ organizationId }: EventsTableProps): string => organizationId ?? '';
 
-export function EventsTable({ organizationId }: EventsTableProps) {
-  const [eventsPageTokens, setEventsPageTokens] = useState<string[]>(['']);
-  const [eventsPageSize, setEventsPageSize] = useState<EventsPageSize>(DEFAULT_EVENTS_PAGE_SIZE);
-
-  const currentPageToken = eventsPageTokens[eventsPageTokens.length - 1];
+function EventsTableImpl({ organizationId }: EventsTableProps) {
+  const pagination = usePagination();
 
   const {
     data: eventsData,
@@ -33,7 +23,7 @@ export function EventsTable({ organizationId }: EventsTableProps) {
     error,
   } = useListOrganizationEvents(
     organizationId ?? '',
-    { page_size: Number(eventsPageSize), page_token: currentPageToken },
+    { page_size: pagination.pageSize, page_token: pagination.currentPageToken },
     {
       swr: {
         keepPreviousData: true,
@@ -45,39 +35,6 @@ export function EventsTable({ organizationId }: EventsTableProps) {
 
   const events = eventsData?.items || [];
   const nextPageToken = eventsData?.next_page_token || '';
-
-  const canGoToPreviousPage = eventsPageTokens.length > 1 && !isLoading;
-  const canGoToNextPage = !!nextPageToken && !isLoading;
-
-  useEffect(() => {
-    setEventsPageTokens(['']);
-  }, [eventsPageSize, organizationId]);
-
-  const goToPreviousPage = () => {
-    setEventsPageTokens((previousTokens) => {
-      if (previousTokens.length <= 1) {
-        return previousTokens;
-      }
-
-      return previousTokens.slice(0, -1);
-    });
-  };
-
-  const goToNextPage = () => {
-    if (!nextPageToken) {
-      return;
-    }
-
-    setEventsPageTokens((previousTokens) => [...previousTokens, nextPageToken]);
-  };
-
-  const setPageSize = (value: string) => {
-    if (!isEventsPageSize(value)) {
-      return;
-    }
-
-    setEventsPageSize(value);
-  };
 
   if (!organizationId) {
     return (
@@ -136,40 +93,13 @@ export function EventsTable({ organizationId }: EventsTableProps) {
         </Table.Root>
 
         <Flex justify="end" gap="2">
-          <Select.Root value={eventsPageSize} onValueChange={setPageSize} size="1">
-            <Select.Trigger />
-            <Select.Content position="popper">
-              {EVENTS_PAGE_SIZE_OPTIONS.map((option) => (
-                <Select.Item key={option} value={option}>
-                  {option}
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Root>
-          <Button
-            size="1"
-            variant="soft"
-            color="gray"
-            onClick={goToPreviousPage}
-            disabled={!canGoToPreviousPage}
-            loading={isLoading}
-          >
-            <ChevronLeftIcon />
-            Prev
-          </Button>
-          <Button
-            size="1"
-            variant="soft"
-            color="gray"
-            onClick={goToNextPage}
-            disabled={!canGoToNextPage}
-            loading={isLoading}
-          >
-            Next
-            <ChevronRightIcon />
-          </Button>
+          <PaginationButtons pagination={pagination} isLoading={isLoading} nextPageToken={nextPageToken} />
         </Flex>
       </Flex>
     </Flex>
   );
+}
+
+export function EventsTable(props: EventsTableProps) {
+  return <EventsTableImpl key={getEventsTableKey(props)} {...props} />;
 }
