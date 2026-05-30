@@ -11,8 +11,7 @@ import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
 import { PaginationButtons } from '@/components/ui/pagination/pagination-buttons';
-
-const formatCreatedAt = (iso: string): string => new Date(iso).toLocaleDateString();
+import { formatIsoDateTimeLocal } from '@/services/date-utils';
 
 export function UsersManagementTable() {
   const [emailQuery, setEmailQuery] = useState('');
@@ -77,7 +76,7 @@ export function UsersManagementTable() {
                 <Table.Cell>
                   <Link href={`/users/${user.id}`}>{user.email}</Link>
                 </Table.Cell>
-                <Table.Cell>{formatCreatedAt(user.created_at)}</Table.Cell>
+                <Table.Cell>{formatIsoDateTimeLocal(user.created_at)}</Table.Cell>
                 <Table.Cell justify="end">{user.organizations.length}</Table.Cell>
                 <Table.Cell justify="center">
                   {user.is_privileged ? <CheckIcon aria-label="Yes" /> : <Text color="gray">—</Text>}

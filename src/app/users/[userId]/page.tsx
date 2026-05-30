@@ -25,6 +25,7 @@ import { XSpinner } from '@/components/ui/x-spinner';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
 import { DeleteAlertDialog } from '@/components/ui/delete-alert-dialog';
+import { formatIsoDateTimeLocal } from '@/services/date-utils';
 import { OrganizationsTable } from '@/components/features/organizations/organizations-table';
 import { RemoveUserFromOrgDialog } from '@/components/features/users/remove-user-from-org-dialog';
 import { UserPrivilegedToggle } from '@/components/features/users/user-privileged-toggle';
@@ -32,8 +33,6 @@ import { UserPrivilegedToggle } from '@/components/features/users/user-privilege
 const UNIX_EPOCH_MS = new Date('1970-01-01T00:00:00Z').getTime();
 const SELF_REMOVE_TOOLTIP = 'You cannot remove yourself from an organization.';
 
-const formatDateTime = (iso: string): string => new Date(iso).toLocaleString();
-const formatDate = (iso: string): string => new Date(iso).toLocaleDateString();
 const hasLoggedOut = (iso: string): boolean => new Date(iso).getTime() > UNIX_EPOCH_MS;
 
 export default function Page() {
@@ -162,7 +161,7 @@ export default function Page() {
                 </Tooltip>
               </Flex>
             </DataList.Label>
-            <DataList.Value>{formatDate(user.created_at)}</DataList.Value>
+            <DataList.Value>{formatIsoDateTimeLocal(user.created_at)}</DataList.Value>
           </DataList.Item>
           <DataList.Item align="center">
             <DataList.Label minWidth="120px">Has logged in</DataList.Label>
@@ -184,7 +183,7 @@ export default function Page() {
               </Flex>
             </DataList.Label>
             <DataList.Value>
-              {hasLoggedOut(user.last_logout) ? formatDateTime(user.last_logout) : 'Never'}
+              {hasLoggedOut(user.last_logout) ? formatIsoDateTimeLocal(user.last_logout) : 'Never'}
             </DataList.Value>
           </DataList.Item>
           <DataList.Item align="center">

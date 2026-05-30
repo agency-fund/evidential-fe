@@ -4,8 +4,7 @@ import { Flex, IconButton, Table, Tooltip } from '@radix-ui/themes';
 import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
 import Link from 'next/link';
 import { ReactNode } from 'react';
-
-const formatDate = (iso: string): string => new Date(iso).toLocaleDateString();
+import { formatIsoDateTimeLocal } from '@/services/date-utils';
 
 interface OrganizationsTableProps {
   organizations: OrganizationListItem[];
@@ -54,8 +53,8 @@ export function OrganizationsTable({ organizations, renderActions, showJoinedAt 
             <Table.Cell>
               <Link href={`/organizations/${item.id}`}>{item.name}</Link>
             </Table.Cell>
-            <Table.Cell>{formatDate(item.created_at)}</Table.Cell>
-            {showJoinedAt && <Table.Cell>{item.joined_at ? formatDate(item.joined_at) : '—'}</Table.Cell>}
+            <Table.Cell>{formatIsoDateTimeLocal(item.created_at)}</Table.Cell>
+            {showJoinedAt && <Table.Cell>{item.joined_at ? formatIsoDateTimeLocal(item.joined_at) : '—'}</Table.Cell>}
             <Table.Cell justify="end">{item.user_count}</Table.Cell>
             <Table.Cell justify="end">{item.experiment_count}</Table.Cell>
             {renderActions && (
