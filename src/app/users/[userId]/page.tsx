@@ -25,6 +25,7 @@ import { XSpinner } from '@/components/ui/x-spinner';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
 import { DeleteAlertDialog } from '@/components/ui/delete-alert-dialog';
+import RequirePrivileged from '@/components/require-privileged';
 import { formatIsoDateTimeLocal } from '@/services/date-utils';
 import { OrganizationsTable } from '@/components/features/organizations/organizations-table';
 import { RemoveUserFromOrgDialog } from '@/components/features/users/remove-user-from-org-dialog';
@@ -35,7 +36,7 @@ const SELF_REMOVE_TOOLTIP = 'You cannot remove yourself from an organization.';
 
 const hasLoggedOut = (iso: string): boolean => new Date(iso).getTime() > UNIX_EPOCH_MS;
 
-export default function Page() {
+function UserDetail() {
   const params = useParams();
   const router = useRouter();
   const userId = params.userId as string;
@@ -78,10 +79,6 @@ export default function Page() {
     },
   });
 
-  if (!auth.isAuthenticated || !auth.isPrivileged) {
-    return <Text>Access denied. Only privileged users can manage users.</Text>;
-  }
-
   if (!userId) {
     return <Text>Error: Missing user ID.</Text>;
   }
@@ -94,7 +91,7 @@ export default function Page() {
     return <GenericErrorCallout title="Failed to fetch user" error={error as Error | undefined} />;
   }
 
-  const isSelf = auth.userEmail === user.email;
+  const isSelf = auth.isAuthenticated && auth.userEmail === user.email;
   const allOrgs = orgsResponse?.items ?? [];
   const memberOrgIds = new Set(user.organizations.map((o) => o.id));
   const availableOrgs = allOrgs.filter((o) => !memberOrgIds.has(o.id));
@@ -247,5 +244,13 @@ export default function Page() {
         The user will lose access to the application and be removed from all of their organizations.
       </DeleteAlertDialog>
     </Flex>
+  );
+}
+
+export default function Page() {
+  return (
+    <RequirePrivileged>
+      <UserDetail />
+    </RequirePrivileged>
   );
 }
