@@ -1,12 +1,12 @@
 'use client';
 import { useListParticipantTypes } from '@/api/admin';
-import { Button, Flex, IconButton, Table } from '@radix-ui/themes';
+import { Flex, IconButton, Table } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import Link from 'next/link';
 import { DeleteParticipantTypeDialog } from '@/components/features/participants/delete-participant-type-dialog';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
-import { Pencil2Icon, PlusIcon } from '@radix-ui/react-icons';
+import { Pencil2Icon } from '@radix-ui/react-icons';
 
 export function ParticipantTypesTable({ datasourceId }: { datasourceId: string }) {
   const { data, isLoading, error } = useListParticipantTypes(datasourceId);
@@ -50,13 +50,10 @@ export function ParticipantTypesTable({ datasourceId }: { datasourceId: string }
           </Table.Body>
         </Table.Root>
       ) : (
-        <EmptyStateCard title="No participant types found" description="Add a participant type to get started">
-          <Link href={`/datasources/${datasourceId}/participants/create`}>
-            <Button>
-              <PlusIcon /> Add Participant Type
-            </Button>
-          </Link>
-        </EmptyStateCard>
+        <EmptyStateCard
+          title="No participant types found"
+          description="Create an experiment to get started."
+        ></EmptyStateCard>
       )}
     </>
   );
