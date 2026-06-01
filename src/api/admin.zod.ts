@@ -6,6 +6,16 @@
  */
 import * as zod from "zod";
 
+export const createUserBodyEmailMax = 64;
+
+export const createUserBody = zod.object({
+	email: zod.string().max(createUserBodyEmailMax),
+});
+
+export const patchUserBody = zod.object({
+	is_privileged: zod.union([zod.boolean(), zod.null()]).optional(),
+});
+
 export const createOrganizationsBodyNameMax = 100;
 
 export const createOrganizationsBody = zod.object({

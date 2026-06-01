@@ -551,8 +551,6 @@ export type CreateExperimentResponseAssignSummary = AssignSummary | null;
 export interface CreateExperimentResponse {
 	experiment_id: string;
 	datasource_id: string;
-	/** @maxLength 100 */
-	participant_type_deprecated: string;
 	state: ExperimentState;
 	stopped_assignments_at: CreateExperimentResponseStoppedAssignmentsAt;
 	stopped_assignments_reason: CreateExperimentResponseStoppedAssignmentsReason;
@@ -587,6 +585,16 @@ export interface CreateParticipantsTypeResponse {
 }
 
 export interface CreateSnapshotResponse {
+	id: string;
+}
+
+export interface CreateUserRequest {
+	/** @maxLength 64 */
+	email: string;
+}
+
+export interface CreateUserResponse {
+	/** @maxLength 64 */
 	id: string;
 }
 
@@ -744,8 +752,6 @@ export type ExperimentConfigAssignSummary = AssignSummary | null;
 export interface ExperimentConfig {
 	experiment_id: string;
 	datasource_id: string;
-	/** @maxLength 100 */
-	participant_type_deprecated: string;
 	state: ExperimentState;
 	stopped_assignments_at: ExperimentConfigStoppedAssignmentsAt;
 	stopped_assignments_reason: ExperimentConfigStoppedAssignmentsReason;
@@ -889,11 +895,12 @@ export interface GetExperimentAssignmentsResponse {
 	assignments: Assignment[];
 }
 
-export type GetExperimentForUiResponseParticipantType = ParticipantsDef | null;
+export type GetExperimentForUiResponseExperimentSchema =
+	ParticipantsSchemaOutput | null;
 
 export interface GetExperimentForUiResponse {
 	config: ExperimentConfig;
-	participant_type: GetExperimentForUiResponseParticipantType;
+	experiment_schema: GetExperimentForUiResponseExperimentSchema;
 }
 
 export type GetExperimentResponseStoppedAssignmentsAt = string | null;
@@ -908,8 +915,6 @@ export type GetExperimentResponseAssignSummary = AssignSummary | null;
 export interface GetExperimentResponse {
 	experiment_id: string;
 	datasource_id: string;
-	/** @maxLength 100 */
-	participant_type_deprecated: string;
 	state: ExperimentState;
 	stopped_assignments_at: GetExperimentResponseStoppedAssignmentsAt;
 	stopped_assignments_reason: GetExperimentResponseStoppedAssignmentsReason;
@@ -1031,6 +1036,16 @@ export interface GetTurnJourneysResponse {
 	journeys: GetTurnJourneysResponseJourneys;
 }
 
+export interface GetUserResponse {
+	id: string;
+	email: string;
+	is_privileged: boolean;
+	last_logout: string;
+	has_logged_in: boolean;
+	created_at: string;
+	organizations: OrganizationListItem[];
+}
+
 export interface HTTPExceptionError {
 	detail: string;
 }
@@ -1099,7 +1114,8 @@ export interface ListOrganizationEventsResponse {
 }
 
 export interface ListOrganizationsResponse {
-	items: OrganizationSummary[];
+	next_page_token?: string;
+	items: OrganizationListItem[];
 }
 
 export interface ListParticipantsTypeResponse {
@@ -1113,6 +1129,11 @@ export interface ListSnapshotsResponse {
 	next_page_token?: string;
 	items: Snapshot[];
 	latest_failure: ListSnapshotsResponseLatestFailure;
+}
+
+export interface ListUsersResponse {
+	next_page_token?: string;
+	items: UserDetail[];
 }
 
 export interface ListWebhooksResponse {
@@ -1426,6 +1447,23 @@ export interface OnlineFrequentistExperimentSpecOutput {
 	fstat_thresh?: number;
 }
 
+export type OrganizationListItemUserCount = number | null;
+
+export type OrganizationListItemExperimentCount = number | null;
+
+export type OrganizationListItemJoinedAt = string | null;
+
+export interface OrganizationListItem {
+	/** @maxLength 64 */
+	id: string;
+	/** @maxLength 100 */
+	name: string;
+	created_at: string;
+	user_count?: OrganizationListItemUserCount;
+	experiment_count?: OrganizationListItemExperimentCount;
+	joined_at?: OrganizationListItemJoinedAt;
+}
+
 export interface OrganizationSummary {
 	/** @maxLength 64 */
 	id: string;
@@ -1455,6 +1493,12 @@ export interface ParticipantsSchemaInput {
 export interface ParticipantsSchemaOutput {
 	table_name: string;
 	fields: FieldDescriptor[];
+}
+
+export type PatchUserRequestIsPrivileged = boolean | null;
+
+export interface PatchUserRequest {
+	is_privileged?: PatchUserRequestIsPrivileged;
 }
 
 export type PostgresDsnType =
@@ -1858,11 +1902,22 @@ export interface UpdateParticipantsTypeResponse {
 	fields?: UpdateParticipantsTypeResponseFields;
 }
 
+export interface UserDetail {
+	id: string;
+	email: string;
+	is_privileged: boolean;
+	last_logout: string;
+	has_logged_in: boolean;
+	created_at: string;
+	organizations: OrganizationSummary[];
+}
+
 export interface UserSummary {
 	/** @maxLength 64 */
 	id: string;
 	/** @maxLength 64 */
 	email: string;
+	is_privileged: boolean;
 }
 
 export type ValidationErrorLocItem = string | number;
@@ -1899,6 +1954,30 @@ export interface XValidationError {
 	type: string;
 }
 
+export type ListUsersParams = {
+	email_contains?: string | null;
+	scope?: ListUsersScope;
+	/**
+	 * @minimum 1
+	 * @maximum 100
+	 */
+	page_size?: number;
+	page_token?: string | null;
+	/**
+	 * @minimum 0
+	 */
+	skip?: number;
+};
+
+export type ListUsersScope =
+	(typeof ListUsersScope)[keyof typeof ListUsersScope];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ListUsersScope = {
+	all: "all",
+	mine: "mine",
+} as const;
+
 export type DeleteSnapshotParams = {
 	allow_missing?: boolean;
 };
@@ -1916,6 +1995,31 @@ export type ListSnapshotsParams = {
 	 */
 	skip?: number;
 };
+
+export type ListOrganizationsParams = {
+	scope?: ListOrganizationsScope;
+	name_contains?: string | null;
+	include_stats?: boolean;
+	/**
+	 * @minimum 1
+	 * @maximum 100
+	 */
+	page_size?: number;
+	page_token?: string | null;
+	/**
+	 * @minimum 0
+	 */
+	skip?: number;
+};
+
+export type ListOrganizationsScope =
+	(typeof ListOrganizationsScope)[keyof typeof ListOrganizationsScope];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ListOrganizationsScope = {
+	mine: "mine",
+	all: "all",
+} as const;
 
 export type DeleteWebhookFromOrganizationParams = {
 	allow_missing?: boolean;
