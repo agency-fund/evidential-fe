@@ -227,6 +227,8 @@ export interface AssignSummary {
 	arm_sizes?: AssignSummaryArmSizes;
 }
 
+export type AssignmentClusterKey = string | null;
+
 export type AssignmentCreatedAt = string | null;
 
 export type AssignmentStrata = Strata[] | null;
@@ -241,6 +243,7 @@ export interface Assignment {
 	arm_id: string;
 	/** @maxLength 64 */
 	participant_id: string;
+	cluster_key?: AssignmentClusterKey;
 	/** @maxLength 100 */
 	arm_name: string;
 	created_at?: AssignmentCreatedAt;
@@ -1986,7 +1989,6 @@ export type ListSnapshotsParams = {
 	status?: SnapshotStatus[] | null;
 	/**
 	 * @minimum 1
-	 * @maximum 100
 	 */
 	page_size?: number;
 	page_token?: string | null;

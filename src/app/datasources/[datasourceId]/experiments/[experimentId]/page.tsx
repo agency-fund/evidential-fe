@@ -208,7 +208,7 @@ export default function ExperimentViewPage() {
     organizationId,
     datasourceId,
     experimentId,
-    { status: ['success'] },
+    { status: ['success'], page_size: Number.MAX_SAFE_INTEGER },
     {
       swr: {
         enabled: !!organizationId && !!datasourceId && !!experimentId && !!experiment,
