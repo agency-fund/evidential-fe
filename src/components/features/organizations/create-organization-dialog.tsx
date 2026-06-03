@@ -68,7 +68,8 @@ export function CreateOrganizationDialog() {
           <form onSubmit={handleSubmit}>
             <Dialog.Title>Create Organization</Dialog.Title>
             <Dialog.Description size="2" mb="4">
-              Create a new organization.
+              Organizations are shared workspaces where your team runs experiments. Each has its own data sources,
+              access controls, and integrations.
             </Dialog.Description>
 
             {error && <GenericErrorCallout title="Failed to create organization" error={error} />}

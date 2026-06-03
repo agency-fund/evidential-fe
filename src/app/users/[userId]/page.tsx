@@ -2,6 +2,7 @@
 import {
   Badge,
   Button,
+  Code,
   DataList,
   DropdownMenu,
   Flex,
@@ -217,14 +218,19 @@ function UserDetail() {
               <Select.Content position="popper">
                 {availableOrgs.map((org) => (
                   <Select.Item key={org.id} value={org.id}>
-                    <span title={org.id}>{org.name}</span>
+                    <Flex align="center" gap="2">
+                      <Text>{org.name}</Text>
+                      <Code size="1" variant="ghost" color="gray">
+                        {org.id}
+                      </Code>
+                    </Flex>
                   </Select.Item>
                 ))}
               </Select.Content>
             </Select.Root>
             <Button onClick={addToOrganization} disabled={addingOrg || !orgToAdd} loading={addingOrg} variant="soft">
               <PlusIcon />
-              Add
+              Add User
             </Button>
           </Flex>
         </Flex>

@@ -1,9 +1,10 @@
 'use client';
 import { OrganizationListItem } from '@/api/methods.schemas';
-import { Flex, IconButton, Table, Tooltip } from '@radix-ui/themes';
+import { Code, Flex, IconButton, Table, Tooltip } from '@radix-ui/themes';
 import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
 import Link from 'next/link';
 import { ReactNode } from 'react';
+import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
 import { formatIsoDateTimeLocal } from '@/services/date-utils';
 
 interface OrganizationsTableProps {
@@ -20,6 +21,7 @@ export function OrganizationsTable({ organizations, renderActions, showJoinedAt 
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell>ID</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>
             <Flex align="center" gap="1">
               Created
@@ -52,6 +54,14 @@ export function OrganizationsTable({ organizations, renderActions, showJoinedAt 
           <Table.Row key={item.id}>
             <Table.Cell>
               <Link href={`/organizations/${item.id}`}>{item.name}</Link>
+            </Table.Cell>
+            <Table.Cell>
+              <Flex align="center" gap="1">
+                <Code size="1" variant="ghost" color="gray">
+                  {item.id}
+                </Code>
+                <CopyToClipBoard content={item.id} tooltipContent="Copy organization ID" size="1" />
+              </Flex>
             </Table.Cell>
             <Table.Cell>{formatIsoDateTimeLocal(item.created_at)}</Table.Cell>
             {showJoinedAt && <Table.Cell>{item.joined_at ? formatIsoDateTimeLocal(item.joined_at) : '—'}</Table.Cell>}

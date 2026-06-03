@@ -8,7 +8,7 @@ import { ListOrganizationsScope } from '@/api/methods.schemas';
 import { useAuth } from '@/providers/auth-provider';
 import { useDebounced } from '@/providers/use-debounced';
 import { usePagination } from '@/providers/use-pagination';
-import { AddUserDialog } from '@/components/features/organizations/add-user-dialog';
+import { AddUserToOrgDialog } from '@/components/features/organizations/add-user-to-org-dialog';
 import { CreateOrganizationDialog } from '@/components/features/organizations/create-organization-dialog';
 import { OrganizationsTable } from '@/components/features/organizations/organizations-table';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -88,7 +88,10 @@ export default function Page() {
       </Flex>
 
       {items.length > 0 ? (
-        <OrganizationsTable organizations={items} renderActions={(org) => <AddUserDialog organizationId={org.id} />} />
+        <OrganizationsTable
+          organizations={items}
+          renderActions={(org) => <AddUserToOrgDialog organizationId={org.id} />}
+        />
       ) : (
         <EmptyStateCard
           title="No organizations found"

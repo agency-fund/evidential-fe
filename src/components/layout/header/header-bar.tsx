@@ -90,19 +90,6 @@ export function HeaderBar() {
               <GearIcon /> Manage Organizations
             </DropdownMenu.Item>
             <DropdownMenu.Separator />
-            {auth.isPrivileged && (
-              <>
-                <DropdownMenu.Label>
-                  <Text size="1" color="gray">
-                    Administration
-                  </Text>
-                </DropdownMenu.Label>
-                <DropdownMenu.Item onClick={() => router.push('/users')}>
-                  <PersonIcon /> Manage Users
-                </DropdownMenu.Item>
-                <DropdownMenu.Separator />
-              </>
-            )}
 
             <DropdownMenu.Item asChild>
               <a href={XNGIN_API_DOCS_LINK} target="_blank" rel="noopener noreferrer">
@@ -113,6 +100,19 @@ export function HeaderBar() {
             <DropdownMenu.Item color="red" onClick={auth.logout}>
               <ExitIcon /> Logout
             </DropdownMenu.Item>
+            {auth.isPrivileged && (
+              <>
+                <DropdownMenu.Separator />
+                <DropdownMenu.Label>
+                  <Text size="1" color="gray">
+                    Administration
+                  </Text>
+                </DropdownMenu.Label>
+                <DropdownMenu.Item onClick={() => router.push('/users')}>
+                  <PersonIcon /> Manage Users
+                </DropdownMenu.Item>
+              </>
+            )}
           </DropdownMenu.Content>
         ) : dropdownOpen === 'organizations' ? (
           <DropdownMenu.Content id="organizations-menu">

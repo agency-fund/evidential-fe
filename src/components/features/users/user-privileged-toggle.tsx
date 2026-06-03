@@ -40,7 +40,8 @@ export function UserPrivilegedToggle({ user }: UserPrivilegedToggleProps) {
       <Flex align="center" gap="3">
         {isSelf ? <Tooltip content={SELF_REVOKE_TOOLTIP}>{switchEl}</Tooltip> : switchEl}
         <Text size="2" color="gray">
-          Privileged users can manage all users and organizations.
+          Privileged users can manage all users and organizations. Only enable this for users that also administer this
+          Evidential installation.
         </Text>
       </Flex>
     </Flex>

@@ -3,7 +3,7 @@ import { Flex, Heading, Table, Text } from '@radix-ui/themes';
 import { CheckIcon } from '@radix-ui/react-icons';
 import { RemoveUserFromOrgDialog } from '@/components/features/users/remove-user-from-org-dialog';
 import { useAuth } from '@/providers/auth-provider';
-import { AddUserDialog } from '@/components/features/organizations/add-user-dialog';
+import { AddUserToOrgDialog } from '@/components/features/organizations/add-user-to-org-dialog';
 import { UserSummary } from '@/api/methods.schemas';
 
 interface UsersTableProps {
@@ -20,7 +20,7 @@ export function UsersTable({ users, organizationId, organizationName }: UsersTab
     <Flex direction="column" gap="3">
       <Flex justify="between" align="center">
         <Heading size="4">Users</Heading>
-        <AddUserDialog organizationId={organizationId} />
+        <AddUserToOrgDialog organizationId={organizationId} />
       </Flex>
 
       <Table.Root variant="surface">
