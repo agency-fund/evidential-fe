@@ -44,3 +44,10 @@ export const formatIsoDateLocal = (isoString: string): string => {
   // Create date in local timezone to avoid UTC conversion
   return new Date(year, month - 1, day).toLocaleDateString();
 };
+
+export const formatIsoDateTimeLocal = (isoString: string): string => {
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(isoString));
+};

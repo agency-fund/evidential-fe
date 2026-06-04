@@ -584,7 +584,6 @@ export const createExperimentBody = zod.object({
 				primary_key: zod
 					.string()
 					.regex(createExperimentBodyDesignSpecPrimaryKeyRegExp),
-				cluster_key: zod.union([zod.string(), zod.null()]).optional(),
 				strata: zod
 					.array(
 						zod.object({
@@ -654,6 +653,7 @@ export const createExperimentBody = zod.object({
 					.min(createExperimentBodyDesignSpecFstatThreshMin)
 					.max(createExperimentBodyDesignSpecFstatThreshMax)
 					.default(createExperimentBodyDesignSpecFstatThreshDefault),
+				cluster_key: zod.union([zod.string(), zod.null()]).optional(),
 			}),
 			zod.object({
 				experiment_type: zod.enum(["freq_online"]),
@@ -703,7 +703,6 @@ export const createExperimentBody = zod.object({
 				primary_key: zod
 					.string()
 					.regex(createExperimentBodyDesignSpecPrimaryKeyRegExpOne),
-				cluster_key: zod.union([zod.string(), zod.null()]).optional(),
 				strata: zod
 					.array(
 						zod.object({
@@ -1241,7 +1240,6 @@ export const powerCheckBody = zod.object({
 				.max(powerCheckBodyDesignSpecArmsMax),
 			table_name: zod.string().max(powerCheckBodyDesignSpecTableNameMax),
 			primary_key: zod.string().regex(powerCheckBodyDesignSpecPrimaryKeyRegExp),
-			cluster_key: zod.union([zod.string(), zod.null()]).optional(),
 			strata: zod
 				.array(
 					zod.object({
@@ -1303,6 +1301,7 @@ export const powerCheckBody = zod.object({
 				.min(powerCheckBodyDesignSpecFstatThreshMin)
 				.max(powerCheckBodyDesignSpecFstatThreshMax)
 				.default(powerCheckBodyDesignSpecFstatThreshDefault),
+			cluster_key: zod.union([zod.string(), zod.null()]).optional(),
 		}),
 		zod.object({
 			experiment_type: zod.enum(["freq_online"]),
@@ -1346,7 +1345,6 @@ export const powerCheckBody = zod.object({
 			primary_key: zod
 				.string()
 				.regex(powerCheckBodyDesignSpecPrimaryKeyRegExpOne),
-			cluster_key: zod.union([zod.string(), zod.null()]).optional(),
 			strata: zod
 				.array(
 					zod.object({

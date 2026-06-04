@@ -12,10 +12,8 @@ interface EventsTableProps {
   organizationId?: string;
 }
 
-const getEventsTableKey = ({ organizationId }: EventsTableProps): string => organizationId ?? '';
-
-function EventsTableImpl({ organizationId }: EventsTableProps) {
-  const pagination = usePagination();
+export function EventsTable({ organizationId }: EventsTableProps) {
+  const pagination = usePagination({ resetKey: organizationId ?? '' });
 
   const {
     data: eventsData,
@@ -98,8 +96,4 @@ function EventsTableImpl({ organizationId }: EventsTableProps) {
       </Flex>
     </Flex>
   );
-}
-
-export function EventsTable(props: EventsTableProps) {
-  return <EventsTableImpl key={getEventsTableKey(props)} {...props} />;
 }

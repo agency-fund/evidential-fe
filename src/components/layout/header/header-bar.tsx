@@ -1,7 +1,15 @@
 'use client';
 import { DropdownMenu, Flex, IconButton, Text } from '@radix-ui/themes';
 import { useAuth } from '@/providers/auth-provider';
-import { ArrowLeftIcon, AvatarIcon, BackpackIcon, ExitIcon, GearIcon, RocketIcon } from '@radix-ui/react-icons';
+import {
+  ArrowLeftIcon,
+  AvatarIcon,
+  BackpackIcon,
+  ExitIcon,
+  GearIcon,
+  PersonIcon,
+  RocketIcon,
+} from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
 import { XNGIN_API_DOCS_LINK } from '@/services/constants';
 import { useListOrganizations } from '@/api/admin';
@@ -92,6 +100,19 @@ export function HeaderBar() {
             <DropdownMenu.Item color="red" onClick={auth.logout}>
               <ExitIcon /> Logout
             </DropdownMenu.Item>
+            {auth.isPrivileged && (
+              <>
+                <DropdownMenu.Separator />
+                <DropdownMenu.Label>
+                  <Text size="1" color="gray">
+                    Administration
+                  </Text>
+                </DropdownMenu.Label>
+                <DropdownMenu.Item onClick={() => router.push('/users')}>
+                  <PersonIcon /> Manage Users
+                </DropdownMenu.Item>
+              </>
+            )}
           </DropdownMenu.Content>
         ) : dropdownOpen === 'organizations' ? (
           <DropdownMenu.Content id="organizations-menu">

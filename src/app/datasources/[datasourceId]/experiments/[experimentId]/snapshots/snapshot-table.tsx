@@ -55,7 +55,7 @@ interface SnapshotTableProps {
 const getSnapshotTableKey = ({ organizationId, datasourceId, experimentId, status }: SnapshotTableProps): string =>
   `${status}:${organizationId ?? ''}:${datasourceId ?? ''}:${experimentId ?? ''}`;
 
-function SnapshotTableImpl({
+export function SnapshotTable({
   organizationId,
   datasourceId,
   experimentId,
@@ -63,7 +63,9 @@ function SnapshotTableImpl({
   showDetails = false,
   emptyMessage = 'No snapshots',
 }: SnapshotTableProps) {
-  const pagination = usePagination();
+  const pagination = usePagination({
+    resetKey: getSnapshotTableKey({ organizationId, datasourceId, experimentId, status }),
+  });
 
   const {
     data: snapshotsData,
@@ -149,9 +151,4 @@ function SnapshotTableImpl({
       </Flex>
     </Flex>
   );
-}
-
-export function SnapshotTable(props: SnapshotTableProps) {
-  // Wrapping SnapshotTableImpl and adding a key= avoids needing a useEffect to clear pagination tokens.
-  return <SnapshotTableImpl key={getSnapshotTableKey(props)} {...props} />;
 }

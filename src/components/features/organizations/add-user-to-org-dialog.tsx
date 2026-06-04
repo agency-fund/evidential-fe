@@ -15,7 +15,7 @@ const defaultFormData = (): FormFields => ({
   email: '',
 });
 
-export function AddUserDialog({ organizationId }: { organizationId: string }) {
+export function AddUserToOrgDialog({ organizationId }: { organizationId: string }) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState(defaultFormData());
 

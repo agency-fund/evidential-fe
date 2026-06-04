@@ -7,6 +7,7 @@ import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
 import { EventRowStatusIcon } from '@/components/features/organizations/event-row-status-icon';
 import { ResendWebhookDialog } from '@/components/features/organizations/resend-webhook-dialog';
+import { formatIsoDateTimeLocal } from '@/services/date-utils';
 import { useState } from 'react';
 
 const WEBHOOK_SENT_EVENT_TYPE = 'webhook.sent';
@@ -19,7 +20,7 @@ const EVENT_DETAILS = [
   },
   {
     label: 'Timestamp',
-    value: (event: EventSummary) => event.created_at,
+    value: (event: EventSummary) => formatIsoDateTimeLocal(event.created_at),
     copy: false,
   },
   {
@@ -38,7 +39,7 @@ export function EventRow({ event, organizationId }: { event: EventSummary; organ
       <HoverCard.Trigger>
         <Table.Row style={{ cursor: 'pointer' }}>
           <Table.Cell>{event.type}</Table.Cell>
-          <Table.Cell>{new Date(event.created_at).toLocaleString()}</Table.Cell>
+          <Table.Cell>{formatIsoDateTimeLocal(event.created_at)}</Table.Cell>
           <Table.Cell>
             <Flex align="center" gap="2">
               <EventRowStatusIcon icon={event.status_icon} />
