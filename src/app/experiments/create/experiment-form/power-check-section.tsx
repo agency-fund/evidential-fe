@@ -58,7 +58,7 @@ function RunPowerCheckButton({ enabled, onClick, loading }: PowerCheckButtonProp
       <Spinner loading={loading}>
         <LightningBoltIcon />
       </Spinner>
-      Run Power Check
+      Estimate Sample Size
     </Button>
   );
 }
@@ -287,7 +287,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                       </DataList.Item>
                       {primaryPower.pct_change_possible !== null && primaryPower.pct_change_possible !== undefined && (
                         <DataList.Item>
-                          <DataList.Label>MME</DataList.Label>
+                          <DataList.Label>MDE</DataList.Label>
                           <DataList.Value>{(primaryPower.pct_change_possible * 100).toFixed(4)}%</DataList.Value>
                         </DataList.Item>
                       )}
