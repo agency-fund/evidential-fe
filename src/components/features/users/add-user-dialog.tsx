@@ -1,5 +1,5 @@
 'use client';
-import { useCreateOrganizations } from '@/api/admin';
+import { useCreateUser } from '@/api/admin';
 import { useState } from 'react';
 import { Button, Dialog, Flex, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
@@ -8,24 +8,21 @@ import { invalidatePath } from '@/services/swr-cache';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 
 interface FormFields {
-  name: string;
+  email: string;
 }
 
 const defaultFormData = (): FormFields => ({
-  name: '',
+  email: '',
 });
 
-export function CreateOrganizationDialog() {
+export function AddUserDialog() {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState(defaultFormData());
 
-  const { trigger, isMutating, error, reset } = useCreateOrganizations({
+  const { trigger, isMutating, error, reset } = useCreateUser({
     swr: {
       onSuccess: async () => {
-        // Refetch first so any subscriber whose render branch depends on the org list (e.g. the
-        // OrganizationProvider's empty state) switches off that branch before this dialog closes.
-        // Otherwise the user briefly sees the empty state again between close and revalidate.
-        await invalidatePath('/v1/m/organizations');
+        await invalidatePath('/v1/m/users');
         handleClose();
       },
     },
@@ -39,7 +36,7 @@ export function CreateOrganizationDialog() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    await trigger({ name: formData.name });
+    await trigger({ email: formData.email });
   };
 
   return (
@@ -54,35 +51,35 @@ export function CreateOrganizationDialog() {
       }}
     >
       <Dialog.Trigger>
-        <Flex gap="3">
-          <Button>
-            <PlusIcon /> Create Organization
-          </Button>
-        </Flex>
+        <Button>
+          <PlusIcon /> Add User
+        </Button>
       </Dialog.Trigger>
 
       <Dialog.Content>
         {isMutating ? (
-          <XSpinner message="Creating organization..." />
+          <XSpinner message="Adding user..." />
         ) : (
           <form onSubmit={handleSubmit}>
-            <Dialog.Title>Create Organization</Dialog.Title>
+            <Dialog.Title>Add User</Dialog.Title>
             <Dialog.Description size="2" mb="4">
-              Organizations are shared workspaces where your team runs experiments. Each has its own data sources,
-              access controls, and integrations.
+              Creates a user record by email. The user will be able to log in via Google and will land on a welcome
+              screen if they are not yet a member of any organization. No email is sent; you must inform them
+              out-of-band.
             </Dialog.Description>
 
-            {error && <GenericErrorCallout title="Failed to create organization" error={error} />}
+            {error && <GenericErrorCallout title="Failed to add user" error={error} />}
 
             <Flex direction="column" gap="3">
               <label>
                 <Text as="div" size="2" mb="1" weight="bold">
-                  Name
+                  Email
                 </Text>
                 <TextField.Root
-                  value={formData.name}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                  placeholder="Enter organization name"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                  placeholder="user@example.com"
                   required
                 />
               </label>
@@ -94,7 +91,7 @@ export function CreateOrganizationDialog() {
                   Cancel
                 </Button>
               </Dialog.Close>
-              <Button type="submit">Create</Button>
+              <Button type="submit">Add</Button>
             </Flex>
           </form>
         )}

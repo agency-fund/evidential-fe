@@ -1340,8 +1340,6 @@ export const OnlineFrequentistExperimentSpecInputExperimentType = {
 
 export type OnlineFrequentistExperimentSpecInputDesignUrl = string | null;
 
-export type OnlineFrequentistExperimentSpecInputClusterKey = string | null;
-
 export type OnlineFrequentistExperimentSpecInputDesiredN = number | null;
 
 export interface OnlineFrequentistExperimentSpecInput {
@@ -1362,7 +1360,6 @@ export interface OnlineFrequentistExperimentSpecInput {
 	table_name: string;
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	primary_key: string;
-	cluster_key?: OnlineFrequentistExperimentSpecInputClusterKey;
 	/** @maxItems 150 */
 	strata: Stratum[];
 	/**
@@ -1400,8 +1397,6 @@ export const OnlineFrequentistExperimentSpecOutputExperimentType = {
 
 export type OnlineFrequentistExperimentSpecOutputDesignUrl = string | null;
 
-export type OnlineFrequentistExperimentSpecOutputClusterKey = string | null;
-
 export type OnlineFrequentistExperimentSpecOutputDesiredN = number | null;
 
 export interface OnlineFrequentistExperimentSpecOutput {
@@ -1422,7 +1417,6 @@ export interface OnlineFrequentistExperimentSpecOutput {
 	table_name: string;
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	primary_key: string;
-	cluster_key?: OnlineFrequentistExperimentSpecOutputClusterKey;
 	/** @maxItems 150 */
 	strata: Stratum[];
 	/**
@@ -1566,9 +1560,9 @@ export const PreassignedFrequentistExperimentSpecInputExperimentType = {
 
 export type PreassignedFrequentistExperimentSpecInputDesignUrl = string | null;
 
-export type PreassignedFrequentistExperimentSpecInputClusterKey = string | null;
-
 export type PreassignedFrequentistExperimentSpecInputDesiredN = number | null;
+
+export type PreassignedFrequentistExperimentSpecInputClusterKey = string | null;
 
 export interface PreassignedFrequentistExperimentSpecInput {
 	experiment_type: PreassignedFrequentistExperimentSpecInputExperimentType;
@@ -1588,7 +1582,6 @@ export interface PreassignedFrequentistExperimentSpecInput {
 	table_name: string;
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	primary_key: string;
-	cluster_key?: PreassignedFrequentistExperimentSpecInputClusterKey;
 	/** @maxItems 150 */
 	strata: Stratum[];
 	/**
@@ -1614,6 +1607,7 @@ export interface PreassignedFrequentistExperimentSpecInput {
 	 * @maximum 1
 	 */
 	fstat_thresh?: number;
+	cluster_key?: PreassignedFrequentistExperimentSpecInputClusterKey;
 }
 
 export type PreassignedFrequentistExperimentSpecOutputExperimentType =
@@ -1626,11 +1620,11 @@ export const PreassignedFrequentistExperimentSpecOutputExperimentType = {
 
 export type PreassignedFrequentistExperimentSpecOutputDesignUrl = string | null;
 
+export type PreassignedFrequentistExperimentSpecOutputDesiredN = number | null;
+
 export type PreassignedFrequentistExperimentSpecOutputClusterKey =
 	| string
 	| null;
-
-export type PreassignedFrequentistExperimentSpecOutputDesiredN = number | null;
 
 export interface PreassignedFrequentistExperimentSpecOutput {
 	experiment_type: PreassignedFrequentistExperimentSpecOutputExperimentType;
@@ -1650,7 +1644,6 @@ export interface PreassignedFrequentistExperimentSpecOutput {
 	table_name: string;
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	primary_key: string;
-	cluster_key?: PreassignedFrequentistExperimentSpecOutputClusterKey;
 	/** @maxItems 150 */
 	strata: Stratum[];
 	/**
@@ -1676,6 +1669,7 @@ export interface PreassignedFrequentistExperimentSpecOutput {
 	 * @maximum 1
 	 */
 	fstat_thresh?: number;
+	cluster_key?: PreassignedFrequentistExperimentSpecOutputClusterKey;
 }
 
 export type PriorTypes = (typeof PriorTypes)[keyof typeof PriorTypes];
