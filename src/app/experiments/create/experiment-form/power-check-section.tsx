@@ -94,16 +94,17 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
   const { enabled } = isPowerCheckButtonEnabled(isMutating, data); // TODO: present reason field
 
-  // Keep a ref to the latest data so the effect below can read it without making `data` a
-  // reactive dependency. This is intentional: we only want to fire the estimate request when
-  // the debounced desiredN value commits, not on every unrelated form field change.
+  // A ref so the effect always reads the latest form data without making `data` a reactive
+  // dependency. `data` changes whenever any field updates — including when the effect's own
+  // dispatch sets `customPowerCheckResponse` — so including it in deps would retrigger the
+  // effect after every successful estimate, producing an infinite request loop.
   const dataRef = useRef(data);
   dataRef.current = data;
 
-  // useEffect is the right tool here because firing the estimate API call is a side effect that
-  // must be triggered by the *debounced* committed desiredN — not by each raw keystroke. Running
-  // it after render also ensures React has delivered the latest reducer-backed desiredN, so
-  // `convertToFrequentistDesignSpec` receives the correct `desired_n` in the request body.
+  // useEffect because we only want to estimate with the *debounced* committed desiredN — not by
+  // each raw keystroke. Running it after render also ensures we have the latest reducer-backed
+  // desiredN to use with `convertToFrequentistDesignSpec` for the request body.  `dispatch` is
+  // stable thanks to the Wizard's ScreenRenderer, while SWR gives us a stable `trigger` function.
   useEffect(() => {
     if (!shouldEstimateMde || debouncedDesiredN === undefined) return;
     void triggerEstimatedMde({
