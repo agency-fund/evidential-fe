@@ -544,7 +544,12 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           };
         }
         if (msg.type === 'set-power-check-response') {
-          return { ...data, powerCheckResponse: msg.response, desiredN: msg.desiredN };
+          return {
+            ...data,
+            powerCheckResponse: msg.response,
+            desiredN: msg.desiredN,
+            sampleSizeOption: msg.sampleSizeOption,
+          };
         }
         if (msg.type === 'set-chosen-n') {
           return { ...data, desiredN: msg.value };

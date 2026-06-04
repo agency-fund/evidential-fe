@@ -23,7 +23,12 @@ export type ExperimentFreqStackScreenMessage =
   | { type: 'set-strata'; strata: FieldMetadata[] }
   | { type: 'set-confidence'; value: string }
   | { type: 'set-power'; value: string }
-  | { type: 'set-power-check-response'; response: PowerResponseOutput; desiredN?: number }
+  | {
+      type: 'set-power-check-response';
+      response: PowerResponseOutput;
+      desiredN?: number;
+      sampleSizeOption?: PowerCheckOption;
+    }
   | { type: 'set-create-response'; response: CreateExperimentResponse }
   | { type: 'set-create-error'; response: ErrorType<unknown> }
   | { type: 'set-chosen-n'; value: number | undefined }

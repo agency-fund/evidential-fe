@@ -87,15 +87,15 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     try {
       const design_spec = convertToFrequentistDesignSpec(data);
       const response = await trigger({ design_spec });
-      const primary = response.analyses.find((a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name);
 
-      dispatch({ type: 'set-power-check-response', response, desiredN: undefined });
+      const primary = response.analyses.find((a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name);
+      let desiredN = undefined;
+      let sampleSizeOption = PowerCheckOption.NONE;
       if (primary?.sufficient_n) {
-        dispatch({ type: 'set-sample-size-option', value: PowerCheckOption.USE_POWER_CHECK });
-        dispatch({ type: 'set-chosen-n', value: primary?.target_n ?? undefined });
-      } else {
-        dispatch({ type: 'set-sample-size-option', value: PowerCheckOption.NONE });
+        desiredN = primary?.target_n ?? undefined;
+        sampleSizeOption = PowerCheckOption.USE_POWER_CHECK;
       }
+      dispatch({ type: 'set-power-check-response', response, desiredN, sampleSizeOption });
     } catch (err) {
       if (err instanceof ZodError) {
         setValidationError(err);
