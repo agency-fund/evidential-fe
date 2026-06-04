@@ -33,7 +33,7 @@ export type ExperimentFreqStackScreenMessage =
   | { type: 'set-create-error'; response: ErrorType<unknown> }
   | { type: 'set-chosen-n'; value: number | undefined }
   | { type: 'set-sample-size-option'; value: PowerCheckOption }
-  | { type: 'set-custom-power-check-response'; response: PowerResponseOutput };
+  | { type: 'set-custom-power-check-response'; response: PowerResponseOutput; desiredN: number };
 
 const isNextEnabled = (data: ExperimentFormData) => {
   const isFreqPreassigned = data.experimentType === 'freq_preassigned';

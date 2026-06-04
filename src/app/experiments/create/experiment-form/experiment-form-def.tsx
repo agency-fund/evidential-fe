@@ -564,7 +564,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           };
         }
         if (msg.type === 'set-custom-power-check-response') {
-          return { ...data, customPowerCheckResponse: msg.response };
+          return { ...data, customPowerCheckResponse: msg.response, desiredN: msg.desiredN };
         }
         if (msg.type === 'set-chosen-n') {
           return { ...data, desiredN: msg.value };

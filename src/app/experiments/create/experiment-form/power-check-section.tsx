@@ -63,14 +63,27 @@ function RunPowerCheckButton({ enabled, onClick, loading }: PowerCheckButtonProp
   );
 }
 
+function getValidDraftN(input: string): number | undefined {
+  const parsed = input === '' ? undefined : Number(input);
+  return parsed !== undefined && !isNaN(parsed) && parsed > 0 ? parsed : undefined;
+}
+
 export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
-  const { trigger, isMutating, error } = usePowerCheck(data.datasourceId!);
+  const { trigger: triggerEstimateSampleSize, isMutating, error } = usePowerCheck(data.datasourceId!);
   // Separate mutation with a distinct SWR key so it doesn't share cache or conflict with the
   // main power-check mutation above.
-  const { trigger: triggerEstimatedMde, isMutating: isEstimatingMde } = usePowerCheck(data.datasourceId!, {
+  const { trigger: triggerEstimateMde, isMutating: isEstimatingMde } = usePowerCheck(data.datasourceId!, {
     swr: { swrKey: `${data.datasourceId}/power/mde-estimate` },
   });
   const [validationError, setValidationError] = useState<ZodError | null>(null);
+  // Local draft state for the custom N input. Kept separate from data.desiredN so that the effect
+  // only fires after the debounce settles on a value the user actually typed, not immediately when
+  // the user switches to ENTER_OWN with a previously-committed value.
+  // Initialised from data.desiredN so the input is pre-filled when returning to this screen.
+  const [draftN, setDraftN] = useState<string>(
+    data.sampleSizeOption === PowerCheckOption.ENTER_OWN && data.desiredN !== undefined ? String(data.desiredN) : '',
+  );
+  const debouncedValidDraftN = useDebounced(getValidDraftN(draftN), 400);
 
   const primaryAnalysis = data.powerCheckResponse?.analyses.find(
     (a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
@@ -79,10 +92,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const nonNullSamples = primaryAnalysis?.metric_spec.available_nonnull_n ?? 0;
   const allSamples = primaryAnalysis?.metric_spec.available_n ?? 0;
   const selectedSampleOption = data.sampleSizeOption ?? PowerCheckOption.USE_POWER_CHECK;
-
-  const debouncedDesiredN = useDebounced(data.desiredN, 400);
-  const shouldEstimateMde =
-    selectedSampleOption === PowerCheckOption.ENTER_OWN && debouncedDesiredN !== undefined && debouncedDesiredN > 0;
+  const shouldEstimateMde = selectedSampleOption === PowerCheckOption.ENTER_OWN && debouncedValidDraftN !== undefined;
 
   const customPrimaryAnalysis = data.customPowerCheckResponse?.analyses.find(
     (a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
@@ -94,27 +104,27 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
   const { enabled } = isPowerCheckButtonEnabled(isMutating, data); // TODO: present reason field
 
-  // A ref so the effect always reads the latest form data without making `data` a reactive
-  // dependency. `data` changes whenever any field updates — including when the effect's own
-  // dispatch sets `customPowerCheckResponse` — so including it in deps would retrigger the
-  // effect after every successful estimate, producing an infinite request loop.
+  // A ref so our useEffect for triggering MDE mode always reads the latest form data without making
+  // `data` a reactive dependency. `data.customPowerCheckResponse` changes when the effect's own
+  // dispatch completes, so including `data` in deps would retrigger the effect after every
+  // successful estimate, producing an infinite request loop.
   const dataRef = useRef(data);
   dataRef.current = data;
 
-  // useEffect because we only want to estimate with the *debounced* committed desiredN — not by
-  // each raw keystroke. Running it after render also ensures we have the latest reducer-backed
-  // desiredN to use with `convertToFrequentistDesignSpec` for the request body.  `dispatch` is
-  // stable thanks to the Wizard's ScreenRenderer, while SWR gives us a stable `trigger` function.
+  // useEffect because we need a side effect (API call) triggered by the debounced draft value,
+  // not by each raw keystroke. `dispatch` is stable thanks to ScreenRenderer's useCallback in
+  // Wizard.tsx; `triggerEstimateMde` is stable from useSWRMutation.
   useEffect(() => {
-    if (!shouldEstimateMde || debouncedDesiredN === undefined) return;
-    void triggerEstimatedMde({
-      design_spec: convertToFrequentistDesignSpec({ ...dataRef.current, desiredN: debouncedDesiredN }),
-    }).then((response) => {
+    if (!shouldEstimateMde || debouncedValidDraftN === undefined) return;
+    void (async () => {
+      const response = await triggerEstimateMde({
+        design_spec: convertToFrequentistDesignSpec({ ...dataRef.current, desiredN: debouncedValidDraftN }),
+      });
       if (response) {
-        dispatch({ type: 'set-custom-power-check-response', response });
+        dispatch({ type: 'set-custom-power-check-response', response, desiredN: debouncedValidDraftN });
       }
-    });
-  }, [debouncedDesiredN, shouldEstimateMde, triggerEstimatedMde, dispatch]);
+    })();
+  }, [debouncedValidDraftN, shouldEstimateMde, triggerEstimateMde, dispatch]);
 
   const handlePowerCheck = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -125,7 +135,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     }
 
     try {
-      const response = await trigger({ design_spec: convertToFrequentistDesignSpec(data) });
+      const response = await triggerEstimateSampleSize({ design_spec: convertToFrequentistDesignSpec(data) });
 
       const primary = response.analyses.find((a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name);
       const desiredN = primary?.sufficient_n ? (primary.target_n ?? undefined) : undefined;
@@ -386,13 +396,8 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                             size="2"
                             type="number"
                             max={allSamples ?? undefined}
-                            value={selectedSampleOption === PowerCheckOption.ENTER_OWN ? (data.desiredN ?? '') : ''}
-                            onChange={(e) =>
-                              dispatch({
-                                type: 'set-chosen-n',
-                                value: e.target.value === '' ? undefined : Number(e.target.value),
-                              })
-                            }
+                            value={selectedSampleOption === PowerCheckOption.ENTER_OWN ? draftN : ''}
+                            onChange={(e) => setDraftN(e.target.value)}
                             placeholder="Enter desired N"
                           />
                         </div>
