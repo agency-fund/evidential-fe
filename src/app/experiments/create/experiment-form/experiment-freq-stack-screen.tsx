@@ -33,7 +33,9 @@ export type ExperimentFreqStackScreenMessage =
   | { type: 'set-create-error'; response: ErrorType<unknown> }
   | { type: 'set-chosen-n'; value: number | undefined }
   | { type: 'set-sample-size-option'; value: PowerCheckOption }
-  | { type: 'set-custom-power-check-response'; response: PowerResponseOutput; desiredN: number };
+  | { type: 'set-custom-power-check-response'; response: PowerResponseOutput; desiredN: number }
+  | { type: 'clear-custom-power-check-response' }
+  | { type: 'set-non-null-samples-power-check-response'; response: PowerResponseOutput };
 
 const getPrimaryAnalysisAvailableN = (data: ExperimentFormData): number | undefined => {
   if (!data.powerCheckResponse || !data.primaryMetric) return undefined;
@@ -127,7 +129,11 @@ export const ExperimentFreqStackScreen = ({
   const handleCreate = async () => {
     const designSpec = convertToFrequentistDesignSpec(data);
     const powerAnalyses =
-      data.sampleSizeOption === PowerCheckOption.ENTER_OWN ? data.customPowerCheckResponse : data.powerCheckResponse;
+      data.sampleSizeOption === PowerCheckOption.ENTER_OWN
+        ? data.customPowerCheckResponse
+        : data.sampleSizeOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES
+          ? data.nonNullSamplesPowerCheckResponse
+          : data.powerCheckResponse;
     const createExperimentRequest = createExperimentBody.strict().parse({
       design_spec: designSpec,
       power_analyses: powerAnalyses,

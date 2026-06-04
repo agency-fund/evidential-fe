@@ -71,7 +71,8 @@ function getValidDraftN(input: string): number | undefined {
 export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const { trigger: triggerEstimateSampleSize, isMutating, error } = usePowerCheck(data.datasourceId!);
   // Separate mutation with a distinct SWR key so it doesn't share cache or conflict with the
-  // main power-check mutation above.
+  // main power-check mutation above. Reused for both ENTER_OWN and USE_ALL_NON_NULL_SAMPLES:
+  // the two effects are mutually exclusive (only one option is active at a time).
   const { trigger: triggerEstimateMde, isMutating: isEstimatingMde } = usePowerCheck(data.datasourceId!, {
     swr: { swrKey: `${data.datasourceId}/power/mde-estimate` },
   });
@@ -102,6 +103,17 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
       ? (customPrimaryAnalysis.pct_change_with_desired_n * 100).toFixed(1)
       : 'N/A';
 
+  const nonNullPrimaryAnalysis = data.nonNullSamplesPowerCheckResponse?.analyses.find(
+    (a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
+  );
+  const estimatedNonNullMdePct =
+    nonNullPrimaryAnalysis?.pct_change_with_desired_n != null
+      ? (nonNullPrimaryAnalysis.pct_change_with_desired_n * 100).toFixed(1)
+      : 'N/A';
+
+  const shouldEstimateNonNullMde =
+    selectedSampleOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES && nonNullSamples > 0;
+
   const { enabled } = isPowerCheckButtonEnabled(isMutating, data); // TODO: present reason field
 
   // A ref so our useEffect for triggering MDE mode always reads the latest form data without making
@@ -116,15 +128,34 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   // Wizard.tsx; `triggerEstimateMde` is stable from useSWRMutation.
   useEffect(() => {
     if (!shouldEstimateMde || debouncedValidDraftN === undefined) return;
+
     void (async () => {
       const response = await triggerEstimateMde({
         design_spec: convertToFrequentistDesignSpec({ ...dataRef.current, desiredN: debouncedValidDraftN }),
       });
+      // Ok to update this pair of values because its use is dependent on sampleSizeOption.
       if (response) {
         dispatch({ type: 'set-custom-power-check-response', response, desiredN: debouncedValidDraftN });
       }
     })();
   }, [debouncedValidDraftN, shouldEstimateMde, triggerEstimateMde, dispatch]);
+
+  // Same pattern for USE_ALL_NON_NULL_SAMPLES: estimate the MDE achievable with all non-null
+  // samples so we can display it inline. `nonNullSamples` is a stable number derived from the
+  // power-check response, so this only re-fires when the option changes or a new power check runs.
+  useEffect(() => {
+    if (!shouldEstimateNonNullMde) return;
+
+    void (async () => {
+      const response = await triggerEstimateMde({
+        design_spec: convertToFrequentistDesignSpec({ ...dataRef.current, desiredN: nonNullSamples }),
+      });
+      // Ok to update this pair of values because its use is dependent on sampleSizeOption.
+      if (response) {
+        dispatch({ type: 'set-non-null-samples-power-check-response', response });
+      }
+    })();
+  }, [nonNullSamples, shouldEstimateNonNullMde, triggerEstimateMde, dispatch]);
 
   const handlePowerCheck = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -377,7 +408,9 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                   >
                     <Flex align="center" direction="column" gap="2">
                       <Text size="2">Use minimum sample required:</Text>
-                      <Text size="2">{powerCheckTarget ?? 'N/A'}</Text>
+                      <Flex height="32px" align="center">
+                        <Text size="2">{powerCheckTarget ?? 'N/A'}</Text>
+                      </Flex>
                       <Flex align="center" style={{ minHeight: '24px' }}>
                         {data.primaryMetric?.mde !== undefined && (
                           <Badge color="purple" variant="soft" size="2">
@@ -393,8 +426,24 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                   >
                     <Flex align="center" direction="column" gap="2">
                       <Text size="2">Use all available non-null samples:</Text>
-                      <Text size="2">{nonNullSamples ?? 'N/A'}</Text>
-                      <Flex align="center" style={{ minHeight: '24px' }}></Flex>
+                      <Flex height="32px" align="center">
+                        <Text size="2">{nonNullSamples ?? 'N/A'}</Text>
+                      </Flex>
+
+                      <Flex align="center" style={{ minHeight: '24px' }}>
+                        {selectedSampleOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES && isEstimatingMde && (
+                          <Badge color="purple" variant="soft" size="2">
+                            Estimated MDE: …
+                            <Spinner size="1" />
+                          </Badge>
+                        )}
+                        {!(isEstimatingMde && nonNullPrimaryAnalysis !== undefined) &&
+                          data.nonNullSamplesPowerCheckResponse !== undefined && (
+                            <Badge color="purple" variant="soft" size="2">
+                              Estimated MDE: {estimatedNonNullMdePct}%
+                            </Badge>
+                          )}
+                      </Flex>
                     </Flex>
                   </RadioCards.Item>
                   <RadioCards.Item
@@ -410,7 +459,10 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                         min={1}
                         max={allSamples ?? undefined}
                         value={draftN}
-                        onChange={(e) => setDraftN(e.target.value)}
+                        onChange={(e) => {
+                          setDraftN(e.target.value);
+                          dispatch({ type: 'clear-custom-power-check-response' });
+                        }}
                         placeholder="Enter your desired N"
                       />
                       <Flex align="center" style={{ minHeight: '24px' }}>
@@ -420,7 +472,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                             <Spinner size="1" />
                           </Badge>
                         )}
-                        {!isEstimatingMde && draftN !== '' && (
+                        {!isEstimatingMde && draftN !== '' && customPrimaryAnalysis !== undefined && (
                           <Badge color="purple" variant="soft" size="2">
                             Estimated MDE: {estimatedMdePct}%
                           </Badge>
