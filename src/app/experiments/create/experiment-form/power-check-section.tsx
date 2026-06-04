@@ -100,7 +100,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const estimatedMdePct =
     customPrimaryAnalysis?.pct_change_with_desired_n != null
       ? (customPrimaryAnalysis.pct_change_with_desired_n * 100).toFixed(1)
-      : null;
+      : 'N/A';
 
   const { enabled } = isPowerCheckButtonEnabled(isMutating, data); // TODO: present reason field
 
@@ -375,40 +375,57 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                     value={PowerCheckOption.USE_POWER_CHECK}
                     disabled={powerCheckTarget === undefined || powerCheckTarget === 0}
                   >
-                    Use minimum sample required: {powerCheckTarget ?? 'N/A'}
+                    <Flex align="center" direction="column" gap="2">
+                      <Text size="2">Use minimum sample required:</Text>
+                      <Text size="2">{powerCheckTarget ?? 'N/A'}</Text>
+                      <Flex align="center" style={{ minHeight: '24px' }}>
+                        {data.primaryMetric?.mde !== undefined && (
+                          <Badge color="purple" variant="soft" size="2">
+                            Target MDE: {data.primaryMetric.mde}%
+                          </Badge>
+                        )}
+                      </Flex>
+                    </Flex>
                   </RadioCards.Item>
                   <RadioCards.Item
                     value={PowerCheckOption.USE_ALL_NON_NULL_SAMPLES}
                     disabled={nonNullSamples === undefined || nonNullSamples === 0}
                   >
-                    Use all available non-null samples: {nonNullSamples}
+                    <Flex align="center" direction="column" gap="2">
+                      <Text size="2">Use all available non-null samples:</Text>
+                      <Text size="2">{nonNullSamples ?? 'N/A'}</Text>
+                      <Flex align="center" style={{ minHeight: '24px' }}></Flex>
+                    </Flex>
                   </RadioCards.Item>
                   <RadioCards.Item
                     value={PowerCheckOption.ENTER_OWN}
                     disabled={allSamples === undefined || allSamples === 0}
                   >
-                    <Flex align="start" direction="column" gap="2">
-                      <Flex align="center" direction="row" gap="2">
-                        <span>Use custom sample size:</span>
-                        <div style={{ pointerEvents: 'auto' }}>
-                          <TextField.Root
-                            style={{ width: '200px' }}
-                            size="2"
-                            type="number"
-                            max={allSamples ?? undefined}
-                            value={selectedSampleOption === PowerCheckOption.ENTER_OWN ? draftN : ''}
-                            onChange={(e) => setDraftN(e.target.value)}
-                            placeholder="Enter desired N"
-                          />
-                        </div>
+                    <Flex align="center" direction="column" gap="2" style={{ pointerEvents: 'auto' }}>
+                      <Text size="2">Use custom sample size:</Text>
+                      <TextField.Root
+                        style={{ width: '150px' }}
+                        size="2"
+                        type="number"
+                        min={1}
+                        max={allSamples ?? undefined}
+                        value={draftN}
+                        onChange={(e) => setDraftN(e.target.value)}
+                        placeholder="Enter your desired N"
+                      />
+                      <Flex align="center" style={{ minHeight: '24px' }}>
+                        {selectedSampleOption === PowerCheckOption.ENTER_OWN && isEstimatingMde && (
+                          <Badge color="purple" variant="soft" size="2">
+                            Estimated MDE: …
+                            <Spinner size="1" />
+                          </Badge>
+                        )}
+                        {!isEstimatingMde && draftN !== '' && (
+                          <Badge color="purple" variant="soft" size="2">
+                            Estimated MDE: {estimatedMdePct}%
+                          </Badge>
+                        )}
                       </Flex>
-                      {selectedSampleOption === PowerCheckOption.ENTER_OWN ? (
-                        isEstimatingMde ? (
-                          <Spinner size="1" loading={true} />
-                        ) : estimatedMdePct !== null ? (
-                          <Badge color="purple">Estimated MDE: {estimatedMdePct}%</Badge>
-                        ) : null
-                      ) : null}
                     </Flex>
                   </RadioCards.Item>
                 </Flex>
