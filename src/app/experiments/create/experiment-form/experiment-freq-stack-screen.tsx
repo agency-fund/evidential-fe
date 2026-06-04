@@ -32,7 +32,8 @@ export type ExperimentFreqStackScreenMessage =
   | { type: 'set-create-response'; response: CreateExperimentResponse }
   | { type: 'set-create-error'; response: ErrorType<unknown> }
   | { type: 'set-chosen-n'; value: number | undefined }
-  | { type: 'set-sample-size-option'; value: PowerCheckOption };
+  | { type: 'set-sample-size-option'; value: PowerCheckOption }
+  | { type: 'set-custom-power-check-response'; response: PowerResponseOutput };
 
 const isNextEnabled = (data: ExperimentFormData) => {
   const isFreqPreassigned = data.experimentType === 'freq_preassigned';
@@ -100,9 +101,11 @@ export const ExperimentFreqStackScreen = ({
 
   const handleCreate = async () => {
     const designSpec = convertToFrequentistDesignSpec(data);
+    const powerAnalyses =
+      data.sampleSizeOption === PowerCheckOption.ENTER_OWN ? data.customPowerCheckResponse : data.powerCheckResponse;
     const createExperimentRequest = createExperimentBody.strict().parse({
       design_spec: designSpec,
-      power_analyses: data.powerCheckResponse,
+      power_analyses: powerAnalyses,
       webhooks: data.selectedWebhookIds && data.selectedWebhookIds.length > 0 ? data.selectedWebhookIds : [],
     });
     console.log('converted', createExperimentRequest);

@@ -23,8 +23,9 @@ import { usePowerCheck } from '@/api/admin';
 import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ZodError } from 'zod';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SectionCard } from '@/components/ui/cards/section-card';
+import { useDebounced } from '@/providers/use-debounced';
 
 interface PowerCheckSectionProps {
   data: ExperimentFormData;
@@ -64,7 +65,13 @@ function RunPowerCheckButton({ enabled, onClick, loading }: PowerCheckButtonProp
 
 export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const { trigger, isMutating, error } = usePowerCheck(data.datasourceId!);
+  // Separate mutation with a distinct SWR key so it doesn't share cache or conflict with the
+  // main power-check mutation above.
+  const { trigger: triggerEstimatedMde, isMutating: isEstimatingMde } = usePowerCheck(data.datasourceId!, {
+    swr: { swrKey: `${data.datasourceId}/power/mde-estimate` },
+  });
   const [validationError, setValidationError] = useState<ZodError | null>(null);
+
   const primaryAnalysis = data.powerCheckResponse?.analyses.find(
     (a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
   );
@@ -73,7 +80,40 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const allSamples = primaryAnalysis?.metric_spec.available_n ?? 0;
   const selectedSampleOption = data.sampleSizeOption ?? PowerCheckOption.USE_POWER_CHECK;
 
+  const debouncedDesiredN = useDebounced(data.desiredN, 400);
+  const shouldEstimateMde =
+    selectedSampleOption === PowerCheckOption.ENTER_OWN && debouncedDesiredN !== undefined && debouncedDesiredN > 0;
+
+  const customPrimaryAnalysis = data.customPowerCheckResponse?.analyses.find(
+    (a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
+  );
+  const estimatedMdePct =
+    customPrimaryAnalysis?.pct_change_with_desired_n != null
+      ? (customPrimaryAnalysis.pct_change_with_desired_n * 100).toFixed(1)
+      : null;
+
   const { enabled } = isPowerCheckButtonEnabled(isMutating, data); // TODO: present reason field
+
+  // Keep a ref to the latest data so the effect below can read it without making `data` a
+  // reactive dependency. This is intentional: we only want to fire the estimate request when
+  // the debounced desiredN value commits, not on every unrelated form field change.
+  const dataRef = useRef(data);
+  dataRef.current = data;
+
+  // useEffect is the right tool here because firing the estimate API call is a side effect that
+  // must be triggered by the *debounced* committed desiredN — not by each raw keystroke. Running
+  // it after render also ensures React has delivered the latest reducer-backed desiredN, so
+  // `convertToFrequentistDesignSpec` receives the correct `desired_n` in the request body.
+  useEffect(() => {
+    if (!shouldEstimateMde || debouncedDesiredN === undefined) return;
+    void triggerEstimatedMde({
+      design_spec: convertToFrequentistDesignSpec({ ...dataRef.current, desiredN: debouncedDesiredN }),
+    }).then((response) => {
+      if (response) {
+        dispatch({ type: 'set-custom-power-check-response', response });
+      }
+    });
+  }, [debouncedDesiredN, shouldEstimateMde, triggerEstimatedMde, dispatch]);
 
   const handlePowerCheck = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -83,18 +123,12 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
       return;
     }
 
-    // TODO: reimplement this to be simpler
     try {
-      const design_spec = convertToFrequentistDesignSpec(data);
-      const response = await trigger({ design_spec });
+      const response = await trigger({ design_spec: convertToFrequentistDesignSpec(data) });
 
       const primary = response.analyses.find((a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name);
-      let desiredN = undefined;
-      let sampleSizeOption = PowerCheckOption.NONE;
-      if (primary?.sufficient_n) {
-        desiredN = primary?.target_n ?? undefined;
-        sampleSizeOption = PowerCheckOption.USE_POWER_CHECK;
-      }
+      const desiredN = primary?.sufficient_n ? (primary.target_n ?? undefined) : undefined;
+      const sampleSizeOption = desiredN === undefined ? PowerCheckOption.NONE : PowerCheckOption.USE_POWER_CHECK;
       dispatch({ type: 'set-power-check-response', response, desiredN, sampleSizeOption });
     } catch (err) {
       if (err instanceof ZodError) {
@@ -342,24 +376,33 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                     value={PowerCheckOption.ENTER_OWN}
                     disabled={allSamples === undefined || allSamples === 0}
                   >
-                    <Flex align="center" direction={'row'} gap="2">
-                      <span>Use custom sample size:</span>
-                      <div style={{ pointerEvents: 'auto' }}>
-                        <TextField.Root
-                          style={{ width: '250px' }}
-                          size="2"
-                          type="number"
-                          max={allSamples ?? undefined}
-                          value={selectedSampleOption === PowerCheckOption.ENTER_OWN ? (data.desiredN ?? '') : ''}
-                          onChange={(e) =>
-                            dispatch({
-                              type: 'set-chosen-n',
-                              value: e.target.value === '' ? undefined : Number(e.target.value),
-                            })
-                          }
-                          placeholder="Type your own desired #."
-                        />
-                      </div>
+                    <Flex align="start" direction="column" gap="2">
+                      <Flex align="center" direction="row" gap="2">
+                        <span>Use custom sample size:</span>
+                        <div style={{ pointerEvents: 'auto' }}>
+                          <TextField.Root
+                            style={{ width: '200px' }}
+                            size="2"
+                            type="number"
+                            max={allSamples ?? undefined}
+                            value={selectedSampleOption === PowerCheckOption.ENTER_OWN ? (data.desiredN ?? '') : ''}
+                            onChange={(e) =>
+                              dispatch({
+                                type: 'set-chosen-n',
+                                value: e.target.value === '' ? undefined : Number(e.target.value),
+                              })
+                            }
+                            placeholder="Enter desired N"
+                          />
+                        </div>
+                      </Flex>
+                      {selectedSampleOption === PowerCheckOption.ENTER_OWN ? (
+                        isEstimatingMde ? (
+                          <Spinner size="1" loading={true} />
+                        ) : estimatedMdePct !== null ? (
+                          <Badge color="purple">Estimated MDE: {estimatedMdePct}%</Badge>
+                        ) : null
+                      ) : null}
                     </Flex>
                   </RadioCards.Item>
                 </Flex>
