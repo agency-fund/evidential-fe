@@ -46,6 +46,7 @@ import {
   BanditParams,
   isBanditExperimentType,
   MetricWithMDE,
+  PowerCheckOption,
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
 
 export type ExperimentType = DesignSpecInput['experiment_type'];
@@ -80,6 +81,7 @@ export type ExperimentFormData = {
   power?: string;
   // Populated when user clicks "Power Check" on DesignForm
   desiredN?: number;
+  sampleSizeOption?: PowerCheckOption;
   powerCheckResponse?: PowerResponseOutput;
   createExperimentResponse?: CreateExperimentResponse;
   createExperimentError?: ErrorType<unknown>;
@@ -516,6 +518,9 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         }
         if (msg.type === 'set-chosen-n') {
           return { ...data, desiredN: msg.value };
+        }
+        if (msg.type === 'set-sample-size-option') {
+          return { ...data, sampleSizeOption: msg.value };
         }
         if (msg.type === 'set-create-error') {
           return { ...data, createExperimentError: msg.response, createExperimentResponse: undefined };
