@@ -35,6 +35,14 @@ export type ExperimentFreqStackScreenMessage =
   | { type: 'set-sample-size-option'; value: PowerCheckOption }
   | { type: 'set-custom-power-check-response'; response: PowerResponseOutput; desiredN: number };
 
+const getPrimaryAnalysisAvailableN = (data: ExperimentFormData): number | undefined => {
+  if (!data.powerCheckResponse || !data.primaryMetric) return undefined;
+  const primaryAnalysis = data.powerCheckResponse.analyses.find(
+    (a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
+  );
+  return primaryAnalysis?.metric_spec.available_n ?? undefined;
+};
+
 const isNextEnabled = (data: ExperimentFormData) => {
   const isFreqPreassigned = data.experimentType === 'freq_preassigned';
 
@@ -51,8 +59,24 @@ const isNextEnabled = (data: ExperimentFormData) => {
     if (!data.powerCheckResponse) return false;
     // Must have selected a sample size for pre-assigned frequentist experiment
     if (data.desiredN === undefined || data.desiredN === 0) return false;
+    // desiredN must not exceed the primary metric's available samples
+    const availableN = getPrimaryAnalysisAvailableN(data);
+    if (availableN !== undefined && data.desiredN > availableN) return false;
   }
   return true;
+};
+
+const getNextTooltip = (data: ExperimentFormData): string | undefined => {
+  if (isNextEnabled(data)) return undefined;
+  const isFreqPreassigned = data.experimentType === 'freq_preassigned';
+  if (!isFreqPreassigned) return undefined;
+  if (!data.powerCheckResponse) return 'Please run a power check first.';
+  if (data.desiredN === undefined || data.desiredN === 0) return 'Please select a sample size.';
+  const availableN = getPrimaryAnalysisAvailableN(data);
+  if (availableN !== undefined && data.desiredN > availableN) {
+    return `Desired N (${data.desiredN.toLocaleString()}) exceeds the available samples for the primary metric (${availableN.toLocaleString()}).`;
+  }
+  return undefined;
 };
 
 /** ExperimentFreqStackScreen allows users to define the primary key, metrics, filters, strata, confidence, power,
@@ -98,6 +122,7 @@ export const ExperimentFreqStackScreen = ({
     .filter((f): f is FieldMetadata => Boolean(f));
 
   const nextEnabled = isNextEnabled(data);
+  const nextTooltip = getNextTooltip(data);
 
   const handleCreate = async () => {
     const designSpec = convertToFrequentistDesignSpec(data);
@@ -167,6 +192,7 @@ export const ExperimentFreqStackScreen = ({
         onNext={handleCreate}
         nextDisabled={!nextEnabled}
         nextLoading={triggerLoading}
+        nextTooltipContent={nextTooltip}
       />
     </>
   );
