@@ -269,6 +269,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             // Changing datasource should clear power check
             powerCheckResponse: undefined,
             desiredN: undefined,
+            sampleSizeOption: undefined,
           };
         }
         return data;
@@ -444,7 +445,13 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       reducer: (data, msg: ExperimentFreqStackScreenMessage) => {
         // Metric builder actions - all metric changes invalidate power check
         if (msg.type === 'primary-metric-select') {
-          return { ...data, primaryMetric: msg.primaryMetric, powerCheckResponse: undefined, desiredN: undefined };
+          return {
+            ...data,
+            primaryMetric: msg.primaryMetric,
+            powerCheckResponse: undefined,
+            desiredN: undefined,
+            sampleSizeOption: undefined,
+          };
         }
         if (msg.type === 'primary-metric-deselect') {
           return {
@@ -453,6 +460,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             secondaryMetrics: msg.secondaryMetrics,
             powerCheckResponse: undefined,
             desiredN: undefined,
+            sampleSizeOption: undefined,
           };
         }
         if (msg.type === 'promote-secondary-to-primary') {
@@ -462,6 +470,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             secondaryMetrics: msg.secondaryMetrics,
             powerCheckResponse: undefined,
             desiredN: undefined,
+            sampleSizeOption: undefined,
           };
         }
         if (msg.type === 'secondary-metric-add') {
@@ -470,6 +479,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             secondaryMetrics: msg.secondaryMetrics,
             powerCheckResponse: undefined,
             desiredN: undefined,
+            sampleSizeOption: undefined,
           };
         }
         if (msg.type === 'secondary-metric-remove') {
@@ -478,6 +488,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             secondaryMetrics: msg.secondaryMetrics,
             powerCheckResponse: undefined,
             desiredN: undefined,
+            sampleSizeOption: undefined,
           };
         }
         if (msg.type === 'mde-change') {
@@ -487,12 +498,19 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             secondaryMetrics: msg.secondaryMetrics ?? data.secondaryMetrics,
             powerCheckResponse: undefined,
             desiredN: undefined,
+            sampleSizeOption: undefined,
           };
         }
 
         // Filter builder - filter changes invalidate power check
         if (msg.type === 'set-filters') {
-          return { ...data, filters: msg.filters, powerCheckResponse: undefined, desiredN: undefined };
+          return {
+            ...data,
+            filters: msg.filters,
+            powerCheckResponse: undefined,
+            desiredN: undefined,
+            sampleSizeOption: undefined,
+          };
         }
 
         // Strata builder -
@@ -508,10 +526,22 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
 
         // Power check - changing confidence/power invalidates power check response
         if (msg.type === 'set-confidence') {
-          return { ...data, confidence: msg.value, powerCheckResponse: undefined, desiredN: undefined };
+          return {
+            ...data,
+            confidence: msg.value,
+            powerCheckResponse: undefined,
+            desiredN: undefined,
+            sampleSizeOption: undefined,
+          };
         }
         if (msg.type === 'set-power') {
-          return { ...data, power: msg.value, powerCheckResponse: undefined, desiredN: undefined };
+          return {
+            ...data,
+            power: msg.value,
+            powerCheckResponse: undefined,
+            desiredN: undefined,
+            sampleSizeOption: undefined,
+          };
         }
         if (msg.type === 'set-power-check-response') {
           return { ...data, powerCheckResponse: msg.response, desiredN: msg.desiredN };
