@@ -51,7 +51,6 @@ import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/
 import { ExperimentDetailsDropdownMenu } from '@/components/features/experiments/experiment-details-dropdown-menu';
 import { DecisionAndImpactSection } from '@/components/features/experiments/decision-and-impact-section';
 import { ExperimentCompletionCallout } from '@/components/features/experiments/experiment-completion-callout';
-import { ParticipantTypeBadge } from '@/components/features/participants/participant-type-badge';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { CodeSnippetCard } from '@/components/ui/cards/code-snippet-card';
@@ -209,7 +208,7 @@ export default function ExperimentViewPage() {
     organizationId,
     datasourceId,
     experimentId,
-    { status: ['success'] },
+    { status: ['success'], page_size: Number.MAX_SAFE_INTEGER },
     {
       swr: {
         enabled: !!organizationId && !!datasourceId && !!experimentId && !!experiment,
@@ -419,27 +418,14 @@ export default function ExperimentViewPage() {
           <Separator orientation="vertical" />
           {isFrequentistSpec(design_spec) && (
             <>
-              {design_spec.table_name ? (
-                <>
-                  <TableNameBadge tableName={design_spec.table_name} />
-                  <Separator orientation="vertical" />
-                </>
-              ) : experiment.config.participant_type_deprecated ? (
-                // For backwards compatibility with legacy experiments, show the participant type badge.
-                <>
-                  <ParticipantTypeBadge
-                    datasourceId={experiment.config.datasource_id}
-                    participantType={experiment.config.participant_type_deprecated}
-                  />
-                  <Separator orientation="vertical" />
-                </>
-              ) : null}
+              <TableNameBadge tableName={design_spec.table_name} />
+              <Separator orientation="vertical" />
             </>
           )}
           <>
             <TargetingDialog
               designSpec={design_spec}
-              participantType={experiment.participant_type}
+              experimentSchema={experiment.experiment_schema}
               webhookIds={experiment.config.webhooks ?? []}
             />
             <Separator orientation="vertical" />

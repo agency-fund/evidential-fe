@@ -38,7 +38,7 @@ tasks:
         echo "Tip: Run 'nvm install' from the repo root to install and then run 'nvm use' to switch to the correct version."
         exit 1
       fi
-      npm install
+      npm ci
   start:
     desc: 'Starts the development server'
     interactive: true
@@ -73,6 +73,11 @@ tasks:
     desc: 'Runs the NextJS-managed linter'
   build:
     desc: 'Production build of the NextJS application'
+    cmd: npm run build
+  analyze:
+    desc: 'Production build with bundle-analyzer reports written to .next/analyze/{client,nodejs,edge}.html'
+    env:
+      ANALYZE: 'true'
     cmd: npm run build
   railway-build:
     desc: 'Builds the Docker image used by the Railway deployment.'
