@@ -570,12 +570,10 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           // If the desiredN changes due to user selection, reset the stored MDE estimate response.
           return {
             ...data,
-            desiredN: msg.value,
-            mdePowerCheckResponse: data.desiredN !== msg.value ? undefined : data.mdePowerCheckResponse,
+            desiredN: msg.desiredN,
+            sampleSizeOption: msg.sampleSizeOption,
+            mdePowerCheckResponse: msg.mdePowerCheckResponse,
           };
-        }
-        if (msg.type === 'set-sample-size-option') {
-          return { ...data, sampleSizeOption: msg.value };
         }
         if (msg.type === 'set-create-error') {
           return { ...data, createExperimentError: msg.response, createExperimentResponse: undefined };

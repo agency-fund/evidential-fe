@@ -164,22 +164,33 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     }
   };
 
-  const handleSampleOptionChange = (value: PowerCheckOption) => {
-    dispatch({ type: 'set-sample-size-option', value });
-    switch (value) {
+  const handleSampleOptionChange = (option: PowerCheckOption) => {
+    // For the MDE estimation options (USE_ALL_NON_NULL_SAMPLES and ENTER_OWN), we also reset the
+    // MDE response if the value selected differs from the current data.desiredN.
+    switch (option) {
       case PowerCheckOption.USE_POWER_CHECK:
-        dispatch({ type: 'set-chosen-n', value: powerCheckTargetN });
+        dispatch({ type: 'set-chosen-n', desiredN: powerCheckTargetN, sampleSizeOption: option });
         break;
       case PowerCheckOption.USE_ALL_NON_NULL_SAMPLES:
-        dispatch({ type: 'set-chosen-n', value: nonNullSamples });
+        dispatch({
+          type: 'set-chosen-n',
+          desiredN: nonNullSamples,
+          sampleSizeOption: option,
+          mdePowerCheckResponse: data.desiredN !== nonNullSamples ? undefined : data.mdePowerCheckResponse,
+        });
         setDraftN(String(nonNullSamples));
         break;
       case PowerCheckOption.ENTER_OWN:
-        dispatch({ type: 'set-chosen-n', value: debouncedValidDraftN });
+        dispatch({
+          type: 'set-chosen-n',
+          desiredN: debouncedValidDraftN,
+          sampleSizeOption: option,
+          mdePowerCheckResponse: data.desiredN !== debouncedValidDraftN ? undefined : data.mdePowerCheckResponse,
+        });
         setDraftN(String(debouncedValidDraftN));
         break;
       case PowerCheckOption.NONE:
-        dispatch({ type: 'set-chosen-n', value: undefined });
+        dispatch({ type: 'set-chosen-n', desiredN: undefined, sampleSizeOption: option });
         break;
     }
   };
