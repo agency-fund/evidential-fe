@@ -18,8 +18,8 @@ import {
 import { CheckCircledIcon, CrossCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData } from './experiment-form-def';
 import { PowerCheckOption } from './experiment-form-types';
-import { ExperimentFreqStackScreenMessage } from './experiment-freq-stack-screen';
 import { usePowerCheck } from '@/api/admin';
+import { PowerResponseOutput } from '@/api/methods.schemas';
 import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ZodError } from 'zod';
@@ -27,9 +27,26 @@ import { useEffect, useRef, useState } from 'react';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { useDebounced } from '@/providers/use-debounced';
 
+export type PowerCheckSectionAction =
+  | { type: 'set-confidence'; value: string }
+  | { type: 'set-power'; value: string }
+  | {
+      type: 'set-power-check-response';
+      response: PowerResponseOutput;
+      desiredN?: number;
+      sampleSizeOption?: PowerCheckOption;
+    }
+  | {
+      type: 'set-chosen-n';
+      desiredN: number | undefined;
+      sampleSizeOption: PowerCheckOption;
+      mdePowerCheckResponse?: PowerResponseOutput;
+    }
+  | { type: 'set-custom-power-check-response'; response: PowerResponseOutput; desiredN: number };
+
 interface PowerCheckSectionProps {
   data: ExperimentFormData;
-  dispatch: (msg: ExperimentFreqStackScreenMessage) => void;
+  dispatch: (action: PowerCheckSectionAction) => void;
 }
 
 const isPowerCheckButtonEnabled = (isMutating: boolean, data: ExperimentFormData) => {

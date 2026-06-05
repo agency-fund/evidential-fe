@@ -6,8 +6,8 @@ import { MetricBuilder, MetricBuilderAction } from '@/components/features/experi
 import { FilterBuilder } from '@/components/features/experiments/querybuilder/filter-builder';
 import { StrataBuilder } from '@/components/features/experiments/strata-builder';
 import { useCreateExperiment, useInspectTableInDatasource } from '@/api/admin';
-import { CreateExperimentResponse, FieldMetadata, FilterInput, PowerResponseOutput } from '@/api/methods.schemas';
-import { PowerCheckSection } from './power-check-section';
+import { CreateExperimentResponse, FieldMetadata, FilterInput } from '@/api/methods.schemas';
+import { PowerCheckSection, PowerCheckSectionAction } from './power-check-section';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import {
   convertToFrequentistDesignSpec,
@@ -19,25 +19,11 @@ import { GenericErrorCallout } from '@/components/ui/generic-error';
 
 export type ExperimentFreqStackScreenMessage =
   | MetricBuilderAction
+  | PowerCheckSectionAction
   | { type: 'set-filters'; filters: FilterInput[] }
   | { type: 'set-strata'; strata: FieldMetadata[] }
-  | { type: 'set-confidence'; value: string }
-  | { type: 'set-power'; value: string }
-  | {
-      type: 'set-power-check-response';
-      response: PowerResponseOutput;
-      desiredN?: number;
-      sampleSizeOption?: PowerCheckOption;
-    }
   | { type: 'set-create-response'; response: CreateExperimentResponse }
-  | { type: 'set-create-error'; response: ErrorType<unknown> }
-  | {
-      type: 'set-chosen-n';
-      desiredN: number | undefined;
-      sampleSizeOption: PowerCheckOption;
-      mdePowerCheckResponse?: PowerResponseOutput;
-    }
-  | { type: 'set-custom-power-check-response'; response: PowerResponseOutput; desiredN: number };
+  | { type: 'set-create-error'; response: ErrorType<unknown> };
 
 const getPrimaryAnalysisAvailableN = (data: ExperimentFormData): number | undefined => {
   if (!data.powerCheckResponse || !data.primaryMetric) return undefined;
