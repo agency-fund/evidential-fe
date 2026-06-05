@@ -29,6 +29,14 @@ export type PriorType = MABExperimentSpecInput['prior_type'];
 export type FormOutcomeType = 'binary' | 'real';
 export type BanditExperimentType = 'mab_online' | 'cmab_online';
 
+// Sample-size selection mode on the Power Analysis screen (power-check-section).
+export enum PowerCheckOption {
+  USE_POWER_CHECK = 'use_power_check',
+  USE_ALL_NON_NULL_SAMPLES = 'use_all_non_null_samples',
+  ENTER_OWN = 'enter_own',
+  NONE = '',
+}
+
 // MAB-specific arm configuration with prior parameters
 export type BanditArm = Omit<Arm, 'arm_id'> & {
   arm_weight?: number;

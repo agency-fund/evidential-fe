@@ -17,6 +17,7 @@ import {
 } from '@radix-ui/themes';
 import { CheckCircledIcon, CrossCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData } from './experiment-form-def';
+import { PowerCheckOption } from './experiment-form-types';
 import { ExperimentFreqStackScreenMessage } from './experiment-freq-stack-screen';
 import { usePowerCheck } from '@/api/admin';
 import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
@@ -24,13 +25,6 @@ import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ZodError } from 'zod';
 import { useState } from 'react';
 import { SectionCard } from '@/components/ui/cards/section-card';
-
-enum PowerCheckOption {
-  USE_POWER_CHECK = 'use_power_check',
-  USE_ALL_NON_NULL_SAMPLES = 'use_all_non_null_samples',
-  ENTER_OWN = 'enter_own',
-  NONE = '',
-}
 
 interface PowerCheckSectionProps {
   data: ExperimentFormData;
@@ -71,10 +65,13 @@ function RunPowerCheckButton({ enabled, onClick, loading }: PowerCheckButtonProp
 export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const { trigger, isMutating, error } = usePowerCheck(data.datasourceId!);
   const [validationError, setValidationError] = useState<ZodError | null>(null);
-  const [powerCheckTarget, setPowerCheckTarget] = useState<number | undefined>();
-  const [nonNullSamples, setNonNullSamples] = useState<number | undefined>();
-  const [allSamples, setAllSamples] = useState<number | undefined>();
-  const [selectedSampleOption, setSelectedSampleOption] = useState<PowerCheckOption>(PowerCheckOption.USE_POWER_CHECK);
+  const primaryAnalysis = data.powerCheckResponse?.analyses.find(
+    (a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
+  );
+  const powerCheckTarget = primaryAnalysis?.target_n ?? undefined;
+  const nonNullSamples = primaryAnalysis?.metric_spec.available_nonnull_n ?? 0;
+  const allSamples = primaryAnalysis?.metric_spec.available_n ?? 0;
+  const selectedSampleOption = data.sampleSizeOption ?? PowerCheckOption.USE_POWER_CHECK;
 
   const { enabled } = isPowerCheckButtonEnabled(isMutating, data); // TODO: present reason field
 
@@ -90,18 +87,15 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     try {
       const design_spec = convertToFrequentistDesignSpec(data);
       const response = await trigger({ design_spec });
-      const primary = response.analyses.find((a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name);
 
-      dispatch({ type: 'set-power-check-response', response, desiredN: undefined });
-      setPowerCheckTarget(primary?.target_n ?? undefined);
-      setNonNullSamples(primary?.metric_spec.available_nonnull_n ?? 0);
-      setAllSamples(primary?.metric_spec.available_n ?? 0);
+      const primary = response.analyses.find((a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name);
+      let desiredN = undefined;
+      let sampleSizeOption = PowerCheckOption.NONE;
       if (primary?.sufficient_n) {
-        setSelectedSampleOption(PowerCheckOption.USE_POWER_CHECK);
-        dispatch({ type: 'set-chosen-n', value: primary?.target_n ?? undefined });
-      } else {
-        setSelectedSampleOption(PowerCheckOption.NONE);
+        desiredN = primary?.target_n ?? undefined;
+        sampleSizeOption = PowerCheckOption.USE_POWER_CHECK;
       }
+      dispatch({ type: 'set-power-check-response', response, desiredN, sampleSizeOption });
     } catch (err) {
       if (err instanceof ZodError) {
         setValidationError(err);
@@ -112,7 +106,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   };
 
   const handleSampleOptionChange = (value: PowerCheckOption) => {
-    setSelectedSampleOption(value);
+    dispatch({ type: 'set-sample-size-option', value });
     switch (value) {
       case PowerCheckOption.USE_POWER_CHECK:
         dispatch({ type: 'set-chosen-n', value: powerCheckTarget });
@@ -356,6 +350,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                           size="2"
                           type="number"
                           max={allSamples ?? undefined}
+                          value={selectedSampleOption === PowerCheckOption.ENTER_OWN ? (data.desiredN ?? '') : ''}
                           onChange={(e) =>
                             dispatch({
                               type: 'set-chosen-n',

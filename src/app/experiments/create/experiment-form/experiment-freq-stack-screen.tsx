@@ -1,5 +1,6 @@
 import { ScreenProps } from '@/services/wizard/wizard-types';
 import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
+import { PowerCheckOption } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { Card, Flex, Heading } from '@radix-ui/themes';
 import { MetricBuilder, MetricBuilderAction } from '@/components/features/experiments/metric-builder';
 import { FilterBuilder } from '@/components/features/experiments/querybuilder/filter-builder';
@@ -22,10 +23,16 @@ export type ExperimentFreqStackScreenMessage =
   | { type: 'set-strata'; strata: FieldMetadata[] }
   | { type: 'set-confidence'; value: string }
   | { type: 'set-power'; value: string }
-  | { type: 'set-power-check-response'; response: PowerResponseOutput; desiredN?: number }
+  | {
+      type: 'set-power-check-response';
+      response: PowerResponseOutput;
+      desiredN?: number;
+      sampleSizeOption?: PowerCheckOption;
+    }
   | { type: 'set-create-response'; response: CreateExperimentResponse }
   | { type: 'set-create-error'; response: ErrorType<unknown> }
-  | { type: 'set-chosen-n'; value: number | undefined };
+  | { type: 'set-chosen-n'; value: number | undefined }
+  | { type: 'set-sample-size-option'; value: PowerCheckOption };
 
 const isNextEnabled = (data: ExperimentFormData) => {
   const isFreqPreassigned = data.experimentType === 'freq_preassigned';
