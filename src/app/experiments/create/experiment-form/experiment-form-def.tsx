@@ -83,10 +83,8 @@ export type ExperimentFormData = {
   desiredN?: number;
   sampleSizeOption?: PowerCheckOption;
   powerCheckResponse?: PowerResponseOutput;
-  // Populated by the custom MDE estimate request when the user selects ENTER_OWN sample size.
-  customPowerCheckResponse?: PowerResponseOutput;
-  // Populated by the MDE estimate request when the user selects USE_ALL_NON_NULL_SAMPLES.
-  nonNullSamplesPowerCheckResponse?: PowerResponseOutput;
+  // Populated by the MDE estimate for the currently-active custom N (ENTER_OWN or USE_ALL_NON_NULL_SAMPLES).
+  mdePowerCheckResponse?: PowerResponseOutput;
   createExperimentResponse?: CreateExperimentResponse;
   createExperimentError?: ErrorType<unknown>;
 
@@ -272,8 +270,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
 
             // Changing datasource should clear power check
             powerCheckResponse: undefined,
-            customPowerCheckResponse: undefined,
-            nonNullSamplesPowerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
           };
@@ -455,8 +452,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             primaryMetric: msg.primaryMetric,
             powerCheckResponse: undefined,
-            customPowerCheckResponse: undefined,
-            nonNullSamplesPowerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
           };
@@ -467,8 +463,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             primaryMetric: msg.primaryMetric,
             secondaryMetrics: msg.secondaryMetrics,
             powerCheckResponse: undefined,
-            customPowerCheckResponse: undefined,
-            nonNullSamplesPowerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
           };
@@ -479,8 +474,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             primaryMetric: msg.primaryMetric,
             secondaryMetrics: msg.secondaryMetrics,
             powerCheckResponse: undefined,
-            customPowerCheckResponse: undefined,
-            nonNullSamplesPowerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
           };
@@ -490,8 +484,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             secondaryMetrics: msg.secondaryMetrics,
             powerCheckResponse: undefined,
-            customPowerCheckResponse: undefined,
-            nonNullSamplesPowerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
           };
@@ -501,8 +494,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             secondaryMetrics: msg.secondaryMetrics,
             powerCheckResponse: undefined,
-            customPowerCheckResponse: undefined,
-            nonNullSamplesPowerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
           };
@@ -513,8 +505,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             primaryMetric: msg.primaryMetric ?? data.primaryMetric,
             secondaryMetrics: msg.secondaryMetrics ?? data.secondaryMetrics,
             powerCheckResponse: undefined,
-            customPowerCheckResponse: undefined,
-            nonNullSamplesPowerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
           };
@@ -526,8 +517,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             filters: msg.filters,
             powerCheckResponse: undefined,
-            customPowerCheckResponse: undefined,
-            nonNullSamplesPowerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
           };
@@ -550,8 +540,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             confidence: msg.value,
             powerCheckResponse: undefined,
-            customPowerCheckResponse: undefined,
-            nonNullSamplesPowerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
           };
@@ -561,8 +550,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             power: msg.value,
             powerCheckResponse: undefined,
-            customPowerCheckResponse: undefined,
-            nonNullSamplesPowerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
           };
@@ -576,16 +564,15 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           };
         }
         if (msg.type === 'set-custom-power-check-response') {
-          return { ...data, customPowerCheckResponse: msg.response, desiredN: msg.desiredN };
-        }
-        if (msg.type === 'clear-custom-power-check-response') {
-          return { ...data, customPowerCheckResponse: undefined, desiredN: undefined };
-        }
-        if (msg.type === 'set-non-null-samples-power-check-response') {
-          return { ...data, nonNullSamplesPowerCheckResponse: msg.response };
+          return { ...data, mdePowerCheckResponse: msg.response, desiredN: msg.desiredN };
         }
         if (msg.type === 'set-chosen-n') {
-          return { ...data, desiredN: msg.value };
+          // If the desiredN changes due to user selection, reset the stored MDE estimate response.
+          return {
+            ...data,
+            desiredN: msg.value,
+            mdePowerCheckResponse: data.desiredN !== msg.value ? undefined : data.mdePowerCheckResponse,
+          };
         }
         if (msg.type === 'set-sample-size-option') {
           return { ...data, sampleSizeOption: msg.value };
