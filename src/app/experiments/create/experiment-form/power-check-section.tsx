@@ -15,6 +15,7 @@ import {
   Text,
   TextField,
 } from '@radix-ui/themes';
+import { PowerCheckDesiredNInput } from './power-check-desired-n-input';
 import { CheckCircledIcon, CrossCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData } from './experiment-form-def';
 import { PowerCheckOption } from './experiment-form-types';
@@ -25,7 +26,6 @@ import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ZodError } from 'zod';
 import { useEffect, useRef, useState } from 'react';
 import { SectionCard } from '@/components/ui/cards/section-card';
-import { useDebounced } from '@/providers/use-debounced';
 
 export type PowerCheckSectionAction =
   | { type: 'set-confidence'; value: string }
@@ -80,11 +80,6 @@ function RunPowerCheckButton({ enabled, onClick, loading }: PowerCheckButtonProp
   );
 }
 
-function getValidDraftN(input: string): number | undefined {
-  const parsed = input === '' ? undefined : Number(input);
-  return parsed !== undefined && !isNaN(parsed) && parsed > 0 ? parsed : undefined;
-}
-
 export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const { trigger: triggerEstimateSampleSize, isMutating, error } = usePowerCheck(data.datasourceId!);
   // Separate mutation with a distinct SWR key so it doesn't share cache or conflict with the
@@ -103,7 +98,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
       data.sampleSizeOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES;
     return isMdeMode && data.desiredN !== undefined ? String(data.desiredN) : '';
   });
-  const debouncedValidDraftN = useDebounced(getValidDraftN(draftN), 400);
+  const [debouncedValidDraftN, setDebouncedValidDraftN] = useState<number | undefined>(undefined);
 
   const primaryAnalysis = data.powerCheckResponse?.analyses.find(
     (a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
@@ -468,15 +463,10 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                   >
                     <Flex align="center" direction="column" gap="2" style={{ pointerEvents: 'auto' }}>
                       <Text size="2">Use custom sample size:</Text>
-                      <TextField.Root
-                        style={{ width: '150px' }}
-                        size="2"
-                        type="number"
-                        min={1}
-                        max={allSamples ?? undefined}
+                      <PowerCheckDesiredNInput
                         value={draftN}
-                        onChange={(e) => setDraftN(e.target.value)}
-                        placeholder="Enter your desired N"
+                        onChange={setDebouncedValidDraftN}
+                        max={allSamples ?? undefined}
                       />
                       <Flex align="center" style={{ minHeight: '24px' }}>
                         {selectedSampleOption === PowerCheckOption.ENTER_OWN && isEstimatingMde && (
