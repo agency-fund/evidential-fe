@@ -455,6 +455,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
         if (msg.type === 'primary-metric-deselect') {
@@ -466,6 +467,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
         if (msg.type === 'promote-secondary-to-primary') {
@@ -477,6 +479,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
         if (msg.type === 'secondary-metric-add') {
@@ -487,6 +490,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
         if (msg.type === 'secondary-metric-remove') {
@@ -497,6 +501,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
         if (msg.type === 'mde-change') {
@@ -508,6 +513,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
 
@@ -520,6 +526,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
 
@@ -543,6 +550,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
         if (msg.type === 'set-power') {
@@ -553,6 +561,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
         if (msg.type === 'set-chosen-n' || msg.type === 'set-power-check-response') {
@@ -575,6 +584,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
                 sampleSizeOption: msg.sampleSizeOption,
                 desiredN: msg.desiredN,
                 powerCheckResponse: msg.response,
+                createExperimentError: undefined,
               };
             case PowerCheckOption.USE_ALL_NON_NULL_SAMPLES:
             case PowerCheckOption.ENTER_OWN:
@@ -583,6 +593,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
                 sampleSizeOption: msg.sampleSizeOption,
                 desiredN: msg.desiredN,
                 mdePowerCheckResponse: msg.response,
+                createExperimentError: undefined,
               };
           }
         }
