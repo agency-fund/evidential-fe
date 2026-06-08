@@ -253,7 +253,7 @@ export function IntegrationGuideDialog({
                     <Flex align="center" justify="between">
                       <Flex align="center" gap="2">
                         <GearIcon />
-                        <Text size="2" weight="medium" color={staleArmIds.length > 0 ? 'red' : 'black'}>
+                        <Text size="2" weight="medium" color={staleArmIds.length > 0 ? 'red' : undefined}>
                           Configure integration for third-party tools
                         </Text>
                       </Flex>
