@@ -322,7 +322,7 @@ export function IntegrationGuideDialog({
                                       </Select.Root>
                                       {staleArmIds.includes(armId) && (
                                         <Tooltip content="This arm's mapping is stale. Please re-select a journey and save to update.">
-                                          <ExclamationTriangleIcon />
+                                          <ExclamationTriangleIcon color="red" />
                                         </Tooltip>
                                       )}
                                     </Flex>
