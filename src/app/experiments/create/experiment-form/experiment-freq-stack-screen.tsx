@@ -33,29 +33,55 @@ const getPrimaryAnalysisAvailableN = (data: ExperimentFormData): number | undefi
   return primaryAnalysis?.metric_spec.available_n ?? undefined;
 };
 
-const isNextEnabled = (data: ExperimentFormData) => {
+const getNextDisabledReasons = (data: ExperimentFormData): string[] => {
+  const reasons: string[] = [];
+
   // Must have primary metric selected
-  if (!data.primaryMetric) return false;
+  if (!data.primaryMetric) {
+    reasons.push('Please select a primary metric.');
+  }
 
   const isFreqPreassigned = data.experimentType === 'freq_preassigned';
   if (isFreqPreassigned) {
     // Must have valid confidence value (50-99)
     const confidence = Number(data.confidence);
-    if (isNaN(confidence) || confidence < 50 || confidence > 99) return false;
+    if (isNaN(confidence) || confidence < 50 || confidence > 99) {
+      reasons.push('Enter a valid confidence value (50-99).');
+    }
 
     // Must have valid power value (50-99) for pre-assigned frequentist experiment
     const power = Number(data.power);
-    if (isNaN(power) || power < 50 || power > 99) return false;
+    if (isNaN(power) || power < 50 || power > 99) {
+      reasons.push('Enter a valid power value (50-99).');
+    }
 
     // Must have run power check for pre-assigned frequentist experiment
-    if (!data.powerCheckResponse) return false;
+    if (!data.powerCheckResponse) {
+      reasons.push('Please perform a sample size estimation.');
+    }
+
+    // Batch the above checks into a single set of reasons if any are present.
+    if (reasons.length > 0) {
+      return reasons;
+    }
 
     // Must have selected a sample size for pre-assigned frequentist experiment
-    if (data.desiredN === undefined || data.desiredN === 0) return false;
+    if (data.desiredN === undefined || data.desiredN === 0) {
+      reasons.push('Select a sample size.');
+    }
 
     // desiredN must not exceed the primary metric's available samples
     const availableN = getPrimaryAnalysisAvailableN(data);
-    if (availableN === undefined || data.desiredN > availableN) return false;
+    const hasAvailableN = availableN !== undefined && availableN !== 0;
+    if (!hasAvailableN) {
+      reasons.push('The primary metric has no available samples per the latest power check results.');
+    }
+
+    if (data.desiredN !== undefined && hasAvailableN && data.desiredN > availableN) {
+      reasons.push(
+        `Desired N (${data.desiredN.toLocaleString()}) exceeds the primary metric's available samples (${availableN.toLocaleString()}).`,
+      );
+    }
 
     // If in MDE mode, must have an MDE estimate
     if (
@@ -63,31 +89,10 @@ const isNextEnabled = (data: ExperimentFormData) => {
         data.sampleSizeOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES) &&
       !data.mdePowerCheckResponse
     ) {
-      return false;
+      reasons.push('Please generate a valid MDE estimate first.');
     }
   }
-  return true;
-};
-
-const getNextTooltip = (data: ExperimentFormData): string | undefined => {
-  if (isNextEnabled(data)) return undefined;
-
-  const isFreqPreassigned = data.experimentType === 'freq_preassigned';
-  if (!isFreqPreassigned) return undefined;
-
-  const power = Number(data.power);
-  if (isNaN(power) || power < 50 || power > 99) return 'Please enter a valid power value (50-99).';
-
-  if (!data.powerCheckResponse) return 'Please run a power check first.';
-
-  if (data.desiredN === undefined || data.desiredN === 0) return 'Please select a sample size.';
-
-  const availableN = getPrimaryAnalysisAvailableN(data);
-  if (availableN !== undefined && data.desiredN > availableN) {
-    return `Desired N (${data.desiredN.toLocaleString()}) exceeds the primary metric's available samples (${availableN.toLocaleString()}).`;
-  }
-
-  return undefined;
+  return reasons;
 };
 
 /** ExperimentFreqStackScreen allows users to define the primary key, metrics, filters, strata, confidence, power,
@@ -132,8 +137,9 @@ export const ExperimentFreqStackScreen = ({
     .map((s) => availableStrata.find((f) => f.field_name === s.field_name))
     .filter((f): f is FieldMetadata => Boolean(f));
 
-  const nextEnabled = isNextEnabled(data);
-  const nextTooltip = getNextTooltip(data);
+  const nextDisabledReasons = getNextDisabledReasons(data);
+  const nextEnabled = nextDisabledReasons.length === 0;
+  const nextTooltip = nextEnabled ? undefined : nextDisabledReasons.join('\n');
 
   const handleCreate = async () => {
     const designSpec = convertToFrequentistDesignSpec(data);
