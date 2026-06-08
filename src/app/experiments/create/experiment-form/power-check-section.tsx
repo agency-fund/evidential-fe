@@ -28,6 +28,7 @@ import { SectionCard } from '@/components/ui/cards/section-card';
 export type PowerCheckSectionAction =
   | { type: 'set-confidence'; value: string }
   | { type: 'set-power'; value: string }
+  | ({ type: 'set-chosen-n' } & PowerCheckSampleOptionChange)
   | ({ type: 'set-power-check-response' } & PowerCheckSampleOptionChange);
 
 interface PowerCheckSectionProps {
@@ -97,6 +98,10 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   };
 
   const handleSampleOptionChange = ({ sampleSizeOption, desiredN, response }: PowerCheckSampleOptionChange) => {
+    dispatch({ type: 'set-chosen-n', response, desiredN, sampleSizeOption });
+  };
+
+  const handleEstimatedMDEChange = ({ sampleSizeOption, desiredN, response }: PowerCheckSampleOptionChange) => {
     dispatch({ type: 'set-power-check-response', response, desiredN, sampleSizeOption });
   };
 
@@ -313,6 +318,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                 mdePowerCheckResponse={data.mdePowerCheckResponse}
                 makeDesignSpec={(desiredN) => convertToFrequentistDesignSpec({ ...data, desiredN })}
                 onOptionChange={handleSampleOptionChange}
+                onEstimatedMDEChange={handleEstimatedMDEChange}
               />
             </Flex>
           </Flex>

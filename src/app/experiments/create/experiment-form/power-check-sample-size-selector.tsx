@@ -38,10 +38,14 @@ interface PowerCheckSampleSizeSelectorProps {
   /** Used for making MDE estimates. Creates a design spec for the given desired N. */
   makeDesignSpec: (desiredN: number) => AnyFrequentistDesignSpecInput;
   /**
-   * Handles both the radio button selection immediately and any async MDE estimation request
-   * corresponding to the selection. Parent is responsible for handling potentially stale responses.
+   * Handles the radio button selection immediately.
    */
   onOptionChange: (change: PowerCheckSampleOptionChange) => void;
+  /**
+   * Called on completion of any async MDE estimation request.
+   * Parent is responsible for handling potentially stale responses.
+   */
+  onEstimatedMDEChange: (change: PowerCheckSampleOptionChange) => void;
 }
 
 interface EstimatedMdeBadgeProps {
@@ -85,6 +89,7 @@ export function PowerCheckSampleSizeSelector({
   desiredN,
   makeDesignSpec,
   onOptionChange,
+  onEstimatedMDEChange,
 }: PowerCheckSampleSizeSelectorProps) {
   const {
     trigger: triggerEstimateMde,
@@ -118,7 +123,7 @@ export function PowerCheckSampleSizeSelector({
     const designSpec = makeDesignSpec(desiredN);
     void (async () => {
       const response = await triggerEstimateMde({ design_spec: designSpec });
-      onOptionChange({ sampleSizeOption, desiredN, response });
+      onEstimatedMDEChange({ sampleSizeOption, desiredN, response });
     })();
   };
 
@@ -128,6 +133,7 @@ export function PowerCheckSampleSizeSelector({
    * we also kick off an MDE estimate for the new desiredN.
    */
   const handleOptionChange = (option: PowerCheckOption) => {
+    let useCachedResponse = false;
     switch (option) {
       case PowerCheckOption.NONE:
         onOptionChange({
@@ -144,40 +150,37 @@ export function PowerCheckSampleSizeSelector({
         });
         break;
       case PowerCheckOption.USE_ALL_NON_NULL_SAMPLES:
+        useCachedResponse = mdePowerCheckResponse !== undefined && desiredN === nonNullSamples;
         onOptionChange({
           sampleSizeOption: option,
           desiredN: nonNullSamples,
-          response: undefined,
+          response: useCachedResponse ? mdePowerCheckResponse : undefined,
         });
-        estimateMde(option, nonNullSamples);
+        if (!useCachedResponse) {
+          estimateMde(option, nonNullSamples);
+        }
         break;
       case PowerCheckOption.ENTER_OWN:
+        useCachedResponse = mdePowerCheckResponse !== undefined && desiredN === nonNullSamples;
         onOptionChange({
           sampleSizeOption: option,
           desiredN: desiredN,
-          response: undefined,
+          response: useCachedResponse ? mdePowerCheckResponse : undefined,
         });
-        if (desiredN !== undefined) {
+        if (!useCachedResponse && desiredN !== undefined) {
           estimateMde(option, desiredN);
         }
         break;
     }
   };
 
-  const handleInputChange = (validN: number | undefined) => {
-    if (
-      selectedSampleOption === PowerCheckOption.ENTER_OWN &&
-      validN !== undefined &&
-      (validN !== desiredN || mdePowerCheckResponse === undefined)
-    ) {
-      // Notify parent that we want a new desiredN.
-      onOptionChange({
-        sampleSizeOption: selectedSampleOption,
-        desiredN: validN,
-        response: undefined,
-      });
-      estimateMde(PowerCheckOption.ENTER_OWN, validN);
+  const handleInputChange = (newN: number | undefined) => {
+    if (newN === undefined || selectedSampleOption !== PowerCheckOption.ENTER_OWN) {
+      return;
     }
+    // Notify parent that we want a new desiredN.
+    onOptionChange({ sampleSizeOption: selectedSampleOption, desiredN: newN, response: undefined });
+    estimateMde(PowerCheckOption.ENTER_OWN, newN);
   };
 
   return (
