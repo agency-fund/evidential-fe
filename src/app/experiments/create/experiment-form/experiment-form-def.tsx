@@ -566,6 +566,8 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         }
         if (msg.type === 'set-chosen-n' || msg.type === 'set-power-check-response') {
           // For handling async power check responses, first check if they are stale.
+          // This does NOT currently address potentially stale power responses from USE_POWER_CHECK,
+          // e.g. if the user changes any values while the original trigger is in flight.
           if (
             msg.type === 'set-power-check-response' &&
             (msg.sampleSizeOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES ||
@@ -595,6 +597,8 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
                 mdePowerCheckResponse: msg.response,
                 createExperimentError: undefined,
               };
+            default:
+              return data;
           }
         }
         if (msg.type === 'set-create-error') {

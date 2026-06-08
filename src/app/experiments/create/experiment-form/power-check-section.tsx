@@ -53,14 +53,14 @@ const isPowerCheckButtonEnabled = (isMutating: boolean, data: ExperimentFormData
 
 interface PowerCheckButtonProps {
   enabled: boolean;
-  onClick: (event: React.MouseEvent<HTMLButtonElement>) => Promise<void>;
+  onClick: () => Promise<void>;
   loading: boolean;
   disabledReason?: string;
 }
 
 function RunPowerCheckButton({ enabled, onClick, loading, disabledReason }: PowerCheckButtonProps) {
   const button = (
-    <Button disabled={!enabled} onClick={onClick} style={{ minWidth: '25%' }}>
+    <Button type="button" disabled={!enabled} onClick={onClick} style={{ minWidth: '25%' }}>
       <Spinner loading={loading}>
         <LightningBoltIcon />
       </Spinner>
@@ -84,8 +84,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const { trigger: triggerEstimateSampleSize, isMutating, error } = usePowerCheck(data.datasourceId!);
   const { enabled, reason } = isPowerCheckButtonEnabled(isMutating, data);
 
-  const handlePowerCheck = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
+  const handlePowerCheck = async () => {
     setValidationError(null);
 
     if (!data.tableName || !data.primaryKey || !data.primaryMetric) {
@@ -116,11 +115,14 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     dispatch({ type: 'set-chosen-n', sampleSizeOption, desiredN, response });
   };
 
+  const primaryMetricFieldName = data.primaryMetric?.metric.field_name ?? '';
   const primaryPower =
-    data.powerCheckResponse !== undefined && !validationError ? data.powerCheckResponse.analyses[0] : undefined;
+    data.powerCheckResponse !== undefined && !validationError
+      ? data.powerCheckResponse.analyses.find((a) => a.metric_spec.field_name === primaryMetricFieldName)
+      : undefined;
   const restPower =
-    data.powerCheckResponse !== undefined && !validationError && data.powerCheckResponse.analyses.length > 1
-      ? data.powerCheckResponse.analyses.slice(1)
+    data.powerCheckResponse !== undefined && !validationError
+      ? data.powerCheckResponse.analyses.filter((a) => a.metric_spec.field_name !== primaryMetricFieldName)
       : undefined;
 
   return (
@@ -327,7 +329,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
               <PowerCheckSampleSizeSelector
                 datasourceId={data.datasourceId!}
                 powerCheckResponse={data.powerCheckResponse}
-                primaryMetricFieldName={data.primaryMetric!.metric.field_name}
+                primaryMetricFieldName={primaryMetricFieldName}
                 targetMde={data.primaryMetric?.mde}
                 selectedSampleOption={data.sampleSizeOption ?? PowerCheckOption.USE_POWER_CHECK}
                 desiredN={data.desiredN}

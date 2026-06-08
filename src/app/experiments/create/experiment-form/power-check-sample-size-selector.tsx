@@ -77,8 +77,11 @@ function EstimatedMdeBadge({ isSelectedOption, isEstimatingMde, estimatedMdePct,
   );
 }
 
-// Reponsible for making MDE estimates if the user selects a sample size other than the minimum
-// sample size (USE_POWER_CHECK).
+/**
+ * Handles sample size selection for experiment arms and triggers Minimum Detectable Effect
+ * re-estimation when the user chooses an option other than the min sample size.  Estimates are
+ * dispatched to the parent, which is responsible for managing and validating latest state.
+ */
 export function PowerCheckSampleSizeSelector({
   datasourceId,
   selectedSampleOption,
@@ -128,9 +131,12 @@ export function PowerCheckSampleSizeSelector({
   };
 
   /**
-   * We immediately report back the selected option, the desiredN if appropriate for the option, and
-   * its current estimate if it doesn't need updating. If the cached response doesn't match the desiredN,
-   * we also kick off an MDE estimate for the new desiredN.
+   * Handler immediately reports back:
+   * - the selected option,
+   * - the desiredN if appropriate for the option, and
+   * - its current power estimate if it doesn't need updating.
+   *
+   * If the cached response doesn't match the desiredN, we also trigger a new MDE estimate.
    */
   const handleOptionChange = (option: PowerCheckOption) => {
     let useCachedResponse = false;
@@ -161,6 +167,9 @@ export function PowerCheckSampleSizeSelector({
         }
         break;
       case PowerCheckOption.ENTER_OWN:
+        // Switching away from ENTER_OWN will either keep desiredN set to nonNullSamples or change
+        // it away, so switching back to ENTER_OWN will not reuse a stale custom response with the
+        // following restricted reuse check.
         useCachedResponse = mdePowerCheckResponse !== undefined && desiredN === nonNullSamples;
         onOptionChange({
           sampleSizeOption: option,

@@ -159,6 +159,7 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
   // Use CPS pattern to render the screen with full type safety
   return currentPackedScreen.withScreen((screen) => {
     const handleDispatch = (message: Parameters<typeof screen.reducer>[1]) => {
+      console.log('handleDispatch', message);
       setData((prev) => screen.reducer(prev, message));
     };
 

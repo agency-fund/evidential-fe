@@ -34,25 +34,29 @@ const getPrimaryAnalysisAvailableN = (data: ExperimentFormData): number | undefi
 };
 
 const isNextEnabled = (data: ExperimentFormData) => {
-  const isFreqPreassigned = data.experimentType === 'freq_preassigned';
-
   // Must have primary metric selected
   if (!data.primaryMetric) return false;
-  // Must have valid confidence value (50-99)
+
+  const isFreqPreassigned = data.experimentType === 'freq_preassigned';
   if (isFreqPreassigned) {
+    // Must have valid confidence value (50-99)
     const confidence = Number(data.confidence);
     if (isNaN(confidence) || confidence < 50 || confidence > 99) return false;
+
     // Must have valid power value (50-99) for pre-assigned frequentist experiment
     const power = Number(data.power);
     if (isNaN(power) || power < 50 || power > 99) return false;
+
     // Must have run power check for pre-assigned frequentist experiment
     if (!data.powerCheckResponse) return false;
+
     // Must have selected a sample size for pre-assigned frequentist experiment
     if (data.desiredN === undefined || data.desiredN === 0) return false;
+
     // desiredN must not exceed the primary metric's available samples
     const availableN = getPrimaryAnalysisAvailableN(data);
-    if (availableN === undefined) return false;
-    if (data.desiredN > availableN) return false;
+    if (availableN === undefined || data.desiredN > availableN) return false;
+
     // If in MDE mode, must have an MDE estimate
     if (
       (data.sampleSizeOption === PowerCheckOption.ENTER_OWN ||
@@ -67,14 +71,22 @@ const isNextEnabled = (data: ExperimentFormData) => {
 
 const getNextTooltip = (data: ExperimentFormData): string | undefined => {
   if (isNextEnabled(data)) return undefined;
+
   const isFreqPreassigned = data.experimentType === 'freq_preassigned';
   if (!isFreqPreassigned) return undefined;
+
+  const power = Number(data.power);
+  if (isNaN(power) || power < 50 || power > 99) return 'Please enter a valid power value (50-99).';
+
   if (!data.powerCheckResponse) return 'Please run a power check first.';
+
   if (data.desiredN === undefined || data.desiredN === 0) return 'Please select a sample size.';
+
   const availableN = getPrimaryAnalysisAvailableN(data);
   if (availableN !== undefined && data.desiredN > availableN) {
-    return `Desired N (${data.desiredN.toLocaleString()}) exceeds the available samples for the primary metric (${availableN.toLocaleString()}).`;
+    return `Desired N (${data.desiredN.toLocaleString()}) exceeds the primary metric's available samples (${availableN.toLocaleString()}).`;
   }
+
   return undefined;
 };
 
@@ -135,7 +147,6 @@ export const ExperimentFreqStackScreen = ({
       power_analyses: powerAnalyses,
       webhooks: data.selectedWebhookIds && data.selectedWebhookIds.length > 0 ? data.selectedWebhookIds : [],
     });
-    console.log('converted', createExperimentRequest);
     await triggerCreate(createExperimentRequest, { throwOnError: false });
   };
 
