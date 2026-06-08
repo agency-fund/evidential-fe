@@ -15,6 +15,13 @@ interface PowerCheckDesiredNInputProps {
   max?: number;
 }
 
+/**
+ * Semi-controlled number input with local draft state and debounced commits.
+ *
+ * - `value`: external sync/reset string (e.g. when parent changes desiredN from outside typing).
+ * - `onChange`: latest ref called after debounce delay with a parsed positive integer, or
+ * `undefined` for empty/invalid input.
+ */
 export function PowerCheckDesiredNInput({ value, onChange, max }: PowerCheckDesiredNInputProps) {
   const [draftN, setDraftN] = useState(value);
   // Guard against the onChange function changing between debounce calls with a ref.

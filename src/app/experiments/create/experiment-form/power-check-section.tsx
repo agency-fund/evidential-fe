@@ -19,7 +19,6 @@ import { CheckCircledIcon, CrossCircledIcon, LightningBoltIcon } from '@radix-ui
 import { ExperimentFormData } from './experiment-form-def';
 import { PowerCheckOption } from './experiment-form-types';
 import { usePowerCheck } from '@/api/admin';
-import { PowerResponseOutput } from '@/api/methods.schemas';
 import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ZodError } from 'zod';
@@ -29,12 +28,7 @@ import { SectionCard } from '@/components/ui/cards/section-card';
 export type PowerCheckSectionAction =
   | { type: 'set-confidence'; value: string }
   | { type: 'set-power'; value: string }
-  | {
-      type: 'set-power-check-response';
-      sampleSizeOption: PowerCheckOption;
-      desiredN?: number;
-      response?: PowerResponseOutput;
-    };
+  | ({ type: 'set-power-check-response' } & PowerCheckSampleOptionChange);
 
 interface PowerCheckSectionProps {
   data: ExperimentFormData;
@@ -318,7 +312,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                 desiredN={data.desiredN}
                 mdePowerCheckResponse={data.mdePowerCheckResponse}
                 makeDesignSpec={(desiredN) => convertToFrequentistDesignSpec({ ...data, desiredN })}
-                onSampleOptionChange={handleSampleOptionChange}
+                onOptionChange={handleSampleOptionChange}
               />
             </Flex>
           </Flex>
