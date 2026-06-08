@@ -1,0 +1,223 @@
+'use client';
+
+import { Badge, Flex, RadioCards, Spinner, Text } from '@radix-ui/themes';
+import { usePowerCheck } from '@/api/admin';
+import { AnyFrequentistDesignSpecInput, PowerResponseOutput } from '@/api/methods.schemas';
+import { PowerCheckDesiredNInput } from './power-check-desired-n-input';
+import { PowerCheckOption } from './experiment-form-types';
+
+export type PowerCheckSampleOptionChange = {
+  sampleSizeOption: PowerCheckOption;
+  desiredN: number | undefined;
+  response: PowerResponseOutput | undefined;
+};
+
+interface PowerCheckSampleSizeSelectorProps {
+  datasourceId: string;
+  selectedSampleOption: PowerCheckOption;
+  primaryMetricFieldName: string;
+  /** Values for display in sample size mode (USE_POWER_CHECK) */
+  powerCheckResponse: PowerResponseOutput;
+  targetMde?: string;
+  /**
+   * Values for display in MDE mode (USE_ALL_NON_NULL_SAMPLES or ENTER_OWN).
+   * desiredN should always correspond to the mdePowerCheckResponse if it exists.
+   */
+  mdePowerCheckResponse?: PowerResponseOutput;
+  desiredN?: number;
+  /** Used for making MDE estimates. Creates a design spec for the given desired N. */
+  makeDesignSpec: (desiredN: number) => AnyFrequentistDesignSpecInput;
+  /**
+   * Handles both the radio button selection immediately and any async MDE estimation request
+   * corresponding to the selection.
+   */
+  onSampleOptionChange: (change: PowerCheckSampleOptionChange) => void;
+}
+
+interface EstimatedMdeBadgeProps {
+  isSelectedOption: boolean;
+  isEstimatingMde: boolean;
+  estimatedMdePct: string | undefined;
+  error: Error | undefined;
+}
+
+function EstimatedMdeBadge({ isSelectedOption, isEstimatingMde, estimatedMdePct, error }: EstimatedMdeBadgeProps) {
+  return (
+    <Flex align="center" style={{ minHeight: '24px' }}>
+      {isSelectedOption &&
+        (isEstimatingMde ? (
+          <Badge color="purple" variant="soft" size="2">
+            Estimated MDE: …
+            <Spinner size="1" />
+          </Badge>
+        ) : estimatedMdePct !== undefined ? (
+          <Badge color="purple" variant="soft" size="2">
+            Estimated MDE: {estimatedMdePct}%
+          </Badge>
+        ) : error ? (
+          <Badge color="red" variant="soft" size="2">
+            MDE Error
+          </Badge>
+        ) : null)}
+    </Flex>
+  );
+}
+
+// Reponsible for making MDE estimates if the user selects a sample size other than the minimum
+// sample size (USE_POWER_CHECK).
+export function PowerCheckSampleSizeSelector({
+  datasourceId,
+  selectedSampleOption,
+  primaryMetricFieldName,
+  powerCheckResponse,
+  targetMde,
+  mdePowerCheckResponse,
+  desiredN,
+  makeDesignSpec,
+  onSampleOptionChange,
+}: PowerCheckSampleSizeSelectorProps) {
+  const {
+    trigger: triggerEstimateMde,
+    isMutating: isEstimatingMde,
+    error,
+  } = usePowerCheck(datasourceId, {
+    swr: { swrKey: `${datasourceId}/power/mde-estimate/${desiredN}` },
+  });
+
+  const primaryAnalysis = powerCheckResponse.analyses.find((a) => a.metric_spec.field_name === primaryMetricFieldName);
+  const targetN = primaryAnalysis?.target_n ?? undefined;
+  const nonNullSamples = primaryAnalysis?.metric_spec.available_nonnull_n ?? 0;
+  const allSamples = primaryAnalysis?.metric_spec.available_n ?? 0;
+
+  const mdePrimaryAnalysis = mdePowerCheckResponse?.analyses.find(
+    (a) => a.metric_spec.field_name === primaryMetricFieldName,
+  );
+  const estimatedMdePct =
+    mdePrimaryAnalysis === undefined
+      ? undefined
+      : mdePrimaryAnalysis.pct_change_with_desired_n != null
+        ? (mdePrimaryAnalysis.pct_change_with_desired_n * 100).toFixed(1)
+        : 'N/A';
+
+  const estimateMde = (forOption: PowerCheckOption, desiredN: number) => {
+    const designSpec = makeDesignSpec(desiredN);
+    void (async () => {
+      const response = await triggerEstimateMde({ design_spec: designSpec });
+      // Always dispatch the result even if stale; let the reducer handle it.
+      onSampleOptionChange({
+        sampleSizeOption: forOption,
+        desiredN: designSpec.desired_n ?? undefined,
+        response,
+      });
+    })();
+  };
+
+  /**
+   * We immediately report back the selected option, the desiredN if appropriate for the option, and
+   * its current estimate if it doesn't need updating. If the cached response doesn't match the desiredN,
+   * we also kick off an MDE estimate for the new desiredN.
+   */
+  const handleOptionChange = (option: PowerCheckOption) => {
+    switch (option) {
+      case PowerCheckOption.NONE:
+        onSampleOptionChange({ sampleSizeOption: option, desiredN: undefined, response: powerCheckResponse });
+        break;
+      case PowerCheckOption.USE_POWER_CHECK:
+        onSampleOptionChange({ sampleSizeOption: option, desiredN: targetN, response: powerCheckResponse });
+        break;
+      case PowerCheckOption.USE_ALL_NON_NULL_SAMPLES:
+        onSampleOptionChange({
+          sampleSizeOption: option,
+          desiredN: nonNullSamples,
+          response: undefined,
+        });
+        estimateMde(option, nonNullSamples);
+        break;
+      case PowerCheckOption.ENTER_OWN:
+        onSampleOptionChange({
+          sampleSizeOption: option,
+          desiredN: desiredN,
+          response: undefined,
+        });
+        if (desiredN !== undefined) {
+          estimateMde(option, desiredN);
+        }
+        break;
+    }
+  };
+
+  const handleDesiredNChange = (validN: number | undefined) => {
+    if (
+      selectedSampleOption === PowerCheckOption.ENTER_OWN &&
+      validN !== undefined &&
+      (validN !== desiredN || mdePowerCheckResponse === undefined)
+    ) {
+      // Notify parent that we want a new desiredN.
+      onSampleOptionChange({
+        sampleSizeOption: selectedSampleOption,
+        desiredN: validN,
+        response: undefined,
+      });
+      estimateMde(PowerCheckOption.ENTER_OWN, validN);
+    }
+  };
+
+  return (
+    <RadioCards.Root columns="1" value={selectedSampleOption} onValueChange={handleOptionChange}>
+      <Flex direction={'row'} gap={'3'} justify={'between'}>
+        <RadioCards.Item
+          value={PowerCheckOption.USE_POWER_CHECK}
+          disabled={targetN === undefined || targetN === 0 || targetN > allSamples}
+        >
+          <Flex align="center" direction="column" gap="2">
+            <Text size="2">Use minimum sample required:</Text>
+            <Flex height="32px" align="center">
+              <Text size="2">{targetN ?? 'N/A'}</Text>
+            </Flex>
+            <Flex align="center" style={{ minHeight: '24px' }}>
+              {targetMde !== undefined ? (
+                <Badge color="purple" variant="soft" size="2">
+                  Target MDE: {targetMde}%
+                </Badge>
+              ) : null}
+            </Flex>
+          </Flex>
+        </RadioCards.Item>
+        <RadioCards.Item
+          value={PowerCheckOption.USE_ALL_NON_NULL_SAMPLES}
+          disabled={nonNullSamples === undefined || nonNullSamples === 0}
+        >
+          <Flex align="center" direction="column" gap="2">
+            <Text size="2">Use all available non-null samples:</Text>
+            <Flex height="32px" align="center">
+              <Text size="2">{nonNullSamples ?? 'N/A'}</Text>
+            </Flex>
+
+            <EstimatedMdeBadge
+              isSelectedOption={selectedSampleOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES}
+              isEstimatingMde={isEstimatingMde}
+              estimatedMdePct={estimatedMdePct}
+              error={error}
+            />
+          </Flex>
+        </RadioCards.Item>
+        <RadioCards.Item value={PowerCheckOption.ENTER_OWN} disabled={allSamples === undefined || allSamples === 0}>
+          <Flex align="center" direction="column" gap="2" style={{ pointerEvents: 'auto' }}>
+            <Text size="2">Use custom sample size:</Text>
+            <PowerCheckDesiredNInput
+              value={String(desiredN ?? '')}
+              onChange={handleDesiredNChange}
+              max={allSamples ?? undefined}
+            />
+            <EstimatedMdeBadge
+              isSelectedOption={selectedSampleOption === PowerCheckOption.ENTER_OWN}
+              isEstimatingMde={isEstimatingMde}
+              estimatedMdePct={estimatedMdePct}
+              error={error}
+            />
+          </Flex>
+        </RadioCards.Item>
+      </Flex>
+    </RadioCards.Root>
+  );
+}

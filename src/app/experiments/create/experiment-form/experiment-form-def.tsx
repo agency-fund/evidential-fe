@@ -556,24 +556,36 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           };
         }
         if (msg.type === 'set-power-check-response') {
-          return {
-            ...data,
-            powerCheckResponse: msg.response,
-            desiredN: msg.desiredN,
-            sampleSizeOption: msg.sampleSizeOption,
-          };
-        }
-        if (msg.type === 'set-custom-power-check-response') {
-          return { ...data, mdePowerCheckResponse: msg.response, desiredN: msg.desiredN };
-        }
-        if (msg.type === 'set-chosen-n') {
-          // If the desiredN changes due to user selection, reset the stored MDE estimate response.
-          return {
-            ...data,
-            desiredN: msg.desiredN,
-            sampleSizeOption: msg.sampleSizeOption,
-            mdePowerCheckResponse: msg.mdePowerCheckResponse,
-          };
+          const isMdeEstimateResponse =
+            msg.sampleSizeOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES ||
+            msg.sampleSizeOption === PowerCheckOption.ENTER_OWN;
+          if (
+            isMdeEstimateResponse &&
+            msg.response !== undefined &&
+            (msg.sampleSizeOption !== data.sampleSizeOption || msg.desiredN !== data.desiredN)
+          ) {
+            // Stale MDE estimate response, so ignore the message.
+            return data;
+          }
+
+          switch (msg.sampleSizeOption) {
+            case PowerCheckOption.NONE:
+            case PowerCheckOption.USE_POWER_CHECK:
+              return {
+                ...data,
+                sampleSizeOption: msg.sampleSizeOption,
+                desiredN: msg.desiredN,
+                powerCheckResponse: msg.response,
+              };
+            case PowerCheckOption.USE_ALL_NON_NULL_SAMPLES:
+            case PowerCheckOption.ENTER_OWN:
+              return {
+                ...data,
+                sampleSizeOption: msg.sampleSizeOption,
+                desiredN: msg.desiredN,
+                mdePowerCheckResponse: msg.response,
+              };
+          }
         }
         if (msg.type === 'set-create-error') {
           return { ...data, createExperimentError: msg.response, createExperimentResponse: undefined };

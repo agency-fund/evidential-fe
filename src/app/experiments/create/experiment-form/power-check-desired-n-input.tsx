@@ -1,7 +1,7 @@
 'use client';
 
 import { TextField } from '@radix-ui/themes';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDebounced } from '@/providers/use-debounced';
 
 function getValidDraftN(input: string): number | undefined {
@@ -17,15 +17,19 @@ interface PowerCheckDesiredNInputProps {
 
 export function PowerCheckDesiredNInput({ value, onChange, max }: PowerCheckDesiredNInputProps) {
   const [draftN, setDraftN] = useState(value);
+  // Guard against the onChange function changing between debounce calls with a ref.
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
   const debouncedValidN = useDebounced(getValidDraftN(draftN), 400);
 
+  // Allow updates to the input due to prop changes, as can happen if the user chose all samples.
   useEffect(() => {
     setDraftN(value);
   }, [value]);
 
   useEffect(() => {
-    onChange(debouncedValidN);
-  }, [debouncedValidN, onChange]);
+    onChangeRef.current(debouncedValidN);
+  }, [debouncedValidN]);
 
   return (
     <TextField.Root

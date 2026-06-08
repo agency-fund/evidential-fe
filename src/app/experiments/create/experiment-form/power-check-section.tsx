@@ -9,13 +9,12 @@ import {
   Flex,
   Grid,
   Heading,
-  RadioCards,
   Spinner,
   Table,
   Text,
   TextField,
 } from '@radix-ui/themes';
-import { PowerCheckDesiredNInput } from './power-check-desired-n-input';
+import { PowerCheckSampleOptionChange, PowerCheckSampleSizeSelector } from './power-check-sample-size-selector';
 import { CheckCircledIcon, CrossCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData } from './experiment-form-def';
 import { PowerCheckOption } from './experiment-form-types';
@@ -24,7 +23,7 @@ import { PowerResponseOutput } from '@/api/methods.schemas';
 import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ZodError } from 'zod';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { SectionCard } from '@/components/ui/cards/section-card';
 
 export type PowerCheckSectionAction =
@@ -32,17 +31,10 @@ export type PowerCheckSectionAction =
   | { type: 'set-power'; value: string }
   | {
       type: 'set-power-check-response';
-      response: PowerResponseOutput;
-      desiredN?: number;
-      sampleSizeOption?: PowerCheckOption;
-    }
-  | {
-      type: 'set-chosen-n';
-      desiredN: number | undefined;
       sampleSizeOption: PowerCheckOption;
-      mdePowerCheckResponse?: PowerResponseOutput;
-    }
-  | { type: 'set-custom-power-check-response'; response: PowerResponseOutput; desiredN: number };
+      desiredN?: number;
+      response?: PowerResponseOutput;
+    };
 
 interface PowerCheckSectionProps {
   data: ExperimentFormData;
@@ -82,75 +74,9 @@ function RunPowerCheckButton({ enabled, onClick, loading }: PowerCheckButtonProp
 
 export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const { trigger: triggerEstimateSampleSize, isMutating, error } = usePowerCheck(data.datasourceId!);
-  // Separate mutation with a distinct SWR key so it doesn't share cache or conflict with the
-  // main power-check mutation above. Reused for both ENTER_OWN and USE_ALL_NON_NULL_SAMPLES:
-  // the two effects are mutually exclusive (only one option is active at a time).
-  const { trigger: triggerEstimateMde, isMutating: isEstimatingMde } = usePowerCheck(data.datasourceId!, {
-    swr: { swrKey: `${data.datasourceId}/power/mde-estimate` },
-  });
   const [validationError, setValidationError] = useState<ZodError | null>(null);
-  // Local draft state for the custom N input, separate from data.desiredN so that we can validate
-  // and debounce it before making our API call. Pre-filled from data.desiredN when returning to
-  // this screen (used for both ENTER_OWN and USE_ALL_NON_NULL_SAMPLES since both commit desiredN).
-  const [draftN, setDraftN] = useState<string>(() => {
-    const isMdeMode =
-      data.sampleSizeOption === PowerCheckOption.ENTER_OWN ||
-      data.sampleSizeOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES;
-    return isMdeMode && data.desiredN !== undefined ? String(data.desiredN) : '';
-  });
-  const [debouncedValidDraftN, setDebouncedValidDraftN] = useState<number | undefined>(undefined);
-
-  const primaryAnalysis = data.powerCheckResponse?.analyses.find(
-    (a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
-  );
-  const powerCheckTargetN = primaryAnalysis?.target_n ?? undefined;
-  const nonNullSamples = primaryAnalysis?.metric_spec.available_nonnull_n ?? 0;
-  const allSamples = primaryAnalysis?.metric_spec.available_n ?? 0;
-  const selectedSampleOption = data.sampleSizeOption ?? PowerCheckOption.USE_POWER_CHECK;
-  // Both ENTER_OWN and USE_ALL_NON_NULL_SAMPLES flow through the same debounced estimate —
-  // USE_ALL_NON_NULL_SAMPLES just auto-populates draftN with its fixed value.
-  const shouldEstimateMde =
-    (selectedSampleOption === PowerCheckOption.ENTER_OWN ||
-      selectedSampleOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES) &&
-    debouncedValidDraftN !== undefined;
-
-  const mdePrimaryAnalysis = data.mdePowerCheckResponse?.analyses.find(
-    (a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
-  );
-  const estimatedMdePct =
-    mdePrimaryAnalysis?.pct_change_with_desired_n != null
-      ? (mdePrimaryAnalysis.pct_change_with_desired_n * 100).toFixed(1)
-      : 'N/A';
 
   const { enabled } = isPowerCheckButtonEnabled(isMutating, data); // TODO: present reason field
-
-  // Maintain a ref to the latest form data for the MDE estimation useEffect to avoid making `data`
-  // a dependency, which otherwise would cause an infinite request loop, as the useEffect dispatches
-  // updates to `data.mdePowerCheckResponse`.
-  const dataRef = useRef(data);
-  dataRef.current = data;
-
-  // Triggers an MDE estimate with the debounced draftN (used by both ENTER_OWN and USE_ALL_NON_NULL_SAMPLES).
-  // `dispatch` and `triggerEstimateMde` are stable references (useCallback / useSWRMutation).
-  useEffect(() => {
-    if (!shouldEstimateMde || debouncedValidDraftN === undefined) return;
-
-    let cancelled = false;
-    // Capture the active option so a response arriving after a mode switch is discarded.
-    const optionAtStart = dataRef.current.sampleSizeOption;
-    void (async () => {
-      const response = await triggerEstimateMde({
-        design_spec: convertToFrequentistDesignSpec({ ...dataRef.current, desiredN: debouncedValidDraftN }),
-      });
-      if (response && !cancelled && dataRef.current.sampleSizeOption === optionAtStart) {
-        dispatch({ type: 'set-custom-power-check-response', response, desiredN: debouncedValidDraftN });
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [debouncedValidDraftN, shouldEstimateMde, triggerEstimateMde, dispatch]);
 
   const handlePowerCheck = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -176,35 +102,8 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     }
   };
 
-  const handleSampleOptionChange = (option: PowerCheckOption) => {
-    // For the MDE estimation options (USE_ALL_NON_NULL_SAMPLES and ENTER_OWN), we also reset the
-    // MDE response if the value selected differs from the current data.desiredN.
-    switch (option) {
-      case PowerCheckOption.USE_POWER_CHECK:
-        dispatch({ type: 'set-chosen-n', desiredN: powerCheckTargetN, sampleSizeOption: option });
-        break;
-      case PowerCheckOption.USE_ALL_NON_NULL_SAMPLES:
-        dispatch({
-          type: 'set-chosen-n',
-          desiredN: nonNullSamples,
-          sampleSizeOption: option,
-          mdePowerCheckResponse: data.desiredN !== nonNullSamples ? undefined : data.mdePowerCheckResponse,
-        });
-        setDraftN(String(nonNullSamples));
-        break;
-      case PowerCheckOption.ENTER_OWN:
-        dispatch({
-          type: 'set-chosen-n',
-          desiredN: debouncedValidDraftN,
-          sampleSizeOption: option,
-          mdePowerCheckResponse: data.desiredN !== debouncedValidDraftN ? undefined : data.mdePowerCheckResponse,
-        });
-        setDraftN(String(debouncedValidDraftN));
-        break;
-      case PowerCheckOption.NONE:
-        dispatch({ type: 'set-chosen-n', desiredN: undefined, sampleSizeOption: option });
-        break;
-    }
+  const handleSampleOptionChange = ({ sampleSizeOption, desiredN, response }: PowerCheckSampleOptionChange) => {
+    dispatch({ type: 'set-power-check-response', response, desiredN, sampleSizeOption });
   };
 
   const primaryPower =
@@ -410,83 +309,17 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                   </Callout.Text>
                 </Callout.Root>
               )}
-              <RadioCards.Root columns="1" value={selectedSampleOption} onValueChange={handleSampleOptionChange}>
-                <Flex direction={'row'} gap={'3'} justify={'between'}>
-                  <RadioCards.Item
-                    value={PowerCheckOption.USE_POWER_CHECK}
-                    disabled={powerCheckTargetN === undefined || powerCheckTargetN === 0}
-                  >
-                    <Flex align="center" direction="column" gap="2">
-                      <Text size="2">Use minimum sample required:</Text>
-                      <Flex height="32px" align="center">
-                        <Text size="2">{powerCheckTargetN ?? 'N/A'}</Text>
-                      </Flex>
-                      <Flex align="center" style={{ minHeight: '24px' }}>
-                        {data.primaryMetric?.mde !== undefined && (
-                          <Badge color="purple" variant="soft" size="2">
-                            Target MDE: {data.primaryMetric.mde}%
-                          </Badge>
-                        )}
-                      </Flex>
-                    </Flex>
-                  </RadioCards.Item>
-                  <RadioCards.Item
-                    value={PowerCheckOption.USE_ALL_NON_NULL_SAMPLES}
-                    disabled={nonNullSamples === undefined || nonNullSamples === 0}
-                  >
-                    <Flex align="center" direction="column" gap="2">
-                      <Text size="2">Use all available non-null samples:</Text>
-                      <Flex height="32px" align="center">
-                        <Text size="2">{nonNullSamples ?? 'N/A'}</Text>
-                      </Flex>
-
-                      <Flex align="center" style={{ minHeight: '24px' }}>
-                        {selectedSampleOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES && isEstimatingMde && (
-                          <Badge color="purple" variant="soft" size="2">
-                            Estimated MDE: …
-                            <Spinner size="1" />
-                          </Badge>
-                        )}
-                        {selectedSampleOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES &&
-                          !isEstimatingMde &&
-                          data.mdePowerCheckResponse !== undefined && (
-                            <Badge color="purple" variant="soft" size="2">
-                              Estimated MDE: {estimatedMdePct}%
-                            </Badge>
-                          )}
-                      </Flex>
-                    </Flex>
-                  </RadioCards.Item>
-                  <RadioCards.Item
-                    value={PowerCheckOption.ENTER_OWN}
-                    disabled={allSamples === undefined || allSamples === 0}
-                  >
-                    <Flex align="center" direction="column" gap="2" style={{ pointerEvents: 'auto' }}>
-                      <Text size="2">Use custom sample size:</Text>
-                      <PowerCheckDesiredNInput
-                        value={draftN}
-                        onChange={setDebouncedValidDraftN}
-                        max={allSamples ?? undefined}
-                      />
-                      <Flex align="center" style={{ minHeight: '24px' }}>
-                        {selectedSampleOption === PowerCheckOption.ENTER_OWN && isEstimatingMde && (
-                          <Badge color="purple" variant="soft" size="2">
-                            Estimated MDE: …
-                            <Spinner size="1" />
-                          </Badge>
-                        )}
-                        {selectedSampleOption === PowerCheckOption.ENTER_OWN &&
-                          !isEstimatingMde &&
-                          data.mdePowerCheckResponse !== undefined && (
-                            <Badge color="purple" variant="soft" size="2">
-                              Estimated MDE: {estimatedMdePct}%
-                            </Badge>
-                          )}
-                      </Flex>
-                    </Flex>
-                  </RadioCards.Item>
-                </Flex>
-              </RadioCards.Root>
+              <PowerCheckSampleSizeSelector
+                datasourceId={data.datasourceId!}
+                powerCheckResponse={data.powerCheckResponse}
+                primaryMetricFieldName={data.primaryMetric!.metric.field_name}
+                targetMde={data.primaryMetric?.mde}
+                selectedSampleOption={data.sampleSizeOption ?? PowerCheckOption.USE_POWER_CHECK}
+                desiredN={data.desiredN}
+                mdePowerCheckResponse={data.mdePowerCheckResponse}
+                makeDesignSpec={(desiredN) => convertToFrequentistDesignSpec({ ...data, desiredN })}
+                onSampleOptionChange={handleSampleOptionChange}
+              />
             </Flex>
           </Flex>
         </SectionCard>
