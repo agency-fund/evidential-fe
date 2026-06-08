@@ -1,6 +1,6 @@
 'use client';
-import { Fragment, useCallback, useState } from 'react';
-import { BreadcrumbInfo, NavigationSource, NavigationTask, Screen, WizardForm } from './wizard-types';
+import { Fragment, useState } from 'react';
+import { BreadcrumbInfo, NavigationSource, NavigationTask, WizardForm } from './wizard-types';
 import { DebugDrawer } from './wizard-debug-drawer';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import { WizardBreadcrumbs, WizardBreadcrumbsProvider } from './wizard-breadcrumbs-context';
@@ -142,202 +142,6 @@ type WizardProps<FormData, ScreenId extends string, InputData> = {
  }
  ```
  */
-// Props passed down from Wizard into ScreenRenderer. Kept separate from WizardProps so the
-// generic Message type can be introduced here without polluting the public Wizard API.
-type ScreenRendererProps<FormData, Message, ScreenId extends string, InputData> = {
-  screen: Screen<FormData, Message, ScreenId>;
-  data: FormData;
-  setData: React.Dispatch<React.SetStateAction<FormData>>;
-  currentScreenId: ScreenId;
-  setCurrentScreenId: React.Dispatch<React.SetStateAction<ScreenId>>;
-  isTransitioning: boolean;
-  setIsTransitioning: React.Dispatch<React.SetStateAction<boolean>>;
-  form: WizardForm<FormData, ScreenId, InputData>;
-  onSubmit?: (data: FormData) => void;
-  onPrev?: (data: FormData) => void;
-  debug?: boolean;
-};
-
-/**
- * ScreenRenderer is a proper React component that owns all per-screen rendering and navigation
- * logic. Separating it from the CPS `withScreen` callback is essential: hooks (including
- * `useCallback`) cannot be called inside a plain callback, even a synchronously-invoked one.
- * Here, `dispatch` is stabilised with `useCallback`, so screen components can safely list
- * `dispatch` in `useEffect` dependency arrays without producing infinite loops.
- */
-function ScreenRenderer<FormData, Message, ScreenId extends string, InputData>({
-  screen,
-  data,
-  setData,
-  currentScreenId,
-  setCurrentScreenId,
-  isTransitioning,
-  setIsTransitioning,
-  form,
-  onSubmit,
-  onPrev,
-  debug,
-}: ScreenRendererProps<FormData, Message, ScreenId, InputData>) {
-  // Stable dispatch: setData is guaranteed stable by useState, and screen.reducer is a
-  // module-level constant — so these deps never change after mount. Screen components can
-  // safely include dispatch in useEffect dependency arrays.
-  const dispatch = useCallback(
-    (message: Message) => {
-      console.log('handleDispatch', message);
-      setData((prev) => screen.reducer(prev, message));
-    },
-    [screen, setData],
-  );
-
-  const screenIdBreadcrumbs = screen.breadcrumbs
-    ? screen.breadcrumbs(data)
-    : form.breadcrumbs
-      ? form.breadcrumbs(data)
-      : [];
-
-  const resolvePrevScreen = (): PrevTask<ScreenId> => {
-    if (screen.prevScreen) {
-      return screen.prevScreen(data);
-    }
-    return prevFromFlow(screenIdBreadcrumbs, currentScreenId);
-  };
-
-  const resolveNextScreen = (): NextTask<ScreenId> => {
-    if (screen.nextScreen) {
-      return screen.nextScreen(data);
-    }
-    return nextFromFlow(screenIdBreadcrumbs, currentScreenId);
-  };
-
-  const runBeforeNavigateAway = async (source: NavigationSource, target: NavigationTask<ScreenId>) => {
-    if (!screen.beforeNavigateAway) {
-      return true;
-    }
-    const result = await screen.beforeNavigateAway(data, {
-      source,
-      fromScreenId: currentScreenId,
-      target,
-    });
-    return result !== false;
-  };
-
-  const executeNavigationTask = (task: Exclude<NavigationTask<ScreenId>, null>) => {
-    switch (task.type) {
-      case 'screen':
-        setCurrentScreenId(task.id);
-        break;
-      case 'submit':
-        if (onSubmit) {
-          onSubmit(data);
-        }
-        break;
-      case 'wizard-exit-left':
-        if (onPrev) {
-          onPrev(data);
-        }
-        break;
-    }
-  };
-
-  const navigateWithGuard = async (source: NavigationSource, target: NavigationTask<ScreenId>) => {
-    if (target === null || isTransitioning) {
-      return;
-    }
-
-    setIsTransitioning(true);
-    try {
-      const shouldContinue = await runBeforeNavigateAway(source, target);
-      if (!shouldContinue) {
-        return;
-      }
-      executeNavigationTask(target);
-    } finally {
-      setIsTransitioning(false);
-    }
-  };
-
-  const handleNext = async () => {
-    const task = resolveNextScreen();
-    await navigateWithGuard('next', task);
-  };
-
-  const handlePrev = async () => {
-    const task = resolvePrevScreen();
-    await navigateWithGuard('prev', task);
-  };
-
-  const handleNavigate = async (screenId: string) => {
-    await navigateWithGuard('breadcrumb', { type: 'screen', id: screenId as ScreenId });
-  };
-
-  const handleNavigateTo = async (screenId: ScreenId) => {
-    await navigateWithGuard('navigate-to', { type: 'screen', id: screenId });
-  };
-
-  const isPrevEnabled = screen.isPrevEnabled === undefined ? true : screen.isPrevEnabled(data);
-  const prevScreen = resolvePrevScreen();
-  const isNextEnabled = screen.isNextEnabled === undefined ? true : screen.isNextEnabled(data);
-  const nextScreen = resolveNextScreen();
-
-  // Determine button labels
-  const nextLabel = screen.nextButtonLabel
-    ? screen.nextButtonLabel(data)
-    : nextScreen.type === 'submit'
-      ? 'Submit'
-      : 'Next';
-  const prevLabel = screen.prevButtonLabel ? screen.prevButtonLabel(data) : 'Back';
-
-  // Check if navigation should be hidden
-  const hideNav = screen.hideNavigation?.(data) ?? false;
-
-  // Get tooltip message for next button
-  const nextButtonTooltip = screen.nextButtonTooltip?.(data) ?? undefined;
-
-  const breadcrumbs: Array<BreadcrumbInfo> = screenIdBreadcrumbs.map((v): BreadcrumbInfo => {
-    return form.screens[v].withScreen((s) => ({
-      type: 'screen',
-      screenId: v,
-      label: s.breadcrumbTitle ?? v,
-      clickable: s.isBreadcrumbClickable === undefined ? true : s.isBreadcrumbClickable(data),
-    }));
-  });
-
-  return (
-    <Box style={{ paddingBottom: debug ? '45vh' : undefined }}>
-      <WizardBreadcrumbsProvider
-        breadcrumbs={breadcrumbs}
-        currentScreenId={currentScreenId}
-        onNavigate={handleNavigate}
-      >
-        <Fragment key={currentScreenId}>
-          <Flex direction={'column'} gap={'3'}>
-            <WizardBreadcrumbs />
-            <screen.render
-              data={data}
-              dispatch={dispatch}
-              navigateNext={handleNext}
-              navigatePrev={handlePrev}
-              navigateTo={handleNavigateTo}
-            />
-            {!hideNav && (
-              <NavigationButtons
-                onPrev={prevScreen ? handlePrev : undefined}
-                onNext={nextScreen ? handleNext : undefined}
-                prevLabel={prevLabel}
-                nextLabel={nextLabel}
-                prevDisabled={!isPrevEnabled || isTransitioning}
-                nextDisabled={!isNextEnabled || isTransitioning}
-                nextTooltipContent={nextButtonTooltip}
-              />
-            )}
-          </Flex>
-        </Fragment>
-      </WizardBreadcrumbsProvider>
-      {debug && <DebugDrawer data={data} breadcrumbs={breadcrumbs} currentScreenId={currentScreenId} />}
-    </Box>
-  );
-}
-
 export function Wizard<FormData, ScreenId extends string, InputData>({
   form,
   onSubmit,
@@ -349,24 +153,159 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
   const [currentScreenId, setCurrentScreenId] = useState<ScreenId>(() => form.initialScreenId(data));
   const [isTransitioning, setIsTransitioning] = useState(false);
 
+  // Get current packed screen by id (direct object access instead of array.find)
   const currentPackedScreen = form.screens[currentScreenId];
 
-  // withScreen is used here only to unwrap the CPS-encoded existential type so TypeScript knows
-  // the Message type of the current screen. All rendering and state logic lives in ScreenRenderer,
-  // which is a proper React component where hooks (e.g. useCallback for dispatch) work correctly.
-  return currentPackedScreen.withScreen((screen) => (
-    <ScreenRenderer
-      screen={screen}
-      data={data}
-      setData={setData}
-      currentScreenId={currentScreenId}
-      setCurrentScreenId={setCurrentScreenId}
-      isTransitioning={isTransitioning}
-      setIsTransitioning={setIsTransitioning}
-      form={form}
-      onSubmit={onSubmit}
-      onPrev={onPrev}
-      debug={debug}
-    />
-  ));
+  // Use CPS pattern to render the screen with full type safety
+  return currentPackedScreen.withScreen((screen) => {
+    const handleDispatch = (message: Parameters<typeof screen.reducer>[1]) => {
+      setData((prev) => screen.reducer(prev, message));
+    };
+
+    const screenIdBreadcrumbs = screen.breadcrumbs
+      ? screen.breadcrumbs(data)
+      : form.breadcrumbs
+        ? form.breadcrumbs(data)
+        : [];
+    const resolvePrevScreen = (): PrevTask<ScreenId> => {
+      if (screen.prevScreen) {
+        return screen.prevScreen(data);
+      }
+      return prevFromFlow(screenIdBreadcrumbs, currentScreenId);
+    };
+    const resolveNextScreen = (): NextTask<ScreenId> => {
+      if (screen.nextScreen) {
+        return screen.nextScreen(data);
+      }
+      return nextFromFlow(screenIdBreadcrumbs, currentScreenId);
+    };
+
+    const runBeforeNavigateAway = async (source: NavigationSource, target: NavigationTask<ScreenId>) => {
+      if (!screen.beforeNavigateAway) {
+        return true;
+      }
+      const result = await screen.beforeNavigateAway(data, {
+        source,
+        fromScreenId: currentScreenId,
+        target,
+      });
+      return result !== false;
+    };
+
+    const executeNavigationTask = (task: Exclude<NavigationTask<ScreenId>, null>) => {
+      switch (task.type) {
+        case 'screen':
+          setCurrentScreenId(task.id);
+          break;
+        case 'submit':
+          if (onSubmit) {
+            onSubmit(data);
+          }
+          break;
+        case 'wizard-exit-left':
+          if (onPrev) {
+            onPrev(data);
+          }
+          break;
+      }
+    };
+
+    const navigateWithGuard = async (source: NavigationSource, target: NavigationTask<ScreenId>) => {
+      if (target === null || isTransitioning) {
+        return;
+      }
+
+      setIsTransitioning(true);
+      try {
+        const shouldContinue = await runBeforeNavigateAway(source, target);
+        if (!shouldContinue) {
+          return;
+        }
+        executeNavigationTask(target);
+      } finally {
+        setIsTransitioning(false);
+      }
+    };
+
+    const handleNext = async () => {
+      const task = resolveNextScreen();
+      await navigateWithGuard('next', task);
+    };
+
+    const handlePrev = async () => {
+      const task = resolvePrevScreen();
+      await navigateWithGuard('prev', task);
+    };
+
+    const handleNavigate = async (screenId: string) => {
+      await navigateWithGuard('breadcrumb', { type: 'screen', id: screenId as ScreenId });
+    };
+
+    const handleNavigateTo = async (screenId: ScreenId) => {
+      await navigateWithGuard('navigate-to', { type: 'screen', id: screenId });
+    };
+
+    const isPrevEnabled = screen.isPrevEnabled === undefined ? true : screen.isPrevEnabled(data);
+    const prevScreen = resolvePrevScreen();
+    const isNextEnabled = screen.isNextEnabled === undefined ? true : screen.isNextEnabled(data);
+    const nextScreen = resolveNextScreen();
+
+    // Determine button labels
+    const nextLabel = screen.nextButtonLabel
+      ? screen.nextButtonLabel(data)
+      : nextScreen.type === 'submit'
+        ? 'Submit'
+        : 'Next';
+    const prevLabel = screen.prevButtonLabel ? screen.prevButtonLabel(data) : 'Back';
+
+    // Check if navigation should be hidden
+    const hideNav = screen.hideNavigation?.(data) ?? false;
+
+    // Get tooltip message for next button
+    const nextButtonTooltip = screen.nextButtonTooltip?.(data) ?? undefined;
+
+    const breadcrumbs: Array<BreadcrumbInfo> = screenIdBreadcrumbs.map((v): BreadcrumbInfo => {
+      return form.screens[v].withScreen((s) => ({
+        type: 'screen',
+        screenId: v,
+        label: s.breadcrumbTitle ?? v,
+        clickable: s.isBreadcrumbClickable === undefined ? true : s.isBreadcrumbClickable(data),
+      }));
+    });
+
+    return (
+      <Box style={{ paddingBottom: debug ? '45vh' : undefined }}>
+        <WizardBreadcrumbsProvider
+          breadcrumbs={breadcrumbs}
+          currentScreenId={currentScreenId}
+          onNavigate={handleNavigate}
+        >
+          <Fragment key={currentScreenId}>
+            <Flex direction={'column'} gap={'3'}>
+              <WizardBreadcrumbs />
+              <screen.render
+                data={data}
+                dispatch={handleDispatch}
+                navigateNext={handleNext}
+                navigatePrev={handlePrev}
+                navigateTo={handleNavigateTo}
+              />
+              {!hideNav && (
+                <NavigationButtons
+                  onPrev={prevScreen ? handlePrev : undefined}
+                  onNext={nextScreen ? handleNext : undefined}
+                  prevLabel={prevLabel}
+                  nextLabel={nextLabel}
+                  prevDisabled={!isPrevEnabled || isTransitioning}
+                  nextDisabled={!isNextEnabled || isTransitioning}
+                  nextTooltipContent={nextButtonTooltip}
+                />
+              )}
+            </Flex>
+          </Fragment>
+        </WizardBreadcrumbsProvider>
+        {debug && <DebugDrawer data={data} breadcrumbs={breadcrumbs} currentScreenId={currentScreenId} />}
+      </Box>
+    );
+  });
 }
