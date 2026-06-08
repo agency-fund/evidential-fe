@@ -42,7 +42,7 @@ export function IntegrationGuideDialog({
   contexts,
 }: IntegrationGuideDialogProps) {
   const [open, setOpen] = useState(false);
-  const [showTurnConfig, setShowTurnConfig] = useState(false);
+  const [showTurnConfig, setShowTurnConfig] = useState(true);
   const [armJourneyDraft, setArmJourneyDraft] = useState<Record<string, string>>({});
   const [staleArmIds, setStaleArmIds] = useState<string[]>([]); // List of arm IDs that have stale mappings
 
@@ -253,7 +253,7 @@ export function IntegrationGuideDialog({
                     <Flex align="center" justify="between">
                       <Flex align="center" gap="2">
                         <GearIcon />
-                        <Text size="2" weight="medium">
+                        <Text size="2" weight="medium" color={staleArmIds.length > 0 ? 'red' : 'black'}>
                           Configure integration for third-party tools
                         </Text>
                       </Flex>
@@ -322,7 +322,7 @@ export function IntegrationGuideDialog({
                                       </Select.Root>
                                       {staleArmIds.includes(armId) && (
                                         <Tooltip content="This arm's mapping is stale. Please re-select a journey and save to update.">
-                                          <ExclamationTriangleIcon color="red" />
+                                          <ExclamationTriangleIcon color="red" width="24" height="24" />
                                         </Tooltip>
                                       )}
                                     </Flex>
