@@ -13,6 +13,7 @@ import {
   Table,
   Text,
   TextField,
+  Tooltip,
 } from '@radix-ui/themes';
 import { PowerCheckSampleOptionChange, PowerCheckSampleSizeSelector } from './power-check-sample-size-selector';
 import { CheckCircledIcon, CrossCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
@@ -54,10 +55,11 @@ interface PowerCheckButtonProps {
   enabled: boolean;
   onClick: (event: React.MouseEvent<HTMLButtonElement>) => Promise<void>;
   loading: boolean;
+  disabledReason?: string;
 }
 
-function RunPowerCheckButton({ enabled, onClick, loading }: PowerCheckButtonProps) {
-  return (
+function RunPowerCheckButton({ enabled, onClick, loading, disabledReason }: PowerCheckButtonProps) {
+  const button = (
     <Button disabled={!enabled} onClick={onClick} style={{ minWidth: '25%' }}>
       <Spinner loading={loading}>
         <LightningBoltIcon />
@@ -65,13 +67,22 @@ function RunPowerCheckButton({ enabled, onClick, loading }: PowerCheckButtonProp
       Estimate Sample Size
     </Button>
   );
+
+  const tooltipContent = !enabled
+    ? disabledReason
+    : "Calculates the minimum number of participants needed to be able to detect your primary metric's minimum effect.";
+
+  return (
+    <Tooltip content={tooltipContent} side="top" align="center">
+      {button}
+    </Tooltip>
+  );
 }
 
 export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
-  const { trigger: triggerEstimateSampleSize, isMutating, error } = usePowerCheck(data.datasourceId!);
   const [validationError, setValidationError] = useState<ZodError | null>(null);
-
-  const { enabled } = isPowerCheckButtonEnabled(isMutating, data); // TODO: present reason field
+  const { trigger: triggerEstimateSampleSize, isMutating, error } = usePowerCheck(data.datasourceId!);
+  const { enabled, reason } = isPowerCheckButtonEnabled(isMutating, data);
 
   const handlePowerCheck = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -97,12 +108,12 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     }
   };
 
-  const handleSampleOptionChange = ({ sampleSizeOption, desiredN, response }: PowerCheckSampleOptionChange) => {
-    dispatch({ type: 'set-chosen-n', response, desiredN, sampleSizeOption });
+  const handleEstimatedMDEChange = ({ sampleSizeOption, desiredN, response }: PowerCheckSampleOptionChange) => {
+    dispatch({ type: 'set-power-check-response', sampleSizeOption, desiredN, response });
   };
 
-  const handleEstimatedMDEChange = ({ sampleSizeOption, desiredN, response }: PowerCheckSampleOptionChange) => {
-    dispatch({ type: 'set-power-check-response', response, desiredN, sampleSizeOption });
+  const handleSampleOptionChange = ({ sampleSizeOption, desiredN, response }: PowerCheckSampleOptionChange) => {
+    dispatch({ type: 'set-chosen-n', sampleSizeOption, desiredN, response });
   };
 
   const primaryPower =
@@ -145,7 +156,12 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
       <SectionCard title="Analysis">
         <Flex direction="column" gap="3" align="center">
-          <RunPowerCheckButton enabled={enabled} onClick={handlePowerCheck} loading={isMutating} />
+          <RunPowerCheckButton
+            enabled={enabled}
+            onClick={handlePowerCheck}
+            loading={isMutating}
+            disabledReason={reason}
+          />
 
           {error && (
             <Flex align="center" gap="2">
