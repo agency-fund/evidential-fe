@@ -42,7 +42,7 @@ interface PowerCheckSampleSizeSelectorProps {
    */
   onOptionChange: (change: PowerCheckSampleOptionChange) => void;
   /**
-   * Called on completion of any async MDE estimation request.
+   * Called on successful completion of any async MDE estimation request.
    * Parent is responsible for handling potentially stale responses.
    */
   onEstimatedMDEChange: (change: PowerCheckSampleOptionChange) => void;
@@ -99,7 +99,7 @@ export function PowerCheckSampleSizeSelector({
     isMutating: isEstimatingMde,
     error,
   } = usePowerCheck(datasourceId, {
-    swr: { swrKey: `${datasourceId}/power/mde-estimate/${desiredN}` },
+    swr: { swrKey: `${datasourceId}/power/mde-estimate` },
   });
 
   const primaryAnalysis = powerCheckResponse.analyses.find((a) => a.metric_spec.field_name === primaryMetricFieldName);
@@ -120,12 +120,17 @@ export function PowerCheckSampleSizeSelector({
   /**
    * Estimates may trigger on option selection or custom desired n entry.
    *
-   * We always dispatch the result even if stale, letting the parent handle it.
+   * We always dispatch a valid response even if stale, letting the parent handle it.
    */
   const estimateMde = (sampleSizeOption: PowerCheckOption, desiredN: number) => {
     const designSpec = makeDesignSpec(desiredN);
     void (async () => {
       const response = await triggerEstimateMde({ design_spec: designSpec });
+      if (!response) {
+        // Can happen if this request has gone stale and failed, superceded by a more recent request.
+        // Stale requests that succeed will be handled by the parent.
+        return;
+      }
       onEstimatedMDEChange({ sampleSizeOption, desiredN, response });
     })();
   };
