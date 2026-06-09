@@ -1,6 +1,6 @@
 'use client';
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
+import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { Box, Flex, Separator, Text, TextArea, TextField } from '@radix-ui/themes';
 import { SelectWebhooksSection } from '@/app/experiments/create/experiment-form/select-webhooks-section';
 

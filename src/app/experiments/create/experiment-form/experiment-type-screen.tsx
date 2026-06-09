@@ -3,7 +3,7 @@ import {
   ExperimentFormData,
   ExperimentScreenId,
   ExperimentType,
-} from '@/app/experiments/create/experiment-form/experiment-form-def';
+} from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { Badge, Flex, RadioCards, Text } from '@radix-ui/themes';
 import { ExperimentTypeOptions } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
+import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { ErrorType } from '@/services/orval-fetch';
 import { ExperimentConfirmationDisplayProps } from '@/components/features/experiments/experiment-confirmation-display';
 import { ExperimentsSummarizeScreenBase } from '@/app/experiments/create/experiment-form/experiment-summarize-screen-base';

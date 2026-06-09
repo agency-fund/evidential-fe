@@ -3,18 +3,25 @@ import {
   CMABExperimentSpecInputExperimentType,
   CMABExperimentSpecOutput,
   ContextType,
+  CreateExperimentResponse,
+  DesignSpecInput,
   DesignSpecOutput,
   ExperimentConfig,
+  FieldMetadata,
+  FilterInput,
   GetExperimentResponse,
+  GetFiltersResponseElement,
   GetMetricsResponseElement,
   MABExperimentSpecInput,
   MABExperimentSpecInputExperimentType,
   MABExperimentSpecOutput,
   OnlineFrequentistExperimentSpecInputExperimentType,
   OnlineFrequentistExperimentSpecOutput,
+  PowerResponseOutput,
   PreassignedFrequentistExperimentSpecInputExperimentType,
   PreassignedFrequentistExperimentSpecOutput,
 } from '@/api/methods.schemas';
+import { ErrorType } from '@/services/orval-fetch';
 
 // export type ContextVariableType2 = ContextSpec['value_type'];
 export type ContextVariableType = ContextType;
@@ -75,6 +82,71 @@ export type MetricWithMDE = {
   metric: GetMetricsResponseElement;
   mde: string; // desired minimum detectable effect as a percentage of the metric's baseline value
 };
+
+export type ExperimentType = DesignSpecInput['experiment_type'];
+
+// Defines the entirety of the editable data collected via this wizard flow.
+export type ExperimentFormData = {
+  // experiment-metadata-screen
+  name?: string;
+  hypothesis?: string;
+  designUrl?: string;
+  startDate?: string;
+  endDate?: string;
+
+  // experiment-type-screen
+  experimentType?: ExperimentType;
+
+  // experiment-select-datasource-screen
+  datasourceId?: string;
+  tableName?: string;
+
+  // experiment-freq-stack-screen
+  primaryKey?: string;
+  primaryMetric?: MetricWithMDE;
+  secondaryMetrics?: MetricWithMDE[];
+  filters?: FilterInput[];
+  // Cache of available filter fields (and their data types) for lookup/display/search
+  availableFilterFields?: GetFiltersResponseElement[];
+  strata?: FieldMetadata[];
+  // These next 2 Experiment Parameters are strings to allow for empty values,
+  // which should be converted to numbers when making power or experiment creation requests.
+  confidence?: string;
+  power?: string;
+  // Populated when user clicks "Power Check" on DesignForm
+  desiredN?: number;
+  sampleSizeOption?: PowerCheckOption;
+  powerCheckResponse?: PowerResponseOutput;
+  createExperimentResponse?: CreateExperimentResponse;
+  createExperimentError?: ErrorType<unknown>;
+
+  // experiment-describe-webhooks-screen
+  selectedWebhookIds?: string[];
+
+  // experiment-describe-arms-screen
+  arms?: Omit<Arm, 'arm_id'>[];
+
+  // bandit flow config
+  bandit?: BanditParams;
+
+  // experiment-summarize-freq-screen (populated after createExperiment API call)
+  experimentId?: string;
+  commitError?: ErrorType<unknown>;
+};
+
+// All known screen IDs for the experiment form wizard. Used with screen() to type-check ids
+// returned by nextScreen and prevScreen.
+export type ExperimentScreenId =
+  | 'metadata'
+  | 'experiment-type'
+  | 'freq-select-datasource'
+  | 'bandit-binary-or-real'
+  | 'describe-contexts'
+  | 'describe-arms'
+  | 'describe-bandit-arms'
+  | 'freq-stack'
+  | 'summarize-freq'
+  | 'summarize-bandit';
 
 // Define the type alias using imported types
 export function isFreqExperimentType(type: string | undefined): boolean {
