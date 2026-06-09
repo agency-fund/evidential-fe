@@ -37,15 +37,9 @@ import {
   ExperimentScreenId,
   ExperimentType,
   isBanditExperimentType,
+  isCmabExperimentType,
+  isFreqExperimentType,
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
-
-const isFreq = (experimentType: ExperimentType) => {
-  return experimentType === 'freq_online' || experimentType === 'freq_preassigned';
-};
-
-const isCmab = (experimentType: ExperimentType) => {
-  return experimentType === 'cmab_online';
-};
 
 // Helper to create screens with proper type inference
 const screen = packScreen<ExperimentFormData, ExperimentScreenId>();
@@ -79,9 +73,9 @@ const MAB_BREADCRUMBS: Array<ExperimentScreenId> = [
 const breadcrumbs = ({ experimentType }: { experimentType?: ExperimentType }) => {
   if (experimentType === undefined) {
     return [];
-  } else if (isFreq(experimentType)) {
+  } else if (isFreqExperimentType(experimentType)) {
     return FREQUENTIST_BREADCRUMBS;
-  } else if (isCmab(experimentType)) {
+  } else if (isCmabExperimentType(experimentType)) {
     return CMAB_BREADCRUMBS;
   } else {
     return MAB_BREADCRUMBS;

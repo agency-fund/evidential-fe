@@ -1,4 +1,5 @@
 import {
+  AnyFrequentistDesignSpecInputExperimentType,
   Arm,
   CMABExperimentSpecInputExperimentType,
   CMABExperimentSpecOutput,
@@ -149,13 +150,20 @@ export type ExperimentScreenId =
   | 'summarize-bandit';
 
 // Define the type alias using imported types
-export function isFreqExperimentType(type: string | undefined): boolean {
-  return (
-    !!type &&
-    (type in PreassignedFrequentistExperimentSpecInputExperimentType ||
-      type in OnlineFrequentistExperimentSpecInputExperimentType)
-  );
-}
+export const isFreqExperimentType = (
+  experimentType?: ExperimentType,
+): experimentType is AnyFrequentistDesignSpecInputExperimentType =>
+  experimentType === PreassignedFrequentistExperimentSpecInputExperimentType.freq_preassigned ||
+  experimentType === OnlineFrequentistExperimentSpecInputExperimentType.freq_online;
+
+export const isCmabExperimentType = (
+  experimentType?: ExperimentType,
+): experimentType is CMABExperimentSpecInputExperimentType =>
+  experimentType === CMABExperimentSpecInputExperimentType.cmab_online;
+
+export const isBanditExperimentType = (experimentType?: ExperimentType): experimentType is BanditExperimentType =>
+  experimentType === MABExperimentSpecInputExperimentType.mab_online ||
+  experimentType === CMABExperimentSpecInputExperimentType.cmab_online;
 
 export const isFrequentistSpec = (
   spec: DesignSpecOutput | undefined,
@@ -172,7 +180,3 @@ export function isCmabSpec(spec: DesignSpecOutput | undefined): spec is CMABExpe
 
 export const isCmabExperiment = (experiment: GetExperimentResponse | ExperimentConfig | undefined): boolean =>
   !!experiment && isCmabSpec(experiment.design_spec);
-
-export const isBanditExperimentType = (experimentType?: string): experimentType is BanditExperimentType =>
-  experimentType === MABExperimentSpecInputExperimentType.mab_online ||
-  experimentType === CMABExperimentSpecInputExperimentType.cmab_online;
