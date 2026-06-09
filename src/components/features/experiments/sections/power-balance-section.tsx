@@ -12,6 +12,7 @@ export interface PowerBalanceSectionProps {
   assignSummary: AssignSummary | null | undefined;
   onEdit?: () => void;
   showDesiredSampleSize?: boolean;
+  showActualSampleSize?: boolean;
   showTitle?: boolean;
 }
 

@@ -72,7 +72,7 @@ import {
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { TableNameBadge } from '@/components/features/participants/table-name-badge';
 import { TargetingDialog } from '@/components/features/experiments/targeting-dialog';
-import { PowerAndBalanceDialog } from '@/components/features/experiments/power-and-balance-dialog';
+import { DesignDetailsDialog } from '@/components/features/experiments/design-details-dialog';
 
 const SNAPSHOT_ERROR_ALERT_THRESHOLD_MS = 8 * 60 * 60 * 1000;
 
@@ -430,17 +430,6 @@ export default function ExperimentViewPage() {
             />
             <Separator orientation="vertical" />
           </>
-          {isFrequentistSpec(design_spec) && (
-            <>
-              <PowerAndBalanceDialog
-                confidence={Math.round((1 - alpha!) * 100)}
-                power={Math.round(power! * 100)}
-                desiredN={design_spec.desired_n ?? undefined}
-                assignSummary={assign_summary}
-              />
-              <Separator orientation="vertical" />
-            </>
-          )}
           <Flex align="center" gap="2">
             <FileTextIcon />
             <EditableTextField
@@ -534,6 +523,11 @@ export default function ExperimentViewPage() {
                     </Flex>
                   </Badge>
                   <MdeBadge value={mdePct} />
+                  <DesignDetailsDialog
+                    designSpec={design_spec}
+                    experimentSchema={experiment.experiment_schema}
+                    assignSummary={assign_summary}
+                />
                 </Flex>
               ) : isBanditAnalysis(selectedAnalysisState.data) &&
                 selectedAnalysisState.banditEffects &&
