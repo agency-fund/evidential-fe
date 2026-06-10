@@ -96,7 +96,8 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     }
 
     try {
-      const designSpec = convertToFrequentistDesignSpec(data);
+      // We always estimate the minimum sample size with this handler, so clear out desiredN.
+      const designSpec = convertToFrequentistDesignSpec({ ...data, desiredN: undefined });
       const response = await triggerEstimateSampleSize({ design_spec: designSpec });
 
       const primary = response.analyses.find((a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name);

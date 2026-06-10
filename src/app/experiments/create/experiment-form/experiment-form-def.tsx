@@ -492,7 +492,9 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
                 // seeing if the spec used differs from what we would produce now, i.e. did the user
                 // change a value while the request was in flight?
                 // (We cannot check for sampleSizeOption && desiredN mismatches because they start off undefined.)
-                const expected_stringified_spec = JSON.stringify(convertToFrequentistDesignSpec(data));
+                const expected_stringified_spec = JSON.stringify(
+                  convertToFrequentistDesignSpec({ ...data, desiredN: undefined }),
+                );
                 if (JSON.stringify(msg.designSpec) !== expected_stringified_spec) {
                   return data;
                 }
