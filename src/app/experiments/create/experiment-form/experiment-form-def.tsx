@@ -22,6 +22,7 @@ import {
 } from '@/app/experiments/create/experiment-form/experiment-freq-stack-screen';
 import { ExperimentsSummarizeFreqScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-freq-screen';
 import {
+  convertToFrequentistDesignSpec,
   getReasonableEndDate,
   getReasonableStartDate,
   removeFieldByName,
@@ -483,22 +484,19 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           };
         }
         if (msg.type === 'set-chosen-n' || msg.type === 'set-power-check-response') {
-          // For handling async power check responses, first check if they are stale.
-          // This does NOT currently address potentially stale power responses from USE_POWER_CHECK,
-          // e.g. if the user changes any values while the original trigger is in flight.
-          if (
-            msg.type === 'set-power-check-response' &&
-            (msg.sampleSizeOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES ||
-              msg.sampleSizeOption === PowerCheckOption.ENTER_OWN) &&
-            msg.response !== undefined &&
-            (msg.sampleSizeOption !== data.sampleSizeOption || msg.desiredN !== data.desiredN)
-          ) {
-            return data;
-          }
-
           switch (msg.sampleSizeOption) {
             case PowerCheckOption.NONE:
             case PowerCheckOption.USE_POWER_CHECK:
+              if (msg.type === 'set-power-check-response') {
+                // For handling async min sample size responses, we check for stale requests by
+                // seeing if the spec used differs from what we would produce now, i.e. did the user
+                // change a value while the request was in flight?
+                // (We cannot check for sampleSizeOption && desiredN mismatches because they start off undefined.)
+                const expected_stringified_spec = JSON.stringify(convertToFrequentistDesignSpec(data));
+                if (JSON.stringify(msg.designSpec) !== expected_stringified_spec) {
+                  return data;
+                }
+              }
               return {
                 ...data,
                 sampleSizeOption: msg.sampleSizeOption,
@@ -508,6 +506,13 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
               };
             case PowerCheckOption.USE_ALL_NON_NULL_SAMPLES:
             case PowerCheckOption.ENTER_OWN:
+              if (msg.type === 'set-power-check-response') {
+                // For handling async MDE responses, to check for stale requests we only need to
+                // verify that the option and desiredN haven't changed since the request was made.
+                if (msg.sampleSizeOption !== data.sampleSizeOption || msg.desiredN !== data.desiredN) {
+                  return data;
+                }
+              }
               return {
                 ...data,
                 sampleSizeOption: msg.sampleSizeOption,

@@ -22,6 +22,14 @@ export type PowerCheckSampleOptionChange = {
   response: PowerResponseOutput | undefined;
 };
 
+/**
+ * `designSpec` is the payload sent in the power request that produced the response.
+ * Can be used to check for stale responses.
+ */
+export type PowerCheckResponseChange = PowerCheckSampleOptionChange & {
+  designSpec: AnyFrequentistDesignSpecInput;
+};
+
 interface PowerCheckSampleSizeSelectorProps {
   datasourceId: string;
   selectedSampleOption: PowerCheckOption;
@@ -45,7 +53,7 @@ interface PowerCheckSampleSizeSelectorProps {
    * Called on successful completion of any async MDE estimation request.
    * Parent is responsible for handling potentially stale responses.
    */
-  onEstimatedMDEChange: (change: PowerCheckSampleOptionChange) => void;
+  onEstimatedMDEChange: (change: PowerCheckResponseChange) => void;
 }
 
 interface EstimatedMdeBadgeProps {
@@ -131,7 +139,7 @@ export function PowerCheckSampleSizeSelector({
         // Stale requests that succeed will be handled by the parent.
         return;
       }
-      onEstimatedMDEChange({ sampleSizeOption, desiredN, response });
+      onEstimatedMDEChange({ sampleSizeOption, desiredN, response, designSpec });
     })();
   };
 

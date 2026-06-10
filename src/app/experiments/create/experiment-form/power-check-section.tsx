@@ -15,7 +15,11 @@ import {
   TextField,
   Tooltip,
 } from '@radix-ui/themes';
-import { PowerCheckSampleOptionChange, PowerCheckSampleSizeSelector } from './power-check-sample-size-selector';
+import {
+  PowerCheckResponseChange,
+  PowerCheckSampleOptionChange,
+  PowerCheckSampleSizeSelector,
+} from './power-check-sample-size-selector';
 import { CheckCircledIcon, CrossCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData } from './experiment-form-types';
 import { PowerCheckOption } from './experiment-form-types';
@@ -30,7 +34,7 @@ export type PowerCheckSectionAction =
   | { type: 'set-confidence'; value: string }
   | { type: 'set-power'; value: string }
   | ({ type: 'set-chosen-n' } & PowerCheckSampleOptionChange)
-  | ({ type: 'set-power-check-response' } & PowerCheckSampleOptionChange);
+  | ({ type: 'set-power-check-response' } & PowerCheckResponseChange);
 
 interface PowerCheckSectionProps {
   data: ExperimentFormData;
@@ -92,12 +96,13 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     }
 
     try {
-      const response = await triggerEstimateSampleSize({ design_spec: convertToFrequentistDesignSpec(data) });
+      const designSpec = convertToFrequentistDesignSpec(data);
+      const response = await triggerEstimateSampleSize({ design_spec: designSpec });
 
       const primary = response.analyses.find((a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name);
       const desiredN = primary?.sufficient_n ? (primary.target_n ?? undefined) : undefined;
       const sampleSizeOption = desiredN === undefined ? PowerCheckOption.NONE : PowerCheckOption.USE_POWER_CHECK;
-      dispatch({ type: 'set-power-check-response', response, desiredN, sampleSizeOption });
+      dispatch({ type: 'set-power-check-response', response, desiredN, sampleSizeOption, designSpec });
     } catch (err) {
       if (err instanceof ZodError) {
         setValidationError(err);
@@ -107,8 +112,8 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     }
   };
 
-  const handleEstimatedMDEChange = ({ sampleSizeOption, desiredN, response }: PowerCheckSampleOptionChange) => {
-    dispatch({ type: 'set-power-check-response', sampleSizeOption, desiredN, response });
+  const handleEstimatedMDEChange = ({ sampleSizeOption, desiredN, response, designSpec }: PowerCheckResponseChange) => {
+    dispatch({ type: 'set-power-check-response', sampleSizeOption, desiredN, response, designSpec });
   };
 
   const handleSampleOptionChange = ({ sampleSizeOption, desiredN, response }: PowerCheckSampleOptionChange) => {
