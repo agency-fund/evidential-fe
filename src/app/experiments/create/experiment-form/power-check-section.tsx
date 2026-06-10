@@ -312,17 +312,17 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
       {data.powerCheckResponse !== undefined && !validationError && (
         <SectionCard title="Select Target Sample Size">
-          <Flex direction="column" gap="3" align="start">
-            <Text>Select target sample size to distribute across all arms:</Text>
-            <Flex direction="column" gap="2" align="center">
+          <Flex direction="column" gap="3" align="start" width="100%">
+            <Text>Choose the total number of participants to distribute across all arms:</Text>
+            <Flex direction="column" gap="2" align="center" width="100%">
               {!data.powerCheckResponse.analyses.map((a) => a.sufficient_n).every((sufficient) => sufficient) && (
                 <Callout.Root color="orange">
                   <Callout.Icon>
                     <CrossCircledIcon />
                   </Callout.Icon>
                   <Callout.Text>
-                    You don&apos;t have sufficient samples for one or more metrics. You can still proceed with a custom
-                    sample size, but consider adjusting your experiment design.
+                    You don&apos;t have a sufficient sample size for one or more metrics. You can still proceed with a
+                    custom sample size, but consider adjusting your experiment design.
                   </Callout.Text>
                 </Callout.Root>
               )}

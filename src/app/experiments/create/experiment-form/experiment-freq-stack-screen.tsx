@@ -148,6 +148,7 @@ export const ExperimentFreqStackScreen = ({
       data.sampleSizeOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES
         ? data.mdePowerCheckResponse
         : data.powerCheckResponse;
+
     const createExperimentRequest = createExperimentBody.strict().parse({
       design_spec: designSpec,
       power_analyses: powerAnalyses,

@@ -198,15 +198,15 @@ export function PowerCheckSampleSizeSelector({
   };
 
   return (
-    <Flex direction="column" gap="2">
+    <Flex direction="column" gap="2" justify="center" width="100%">
       <RadioCards.Root columns="1" value={selectedSampleOption} onValueChange={handleOptionChange}>
-        <Flex direction={'row'} gap={'3'} justify={'between'}>
+        <Flex direction="row" gap="3" justify="center" wrap="wrap">
           <RadioCards.Item
             value={PowerCheckOption.USE_POWER_CHECK}
             disabled={targetN === undefined || targetN === 0 || targetN > allSamples}
           >
             <Flex align="center" direction="column" gap="2">
-              <Text size="2">Use minimum sample required:</Text>
+              <Text size="2">Use the minimum required sample:</Text>
               <Flex height="32px" align="center">
                 <Text size="2">{targetN ?? 'N/A'}</Text>
               </Flex>
@@ -224,7 +224,7 @@ export function PowerCheckSampleSizeSelector({
             disabled={nonNullSamples === undefined || nonNullSamples === 0}
           >
             <Flex align="center" direction="column" gap="2">
-              <Text size="2">Use all available non-null samples:</Text>
+              <Text size="2">Use all non-null samples:</Text>
               <Flex height="32px" align="center">
                 <Text size="2">{nonNullSamples ?? 'N/A'}</Text>
               </Flex>
@@ -239,7 +239,7 @@ export function PowerCheckSampleSizeSelector({
           </RadioCards.Item>
           <RadioCards.Item value={PowerCheckOption.ENTER_OWN} disabled={allSamples === undefined || allSamples === 0}>
             <Flex align="center" direction="column" gap="2" style={{ pointerEvents: 'auto' }}>
-              <Text size="2">Use custom sample size:</Text>
+              <Text size="2">Use a custom sample size:</Text>
               <PowerCheckDesiredNInput
                 value={String(desiredN ?? '')}
                 onChange={handleInputChange}
