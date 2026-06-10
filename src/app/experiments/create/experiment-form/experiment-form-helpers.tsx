@@ -11,7 +11,7 @@ import {
   Stratum,
 } from '@/api/methods.schemas';
 import { createExperimentBody } from '@/api/admin.zod';
-import { ExperimentFormData } from './experiment-form-def';
+import { ExperimentFormData } from './experiment-form-types';
 import { getCanonicalRewardType } from '@/app/experiments/create/experiment-form/experiment-bandit-helpers';
 import { isFreqExperimentType, isFrequentistSpec } from './experiment-form-types';
 

@@ -1,5 +1,5 @@
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
+import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { Flex, Heading, RadioCards, Text } from '@radix-ui/themes';
 import { FormOutcomeType } from '@/app/experiments/create/experiment-form/experiment-form-types';
 
