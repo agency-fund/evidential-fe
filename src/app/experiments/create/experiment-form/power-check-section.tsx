@@ -17,7 +17,7 @@ import {
 } from '@radix-ui/themes';
 import { PowerCheckSampleOptionChange, PowerCheckSampleSizeSelector } from './power-check-sample-size-selector';
 import { CheckCircledIcon, CrossCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
-import { ExperimentFormData } from './experiment-form-def';
+import { ExperimentFormData } from './experiment-form-types';
 import { PowerCheckOption } from './experiment-form-types';
 import { usePowerCheck } from '@/api/admin';
 import { convertToFrequentistDesignSpec } from './experiment-form-helpers';

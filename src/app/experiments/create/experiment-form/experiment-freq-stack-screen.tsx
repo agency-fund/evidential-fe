@@ -1,5 +1,5 @@
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
+import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { PowerCheckOption } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { Card, Flex, Heading } from '@radix-ui/themes';
 import { MetricBuilder, MetricBuilderAction } from '@/components/features/experiments/metric-builder';

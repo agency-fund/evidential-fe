@@ -11,7 +11,7 @@ import {
   ExperimentConfirmationDisplay,
   ExperimentConfirmationDisplayProps,
 } from '@/components/features/experiments/experiment-confirmation-display';
-import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
+import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-types';
 
 // The "Edit" buttons on the confirmation screen are temporarily disabled pending further UX effort.
 const FEATURE_EDIT_BUTTONS_ENABLED = false;
