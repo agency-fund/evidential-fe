@@ -22,6 +22,7 @@ import {
 } from '@/app/experiments/create/experiment-form/experiment-freq-stack-screen';
 import { ExperimentsSummarizeFreqScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-freq-screen';
 import {
+  convertToFrequentistDesignSpec,
   getReasonableEndDate,
   getReasonableStartDate,
   removeFieldByName,
@@ -39,6 +40,7 @@ import {
   isBanditExperimentType,
   isCmabExperimentType,
   isFreqExperimentType,
+  PowerCheckOption,
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
 
 // Helper to create screens with proper type inference
@@ -187,6 +189,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
 
             // Changing datasource should clear power check
             powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
           };
@@ -368,8 +371,10 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             primaryMetric: msg.primaryMetric,
             powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
         if (msg.type === 'primary-metric-deselect') {
@@ -378,8 +383,10 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             primaryMetric: msg.primaryMetric,
             secondaryMetrics: msg.secondaryMetrics,
             powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
         if (msg.type === 'promote-secondary-to-primary') {
@@ -388,8 +395,10 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             primaryMetric: msg.primaryMetric,
             secondaryMetrics: msg.secondaryMetrics,
             powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
         if (msg.type === 'secondary-metric-add') {
@@ -397,8 +406,10 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             secondaryMetrics: msg.secondaryMetrics,
             powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
         if (msg.type === 'secondary-metric-remove') {
@@ -406,8 +417,10 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             secondaryMetrics: msg.secondaryMetrics,
             powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
         if (msg.type === 'mde-change') {
@@ -416,8 +429,10 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             primaryMetric: msg.primaryMetric ?? data.primaryMetric,
             secondaryMetrics: msg.secondaryMetrics ?? data.secondaryMetrics,
             powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
 
@@ -427,8 +442,10 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             filters: msg.filters,
             powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
 
@@ -449,8 +466,10 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             confidence: msg.value,
             powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
         if (msg.type === 'set-power') {
@@ -458,23 +477,54 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             power: msg.value,
             powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
-        if (msg.type === 'set-power-check-response') {
-          return {
-            ...data,
-            powerCheckResponse: msg.response,
-            desiredN: msg.desiredN,
-            sampleSizeOption: msg.sampleSizeOption,
-          };
-        }
-        if (msg.type === 'set-chosen-n') {
-          return { ...data, desiredN: msg.value };
-        }
-        if (msg.type === 'set-sample-size-option') {
-          return { ...data, sampleSizeOption: msg.value };
+        if (msg.type === 'set-chosen-n' || msg.type === 'set-power-check-response') {
+          switch (msg.sampleSizeOption) {
+            case PowerCheckOption.NONE:
+            case PowerCheckOption.USE_POWER_CHECK:
+              if (msg.type === 'set-power-check-response') {
+                // For handling async min sample size responses, we check for stale requests by
+                // seeing if the spec used differs from what we would produce now, i.e. did the user
+                // change a value while the request was in flight?
+                // (We cannot check for sampleSizeOption && desiredN mismatches because they start off undefined.)
+                const expected_stringified_spec = JSON.stringify(
+                  convertToFrequentistDesignSpec({ ...data, desiredN: undefined }),
+                );
+                if (JSON.stringify(msg.designSpec) !== expected_stringified_spec) {
+                  return data;
+                }
+              }
+              return {
+                ...data,
+                sampleSizeOption: msg.sampleSizeOption,
+                desiredN: msg.desiredN,
+                powerCheckResponse: msg.response,
+                createExperimentError: undefined,
+              };
+            case PowerCheckOption.USE_ALL_NON_NULL_SAMPLES:
+            case PowerCheckOption.ENTER_OWN:
+              if (msg.type === 'set-power-check-response') {
+                // For handling async MDE responses, to check for stale requests we only need to
+                // verify that the option and desiredN haven't changed since the request was made.
+                if (msg.sampleSizeOption !== data.sampleSizeOption || msg.desiredN !== data.desiredN) {
+                  return data;
+                }
+              }
+              return {
+                ...data,
+                sampleSizeOption: msg.sampleSizeOption,
+                desiredN: msg.desiredN,
+                mdePowerCheckResponse: msg.response,
+                createExperimentError: undefined,
+              };
+            default:
+              return data;
+          }
         }
         if (msg.type === 'set-create-error') {
           return { ...data, createExperimentError: msg.response, createExperimentResponse: undefined };

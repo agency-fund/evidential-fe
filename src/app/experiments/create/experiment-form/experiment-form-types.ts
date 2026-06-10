@@ -118,6 +118,8 @@ export type ExperimentFormData = {
   desiredN?: number;
   sampleSizeOption?: PowerCheckOption;
   powerCheckResponse?: PowerResponseOutput;
+  // Populated by the MDE estimate for the currently-active custom N (ENTER_OWN or USE_ALL_NON_NULL_SAMPLES).
+  mdePowerCheckResponse?: PowerResponseOutput;
   createExperimentResponse?: CreateExperimentResponse;
   createExperimentError?: ErrorType<unknown>;
 

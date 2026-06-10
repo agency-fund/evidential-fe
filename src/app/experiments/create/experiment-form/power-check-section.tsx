@@ -9,16 +9,20 @@ import {
   Flex,
   Grid,
   Heading,
-  RadioCards,
   Spinner,
   Table,
   Text,
   TextField,
+  Tooltip,
 } from '@radix-ui/themes';
+import {
+  PowerCheckResponseChange,
+  PowerCheckSampleOptionChange,
+  PowerCheckSampleSizeSelector,
+} from './power-check-sample-size-selector';
 import { CheckCircledIcon, CrossCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData } from './experiment-form-types';
 import { PowerCheckOption } from './experiment-form-types';
-import { ExperimentFreqStackScreenMessage } from './experiment-freq-stack-screen';
 import { usePowerCheck } from '@/api/admin';
 import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -26,9 +30,15 @@ import { ZodError } from 'zod';
 import { useState } from 'react';
 import { SectionCard } from '@/components/ui/cards/section-card';
 
+export type PowerCheckSectionAction =
+  | { type: 'set-confidence'; value: string }
+  | { type: 'set-power'; value: string }
+  | ({ type: 'set-chosen-n' } & PowerCheckSampleOptionChange)
+  | ({ type: 'set-power-check-response' } & PowerCheckResponseChange);
+
 interface PowerCheckSectionProps {
   data: ExperimentFormData;
-  dispatch: (msg: ExperimentFreqStackScreenMessage) => void;
+  dispatch: (action: PowerCheckSectionAction) => void;
 }
 
 const isPowerCheckButtonEnabled = (isMutating: boolean, data: ExperimentFormData) => {
@@ -47,55 +57,53 @@ const isPowerCheckButtonEnabled = (isMutating: boolean, data: ExperimentFormData
 
 interface PowerCheckButtonProps {
   enabled: boolean;
-  onClick: (event: React.MouseEvent<HTMLButtonElement>) => Promise<void>;
+  onClick: () => Promise<void>;
   loading: boolean;
+  disabledReason?: string;
 }
 
-function RunPowerCheckButton({ enabled, onClick, loading }: PowerCheckButtonProps) {
-  return (
-    <Button disabled={!enabled} onClick={onClick} style={{ minWidth: '25%' }}>
+function RunPowerCheckButton({ enabled, onClick, loading, disabledReason }: PowerCheckButtonProps) {
+  const button = (
+    <Button type="button" disabled={!enabled} onClick={onClick} style={{ minWidth: '25%' }}>
       <Spinner loading={loading}>
         <LightningBoltIcon />
       </Spinner>
-      Run Power Check
+      Estimate Sample Size
     </Button>
+  );
+
+  const tooltipContent = !enabled
+    ? disabledReason
+    : "Calculates the minimum number of participants needed to be able to detect your primary metric's minimum effect.";
+
+  return (
+    <Tooltip content={tooltipContent} side="top" align="center">
+      {button}
+    </Tooltip>
   );
 }
 
 export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
-  const { trigger, isMutating, error } = usePowerCheck(data.datasourceId!);
   const [validationError, setValidationError] = useState<ZodError | null>(null);
-  const primaryAnalysis = data.powerCheckResponse?.analyses.find(
-    (a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
-  );
-  const powerCheckTarget = primaryAnalysis?.target_n ?? undefined;
-  const nonNullSamples = primaryAnalysis?.metric_spec.available_nonnull_n ?? 0;
-  const allSamples = primaryAnalysis?.metric_spec.available_n ?? 0;
-  const selectedSampleOption = data.sampleSizeOption ?? PowerCheckOption.USE_POWER_CHECK;
+  const { trigger: triggerEstimateSampleSize, isMutating, error } = usePowerCheck(data.datasourceId!);
+  const { enabled, reason } = isPowerCheckButtonEnabled(isMutating, data);
 
-  const { enabled } = isPowerCheckButtonEnabled(isMutating, data); // TODO: present reason field
-
-  const handlePowerCheck = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
+  const handlePowerCheck = async () => {
     setValidationError(null);
 
     if (!data.tableName || !data.primaryKey || !data.primaryMetric) {
       return;
     }
 
-    // TODO: reimplement this to be simpler
     try {
-      const design_spec = convertToFrequentistDesignSpec(data);
-      const response = await trigger({ design_spec });
+      // We always estimate the minimum sample size with this handler, so clear out desiredN.
+      const designSpec = convertToFrequentistDesignSpec({ ...data, desiredN: undefined });
+      const response = await triggerEstimateSampleSize({ design_spec: designSpec });
 
       const primary = response.analyses.find((a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name);
-      let desiredN = undefined;
-      let sampleSizeOption = PowerCheckOption.NONE;
-      if (primary?.sufficient_n) {
-        desiredN = primary?.target_n ?? undefined;
-        sampleSizeOption = PowerCheckOption.USE_POWER_CHECK;
-      }
-      dispatch({ type: 'set-power-check-response', response, desiredN, sampleSizeOption });
+      const desiredN = primary?.sufficient_n ? (primary.target_n ?? undefined) : undefined;
+      const sampleSizeOption = desiredN === undefined ? PowerCheckOption.NONE : PowerCheckOption.USE_POWER_CHECK;
+      dispatch({ type: 'set-power-check-response', response, desiredN, sampleSizeOption, designSpec });
     } catch (err) {
       if (err instanceof ZodError) {
         setValidationError(err);
@@ -105,27 +113,22 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     }
   };
 
-  const handleSampleOptionChange = (value: PowerCheckOption) => {
-    dispatch({ type: 'set-sample-size-option', value });
-    switch (value) {
-      case PowerCheckOption.USE_POWER_CHECK:
-        dispatch({ type: 'set-chosen-n', value: powerCheckTarget });
-        break;
-      case PowerCheckOption.USE_ALL_NON_NULL_SAMPLES:
-        dispatch({ type: 'set-chosen-n', value: nonNullSamples });
-        break;
-      case PowerCheckOption.ENTER_OWN:
-      case PowerCheckOption.NONE:
-        dispatch({ type: 'set-chosen-n', value: undefined });
-        break;
-    }
+  const handleEstimatedMDEChange = ({ sampleSizeOption, desiredN, response, designSpec }: PowerCheckResponseChange) => {
+    dispatch({ type: 'set-power-check-response', sampleSizeOption, desiredN, response, designSpec });
   };
 
+  const handleSampleOptionChange = ({ sampleSizeOption, desiredN, response }: PowerCheckSampleOptionChange) => {
+    dispatch({ type: 'set-chosen-n', sampleSizeOption, desiredN, response });
+  };
+
+  const primaryMetricFieldName = data.primaryMetric?.metric.field_name ?? '';
   const primaryPower =
-    data.powerCheckResponse !== undefined && !validationError ? data.powerCheckResponse.analyses[0] : undefined;
+    data.powerCheckResponse !== undefined && !validationError
+      ? data.powerCheckResponse.analyses.find((a) => a.metric_spec.field_name === primaryMetricFieldName)
+      : undefined;
   const restPower =
-    data.powerCheckResponse !== undefined && !validationError && data.powerCheckResponse.analyses.length > 1
-      ? data.powerCheckResponse.analyses.slice(1)
+    data.powerCheckResponse !== undefined && !validationError
+      ? data.powerCheckResponse.analyses.filter((a) => a.metric_spec.field_name !== primaryMetricFieldName)
       : undefined;
 
   return (
@@ -161,7 +164,12 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
       <SectionCard title="Analysis">
         <Flex direction="column" gap="3" align="center">
-          <RunPowerCheckButton enabled={enabled} onClick={handlePowerCheck} loading={isMutating} />
+          <RunPowerCheckButton
+            enabled={enabled}
+            onClick={handlePowerCheck}
+            loading={isMutating}
+            disabledReason={reason}
+          />
 
           {error && (
             <Flex align="center" gap="2">
@@ -242,7 +250,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                       </DataList.Item>
                       {primaryPower.pct_change_possible !== null && primaryPower.pct_change_possible !== undefined && (
                         <DataList.Item>
-                          <DataList.Label>MME</DataList.Label>
+                          <DataList.Label>MDE</DataList.Label>
                           <DataList.Value>{(primaryPower.pct_change_possible * 100).toFixed(4)}%</DataList.Value>
                         </DataList.Item>
                       )}
@@ -310,60 +318,32 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
       {data.powerCheckResponse !== undefined && !validationError && (
         <SectionCard title="Select Target Sample Size">
-          <Flex direction="column" gap="3" align="start">
-            <Text>Select target sample size to distribute across all arms:</Text>
-            <Flex direction="column" gap="2" align="center">
+          <Flex direction="column" gap="3" align="start" width="100%">
+            <Text>Choose the total number of participants to distribute across all arms:</Text>
+            <Flex direction="column" gap="2" align="center" width="100%">
               {!data.powerCheckResponse.analyses.map((a) => a.sufficient_n).every((sufficient) => sufficient) && (
                 <Callout.Root color="orange">
                   <Callout.Icon>
                     <CrossCircledIcon />
                   </Callout.Icon>
                   <Callout.Text>
-                    You don&apos;t have sufficient samples for one or more metrics. You can still proceed with a custom
-                    sample size, but consider adjusting your experiment design.
+                    You don&apos;t have a sufficient sample size for one or more metrics. You can still proceed with a
+                    custom sample size, but consider adjusting your experiment design.
                   </Callout.Text>
                 </Callout.Root>
               )}
-              <RadioCards.Root columns="1" value={selectedSampleOption} onValueChange={handleSampleOptionChange}>
-                <Flex direction={'row'} gap={'3'} justify={'between'}>
-                  <RadioCards.Item
-                    value={PowerCheckOption.USE_POWER_CHECK}
-                    disabled={powerCheckTarget === undefined || powerCheckTarget === 0}
-                  >
-                    Use minimum sample required: {powerCheckTarget ?? 'N/A'}
-                  </RadioCards.Item>
-                  <RadioCards.Item
-                    value={PowerCheckOption.USE_ALL_NON_NULL_SAMPLES}
-                    disabled={nonNullSamples === undefined || nonNullSamples === 0}
-                  >
-                    Use all available non-null samples: {nonNullSamples}
-                  </RadioCards.Item>
-                  <RadioCards.Item
-                    value={PowerCheckOption.ENTER_OWN}
-                    disabled={allSamples === undefined || allSamples === 0}
-                  >
-                    <Flex align="center" direction={'row'} gap="2">
-                      <span>Use custom sample size:</span>
-                      <div style={{ pointerEvents: 'auto' }}>
-                        <TextField.Root
-                          style={{ width: '250px' }}
-                          size="2"
-                          type="number"
-                          max={allSamples ?? undefined}
-                          value={selectedSampleOption === PowerCheckOption.ENTER_OWN ? (data.desiredN ?? '') : ''}
-                          onChange={(e) =>
-                            dispatch({
-                              type: 'set-chosen-n',
-                              value: e.target.value === '' ? undefined : Number(e.target.value),
-                            })
-                          }
-                          placeholder="Type your own desired #."
-                        />
-                      </div>
-                    </Flex>
-                  </RadioCards.Item>
-                </Flex>
-              </RadioCards.Root>
+              <PowerCheckSampleSizeSelector
+                datasourceId={data.datasourceId!}
+                powerCheckResponse={data.powerCheckResponse}
+                primaryMetricFieldName={primaryMetricFieldName}
+                targetMde={data.primaryMetric?.mde}
+                selectedSampleOption={data.sampleSizeOption ?? PowerCheckOption.USE_POWER_CHECK}
+                desiredN={data.desiredN}
+                mdePowerCheckResponse={data.mdePowerCheckResponse}
+                makeDesignSpec={(desiredN) => convertToFrequentistDesignSpec({ ...data, desiredN })}
+                onOptionChange={handleSampleOptionChange}
+                onEstimatedMDEChange={handleEstimatedMDEChange}
+              />
             </Flex>
           </Flex>
         </SectionCard>

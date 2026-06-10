@@ -6,8 +6,8 @@ import { MetricBuilder, MetricBuilderAction } from '@/components/features/experi
 import { FilterBuilder } from '@/components/features/experiments/querybuilder/filter-builder';
 import { StrataBuilder } from '@/components/features/experiments/strata-builder';
 import { useCreateExperiment, useInspectTableInDatasource } from '@/api/admin';
-import { CreateExperimentResponse, FieldMetadata, FilterInput, PowerResponseOutput } from '@/api/methods.schemas';
-import { PowerCheckSection } from './power-check-section';
+import { CreateExperimentResponse, FieldMetadata, FilterInput } from '@/api/methods.schemas';
+import { PowerCheckSection, PowerCheckSectionAction } from './power-check-section';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import {
   convertToFrequentistDesignSpec,
@@ -19,39 +19,80 @@ import { GenericErrorCallout } from '@/components/ui/generic-error';
 
 export type ExperimentFreqStackScreenMessage =
   | MetricBuilderAction
+  | PowerCheckSectionAction
   | { type: 'set-filters'; filters: FilterInput[] }
   | { type: 'set-strata'; strata: FieldMetadata[] }
-  | { type: 'set-confidence'; value: string }
-  | { type: 'set-power'; value: string }
-  | {
-      type: 'set-power-check-response';
-      response: PowerResponseOutput;
-      desiredN?: number;
-      sampleSizeOption?: PowerCheckOption;
-    }
   | { type: 'set-create-response'; response: CreateExperimentResponse }
-  | { type: 'set-create-error'; response: ErrorType<unknown> }
-  | { type: 'set-chosen-n'; value: number | undefined }
-  | { type: 'set-sample-size-option'; value: PowerCheckOption };
+  | { type: 'set-create-error'; response: ErrorType<unknown> };
 
-const isNextEnabled = (data: ExperimentFormData) => {
-  const isFreqPreassigned = data.experimentType === 'freq_preassigned';
+const getPrimaryAnalysisAvailableN = (data: ExperimentFormData): number | undefined => {
+  if (!data.powerCheckResponse || !data.primaryMetric) return undefined;
+  const primaryAnalysis = data.powerCheckResponse.analyses.find(
+    (a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
+  );
+  return primaryAnalysis?.metric_spec.available_n ?? undefined;
+};
+
+const getNextDisabledReasons = (data: ExperimentFormData): string[] => {
+  const reasons: string[] = [];
 
   // Must have primary metric selected
-  if (!data.primaryMetric) return false;
-  // Must have valid confidence value (50-99)
+  if (!data.primaryMetric) {
+    reasons.push('Please select a primary metric.');
+  }
+
+  const isFreqPreassigned = data.experimentType === 'freq_preassigned';
   if (isFreqPreassigned) {
+    // Must have valid confidence value (50-99)
     const confidence = Number(data.confidence);
-    if (isNaN(confidence) || confidence < 50 || confidence > 99) return false;
+    if (isNaN(confidence) || confidence < 50 || confidence > 99) {
+      reasons.push('Enter a valid confidence value (50-99).');
+    }
+
     // Must have valid power value (50-99) for pre-assigned frequentist experiment
     const power = Number(data.power);
-    if (isNaN(power) || power < 50 || power > 99) return false;
+    if (isNaN(power) || power < 50 || power > 99) {
+      reasons.push('Enter a valid power value (50-99).');
+    }
+
     // Must have run power check for pre-assigned frequentist experiment
-    if (!data.powerCheckResponse) return false;
+    if (!data.powerCheckResponse) {
+      reasons.push('Please perform a sample size estimation.');
+    }
+
+    // Batch the above checks into a single set of reasons if any are present.
+    if (reasons.length > 0) {
+      return reasons;
+    }
+
     // Must have selected a sample size for pre-assigned frequentist experiment
-    if (data.desiredN === undefined || data.desiredN === 0) return false;
+    if (data.desiredN === undefined || data.desiredN === 0) {
+      reasons.push('Select a sample size.');
+    }
+
+    // desiredN must not exceed the primary metric's available samples
+    const availableN = getPrimaryAnalysisAvailableN(data);
+    const hasAvailableN = availableN !== undefined && availableN !== 0;
+    if (!hasAvailableN) {
+      reasons.push('The primary metric has no available samples per the latest power check results.');
+    }
+
+    if (data.desiredN !== undefined && hasAvailableN && data.desiredN > availableN) {
+      reasons.push(
+        `Desired N (${data.desiredN.toLocaleString()}) exceeds the primary metric's available samples (${availableN.toLocaleString()}).`,
+      );
+    }
+
+    // If in MDE mode, must have an MDE estimate
+    if (
+      (data.sampleSizeOption === PowerCheckOption.ENTER_OWN ||
+        data.sampleSizeOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES) &&
+      !data.mdePowerCheckResponse
+    ) {
+      reasons.push('Please generate a valid MDE estimate first.');
+    }
   }
-  return true;
+  return reasons;
 };
 
 /** ExperimentFreqStackScreen allows users to define the primary key, metrics, filters, strata, confidence, power,
@@ -96,16 +137,23 @@ export const ExperimentFreqStackScreen = ({
     .map((s) => availableStrata.find((f) => f.field_name === s.field_name))
     .filter((f): f is FieldMetadata => Boolean(f));
 
-  const nextEnabled = isNextEnabled(data);
+  const nextDisabledReasons = getNextDisabledReasons(data);
+  const nextEnabled = nextDisabledReasons.length === 0;
+  const nextTooltip = nextEnabled ? undefined : nextDisabledReasons.join('\n');
 
   const handleCreate = async () => {
     const designSpec = convertToFrequentistDesignSpec(data);
+    const powerAnalyses =
+      data.sampleSizeOption === PowerCheckOption.ENTER_OWN ||
+      data.sampleSizeOption === PowerCheckOption.USE_ALL_NON_NULL_SAMPLES
+        ? data.mdePowerCheckResponse
+        : data.powerCheckResponse;
+
     const createExperimentRequest = createExperimentBody.strict().parse({
       design_spec: designSpec,
-      power_analyses: data.powerCheckResponse,
+      power_analyses: powerAnalyses,
       webhooks: data.selectedWebhookIds && data.selectedWebhookIds.length > 0 ? data.selectedWebhookIds : [],
     });
-    console.log('converted', createExperimentRequest);
     await triggerCreate(createExperimentRequest, { throwOnError: false });
   };
 
@@ -164,6 +212,7 @@ export const ExperimentFreqStackScreen = ({
         onNext={handleCreate}
         nextDisabled={!nextEnabled}
         nextLoading={triggerLoading}
+        nextTooltipContent={nextTooltip}
       />
     </>
   );
