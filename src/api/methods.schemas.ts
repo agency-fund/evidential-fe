@@ -1027,6 +1027,7 @@ export type GetTurnArmJourneyMappingResponseArmToJourneys = {
 
 export interface GetTurnArmJourneyMappingResponse {
 	arm_to_journeys: GetTurnArmJourneyMappingResponseArmToJourneys;
+	stale_arm_ids: string[];
 }
 
 export interface GetTurnConnectionResponse {
