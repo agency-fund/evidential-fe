@@ -16,7 +16,7 @@ export function MdeBadge({ value, size = '2' }: MdeBadgeProps) {
         <Heading size={size}>MDE:</Heading>
         <Flex gap="2" align="center">
           <Text>{displayValue}%</Text>
-          <RadixTooltip content="This metric's minimum detectable effect as defined in the experiment's design that meets the confidence and power requirements.">
+          <RadixTooltip content="This metric's minimum detectable effect as defined in the experiment's design that meets the confidence and power requirements. You should set a practical threshold, meaningful enough to make a change worthwhile.">            
             <InfoCircledIcon />
           </RadixTooltip>
         </Flex>
