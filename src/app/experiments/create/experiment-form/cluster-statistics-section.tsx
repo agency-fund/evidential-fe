@@ -120,9 +120,9 @@ export function ClusterStatisticsSection({ data, dispatch }: ClusterStatisticsSe
   return (
     <Flex direction="column" gap="3">
       <Text size="2" color="gray">
-        Information on how your data is clustered is required to estimate sample size. Enter estimates or derive them
-        from your data source. (NOTE: The ICC estimate entered or derived from the primary metric will also be applied
-        to all other metrics whether appropriate or not!)
+        Information on how your data is clustered is required to estimate sample size. We will derive them from your
+        data source, but you can enter your own below if desired. (NOTE: The ICC estimate entered or derived from the
+        primary metric will also be applied to all other metrics whether appropriate or not!)
       </Text>
 
       <Flex align="center" gap="2">
