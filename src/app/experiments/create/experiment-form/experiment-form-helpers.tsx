@@ -55,6 +55,15 @@ const zodNumberFromForm = (configure?: (num: z.ZodNumber) => z.ZodNumber) =>
 
 const zodMde = zodNumberFromForm((num) => num.int().safe().min(0).max(100));
 
+const getPrimaryMetricClusterStats = (data: ExperimentFormData) => {
+  if (!data.clusterKey) return undefined;
+  const icc = data.clusterIcc;
+  const cv = data.clusterCv;
+  const avgClusterSize = data.clusterAvgClusterSize;
+  if (icc === undefined && cv === undefined && avgClusterSize === undefined) return undefined;
+  return { icc, cv, avg_cluster_size: avgClusterSize };
+};
+
 export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFrequentistDesignSpecInput {
   if (!isFreqExperimentType(data.experimentType)) {
     throw new Error('Frequentist configuration is required.');
@@ -65,11 +74,20 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
 
   const metrics: DesignSpecMetricRequest[] = [];
 
+  const primaryClusterStats = getPrimaryMetricClusterStats(data);
+
   if (data.primaryMetric?.metric.field_name) {
     zodMde.parse(data.primaryMetric.mde, { path: ['primaryMetric', 'mde'] });
     metrics.push({
       field_name: data.primaryMetric.metric.field_name,
       metric_pct_change: Number(data.primaryMetric.mde) / 100.0,
+      ...(primaryClusterStats
+        ? {
+            icc: primaryClusterStats.icc ?? null,
+            cv: primaryClusterStats.cv ?? null,
+            avg_cluster_size: primaryClusterStats.avg_cluster_size ?? null,
+          }
+        : {}),
     });
   }
 
@@ -85,7 +103,7 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
     field_name: f.field_name,
   }));
 
-  const commonFields = {
+  const designSpec: Record<string, unknown> = {
     experiment_name: data.name,
     description: data.hypothesis ?? '',
     design_url: data.designUrl ?? null,
@@ -99,19 +117,16 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
     filters: data.filters ?? [],
     power: data.power ? Number(data.power) / 100.0 : 0.8,
     alpha: data.confidence ? 1 - Number(data.confidence) / 100.0 : 0.05,
+    experiment_type: data.experimentType,
   };
+  if (data.experimentType === 'freq_preassigned' && data.clusterKey) {
+    designSpec.cluster_key = data.clusterKey;
+  }
+  if (data.experimentType === 'freq_preassigned' && data.desiredN !== undefined) {
+    designSpec.desired_n = data.desiredN;
+  }
 
-  const spec = createExperimentBody.strict().parse({
-    design_spec: {
-      ...commonFields,
-      experiment_type: data.experimentType,
-      ...(data.experimentType === 'freq_preassigned' && data.clusterKey ? { cluster_key: data.clusterKey } : {}),
-      ...(data.experimentType === 'freq_preassigned' && data.desiredN !== undefined
-        ? { desired_n: data.desiredN }
-        : {}),
-    },
-  }).design_spec;
-
+  const spec = createExperimentBody.strict().parse({ design_spec: designSpec }).design_spec;
   if (!isFrequentistSpec(spec)) {
     throw new Error('Frequentist configuration is required.');
   }
