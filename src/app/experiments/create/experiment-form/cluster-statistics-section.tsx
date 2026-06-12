@@ -1,25 +1,15 @@
 'use client';
 
-import { Button, Flex, Grid, Spinner, Text, TextField, Tooltip } from '@radix-ui/themes';
-import { InfoCircledIcon, Share1Icon } from '@radix-ui/react-icons';
+import { Button, Flex, Grid, Text, TextField, Tooltip } from '@radix-ui/themes';
+import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData } from './experiment-form-types';
-import { usePowerCheck } from '@/api/admin';
-import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
-import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { EditableTextField } from '@/components/ui/inputs/editable-text-field';
-import { ZodError } from 'zod';
-import { useState } from 'react';
 
 export type ClusterStatisticsSectionAction =
   | { type: 'set-cluster-icc'; value: number | undefined }
   | { type: 'set-cluster-cv'; value: number | undefined }
   | { type: 'set-cluster-avg-size'; value: number | undefined }
-  | {
-      type: 'set-cluster-stats-from-datasource';
-      icc?: number;
-      cv?: number;
-      avgClusterSize?: number;
-    };
+  | { type: 'clear-cluster-stats' };
 
 const parseStatValue = (input: string): number | undefined => {
   const parsed = input === '' ? undefined : Number(input);
@@ -54,68 +44,14 @@ function LabelWithTooltip({ label, tooltip }: LabelWithTooltipProps) {
   );
 }
 
-interface CalculateFromDatasourceButtonProps {
-  onClick: () => Promise<void>;
-  loading: boolean;
-  disabledReason?: string;
-}
-
-function CalculateFromDatasourceButton({ onClick, loading, disabledReason }: CalculateFromDatasourceButtonProps) {
-  const disabled = disabledReason !== undefined;
-  const button = (
-    <Button type="button" disabled={disabled || loading} onClick={onClick}>
-      <Spinner loading={loading}>
-        <Share1Icon />
-      </Spinner>
-      Calculate from your Datasource
-    </Button>
-  );
-
-  return disabled ? (
-    <Tooltip content={disabledReason} side="top" align="start">
-      {button}
-    </Tooltip>
-  ) : (
-    button
-  );
-}
-
 interface ClusterStatisticsSectionProps {
   data: ExperimentFormData;
   dispatch: (action: ClusterStatisticsSectionAction) => void;
 }
 
 export function ClusterStatisticsSection({ data, dispatch }: ClusterStatisticsSectionProps) {
-  const [validationError, setValidationError] = useState<ZodError | null>(null);
-  const { trigger: triggerPowerCheck, isMutating, error } = usePowerCheck(data.datasourceId!);
-
-  const handleCalculate = async () => {
-    setValidationError(null);
-
-    if (!data.clusterKey || !data.primaryMetric) {
-      return;
-    }
-
-    try {
-      const designSpec = convertToFrequentistDesignSpec({ ...data, desiredN: undefined });
-      const response = await triggerPowerCheck({ design_spec: designSpec });
-      const primary = response.analyses.find((a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name);
-      const metricSpec = primary?.metric_spec;
-
-      dispatch({
-        type: 'set-cluster-stats-from-datasource',
-        icc: metricSpec?.icc ?? undefined,
-        cv: metricSpec?.cv ?? undefined,
-        avgClusterSize: metricSpec?.avg_cluster_size ?? undefined,
-      });
-    } catch (err) {
-      if (err instanceof ZodError) {
-        setValidationError(err);
-        return;
-      }
-      throw err;
-    }
-  };
+  const hasClusterStatValues =
+    data.clusterIcc !== undefined || data.clusterCv !== undefined || data.clusterAvgClusterSize !== undefined;
 
   return (
     <Flex direction="column" gap="3">
@@ -130,21 +66,15 @@ export function ClusterStatisticsSection({ data, dispatch }: ClusterStatisticsSe
           Cluster ID field:
         </Text>
         <TextField.Root value={data.clusterKey ?? ''} readOnly />
-        <CalculateFromDatasourceButton
-          onClick={handleCalculate}
-          loading={isMutating}
-          disabledReason={data.primaryMetric === undefined ? 'Select a primary metric.' : undefined}
-        />
+        <Button
+          type="button"
+          variant="soft"
+          disabled={!hasClusterStatValues}
+          onClick={() => dispatch({ type: 'clear-cluster-stats' })}
+        >
+          Reset stats
+        </Button>
       </Flex>
-
-      {error && <GenericErrorCallout title="Failed to calculate cluster statistics" error={error} />}
-
-      {validationError && (
-        <GenericErrorCallout
-          title="Validation failed"
-          message={validationError.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('\n')}
-        />
-      )}
 
       <Grid columns={{ initial: '1', sm: '3' }} gap="4">
         <Flex direction="column" gap="1">

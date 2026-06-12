@@ -7,6 +7,7 @@ import {
   DesignSpecMetricRequest,
   MABExperimentSpecInputExperimentType,
   OnlineFrequentistExperimentSpecInputExperimentType,
+  PowerResponseOutput,
   PreassignedFrequentistExperimentSpecInputExperimentType,
   Stratum,
 } from '@/api/methods.schemas';
@@ -62,6 +63,23 @@ const getPrimaryMetricClusterStats = (data: ExperimentFormData) => {
   const avgClusterSize = data.clusterAvgClusterSize;
   if (icc === undefined && cv === undefined && avgClusterSize === undefined) return undefined;
   return { icc, cv, avg_cluster_size: avgClusterSize };
+};
+
+export const getClusterStatsFromPowerCheckResponse = (
+  data: ExperimentFormData,
+  response: PowerResponseOutput,
+): Pick<ExperimentFormData, 'clusterIcc' | 'clusterCv' | 'clusterAvgClusterSize'> | undefined => {
+  if (!data.clusterKey || !data.primaryMetric) return undefined;
+
+  const primary = response.analyses.find((a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name);
+  const metricSpec = primary?.metric_spec;
+  if (!metricSpec) return undefined;
+
+  return {
+    clusterIcc: metricSpec.icc ?? undefined,
+    clusterCv: metricSpec.cv ?? undefined,
+    clusterAvgClusterSize: metricSpec.avg_cluster_size ?? undefined,
+  };
 };
 
 export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFrequentistDesignSpecInput {

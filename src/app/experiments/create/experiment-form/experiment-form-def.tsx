@@ -23,6 +23,7 @@ import {
 import { ExperimentsSummarizeFreqScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-freq-screen';
 import {
   convertToFrequentistDesignSpec,
+  getClusterStatsFromPowerCheckResponse,
   getReasonableEndDate,
   getReasonableStartDate,
   removeFieldByName,
@@ -500,12 +501,12 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             createExperimentError: undefined,
           };
         }
-        if (msg.type === 'set-cluster-stats-from-datasource') {
+        if (msg.type === 'clear-cluster-stats') {
           return {
             ...data,
-            clusterIcc: msg.icc,
-            clusterCv: msg.cv,
-            clusterAvgClusterSize: msg.avgClusterSize,
+            clusterIcc: undefined,
+            clusterCv: undefined,
+            clusterAvgClusterSize: undefined,
             powerCheckResponse: undefined,
             mdePowerCheckResponse: undefined,
             desiredN: undefined,
@@ -549,6 +550,10 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           };
         }
         if (msg.type === 'set-chosen-n' || msg.type === 'set-power-check-response') {
+          const clusterStatsFromPowerCheck =
+            msg.type === 'set-power-check-response' && msg.response
+              ? getClusterStatsFromPowerCheckResponse(data, msg.response)
+              : undefined;
           switch (msg.sampleSizeOption) {
             case PowerCheckOption.NONE:
             case PowerCheckOption.USE_POWER_CHECK:
@@ -570,6 +575,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
                 desiredN: msg.desiredN,
                 powerCheckResponse: msg.response,
                 createExperimentError: undefined,
+                ...clusterStatsFromPowerCheck,
               };
             case PowerCheckOption.USE_ALL_NON_NULL_SAMPLES:
             case PowerCheckOption.ENTER_OWN:
@@ -586,6 +592,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
                 desiredN: msg.desiredN,
                 mdePowerCheckResponse: msg.response,
                 createExperimentError: undefined,
+                ...clusterStatsFromPowerCheck,
               };
             default:
               return data;
