@@ -430,6 +430,16 @@ export default function ExperimentViewPage() {
             <Separator orientation="vertical" />
           </>
           <Flex align="center" gap="2">
+          {isFrequentistSpec(design_spec) && (
+            <>
+              <DesignDetailsDialog
+                designSpec={design_spec}
+                experimentSchema={experiment.experiment_schema}
+                assignSummary={assign_summary}
+              />
+              <Separator orientation="vertical" />
+            </>
+          )}
             <FileTextIcon />
             <EditableTextField
               value={design_url ?? ''}
@@ -522,11 +532,6 @@ export default function ExperimentViewPage() {
                     </Flex>
                   </Badge>
                   <MdeBadge value={mdePct} />
-                  <DesignDetailsDialog
-                    designSpec={design_spec}
-                    experimentSchema={experiment.experiment_schema}
-                    assignSummary={assign_summary}
-                />
                 </Flex>
               ) : isBanditAnalysis(selectedAnalysisState.data) &&
                 selectedAnalysisState.banditEffects &&
