@@ -8,6 +8,7 @@ import { StrataBuilder } from '@/components/features/experiments/strata-builder'
 import { useCreateExperiment, useInspectTableInDatasource } from '@/api/admin';
 import { CreateExperimentResponse, FieldMetadata, FilterInput } from '@/api/methods.schemas';
 import { PowerCheckSection, PowerCheckSectionAction } from './power-check-section';
+import { ClusterStatisticsSectionAction } from './cluster-statistics-section';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import {
   convertToFrequentistDesignSpec,
@@ -20,6 +21,7 @@ import { GenericErrorCallout } from '@/components/ui/generic-error';
 export type ExperimentFreqStackScreenMessage =
   | MetricBuilderAction
   | PowerCheckSectionAction
+  | ClusterStatisticsSectionAction
   | { type: 'set-filters'; filters: FilterInput[] }
   | { type: 'set-strata'; strata: FieldMetadata[] }
   | { type: 'set-create-response'; response: CreateExperimentResponse }

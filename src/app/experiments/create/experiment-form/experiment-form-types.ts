@@ -123,6 +123,10 @@ export type ExperimentFormData = {
   mdePowerCheckResponse?: PowerResponseOutput;
   createExperimentResponse?: CreateExperimentResponse;
   createExperimentError?: ErrorType<unknown>;
+  // Values needed for cluster-randomized experiments
+  clusterAvgClusterSize?: number;
+  clusterIcc?: number;
+  clusterCv?: number;
 
   // experiment-describe-webhooks-screen
   selectedWebhookIds?: string[];

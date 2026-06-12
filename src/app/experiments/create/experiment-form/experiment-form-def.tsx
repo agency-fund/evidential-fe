@@ -23,6 +23,7 @@ import {
 import { ExperimentsSummarizeFreqScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-freq-screen';
 import {
   convertToFrequentistDesignSpec,
+  getClusterStatsFromPowerCheckResponse,
   getReasonableEndDate,
   getReasonableStartDate,
   removeFieldByName,
@@ -173,6 +174,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       render: ExperimentSelectDatasourceScreen,
       reducer: (data, msg) => {
         const shouldClearDependents = data.datasourceId !== msg.datasourceId || data.tableName !== msg.tableName;
+        const shouldClearClusterStats = shouldClearDependents || data.clusterKey !== msg.clusterKey || !msg.clusterKey;
         if (msg.type === 'set-datasource') {
           return {
             ...data,
@@ -187,6 +189,10 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             secondaryMetrics: shouldClearDependents ? undefined : data.secondaryMetrics,
             filters: shouldClearDependents ? undefined : data.filters,
             strata: shouldClearDependents ? undefined : removeFieldByName(data.strata, msg.primaryKey),
+
+            clusterIcc: shouldClearClusterStats ? undefined : data.clusterIcc,
+            clusterCv: shouldClearClusterStats ? undefined : data.clusterCv,
+            clusterAvgClusterSize: shouldClearClusterStats ? undefined : data.clusterAvgClusterSize,
 
             // Changing datasource should clear power check
             powerCheckResponse: undefined,
@@ -371,6 +377,9 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           return {
             ...data,
             primaryMetric: msg.primaryMetric,
+            clusterIcc: undefined,
+            clusterCv: undefined,
+            clusterAvgClusterSize: undefined,
             powerCheckResponse: undefined,
             mdePowerCheckResponse: undefined,
             desiredN: undefined,
@@ -383,6 +392,9 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             primaryMetric: msg.primaryMetric,
             secondaryMetrics: msg.secondaryMetrics,
+            clusterIcc: undefined,
+            clusterCv: undefined,
+            clusterAvgClusterSize: undefined,
             powerCheckResponse: undefined,
             mdePowerCheckResponse: undefined,
             desiredN: undefined,
@@ -395,6 +407,9 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             primaryMetric: msg.primaryMetric,
             secondaryMetrics: msg.secondaryMetrics,
+            clusterIcc: undefined,
+            clusterCv: undefined,
+            clusterAvgClusterSize: undefined,
             powerCheckResponse: undefined,
             mdePowerCheckResponse: undefined,
             desiredN: undefined,
@@ -442,6 +457,56 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           return {
             ...data,
             filters: msg.filters,
+            clusterIcc: undefined,
+            clusterCv: undefined,
+            clusterAvgClusterSize: undefined,
+            powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
+            desiredN: undefined,
+            sampleSizeOption: undefined,
+            createExperimentError: undefined,
+          };
+        }
+
+        if (msg.type === 'set-cluster-icc') {
+          return {
+            ...data,
+            clusterIcc: msg.value,
+            powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
+            desiredN: undefined,
+            sampleSizeOption: undefined,
+            createExperimentError: undefined,
+          };
+        }
+        if (msg.type === 'set-cluster-cv') {
+          return {
+            ...data,
+            clusterCv: msg.value,
+            powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
+            desiredN: undefined,
+            sampleSizeOption: undefined,
+            createExperimentError: undefined,
+          };
+        }
+        if (msg.type === 'set-cluster-avg-size') {
+          return {
+            ...data,
+            clusterAvgClusterSize: msg.value,
+            powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
+            desiredN: undefined,
+            sampleSizeOption: undefined,
+            createExperimentError: undefined,
+          };
+        }
+        if (msg.type === 'clear-cluster-stats') {
+          return {
+            ...data,
+            clusterIcc: undefined,
+            clusterCv: undefined,
+            clusterAvgClusterSize: undefined,
             powerCheckResponse: undefined,
             mdePowerCheckResponse: undefined,
             desiredN: undefined,
@@ -485,6 +550,10 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           };
         }
         if (msg.type === 'set-chosen-n' || msg.type === 'set-power-check-response') {
+          const clusterStatsFromPowerCheck =
+            msg.type === 'set-power-check-response' && msg.response
+              ? getClusterStatsFromPowerCheckResponse(data, msg.response)
+              : undefined;
           switch (msg.sampleSizeOption) {
             case PowerCheckOption.NONE:
             case PowerCheckOption.USE_POWER_CHECK:
@@ -506,6 +575,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
                 desiredN: msg.desiredN,
                 powerCheckResponse: msg.response,
                 createExperimentError: undefined,
+                ...clusterStatsFromPowerCheck,
               };
             case PowerCheckOption.USE_ALL_NON_NULL_SAMPLES:
             case PowerCheckOption.ENTER_OWN:
@@ -522,6 +592,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
                 desiredN: msg.desiredN,
                 mdePowerCheckResponse: msg.response,
                 createExperimentError: undefined,
+                ...clusterStatsFromPowerCheck,
               };
             default:
               return data;
