@@ -6,6 +6,7 @@ import { XSpinner } from '@/components/ui/x-spinner';
 import { Box, Flex, IconButton, Select, Text } from '@radix-ui/themes';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { SelectClusterKey } from '@/app/experiments/create/experiment-form/select-cluster-key';
+import { isFreqExperimentType } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { SelectPrimaryKey } from '@/app/experiments/create/experiment-form/select-primary-key';
 import { useFeatureFlag } from '@/services/feature-flags/use-feature-flag';
 import { ReloadIcon } from '@radix-ui/react-icons';
@@ -134,7 +135,7 @@ export const SelectTableScreen = ({
         />
       </Box>
 
-      {ffClusterExperimentsEnabled && (
+      {ffClusterExperimentsEnabled && isFreqExperimentType(data.experimentType) && (
         <Box maxWidth={'50%'}>
           <SelectClusterKey
             tableData={tableData}

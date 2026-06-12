@@ -37,8 +37,9 @@ export const ExperimentSelectDatasourceScreen = ({
       tableName: data.tableName,
       primaryKey: data.primaryKey,
       clusterKey: data.clusterKey,
+      experimentType: data.experimentType,
     }),
-    [data.clusterKey, data.datasourceId, data.primaryKey, data.tableName],
+    [data.clusterKey, data.datasourceId, data.experimentType, data.primaryKey, data.tableName],
   );
 
   return (

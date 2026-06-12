@@ -7,12 +7,14 @@ import {
   DatasourceFormData as CreateDatasourceFormData,
   defaultDatasourceFormData,
 } from '@/components/features/datasources/add-datasource-form';
+import { ExperimentType } from '@/app/experiments/create/experiment-form/experiment-form-types';
 
 export type DatasourceFormInputData = {
   datasourceId?: string;
   tableName?: string;
   primaryKey?: string;
   clusterKey?: string;
+  experimentType?: ExperimentType;
 };
 // Form data for the datasource selection/creation wizard
 export type DatasourceFormData = {
@@ -24,6 +26,8 @@ export type DatasourceFormData = {
   primaryKey?: string;
   // Optional cluster key field for cluster-randomized experiments
   clusterKey?: string;
+  // Experiment type context from the parent wizard (read-only)
+  experimentType?: ExperimentType;
   // Selection mode: existing or create
   selectionMode: 'existing' | 'create';
   // Create datasource form state (reuse existing interface)
@@ -43,6 +47,7 @@ export const DatasourceForm: WizardForm<DatasourceFormData, DatasourceScreenId, 
     tableName: inputData?.tableName,
     primaryKey: inputData?.primaryKey,
     clusterKey: inputData?.clusterKey,
+    experimentType: inputData?.experimentType,
     selectionMode: 'existing',
   }),
   initialScreenId: () => 'select-datasource',
