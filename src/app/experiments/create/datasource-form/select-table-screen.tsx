@@ -7,6 +7,7 @@ import { Box, Flex, IconButton, Select, Text } from '@radix-ui/themes';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { SelectClusterKey } from '@/app/experiments/create/experiment-form/select-cluster-key';
 import { SelectPrimaryKey } from '@/app/experiments/create/experiment-form/select-primary-key';
+import { useFeatureFlag } from '@/services/feature-flags/use-feature-flag';
 import { ReloadIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 
@@ -19,6 +20,7 @@ export const SelectTableScreen = ({
   data,
   dispatch,
 }: ScreenProps<DatasourceFormData, SelectTableMessages, DatasourceScreenId>) => {
+  const ffClusterExperimentsEnabled = useFeatureFlag('clusterExperiments');
   const [refresh, setRefresh] = useState(false);
   const {
     data: inspectData,
@@ -132,16 +134,18 @@ export const SelectTableScreen = ({
         />
       </Box>
 
-      <Box maxWidth={'50%'}>
-        <SelectClusterKey
-          tableData={tableData}
-          isLoading={isLoadingTable}
-          value={data.clusterKey}
-          onChange={(value) => dispatch({ type: 'set-cluster-key', value })}
-          disabled={primaryKeyDisabled}
-          excludeFieldName={data.primaryKey}
-        />
-      </Box>
+      {ffClusterExperimentsEnabled && (
+        <Box maxWidth={'50%'}>
+          <SelectClusterKey
+            tableData={tableData}
+            isLoading={isLoadingTable}
+            value={data.clusterKey}
+            onChange={(value) => dispatch({ type: 'set-cluster-key', value })}
+            disabled={primaryKeyDisabled}
+            excludeFieldName={data.primaryKey}
+          />
+        </Box>
+      )}
     </Flex>
   );
 };
