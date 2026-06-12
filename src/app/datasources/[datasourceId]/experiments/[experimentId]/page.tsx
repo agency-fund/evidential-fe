@@ -425,7 +425,6 @@ export default function ExperimentViewPage() {
           <>
             <TargetingDialog
               designSpec={design_spec}
-              experimentSchema={experiment.experiment_schema}
               webhookIds={experiment.config.webhooks ?? []}
             />
             <Separator orientation="vertical" />

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { MixerHorizontalIcon } from '@radix-ui/react-icons';
 import { Box, Button, Dialog, Flex } from '@radix-ui/themes';
 import { AssignSummary, DataType, DesignSpecOutput, ParticipantsSchemaOutput } from '@/api/methods.schemas';
 import { isFrequentistSpec } from '@/app/experiments/create/experiment-form/experiment-form-types';
@@ -49,7 +50,7 @@ export function DesignDetailsDialog({ designSpec, experimentSchema, assignSummar
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger>
         <Button variant="ghost" color="blue">
-          Design Details
+          <MixerHorizontalIcon /> Design Details
         </Button>
       </Dialog.Trigger>
       <Dialog.Content size="4" width="700px">
@@ -58,7 +59,13 @@ export function DesignDetailsDialog({ designSpec, experimentSchema, assignSummar
           <Box maxHeight="70vh" overflow="auto" pr="1">
             <Flex direction="column" gap="4">
               <MetricsSection metrics={metrics} strata={strata} />
-              <PowerBalanceSection confidence={confidence} power={power} desiredN={desiredN} assignSummary={assignSummary} showActualSampleSize={false}/>
+              <PowerBalanceSection
+                confidence={confidence}
+                power={power}
+                desiredN={desiredN}
+                assignSummary={assignSummary}
+                showActualSampleSize={false}
+              />
             </Flex>
           </Box>
           <Flex gap="3" justify="end">

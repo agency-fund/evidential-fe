@@ -23,6 +23,7 @@ export function PowerBalanceSection({
   assignSummary,
   onEdit,
   showDesiredSampleSize = true,
+  showActualSampleSize = true,
   showTitle = true,
 }: PowerBalanceSectionProps) {
   const balanceCheck = assignSummary?.balance_check;
@@ -61,10 +62,12 @@ export function PowerBalanceSection({
                 <DataList.Value>{desiredN ?? 'N/A'}</DataList.Value>
               </DataList.Item>
             )}
-            <DataList.Item>
-              <DataList.Label>Actual Sample Size</DataList.Label>
-              <DataList.Value>{assignSummary?.sample_size ?? 'N/A'}</DataList.Value>
-            </DataList.Item>
+            {showActualSampleSize && (
+              <DataList.Item>
+                <DataList.Label>Actual Sample Size</DataList.Label>
+                <DataList.Value>{assignSummary?.sample_size ?? 'N/A'}</DataList.Value>
+              </DataList.Item>
+            )}
           </DataList.Root>
         </Flex>
 
