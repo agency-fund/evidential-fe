@@ -15,9 +15,25 @@ interface EditableTextFieldProps {
   onSubmit: (value: string) => Promise<void> | void;
   children: ReactNode;
   size?: '1' | '2' | '3';
+  type?: 'text' | 'number';
+  min?: number;
+  max?: number;
+  step?: number;
+  /** Minimum width for the edit input (not the preview). */
+  minWidth?: string;
 }
 
-export function EditableTextField({ value, onSubmit, children, size = '2' }: EditableTextFieldProps) {
+export function EditableTextField({
+  value,
+  onSubmit,
+  children,
+  size = '2',
+  type = 'text',
+  min,
+  max,
+  step,
+  minWidth,
+}: EditableTextFieldProps) {
   const [error, setError] = useState<boolean>();
 
   const handleSubmit = async (value: string) => {
@@ -43,6 +59,10 @@ export function EditableTextField({ value, onSubmit, children, size = '2' }: Edi
               <EditableInput>
                 {({ value, onChange, onKeyDown }) => (
                   <TextField.Root
+                    type={type}
+                    min={min}
+                    max={max}
+                    step={step}
                     value={value}
                     onChange={(e) => {
                       onChange(e);
@@ -52,6 +72,7 @@ export function EditableTextField({ value, onSubmit, children, size = '2' }: Edi
                     size={size}
                     variant={error ? 'soft' : 'surface'}
                     color={error ? 'red' : undefined}
+                    style={minWidth ? { minWidth } : undefined}
                     autoFocus
                   />
                 )}
