@@ -2,11 +2,11 @@
 import { ScreenProps } from '@/services/wizard/wizard-types';
 import { DatasourceFormData, DatasourceScreenId } from './datasource-form-def';
 import { useInspectDatasource, useInspectTableInDatasource } from '@/api/admin';
+import { PreassignedFrequentistExperimentSpecInputExperimentType } from '@/api/methods.schemas';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { Box, Flex, IconButton, Select, Text } from '@radix-ui/themes';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { SelectClusterKey } from '@/app/experiments/create/experiment-form/select-cluster-key';
-import { isFreqExperimentType } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { SelectPrimaryKey } from '@/app/experiments/create/experiment-form/select-primary-key';
 import { useFeatureFlag } from '@/services/feature-flags/use-feature-flag';
 import { ReloadIcon } from '@radix-ui/react-icons';
@@ -135,18 +135,19 @@ export const SelectTableScreen = ({
         />
       </Box>
 
-      {ffClusterExperimentsEnabled && isFreqExperimentType(data.experimentType) && (
-        <Box maxWidth={'50%'}>
-          <SelectClusterKey
-            tableData={tableData}
-            isLoading={isLoadingTable}
-            value={data.clusterKey}
-            onChange={(value) => dispatch({ type: 'set-cluster-key', value })}
-            disabled={primaryKeyDisabled}
-            excludeFieldName={data.primaryKey}
-          />
-        </Box>
-      )}
+      {ffClusterExperimentsEnabled &&
+        data.experimentType === PreassignedFrequentistExperimentSpecInputExperimentType.freq_preassigned && (
+          <Box maxWidth={'50%'}>
+            <SelectClusterKey
+              tableData={tableData}
+              isLoading={isLoadingTable}
+              value={data.clusterKey}
+              onChange={(value) => dispatch({ type: 'set-cluster-key', value })}
+              disabled={primaryKeyDisabled}
+              excludeFieldName={data.primaryKey}
+            />
+          </Box>
+        )}
     </Flex>
   );
 };
