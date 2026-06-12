@@ -1,9 +1,10 @@
-import { Badge, Flex, Text } from '@radix-ui/themes';
+import { Badge, Flex, Text, Tooltip } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
 import { DataType, InspectDatasourceTableResponse } from '@/api/methods.schemas';
 import { Combobox } from '@/components/ui/combobox';
 import { useEffect, useMemo, useState } from 'react';
+import { InfoCircledIcon } from '@radix-ui/react-icons';
 
 interface RightBadgesProps {
   primary_key: boolean;
@@ -71,9 +72,15 @@ export const SelectPrimaryKey = ({ tableData, isLoading, value, onChange, disabl
 
   return (
     <Flex direction="column" gap={'3'}>
-      <Text as="label" size="2" weight="bold">
-        Unique ID
-      </Text>
+      <Flex align="center" gap="1">
+        <Text as="label" size="2" weight="bold">
+          Unique ID
+        </Text>
+        <Tooltip content="Select the field that will uniquely identify each individual participant in the experiment.">
+          <InfoCircledIcon />
+        </Tooltip>
+      </Flex>
+
       {showSpinner ? (
         <XSpinner message="Loading fields..." />
       ) : (

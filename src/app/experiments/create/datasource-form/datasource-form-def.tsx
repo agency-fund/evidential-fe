@@ -12,6 +12,7 @@ export type DatasourceFormInputData = {
   datasourceId?: string;
   tableName?: string;
   primaryKey?: string;
+  clusterKey?: string;
 };
 // Form data for the datasource selection/creation wizard
 export type DatasourceFormData = {
@@ -21,6 +22,8 @@ export type DatasourceFormData = {
   tableName?: string;
   // Selected primary key field
   primaryKey?: string;
+  // Optional cluster key field for cluster-randomized experiments
+  clusterKey?: string;
   // Selection mode: existing or create
   selectionMode: 'existing' | 'create';
   // Create datasource form state (reuse existing interface)
@@ -39,6 +42,7 @@ export const DatasourceForm: WizardForm<DatasourceFormData, DatasourceScreenId, 
     datasourceId: inputData?.datasourceId,
     tableName: inputData?.tableName,
     primaryKey: inputData?.primaryKey,
+    clusterKey: inputData?.clusterKey,
     selectionMode: 'existing',
   }),
   initialScreenId: () => 'select-datasource',
@@ -49,7 +53,13 @@ export const DatasourceForm: WizardForm<DatasourceFormData, DatasourceScreenId, 
       render: SelectDatasourceScreen,
       reducer: (data, msg) => {
         if (msg.type === 'set-datasource') {
-          return { ...data, datasourceId: msg.value, tableName: undefined, primaryKey: undefined };
+          return {
+            ...data,
+            datasourceId: msg.value,
+            tableName: undefined,
+            primaryKey: undefined,
+            clusterKey: undefined,
+          };
         }
         if (msg.type === 'set-mode') {
           if (msg.value === 'create') {
@@ -64,6 +74,7 @@ export const DatasourceForm: WizardForm<DatasourceFormData, DatasourceScreenId, 
             selectionMode: 'existing',
             tableName: undefined,
             primaryKey: undefined,
+            clusterKey: undefined,
             createForm: defaultDatasourceFormData(),
           };
         }
@@ -78,10 +89,17 @@ export const DatasourceForm: WizardForm<DatasourceFormData, DatasourceScreenId, 
       render: SelectTableScreen,
       reducer: (data, msg) => {
         if (msg.type === 'set-table') {
-          return { ...data, tableName: msg.value, primaryKey: undefined };
+          return { ...data, tableName: msg.value, primaryKey: undefined, clusterKey: undefined };
         }
         if (msg.type === 'set-primary-key') {
-          return { ...data, primaryKey: msg.value };
+          return {
+            ...data,
+            primaryKey: msg.value,
+            clusterKey: data.clusterKey === msg.value ? undefined : data.clusterKey, // Can't be the same as the primary key
+          };
+        }
+        if (msg.type === 'set-cluster-key') {
+          return { ...data, clusterKey: msg.value };
         }
         return data;
       },

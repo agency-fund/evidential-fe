@@ -179,6 +179,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             datasourceId: msg.datasourceId,
             tableName: msg.tableName,
             primaryKey: msg.primaryKey,
+            clusterKey: msg.clusterKey,
 
             // Clear metrics and filters if the datasource ID or table have changed. This could be improved by retain
             // entries based on the inspection results.

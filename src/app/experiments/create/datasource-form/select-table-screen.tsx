@@ -5,13 +5,15 @@ import { useInspectDatasource, useInspectTableInDatasource } from '@/api/admin';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { Box, Flex, IconButton, Select, Text } from '@radix-ui/themes';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { SelectClusterKey } from '@/app/experiments/create/experiment-form/select-cluster-key';
 import { SelectPrimaryKey } from '@/app/experiments/create/experiment-form/select-primary-key';
 import { ReloadIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 
 type SelectTableMessages =
   | { type: 'set-table'; value: string }
-  | { type: 'set-primary-key'; value: string | undefined };
+  | { type: 'set-primary-key'; value: string | undefined }
+  | { type: 'set-cluster-key'; value: string | undefined };
 
 export const SelectTableScreen = ({
   data,
@@ -127,6 +129,17 @@ export const SelectTableScreen = ({
           value={data.primaryKey}
           onChange={(value) => dispatch({ type: 'set-primary-key', value })}
           disabled={primaryKeyDisabled}
+        />
+      </Box>
+
+      <Box maxWidth={'50%'}>
+        <SelectClusterKey
+          tableData={tableData}
+          isLoading={isLoadingTable}
+          value={data.clusterKey}
+          onChange={(value) => dispatch({ type: 'set-cluster-key', value })}
+          disabled={primaryKeyDisabled}
+          excludeFieldName={data.primaryKey}
         />
       </Box>
     </Flex>
