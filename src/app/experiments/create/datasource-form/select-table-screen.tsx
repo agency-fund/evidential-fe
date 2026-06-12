@@ -20,7 +20,7 @@ export const SelectTableScreen = ({
   data,
   dispatch,
 }: ScreenProps<DatasourceFormData, SelectTableMessages, DatasourceScreenId>) => {
-  const ffClusterExperimentsEnabled = useFeatureFlag('clusterExperiments');
+  const ffClusterExperimentsEnabled = useFeatureFlag('cluster_experiments');
   const [refresh, setRefresh] = useState(false);
   const {
     data: inspectData,

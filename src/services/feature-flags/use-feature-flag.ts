@@ -1,30 +1,46 @@
 'use client';
 
+import { FLAG_DEFAULTS, FlagKey } from './feature-flags';
 import { useLocalStorage } from '@/providers/use-local-storage';
 
-import {
-  type FeatureFlagKey,
-  type FeatureFlagValue,
-  FEATURE_FLAGS,
-  getFeatureFlagDefault,
-  parseFeatureFlagStoredValue,
-} from './feature-flags';
-
 /**
- * Basic developer feature flag hook.
+ * Returns whether a feature flag is enabled.
  *
- * To set a feature flag in dev tools:
- *   localStorage.setItem('my_flag_storagekey', 'true');
- * Then refresh the page, or send the custom event with key defined by userLocalStorage e.g.:
- *   window.dispatchEvent(new StorageEvent('uls_my_flag_storagekey_event'));
+ * Resolution order:
+ * 1. `localStorage` override at `ff_<flagKey>` (developer tooling)
+ * 2. Build-time default from `FLAG_DEFAULTS` (env vars)
+ *
+ * @example
+ * ```tsx
+ * import { FLAGS } from './feature-flags';
+ *
+ * const clusterExperimentsEnabled = useFeatureFlag(FLAGS.CLUSTER_EXPERIMENTS);
+ * ```
+ *
+ * Override a flag from the browser console without refreshing:
+ *
+ * @example
+ * ```js
+ * const key = 'ff_cluster_experiments';
+ * const eventKey = `uls_${key}_event`;
+ *
+ * localStorage.setItem(key, true); // or false
+ * window.dispatchEvent(new StorageEvent(eventKey));
+ * ```
+ *
+ * Remove the override to fall back to the env default:
+ *
+ * @example
+ * ```js
+ * localStorage.removeItem(key);
+ * window.dispatchEvent(new StorageEvent(eventKey));
+ * ```
  */
-export function useFeatureFlag<K extends FeatureFlagKey>(key: K): FeatureFlagValue<K> {
-  const { storageKey } = FEATURE_FLAGS[key];
-  const [stored] = useLocalStorage<FeatureFlagValue<K>>(storageKey);
+export function useFeatureFlag(flagKey: FlagKey): boolean {
+  const [storedValue] = useLocalStorage<boolean>(`ff_${flagKey}`);
 
-  const override = parseFeatureFlagStoredValue(stored, key);
-  if (override !== undefined) {
-    return override;
+  if (storedValue !== undefined && storedValue !== null) {
+    return storedValue;
   }
-  return getFeatureFlagDefault(key);
+  return FLAG_DEFAULTS[flagKey];
 }
