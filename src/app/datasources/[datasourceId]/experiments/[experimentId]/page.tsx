@@ -357,7 +357,6 @@ export default function ExperimentViewPage() {
   if (!experiment) {
     return <Text>No experiment data found</Text>;
   }
-
   const { design_spec, assign_summary, decision, impact } = experiment.config;
   const { alpha, power } = getAlphaAndPower(experiment.config); // undefined for non-frequentist experiments
   const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;

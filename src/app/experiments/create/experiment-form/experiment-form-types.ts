@@ -101,9 +101,10 @@ export type ExperimentFormData = {
   // experiment-select-datasource-screen
   datasourceId?: string;
   tableName?: string;
+  primaryKey?: string;
+  clusterKey?: string;
 
   // experiment-freq-stack-screen
-  primaryKey?: string;
   primaryMetric?: MetricWithMDE;
   secondaryMetrics?: MetricWithMDE[];
   filters?: FilterInput[];

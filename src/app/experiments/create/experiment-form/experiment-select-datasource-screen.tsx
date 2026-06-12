@@ -11,6 +11,7 @@ type ExperimentSelectDatasourceMessages = {
   datasourceId: string;
   tableName: string;
   primaryKey?: string;
+  clusterKey?: string;
 };
 
 export const ExperimentSelectDatasourceScreen = ({
@@ -25,6 +26,7 @@ export const ExperimentSelectDatasourceScreen = ({
       datasourceId: formData.datasourceId!,
       tableName: formData.tableName!,
       primaryKey: formData.primaryKey,
+      clusterKey: formData.clusterKey,
     });
     navigateNext();
   };
@@ -34,8 +36,10 @@ export const ExperimentSelectDatasourceScreen = ({
       datasourceId: data.datasourceId,
       tableName: data.tableName,
       primaryKey: data.primaryKey,
+      clusterKey: data.clusterKey,
+      experimentType: data.experimentType,
     }),
-    [data.datasourceId, data.primaryKey, data.tableName],
+    [data.clusterKey, data.datasourceId, data.experimentType, data.primaryKey, data.tableName],
   );
 
   return (

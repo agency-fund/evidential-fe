@@ -105,6 +105,7 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
     design_spec: {
       ...commonFields,
       experiment_type: data.experimentType,
+      ...(data.experimentType === 'freq_preassigned' && data.clusterKey ? { cluster_key: data.clusterKey } : {}),
       ...(data.experimentType === 'freq_preassigned' && data.desiredN !== undefined
         ? { desired_n: data.desiredN }
         : {}),
