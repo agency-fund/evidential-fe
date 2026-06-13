@@ -3,7 +3,13 @@
 import { useState } from 'react';
 import { MixerHorizontalIcon } from '@radix-ui/react-icons';
 import { Box, Button, Dialog, Flex } from '@radix-ui/themes';
-import { AssignSummary, DataType, DesignSpecOutput, ParticipantsSchemaOutput } from '@/api/methods.schemas';
+import {
+  AssignSummary,
+  DataType,
+  DesignSpecOutput,
+  MetricPowerAnalysisOutput,
+  ParticipantsSchemaOutput,
+} from '@/api/methods.schemas';
 import { isFrequentistSpec } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { MetricDisplay, MetricsSection } from '@/components/features/experiments/sections/metrics-section';
 import { PowerBalanceSection } from '@/components/features/experiments/sections/power-balance-section';
@@ -12,21 +18,33 @@ interface DesignDetailsDialogProps {
   designSpec: DesignSpecOutput;
   experimentSchema: ParticipantsSchemaOutput | null | undefined;
   assignSummary: AssignSummary | null | undefined;
+  powerAnalyses?: MetricPowerAnalysisOutput[];
 }
 
 const toMdePercent = (value: number | null | undefined): string =>
   value === null || value === undefined ? 'unknown' : (value * 100).toFixed(1);
 
-export function DesignDetailsDialog({ designSpec, experimentSchema, assignSummary }: DesignDetailsDialogProps) {
+export function DesignDetailsDialog({
+  designSpec,
+  experimentSchema,
+  assignSummary,
+  powerAnalyses,
+}: DesignDetailsDialogProps) {
   const [open, setOpen] = useState(false);
 
   const fieldTypeByName = new Map((experimentSchema?.fields ?? []).map((field) => [field.field_name, field.data_type]));
-
-  const toMetricDisplay = (fieldName: string, mdePct: number | null | undefined): MetricDisplay => ({
-    field_name: fieldName,
-    data_type: fieldTypeByName.get(fieldName) ?? DataType.unknown,
-    mde: toMdePercent(mdePct),
-  });
+  const estimatedMdeByField = new Map(
+    (powerAnalyses ?? []).map((analysis) => [analysis.metric_spec.field_name, analysis.pct_change_with_desired_n]),
+  );
+  const toMetricDisplay = (fieldName: string, mdePct: number | null | undefined): MetricDisplay => {
+    const estimatedRaw = estimatedMdeByField.get(fieldName);
+    return {
+      field_name: fieldName,
+      data_type: fieldTypeByName.get(fieldName) ?? DataType.unknown,
+      mde: toMdePercent(mdePct),
+      estimatedMde: estimatedRaw != null ? (estimatedRaw * 100).toFixed(1) : null,
+    };
+  };
 
   let metrics: { primary?: MetricDisplay; secondary?: MetricDisplay[] } | undefined;
   let strata: string[] = [];
@@ -65,6 +83,8 @@ export function DesignDetailsDialog({ designSpec, experimentSchema, assignSummar
                 desiredN={desiredN}
                 assignSummary={assignSummary}
                 showActualSampleSize={false}
+                showBalanceCheck={false}
+                labelInPill={true}
               />
             </Flex>
           </Box>

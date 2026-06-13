@@ -359,7 +359,7 @@ export default function ExperimentViewPage() {
   }
 
   const { design_spec, assign_summary, decision, impact } = experiment.config;
-  const { alpha, power } = getAlphaAndPower(experiment.config); // undefined for non-frequentist experiments
+  const { alpha } = getAlphaAndPower(experiment.config); // undefined for non-frequentist experiments
   const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
   const isFrequentistExperiment = isFrequentistSpec(design_spec);
   const contexts = isBanditSpec(design_spec) ? (design_spec.contexts ?? []) : [];
@@ -367,17 +367,17 @@ export default function ExperimentViewPage() {
   const metricPowerAnalysis = experiment.config.power_analyses?.analyses?.find(
     (analysis) => analysis.metric_spec.field_name === selectedMetricAnalysis?.metric?.field_name,
   );
-  
+
   const targetMdePct =
     selectedMetricAnalysis?.metric?.metric_pct_change != null
       ? (selectedMetricAnalysis.metric.metric_pct_change * 100).toFixed(1)
       : null;
-  
+
   const estimatedMdePct =
     metricPowerAnalysis?.pct_change_with_desired_n != null
       ? (metricPowerAnalysis.pct_change_with_desired_n * 100).toFixed(1)
       : null;
-  
+
   const mdePct = estimatedMdePct ?? targetMdePct;
 
   const { timeseriesData, armMetadata, minDate, maxDate } = transformAnalysisForForestTimeseriesPlot(
@@ -433,10 +433,7 @@ export default function ExperimentViewPage() {
             </>
           )}
           <>
-            <TargetingDialog
-              designSpec={design_spec}
-              webhookIds={experiment.config.webhooks ?? []}
-            />
+            <TargetingDialog designSpec={design_spec} webhookIds={experiment.config.webhooks ?? []} />
             <Separator orientation="vertical" />
           </>
           <Flex align="center" gap="2">
@@ -531,10 +528,12 @@ export default function ExperimentViewPage() {
                       )}
                     </Flex>
                   </Badge>
-                  <MdeBadge value={mdePct} kind={estimatedMdePct != null ? 'estimated' : 'target'} />                  <DesignDetailsDialog
+                  <MdeBadge value={mdePct} kind={estimatedMdePct != null ? 'estimated' : 'target'} />
+                  <DesignDetailsDialog
                     designSpec={design_spec}
                     experimentSchema={experiment.experiment_schema}
                     assignSummary={assign_summary}
+                    powerAnalyses={experiment.config.power_analyses?.analyses}
                   />
                 </Flex>
               ) : isBanditAnalysis(selectedAnalysisState.data) &&
@@ -611,32 +610,7 @@ export default function ExperimentViewPage() {
                   </Flex>
                 </Badge>
               </Flex>
-              {isFrequentistExperiment ? (
-                <Flex gap="3" wrap="wrap">
-                  <Badge size="2">
-                    <Flex gap="4" align="center">
-                      <Heading size="2">Confidence:</Heading>
-                      <Flex gap="2" align="center">
-                        <Text>{alpha ? `${(1 - alpha) * 100}%` : '?'}</Text>
-                        <Tooltip content="Chance that our test correctly shows no significant difference, if there truly is none. (The probability of avoiding a false positive.)">
-                          <InfoCircledIcon />
-                        </Tooltip>
-                      </Flex>
-                    </Flex>
-                  </Badge>
-                  <Badge size="2">
-                    <Flex gap="4" align="center">
-                      <Heading size="2">Power:</Heading>
-                      <Flex gap="2" align="center">
-                        <Text>{power ? `${power * 100}%` : '?'}</Text>
-                        <Tooltip content="Chance of detecting a difference at least as large as the pre-specified minimum effect for the metric, if that difference truly exists. (The probability of avoiding a false negative.)">
-                          <InfoCircledIcon />
-                        </Tooltip>
-                      </Flex>
-                    </Flex>
-                  </Badge>
-                </Flex>
-              ) : (
+              {!isFrequentistExperiment && (
                 <Badge size="2">
                   <Flex gap="4" align="center">
                     <Tooltip
