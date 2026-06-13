@@ -364,11 +364,21 @@ export default function ExperimentViewPage() {
   const isFrequentistExperiment = isFrequentistSpec(design_spec);
   const contexts = isBanditSpec(design_spec) ? (design_spec.contexts ?? []) : [];
 
-  // Calculate MDE percentage for the selected metric
-  let mdePct: string | null = null;
-  if (selectedMetricAnalysis?.metric?.metric_pct_change) {
-    mdePct = (selectedMetricAnalysis.metric.metric_pct_change * 100).toFixed(1);
-  }
+  const metricPowerAnalysis = experiment.config.power_analyses?.analyses?.find(
+    (analysis) => analysis.metric_spec.field_name === selectedMetricAnalysis?.metric?.field_name,
+  );
+  
+  const targetMdePct =
+    selectedMetricAnalysis?.metric?.metric_pct_change != null
+      ? (selectedMetricAnalysis.metric.metric_pct_change * 100).toFixed(1)
+      : null;
+  
+  const estimatedMdePct =
+    metricPowerAnalysis?.pct_change_with_desired_n != null
+      ? (metricPowerAnalysis.pct_change_with_desired_n * 100).toFixed(1)
+      : null;
+  
+  const mdePct = estimatedMdePct ?? targetMdePct;
 
   const { timeseriesData, armMetadata, minDate, maxDate } = transformAnalysisForForestTimeseriesPlot(
     analysisHistory,
@@ -430,16 +440,6 @@ export default function ExperimentViewPage() {
             <Separator orientation="vertical" />
           </>
           <Flex align="center" gap="2">
-          {isFrequentistSpec(design_spec) && (
-            <>
-              <DesignDetailsDialog
-                designSpec={design_spec}
-                experimentSchema={experiment.experiment_schema}
-                assignSummary={assign_summary}
-              />
-              <Separator orientation="vertical" />
-            </>
-          )}
             <FileTextIcon />
             <EditableTextField
               value={design_url ?? ''}
@@ -531,7 +531,11 @@ export default function ExperimentViewPage() {
                       )}
                     </Flex>
                   </Badge>
-                  <MdeBadge value={mdePct} />
+                  <MdeBadge value={mdePct} kind={estimatedMdePct != null ? 'estimated' : 'target'} />                  <DesignDetailsDialog
+                    designSpec={design_spec}
+                    experimentSchema={experiment.experiment_schema}
+                    assignSummary={assign_summary}
+                  />
                 </Flex>
               ) : isBanditAnalysis(selectedAnalysisState.data) &&
                 selectedAnalysisState.banditEffects &&
