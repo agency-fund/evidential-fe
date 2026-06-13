@@ -129,6 +129,7 @@ export function ExperimentConfirmationDisplay({
                 desiredN={desiredN}
                 assignSummary={response.assign_summary}
                 onEdit={onEditPowerBalance}
+                labelInPill={true}
               />
             )}
           </>
