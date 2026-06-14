@@ -23,6 +23,8 @@ export const SelectTableScreen = ({
 }: ScreenProps<DatasourceFormData, SelectTableMessages, DatasourceScreenId>) => {
   const ffClusterExperimentsEnabled = useFeatureFlag('cluster_experiments');
   const [refresh, setRefresh] = useState(false);
+  const [selectClusterKeyInput, setSelectClusterKeyInput] = useState(data.clusterKey ?? '');
+
   const {
     data: inspectData,
     isValidating: validatingDatasource,
@@ -36,7 +38,7 @@ export const SelectTableScreen = ({
           setRefresh(false);
         }
         if (!data.tableName && response.tables.length > 0) {
-          dispatch({ type: 'set-table', value: response.tables[0] });
+          handleTableChange(response.tables[0]);
         }
       },
     },
@@ -64,6 +66,19 @@ export const SelectTableScreen = ({
 
   const tables = inspectData?.tables ?? [];
   const primaryKeyDisabled = !data.tableName || !inspectData;
+  const showClusterKeyField =
+    ffClusterExperimentsEnabled &&
+    data.experimentType === PreassignedFrequentistExperimentSpecInputExperimentType.freq_preassigned;
+
+  function handleTableChange(tableName: string) {
+    setSelectClusterKeyInput('');
+    dispatch({ type: 'set-table', value: tableName });
+  }
+
+  function handleClusterKeyChange(inputText: string, selectedKey?: string) {
+    setSelectClusterKeyInput(inputText);
+    dispatch({ type: 'set-cluster-key', value: selectedKey });
+  }
 
   if (isLoading) {
     return <XSpinner message="Loading tables..." />;
@@ -93,10 +108,7 @@ export const SelectTableScreen = ({
             Select a table
           </Text>
           <Flex direction={'row'} gap={'3'}>
-            <Select.Root
-              value={data.tableName}
-              onValueChange={(tableName) => dispatch({ type: 'set-table', value: tableName })}
-            >
+            <Select.Root value={data.tableName} onValueChange={handleTableChange}>
               <Select.Trigger placeholder="Select a table" />
               <Select.Content>
                 {tables.map((table) => (
@@ -135,19 +147,18 @@ export const SelectTableScreen = ({
         />
       </Box>
 
-      {ffClusterExperimentsEnabled &&
-        data.experimentType === PreassignedFrequentistExperimentSpecInputExperimentType.freq_preassigned && (
-          <Box maxWidth={'50%'}>
-            <SelectClusterKey
-              tableData={tableData}
-              isLoading={isLoadingTable}
-              value={data.clusterKey}
-              onChange={(value) => dispatch({ type: 'set-cluster-key', value })}
-              disabled={primaryKeyDisabled}
-              excludeFieldName={data.primaryKey}
-            />
-          </Box>
-        )}
+      {showClusterKeyField && (
+        <Box maxWidth={'50%'}>
+          <SelectClusterKey
+            tableData={tableData}
+            isLoading={isLoadingTable}
+            inputValue={selectClusterKeyInput}
+            onChange={handleClusterKeyChange}
+            disabled={primaryKeyDisabled}
+            excludeFieldName={data.primaryKey}
+          />
+        </Box>
+      )}
     </Flex>
   );
 };
