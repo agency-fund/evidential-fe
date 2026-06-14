@@ -23,6 +23,7 @@ export const SelectTableScreen = ({
 }: ScreenProps<DatasourceFormData, SelectTableMessages, DatasourceScreenId>) => {
   const ffClusterExperimentsEnabled = useFeatureFlag('cluster_experiments');
   const [refresh, setRefresh] = useState(false);
+  const [selectPrimaryKeyInput, setSelectPrimaryKeyInput] = useState(data.primaryKey ?? '');
   const [selectClusterKeyInput, setSelectClusterKeyInput] = useState(data.clusterKey ?? '');
 
   const {
@@ -53,10 +54,9 @@ export const SelectTableScreen = ({
         enabled: !!data.datasourceId && !!data.tableName,
         onSuccess: (response) => {
           if (!data.primaryKey) {
-            if (response.primary_key_fields.length > 0) {
-              dispatch({ type: 'set-primary-key', value: response.primary_key_fields[0] });
-            } else if (response.detected_unique_id_fields.length > 0) {
-              dispatch({ type: 'set-primary-key', value: response.detected_unique_id_fields[0] });
+            const detectedPrimaryKey = response.primary_key_fields[0] ?? response.detected_unique_id_fields[0];
+            if (detectedPrimaryKey) {
+              handlePrimaryKeyChange(detectedPrimaryKey, detectedPrimaryKey);
             }
           }
         },
@@ -71,8 +71,14 @@ export const SelectTableScreen = ({
     data.experimentType === PreassignedFrequentistExperimentSpecInputExperimentType.freq_preassigned;
 
   function handleTableChange(tableName: string) {
+    setSelectPrimaryKeyInput('');
     setSelectClusterKeyInput('');
     dispatch({ type: 'set-table', value: tableName });
+  }
+
+  function handlePrimaryKeyChange(inputText: string, selectedKey?: string) {
+    setSelectPrimaryKeyInput(inputText);
+    dispatch({ type: 'set-primary-key', value: selectedKey });
   }
 
   function handleClusterKeyChange(inputText: string, selectedKey?: string) {
@@ -141,8 +147,8 @@ export const SelectTableScreen = ({
         <SelectPrimaryKey
           tableData={tableData}
           isLoading={isLoadingTable}
-          value={data.primaryKey}
-          onChange={(value) => dispatch({ type: 'set-primary-key', value })}
+          inputValue={selectPrimaryKeyInput}
+          onChange={handlePrimaryKeyChange}
           disabled={primaryKeyDisabled}
         />
       </Box>

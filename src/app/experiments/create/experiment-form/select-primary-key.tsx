@@ -3,7 +3,7 @@ import { XSpinner } from '@/components/ui/x-spinner';
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
 import { DataType, InspectDatasourceTableResponse } from '@/api/methods.schemas';
 import { Combobox } from '@/components/ui/combobox';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 
 interface RightBadgesProps {
@@ -29,25 +29,27 @@ interface ComboboxRowProps {
   recommended: boolean;
 }
 
-const ComboboxRow = ({ field_name, data_type, recommended, primary_key }: ComboboxRowProps) => {
-  return (
-    <Flex gap="2" align="center" justify="between" style={{ whiteSpace: 'nowrap' }}>
-      <Text size="2">{field_name}</Text>
-      <RightBadges recommended={recommended} type={data_type} primary_key={primary_key} />
-    </Flex>
-  );
-};
+const ComboboxRow = ({ field_name, data_type, recommended, primary_key }: ComboboxRowProps) => (
+  <Flex gap="2" align="center" justify="between" style={{ whiteSpace: 'nowrap' }}>
+    <Text size="2">{field_name}</Text>
+    <RightBadges recommended={recommended} type={data_type} primary_key={primary_key} />
+  </Flex>
+);
 
 interface SelectPrimaryKeyProps {
   tableData: InspectDatasourceTableResponse | undefined;
-  value: string | undefined;
+  /** Input text owned by the parent component. */
+  inputValue: string;
   isLoading: boolean;
-  onChange: (value: string | undefined) => void;
+  /**
+   * `inputText` is always the new input from typing or selection. `selectedKey` is set only on an
+   * exact unique field-name match (same as Combobox), otherwise undefined.
+   */
+  onChange: (inputText: string, selectedKey?: string) => void;
   disabled?: boolean;
 }
 
-export const SelectPrimaryKey = ({ tableData, isLoading, value, onChange, disabled }: SelectPrimaryKeyProps) => {
-  const [inputValue, setInputValue] = useState<string>(value ?? '');
+export const SelectPrimaryKey = ({ tableData, isLoading, inputValue, onChange, disabled }: SelectPrimaryKeyProps) => {
   const primaryKeyFields = useMemo(() => new Set(tableData?.primary_key_fields ?? []), [tableData]);
   const uniqueIdFields = useMemo(() => new Set(tableData?.detected_unique_id_fields ?? []), [tableData]);
   const orderedFields = useMemo(() => {
@@ -66,10 +68,6 @@ export const SelectPrimaryKey = ({ tableData, isLoading, value, onChange, disabl
   const exactMatchField = tableData?.fields.find((v) => v.field_name === inputValue);
   const showSpinner = isLoading && !disabled;
 
-  useEffect(() => {
-    setInputValue(value ?? '');
-  }, [value]);
-
   return (
     <Flex direction="column" gap={'3'}>
       <Flex align="center" gap="1">
@@ -85,20 +83,17 @@ export const SelectPrimaryKey = ({ tableData, isLoading, value, onChange, disabl
         <XSpinner message="Loading fields..." />
       ) : (
         <Combobox
-          value={inputValue ?? ''}
-          onChange={(value, key) => {
-            setInputValue(value);
-            onChange(key);
-          }}
+          value={inputValue}
+          onChange={onChange}
           options={orderedFields}
           rightSlot={
-            exactMatchField && (
+            exactMatchField ? (
               <RightBadges
                 primary_key={primaryKeyFields.has(exactMatchField.field_name)}
                 recommended={uniqueIdFields.has(exactMatchField.field_name)}
                 type={exactMatchField.data_type}
               />
-            )
+            ) : null
           }
           dropdownRow={({ option }) => (
             <ComboboxRow
