@@ -4,27 +4,30 @@ import { XSpinner } from '@/components/ui/x-spinner';
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
 import { DataType, InspectDatasourceTableResponse } from '@/api/methods.schemas';
 import { Combobox } from '@/components/ui/combobox';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 interface ComboboxRowProps {
   data_type: DataType;
   field_name: string;
 }
 
-const ComboboxRow = ({ field_name, data_type }: ComboboxRowProps) => {
-  return (
-    <Flex gap="2" align="center" justify="between" style={{ whiteSpace: 'nowrap' }}>
-      <Text size="2">{field_name}</Text>
-      <DataTypeBadge type={data_type} />
-    </Flex>
-  );
-};
+const ComboboxRow = ({ field_name, data_type }: ComboboxRowProps) => (
+  <Flex gap="2" align="center" justify="between" style={{ whiteSpace: 'nowrap' }}>
+    <Text size="2">{field_name}</Text>
+    <DataTypeBadge type={data_type} />
+  </Flex>
+);
 
 interface SelectClusterKeyProps {
   tableData: InspectDatasourceTableResponse | undefined;
-  value: string | undefined;
+  /** Input text owned by the parent component. */
+  inputValue: string;
   isLoading: boolean;
-  onChange: (value: string | undefined) => void;
+  /**
+   * `inputText` is always the new input from typing or selection. `selectedKey` is set only on an
+   * exact unique field-name match (same as Combobox), otherwise undefined.
+   */
+  onChange: (inputText: string, selectedKey?: string) => void;
   disabled?: boolean;
   excludeFieldName?: string; // to prevent the cluster key from being the same as the primary key
 }
@@ -32,12 +35,11 @@ interface SelectClusterKeyProps {
 export const SelectClusterKey = ({
   tableData,
   isLoading,
-  value,
+  inputValue,
   onChange,
   disabled,
   excludeFieldName,
 }: SelectClusterKeyProps) => {
-  const [inputValue, setInputValue] = useState<string>(value ?? '');
   const orderedFields = useMemo(() => {
     const fields = tableData?.fields ?? [];
     return fields
@@ -46,10 +48,6 @@ export const SelectClusterKey = ({
   }, [excludeFieldName, tableData]);
   const exactMatchField = tableData?.fields.find((v) => v.field_name === inputValue);
   const showSpinner = isLoading && !disabled;
-
-  useEffect(() => {
-    setInputValue(value ?? '');
-  }, [value]);
 
   return (
     <Flex direction="column" gap={'3'}>
@@ -73,10 +71,7 @@ export const SelectClusterKey = ({
       ) : (
         <Combobox
           value={inputValue}
-          onChange={(value, key) => {
-            setInputValue(value);
-            onChange(key);
-          }}
+          onChange={onChange}
           options={orderedFields}
           rightSlot={exactMatchField && <DataTypeBadge type={exactMatchField.data_type} />}
           dropdownRow={({ option }) => <ComboboxRow data_type={option.data_type} field_name={option.field_name} />}

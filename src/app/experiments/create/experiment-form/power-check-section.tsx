@@ -29,6 +29,7 @@ import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ZodError } from 'zod';
 import { useState } from 'react';
 import { SectionCard } from '@/components/ui/cards/section-card';
+import { ClusterStatisticsSection, ClusterStatisticsSectionAction } from './cluster-statistics-section';
 
 export type PowerCheckSectionAction =
   | { type: 'set-confidence'; value: string }
@@ -38,7 +39,7 @@ export type PowerCheckSectionAction =
 
 interface PowerCheckSectionProps {
   data: ExperimentFormData;
-  dispatch: (action: PowerCheckSectionAction) => void;
+  dispatch: (action: PowerCheckSectionAction | ClusterStatisticsSectionAction) => void;
 }
 
 const isPowerCheckButtonEnabled = (isMutating: boolean, data: ExperimentFormData) => {
@@ -161,6 +162,12 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
           />
         </Flex>
       </Flex>
+
+      {data.clusterKey && (
+        <SectionCard title="Cluster Statistics">
+          <ClusterStatisticsSection data={data} dispatch={dispatch} />
+        </SectionCard>
+      )}
 
       <SectionCard title="Analysis">
         <Flex direction="column" gap="3" align="center">
