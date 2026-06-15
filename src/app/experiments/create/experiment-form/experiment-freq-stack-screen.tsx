@@ -171,6 +171,7 @@ export const ExperimentFreqStackScreen = ({
             secondaryMetrics={data.secondaryMetrics ?? []}
             dispatch={dispatch}
             metricFields={metricFields}
+            excludeKeys={[data.primaryKey, data.clusterKey].filter((key): key is string => key !== undefined)}
           />
         </Card>
 
