@@ -185,16 +185,20 @@ export const ExperimentFreqStackScreen = ({
           />
         </Card>
 
-        <Heading as="h3" size="3">
-          Strata
-        </Heading>
-        <Card>
-          <StrataBuilder
-            availableStrata={availableStrata}
-            selectedStrata={selectedStrata}
-            onStrataChange={(strata) => dispatch({ type: 'set-strata', strata })}
-          />
-        </Card>
+        {!data.clusterKey && (
+          <>
+            <Heading as="h3" size="3">
+              Strata
+            </Heading>
+            <Card>
+              <StrataBuilder
+                availableStrata={availableStrata}
+                selectedStrata={selectedStrata}
+                onStrataChange={(strata) => dispatch({ type: 'set-strata', strata })}
+              />
+            </Card>
+          </>
+        )}
 
         {data.experimentType == 'freq_preassigned' && (
           <Flex direction="column" gap={'3'}>
