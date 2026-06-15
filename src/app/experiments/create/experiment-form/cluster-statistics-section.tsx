@@ -11,9 +11,12 @@ export type ClusterStatisticsSectionAction =
   | { type: 'set-cluster-avg-size'; value: number | undefined }
   | { type: 'clear-cluster-stats' };
 
-const parseStatValue = (input: string): number | undefined => {
+const parseStatValue = (input: string, { min, max }: { min?: number; max?: number } = {}): number | undefined => {
   const parsed = input === '' ? undefined : Number(input);
-  return parsed !== undefined && !isNaN(parsed) ? parsed : undefined;
+  if (parsed === undefined || isNaN(parsed)) return undefined;
+  if (min !== undefined && parsed < min) return min;
+  if (max !== undefined && parsed > max) return max;
+  return parsed;
 };
 
 const formatStatValue = (value: number | undefined, decimalPlaces?: number): string => {
@@ -56,9 +59,9 @@ export function ClusterStatisticsSection({ data, dispatch }: ClusterStatisticsSe
   return (
     <Flex direction="column" gap="3">
       <Text size="2" color="gray">
-        Information on how your data is clustered is required to estimate sample size. We will derive them from your
-        data source, but you can enter your own below if desired. (NOTE: The ICC estimate entered or derived from the
-        primary metric will also be applied to all other metrics whether appropriate or not!)
+        Cluster statistics are needed to estimate sample size. These will be derived from your data source, but you can
+        enter your own values below. The Intracluster Correlation Coefficient (ICC) from the primary metric or entered
+        here is also applied to all other metrics.
       </Text>
 
       <Flex align="center" gap="2">
@@ -78,11 +81,11 @@ export function ClusterStatisticsSection({ data, dispatch }: ClusterStatisticsSe
 
       <Grid columns={{ initial: '1', sm: '3' }} gap="4">
         <Flex direction="column" gap="1">
-          <LabelWithTooltip label="Avg cluster size" tooltip="The average number of participants per cluster." />
+          <LabelWithTooltip label="Average Cluster Size" tooltip="The average number of participants per cluster." />
           <EditableTextField
             value={formatStatValue(data.clusterAvgClusterSize, 2)}
             onSubmit={(value) => {
-              dispatch({ type: 'set-cluster-avg-size', value: parseStatValue(value) });
+              dispatch({ type: 'set-cluster-avg-size', value: parseStatValue(value, { min: 0 }) });
             }}
             type="number"
             min={0}
@@ -95,12 +98,12 @@ export function ClusterStatisticsSection({ data, dispatch }: ClusterStatisticsSe
         <Flex direction="column" gap="1">
           <LabelWithTooltip
             label="Intracluster Correlation Coefficient"
-            tooltip="How similar individual Primary Metric values are within the same cluster, ranging from [0, 1]. Higher ICC means participants in a cluster tend to have similar results, which increases the total sample size you need."
+            tooltip="How similar individual primary metric values are within the same cluster. Values range from 0 to 1; higher values mean more similarity within clusters, which increases the total sample size you need."
           />
           <EditableTextField
             value={formatStatValue(data.clusterIcc, 3)}
             onSubmit={(value) => {
-              dispatch({ type: 'set-cluster-icc', value: parseStatValue(value) });
+              dispatch({ type: 'set-cluster-icc', value: parseStatValue(value, { min: 0, max: 1 }) });
             }}
             type="number"
             min={0}
@@ -116,12 +119,12 @@ export function ClusterStatisticsSection({ data, dispatch }: ClusterStatisticsSe
         <Flex direction="column" gap="1">
           <LabelWithTooltip
             label="Coefficient of Variation"
-            tooltip="How much your cluster sizes vary from one another, ranging from [0, infinity]. Higher CV means more variability, which increases the total sample size you need."
+            tooltip="How much your cluster sizes vary from one another. Higher values mean more variability, which increases the total sample size you need."
           />
           <EditableTextField
             value={formatStatValue(data.clusterCv, 2)}
             onSubmit={(value) => {
-              dispatch({ type: 'set-cluster-cv', value: parseStatValue(value) });
+              dispatch({ type: 'set-cluster-cv', value: parseStatValue(value, { min: 0 }) });
             }}
             type="number"
             min={0}

@@ -164,7 +164,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
       </Flex>
 
       {data.clusterKey && (
-        <SectionCard title="Cluster statistics">
+        <SectionCard title="Cluster Statistics">
           <ClusterStatisticsSection data={data} dispatch={dispatch} />
         </SectionCard>
       )}
