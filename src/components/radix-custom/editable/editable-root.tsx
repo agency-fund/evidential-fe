@@ -38,11 +38,6 @@ export function EditableRoot({ children, value, onSubmit }: EditableRootProps) {
 
   const edit = () => setIsEditing(true);
   const submit = async () => {
-    if (inputValue.trim() === '') {
-      cancel();
-      return;
-    }
-
     if (onSubmit) {
       try {
         await onSubmit(inputValue);
