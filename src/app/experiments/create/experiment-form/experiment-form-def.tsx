@@ -174,7 +174,11 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       render: ExperimentSelectDatasourceScreen,
       reducer: (data, msg) => {
         const shouldClearDependents = data.datasourceId !== msg.datasourceId || data.tableName !== msg.tableName;
-        const shouldClearClusterStats = shouldClearDependents || data.clusterKey !== msg.clusterKey || !msg.clusterKey;
+        const shouldClearClusterStats =
+          shouldClearDependents ||
+          !msg.clusterKey ||
+          data.clusterKey !== msg.clusterKey ||
+          data.primaryKey !== msg.primaryKey;
         if (msg.type === 'set-datasource') {
           return {
             ...data,
