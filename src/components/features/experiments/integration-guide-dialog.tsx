@@ -107,7 +107,7 @@ export function IntegrationGuideDialog({
   };
 
   const journeyEntries = journeysData
-    ? Object.entries(journeysData.journeys).map(([key, j]) => ({ name: j.name, uuid: j.uuid }))
+    ? Object.entries(journeysData.journeys).map(([_, j]) => ({ name: j.name, uuid: j.uuid }))
     : [];
   // const hasJourneys = journeyEntries.length > 0;
   const hasJourneys = true;
