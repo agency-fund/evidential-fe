@@ -163,6 +163,9 @@ export const isFreqExperimentType = (
   experimentType === PreassignedFrequentistExperimentSpecInputExperimentType.freq_preassigned ||
   experimentType === OnlineFrequentistExperimentSpecInputExperimentType.freq_online;
 
+export const isClusteredExperiment = (data: ExperimentFormData): boolean =>
+  data.experimentType === PreassignedFrequentistExperimentSpecInputExperimentType.freq_preassigned && !!data.clusterKey;
+
 export const isCmabExperimentType = (
   experimentType?: ExperimentType,
 ): experimentType is CMABExperimentSpecInputExperimentType =>

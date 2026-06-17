@@ -21,10 +21,10 @@ import {
   PowerCheckSampleSizeSelector,
 } from './power-check-sample-size-selector';
 import { CheckCircledIcon, CrossCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
-import { ExperimentFormData } from './experiment-form-types';
-import { PowerCheckOption } from './experiment-form-types';
+import { ExperimentFormData, isClusteredExperiment, PowerCheckOption } from './experiment-form-types';
 import { usePowerCheck } from '@/api/admin';
 import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
+import { MetricSampleSizeDisplay } from './metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ZodError } from 'zod';
 import { useState } from 'react';
@@ -123,6 +123,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   };
 
   const primaryMetricFieldName = data.primaryMetric?.metric.field_name ?? '';
+  const isClustered = isClusteredExperiment(data);
   const primaryPower =
     data.powerCheckResponse !== undefined && !validationError
       ? data.powerCheckResponse.analyses.find((a) => a.metric_spec.field_name === primaryMetricFieldName)
@@ -224,35 +225,32 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                       </DataList.Item>
                       <DataList.Item>
                         <DataList.Label>Required</DataList.Label>
-                        <DataList.Value>{primaryPower.target_n || '?'}</DataList.Value>
+                        <DataList.Value>
+                          <MetricSampleSizeDisplay
+                            analysis={primaryPower}
+                            isClustered={isClustered}
+                            variant="required"
+                          />
+                        </DataList.Value>
                       </DataList.Item>
                       <DataList.Item>
                         <DataList.Label>Available</DataList.Label>
                         <DataList.Value>
-                          {' '}
-                          {primaryPower.metric_spec.available_n == null ? (
-                            '?'
-                          ) : primaryPower.metric_spec.available_n === 0 ||
-                            primaryPower.metric_spec.available_n < (primaryPower.target_n ?? 0) ? (
-                            <span color="crimson">{primaryPower.metric_spec.available_n}</span>
-                          ) : (
-                            primaryPower.metric_spec.available_n
-                          )}
+                          <MetricSampleSizeDisplay
+                            analysis={primaryPower}
+                            isClustered={isClustered}
+                            variant="available"
+                          />
                         </DataList.Value>
                       </DataList.Item>
                       <DataList.Item>
                         <DataList.Label>Available (non-null)</DataList.Label>
                         <DataList.Value>
-                          {primaryPower.metric_spec.available_nonnull_n == null ? (
-                            '?'
-                          ) : primaryPower.metric_spec.available_nonnull_n === 0 ||
-                            primaryPower.metric_spec.available_nonnull_n < (primaryPower.target_n ?? 0) ||
-                            primaryPower.metric_spec.available_nonnull_n <
-                              (primaryPower.metric_spec.available_n ?? 0) ? (
-                            <Text color="orange">{primaryPower.metric_spec.available_nonnull_n}</Text>
-                          ) : (
-                            primaryPower.metric_spec.available_nonnull_n
-                          )}
+                          <MetricSampleSizeDisplay
+                            analysis={primaryPower}
+                            isClustered={isClustered}
+                            variant="available-nonnull"
+                          />
                         </DataList.Value>
                       </DataList.Item>
                       {primaryPower.pct_change_possible !== null && primaryPower.pct_change_possible !== undefined && (
@@ -288,29 +286,29 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                             {metricAnalysis.sufficient_n ? (
                               <Badge color={'green'}>Pass</Badge>
                             ) : (
-                              <Badge color={'orange'}>Failed</Badge>
-                            )}
-                          </Table.Cell>
-                          <Table.Cell align={'right'}>{metricAnalysis.target_n ?? ''}</Table.Cell>
-                          <Table.Cell align={'right'}>
-                            {metricAnalysis.metric_spec.available_n == null ? (
-                              '?'
-                            ) : metricAnalysis.metric_spec.available_n === 0 ||
-                              metricAnalysis.metric_spec.available_n < (metricAnalysis.target_n ?? 0) ? (
-                              <Text color="crimson">{metricAnalysis.metric_spec.available_n}</Text>
-                            ) : (
-                              metricAnalysis.metric_spec.available_n
+                              <Badge color={'red'}>Failed</Badge>
                             )}
                           </Table.Cell>
                           <Table.Cell align={'right'}>
-                            {metricAnalysis.metric_spec.available_nonnull_n == null ? (
-                              '?'
-                            ) : metricAnalysis.metric_spec.available_nonnull_n === 0 ||
-                              metricAnalysis.metric_spec.available_nonnull_n < (metricAnalysis.target_n ?? 0) ? (
-                              <Text color="crimson">{metricAnalysis.metric_spec.available_nonnull_n}</Text>
-                            ) : (
-                              metricAnalysis.metric_spec.available_nonnull_n
-                            )}
+                            <MetricSampleSizeDisplay
+                              analysis={metricAnalysis}
+                              isClustered={isClustered}
+                              variant="required"
+                            />
+                          </Table.Cell>
+                          <Table.Cell align={'right'}>
+                            <MetricSampleSizeDisplay
+                              analysis={metricAnalysis}
+                              isClustered={isClustered}
+                              variant="available"
+                            />
+                          </Table.Cell>
+                          <Table.Cell align={'right'}>
+                            <MetricSampleSizeDisplay
+                              analysis={metricAnalysis}
+                              isClustered={isClustered}
+                              variant="available-nonnull"
+                            />
                           </Table.Cell>
                         </Table.Row>
                       ))}
@@ -341,6 +339,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
               )}
               <PowerCheckSampleSizeSelector
                 datasourceId={data.datasourceId!}
+                isClustered={isClustered}
                 powerCheckResponse={data.powerCheckResponse}
                 primaryMetricFieldName={primaryMetricFieldName}
                 targetMde={data.primaryMetric?.mde}

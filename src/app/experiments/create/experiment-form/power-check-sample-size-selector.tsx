@@ -5,6 +5,7 @@ import { usePowerCheck } from '@/api/admin';
 import { AnyFrequentistDesignSpecInput, PowerResponseOutput } from '@/api/methods.schemas';
 import { PowerCheckDesiredNInput } from './power-check-desired-n-input';
 import { PowerCheckOption } from './experiment-form-types';
+import { MetricSampleSizeDisplay } from './metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 
 /**
@@ -34,6 +35,7 @@ interface PowerCheckSampleSizeSelectorProps {
   datasourceId: string;
   selectedSampleOption: PowerCheckOption;
   primaryMetricFieldName: string;
+  isClustered: boolean;
   /** Values for display in sample size mode (USE_POWER_CHECK) */
   powerCheckResponse: PowerResponseOutput;
   targetMde?: string;
@@ -94,6 +96,7 @@ export function PowerCheckSampleSizeSelector({
   datasourceId,
   selectedSampleOption,
   primaryMetricFieldName,
+  isClustered,
   powerCheckResponse,
   targetMde,
   mdePowerCheckResponse,
@@ -216,7 +219,16 @@ export function PowerCheckSampleSizeSelector({
             <Flex align="center" direction="column" gap="2">
               <Text size="2">Use the minimum required sample:</Text>
               <Flex height="32px" align="center">
-                <Text size="2">{targetN ?? 'N/A'}</Text>
+                {primaryAnalysis ? (
+                  <MetricSampleSizeDisplay
+                    analysis={primaryAnalysis}
+                    isClustered={isClustered}
+                    variant="required"
+                    align="center"
+                  />
+                ) : (
+                  <Text size="2">N/A</Text>
+                )}
               </Flex>
               <Flex align="center" style={{ minHeight: '24px' }}>
                 {targetMde !== undefined ? (
@@ -234,7 +246,16 @@ export function PowerCheckSampleSizeSelector({
             <Flex align="center" direction="column" gap="2">
               <Text size="2">Use all non-null samples:</Text>
               <Flex height="32px" align="center">
-                <Text size="2">{nonNullSamples ?? 'N/A'}</Text>
+                {primaryAnalysis ? (
+                  <MetricSampleSizeDisplay
+                    analysis={primaryAnalysis}
+                    isClustered={isClustered}
+                    variant="available-nonnull"
+                    align="center"
+                  />
+                ) : (
+                  <Text size="2">N/A</Text>
+                )}
               </Flex>
 
               <EstimatedMdeBadge
