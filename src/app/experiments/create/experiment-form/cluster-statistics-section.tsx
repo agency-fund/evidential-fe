@@ -119,7 +119,7 @@ export function ClusterStatisticsSection({ data, dispatch }: ClusterStatisticsSe
         <Flex direction="column" gap="1">
           <LabelWithTooltip
             label="Coefficient of Variation"
-            tooltip="How much your cluster sizes vary from one another. Higher values mean more variability, which increases the total sample size you need."
+            tooltip="How much your cluster sizes vary from one another. A value of 0 means all are of equal size; higher values mean more variability, which increases the total sample size you need."
           />
           <EditableTextField
             value={formatStatValue(data.clusterCv, 2)}
