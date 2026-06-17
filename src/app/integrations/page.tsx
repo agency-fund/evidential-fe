@@ -88,8 +88,8 @@ export default function IntegrationsPage() {
           />
 
           <DeleteAlertDialog
-            title="Delete Turn.io API Key"
-            description="Are you sure you want to delete the Turn.io API key? This will delete ALL stored Journeys and any arm -> Journey mappings, INCLUDING experiments that are still running."
+            title="Delete Turn.io Connection"
+            description="Are you sure you want to delete this Turn.io connection? This deletes the stored API key, all Journeys, and arm-to-Journey mappings, including those for experiments that are still running. This action cannot be undone."
             trigger={handleDeleteTurnConnection}
             loading={isDeletingTurnConnection}
             error={deleteError}
