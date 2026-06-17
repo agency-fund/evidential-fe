@@ -1,14 +1,5 @@
-FROM docker.io/node:22-bookworm AS deps
-ENV NPM_CONFIG_AUDIT=false
-ENV NPM_CONFIG_FUND=false
-ENV NPM_CONFIG_UPDATE_NOTIFIER=false
-WORKDIR /app
-COPY package*.json ./
-# Note: Railway builders will error if the id= is set via build variables.
-RUN --mount=type=cache,id=s/c2dbd22d-5c79-4173-be42-e99daa009a7c-/root/.npm,target=/root/.npm npm ci
-
-# Performs an optimized build of the NextJS application and exports it as a static bundle. This application has no
-# server-side JavaScript component.
+# Performs an optimized Next.js standalone build. The application itself is client-side only (no server-side
+# JavaScript in the app); the runtime image serves those assets via the bundled Node server in .next/standalone.
 FROM docker.io/node:22-bookworm AS build
 # These variables must be defined in the Railway settings with values appropriate for the deployment environment.
 # The default values are used when running this image to validate it in a local development environment. These defaults
@@ -22,19 +13,20 @@ ARG NEXT_PUBLIC_XNGIN_OIDC_REDIRECT_URI=http://localhost:3000/
 ARG NEXT_PUBLIC_XNGIN_SUPPORT_EMAIL
 ARG SENTRY_AUTH_TOKEN
 ARG RAILWAY_GIT_COMMIT_SHA
+ENV CI=true
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NPM_CONFIG_AUDIT=false
-ENV NPM_CONFIG_FUND=false
-ENV NPM_CONFIG_UPDATE_NOTIFIER=false
 ENV SENTRY_RELEASE=${RAILWAY_GIT_COMMIT_SHA}
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/package.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+# Note: Railway builders will error if the id= is set via build variables.
+RUN --mount=type=cache,id=s/c2dbd22d-5c79-4173-be42-e99daa009a7c-/pnpm/store,target=/pnpm/store \
+    corepack pnpm config set store-dir /pnpm/store && \
+    corepack pnpm install --frozen-lockfile
 COPY next.config.ts tsconfig.json ./
 COPY sentry.*.config.ts ./
 COPY src ./src
 COPY public ./public
-RUN npm run build
+RUN corepack pnpm run build
 
 # Defines a next server that delivers the compiled output of the build step.
 FROM docker.io/node:22-bookworm
