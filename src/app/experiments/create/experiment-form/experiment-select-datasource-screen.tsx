@@ -1,6 +1,6 @@
 'use client';
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
+import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { Wizard } from '@/services/wizard/Wizard';
 import { DatasourceForm, DatasourceFormData, DatasourceFormInputData } from '../datasource-form/datasource-form-def';
 import { Card, Flex } from '@radix-ui/themes';
@@ -11,6 +11,7 @@ type ExperimentSelectDatasourceMessages = {
   datasourceId: string;
   tableName: string;
   primaryKey?: string;
+  clusterKey?: string;
 };
 
 export const ExperimentSelectDatasourceScreen = ({
@@ -25,6 +26,7 @@ export const ExperimentSelectDatasourceScreen = ({
       datasourceId: formData.datasourceId!,
       tableName: formData.tableName!,
       primaryKey: formData.primaryKey,
+      clusterKey: formData.clusterKey,
     });
     navigateNext();
   };
@@ -34,8 +36,10 @@ export const ExperimentSelectDatasourceScreen = ({
       datasourceId: data.datasourceId,
       tableName: data.tableName,
       primaryKey: data.primaryKey,
+      clusterKey: data.clusterKey,
+      experimentType: data.experimentType,
     }),
-    [data.datasourceId, data.primaryKey, data.tableName],
+    [data.clusterKey, data.datasourceId, data.experimentType, data.primaryKey, data.tableName],
   );
 
   return (

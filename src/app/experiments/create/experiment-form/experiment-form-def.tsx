@@ -5,16 +5,7 @@ import {
   ExperimentMetadataScreen,
 } from '@/app/experiments/create/experiment-form/experiment-metadata-screen';
 import { ExperimentTypeScreen } from '@/app/experiments/create/experiment-form/experiment-type-screen';
-import {
-  Arm,
-  ContextType,
-  CreateExperimentResponse,
-  DesignSpecInput,
-  FieldMetadata,
-  FilterInput,
-  GetFiltersResponseElement,
-  PowerResponseOutput,
-} from '@/api/methods.schemas';
+import { ContextType } from '@/api/methods.schemas';
 import { abandonExperiment } from '@/api/admin';
 import { ExperimentSelectDatasourceScreen } from '@/app/experiments/create/experiment-form/experiment-select-datasource-screen';
 import { ExperimentSelectBinaryOrRealOutcomes } from '@/app/experiments/create/experiment-form/experiment-select-binary-or-real-outcomes';
@@ -31,6 +22,8 @@ import {
 } from '@/app/experiments/create/experiment-form/experiment-freq-stack-screen';
 import { ExperimentsSummarizeFreqScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-freq-screen';
 import {
+  convertToFrequentistDesignSpec,
+  getClusterStatsFromPowerCheckResponse,
   getReasonableEndDate,
   getReasonableStartDate,
   removeFieldByName,
@@ -41,86 +34,15 @@ import {
   toCmabBanditParams,
   toMabBanditParams,
 } from '@/app/experiments/create/experiment-form/experiment-bandit-helpers';
-import { ErrorType } from '@/services/orval-fetch';
 import {
-  BanditParams,
+  ExperimentFormData,
+  ExperimentScreenId,
+  ExperimentType,
   isBanditExperimentType,
-  MetricWithMDE,
+  isCmabExperimentType,
+  isFreqExperimentType,
   PowerCheckOption,
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
-
-export type ExperimentType = DesignSpecInput['experiment_type'];
-
-// Defines the entirety of the editable data collected via this wizard flow.
-export type ExperimentFormData = {
-  // experiment-metadata-screen
-  name?: string;
-  hypothesis?: string;
-  designUrl?: string;
-  startDate?: string;
-  endDate?: string;
-
-  // experiment-type-screen
-  experimentType?: ExperimentType;
-
-  // experiment-select-datasource-screen
-  datasourceId?: string;
-  tableName?: string;
-
-  // experiment-freq-stack-screen
-  primaryKey?: string;
-  primaryMetric?: MetricWithMDE;
-  secondaryMetrics?: MetricWithMDE[];
-  filters?: FilterInput[];
-  // Cache of available filter fields (and their data types) for lookup/display/search
-  availableFilterFields?: GetFiltersResponseElement[];
-  strata?: FieldMetadata[];
-  // These next 2 Experiment Parameters are strings to allow for empty values,
-  // which should be converted to numbers when making power or experiment creation requests.
-  confidence?: string;
-  power?: string;
-  // Populated when user clicks "Power Check" on DesignForm
-  desiredN?: number;
-  sampleSizeOption?: PowerCheckOption;
-  powerCheckResponse?: PowerResponseOutput;
-  createExperimentResponse?: CreateExperimentResponse;
-  createExperimentError?: ErrorType<unknown>;
-
-  // experiment-describe-webhooks-screen
-  selectedWebhookIds?: string[];
-
-  // experiment-describe-arms-screen
-  arms?: Omit<Arm, 'arm_id'>[];
-
-  // bandit flow config
-  bandit?: BanditParams;
-
-  // experiment-summarize-freq-screen (populated after createExperiment API call)
-  experimentId?: string;
-  commitError?: ErrorType<unknown>;
-};
-
-const isFreq = (experimentType: ExperimentType) => {
-  return experimentType === 'freq_online' || experimentType === 'freq_preassigned';
-};
-
-const isCmab = (experimentType: ExperimentType) => {
-  return experimentType === 'cmab_online';
-};
-
-// Defines a type for all known screen IDs for the experiment form. This type is used with screen() to
-// type-check the ids returned by nextScreen and prevScreen.
-export type ExperimentScreenId =
-  | 'metadata'
-  | 'experiment-type'
-  | 'freq-select-datasource'
-  | 'bandit-binary-or-real'
-  | 'describe-contexts'
-  | 'describe-arms'
-  | 'describe-bandit-arms'
-  | 'freq-stack'
-  | 'summarize-freq'
-  | 'summarize-bandit';
 
 // Helper to create screens with proper type inference
 const screen = packScreen<ExperimentFormData, ExperimentScreenId>();
@@ -154,9 +76,9 @@ const MAB_BREADCRUMBS: Array<ExperimentScreenId> = [
 const breadcrumbs = ({ experimentType }: { experimentType?: ExperimentType }) => {
   if (experimentType === undefined) {
     return [];
-  } else if (isFreq(experimentType)) {
+  } else if (isFreqExperimentType(experimentType)) {
     return FREQUENTIST_BREADCRUMBS;
-  } else if (isCmab(experimentType)) {
+  } else if (isCmabExperimentType(experimentType)) {
     return CMAB_BREADCRUMBS;
   } else {
     return MAB_BREADCRUMBS;
@@ -252,12 +174,18 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       render: ExperimentSelectDatasourceScreen,
       reducer: (data, msg) => {
         const shouldClearDependents = data.datasourceId !== msg.datasourceId || data.tableName !== msg.tableName;
+        const shouldClearClusterStats =
+          shouldClearDependents ||
+          !msg.clusterKey ||
+          data.clusterKey !== msg.clusterKey ||
+          data.primaryKey !== msg.primaryKey;
         if (msg.type === 'set-datasource') {
           return {
             ...data,
             datasourceId: msg.datasourceId,
             tableName: msg.tableName,
             primaryKey: msg.primaryKey,
+            clusterKey: msg.clusterKey,
 
             // Clear metrics and filters if the datasource ID or table have changed. This could be improved by retain
             // entries based on the inspection results.
@@ -266,8 +194,13 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             filters: shouldClearDependents ? undefined : data.filters,
             strata: shouldClearDependents ? undefined : removeFieldByName(data.strata, msg.primaryKey),
 
+            clusterIcc: shouldClearClusterStats ? undefined : data.clusterIcc,
+            clusterCv: shouldClearClusterStats ? undefined : data.clusterCv,
+            clusterAvgClusterSize: shouldClearClusterStats ? undefined : data.clusterAvgClusterSize,
+
             // Changing datasource should clear power check
             powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
           };
@@ -448,9 +381,14 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           return {
             ...data,
             primaryMetric: msg.primaryMetric,
+            clusterIcc: undefined,
+            clusterCv: undefined,
+            clusterAvgClusterSize: undefined,
             powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
         if (msg.type === 'primary-metric-deselect') {
@@ -458,9 +396,14 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             primaryMetric: msg.primaryMetric,
             secondaryMetrics: msg.secondaryMetrics,
+            clusterIcc: undefined,
+            clusterCv: undefined,
+            clusterAvgClusterSize: undefined,
             powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
         if (msg.type === 'promote-secondary-to-primary') {
@@ -468,9 +411,14 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             primaryMetric: msg.primaryMetric,
             secondaryMetrics: msg.secondaryMetrics,
+            clusterIcc: undefined,
+            clusterCv: undefined,
+            clusterAvgClusterSize: undefined,
             powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
         if (msg.type === 'secondary-metric-add') {
@@ -478,8 +426,10 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             secondaryMetrics: msg.secondaryMetrics,
             powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
         if (msg.type === 'secondary-metric-remove') {
@@ -487,8 +437,10 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             secondaryMetrics: msg.secondaryMetrics,
             powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
         if (msg.type === 'mde-change') {
@@ -497,8 +449,10 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             primaryMetric: msg.primaryMetric ?? data.primaryMetric,
             secondaryMetrics: msg.secondaryMetrics ?? data.secondaryMetrics,
             powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
 
@@ -507,9 +461,61 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           return {
             ...data,
             filters: msg.filters,
+            clusterIcc: undefined,
+            clusterCv: undefined,
+            clusterAvgClusterSize: undefined,
             powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
+          };
+        }
+
+        if (msg.type === 'set-cluster-icc') {
+          return {
+            ...data,
+            clusterIcc: msg.value,
+            powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
+            desiredN: undefined,
+            sampleSizeOption: undefined,
+            createExperimentError: undefined,
+          };
+        }
+        if (msg.type === 'set-cluster-cv') {
+          return {
+            ...data,
+            clusterCv: msg.value,
+            powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
+            desiredN: undefined,
+            sampleSizeOption: undefined,
+            createExperimentError: undefined,
+          };
+        }
+        if (msg.type === 'set-cluster-avg-size') {
+          return {
+            ...data,
+            clusterAvgClusterSize: msg.value,
+            powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
+            desiredN: undefined,
+            sampleSizeOption: undefined,
+            createExperimentError: undefined,
+          };
+        }
+        if (msg.type === 'clear-cluster-stats') {
+          return {
+            ...data,
+            clusterIcc: undefined,
+            clusterCv: undefined,
+            clusterAvgClusterSize: undefined,
+            powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
+            desiredN: undefined,
+            sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
 
@@ -530,8 +536,10 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             confidence: msg.value,
             powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
         if (msg.type === 'set-power') {
@@ -539,23 +547,60 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             power: msg.value,
             powerCheckResponse: undefined,
+            mdePowerCheckResponse: undefined,
             desiredN: undefined,
             sampleSizeOption: undefined,
+            createExperimentError: undefined,
           };
         }
-        if (msg.type === 'set-power-check-response') {
-          return {
-            ...data,
-            powerCheckResponse: msg.response,
-            desiredN: msg.desiredN,
-            sampleSizeOption: msg.sampleSizeOption,
-          };
-        }
-        if (msg.type === 'set-chosen-n') {
-          return { ...data, desiredN: msg.value };
-        }
-        if (msg.type === 'set-sample-size-option') {
-          return { ...data, sampleSizeOption: msg.value };
+        if (msg.type === 'set-chosen-n' || msg.type === 'set-power-check-response') {
+          const clusterStatsFromPowerCheck =
+            msg.type === 'set-power-check-response' && msg.response
+              ? getClusterStatsFromPowerCheckResponse(data, msg.response)
+              : undefined;
+          switch (msg.sampleSizeOption) {
+            case PowerCheckOption.NONE:
+            case PowerCheckOption.USE_POWER_CHECK:
+              if (msg.type === 'set-power-check-response') {
+                // For handling async min sample size responses, we check for stale requests by
+                // seeing if the spec used differs from what we would produce now, i.e. did the user
+                // change a value while the request was in flight?
+                // (We cannot check for sampleSizeOption && desiredN mismatches because they start off undefined.)
+                const expected_stringified_spec = JSON.stringify(
+                  convertToFrequentistDesignSpec({ ...data, desiredN: undefined }),
+                );
+                if (JSON.stringify(msg.designSpec) !== expected_stringified_spec) {
+                  return data;
+                }
+              }
+              return {
+                ...data,
+                sampleSizeOption: msg.sampleSizeOption,
+                desiredN: msg.desiredN,
+                powerCheckResponse: msg.response,
+                createExperimentError: undefined,
+                ...clusterStatsFromPowerCheck,
+              };
+            case PowerCheckOption.USE_ALL_NON_NULL_SAMPLES:
+            case PowerCheckOption.ENTER_OWN:
+              if (msg.type === 'set-power-check-response') {
+                // For handling async MDE responses, to check for stale requests we only need to
+                // verify that the option and desiredN haven't changed since the request was made.
+                if (msg.sampleSizeOption !== data.sampleSizeOption || msg.desiredN !== data.desiredN) {
+                  return data;
+                }
+              }
+              return {
+                ...data,
+                sampleSizeOption: msg.sampleSizeOption,
+                desiredN: msg.desiredN,
+                mdePowerCheckResponse: msg.response,
+                createExperimentError: undefined,
+                ...clusterStatsFromPowerCheck,
+              };
+            default:
+              return data;
+          }
         }
         if (msg.type === 'set-create-error') {
           return { ...data, createExperimentError: msg.response, createExperimentResponse: undefined };

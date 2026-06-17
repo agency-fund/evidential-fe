@@ -1,7 +1,7 @@
 'use client';
 
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-def';
+import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { Box, Button, Card, Flex, Heading, IconButton, RadioCards, Text, TextArea, TextField } from '@radix-ui/themes';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 
