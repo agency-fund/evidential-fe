@@ -4,9 +4,9 @@ import { Badge, Button, Flex, Separator, Text } from '@radix-ui/themes';
 import { Pencil2Icon, PersonIcon } from '@radix-ui/react-icons';
 import {
   ArmBandit,
-  CMABExperimentSpecOutput,
+  CMABExperimentSpec,
   CreateExperimentResponse,
-  MABExperimentSpecOutput,
+  MABExperimentSpec,
   PriorTypes,
 } from '@/api/methods.schemas';
 import { SectionCard } from '@/components/ui/cards/section-card';
@@ -14,7 +14,7 @@ import { ReadMoreText } from '@/components/ui/read-more-text';
 
 function isBanditExperiment(
   spec: CreateExperimentResponse['design_spec'],
-): spec is MABExperimentSpecOutput | CMABExperimentSpecOutput {
+): spec is MABExperimentSpec | CMABExperimentSpec {
   return spec.experiment_type === 'mab_online' || spec.experiment_type === 'cmab_online';
 }
 

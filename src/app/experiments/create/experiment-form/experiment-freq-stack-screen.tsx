@@ -6,7 +6,7 @@ import { MetricBuilder, MetricBuilderAction } from '@/components/features/experi
 import { FilterBuilder } from '@/components/features/experiments/querybuilder/filter-builder';
 import { StrataBuilder } from '@/components/features/experiments/strata-builder';
 import { useCreateExperiment, useInspectTableInDatasource } from '@/api/admin';
-import { CreateExperimentResponse, FieldMetadata, FilterInput } from '@/api/methods.schemas';
+import { CreateExperimentResponse, FieldMetadata, Filter } from '@/api/methods.schemas';
 import { PowerCheckSection, PowerCheckSectionAction } from './power-check-section';
 import { ClusterStatisticsSectionAction } from './cluster-statistics-section';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
@@ -22,7 +22,7 @@ export type ExperimentFreqStackScreenMessage =
   | MetricBuilderAction
   | PowerCheckSectionAction
   | ClusterStatisticsSectionAction
-  | { type: 'set-filters'; filters: FilterInput[] }
+  | { type: 'set-filters'; filters: Filter[] }
   | { type: 'set-strata'; strata: FieldMetadata[] }
   | { type: 'set-create-response'; response: CreateExperimentResponse }
   | { type: 'set-create-error'; response: ErrorType<unknown> };

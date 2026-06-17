@@ -2,13 +2,13 @@
 
 import { Button, DataList, Flex, Table, Text } from '@radix-ui/themes';
 import { Pencil2Icon } from '@radix-ui/react-icons';
-import { FilterOutput } from '@/api/methods.schemas';
+import { Filter } from '@/api/methods.schemas';
 import { SectionCard } from '@/components/ui/cards/section-card';
 
 interface DatasourceTargetingSectionProps {
   tableName?: string;
   primaryKey?: string;
-  filters: FilterOutput[];
+  filters: Filter[];
   onEditDatasource?: () => void;
   onEditFilters?: () => void;
 }
@@ -16,7 +16,7 @@ interface DatasourceTargetingSectionProps {
 const formatFilterValue = (value: Array<string | number | boolean | null>) =>
   value.map((v) => (v === null ? '(null)' : String(v))).join(', ');
 
-const getFilterOperatorLabel = (filter: FilterOutput) => {
+const getFilterOperatorLabel = (filter: Filter) => {
   if (filter.relation === 'between') {
     const min = filter.value[0] ?? null;
     const max = filter.value[1] ?? null;
@@ -28,7 +28,7 @@ const getFilterOperatorLabel = (filter: FilterOutput) => {
   return 'includes';
 };
 
-const formatFilterValueDisplay = (filter: FilterOutput) => {
+const formatFilterValueDisplay = (filter: Filter) => {
   if (filter.relation === 'between') {
     const min = filter.value[0] ?? null;
     const max = filter.value[1] ?? null;
