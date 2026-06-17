@@ -60,12 +60,11 @@ export const getSetOrganizationTurnConnectionMutationKey = (
 export type SetOrganizationTurnConnectionMutationResult = NonNullable<
 	Awaited<ReturnType<typeof setOrganizationTurnConnection>>
 >;
-export type SetOrganizationTurnConnectionMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
+export type SetOrganizationTurnConnectionMutationError =
+	ErrorType<HTTPExceptionError>;
 
 export const useSetOrganizationTurnConnection = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError>,
 >(
 	organizationId: string,
 	options?: {
@@ -300,12 +299,11 @@ export const getGetOrganizationTurnJourneysKey = (organizationId: string) =>
 export type GetOrganizationTurnJourneysQueryResult = NonNullable<
 	Awaited<ReturnType<typeof getOrganizationTurnJourneys>>
 >;
-export type GetOrganizationTurnJourneysQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
+export type GetOrganizationTurnJourneysQueryError =
+	ErrorType<HTTPExceptionError>;
 
 export const useGetOrganizationTurnJourneys = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError>,
 >(
 	organizationId: string,
 	options?: {

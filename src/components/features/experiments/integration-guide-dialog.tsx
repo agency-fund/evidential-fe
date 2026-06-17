@@ -55,7 +55,6 @@ export function IntegrationGuideDialog({
   const { error: turnConnectionError, isLoading: isLoadingTurnConnection } = useGetOrganizationTurnConnection(
     organizationId,
     { allow_missing: false },
-    { swr: { enabled: true } },
   );
   const noTurnConnection = turnConnectionError instanceof ApiError && turnConnectionError.response.status === 404;
   const hasTurnConnection = !isLoadingTurnConnection && !turnConnectionError;
@@ -75,6 +74,12 @@ export function IntegrationGuideDialog({
         if (data?.arm_to_journeys) {
           setArmJourneyDraft(data.arm_to_journeys);
           setStaleArmIds(data.stale_arm_ids || []);
+        }
+      },
+      onError: (error) => {
+        if (error instanceof ApiError && error.response.status === 404) {
+          setArmJourneyDraft({});
+          setStaleArmIds([]);
         }
       },
     },
@@ -101,8 +106,11 @@ export function IntegrationGuideDialog({
     setShowTurnConfig(false);
   };
 
-  const journeyEntries = journeysData ? Object.entries(journeysData.journeys) : [];
-  const hasJourneys = journeyEntries.length > 0;
+  const journeyEntries = journeysData
+    ? Object.entries(journeysData.journeys).map(([key, j]) => ({ name: j.name, uuid: j.uuid }))
+    : [];
+  // const hasJourneys = journeyEntries.length > 0;
+  const hasJourneys = true;
   const dontShowJourneysList = journeysError || (mappingError && !mappingNotFound) || !hasJourneys; // If there's an error or no journeys, don't show the dropdown list (but still show the section and any errors)
 
   return (
@@ -313,7 +321,7 @@ export function IntegrationGuideDialog({
                                       >
                                         <Select.Trigger placeholder="Select a journey..." style={{ flexGrow: 1 }} />
                                         <Select.Content position="popper">
-                                          {journeyEntries.map(([name, uuid]) => (
+                                          {journeyEntries.map(({ name, uuid }) => (
                                             <Select.Item key={uuid} value={uuid}>
                                               {name}
                                             </Select.Item>
