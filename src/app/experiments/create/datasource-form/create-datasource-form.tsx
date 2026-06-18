@@ -2,7 +2,7 @@
 import { getListOrganizationDatasourcesKey, useCreateDatasource } from '@/api/admin';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { Button, Flex } from '@radix-ui/themes';
-import { BqDsnInput, PostgresDsn, RedshiftDsn } from '@/api/methods.schemas';
+import { BqDsn, PostgresDsn, RedshiftDsn } from '@/api/methods.schemas';
 import { mutate } from 'swr';
 import { PostgresSslModes } from '@/services/typehelper';
 import { ApiError } from '@/services/orval-fetch';
@@ -40,7 +40,7 @@ export const CreateDatasourceForm = ({ onDatasourceCreated }: CreateDatasourceFo
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    let dsn: PostgresDsn | RedshiftDsn | BqDsnInput;
+    let dsn: PostgresDsn | RedshiftDsn | BqDsn;
     if (formData.dwhType === 'postgres') {
       dsn = {
         type: 'postgres',

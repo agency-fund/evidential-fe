@@ -1,14 +1,14 @@
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 import { z } from 'zod';
 import {
-  AnyFrequentistDesignSpecInput,
-  CMABExperimentSpecInputExperimentType,
+  AnyFrequentistDesignSpec,
+  CMABExperimentSpecExperimentType,
   CreateExperimentRequest,
   DesignSpecMetricRequest,
-  MABExperimentSpecInputExperimentType,
-  OnlineFrequentistExperimentSpecInputExperimentType,
-  PowerResponseOutput,
-  PreassignedFrequentistExperimentSpecInputExperimentType,
+  MABExperimentSpecExperimentType,
+  OnlineFrequentistExperimentSpecExperimentType,
+  PowerResponse,
+  PreassignedFrequentistExperimentSpecExperimentType,
   Stratum,
 } from '@/api/methods.schemas';
 import { createExperimentBody } from '@/api/admin.zod';
@@ -67,7 +67,7 @@ const getPrimaryMetricClusterStats = (data: ExperimentFormData) => {
 
 export const getClusterStatsFromPowerCheckResponse = (
   data: ExperimentFormData,
-  response: PowerResponseOutput,
+  response: PowerResponse,
 ): Pick<ExperimentFormData, 'clusterIcc' | 'clusterCv' | 'clusterAvgClusterSize'> | undefined => {
   if (!data.clusterKey || !data.primaryMetric) return undefined;
 
@@ -82,7 +82,7 @@ export const getClusterStatsFromPowerCheckResponse = (
   };
 };
 
-export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFrequentistDesignSpecInput {
+export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFrequentistDesignSpec {
   if (!isFreqExperimentType(data.experimentType)) {
     throw new Error('Frequentist configuration is required.');
   }
@@ -202,28 +202,28 @@ export function convertToBanditCreateRequest(data: ExperimentFormData): CreateEx
 
 export const ExperimentTypeOptions = [
   {
-    value: PreassignedFrequentistExperimentSpecInputExperimentType.freq_preassigned,
+    value: PreassignedFrequentistExperimentSpecExperimentType.freq_preassigned,
     title: 'Preassigned A/B Testing',
     badge: 'A/B',
     description:
       'Participants are assigned to experiment arms at design time. Suitable for controlled experiments with fixed sample sizes.',
   },
   {
-    value: OnlineFrequentistExperimentSpecInputExperimentType.freq_online,
+    value: OnlineFrequentistExperimentSpecExperimentType.freq_online,
     title: 'Online A/B Testing',
     badge: 'A/B',
     description:
       'Participants are assigned to experiment arms dynamically as they arrive. Better for real-time experiments with unknown traffic.',
   },
   {
-    value: MABExperimentSpecInputExperimentType.mab_online,
+    value: MABExperimentSpecExperimentType.mab_online,
     title: 'Multi-Armed Bandit',
     badge: 'MAB',
     description:
       'Adaptive allocation that learns and optimizes automatically. Minimizes opportunity cost by converging to the best performing variant.',
   },
   {
-    value: CMABExperimentSpecInputExperimentType.cmab_online,
+    value: CMABExperimentSpecExperimentType.cmab_online,
     title: 'Contextual Multi-Armed Bandit',
     badge: 'CMAB',
     description:
