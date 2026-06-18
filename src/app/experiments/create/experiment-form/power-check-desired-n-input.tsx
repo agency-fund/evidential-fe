@@ -1,6 +1,6 @@
 'use client';
 
-import { TextField } from '@radix-ui/themes';
+import { Flex, Text, TextField } from '@radix-ui/themes';
 import { useEffect, useRef, useState } from 'react';
 import { useDebounced } from '@/providers/use-debounced';
 
@@ -13,6 +13,8 @@ interface PowerCheckDesiredNInputProps {
   value: string;
   onChange: (debouncedValidN: number | undefined) => void;
   max?: number;
+  label?: string;
+  placeholder?: string;
 }
 
 /**
@@ -22,7 +24,7 @@ interface PowerCheckDesiredNInputProps {
  * - `onChange`: latest ref called after debounce delay with a parsed positive integer, or
  * `undefined` for empty/invalid input.
  */
-export function PowerCheckDesiredNInput({ value, onChange, max }: PowerCheckDesiredNInputProps) {
+export function PowerCheckDesiredNInput({ value, onChange, max, label, placeholder }: PowerCheckDesiredNInputProps) {
   const [draftN, setDraftN] = useState(value);
   // Guard against the onChange function changing between debounce calls with a ref.
   const onChangeRef = useRef(onChange);
@@ -39,15 +41,22 @@ export function PowerCheckDesiredNInput({ value, onChange, max }: PowerCheckDesi
   }, [debouncedValidN]);
 
   return (
-    <TextField.Root
-      style={{ width: '150px' }}
-      size="2"
-      type="number"
-      min={1}
-      max={max}
-      value={draftN}
-      onChange={(e) => setDraftN(e.target.value)}
-      placeholder="Enter your desired N"
-    />
+    <Flex direction="column" gap="1" align="start">
+      {label ? (
+        <Text as="label" size="1" weight="medium">
+          {label}
+        </Text>
+      ) : null}
+      <TextField.Root
+        style={{ width: '150px' }}
+        size="2"
+        type="number"
+        min={1}
+        max={max}
+        value={draftN}
+        onChange={(e) => setDraftN(e.target.value)}
+        placeholder={placeholder ?? 'Enter your desired N'}
+      />
+    </Flex>
   );
 }

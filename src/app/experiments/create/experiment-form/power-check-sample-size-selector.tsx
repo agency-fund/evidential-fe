@@ -5,7 +5,11 @@ import { usePowerCheck } from '@/api/admin';
 import { AnyFrequentistDesignSpecInput, PowerResponseOutput } from '@/api/methods.schemas';
 import { PowerCheckDesiredNInput } from './power-check-desired-n-input';
 import { PowerCheckOption } from './experiment-form-types';
-import { MetricSampleSizeDisplay } from './metric-sample-size-display';
+import {
+  MetricSampleSizeDisplay,
+  estimateClusterN,
+  estimateParticipantNFromClusters,
+} from './metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 
 /**
@@ -117,6 +121,13 @@ export function PowerCheckSampleSizeSelector({
   const targetN = primaryAnalysis?.target_n ?? undefined;
   const nonNullSamples = primaryAnalysis?.metric_spec.available_nonnull_n ?? 0;
   const allSamples = primaryAnalysis?.metric_spec.available_n ?? 0;
+  const avgClusterSize = primaryAnalysis?.metric_spec.avg_cluster_size ?? undefined;
+  const maxClusters =
+    avgClusterSize !== undefined && avgClusterSize > 0 ? Math.floor(allSamples / avgClusterSize) : undefined;
+  const clusterInputValue =
+    desiredN !== undefined && avgClusterSize !== undefined
+      ? String(estimateClusterN(desiredN, avgClusterSize) ?? '')
+      : '';
 
   const mdePrimaryAnalysis = mdePowerCheckResponse?.analyses.find(
     (a) => a.metric_spec.field_name === primaryMetricFieldName,
@@ -200,12 +211,19 @@ export function PowerCheckSampleSizeSelector({
   };
 
   const handleInputChange = (newN: number | undefined) => {
-    if (newN === undefined || selectedSampleOption !== PowerCheckOption.ENTER_OWN) {
+    if (newN === undefined || selectedSampleOption !== PowerCheckOption.ENTER_OWN || newN === desiredN) {
       return;
     }
     // Notify parent that we want a new desiredN.
     onOptionChange({ sampleSizeOption: selectedSampleOption, desiredN: newN, response: undefined });
     estimateMde(PowerCheckOption.ENTER_OWN, newN);
+  };
+
+  const handleClusterInputChange = (clusterN: number | undefined) => {
+    if (clusterN === undefined || avgClusterSize === undefined) {
+      return;
+    }
+    handleInputChange(estimateParticipantNFromClusters(clusterN, avgClusterSize));
   };
 
   return (
@@ -269,10 +287,23 @@ export function PowerCheckSampleSizeSelector({
           <RadioCards.Item value={PowerCheckOption.ENTER_OWN} disabled={allSamples === undefined || allSamples === 0}>
             <Flex align="center" direction="column" gap="2" style={{ pointerEvents: 'auto' }}>
               <Text size="2">Use a custom sample size:</Text>
+              {isClustered && avgClusterSize !== undefined && avgClusterSize > 0 ? (
+                <Flex direction="column" gap="2" align="center">
+                  <PowerCheckDesiredNInput
+                    label="Clusters"
+                    value={clusterInputValue}
+                    onChange={handleClusterInputChange}
+                    max={maxClusters}
+                    placeholder="# of clusters"
+                  />
+                </Flex>
+              ) : null}
               <PowerCheckDesiredNInput
+                label={isClustered ? 'Participants' : undefined}
                 value={String(desiredN ?? '')}
                 onChange={handleInputChange}
                 max={allSamples ?? undefined}
+                placeholder="# of participants"
               />
               <EstimatedMdeBadge
                 isSelectedOption={selectedSampleOption === PowerCheckOption.ENTER_OWN}

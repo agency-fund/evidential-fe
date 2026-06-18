@@ -58,12 +58,18 @@ const getParticipantN = (analysis: MetricPowerAnalysisOutput, variant: MetricSam
   }
 };
 
-const estimateClusterN = (participantN: number | undefined, avgClusterSize: number | undefined): number | undefined => {
+export const estimateClusterN = (
+  participantN: number | undefined,
+  avgClusterSize: number | undefined,
+): number | undefined => {
   if (participantN === undefined || avgClusterSize === undefined || avgClusterSize <= 0) {
     return undefined;
   }
   return Math.floor(participantN / avgClusterSize);
 };
+
+export const estimateParticipantNFromClusters = (clusterN: number, avgClusterSize: number): number =>
+  Math.ceil(clusterN * avgClusterSize);
 
 interface SampleSizeDisplayImplProps {
   participantN: number | undefined;
