@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import { Box, Button, Dialog, Flex } from '@radix-ui/themes';
 import {
-  CMABExperimentSpecOutput,
+  CMABExperimentSpec,
   DataType,
-  DesignSpecOutput,
-  MABExperimentSpecOutput,
-  OnlineFrequentistExperimentSpecOutput,
-  ParticipantsSchemaOutput,
-  PreassignedFrequentistExperimentSpecOutput,
+  DesignSpec,
+  MABExperimentSpec,
+  OnlineFrequentistExperimentSpec,
+  ParticipantsSchema,
+  PreassignedFrequentistExperimentSpec,
 } from '@/api/methods.schemas';
 import { MetricDisplay, MetricsSection } from '@/components/features/experiments/sections/metrics-section';
 import { DatasourceTargetingSection } from '@/components/features/experiments/sections/datasource-targeting-section';
@@ -19,20 +19,20 @@ import { WebhooksSection } from '@/components/features/experiments/sections/webh
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 
 interface TargetingDialogProps {
-  designSpec: DesignSpecOutput;
-  experimentSchema: ParticipantsSchemaOutput | null | undefined;
+  designSpec: DesignSpec;
+  experimentSchema: ParticipantsSchema | null | undefined;
   webhookIds: string[];
 }
 
 const isFrequentistSpec = (
-  spec: DesignSpecOutput,
-): spec is OnlineFrequentistExperimentSpecOutput | PreassignedFrequentistExperimentSpecOutput =>
+  spec: DesignSpec,
+): spec is OnlineFrequentistExperimentSpec | PreassignedFrequentistExperimentSpec =>
   spec.experiment_type === 'freq_online' || spec.experiment_type === 'freq_preassigned';
 
-const isBanditSpec = (spec: DesignSpecOutput): spec is MABExperimentSpecOutput | CMABExperimentSpecOutput =>
+const isBanditSpec = (spec: DesignSpec): spec is MABExperimentSpec | CMABExperimentSpec =>
   spec.experiment_type === 'mab_online' || spec.experiment_type === 'cmab_online';
 
-const isCmabSpec = (spec: DesignSpecOutput): spec is CMABExperimentSpecOutput => spec.experiment_type === 'cmab_online';
+const isCmabSpec = (spec: DesignSpec): spec is CMABExperimentSpec => spec.experiment_type === 'cmab_online';
 
 const toMdePercent = (value: number | null | undefined): string => {
   if (value === null || value === undefined) {

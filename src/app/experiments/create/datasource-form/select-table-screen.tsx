@@ -2,7 +2,7 @@
 import { ScreenProps } from '@/services/wizard/wizard-types';
 import { DatasourceFormData, DatasourceScreenId } from './datasource-form-def';
 import { useInspectDatasource, useInspectTableInDatasource } from '@/api/admin';
-import { PreassignedFrequentistExperimentSpecInputExperimentType } from '@/api/methods.schemas';
+import { PreassignedFrequentistExperimentSpecExperimentType } from '@/api/methods.schemas';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { Box, Flex, IconButton, Select, Text } from '@radix-ui/themes';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -68,7 +68,7 @@ export const SelectTableScreen = ({
   const primaryKeyDisabled = !data.tableName || !inspectData;
   const showClusterKeyField =
     ffClusterExperimentsEnabled &&
-    data.experimentType === PreassignedFrequentistExperimentSpecInputExperimentType.freq_preassigned;
+    data.experimentType === PreassignedFrequentistExperimentSpecExperimentType.freq_preassigned;
 
   function handleTableChange(tableName: string) {
     setSelectPrimaryKeyInput('');

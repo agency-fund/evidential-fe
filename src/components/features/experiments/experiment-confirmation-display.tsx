@@ -2,12 +2,12 @@
 
 import { Flex, Grid } from '@radix-ui/themes';
 import {
-  CMABExperimentSpecOutput,
+  CMABExperimentSpec,
   CreateExperimentResponse,
-  FilterOutput,
-  MABExperimentSpecOutput,
-  OnlineFrequentistExperimentSpecOutput,
-  PreassignedFrequentistExperimentSpecOutput,
+  Filter,
+  MABExperimentSpec,
+  OnlineFrequentistExperimentSpec,
+  PreassignedFrequentistExperimentSpec,
 } from '@/api/methods.schemas';
 import { MetricDisplay, MetricsSection } from '@/components/features/experiments/sections/metrics-section';
 import { ExperimentDescriptionSection } from '@/components/features/experiments/sections/experiment-description-section';
@@ -15,29 +15,27 @@ import { TreatmentArmsSection } from '@/components/features/experiments/sections
 import { ContextsSection } from '@/components/features/experiments/sections/contexts-section';
 import { DatasourceTargetingSection } from '@/components/features/experiments/sections/datasource-targeting-section';
 import { PowerBalanceSection } from '@/components/features/experiments/sections/power-balance-section';
-import { OutcomesPriorSection } from '@/components/features/experiments/sections/outcomes-prior-section';
+import { OutcomesPriorSection } from '@/components/features/experiments/sections/outcomes-prior-section'; // Type guard to check if design spec is frequentist (has alpha, power, filters, strata)
 
 // Type guard to check if design spec is frequentist (has alpha, power, filters, strata)
 function isFrequentistSpec(
   spec: CreateExperimentResponse['design_spec'],
-): spec is OnlineFrequentistExperimentSpecOutput | PreassignedFrequentistExperimentSpecOutput {
+): spec is OnlineFrequentistExperimentSpec | PreassignedFrequentistExperimentSpec {
   return spec.experiment_type === 'freq_online' || spec.experiment_type === 'freq_preassigned';
 }
 
 // Type guard for MAB experiments
-function isMABSpec(spec: CreateExperimentResponse['design_spec']): spec is MABExperimentSpecOutput {
+function isMABSpec(spec: CreateExperimentResponse['design_spec']): spec is MABExperimentSpec {
   return spec.experiment_type === 'mab_online';
 }
 
 // Type guard for CMAB experiments
-function isCMABSpec(spec: CreateExperimentResponse['design_spec']): spec is CMABExperimentSpecOutput {
+function isCMABSpec(spec: CreateExperimentResponse['design_spec']): spec is CMABExperimentSpec {
   return spec.experiment_type === 'cmab_online';
 }
 
 // Type guard for any bandit experiment
-function isBanditSpec(
-  spec: CreateExperimentResponse['design_spec'],
-): spec is MABExperimentSpecOutput | CMABExperimentSpecOutput {
+function isBanditSpec(spec: CreateExperimentResponse['design_spec']): spec is MABExperimentSpec | CMABExperimentSpec {
   return isMABSpec(spec) || isCMABSpec(spec);
 }
 
@@ -90,7 +88,7 @@ export function ExperimentConfirmationDisplay({
   // For non-frequentist experiments, these will be undefined
   let confidence = 95;
   let power = 80;
-  let filters: FilterOutput[] = [];
+  let filters: Filter[] = [];
   let strata: string[] | undefined;
 
   if (isFreq) {

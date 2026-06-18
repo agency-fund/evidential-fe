@@ -4,7 +4,7 @@ import { useReducer, useState } from 'react';
 import { Button, Dialog, Flex, Text } from '@radix-ui/themes';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { PlusIcon } from '@radix-ui/react-icons';
-import { BqDsnInput, PostgresDsn, RedshiftDsn } from '@/api/methods.schemas';
+import { BqDsn, PostgresDsn, RedshiftDsn } from '@/api/methods.schemas';
 import { mutate } from 'swr';
 import { PostgresSslModes } from '@/services/typehelper';
 import { ApiError } from '@/services/orval-fetch';
@@ -40,7 +40,7 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    let dsn: PostgresDsn | RedshiftDsn | BqDsnInput;
+    let dsn: PostgresDsn | RedshiftDsn | BqDsn;
     if (formData.dwhType === 'postgres') {
       dsn = {
         type: 'postgres',

@@ -69,7 +69,7 @@ import type {
 	MessageError,
 	PatchUserRequest,
 	PowerRequest,
-	PowerResponseOutput,
+	PowerResponse,
 	RemoveMemberFromOrganizationParams,
 	UpdateArmRequest,
 	UpdateDatasourceRequest,
@@ -599,8 +599,8 @@ export const deleteSnapshot = async (
 	snapshotId: string,
 	params?: DeleteSnapshotParams,
 	options?: RequestInit,
-): Promise<unknown> => {
-	return orvalFetch<unknown>(
+): Promise<void> => {
+	return orvalFetch<void>(
 		getDeleteSnapshotUrl(
 			organizationId,
 			datasourceId,
@@ -4039,8 +4039,8 @@ export const powerCheck = async (
 	datasourceId: string,
 	powerRequest: PowerRequest,
 	options?: RequestInit,
-): Promise<PowerResponseOutput> => {
-	return orvalFetch<PowerResponseOutput>(getPowerCheckUrl(datasourceId), {
+): Promise<PowerResponse> => {
+	return orvalFetch<PowerResponse>(getPowerCheckUrl(datasourceId), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },

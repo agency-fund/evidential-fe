@@ -2,7 +2,7 @@
 
 import { Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
 import { Cross2Icon } from '@radix-ui/react-icons';
-import { DataType, FilterInput } from '@/api/methods.schemas';
+import { DataType, Filter } from '@/api/methods.schemas';
 import {
   BETWEEN_BASED_OPS,
   BETWEEN_WITH_NULL_LENGTH,
@@ -16,8 +16,8 @@ import { AddValueButton } from '@/components/features/experiments/querybuilder/a
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 
 export interface DateFilterInputProps {
-  filter: FilterInput & TypedFilter<string>;
-  onChange: (filter: FilterInput) => void;
+  filter: Filter & TypedFilter<string>;
+  onChange: (filter: Filter) => void;
   dataType: DataType;
 }
 
