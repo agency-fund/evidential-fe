@@ -180,6 +180,13 @@ export const isFrequentistSpec = (
 ): spec is OnlineFrequentistExperimentSpecOutput | PreassignedFrequentistExperimentSpecOutput =>
   !!spec && isFreqExperimentType(spec.experiment_type);
 
+export const isClusteredPreassignedSpec = (
+  spec: DesignSpecOutput | undefined,
+): spec is PreassignedFrequentistExperimentSpecOutput =>
+  !!spec &&
+  spec.experiment_type === PreassignedFrequentistExperimentSpecInputExperimentType.freq_preassigned &&
+  !!spec.cluster_key;
+
 export const isBanditSpec = (
   spec: DesignSpecOutput | undefined,
 ): spec is MABExperimentSpecOutput | CMABExperimentSpecOutput => !!spec && isBanditExperimentType(spec.experiment_type);
