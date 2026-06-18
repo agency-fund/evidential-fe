@@ -7,6 +7,7 @@ import {
   DesignSpecMetricRequest,
   MABExperimentSpecInputExperimentType,
   OnlineFrequentistExperimentSpecInputExperimentType,
+  MetricPowerAnalysisOutput,
   PowerResponseOutput,
   PreassignedFrequentistExperimentSpecInputExperimentType,
   Stratum,
@@ -63,6 +64,21 @@ const getPrimaryMetricClusterStats = (data: ExperimentFormData) => {
   const avgClusterSize = data.clusterAvgClusterSize;
   if (icc === undefined && cv === undefined && avgClusterSize === undefined) return undefined;
   return { icc, cv, avg_cluster_size: avgClusterSize };
+};
+
+export const getPrimaryPowerAnalysis = (
+  powerAnalyses: PowerResponseOutput | null | undefined,
+  primaryMetricFieldName: string | undefined,
+): MetricPowerAnalysisOutput | undefined => {
+  const analyses = powerAnalyses?.analyses;
+  if (!analyses?.length) return undefined;
+
+  if (primaryMetricFieldName) {
+    const match = analyses.find((analysis) => analysis.metric_spec.field_name === primaryMetricFieldName);
+    if (match) return match;
+  }
+
+  return analyses[0];
 };
 
 export const getClusterStatsFromPowerCheckResponse = (

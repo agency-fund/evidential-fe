@@ -2,7 +2,7 @@
 
 import { Button, DataList, Flex } from '@radix-ui/themes';
 import { Pencil2Icon } from '@radix-ui/react-icons';
-import { AssignSummary } from '@/api/methods.schemas';
+import { AssignSummary, MetricPowerAnalysisOutput } from '@/api/methods.schemas';
 import { SectionCard } from '@/components/ui/cards/section-card';
 
 export interface PowerBalanceSectionProps {
@@ -10,6 +10,7 @@ export interface PowerBalanceSectionProps {
   power: number;
   desiredN?: number;
   assignSummary: AssignSummary | null | undefined;
+  primaryPowerAnalysis?: MetricPowerAnalysisOutput;
   onEdit?: () => void;
   showDesiredSampleSize?: boolean;
   showTitle?: boolean;
@@ -20,11 +21,18 @@ export function PowerBalanceSection({
   power,
   desiredN,
   assignSummary,
+  primaryPowerAnalysis,
   onEdit,
   showDesiredSampleSize = true,
   showTitle = true,
 }: PowerBalanceSectionProps) {
   const balanceCheck = assignSummary?.balance_check;
+  const numClustersTotal = primaryPowerAnalysis?.num_clusters_total;
+  // Actual sample size should only differ from the desired if the datasource lost eligible
+  // participants between the time of power calculation and the time of assignment, which hopefully
+  // is a very rare event.
+  const actualSampleSize = assignSummary?.sample_size;
+  const showActualSampleSize = actualSampleSize !== undefined && actualSampleSize !== desiredN;
 
   return (
     <SectionCard
@@ -60,10 +68,18 @@ export function PowerBalanceSection({
                 <DataList.Value>{desiredN ?? 'N/A'}</DataList.Value>
               </DataList.Item>
             )}
-            <DataList.Item>
-              <DataList.Label>Actual Sample Size</DataList.Label>
-              <DataList.Value>{assignSummary?.sample_size ?? 'N/A'}</DataList.Value>
-            </DataList.Item>
+            {numClustersTotal != null && (
+              <DataList.Item>
+                <DataList.Label>Clusters</DataList.Label>
+                <DataList.Value>{numClustersTotal.toLocaleString()}</DataList.Value>
+              </DataList.Item>
+            )}
+            {showActualSampleSize && (
+              <DataList.Item>
+                <DataList.Label>Actual Sample Size</DataList.Label>
+                <DataList.Value>{actualSampleSize} participants</DataList.Value>
+              </DataList.Item>
+            )}
           </DataList.Root>
         </Flex>
 

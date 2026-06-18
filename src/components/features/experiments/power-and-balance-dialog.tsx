@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Box, Button, Dialog, Flex } from '@radix-ui/themes';
 import { BarChartIcon } from '@radix-ui/react-icons';
-import { AssignSummary } from '@/api/methods.schemas';
+import { AssignSummary, MetricPowerAnalysisOutput } from '@/api/methods.schemas';
 import { PowerBalanceSection } from '@/components/features/experiments/sections/power-balance-section';
 
 interface PowerAndBalanceDialogProps {
@@ -11,9 +11,16 @@ interface PowerAndBalanceDialogProps {
   power: number;
   desiredN?: number;
   assignSummary: AssignSummary | null | undefined;
+  primaryPowerAnalysis?: MetricPowerAnalysisOutput;
 }
 
-export function PowerAndBalanceDialog({ confidence, power, desiredN, assignSummary }: PowerAndBalanceDialogProps) {
+export function PowerAndBalanceDialog({
+  confidence,
+  power,
+  desiredN,
+  assignSummary,
+  primaryPowerAnalysis,
+}: PowerAndBalanceDialogProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -32,6 +39,7 @@ export function PowerAndBalanceDialog({ confidence, power, desiredN, assignSumma
               power={power}
               desiredN={desiredN}
               assignSummary={assignSummary}
+              primaryPowerAnalysis={primaryPowerAnalysis}
               showTitle={false}
             />
           </Box>

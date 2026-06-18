@@ -64,11 +64,13 @@ import { prettyJSON } from '@/services/json-utils';
 import { getExperimentStatus } from '@/services/experiment-utils';
 import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date-utils';
 import { ContextConfigBox } from '@/components/features/experiments/context-config-box';
+import { getPrimaryPowerAnalysis } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import {
   isBanditSpec,
   isCmabExperiment,
   isCmabSpec,
   isFrequentistSpec,
+  isFreqPreassignedSpec,
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { TableNameBadge } from '@/components/features/participants/table-name-badge';
 import { TargetingDialog } from '@/components/features/experiments/targeting-dialog';
@@ -361,6 +363,9 @@ export default function ExperimentViewPage() {
   const { alpha, power } = getAlphaAndPower(experiment.config); // undefined for non-frequentist experiments
   const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
   const isFrequentistExperiment = isFrequentistSpec(design_spec);
+  const primaryPowerAnalysis = isFreqPreassignedSpec(design_spec)
+    ? getPrimaryPowerAnalysis(experiment.config.power_analyses, design_spec.metrics[0]?.field_name)
+    : undefined;
   const contexts = isBanditSpec(design_spec) ? (design_spec.contexts ?? []) : [];
 
   // Calculate MDE percentage for the selected metric
@@ -436,6 +441,7 @@ export default function ExperimentViewPage() {
                 power={Math.round(power! * 100)}
                 desiredN={design_spec.desired_n ?? undefined}
                 assignSummary={assign_summary}
+                primaryPowerAnalysis={primaryPowerAnalysis}
               />
               <Separator orientation="vertical" />
             </>
