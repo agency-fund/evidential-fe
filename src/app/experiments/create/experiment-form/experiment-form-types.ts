@@ -1,4 +1,6 @@
 import {
+  AnyBanditDesignSpecOutput,
+  AnyFrequentistDesignSpecOutput,
   AnyFrequentistDesignSpecInputExperimentType,
   Arm,
   CMABExperimentSpecInputExperimentType,
@@ -17,7 +19,6 @@ import {
   MABExperimentSpecInputExperimentType,
   MABExperimentSpecOutput,
   OnlineFrequentistExperimentSpecInputExperimentType,
-  OnlineFrequentistExperimentSpecOutput,
   PowerResponseOutput,
   PreassignedFrequentistExperimentSpecInputExperimentType,
   PreassignedFrequentistExperimentSpecOutput,
@@ -175,25 +176,28 @@ export const isBanditExperimentType = (experimentType?: ExperimentType): experim
   experimentType === MABExperimentSpecInputExperimentType.mab_online ||
   experimentType === CMABExperimentSpecInputExperimentType.cmab_online;
 
-export const isFrequentistSpec = (
-  spec: DesignSpecOutput | undefined,
-): spec is OnlineFrequentistExperimentSpecOutput | PreassignedFrequentistExperimentSpecOutput =>
+export const isFrequentistSpec = (spec: DesignSpecOutput | undefined): spec is AnyFrequentistDesignSpecOutput =>
   !!spec && isFreqExperimentType(spec.experiment_type);
+
+export const isFreqPreassignedSpec = (
+  spec: DesignSpecOutput | undefined,
+): spec is PreassignedFrequentistExperimentSpecOutput =>
+  !!spec && spec.experiment_type === PreassignedFrequentistExperimentSpecInputExperimentType.freq_preassigned;
 
 export const isClusteredPreassignedSpec = (
   spec: DesignSpecOutput | undefined,
-): spec is PreassignedFrequentistExperimentSpecOutput =>
-  !!spec &&
-  spec.experiment_type === PreassignedFrequentistExperimentSpecInputExperimentType.freq_preassigned &&
-  !!spec.cluster_key;
+): spec is PreassignedFrequentistExperimentSpecOutput => isFreqPreassignedSpec(spec) && !!spec.cluster_key;
 
-export const isBanditSpec = (
-  spec: DesignSpecOutput | undefined,
-): spec is MABExperimentSpecOutput | CMABExperimentSpecOutput => !!spec && isBanditExperimentType(spec.experiment_type);
+export function isMabSpec(spec: DesignSpecOutput | undefined): spec is MABExperimentSpecOutput {
+  return !!spec && spec.experiment_type === MABExperimentSpecInputExperimentType.mab_online;
+}
 
 export function isCmabSpec(spec: DesignSpecOutput | undefined): spec is CMABExperimentSpecOutput {
   return !!spec && spec.experiment_type === CMABExperimentSpecInputExperimentType.cmab_online;
 }
+
+export const isBanditSpec = (spec: DesignSpecOutput | undefined): spec is AnyBanditDesignSpecOutput =>
+  isMabSpec(spec) || isCmabSpec(spec);
 
 export const isCmabExperiment = (experiment: GetExperimentResponse | ExperimentConfig | undefined): boolean =>
   !!experiment && isCmabSpec(experiment.design_spec);
