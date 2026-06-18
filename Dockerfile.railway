@@ -1,5 +1,3 @@
-# Performs an optimized Next.js standalone build. The application itself is client-side only (no server-side
-# JavaScript in the app); the runtime image serves those assets via the bundled Node server in .next/standalone.
 FROM docker.io/node:22-bookworm AS build
 # These variables must be defined in the Railway settings with values appropriate for the deployment environment.
 # The default values are used when running this image to validate it in a local development environment. These defaults
