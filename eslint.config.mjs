@@ -1,4 +1,5 @@
 import { FlatCompat } from '@eslint/eslintrc';
+import eslintConfigPrettier from 'eslint-config-prettier/flat';
 
 const compat = new FlatCompat({
   baseDirectory: import.meta.dirname,
@@ -9,7 +10,8 @@ const eslintConfig = [
   {
     ignores: ['.next/**', 'next-env.d.ts', 'src/api/**/*', 'orval.config.ts'],
   },
-  ...compat.extends('next/core-web-vitals', 'next/typescript', 'prettier'),
+  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  eslintConfigPrettier,
   {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {

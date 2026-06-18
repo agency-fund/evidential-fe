@@ -13,11 +13,14 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
+    "@radix-ui/react-accessible-icon": "^1.1.7",
+    "@radix-ui/react-collapsible": "^1.1.12",
     "@radix-ui/react-icons": "^1.3.2",
+    "@radix-ui/react-navigation-menu": "^1.2.14",
     "@radix-ui/themes": "^3.2.1",
     "@sentry/nextjs": "^9.47.1",
     "next": "15.5.18",
-    "@phosphor-icons/react": "^2.1.10",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "recharts": "^3.5.1",
@@ -26,6 +29,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
+    "@eslint/eslintrc": "^3.3.5",
     "@next/bundle-analyzer": "^16.2.6",
     "@types/node": "^22.14.0",
     "@types/react": "^19",
@@ -34,6 +38,7 @@
     "eslint-config-next": "15.5.18",
     "eslint-config-prettier": "^10.0.2",
     "jsonpath-plus": "^10.4.0",
+    "openapi3-ts": "^4.5.0",
     "orval": "7.19.0",
     "prettier": "^3.6.2",
     "typescript": "^5"
