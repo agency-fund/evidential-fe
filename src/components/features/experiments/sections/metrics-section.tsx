@@ -46,7 +46,7 @@ export function MetricsSection({ metrics, strata, onEdit }: MetricsSectionProps)
                   <Text>{metrics.primary.field_name}</Text>
                   <DataTypeBadge type={metrics.primary.data_type} />
                 </Flex>
-                <Flex direction="column" gap="2" align="start">
+                <Flex direction="row" gap="2" align="start">
                   <MdeBadge value={metrics.primary.mde} kind="target" size="1" />
                   {metrics.primary.estimatedMde != null && (
                     <MdeBadge value={metrics.primary.estimatedMde} kind="estimated" size="1" />
@@ -69,7 +69,7 @@ export function MetricsSection({ metrics, strata, onEdit }: MetricsSectionProps)
                       <Text>{metric.field_name}</Text>
                       <DataTypeBadge type={metric.data_type} />
                     </Flex>
-                    <Flex direction="column" gap="2" align="start">
+                    <Flex direction="row" gap="2" align="start">
                       <MdeBadge value={metric.mde} kind="target" size="1" />
                       {metric.estimatedMde != null && (
                         <MdeBadge value={metric.estimatedMde} kind="estimated" size="1" />

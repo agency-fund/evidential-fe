@@ -14,8 +14,6 @@ export interface PowerBalanceSectionProps {
   showDesiredSampleSize?: boolean;
   showActualSampleSize?: boolean;
   showTitle?: boolean;
-  showBalanceCheck?: boolean;
-  labelInPill?: boolean;
 }
 
 export function PowerBalanceSection({
@@ -27,15 +25,12 @@ export function PowerBalanceSection({
   showDesiredSampleSize = true,
   showActualSampleSize = true,
   showTitle = true,
-  showBalanceCheck = true,
-  labelInPill = false,
 }: PowerBalanceSectionProps) {
   const balanceCheck = assignSummary?.balance_check;
 
   const confidenceBadge = (
     <Badge>
       <Flex gap="2" align="center">
-        {labelInPill && <Text weight="bold">Confidence</Text>}
         <Text>{confidence}%</Text>
         <Tooltip content="Chance that our test correctly shows no significant difference, if there truly is none. (The probability of avoiding a false positive.)">
           <InfoCircledIcon />
@@ -47,7 +42,6 @@ export function PowerBalanceSection({
   const powerBadge = (
     <Badge>
       <Flex gap="2" align="center">
-        {labelInPill && <Text weight="bold">Power</Text>}
         <Text>{power}%</Text>
         <Tooltip content="Chance of detecting a difference at least as large as the pre-specified minimum effect for the metric, if that difference truly exists. (The probability of avoiding a false negative.)">
           <InfoCircledIcon />
@@ -76,27 +70,14 @@ export function PowerBalanceSection({
                 <b>Power Parameters</b>
               </DataList.Label>
             </DataList.Item>
-            {labelInPill ? (
-              <DataList.Item>
-                <DataList.Value>
-                  <Flex direction="column" gap="2" align="start">
-                    {confidenceBadge}
-                    {powerBadge}
-                  </Flex>
-                </DataList.Value>
-              </DataList.Item>
-            ) : (
-              <>
-                <DataList.Item>
-                  <DataList.Label>Confidence</DataList.Label>
-                  <DataList.Value>{confidenceBadge}</DataList.Value>
-                </DataList.Item>
-                <DataList.Item>
-                  <DataList.Label>Power</DataList.Label>
-                  <DataList.Value>{powerBadge}</DataList.Value>
-                </DataList.Item>
-              </>
-            )}
+            <DataList.Item>
+              <DataList.Label>Confidence</DataList.Label>
+              <DataList.Value>{confidenceBadge}</DataList.Value>
+            </DataList.Item>
+            <DataList.Item>
+              <DataList.Label>Power</DataList.Label>
+              <DataList.Value>{powerBadge}</DataList.Value>
+            </DataList.Item>
             {showDesiredSampleSize && (
               <DataList.Item>
                 <DataList.Label>Desired Sample Size</DataList.Label>
@@ -112,7 +93,7 @@ export function PowerBalanceSection({
           </DataList.Root>
         </Flex>
 
-        {showBalanceCheck && balanceCheck ? (
+        {balanceCheck ? (
           <Flex flexGrow="1">
             <DataList.Root>
               <DataList.Item>

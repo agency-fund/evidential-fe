@@ -15,7 +15,7 @@ const MDE_COPY: Record<MdeKind, { label: string; tooltip: string }> = {
   target: {
     label: 'Target MDE:',
     tooltip:
-      "This metric's minimum detectable effect as defined in the experiment's design that meets the confidence and power requirements. You should set a practical threshold, meaningful enough to make a change worthwhile.",
+      'The minimum effect size you set as your detection goal for this metric. It should be the smallest change you considered worth acting on.',
   },
   estimated: {
     label: 'Estimated MDE:',

@@ -72,7 +72,7 @@ import {
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { TableNameBadge } from '@/components/features/participants/table-name-badge';
 import { TargetingDialog } from '@/components/features/experiments/targeting-dialog';
-import { DesignDetailsDialog } from '@/components/features/experiments/design-details-dialog';
+import { FreqDesignDetailsDialog } from '@/components/features/experiments/freq-design-details-dialog';
 
 const SNAPSHOT_ERROR_ALERT_THRESHOLD_MS = 8 * 60 * 60 * 1000;
 
@@ -498,8 +498,8 @@ export default function ExperimentViewPage() {
           headerLeft={
             <Flex gap="3" align="center" wrap="wrap">
               <Heading size="3">Analysis</Heading>
-              {isFrequentistExperiment ? (
-                <Flex gap="3" wrap="wrap">
+              {isFrequentistSpec(design_spec) ? (
+                <Flex gap="3" align="center" wrap="wrap">
                   <Badge size="2">
                     <Flex gap="2" align="center">
                       <Heading size="2">Metric:</Heading>
@@ -528,7 +528,7 @@ export default function ExperimentViewPage() {
                     </Flex>
                   </Badge>
                   <MdeBadge value={mdePct} kind={estimatedMdePct != null ? 'estimated' : 'target'} />
-                  <DesignDetailsDialog
+                  <FreqDesignDetailsDialog
                     designSpec={design_spec}
                     experimentSchema={experiment.experiment_schema}
                     assignSummary={assign_summary}

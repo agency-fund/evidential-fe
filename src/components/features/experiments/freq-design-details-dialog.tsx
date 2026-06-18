@@ -4,18 +4,17 @@ import { useState } from 'react';
 import { MixerHorizontalIcon } from '@radix-ui/react-icons';
 import { Box, Button, Dialog, Flex } from '@radix-ui/themes';
 import {
+  AnyFrequentistDesignSpecOutput,
   AssignSummary,
   DataType,
-  DesignSpecOutput,
   MetricPowerAnalysisOutput,
   ParticipantsSchemaOutput,
 } from '@/api/methods.schemas';
-import { isFrequentistSpec } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { MetricDisplay, MetricsSection } from '@/components/features/experiments/sections/metrics-section';
 import { PowerBalanceSection } from '@/components/features/experiments/sections/power-balance-section';
 
 interface DesignDetailsDialogProps {
-  designSpec: DesignSpecOutput;
+  designSpec: AnyFrequentistDesignSpecOutput;
   experimentSchema: ParticipantsSchemaOutput | null | undefined;
   assignSummary: AssignSummary | null | undefined;
   powerAnalyses?: MetricPowerAnalysisOutput[];
@@ -24,7 +23,7 @@ interface DesignDetailsDialogProps {
 const toMdePercent = (value: number | null | undefined): string =>
   value === null || value === undefined ? 'unknown' : (value * 100).toFixed(1);
 
-export function DesignDetailsDialog({
+export function FreqDesignDetailsDialog({
   designSpec,
   experimentSchema,
   assignSummary,
@@ -46,23 +45,15 @@ export function DesignDetailsDialog({
     };
   };
 
-  let metrics: { primary?: MetricDisplay; secondary?: MetricDisplay[] } | undefined;
-  let strata: string[] = [];
-  let confidence = 95;
-  let power = 80;
-  let desiredN: number | undefined;
-
-  if (isFrequentistSpec(designSpec)) {
-    const [primary, ...secondary] = designSpec.metrics;
-    metrics = {
-      primary: primary ? toMetricDisplay(primary.field_name, primary.metric_pct_change) : undefined,
-      secondary: secondary.map((m) => toMetricDisplay(m.field_name, m.metric_pct_change)),
-    };
-    strata = designSpec.strata?.map((s) => s.field_name) ?? [];
-    confidence = Math.round((1 - (designSpec.alpha ?? 0.05)) * 100);
-    power = Math.round((designSpec.power ?? 0.8) * 100);
-    desiredN = designSpec.desired_n ?? undefined;
-  }
+  const [primary, ...secondary] = designSpec.metrics;
+  const metrics = {
+    primary: primary ? toMetricDisplay(primary.field_name, primary.metric_pct_change) : undefined,
+    secondary: secondary.map((m) => toMetricDisplay(m.field_name, m.metric_pct_change)),
+  };
+  const strata = designSpec.strata?.map((s) => s.field_name) ?? [];
+  const confidence = Math.round((1 - (designSpec.alpha ?? 0.05)) * 100);
+  const power = Math.round((designSpec.power ?? 0.8) * 100);
+  const desiredN = designSpec.desired_n ?? undefined;
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -83,8 +74,6 @@ export function DesignDetailsDialog({
                 desiredN={desiredN}
                 assignSummary={assignSummary}
                 showActualSampleSize={false}
-                showBalanceCheck={false}
-                labelInPill={true}
               />
             </Flex>
           </Box>
@@ -100,5 +89,3 @@ export function DesignDetailsDialog({
     </Dialog.Root>
   );
 }
-
-export default DesignDetailsDialog;
