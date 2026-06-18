@@ -20,7 +20,7 @@ import {
   PowerCheckSampleOptionChange,
   PowerCheckSampleSizeSelector,
 } from './power-check-sample-size-selector';
-import { CheckCircledIcon, CrossCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
+import { CheckCircledIcon, CrossCircledIcon, ExclamationTriangleIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData, isClusteredExperiment, PowerCheckOption } from './experiment-form-types';
 import { usePowerCheck } from '@/api/admin';
 import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
@@ -132,6 +132,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     data.powerCheckResponse !== undefined && !validationError
       ? data.powerCheckResponse.analyses.filter((a) => a.metric_spec.field_name !== primaryMetricFieldName)
       : undefined;
+  const primaryPowerClusterSizeCv = primaryPower?.msg?.values?.cluster_size_cv ?? primaryPower?.metric_spec.cv;
 
   return (
     <Flex direction="column" gap={'3'}>
@@ -198,10 +199,26 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
             <Callout.Root color={primaryPower.sufficient_n ? 'green' : 'red'}>
               <Callout.Icon>{primaryPower.sufficient_n ? <CheckCircledIcon /> : <CrossCircledIcon />}</Callout.Icon>
               <Callout.Text>
-                {primaryPower.msg?.msg ||
-                  (primaryPower.sufficient_n
-                    ? `The experiment has sufficient power.`
-                    : `The experiment does not have sufficient power.`)}
+                <Flex direction="column" gap="2">
+                  <Text>
+                    {primaryPower.msg?.msg ||
+                      (primaryPower.sufficient_n
+                        ? 'The experiment has sufficient power.'
+                        : 'The experiment does not have sufficient power.')}
+                  </Text>
+                  {primaryPower.msg?.high_cluster_variation && primaryPowerClusterSizeCv != null && (
+                    <Callout.Root color="amber" size="1" variant="surface">
+                      <Callout.Icon>
+                        <ExclamationTriangleIcon />
+                      </Callout.Icon>
+                      <Callout.Text>
+                        Because your cluster sizes vary so widely, your experiment is sensitive to enrolling fewer
+                        participants or clusters. Consider adding filters to exclude extreme cluster sizes or adding
+                        more clusters to be safer.
+                      </Callout.Text>
+                    </Callout.Root>
+                  )}
+                </Flex>
               </Callout.Text>
             </Callout.Root>
           )}
