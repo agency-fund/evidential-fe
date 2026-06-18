@@ -22,9 +22,16 @@ type MetricBuilderProps = {
   secondaryMetrics: MetricWithMDE[];
   dispatch: (action: MetricBuilderAction) => void;
   metricFields: GetMetricsResponseElement[];
+  excludeKeys?: string[];
 };
 
-export function MetricBuilder({ primaryMetric, secondaryMetrics, dispatch, metricFields }: MetricBuilderProps) {
+export function MetricBuilder({
+  primaryMetric,
+  secondaryMetrics,
+  dispatch,
+  metricFields,
+  excludeKeys,
+}: MetricBuilderProps) {
   const handlePrimaryMetricSelect = (metric: GetMetricsResponseElement) => {
     dispatch({ type: 'primary-metric-select', primaryMetric: { metric, mde: DEFAULT_MDE } });
   };
@@ -90,18 +97,17 @@ export function MetricBuilder({ primaryMetric, secondaryMetrics, dispatch, metri
     }
   };
 
-  // Determine metrics available for primary selection (all metrics not in secondaryMetrics)
+  const isExcludedMetric = (fieldName: string) =>
+    excludeKeys?.includes(fieldName) || secondaryMetrics.some((sm) => sm.metric.field_name === fieldName);
+
+  // Determine metrics available for primary selection
   const availablePrimaryMetricBadges = metricFields
-    .filter((m) => !secondaryMetrics.some((sm) => sm.metric.field_name === m.field_name))
+    .filter((m) => !isExcludedMetric(m.field_name))
     .toSorted((a, b) => a.field_name.localeCompare(b.field_name));
 
   // Determine metrics available for secondary selection
   const availableSecondaryMetricBadges = metricFields
-    .filter(
-      (m) =>
-        m.field_name !== primaryMetric?.metric.field_name &&
-        !secondaryMetrics.some((sm) => sm.metric.field_name === m.field_name),
-    )
+    .filter((m) => m.field_name !== primaryMetric?.metric.field_name && !isExcludedMetric(m.field_name))
     .toSorted((a, b) => a.field_name.localeCompare(b.field_name));
 
   return (

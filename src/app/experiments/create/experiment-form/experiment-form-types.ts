@@ -101,9 +101,10 @@ export type ExperimentFormData = {
   // experiment-select-datasource-screen
   datasourceId?: string;
   tableName?: string;
+  primaryKey?: string;
+  clusterKey?: string;
 
   // experiment-freq-stack-screen
-  primaryKey?: string;
   primaryMetric?: MetricWithMDE;
   secondaryMetrics?: MetricWithMDE[];
   filters?: FilterInput[];
@@ -122,6 +123,10 @@ export type ExperimentFormData = {
   mdePowerCheckResponse?: PowerResponseOutput;
   createExperimentResponse?: CreateExperimentResponse;
   createExperimentError?: ErrorType<unknown>;
+  // Values needed for cluster-randomized experiments
+  clusterAvgClusterSize?: number;
+  clusterIcc?: number;
+  clusterCv?: number;
 
   // experiment-describe-webhooks-screen
   selectedWebhookIds?: string[];
