@@ -23,10 +23,10 @@ import {
 } from '@/api/admin';
 import {
   CMABContextInputRequest,
-  CMABExperimentSpecOutput,
+  CMABExperimentSpec,
   ContextInput,
   ExperimentAnalysisResponse,
-  MABExperimentSpecOutput,
+  MABExperimentSpec,
   MetricAnalysis,
   Snapshot,
 } from '@/api/methods.schemas';
@@ -542,19 +542,19 @@ export default function ExperimentViewPage() {
                   <Badge size="2">
                     <Flex gap="2" align="center">
                       <Heading size="2"> Prior Type:</Heading>
-                      <Text>{(experiment.config.design_spec as MABExperimentSpecOutput).prior_type}</Text>
+                      <Text>{(experiment.config.design_spec as MABExperimentSpec).prior_type}</Text>
                     </Flex>
                   </Badge>
                   <Badge size="2">
                     <Flex gap="2" align="center">
                       <Heading size="2">Reward Type:</Heading>
-                      <Text>{(experiment.config.design_spec as MABExperimentSpecOutput).reward_type}</Text>
+                      <Text>{(experiment.config.design_spec as MABExperimentSpec).reward_type}</Text>
                     </Flex>
                   </Badge>
                   {cmabContextInputs.length > 0 && (
                     <ContextConfigBox
                       analysisKey={selectedAnalysisState.key}
-                      contexts={(experiment.config.design_spec as CMABExperimentSpecOutput).contexts || []}
+                      contexts={(experiment.config.design_spec as CMABExperimentSpec).contexts || []}
                       contextValues={cmabContextInputs}
                       onUpdate={handleUpdateCmabContextValue}
                     />

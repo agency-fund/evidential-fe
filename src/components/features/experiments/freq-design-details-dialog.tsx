@@ -4,20 +4,20 @@ import { useState } from 'react';
 import { MixerHorizontalIcon } from '@radix-ui/react-icons';
 import { Box, Button, Dialog, Flex } from '@radix-ui/themes';
 import {
-  AnyFrequentistDesignSpecOutput,
+  AnyFrequentistDesignSpec,
   AssignSummary,
   DataType,
-  MetricPowerAnalysisOutput,
-  ParticipantsSchemaOutput,
+  MetricPowerAnalysis,
+  ParticipantsSchema,
 } from '@/api/methods.schemas';
 import { MetricDisplay, MetricsSection } from '@/components/features/experiments/sections/metrics-section';
 import { PowerBalanceSection } from '@/components/features/experiments/sections/power-balance-section';
 
 interface DesignDetailsDialogProps {
-  designSpec: AnyFrequentistDesignSpecOutput;
-  experimentSchema: ParticipantsSchemaOutput | null | undefined;
+  designSpec: AnyFrequentistDesignSpec;
+  experimentSchema: ParticipantsSchema | null | undefined;
   assignSummary: AssignSummary | null | undefined;
-  powerAnalyses?: MetricPowerAnalysisOutput[];
+  powerAnalyses?: MetricPowerAnalysis[];
 }
 
 const toMdePercent = (value: number | null | undefined): string =>

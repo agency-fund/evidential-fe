@@ -2,7 +2,7 @@
 
 import { Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
 import { Cross2Icon } from '@radix-ui/react-icons';
-import { DataType, FilterInput } from '@/api/methods.schemas';
+import { DataType, Filter } from '@/api/methods.schemas';
 import {
   createDefaultValueForOperator,
   operatorToRelation,
@@ -16,8 +16,8 @@ import { IncludeNullButton } from '@/components/features/experiments/querybuilde
 import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
 
 export interface BigIntFilterInputProps {
-  filter: FilterInput & TypedFilter<string>;
-  onChange: (filter: FilterInput) => void;
+  filter: Filter & TypedFilter<string>;
+  onChange: (filter: Filter) => void;
   dataType: DataType;
 }
 

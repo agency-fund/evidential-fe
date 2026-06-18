@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import { Box, Button, Dialog, Flex } from '@radix-ui/themes';
 import {
-  CMABExperimentSpecOutput,
-  DesignSpecOutput,
-  MABExperimentSpecOutput,
-  OnlineFrequentistExperimentSpecOutput,
-  PreassignedFrequentistExperimentSpecOutput,
+  CMABExperimentSpec,
+  DesignSpec,
+  MABExperimentSpec,
+  OnlineFrequentistExperimentSpec,
+  PreassignedFrequentistExperimentSpec,
 } from '@/api/methods.schemas';
 import { DatasourceTargetingSection } from '@/components/features/experiments/sections/datasource-targeting-section';
 import { ContextsSection } from '@/components/features/experiments/sections/contexts-section';
@@ -16,19 +16,19 @@ import { WebhooksSection } from '@/components/features/experiments/sections/webh
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 
 interface TargetingDialogProps {
-  designSpec: DesignSpecOutput;
+  designSpec: DesignSpec;
   webhookIds: string[];
 }
 
 const isFrequentistSpec = (
-  spec: DesignSpecOutput,
-): spec is OnlineFrequentistExperimentSpecOutput | PreassignedFrequentistExperimentSpecOutput =>
+  spec: DesignSpec,
+): spec is OnlineFrequentistExperimentSpec | PreassignedFrequentistExperimentSpec =>
   spec.experiment_type === 'freq_online' || spec.experiment_type === 'freq_preassigned';
 
-const isBanditSpec = (spec: DesignSpecOutput): spec is MABExperimentSpecOutput | CMABExperimentSpecOutput =>
+const isBanditSpec = (spec: DesignSpec): spec is MABExperimentSpec | CMABExperimentSpec =>
   spec.experiment_type === 'mab_online' || spec.experiment_type === 'cmab_online';
 
-const isCmabSpec = (spec: DesignSpecOutput): spec is CMABExperimentSpecOutput => spec.experiment_type === 'cmab_online';
+const isCmabSpec = (spec: DesignSpec): spec is CMABExperimentSpec => spec.experiment_type === 'cmab_online';
 
 export function TargetingDialog({ designSpec, webhookIds }: TargetingDialogProps) {
   const [open, setOpen] = useState(false);
