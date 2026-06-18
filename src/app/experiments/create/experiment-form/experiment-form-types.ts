@@ -20,9 +20,8 @@ import {
   PreassignedFrequentistExperimentSpec,
   PreassignedFrequentistExperimentSpecExperimentType,
 } from '@/api/methods.schemas';
-import { ErrorType } from '@/services/orval-fetch'; // export type ContextVariableType2 = ContextSpec['value_type'];
+import { ErrorType } from '@/services/orval-fetch';
 
-// export type ContextVariableType2 = ContextSpec['value_type'];
 export type ContextVariableType = ContextType;
 
 // Context variable configuration for CMAB
