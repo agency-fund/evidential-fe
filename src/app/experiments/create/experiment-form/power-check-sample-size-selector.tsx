@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge, Flex, RadioCards, Spinner, Text } from '@radix-ui/themes';
+import { Badge, Flex, RadioCards, Spinner, Text, TextField } from '@radix-ui/themes';
 import { usePowerCheck } from '@/api/admin';
 import { AnyFrequentistDesignSpecInput, PowerResponseOutput } from '@/api/methods.schemas';
 import { PowerCheckDesiredNInput } from './power-check-desired-n-input';
@@ -128,6 +128,7 @@ export function PowerCheckSampleSizeSelector({
     desiredN !== undefined && avgClusterSize !== undefined
       ? String(estimateClusterN(desiredN, avgClusterSize) ?? '')
       : '';
+  const showClusteredCustomInput = isClustered && avgClusterSize !== undefined && avgClusterSize > 0;
 
   const mdePrimaryAnalysis = mdePowerCheckResponse?.analyses.find(
     (a) => a.metric_spec.field_name === primaryMetricFieldName,
@@ -214,7 +215,6 @@ export function PowerCheckSampleSizeSelector({
     if (newN === undefined || selectedSampleOption !== PowerCheckOption.ENTER_OWN || newN === desiredN) {
       return;
     }
-    // Notify parent that we want a new desiredN.
     onOptionChange({ sampleSizeOption: selectedSampleOption, desiredN: newN, response: undefined });
     estimateMde(PowerCheckOption.ENTER_OWN, newN);
   };
@@ -287,7 +287,7 @@ export function PowerCheckSampleSizeSelector({
           <RadioCards.Item value={PowerCheckOption.ENTER_OWN} disabled={allSamples === undefined || allSamples === 0}>
             <Flex align="center" direction="column" gap="2" style={{ pointerEvents: 'auto' }}>
               <Text size="2">Use a custom sample size:</Text>
-              {isClustered && avgClusterSize !== undefined && avgClusterSize > 0 ? (
+              {showClusteredCustomInput ? (
                 <Flex direction="column" gap="2" align="center">
                   <PowerCheckDesiredNInput
                     label="Clusters"
@@ -296,15 +296,27 @@ export function PowerCheckSampleSizeSelector({
                     max={maxClusters}
                     placeholder="# of clusters"
                   />
+                  <Flex direction="column" gap="1" align="start">
+                    <Text as="label" size="1" weight="medium">
+                      Participants
+                    </Text>
+                    <TextField.Root
+                      readOnly
+                      style={{ width: '150px' }}
+                      size="2"
+                      value={desiredN !== undefined ? String(desiredN) : ''}
+                      placeholder="—"
+                    />
+                  </Flex>
                 </Flex>
-              ) : null}
-              <PowerCheckDesiredNInput
-                label={isClustered ? 'Participants' : undefined}
-                value={String(desiredN ?? '')}
-                onChange={handleInputChange}
-                max={allSamples ?? undefined}
-                placeholder="# of participants"
-              />
+              ) : (
+                <PowerCheckDesiredNInput
+                  value={String(desiredN ?? '')}
+                  onChange={handleInputChange}
+                  max={allSamples ?? undefined}
+                  placeholder="# of participants"
+                />
+              )}
               <EstimatedMdeBadge
                 isSelectedOption={selectedSampleOption === PowerCheckOption.ENTER_OWN}
                 isEstimatingMde={isEstimatingMde}
