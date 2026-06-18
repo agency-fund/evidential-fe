@@ -2,9 +2,6 @@ version: '3'
 output: prefixed
 env:
   NEXT_TELEMETRY_DISABLED: '1'
-  NPM_CONFIG_AUDIT: 'false'
-  NPM_CONFIG_FUND: 'false'
-  NPM_CONFIG_UPDATE_NOTIFIER: 'false'
 
   # Sentry doesn't work with Turbopack but we don't care because we don't use Sentry in local development and Turbopack
   # is only being used in local dev. This silences some warnings.
@@ -38,7 +35,7 @@ tasks:
         echo "Tip: Run 'nvm install' from the repo root to install and then run 'nvm use' to switch to the correct version."
         exit 1
       fi
-      npm ci
+      corepack pnpm install --frozen-lockfile
   start:
     desc: 'Starts the development server'
     interactive: true
@@ -47,7 +44,7 @@ tasks:
     deps:
       - nodedeps
     cmd: |
-      npm run dev
+      corepack pnpm run dev
   start-airplane:
     desc: "Like start, but runs the frontend in airplane mode. The UI will identify you as testing@example.com automatically."
     env:
@@ -60,12 +57,12 @@ tasks:
       curl --no-progress-meter --retry 10 --retry-connrefused --max-time 3 \
         -o /tmp/apispec.json http://localhost:8000/openapi.json
       jq . /tmp/apispec.json > openapi.json
-      npx orval --config orval.config.ts
+      corepack pnpm exec orval --config orval.config.ts
       if [ $? -eq 0 ]; then
         task lint
       fi
-  lint-next: npm run lint
-  lint-tsc: npx tsc --noemit
+  lint-next: corepack pnpm run lint
+  lint-tsc: corepack pnpm exec tsc --noemit
   lint:
     deps:
       - lint-tsc
@@ -73,12 +70,12 @@ tasks:
     desc: 'Runs the NextJS-managed linter'
   build:
     desc: 'Production build of the NextJS application'
-    cmd: npm run build
+    cmd: corepack pnpm run build
   analyze:
     desc: 'Production build with bundle-analyzer reports written to .next/analyze/{client,nodejs,edge}.html'
     env:
       ANALYZE: 'true'
-    cmd: npm run build
+    cmd: corepack pnpm run build
   railway-build:
     desc: 'Builds the Docker image used by the Railway deployment.'
     cmd: docker build -t evidential-fe -f Dockerfile.railway .

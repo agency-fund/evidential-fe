@@ -8,9 +8,6 @@ on:
   workflow_dispatch:
 
 env:
-  NPM_CONFIG_AUDIT: "false"
-  NPM_CONFIG_FUND: "false"
-  NPM_CONFIG_UPDATE_NOTIFIER: "false"
   NEXT_TELEMETRY_DISABLED: "1"
 
 concurrency:
@@ -27,10 +24,11 @@ jobs:
       - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
         with:
           persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: '.nvmrc'
-          cache: 'npm'
+          cache: 'pnpm'
       - uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v2.0.0
         with:
           version: 3.x
