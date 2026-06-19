@@ -15,7 +15,7 @@ import { z } from 'zod';
 import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
 import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
 
-export interface BigIntFilterInputProps {
+export interface BigIntFilterProps {
   filter: Filter & TypedFilter<string>;
   onChange: (filter: Filter) => void;
   dataType: DataType;
