@@ -15,7 +15,7 @@ import { z } from 'zod';
 import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
 import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
 
-export interface BigIntFilterInputProps {
+export interface BigIntFilterProps {
   filter: Filter & TypedFilter<string>;
   onChange: (filter: Filter) => void;
   dataType: DataType;
@@ -31,7 +31,7 @@ const BigIntStringSchema = z.string().refine((val: string) => {
   }
 }, 'BigInt format error');
 
-export function BigIntFilterInput({ filter, onChange, dataType }: BigIntFilterInputProps) {
+export function BigIntFilter({ filter, onChange, dataType }: BigIntFilterProps) {
   // Initialize operator state based on filter configuration
   const [operator, setOperator] = useState(() => {
     if (filter.relation === 'between') {

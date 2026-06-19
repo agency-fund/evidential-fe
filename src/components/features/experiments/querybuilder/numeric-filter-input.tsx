@@ -14,13 +14,13 @@ import React, { useEffect, useState } from 'react';
 import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
 import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
 
-export interface NumericFilterInputProps {
+export interface NumericFilterProps {
   filter: Filter & TypedFilter<number>;
   onChange: (filter: Filter) => void;
   dataType: DataType;
 }
 
-export function NumericFilterInput({ filter, onChange, dataType }: NumericFilterInputProps) {
+export function NumericFilter({ filter, onChange, dataType }: NumericFilterProps) {
   // Initialize operator state based on filter configuration
   const [operator, setOperator] = useState(() => {
     if (filter.relation === 'between') {
