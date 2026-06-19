@@ -3,12 +3,12 @@ import { Button, Callout, Card, DataList, Dialog, Flex, Select, Text, Tooltip } 
 import {
   ChevronDownIcon,
   ChevronRightIcon,
-  ExclamationTriangleIcon,
   FileIcon,
   GearIcon,
   PlusIcon,
+  ExclamationTriangleIcon,
 } from '@radix-ui/react-icons';
-import { Collapsible } from 'radix-ui';
+import * as Collapsible from '@radix-ui/react-collapsible';
 import { useState } from 'react';
 import { mutate } from 'swr';
 import { Arm, Context } from '@/api/methods.schemas';

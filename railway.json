@@ -13,6 +13,8 @@
       "next*",
       "orval.config.ts",
       "package*.json",
+      "pnpm-lock.yaml",
+      "pnpm-workspace.yaml",
       "public",
       "sentry*",
       "tsconfig.json",

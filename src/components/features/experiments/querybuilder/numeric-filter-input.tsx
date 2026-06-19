@@ -14,7 +14,7 @@ import React, { useEffect, useState } from 'react';
 import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
 import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
 
-export interface NumericFilterProps {
+export interface NumericFilterInputProps {
   filter: Filter & TypedFilter<number>;
   onChange: (filter: Filter) => void;
   dataType: DataType;

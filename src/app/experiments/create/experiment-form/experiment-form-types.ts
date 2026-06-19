@@ -1,8 +1,8 @@
 import {
   AnyFrequentistDesignSpecExperimentType,
   Arm,
-  CMABExperimentSpecExperimentType,
   CMABExperimentSpec,
+  CMABExperimentSpecExperimentType,
   ContextType,
   CreateExperimentResponse,
   DesignSpec,
@@ -14,15 +14,14 @@ import {
   GetMetricsResponseElement,
   MABExperimentSpec,
   MABExperimentSpecExperimentType,
-  OnlineFrequentistExperimentSpecExperimentType,
   OnlineFrequentistExperimentSpec,
+  OnlineFrequentistExperimentSpecExperimentType,
   PowerResponse,
-  PreassignedFrequentistExperimentSpecExperimentType,
   PreassignedFrequentistExperimentSpec,
+  PreassignedFrequentistExperimentSpecExperimentType,
 } from '@/api/methods.schemas';
 import { ErrorType } from '@/services/orval-fetch';
 
-// export type ContextVariableType2 = ContextSpec['value_type'];
 export type ContextVariableType = ContextType;
 
 // Context variable configuration for CMAB

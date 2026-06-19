@@ -3,7 +3,7 @@
 import { Flex, Grid, IconButton, Text } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
 import { DataType, Filter } from '@/api/methods.schemas';
-import { TypeSpecificFilter } from '@/components/features/experiments/querybuilder/type-specific-filter-input';
+import { TypeSpecificFilterInput } from '@/components/features/experiments/querybuilder/type-specific-filter-input';
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
 import { Combobox } from '@/components/ui/combobox';
 

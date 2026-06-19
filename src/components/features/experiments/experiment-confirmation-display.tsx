@@ -15,7 +15,7 @@ import { TreatmentArmsSection } from '@/components/features/experiments/sections
 import { ContextsSection } from '@/components/features/experiments/sections/contexts-section';
 import { DatasourceTargetingSection } from '@/components/features/experiments/sections/datasource-targeting-section';
 import { PowerBalanceSection } from '@/components/features/experiments/sections/power-balance-section';
-import { OutcomesPriorSection } from '@/components/features/experiments/sections/outcomes-prior-section';
+import { OutcomesPriorSection } from '@/components/features/experiments/sections/outcomes-prior-section'; // Type guard to check if design spec is frequentist (has alpha, power, filters, strata)
 
 // Type guard to check if design spec is frequentist (has alpha, power, filters, strata)
 function isFrequentistSpec(

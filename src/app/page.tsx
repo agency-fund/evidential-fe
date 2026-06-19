@@ -15,8 +15,35 @@ import { ExperimentCard } from '@/components/features/experiments/experiment-car
 import { ExperimentsTable } from '@/components/features/experiments/experiments-table';
 import { ExperimentStatusFilter } from '@/components/features/experiments/experiment-status-filter';
 import { ExperimentImpactFilter } from '@/components/features/experiments/experiment-impact-filter';
+import { ExperimentFieldFilter } from '@/components/features/experiments/experiment-field-filter';
 import type { ExperimentStatus, ExperimentWithStatus } from '@/components/features/experiments/types';
 import { getExperimentStatus } from '@/services/experiment-utils';
+import { isFrequentistSpec } from '@/app/experiments/create/experiment-form/experiment-form-types';
+import type { ExperimentConfig } from '@/api/methods.schemas';
+
+// Returns the data warehouse field names an experiment references via its filters, metrics, or
+// strata.
+const getExperimentFieldNames = (experiment: ExperimentConfig): Set<string> => {
+  const spec = experiment.design_spec;
+  if (!isFrequentistSpec(spec)) return new Set();
+  return new Set([
+    ...spec.filters.map((filter) => filter.field_name),
+    ...spec.metrics.map((metric) => metric.field_name),
+    ...spec.strata.map((stratum) => stratum.field_name),
+  ]);
+};
+
+// Returns the sorted list of options to present in the Fields dropdown.
+function getFieldOptions(filteredExperiments: ExperimentConfig[], selectedFields: string[]) {
+  const fieldCounts = filteredExperiments
+    .flatMap((experiment) => [...getExperimentFieldNames(experiment)])
+    .reduce(
+      (counts, field) => counts.set(field, (counts.get(field) ?? 0) + 1),
+      new Map<string, number>(selectedFields.map((field) => [field, 0])),
+    );
+
+  return Array.from(fieldCounts, ([field, count]) => ({ field, count })).sort((a, b) => a.field.localeCompare(b.field));
+}
 
 export default function Page() {
   const router = useRouter();
@@ -24,6 +51,7 @@ export default function Page() {
   const currentOrgId = orgContext!.current.id;
   const [selectedStatuses, setSelectedStatuses] = useState<ExperimentStatus[]>([]);
   const [selectedImpacts, setSelectedImpacts] = useState<string[]>([]);
+  const [selectedFields, setSelectedFields] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useLocalStorage<'card' | 'table'>('exp-view-mode');
 
@@ -70,18 +98,31 @@ export default function Page() {
     );
   };
 
+  const matchesFieldFilter = (experiment: ExperimentWithStatus): boolean => {
+    if (selectedFields.length === 0) return true;
+    const fields = getExperimentFieldNames(experiment);
+    return selectedFields.every((field) => fields.has(field));
+  };
+
   const resetFilters = () => {
     setSelectedStatuses([]);
     setSelectedImpacts([]);
+    setSelectedFields([]);
     setSearchQuery('');
   };
 
   const filteredExperiments = experimentsWithStatus.filter(
     (experiment) =>
-      matchesStatusFilter(experiment) && matchesImpactFilter(experiment) && matchesSearchQuery(experiment),
+      matchesStatusFilter(experiment) &&
+      matchesImpactFilter(experiment) &&
+      matchesSearchQuery(experiment) &&
+      matchesFieldFilter(experiment),
   );
 
-  const filtersActive = selectedStatuses.length > 0 || selectedImpacts.length > 0 || searchQuery !== '';
+  const fieldOptions = getFieldOptions(filteredExperiments, selectedFields);
+
+  const filtersActive =
+    selectedStatuses.length > 0 || selectedImpacts.length > 0 || selectedFields.length > 0 || searchQuery !== '';
 
   if (datasourcesError) {
     return <GenericErrorCallout title={'Error with experiments list'} error={datasourcesError} />;
@@ -145,6 +186,10 @@ export default function Page() {
               <ExperimentStatusFilter value={selectedStatuses} onChange={setSelectedStatuses} />
 
               <ExperimentImpactFilter value={selectedImpacts} onChange={setSelectedImpacts} />
+
+              {fieldOptions.length > 0 ? (
+                <ExperimentFieldFilter value={selectedFields} onChange={setSelectedFields} options={fieldOptions} />
+              ) : null}
               {filtersActive && (
                 <Tooltip content="Reset Filters">
                   <IconButton variant="soft" onClick={resetFilters}>
