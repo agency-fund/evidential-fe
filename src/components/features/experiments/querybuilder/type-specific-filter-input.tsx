@@ -2,11 +2,11 @@
 
 import { Text } from '@radix-ui/themes';
 import { DataType, Filter } from '@/api/methods.schemas';
-import { BooleanFilterInput } from '@/components/features/experiments/querybuilder/boolean-filter-input';
-import { StringFilterInput } from '@/components/features/experiments/querybuilder/string-filter-input';
-import { NumericFilterInput } from '@/components/features/experiments/querybuilder/numeric-filter-input';
-import { BigIntFilterInput } from '@/components/features/experiments/querybuilder/bigint-filter-input';
-import { DateFilterInput } from '@/components/features/experiments/querybuilder/date-filter-input';
+import { BooleanFilter } from '@/components/features/experiments/querybuilder/boolean-filter-input';
+import { StringFilter } from '@/components/features/experiments/querybuilder/string-filter-input';
+import { NumericFilter } from '@/components/features/experiments/querybuilder/numeric-filter-input';
+import { BigIntFilter } from '@/components/features/experiments/querybuilder/bigint-filter-input';
+import { DateFilter } from '@/components/features/experiments/querybuilder/date-filter-input';
 import { TypedFilter } from '@/components/features/experiments/querybuilder/utils';
 
 export interface TypeSpecificFilterProps {

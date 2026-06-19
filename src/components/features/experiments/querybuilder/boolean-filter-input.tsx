@@ -7,7 +7,7 @@ import { TypedFilter } from '@/components/features/experiments/querybuilder/util
 import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
 import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
 
-export interface BooleanFilterInputProps {
+export interface BooleanFilterProps {
   filter: Filter & TypedFilter<boolean>;
   onChange: (filter: Filter) => void;
 }

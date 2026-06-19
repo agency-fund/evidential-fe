@@ -12,7 +12,7 @@ import React, { useState } from 'react';
 import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
 import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
 
-export interface StringFilterInputProps {
+export interface StringFilterProps {
   filter: Filter & TypedFilter<string>;
   onChange: (filter: Filter) => void;
   dataType: DataType;
