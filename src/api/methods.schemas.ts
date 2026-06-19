@@ -984,7 +984,6 @@ export interface InspectParticipantTypesResponse {
 export interface Journey {
 	name: string;
 	uuid: string;
-	[key: string]: unknown;
 }
 
 export type LikelihoodTypes =
