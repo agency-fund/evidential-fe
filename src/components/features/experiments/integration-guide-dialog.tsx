@@ -1,6 +1,13 @@
 'use client';
-import { Button, Callout, Card, DataList, Dialog, Flex, Select, Text } from '@radix-ui/themes';
-import { ChevronDownIcon, ChevronRightIcon, FileIcon, GearIcon, PlusIcon } from '@radix-ui/react-icons';
+import { Button, Callout, Card, DataList, Dialog, Flex, Select, Text, Tooltip } from '@radix-ui/themes';
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  FileIcon,
+  GearIcon,
+  PlusIcon,
+  ExclamationTriangleIcon,
+} from '@radix-ui/react-icons';
 import * as Collapsible from '@radix-ui/react-collapsible';
 import { useState } from 'react';
 import { mutate } from 'swr';
@@ -35,8 +42,9 @@ export function IntegrationGuideDialog({
   contexts,
 }: IntegrationGuideDialogProps) {
   const [open, setOpen] = useState(false);
-  const [showTurnConfig, setShowTurnConfig] = useState(false);
+  const [showTurnConfig, setShowTurnConfig] = useState(true);
   const [armJourneyDraft, setArmJourneyDraft] = useState<Record<string, string>>({});
+  const [staleArmIds, setStaleArmIds] = useState<string[]>([]); // List of arm IDs that have stale mappings
 
   const {
     data: createdKey,
@@ -47,7 +55,6 @@ export function IntegrationGuideDialog({
   const { error: turnConnectionError, isLoading: isLoadingTurnConnection } = useGetOrganizationTurnConnection(
     organizationId,
     { allow_missing: false },
-    { swr: { enabled: open } },
   );
   const noTurnConnection = turnConnectionError instanceof ApiError && turnConnectionError.response.status === 404;
   const hasTurnConnection = !isLoadingTurnConnection && !turnConnectionError;
@@ -62,10 +69,17 @@ export function IntegrationGuideDialog({
 
   const { error: mappingError } = useGetTurnArmJourneyMapping(datasourceId, experimentId, {
     swr: {
-      enabled: turnSectionEnabled,
+      enabled: hasTurnConnection,
       onSuccess: (data) => {
         if (data?.arm_to_journeys) {
           setArmJourneyDraft(data.arm_to_journeys);
+          setStaleArmIds(data.stale_arm_ids || []);
+        }
+      },
+      onError: (error) => {
+        if (error instanceof ApiError && error.response.status === 404) {
+          setArmJourneyDraft({});
+          setStaleArmIds([]);
         }
       },
     },
@@ -92,16 +106,26 @@ export function IntegrationGuideDialog({
     setShowTurnConfig(false);
   };
 
-  const journeyEntries = journeysData ? Object.entries(journeysData.journeys) : [];
-  const hasJourneys = journeyEntries.length > 0;
+  const journeyEntries = journeysData
+    ? Object.entries(journeysData.journeys).map(([, j]) => ({ name: j.name, uuid: j.uuid }))
+    : [];
+  // const hasJourneys = journeyEntries.length > 0;
+  const hasJourneys = true;
   const dontShowJourneysList = journeysError || (mappingError && !mappingNotFound) || !hasJourneys; // If there's an error or no journeys, don't show the dropdown list (but still show the section and any errors)
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>
-        <FileIcon />
-        Integration Guide
-      </Button>
+      {staleArmIds.length > 0 ? (
+        <Button color="red" onClick={() => setOpen(true)}>
+          <ExclamationTriangleIcon />
+          Integration Guide
+        </Button>
+      ) : (
+        <Button onClick={() => setOpen(true)}>
+          <FileIcon />
+          Integration Guide
+        </Button>
+      )}
 
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Content size="3" width={'500'} onOpenAutoFocus={(e) => e.preventDefault()}>
@@ -237,7 +261,7 @@ export function IntegrationGuideDialog({
                     <Flex align="center" justify="between">
                       <Flex align="center" gap="2">
                         <GearIcon />
-                        <Text size="2" weight="medium">
+                        <Text size="2" weight="medium" color={staleArmIds.length > 0 ? 'red' : undefined}>
                           Configure integration for third-party tools
                         </Text>
                       </Flex>
@@ -289,20 +313,27 @@ export function IntegrationGuideDialog({
                                 </DataList.Label>
                                 <DataList.Value>
                                   <Flex direction="column">
-                                    <Select.Root
-                                      value={armJourneyDraft[armId] ?? ''}
-                                      onValueChange={(val) => setArmJourneyDraft((s) => ({ ...s, [armId]: val }))}
-                                      disabled={!hasJourneys}
-                                    >
-                                      <Select.Trigger placeholder="Select a journey..." />
-                                      <Select.Content position="popper">
-                                        {journeyEntries.map(([name, uuid]) => (
-                                          <Select.Item key={uuid} value={uuid}>
-                                            {name}
-                                          </Select.Item>
-                                        ))}
-                                      </Select.Content>
-                                    </Select.Root>
+                                    <Flex align="center" gap="2">
+                                      <Select.Root
+                                        value={armJourneyDraft[armId] ?? ''}
+                                        onValueChange={(val) => setArmJourneyDraft((s) => ({ ...s, [armId]: val }))}
+                                        disabled={!hasJourneys}
+                                      >
+                                        <Select.Trigger placeholder="Select a journey..." style={{ flexGrow: 1 }} />
+                                        <Select.Content position="popper">
+                                          {journeyEntries.map(({ name, uuid }) => (
+                                            <Select.Item key={uuid} value={uuid}>
+                                              {name}
+                                            </Select.Item>
+                                          ))}
+                                        </Select.Content>
+                                      </Select.Root>
+                                      {staleArmIds.includes(armId) && (
+                                        <Tooltip content="This arm's mapping is stale. Please re-select a journey and save to update.">
+                                          <ExclamationTriangleIcon color="red" width="24" height="24" />
+                                        </Tooltip>
+                                      )}
+                                    </Flex>
                                     {armJourneyDraft[armId] && (
                                       <Text size="1" color="gray">
                                         {armJourneyDraft[armId]}

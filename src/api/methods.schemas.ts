@@ -33,10 +33,14 @@ export type AnyBanditDesignSpecExperimentType =
 export const AnyBanditDesignSpecExperimentType = {
 	cmab_online: "cmab_online",
 	mab_online: "mab_online",
+	mab_online_dwh: "mab_online_dwh",
 } as const;
 
 export type AnyBanditDesignSpec =
 	| (MABExperimentSpec & {
+			experiment_type: AnyBanditDesignSpecExperimentType;
+	  })
+	| (MABDwhExperimentSpec & {
 			experiment_type: AnyBanditDesignSpecExperimentType;
 	  })
 	| (CMABExperimentSpec & {
@@ -919,16 +923,15 @@ export type GetTurnArmJourneyMappingResponseArmToJourneys = {
 
 export interface GetTurnArmJourneyMappingResponse {
 	arm_to_journeys: GetTurnArmJourneyMappingResponseArmToJourneys;
+	stale_arm_ids: string[];
 }
 
 export interface GetTurnConnectionResponse {
 	token_preview: string;
 }
 
-export type GetTurnJourneysResponseJourneys = { [key: string]: string };
-
 export interface GetTurnJourneysResponse {
-	journeys: GetTurnJourneysResponseJourneys;
+	journeys: Journey[];
 }
 
 export interface GetUserResponse {
@@ -982,6 +985,11 @@ export interface InspectParticipantTypesResponse {
 	strata: GetStrataResponseElement[];
 }
 
+export interface Journey {
+	name: string;
+	uuid: string;
+}
+
 export type LikelihoodTypes =
 	(typeof LikelihoodTypes)[keyof typeof LikelihoodTypes];
 
@@ -1033,6 +1041,43 @@ export interface ListUsersResponse {
 
 export interface ListWebhooksResponse {
 	items: WebhookSummary[];
+}
+
+export type MABDwhExperimentSpecExperimentType =
+	(typeof MABDwhExperimentSpecExperimentType)[keyof typeof MABDwhExperimentSpecExperimentType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const MABDwhExperimentSpecExperimentType = {
+	mab_online_dwh: "mab_online_dwh",
+} as const;
+
+export type MABDwhExperimentSpecDesignUrl = string | null;
+
+export type MABDwhExperimentSpecContexts = Context[] | null;
+
+export interface MABDwhExperimentSpec {
+	experiment_type: MABDwhExperimentSpecExperimentType;
+	/** @maxLength 100 */
+	experiment_name: string;
+	/** @maxLength 2000 */
+	description: string;
+	design_url?: MABDwhExperimentSpecDesignUrl;
+	start_date: string;
+	end_date: string;
+	/**
+	 * @minItems 2
+	 * @maxItems 20
+	 */
+	arms: ArmBandit[];
+	contexts?: MABDwhExperimentSpecContexts;
+	prior_type?: PriorTypes;
+	reward_type?: LikelihoodTypes;
+	/** @maxLength 100 */
+	table_name: string;
+	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	primary_key: string;
+	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	target_field_name: string;
 }
 
 export type MABExperimentSpecExperimentType =

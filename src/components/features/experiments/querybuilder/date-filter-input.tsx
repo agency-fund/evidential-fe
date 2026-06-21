@@ -15,13 +15,13 @@ import { IncludeNullButton } from '@/components/features/experiments/querybuilde
 import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 
-export interface DateFilterInputProps {
+export interface DateFilterProps {
   filter: Filter & TypedFilter<string>;
   onChange: (filter: Filter) => void;
   dataType: DataType;
 }
 
-export function DateFilterInput({ filter, onChange, dataType }: DateFilterInputProps) {
+export function DateFilter({ filter, onChange, dataType }: DateFilterProps) {
   // Initialize operator state based on filter configuration
   const [operator, setOperator] = useState(() => {
     if (filter.relation === 'between') {

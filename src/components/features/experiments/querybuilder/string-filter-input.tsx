@@ -12,13 +12,13 @@ import React, { useState } from 'react';
 import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
 import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
 
-export interface StringFilterInputProps {
+export interface StringFilterProps {
   filter: Filter & TypedFilter<string>;
   onChange: (filter: Filter) => void;
   dataType: DataType;
 }
 
-export function StringFilterInput({ filter, onChange, dataType }: StringFilterInputProps) {
+export function StringFilter({ filter, onChange, dataType }: StringFilterProps) {
   // Initialize operator state based on filter configuration
   const [operator, setOperator] = useState(() => {
     if (filter.relation === 'excludes') {
