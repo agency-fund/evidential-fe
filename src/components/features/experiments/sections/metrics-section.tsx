@@ -11,6 +11,7 @@ export interface MetricDisplay {
   field_name: string;
   data_type: DataType;
   mde: string | number;
+  estimatedMde?: string | number | null;
 }
 
 export interface MetricsSectionProps {
@@ -40,11 +41,16 @@ export function MetricsSection({ metrics, strata, onEdit }: MetricsSectionProps)
           <DataList.Label>Primary Metric</DataList.Label>
           <DataList.Value>
             {metrics?.primary ? (
-              <Flex direction="row" gap="2" justify={'between'} width={'100%'}>
-                <Text>{metrics.primary.field_name}</Text>
-                <Flex direction={'row'} gap={'3'}>
+              <Flex direction="column" gap="2" width={'100%'}>
+                <Flex direction="row" gap="2" align="center">
+                  <Text>{metrics.primary.field_name}</Text>
                   <DataTypeBadge type={metrics.primary.data_type} />
-                  <MdeBadge value={metrics.primary.mde} size="1" />
+                </Flex>
+                <Flex direction="row" gap="2" align="start">
+                  <MdeBadge value={metrics.primary.mde} kind="target" size="1" />
+                  {metrics.primary.estimatedMde != null && (
+                    <MdeBadge value={metrics.primary.estimatedMde} kind="estimated" size="1" />
+                  )}
                 </Flex>
               </Flex>
             ) : (
@@ -58,11 +64,16 @@ export function MetricsSection({ metrics, strata, onEdit }: MetricsSectionProps)
             {(metrics?.secondary ?? []).length > 0 ? (
               <Flex direction="column" gap="2" width={'100%'}>
                 {(metrics?.secondary ?? []).map((metric) => (
-                  <Flex key={metric.field_name} gap="2" justify={'between'} width={'100%'}>
-                    <Text>{metric.field_name}</Text>
-                    <Flex direction={'row'} gap={'3'}>
+                  <Flex key={metric.field_name} direction="column" gap="2" width={'100%'}>
+                    <Flex direction="row" gap="2" align="center">
+                      <Text>{metric.field_name}</Text>
                       <DataTypeBadge type={metric.data_type} />
-                      <MdeBadge value={metric.mde} size="1" />
+                    </Flex>
+                    <Flex direction="row" gap="2" align="start">
+                      <MdeBadge value={metric.mde} kind="target" size="1" />
+                      {metric.estimatedMde != null && (
+                        <MdeBadge value={metric.estimatedMde} kind="estimated" size="1" />
+                      )}
                     </Flex>
                   </Flex>
                 ))}

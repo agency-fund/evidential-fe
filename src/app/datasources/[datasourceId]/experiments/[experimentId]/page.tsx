@@ -72,7 +72,7 @@ import {
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { TableNameBadge } from '@/components/features/participants/table-name-badge';
 import { TargetingDialog } from '@/components/features/experiments/targeting-dialog';
-import { PowerAndBalanceDialog } from '@/components/features/experiments/power-and-balance-dialog';
+import { FreqDesignDetailsDialog } from '@/components/features/experiments/freq-design-details-dialog';
 
 const SNAPSHOT_ERROR_ALERT_THRESHOLD_MS = 8 * 60 * 60 * 1000;
 
@@ -358,16 +358,26 @@ export default function ExperimentViewPage() {
     return <Text>No experiment data found</Text>;
   }
   const { design_spec, assign_summary, decision, impact } = experiment.config;
-  const { alpha, power } = getAlphaAndPower(experiment.config); // undefined for non-frequentist experiments
+  const { alpha } = getAlphaAndPower(experiment.config); // undefined for non-frequentist experiments
   const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
   const isFrequentistExperiment = isFrequentistSpec(design_spec);
   const contexts = isBanditSpec(design_spec) ? (design_spec.contexts ?? []) : [];
 
-  // Calculate MDE percentage for the selected metric
-  let mdePct: string | null = null;
-  if (selectedMetricAnalysis?.metric?.metric_pct_change) {
-    mdePct = (selectedMetricAnalysis.metric.metric_pct_change * 100).toFixed(1);
-  }
+  const metricPowerAnalysis = experiment.config.power_analyses?.analyses?.find(
+    (analysis) => analysis.metric_spec.field_name === selectedMetricAnalysis?.metric?.field_name,
+  );
+
+  const targetMdePct =
+    selectedMetricAnalysis?.metric?.metric_pct_change != null
+      ? (selectedMetricAnalysis.metric.metric_pct_change * 100).toFixed(1)
+      : null;
+
+  const estimatedMdePct =
+    metricPowerAnalysis?.pct_change_with_desired_n != null
+      ? (metricPowerAnalysis.pct_change_with_desired_n * 100).toFixed(1)
+      : null;
+
+  const mdePct = estimatedMdePct ?? targetMdePct;
 
   const { timeseriesData, armMetadata, minDate, maxDate } = transformAnalysisForForestTimeseriesPlot(
     analysisHistory,
@@ -422,24 +432,9 @@ export default function ExperimentViewPage() {
             </>
           )}
           <>
-            <TargetingDialog
-              designSpec={design_spec}
-              experimentSchema={experiment.experiment_schema}
-              webhookIds={experiment.config.webhooks ?? []}
-            />
+            <TargetingDialog designSpec={design_spec} webhookIds={experiment.config.webhooks ?? []} />
             <Separator orientation="vertical" />
           </>
-          {isFrequentistSpec(design_spec) && (
-            <>
-              <PowerAndBalanceDialog
-                confidence={Math.round((1 - alpha!) * 100)}
-                power={Math.round(power! * 100)}
-                desiredN={design_spec.desired_n ?? undefined}
-                assignSummary={assign_summary}
-              />
-              <Separator orientation="vertical" />
-            </>
-          )}
           <Flex align="center" gap="2">
             <FileTextIcon />
             <EditableTextField
@@ -503,8 +498,8 @@ export default function ExperimentViewPage() {
           headerLeft={
             <Flex gap="3" align="center" wrap="wrap">
               <Heading size="3">Analysis</Heading>
-              {isFrequentistExperiment ? (
-                <Flex gap="3" wrap="wrap">
+              {isFrequentistSpec(design_spec) ? (
+                <Flex gap="3" align="center" wrap="wrap">
                   <Badge size="2">
                     <Flex gap="2" align="center">
                       <Heading size="2">Metric:</Heading>
@@ -532,7 +527,13 @@ export default function ExperimentViewPage() {
                       )}
                     </Flex>
                   </Badge>
-                  <MdeBadge value={mdePct} />
+                  <MdeBadge value={mdePct} kind={estimatedMdePct != null ? 'estimated' : 'target'} />
+                  <FreqDesignDetailsDialog
+                    designSpec={design_spec}
+                    experimentSchema={experiment.experiment_schema}
+                    assignSummary={assign_summary}
+                    powerAnalyses={experiment.config.power_analyses?.analyses}
+                  />
                 </Flex>
               ) : isBanditAnalysis(selectedAnalysisState.data) &&
                 selectedAnalysisState.banditEffects &&
@@ -608,32 +609,7 @@ export default function ExperimentViewPage() {
                   </Flex>
                 </Badge>
               </Flex>
-              {isFrequentistExperiment ? (
-                <Flex gap="3" wrap="wrap">
-                  <Badge size="2">
-                    <Flex gap="4" align="center">
-                      <Heading size="2">Confidence:</Heading>
-                      <Flex gap="2" align="center">
-                        <Text>{alpha ? `${(1 - alpha) * 100}%` : '?'}</Text>
-                        <Tooltip content="Chance that our test correctly shows no significant difference, if there truly is none. (The probability of avoiding a false positive.)">
-                          <InfoCircledIcon />
-                        </Tooltip>
-                      </Flex>
-                    </Flex>
-                  </Badge>
-                  <Badge size="2">
-                    <Flex gap="4" align="center">
-                      <Heading size="2">Power:</Heading>
-                      <Flex gap="2" align="center">
-                        <Text>{power ? `${power * 100}%` : '?'}</Text>
-                        <Tooltip content="Chance of detecting a difference at least as large as the pre-specified minimum effect for the metric, if that difference truly exists. (The probability of avoiding a false negative.)">
-                          <InfoCircledIcon />
-                        </Tooltip>
-                      </Flex>
-                    </Flex>
-                  </Badge>
-                </Flex>
-              ) : (
+              {!isFrequentistExperiment && (
                 <Badge size="2">
                   <Flex gap="4" align="center">
                     <Tooltip
