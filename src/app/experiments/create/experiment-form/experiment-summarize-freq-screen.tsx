@@ -15,18 +15,29 @@ export const ExperimentsSummarizeFreqScreen = ({
   dispatch,
 }: ScreenProps<ExperimentFormData, ExperimentsSummarizeFreqScreenMessage, ExperimentScreenId>) => {
   const isFreqPreassigned = data.experimentType === 'freq_preassigned';
+
+  const estimatedMdeByField = new Map(
+    (data.mdePowerCheckResponse?.analyses ?? []).map((a) => [a.metric_spec.field_name, a.pct_change_with_desired_n]),
+  );
+  const estimatedMdeFor = (fieldName: string): string | null => {
+    const raw = estimatedMdeByField.get(fieldName);
+    return raw != null ? (raw * 100).toFixed(1) : null;
+  };
+
   const metrics: ExperimentConfirmationDisplayProps['metrics'] = {
     primary: data.primaryMetric
       ? {
           field_name: data.primaryMetric.metric.field_name,
           data_type: data.primaryMetric.metric.data_type,
           mde: data.primaryMetric.mde,
+          estimatedMde: estimatedMdeFor(data.primaryMetric.metric.field_name),
         }
       : undefined,
     secondary: (data.secondaryMetrics ?? []).map((m) => ({
       field_name: m.metric.field_name,
       data_type: m.metric.data_type,
       mde: m.mde,
+      estimatedMde: estimatedMdeFor(m.metric.field_name),
     })),
   };
 

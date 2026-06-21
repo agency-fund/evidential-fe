@@ -2,7 +2,7 @@
 
 import { Badge, Flex, RadioCards, Spinner, Text, TextField } from '@radix-ui/themes';
 import { usePowerCheck } from '@/api/admin';
-import { AnyFrequentistDesignSpecInput, PowerResponseOutput } from '@/api/methods.schemas';
+import { AnyFrequentistDesignSpec, PowerResponse } from '@/api/methods.schemas';
 import { PowerCheckDesiredNInput } from './power-check-desired-n-input';
 import { PowerCheckOption } from './experiment-form-types';
 import {
@@ -24,7 +24,7 @@ import { GenericErrorCallout } from '@/components/ui/generic-error';
 export type PowerCheckSampleOptionChange = {
   sampleSizeOption: PowerCheckOption;
   desiredN: number | undefined;
-  response: PowerResponseOutput | undefined;
+  response: PowerResponse | undefined;
 };
 
 /**
@@ -32,7 +32,7 @@ export type PowerCheckSampleOptionChange = {
  * Can be used to check for stale responses.
  */
 export type PowerCheckResponseChange = PowerCheckSampleOptionChange & {
-  designSpec: AnyFrequentistDesignSpecInput;
+  designSpec: AnyFrequentistDesignSpec;
 };
 
 interface PowerCheckSampleSizeSelectorProps {
@@ -41,16 +41,16 @@ interface PowerCheckSampleSizeSelectorProps {
   primaryMetricFieldName: string;
   isClustered: boolean;
   /** Values for display in sample size mode (USE_POWER_CHECK) */
-  powerCheckResponse: PowerResponseOutput;
+  powerCheckResponse: PowerResponse;
   targetMde?: string;
   /**
    * Values for display in MDE mode (USE_ALL_NON_NULL_SAMPLES or ENTER_OWN).
    * desiredN should always correspond to the mdePowerCheckResponse if it exists.
    */
-  mdePowerCheckResponse?: PowerResponseOutput;
+  mdePowerCheckResponse?: PowerResponse;
   desiredN?: number;
   /** Used for making MDE estimates. Creates a design spec for the given desired N. */
-  makeDesignSpec: (desiredN: number) => AnyFrequentistDesignSpecInput;
+  makeDesignSpec: (desiredN: number) => AnyFrequentistDesignSpec;
   /**
    * Handles the radio button selection immediately.
    */

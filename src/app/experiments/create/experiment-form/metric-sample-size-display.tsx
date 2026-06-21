@@ -1,5 +1,5 @@
 import { Flex, Text } from '@radix-ui/themes';
-import { MetricPowerAnalysisOutput } from '@/api/methods.schemas';
+import { MetricPowerAnalysis } from '@/api/methods.schemas';
 
 export type MetricSampleSizeVariant = 'required' | 'available' | 'available-nonnull';
 
@@ -30,7 +30,7 @@ const getAvailableNonnullParticipantColor = (
 };
 
 const getDisplayColor = (
-  analysis: MetricPowerAnalysisOutput,
+  analysis: MetricPowerAnalysis,
   variant: MetricSampleSizeVariant,
 ): 'crimson' | 'green' | undefined => {
   switch (variant) {
@@ -47,7 +47,7 @@ const getDisplayColor = (
   }
 };
 
-const getParticipantN = (analysis: MetricPowerAnalysisOutput, variant: MetricSampleSizeVariant): number | undefined => {
+const getParticipantN = (analysis: MetricPowerAnalysis, variant: MetricSampleSizeVariant): number | undefined => {
   switch (variant) {
     case 'required':
       return analysis.target_n ?? undefined;
@@ -109,7 +109,7 @@ function SampleSizeDisplayImpl({ participantN, clusterN, color, align = 'end' }:
 }
 
 export interface MetricSampleSizeDisplayProps {
-  analysis: MetricPowerAnalysisOutput;
+  analysis: MetricPowerAnalysis;
   isClustered: boolean;
   variant: MetricSampleSizeVariant;
   align?: 'center' | 'end';

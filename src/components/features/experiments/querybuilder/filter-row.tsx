@@ -2,8 +2,8 @@
 
 import { Flex, Grid, IconButton, Text } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
-import { DataType, FilterInput } from '@/api/methods.schemas';
-import { TypeSpecificFilterInput } from '@/components/features/experiments/querybuilder/type-specific-filter-input';
+import { DataType, Filter } from '@/api/methods.schemas';
+import { TypeSpecificFilter } from '@/components/features/experiments/querybuilder/type-specific-filter-input';
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
 import { Combobox } from '@/components/ui/combobox';
 
@@ -13,11 +13,11 @@ export interface FilterRowOption {
 }
 
 export interface FilterRowProps {
-  filter: FilterInput;
+  filter: Filter;
   availableOptions: Array<FilterRowOption>;
   isNewRow: boolean;
   onSelect: (selectedOption: FilterRowOption) => void;
-  onUpdate: (filterRowChange: FilterInput) => void;
+  onUpdate: (filterRowChange: Filter) => void;
   onRemove: () => void;
 }
 
@@ -89,7 +89,7 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
       {/* Filter options for the selected filter field or help text */}
       <Flex gap={'2'} align={'center'}>
         {exactMatchField ? (
-          <TypeSpecificFilterInput dataType={exactMatchField.data_type} filter={filter} onChange={onUpdate} />
+          <TypeSpecificFilter dataType={exactMatchField.data_type} filter={filter} onChange={onUpdate} />
         ) : filter.field_name === '' ? (
           <Text size="2" color="gray">
             ← Select a field or type the name

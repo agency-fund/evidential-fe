@@ -2,17 +2,17 @@
 
 import { Flex, IconButton, Select, TextField } from '@radix-ui/themes';
 import { Cross2Icon } from '@radix-ui/react-icons';
-import { FilterInput } from '@/api/methods.schemas';
+import { Filter } from '@/api/methods.schemas';
 import { TypedFilter } from '@/components/features/experiments/querybuilder/utils';
 import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
 import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
 
-export interface BooleanFilterInputProps {
-  filter: FilterInput & TypedFilter<boolean>;
-  onChange: (filter: FilterInput) => void;
+export interface BooleanFilterProps {
+  filter: Filter & TypedFilter<boolean>;
+  onChange: (filter: Filter) => void;
 }
 
-export function BooleanFilterInput({ filter, onChange }: BooleanFilterInputProps) {
+export function BooleanFilter({ filter, onChange }: BooleanFilterProps) {
   const nonNullValues = filter.value.filter((v) => v !== null);
   const hasTrue = filter.value.some((v) => v === true);
   const includesNull = filter.value.some((v) => v === null);

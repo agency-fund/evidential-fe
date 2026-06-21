@@ -1,4 +1,4 @@
-import { DataType, FilterInput, FilterValueTypes } from '@/api/methods.schemas';
+import { DataType, Filter, FilterValueTypes } from '@/api/methods.schemas';
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 
 export const BETWEEN_BASED_OPS = new Set(['gte', 'lte', 'between', 'after', 'before']);
@@ -8,10 +8,10 @@ export const BETWEEN_BASED_OPS = new Set(['gte', 'lte', 'between', 'after', 'bef
 export const BETWEEN_WITH_NULL_LENGTH = 3;
 
 export type SingleTypeArray<T> = Array<T | null>;
-export type TypedFilter<T> = FilterInput & { value: SingleTypeArray<T> };
+export type TypedFilter<T> = Filter & { value: SingleTypeArray<T> };
 
 // Get default filter configuration for a given field type
-export function getDefaultFilterForType(fieldName: string, dataType: DataType): FilterInput {
+export function getDefaultFilterForType(fieldName: string, dataType: DataType): Filter {
   switch (dataType) {
     case 'boolean':
       return {

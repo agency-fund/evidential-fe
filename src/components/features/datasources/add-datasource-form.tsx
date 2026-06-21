@@ -1,7 +1,7 @@
 'use client';
 import { Button, Flex, RadioGroup, Text, TextField } from '@radix-ui/themes';
 import { EyeClosedIcon, EyeOpenIcon, InfoCircledIcon } from '@radix-ui/react-icons';
-import { ApiOnlyDsn, DsnInput, PostgresDsnSslmode } from '@/api/methods.schemas';
+import { ApiOnlyDsn, Dsn, PostgresDsnSslmode } from '@/api/methods.schemas';
 import { ServiceAccountJsonField } from '@/components/features/datasources/service-account-json-field';
 
 const portMap: Record<string, string> = {
@@ -9,7 +9,7 @@ const portMap: Record<string, string> = {
   redshift: '5439',
 };
 
-export type AllowedDwhTypes = Exclude<DsnInput['type'], ApiOnlyDsn['type']>;
+export type AllowedDwhTypes = Exclude<Dsn['type'], ApiOnlyDsn['type']>;
 
 export interface DatasourceFormData {
   name: string;

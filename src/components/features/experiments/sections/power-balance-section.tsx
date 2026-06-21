@@ -1,8 +1,8 @@
 'use client';
 
-import { Button, DataList, Flex } from '@radix-ui/themes';
-import { Pencil2Icon } from '@radix-ui/react-icons';
-import { AssignSummary, MetricPowerAnalysisOutput } from '@/api/methods.schemas';
+import { Badge, Button, DataList, Flex, Text, Tooltip } from '@radix-ui/themes';
+import { Pencil2Icon, InfoCircledIcon } from '@radix-ui/react-icons';
+import { AssignSummary, MetricPowerAnalysis } from '@/api/methods.schemas';
 import { SectionCard } from '@/components/ui/cards/section-card';
 
 export interface PowerBalanceSectionProps {
@@ -10,9 +10,10 @@ export interface PowerBalanceSectionProps {
   power: number;
   desiredN?: number;
   assignSummary: AssignSummary | null | undefined;
-  primaryPowerAnalysis?: MetricPowerAnalysisOutput;
+  primaryPowerAnalysis?: MetricPowerAnalysis;
   onEdit?: () => void;
   showDesiredSampleSize?: boolean;
+  showActualSampleSize?: boolean;
   showTitle?: boolean;
 }
 
@@ -24,6 +25,7 @@ export function PowerBalanceSection({
   primaryPowerAnalysis,
   onEdit,
   showDesiredSampleSize = true,
+  showActualSampleSize = true,
   showTitle = true,
 }: PowerBalanceSectionProps) {
   const balanceCheck = assignSummary?.balance_check;
@@ -32,7 +34,30 @@ export function PowerBalanceSection({
   // participants between the time of power calculation and the time of assignment, which hopefully
   // is a very rare event.
   const actualSampleSize = assignSummary?.sample_size;
-  const showActualSampleSize = actualSampleSize !== undefined && actualSampleSize !== desiredN;
+  const shouldShowActualSampleSize =
+    showActualSampleSize && actualSampleSize !== undefined && actualSampleSize !== desiredN;
+
+  const confidenceBadge = (
+    <Badge>
+      <Flex gap="2" align="center">
+        <Text>{confidence}%</Text>
+        <Tooltip content="Chance that our test correctly shows no significant difference, if there truly is none. (The probability of avoiding a false positive.)">
+          <InfoCircledIcon />
+        </Tooltip>
+      </Flex>
+    </Badge>
+  );
+
+  const powerBadge = (
+    <Badge>
+      <Flex gap="2" align="center">
+        <Text>{power}%</Text>
+        <Tooltip content="Chance of detecting a difference at least as large as the pre-specified minimum effect for the metric, if that difference truly exists. (The probability of avoiding a false negative.)">
+          <InfoCircledIcon />
+        </Tooltip>
+      </Flex>
+    </Badge>
+  );
 
   return (
     <SectionCard
@@ -56,11 +81,11 @@ export function PowerBalanceSection({
             </DataList.Item>
             <DataList.Item>
               <DataList.Label>Confidence</DataList.Label>
-              <DataList.Value>{confidence}%</DataList.Value>
+              <DataList.Value>{confidenceBadge}</DataList.Value>
             </DataList.Item>
             <DataList.Item>
               <DataList.Label>Power</DataList.Label>
-              <DataList.Value>{power}%</DataList.Value>
+              <DataList.Value>{powerBadge}</DataList.Value>
             </DataList.Item>
             {showDesiredSampleSize && (
               <DataList.Item>
@@ -74,7 +99,7 @@ export function PowerBalanceSection({
                 <DataList.Value>{numClustersTotal.toLocaleString()}</DataList.Value>
               </DataList.Item>
             )}
-            {showActualSampleSize && (
+            {shouldShowActualSampleSize && (
               <DataList.Item>
                 <DataList.Label>Actual Sample Size</DataList.Label>
                 <DataList.Value>{actualSampleSize} participants</DataList.Value>

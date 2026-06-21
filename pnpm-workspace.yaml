@@ -1,0 +1,16 @@
+autoInstallPeers: true
+strictPeerDependencies: true
+ignoreScripts: true
+saveExact: true
+# min age is in minutes for pnpm; 5d=7200
+minimumReleaseAge: 7200
+
+publicHoistPattern:
+- "*import-in-the-middle*"
+- "*require-in-the-middle*"
+
+allowBuilds:
+  '@biomejs/biome': true
+  '@sentry/cli': true
+  esbuild: true
+  sharp: true

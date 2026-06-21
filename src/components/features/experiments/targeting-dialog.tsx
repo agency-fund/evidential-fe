@@ -3,15 +3,12 @@
 import { useState } from 'react';
 import { Box, Button, Dialog, Flex } from '@radix-ui/themes';
 import {
-  CMABExperimentSpecOutput,
-  DataType,
-  DesignSpecOutput,
-  MABExperimentSpecOutput,
-  OnlineFrequentistExperimentSpecOutput,
-  ParticipantsSchemaOutput,
-  PreassignedFrequentistExperimentSpecOutput,
+  CMABExperimentSpec,
+  DesignSpec,
+  MABExperimentSpec,
+  OnlineFrequentistExperimentSpec,
+  PreassignedFrequentistExperimentSpec,
 } from '@/api/methods.schemas';
-import { MetricDisplay, MetricsSection } from '@/components/features/experiments/sections/metrics-section';
 import { DatasourceTargetingSection } from '@/components/features/experiments/sections/datasource-targeting-section';
 import { ContextsSection } from '@/components/features/experiments/sections/contexts-section';
 import { OutcomesPriorSection } from '@/components/features/experiments/sections/outcomes-prior-section';
@@ -19,54 +16,22 @@ import { WebhooksSection } from '@/components/features/experiments/sections/webh
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 
 interface TargetingDialogProps {
-  designSpec: DesignSpecOutput;
-  experimentSchema: ParticipantsSchemaOutput | null | undefined;
+  designSpec: DesignSpec;
   webhookIds: string[];
 }
 
 const isFrequentistSpec = (
-  spec: DesignSpecOutput,
-): spec is OnlineFrequentistExperimentSpecOutput | PreassignedFrequentistExperimentSpecOutput =>
+  spec: DesignSpec,
+): spec is OnlineFrequentistExperimentSpec | PreassignedFrequentistExperimentSpec =>
   spec.experiment_type === 'freq_online' || spec.experiment_type === 'freq_preassigned';
 
-const isBanditSpec = (spec: DesignSpecOutput): spec is MABExperimentSpecOutput | CMABExperimentSpecOutput =>
+const isBanditSpec = (spec: DesignSpec): spec is MABExperimentSpec | CMABExperimentSpec =>
   spec.experiment_type === 'mab_online' || spec.experiment_type === 'cmab_online';
 
-const isCmabSpec = (spec: DesignSpecOutput): spec is CMABExperimentSpecOutput => spec.experiment_type === 'cmab_online';
+const isCmabSpec = (spec: DesignSpec): spec is CMABExperimentSpec => spec.experiment_type === 'cmab_online';
 
-const toMdePercent = (value: number | null | undefined): string => {
-  if (value === null || value === undefined) {
-    return 'unknown';
-  }
-  return (value * 100).toFixed(1);
-};
-
-export function TargetingDialog({ designSpec, experimentSchema, webhookIds }: TargetingDialogProps) {
+export function TargetingDialog({ designSpec, webhookIds }: TargetingDialogProps) {
   const [open, setOpen] = useState(false);
-
-  const fieldTypeByName = new Map(
-    (experimentSchema?.fields ?? []).map((field) => {
-      return [field.field_name, field.data_type];
-    }),
-  );
-
-  const toMetricDisplay = (fieldName: string, mdePct: number | null | undefined): MetricDisplay => {
-    const dataType = fieldTypeByName.get(fieldName) ?? DataType.unknown;
-    return {
-      field_name: fieldName,
-      data_type: dataType,
-      mde: toMdePercent(mdePct),
-    };
-  };
-
-  let frequentistMetrics: { primary?: MetricDisplay; secondary?: MetricDisplay[] } | undefined = undefined;
-  if (isFrequentistSpec(designSpec)) {
-    const [primaryMetric, ...secondaryMetrics] = designSpec.metrics;
-    frequentistMetrics = {
-      primary: primaryMetric ? toMetricDisplay(primaryMetric.field_name, primaryMetric.metric_pct_change) : undefined,
-      secondary: secondaryMetrics.map((metric) => toMetricDisplay(metric.field_name, metric.metric_pct_change)),
-    };
-  }
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -77,21 +42,15 @@ export function TargetingDialog({ designSpec, experimentSchema, webhookIds }: Ta
       </Dialog.Trigger>
       <Dialog.Content size="4" width="900px">
         <Flex direction="column" gap="3">
-          <Dialog.Title>Targeting and Design</Dialog.Title>
+          <Dialog.Title>Targeting</Dialog.Title>
           <Box maxHeight="70vh" overflow="auto" pr="1">
             <Flex direction="column" gap="3">
               {isFrequentistSpec(designSpec) && (
-                <>
-                  <DatasourceTargetingSection
-                    tableName={designSpec.table_name}
-                    primaryKey={designSpec.primary_key}
-                    filters={designSpec.filters}
-                  />
-                  <MetricsSection
-                    metrics={frequentistMetrics}
-                    strata={designSpec.strata?.map((stratum) => stratum.field_name) ?? []}
-                  />
-                </>
+                <DatasourceTargetingSection
+                  tableName={designSpec.table_name}
+                  primaryKey={designSpec.primary_key}
+                  filters={designSpec.filters}
+                />
               )}
               {isBanditSpec(designSpec) && (
                 <OutcomesPriorSection priorType={designSpec.prior_type} rewardType={designSpec.reward_type} />

@@ -1,31 +1,27 @@
 import {
-  AnyBanditDesignSpecOutput,
-  AnyFrequentistDesignSpecOutput,
-  AnyFrequentistDesignSpecInputExperimentType,
+  AnyFrequentistDesignSpecExperimentType,
   Arm,
-  CMABExperimentSpecInputExperimentType,
-  CMABExperimentSpecOutput,
+  CMABExperimentSpec,
+  CMABExperimentSpecExperimentType,
   ContextType,
   CreateExperimentResponse,
-  DesignSpecInput,
-  DesignSpecOutput,
+  DesignSpec,
   ExperimentConfig,
   FieldMetadata,
-  FilterInput,
+  Filter,
   GetExperimentResponse,
   GetFiltersResponseElement,
   GetMetricsResponseElement,
-  MABExperimentSpecInput,
-  MABExperimentSpecInputExperimentType,
-  MABExperimentSpecOutput,
-  OnlineFrequentistExperimentSpecInputExperimentType,
-  PowerResponseOutput,
-  PreassignedFrequentistExperimentSpecInputExperimentType,
-  PreassignedFrequentistExperimentSpecOutput,
+  MABExperimentSpec,
+  MABExperimentSpecExperimentType,
+  OnlineFrequentistExperimentSpec,
+  OnlineFrequentistExperimentSpecExperimentType,
+  PowerResponse,
+  PreassignedFrequentistExperimentSpec,
+  PreassignedFrequentistExperimentSpecExperimentType,
 } from '@/api/methods.schemas';
 import { ErrorType } from '@/services/orval-fetch';
 
-// export type ContextVariableType2 = ContextSpec['value_type'];
 export type ContextVariableType = ContextType;
 
 // Context variable configuration for CMAB
@@ -34,7 +30,7 @@ export type Context = {
   description: string;
   type: ContextVariableType;
 };
-export type PriorType = MABExperimentSpecInput['prior_type'];
+export type PriorType = MABExperimentSpec['prior_type'];
 export type FormOutcomeType = 'binary' | 'real';
 export type BanditExperimentType = 'mab_online' | 'cmab_online';
 
@@ -85,7 +81,7 @@ export type MetricWithMDE = {
   mde: string; // desired minimum detectable effect as a percentage of the metric's baseline value
 };
 
-export type ExperimentType = DesignSpecInput['experiment_type'];
+export type ExperimentType = DesignSpec['experiment_type'];
 
 // Defines the entirety of the editable data collected via this wizard flow.
 export type ExperimentFormData = {
@@ -108,7 +104,7 @@ export type ExperimentFormData = {
   // experiment-freq-stack-screen
   primaryMetric?: MetricWithMDE;
   secondaryMetrics?: MetricWithMDE[];
-  filters?: FilterInput[];
+  filters?: Filter[];
   // Cache of available filter fields (and their data types) for lookup/display/search
   availableFilterFields?: GetFiltersResponseElement[];
   strata?: FieldMetadata[];
@@ -119,9 +115,9 @@ export type ExperimentFormData = {
   // Populated when user clicks "Power Check" on DesignForm
   desiredN?: number;
   sampleSizeOption?: PowerCheckOption;
-  powerCheckResponse?: PowerResponseOutput;
+  powerCheckResponse?: PowerResponse;
   // Populated by the MDE estimate for the currently-active custom N (ENTER_OWN or USE_ALL_NON_NULL_SAMPLES).
-  mdePowerCheckResponse?: PowerResponseOutput;
+  mdePowerCheckResponse?: PowerResponse;
   createExperimentResponse?: CreateExperimentResponse;
   createExperimentError?: ErrorType<unknown>;
   // Values needed for cluster-randomized experiments
@@ -160,43 +156,43 @@ export type ExperimentScreenId =
 // Define the type alias using imported types
 export const isFreqExperimentType = (
   experimentType?: ExperimentType,
-): experimentType is AnyFrequentistDesignSpecInputExperimentType =>
-  experimentType === PreassignedFrequentistExperimentSpecInputExperimentType.freq_preassigned ||
-  experimentType === OnlineFrequentistExperimentSpecInputExperimentType.freq_online;
+): experimentType is AnyFrequentistDesignSpecExperimentType =>
+  experimentType === PreassignedFrequentistExperimentSpecExperimentType.freq_preassigned ||
+  experimentType === OnlineFrequentistExperimentSpecExperimentType.freq_online;
 
 export const isClusteredExperiment = (data: ExperimentFormData): boolean =>
-  data.experimentType === PreassignedFrequentistExperimentSpecInputExperimentType.freq_preassigned && !!data.clusterKey;
+  data.experimentType === PreassignedFrequentistExperimentSpecExperimentType.freq_preassigned && !!data.clusterKey;
 
 export const isCmabExperimentType = (
   experimentType?: ExperimentType,
-): experimentType is CMABExperimentSpecInputExperimentType =>
-  experimentType === CMABExperimentSpecInputExperimentType.cmab_online;
+): experimentType is CMABExperimentSpecExperimentType =>
+  experimentType === CMABExperimentSpecExperimentType.cmab_online;
 
 export const isBanditExperimentType = (experimentType?: ExperimentType): experimentType is BanditExperimentType =>
-  experimentType === MABExperimentSpecInputExperimentType.mab_online ||
-  experimentType === CMABExperimentSpecInputExperimentType.cmab_online;
+  experimentType === MABExperimentSpecExperimentType.mab_online ||
+  experimentType === CMABExperimentSpecExperimentType.cmab_online;
 
-export const isFrequentistSpec = (spec: DesignSpecOutput | undefined): spec is AnyFrequentistDesignSpecOutput =>
+export const isFrequentistSpec = (
+  spec: DesignSpec | undefined,
+): spec is OnlineFrequentistExperimentSpec | PreassignedFrequentistExperimentSpec =>
   !!spec && isFreqExperimentType(spec.experiment_type);
 
-export const isFreqPreassignedSpec = (
-  spec: DesignSpecOutput | undefined,
-): spec is PreassignedFrequentistExperimentSpecOutput =>
-  !!spec && spec.experiment_type === PreassignedFrequentistExperimentSpecInputExperimentType.freq_preassigned;
+export const isFreqPreassignedSpec = (spec: DesignSpec | undefined): spec is PreassignedFrequentistExperimentSpec =>
+  !!spec && spec.experiment_type === PreassignedFrequentistExperimentSpecExperimentType.freq_preassigned;
 
 export const isClusteredPreassignedSpec = (
-  spec: DesignSpecOutput | undefined,
-): spec is PreassignedFrequentistExperimentSpecOutput => isFreqPreassignedSpec(spec) && !!spec.cluster_key;
+  spec: DesignSpec | undefined,
+): spec is PreassignedFrequentistExperimentSpec => isFreqPreassignedSpec(spec) && !!spec.cluster_key;
 
-export function isMabSpec(spec: DesignSpecOutput | undefined): spec is MABExperimentSpecOutput {
-  return !!spec && spec.experiment_type === MABExperimentSpecInputExperimentType.mab_online;
+export function isMabSpec(spec: DesignSpec | undefined): spec is MABExperimentSpec {
+  return !!spec && spec.experiment_type === MABExperimentSpecExperimentType.mab_online;
 }
 
-export function isCmabSpec(spec: DesignSpecOutput | undefined): spec is CMABExperimentSpecOutput {
-  return !!spec && spec.experiment_type === CMABExperimentSpecInputExperimentType.cmab_online;
+export function isCmabSpec(spec: DesignSpec | undefined): spec is CMABExperimentSpec {
+  return !!spec && spec.experiment_type === CMABExperimentSpecExperimentType.cmab_online;
 }
 
-export const isBanditSpec = (spec: DesignSpecOutput | undefined): spec is AnyBanditDesignSpecOutput =>
+export const isBanditSpec = (spec: DesignSpec | undefined): spec is MABExperimentSpec | CMABExperimentSpec =>
   isMabSpec(spec) || isCmabSpec(spec);
 
 export const isCmabExperiment = (experiment: GetExperimentResponse | ExperimentConfig | undefined): boolean =>

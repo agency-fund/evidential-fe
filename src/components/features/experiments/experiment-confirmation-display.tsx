@@ -1,7 +1,7 @@
 'use client';
 
 import { Flex, Grid } from '@radix-ui/themes';
-import { CreateExperimentResponse, FilterOutput } from '@/api/methods.schemas';
+import { CreateExperimentResponse, Filter } from '@/api/methods.schemas';
 import { getPrimaryPowerAnalysis } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import {
   isBanditSpec,
@@ -16,7 +16,6 @@ import { ContextsSection } from '@/components/features/experiments/sections/cont
 import { DatasourceTargetingSection } from '@/components/features/experiments/sections/datasource-targeting-section';
 import { PowerBalanceSection } from '@/components/features/experiments/sections/power-balance-section';
 import { OutcomesPriorSection } from '@/components/features/experiments/sections/outcomes-prior-section';
-
 export interface ExperimentConfirmationDisplayProps {
   response: CreateExperimentResponse;
 
@@ -66,7 +65,7 @@ export function ExperimentConfirmationDisplay({
   // For non-frequentist experiments, these will be undefined
   let confidence = 95;
   let power = 80;
-  let filters: FilterOutput[] = [];
+  let filters: Filter[] = [];
   let strata: string[] | undefined;
 
   if (isFreq) {

@@ -2,13 +2,13 @@
 
 import { Button, Flex, Separator } from '@radix-ui/themes';
 import { PlusIcon } from '@radix-ui/react-icons';
-import { FilterInput } from '@/api/methods.schemas';
+import { Filter } from '@/api/methods.schemas';
 import { FilterRow, FilterRowOption } from '@/components/features/experiments/querybuilder/filter-row';
 import React, { useState } from 'react';
 import { getDefaultFilterForType } from './utils';
 
 // Sanitize filter to ensure no NaN values are passed to the API
-const sanitizeFilter = (availableFields: FilterRowOption[], filter: FilterInput): FilterInput => {
+const sanitizeFilter = (availableFields: FilterRowOption[], filter: Filter): Filter => {
   // For numeric fields, ensure no NaN values
   const field = availableFields.find((f) => f.field_name === filter.field_name);
   const isNumeric =
@@ -22,7 +22,7 @@ const sanitizeFilter = (availableFields: FilterRowOption[], filter: FilterInput)
 };
 
 // Placeholder filter for newly added rows before a field is selected
-const EMPTY_FILTER: FilterInput = {
+const EMPTY_FILTER: Filter = {
   field_name: '',
   relation: 'includes',
   value: [],
@@ -31,18 +31,18 @@ const EMPTY_FILTER: FilterInput = {
 // Internal FilterBuilder state model for associating a stable id with a draft filter.
 interface FilterWithId {
   id: string;
-  filter: FilterInput;
+  filter: Filter;
 }
 
 export interface FilterBuilderProps {
   // Available fields can have a one to many relationship with the filters, i.e. a field can be used
   // in multiple filters with different constraints.
   availableFields: Array<FilterRowOption>;
-  // Array of FilterInputs used to seed the initial state. Component will own the draft state
+  // Array of Filters used to seed the initial state. Component will own the draft state
   // internally and will not sync changes to this prop. To reset the component, change its key prop.
-  initialFilters: FilterInput[];
+  initialFilters: Filter[];
   // Callback to notify parent of changes to the filters.
-  onChange: (filters: FilterInput[]) => void;
+  onChange: (filters: Filter[]) => void;
 }
 
 export function FilterBuilder({ availableFields, initialFilters, onChange }: FilterBuilderProps) {
@@ -75,7 +75,7 @@ export function FilterBuilder({ availableFields, initialFilters, onChange }: Fil
     commitFilters(newFiltersWithIds);
   };
 
-  const updateFilter = (id: string, filterRowChange: FilterInput) => {
+  const updateFilter = (id: string, filterRowChange: Filter) => {
     // Get the field's data type
     const field = availableFields.find((f) => f.field_name === filterRowChange.field_name);
 

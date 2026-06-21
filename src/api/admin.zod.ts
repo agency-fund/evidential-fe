@@ -526,6 +526,33 @@ export const createExperimentBodyDesignSpecContextsItemContextDescriptionMaxFour
 
 export const createExperimentBodyDesignSpecContextsMaxFour = 150;
 
+export const createExperimentBodyDesignSpecTableNameMaxTwo = 100;
+
+export const createExperimentBodyDesignSpecPrimaryKeyRegExpTwo = new RegExp(
+	"^[a-zA-Z_][a-zA-Z0-9_]*$",
+);
+export const createExperimentBodyDesignSpecTargetFieldNameRegExp = new RegExp(
+	"^[a-zA-Z_][a-zA-Z0-9_]*$",
+);
+export const createExperimentBodyDesignSpecExperimentNameMaxFour = 100;
+
+export const createExperimentBodyDesignSpecDescriptionMaxFour = 2000;
+
+export const createExperimentBodyDesignSpecDesignUrlMaxOnethree = 500;
+
+export const createExperimentBodyDesignSpecArmsItemArmNameMaxFour = 100;
+
+export const createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnethree = 2000;
+
+export const createExperimentBodyDesignSpecArmsMinFour = 2;
+export const createExperimentBodyDesignSpecArmsMaxFour = 20;
+
+export const createExperimentBodyDesignSpecContextsItemContextNameMaxTwo = 100;
+
+export const createExperimentBodyDesignSpecContextsItemContextDescriptionMaxSeven = 2000;
+
+export const createExperimentBodyDesignSpecContextsMaxSeven = 150;
+
 export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyPowerAnalysesAnalysesItemMsgHighClusterVariationDefault = false;
@@ -861,7 +888,7 @@ export const createExperimentBody = zod.object({
 				reward_type: zod.enum(["binary", "real-valued"]).optional(),
 			}),
 			zod.object({
-				experiment_type: zod.enum(["cmab_online"]),
+				experiment_type: zod.enum(["mab_online_dwh"]),
 				experiment_name: zod
 					.string()
 					.max(createExperimentBodyDesignSpecExperimentNameMaxThree),
@@ -937,6 +964,98 @@ export const createExperimentBody = zod.object({
 								}),
 							)
 							.max(createExperimentBodyDesignSpecContextsMaxFour),
+						zod.null(),
+					])
+					.optional(),
+				prior_type: zod.enum(["beta", "normal"]).optional(),
+				reward_type: zod.enum(["binary", "real-valued"]).optional(),
+				table_name: zod
+					.string()
+					.max(createExperimentBodyDesignSpecTableNameMaxTwo),
+				primary_key: zod
+					.string()
+					.regex(createExperimentBodyDesignSpecPrimaryKeyRegExpTwo),
+				target_field_name: zod
+					.string()
+					.regex(createExperimentBodyDesignSpecTargetFieldNameRegExp),
+			}),
+			zod.object({
+				experiment_type: zod.enum(["cmab_online"]),
+				experiment_name: zod
+					.string()
+					.max(createExperimentBodyDesignSpecExperimentNameMaxFour),
+				description: zod
+					.string()
+					.max(createExperimentBodyDesignSpecDescriptionMaxFour),
+				design_url: zod
+					.union([
+						zod
+							.string()
+							.url()
+							.min(1)
+							.max(createExperimentBodyDesignSpecDesignUrlMaxOnethree),
+						zod.null(),
+					])
+					.optional(),
+				start_date: zod.string().datetime({}),
+				end_date: zod.string().datetime({}),
+				arms: zod
+					.array(
+						zod.object({
+							arm_id: zod.union([zod.string(), zod.null()]).optional(),
+							arm_name: zod
+								.string()
+								.max(createExperimentBodyDesignSpecArmsItemArmNameMaxFour),
+							arm_description: zod
+								.union([
+									zod
+										.string()
+										.max(
+											createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnethree,
+										),
+									zod.null(),
+								])
+								.optional(),
+							arm_weight: zod.union([zod.number(), zod.null()]).optional(),
+							alpha_init: zod.union([zod.number(), zod.null()]).optional(),
+							beta_init: zod.union([zod.number(), zod.null()]).optional(),
+							mu_init: zod.union([zod.number(), zod.null()]).optional(),
+							sigma_init: zod.union([zod.number(), zod.null()]).optional(),
+							alpha: zod.union([zod.number(), zod.null()]).optional(),
+							beta: zod.union([zod.number(), zod.null()]).optional(),
+							mu: zod.union([zod.array(zod.number()), zod.null()]).optional(),
+							covariance: zod
+								.union([zod.array(zod.array(zod.number())), zod.null()])
+								.optional(),
+						}),
+					)
+					.min(createExperimentBodyDesignSpecArmsMinFour)
+					.max(createExperimentBodyDesignSpecArmsMaxFour),
+				contexts: zod
+					.union([
+						zod
+							.array(
+								zod.object({
+									context_id: zod.union([zod.string(), zod.null()]).optional(),
+									context_name: zod
+										.string()
+										.max(
+											createExperimentBodyDesignSpecContextsItemContextNameMaxTwo,
+										),
+									context_description: zod
+										.union([
+											zod
+												.string()
+												.max(
+													createExperimentBodyDesignSpecContextsItemContextDescriptionMaxSeven,
+												),
+											zod.null(),
+										])
+										.optional(),
+									value_type: zod.enum(["binary", "real-valued"]).optional(),
+								}),
+							)
+							.max(createExperimentBodyDesignSpecContextsMaxSeven),
 						zod.null(),
 					])
 					.optional(),
