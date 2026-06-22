@@ -109,8 +109,8 @@ export function IntegrationGuideDialog({
   const journeyEntries = journeysData
     ? Object.entries(journeysData.journeys).map(([, j]) => ({ name: j.name, uuid: j.uuid }))
     : [];
-  // const hasJourneys = journeyEntries.length > 0;
-  const hasJourneys = true;
+  console.log('journeyEntries', journeyEntries);
+  const hasJourneys = journeyEntries.length > 0;
   const dontShowJourneysList = journeysError || (mappingError && !mappingNotFound) || !hasJourneys; // If there's an error or no journeys, don't show the dropdown list (but still show the section and any errors)
 
   return (
