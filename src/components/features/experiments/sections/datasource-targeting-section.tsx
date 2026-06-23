@@ -8,6 +8,7 @@ import { SectionCard } from '@/components/ui/cards/section-card';
 interface DatasourceTargetingSectionProps {
   tableName?: string;
   primaryKey?: string;
+  clusterKey?: string;
   filters: Filter[];
   onEditDatasource?: () => void;
   onEditFilters?: () => void;
@@ -42,6 +43,7 @@ const formatFilterValueDisplay = (filter: Filter) => {
 export function DatasourceTargetingSection({
   tableName,
   primaryKey,
+  clusterKey,
   filters,
   onEditDatasource,
   onEditFilters,
@@ -77,6 +79,12 @@ export function DatasourceTargetingSection({
           <DataList.Label>Unique ID</DataList.Label>
           <DataList.Value>{primaryKey || '-'}</DataList.Value>
         </DataList.Item>
+        {clusterKey && (
+          <DataList.Item>
+            <DataList.Label>Cluster Key</DataList.Label>
+            <DataList.Value>{clusterKey}</DataList.Value>
+          </DataList.Item>
+        )}
         <DataList.Item>
           <DataList.Label>Filters</DataList.Label>
           <DataList.Value>

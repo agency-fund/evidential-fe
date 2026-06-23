@@ -5,6 +5,7 @@ import { CreateExperimentResponse, Filter } from '@/api/methods.schemas';
 import { getPowerAnalysis } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import {
   isBanditSpec,
+  isClusteredPreassignedSpec,
   isCmabSpec,
   isFreqPreassignedSpec,
   isFrequentistSpec,
@@ -60,6 +61,7 @@ export function ExperimentConfirmationDisplay({
   const isFreqPreassigned = isFreqPreassignedSpec(designSpec);
   const isBandit = isBanditSpec(designSpec);
   const isCmab = isCmabSpec(designSpec);
+  const clusterKey = isClusteredPreassignedSpec(designSpec) ? (designSpec.cluster_key ?? undefined) : undefined;
 
   // Extract frequentist-specific properties (confidence/power/filters/strata)
   // For non-frequentist experiments, these will be undefined
@@ -95,6 +97,7 @@ export function ExperimentConfirmationDisplay({
             <DatasourceTargetingSection
               tableName={tableName}
               primaryKey={primaryKey}
+              clusterKey={clusterKey}
               filters={filters}
               onEditDatasource={onEditDatasource}
               onEditFilters={onEditFilters}

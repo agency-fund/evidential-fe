@@ -9,6 +9,7 @@ import {
   OnlineFrequentistExperimentSpec,
   PreassignedFrequentistExperimentSpec,
 } from '@/api/methods.schemas';
+import { isClusteredPreassignedSpec } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { DatasourceTargetingSection } from '@/components/features/experiments/sections/datasource-targeting-section';
 import { ContextsSection } from '@/components/features/experiments/sections/contexts-section';
 import { OutcomesPriorSection } from '@/components/features/experiments/sections/outcomes-prior-section';
@@ -49,6 +50,9 @@ export function TargetingDialog({ designSpec, webhookIds }: TargetingDialogProps
                 <DatasourceTargetingSection
                   tableName={designSpec.table_name}
                   primaryKey={designSpec.primary_key}
+                  clusterKey={
+                    isClusteredPreassignedSpec(designSpec) ? (designSpec.cluster_key ?? undefined) : undefined
+                  }
                   filters={designSpec.filters}
                 />
               )}
