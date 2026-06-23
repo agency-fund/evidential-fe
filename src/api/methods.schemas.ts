@@ -5,86 +5,81 @@
  * OpenAPI spec version: 0.9.0
  */
 export interface AddMemberToOrganizationRequest {
-	email: string;
+  email: string;
 }
 
 export interface AddWebhookToOrganizationRequest {
-	type: "experiment.created";
-	/** @maxLength 100 */
-	name: string;
-	/** @maxLength 500 */
-	url: string;
+  type: 'experiment.created';
+  /** @maxLength 100 */
+  name: string;
+  /** @maxLength 500 */
+  url: string;
 }
 
 export type AddWebhookToOrganizationResponseAuthToken = string | null;
 
 export interface AddWebhookToOrganizationResponse {
-	id: string;
-	type: string;
-	name: string;
-	url: string;
-	auth_token: AddWebhookToOrganizationResponseAuthToken;
+  id: string;
+  type: string;
+  name: string;
+  url: string;
+  auth_token: AddWebhookToOrganizationResponseAuthToken;
 }
 
-export type AnyBanditDesignSpecExperimentType =
-	(typeof AnyBanditDesignSpecExperimentType)[keyof typeof AnyBanditDesignSpecExperimentType];
+export type AnyBanditDesignSpecExperimentType = typeof AnyBanditDesignSpecExperimentType[keyof typeof AnyBanditDesignSpecExperimentType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AnyBanditDesignSpecExperimentType = {
-	cmab_online: "cmab_online",
-	mab_online: "mab_online",
-	mab_online_dwh: "mab_online_dwh",
+  cmab_online: 'cmab_online',
+  mab_online: 'mab_online',
+  mab_online_dwh: 'mab_online_dwh',
 } as const;
 
-export type AnyBanditDesignSpec =
-	| (MABExperimentSpec & {
-			experiment_type: AnyBanditDesignSpecExperimentType;
-	  })
-	| (MABDwhExperimentSpec & {
-			experiment_type: AnyBanditDesignSpecExperimentType;
-	  })
-	| (CMABExperimentSpec & {
-			experiment_type: AnyBanditDesignSpecExperimentType;
-	  });
+export type AnyBanditDesignSpec = (MABExperimentSpec & {
+  experiment_type: AnyBanditDesignSpecExperimentType;
+}) | (MABDwhExperimentSpec & {
+  experiment_type: AnyBanditDesignSpecExperimentType;
+}) | (CMABExperimentSpec & {
+  experiment_type: AnyBanditDesignSpecExperimentType;
+});
 
-export type AnyFrequentistDesignSpecExperimentType =
-	(typeof AnyFrequentistDesignSpecExperimentType)[keyof typeof AnyFrequentistDesignSpecExperimentType];
+export type AnyFrequentistDesignSpecExperimentType = typeof AnyFrequentistDesignSpecExperimentType[keyof typeof AnyFrequentistDesignSpecExperimentType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AnyFrequentistDesignSpecExperimentType = {
-	freq_online: "freq_online",
-	freq_preassigned: "freq_preassigned",
+  freq_online: 'freq_online',
+  freq_preassigned: 'freq_preassigned',
 } as const;
 
-export type AnyFrequentistDesignSpec =
-	| (PreassignedFrequentistExperimentSpec & {
-			experiment_type: AnyFrequentistDesignSpecExperimentType;
-	  })
-	| (OnlineFrequentistExperimentSpec & {
-			experiment_type: AnyFrequentistDesignSpecExperimentType;
-	  });
+export type AnyFrequentistDesignSpec = (PreassignedFrequentistExperimentSpec & {
+  experiment_type: AnyFrequentistDesignSpecExperimentType;
+}) | (OnlineFrequentistExperimentSpec & {
+  experiment_type: AnyFrequentistDesignSpecExperimentType;
+});
 
 export interface ApiKeySummary {
-	/** @maxLength 64 */
-	id: string;
-	/** @maxLength 64 */
-	datasource_id: string;
-	/** @maxLength 64 */
-	organization_id: string;
-	/** @maxLength 100 */
-	organization_name: string;
+  /** @maxLength 64 */
+  id: string;
+  /** @maxLength 64 */
+  datasource_id: string;
+  /** @maxLength 64 */
+  organization_id: string;
+  /** @maxLength 100 */
+  organization_name: string;
 }
 
-export type ApiOnlyDsnType =
-	(typeof ApiOnlyDsnType)[keyof typeof ApiOnlyDsnType];
+export type ApiOnlyDsnType = typeof ApiOnlyDsnType[keyof typeof ApiOnlyDsnType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ApiOnlyDsnType = {
-	api_only: "api_only",
+  api_only: 'api_only',
 } as const;
 
 export interface ApiOnlyDsn {
-	type: ApiOnlyDsnType;
+  type: ApiOnlyDsnType;
 }
 
 export type ArmArmId = string | null;
@@ -94,11 +89,11 @@ export type ArmArmDescription = string | null;
 export type ArmArmWeight = ArmWeight | null;
 
 export interface Arm {
-	arm_id?: ArmArmId;
-	/** @maxLength 100 */
-	arm_name: string;
-	arm_description?: ArmArmDescription;
-	arm_weight?: ArmArmWeight;
+  arm_id?: ArmArmId;
+  /** @maxLength 100 */
+  arm_name: string;
+  arm_description?: ArmArmDescription;
+  arm_weight?: ArmArmWeight;
 }
 
 export type ArmAnalysisArmId = string | null;
@@ -122,22 +117,22 @@ export type ArmAnalysisMeanCiLower = number | null;
 export type ArmAnalysisMeanCiUpper = number | null;
 
 export interface ArmAnalysis {
-	arm_id?: ArmAnalysisArmId;
-	/** @maxLength 100 */
-	arm_name: string;
-	arm_description?: ArmAnalysisArmDescription;
-	arm_weight?: ArmAnalysisArmWeight;
-	estimate: number;
-	p_value: ArmAnalysisPValue;
-	t_stat: ArmAnalysisTStat;
-	std_error: ArmAnalysisStdError;
-	ci_lower?: ArmAnalysisCiLower;
-	ci_upper?: ArmAnalysisCiUpper;
-	mean_ci_lower?: ArmAnalysisMeanCiLower;
-	mean_ci_upper?: ArmAnalysisMeanCiUpper;
-	/** @minimum -1 */
-	num_missing_values: number;
-	is_baseline: boolean;
+  arm_id?: ArmAnalysisArmId;
+  /** @maxLength 100 */
+  arm_name: string;
+  arm_description?: ArmAnalysisArmDescription;
+  arm_weight?: ArmAnalysisArmWeight;
+  estimate: number;
+  p_value: ArmAnalysisPValue;
+  t_stat: ArmAnalysisTStat;
+  std_error: ArmAnalysisStdError;
+  ci_lower?: ArmAnalysisCiLower;
+  ci_upper?: ArmAnalysisCiUpper;
+  mean_ci_lower?: ArmAnalysisMeanCiLower;
+  mean_ci_upper?: ArmAnalysisMeanCiUpper;
+  /** @minimum -1 */
+  num_missing_values: number;
+  is_baseline: boolean;
 }
 
 export type ArmBanditArmId = string | null;
@@ -163,24 +158,27 @@ export type ArmBanditMu = number[] | null;
 export type ArmBanditCovariance = number[][] | null;
 
 export interface ArmBandit {
-	arm_id?: ArmBanditArmId;
-	/** @maxLength 100 */
-	arm_name: string;
-	arm_description?: ArmBanditArmDescription;
-	arm_weight?: ArmBanditArmWeight;
-	alpha_init?: ArmBanditAlphaInit;
-	beta_init?: ArmBanditBetaInit;
-	mu_init?: ArmBanditMuInit;
-	sigma_init?: ArmBanditSigmaInit;
-	alpha?: ArmBanditAlpha;
-	beta?: ArmBanditBeta;
-	mu?: ArmBanditMu;
-	covariance?: ArmBanditCovariance;
+  arm_id?: ArmBanditArmId;
+  /** @maxLength 100 */
+  arm_name: string;
+  arm_description?: ArmBanditArmDescription;
+  arm_weight?: ArmBanditArmWeight;
+  alpha_init?: ArmBanditAlphaInit;
+  beta_init?: ArmBanditBetaInit;
+  mu_init?: ArmBanditMuInit;
+  sigma_init?: ArmBanditSigmaInit;
+  alpha?: ArmBanditAlpha;
+  beta?: ArmBanditBeta;
+  mu?: ArmBanditMu;
+  covariance?: ArmBanditCovariance;
 }
 
+export type ArmSizeClusterCount = number | null;
+
 export interface ArmSize {
-	arm: Arm;
-	size?: number;
+  arm: Arm;
+  size?: number;
+  cluster_count?: ArmSizeClusterCount;
 }
 
 /**
@@ -192,9 +190,9 @@ export type AssignSummaryBalanceCheck = BalanceCheck | null;
 export type AssignSummaryArmSizes = ArmSize[] | null;
 
 export interface AssignSummary {
-	balance_check?: AssignSummaryBalanceCheck;
-	sample_size: number;
-	arm_sizes?: AssignSummaryArmSizes;
+  balance_check?: AssignSummaryBalanceCheck;
+  sample_size: number;
+  arm_sizes?: AssignSummaryArmSizes;
 }
 
 export type AssignmentClusterKey = string | null;
@@ -210,25 +208,25 @@ export type AssignmentOutcome = number | null;
 export type AssignmentContextValues = number[] | null;
 
 export interface Assignment {
-	arm_id: string;
-	/** @maxLength 64 */
-	participant_id: string;
-	cluster_key?: AssignmentClusterKey;
-	/** @maxLength 100 */
-	arm_name: string;
-	created_at?: AssignmentCreatedAt;
-	strata?: AssignmentStrata;
-	observed_at?: AssignmentObservedAt;
-	outcome?: AssignmentOutcome;
-	context_values?: AssignmentContextValues;
+  arm_id: string;
+  /** @maxLength 64 */
+  participant_id: string;
+  cluster_key?: AssignmentClusterKey;
+  /** @maxLength 100 */
+  arm_name: string;
+  created_at?: AssignmentCreatedAt;
+  strata?: AssignmentStrata;
+  observed_at?: AssignmentObservedAt;
+  outcome?: AssignmentOutcome;
+  context_values?: AssignmentContextValues;
 }
 
 export interface BalanceCheck {
-	f_statistic: number;
-	numerator_df: number;
-	denominator_df: number;
-	p_value: number;
-	balance_ok: boolean;
+  f_statistic: number;
+  numerator_df: number;
+  denominator_df: number;
+  p_value: number;
+  balance_ok: boolean;
 }
 
 export type BanditArmAnalysisArmId = string | null;
@@ -254,87 +252,88 @@ export type BanditArmAnalysisMu = number[] | null;
 export type BanditArmAnalysisCovariance = number[][] | null;
 
 export interface BanditArmAnalysis {
-	arm_id?: BanditArmAnalysisArmId;
-	/** @maxLength 100 */
-	arm_name: string;
-	arm_description?: BanditArmAnalysisArmDescription;
-	arm_weight?: BanditArmAnalysisArmWeight;
-	alpha_init?: BanditArmAnalysisAlphaInit;
-	beta_init?: BanditArmAnalysisBetaInit;
-	mu_init?: BanditArmAnalysisMuInit;
-	sigma_init?: BanditArmAnalysisSigmaInit;
-	alpha?: BanditArmAnalysisAlpha;
-	beta?: BanditArmAnalysisBeta;
-	mu?: BanditArmAnalysisMu;
-	covariance?: BanditArmAnalysisCovariance;
-	prior_pred_mean: number;
-	prior_pred_stdev: number;
-	prior_pred_ci_upper: number;
-	prior_pred_ci_lower: number;
-	post_pred_mean: number;
-	post_pred_stdev: number;
-	post_pred_ci_upper: number;
-	post_pred_ci_lower: number;
+  arm_id?: BanditArmAnalysisArmId;
+  /** @maxLength 100 */
+  arm_name: string;
+  arm_description?: BanditArmAnalysisArmDescription;
+  arm_weight?: BanditArmAnalysisArmWeight;
+  alpha_init?: BanditArmAnalysisAlphaInit;
+  beta_init?: BanditArmAnalysisBetaInit;
+  mu_init?: BanditArmAnalysisMuInit;
+  sigma_init?: BanditArmAnalysisSigmaInit;
+  alpha?: BanditArmAnalysisAlpha;
+  beta?: BanditArmAnalysisBeta;
+  mu?: BanditArmAnalysisMu;
+  covariance?: BanditArmAnalysisCovariance;
+  prior_pred_mean: number;
+  prior_pred_stdev: number;
+  prior_pred_ci_upper: number;
+  prior_pred_ci_lower: number;
+  post_pred_mean: number;
+  post_pred_stdev: number;
+  post_pred_ci_upper: number;
+  post_pred_ci_lower: number;
 }
 
-export type BanditExperimentAnalysisResponseType =
-	(typeof BanditExperimentAnalysisResponseType)[keyof typeof BanditExperimentAnalysisResponseType];
+export type BanditExperimentAnalysisResponseType = typeof BanditExperimentAnalysisResponseType[keyof typeof BanditExperimentAnalysisResponseType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const BanditExperimentAnalysisResponseType = {
-	bandit: "bandit",
+  bandit: 'bandit',
 } as const;
 
 export type BanditExperimentAnalysisResponseContexts = number[] | null;
 
 export interface BanditExperimentAnalysisResponse {
-	type: BanditExperimentAnalysisResponseType;
-	experiment_id: string;
-	arm_analyses: BanditArmAnalysis[];
-	n_outcomes: number;
-	created_at: string;
-	contexts?: BanditExperimentAnalysisResponseContexts;
+  type: BanditExperimentAnalysisResponseType;
+  experiment_id: string;
+  arm_analyses: BanditArmAnalysis[];
+  n_outcomes: number;
+  created_at: string;
+  contexts?: BanditExperimentAnalysisResponseContexts;
 }
 
-export type BqDsnType = (typeof BqDsnType)[keyof typeof BqDsnType];
+export type BqDsnType = typeof BqDsnType[keyof typeof BqDsnType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const BqDsnType = {
-	bigquery: "bigquery",
+  bigquery: 'bigquery',
 } as const;
 
 export type BqDsnCredentials = GcpServiceAccount | Hidden;
 
 export interface BqDsn {
-	type: BqDsnType;
-	/**
-	 * @minLength 6
-	 * @maxLength 30
-	 * @pattern ^[a-z0-9-]+$
-	 */
-	project_id: string;
-	/**
-	 * @minLength 1
-	 * @maxLength 1024
-	 * @pattern ^[a-zA-Z0-9_]+$
-	 */
-	dataset_id: string;
-	credentials: BqDsnCredentials;
+  type: BqDsnType;
+  /**
+   * @minLength 6
+   * @maxLength 30
+   * @pattern ^[a-z0-9-]+$
+   */
+  project_id: string;
+  /**
+   * @minLength 1
+   * @maxLength 1024
+   * @pattern ^[a-zA-Z0-9_]+$
+   */
+  dataset_id: string;
+  credentials: BqDsnCredentials;
 }
 
 export type CMABContextInputRequestContextInputs = ContextInput[] | null;
 
 export interface CMABContextInputRequest {
-	type?: "cmab_assignment";
-	context_inputs: CMABContextInputRequestContextInputs;
+  type?: 'cmab_assignment';
+  context_inputs: CMABContextInputRequestContextInputs;
 }
 
-export type CMABExperimentSpecExperimentType =
-	(typeof CMABExperimentSpecExperimentType)[keyof typeof CMABExperimentSpecExperimentType];
+export type CMABExperimentSpecExperimentType = typeof CMABExperimentSpecExperimentType[keyof typeof CMABExperimentSpecExperimentType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const CMABExperimentSpecExperimentType = {
-	cmab_online: "cmab_online",
+  cmab_online: 'cmab_online',
 } as const;
 
 export type CMABExperimentSpecDesignUrl = string | null;
@@ -342,63 +341,63 @@ export type CMABExperimentSpecDesignUrl = string | null;
 export type CMABExperimentSpecContexts = Context[] | null;
 
 export interface CMABExperimentSpec {
-	experiment_type: CMABExperimentSpecExperimentType;
-	/** @maxLength 100 */
-	experiment_name: string;
-	/** @maxLength 2000 */
-	description: string;
-	design_url?: CMABExperimentSpecDesignUrl;
-	start_date: string;
-	end_date: string;
-	/**
-	 * @minItems 2
-	 * @maxItems 20
-	 */
-	arms: ArmBandit[];
-	contexts?: CMABExperimentSpecContexts;
-	prior_type?: PriorTypes;
-	reward_type?: LikelihoodTypes;
+  experiment_type: CMABExperimentSpecExperimentType;
+  /** @maxLength 100 */
+  experiment_name: string;
+  /** @maxLength 2000 */
+  description: string;
+  design_url?: CMABExperimentSpecDesignUrl;
+  start_date: string;
+  end_date: string;
+  /**
+   * @minItems 2
+   * @maxItems 20
+   */
+  arms: ArmBandit[];
+  contexts?: CMABExperimentSpecContexts;
+  prior_type?: PriorTypes;
+  reward_type?: LikelihoodTypes;
 }
 
 export interface CallbackRequest {
-	code: string;
-	/**
-	 * @minLength 43
-	 * @maxLength 128
-	 * @pattern ^[A-Za-z0-9._~-]+$
-	 */
-	code_verifier: string;
-	/**
-	 * @minLength 8
-	 * @maxLength 128
-	 */
-	nonce: string;
+  code: string;
+  /**
+   * @minLength 43
+   * @maxLength 128
+   * @pattern ^[A-Za-z0-9._~-]+$
+   */
+  code_verifier: string;
+  /**
+   * @minLength 8
+   * @maxLength 128
+   */
+  nonce: string;
 }
 
 export interface CallbackResponse {
-	session_token: string;
+  session_token: string;
 }
 
 export interface CallerIdentity {
-	email: string;
-	iss: string;
-	sub: string;
-	hd: string;
-	is_privileged: boolean;
+  email: string;
+  iss: string;
+  sub: string;
+  hd: string;
+  is_privileged: boolean;
 }
 
-export type ColumnDeletedType =
-	(typeof ColumnDeletedType)[keyof typeof ColumnDeletedType];
+export type ColumnDeletedType = typeof ColumnDeletedType[keyof typeof ColumnDeletedType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ColumnDeletedType = {
-	column_deleted: "column_deleted",
+  column_deleted: 'column_deleted',
 } as const;
 
 export interface ColumnDeleted {
-	type: ColumnDeletedType;
-	table_name: string;
-	column_name: string;
+  type: ColumnDeletedType;
+  table_name: string;
+  column_name: string;
 }
 
 export type ContextContextId = string | null;
@@ -406,142 +405,143 @@ export type ContextContextId = string | null;
 export type ContextContextDescription = string | null;
 
 export interface Context {
-	context_id?: ContextContextId;
-	/** @maxLength 100 */
-	context_name: string;
-	context_description?: ContextContextDescription;
-	value_type?: ContextType;
+  context_id?: ContextContextId;
+  /** @maxLength 100 */
+  context_name: string;
+  context_description?: ContextContextDescription;
+  value_type?: ContextType;
 }
 
 export interface ContextInput {
-	context_id: string;
-	context_value: number;
+  context_id: string;
+  context_value: number;
 }
 
-export type ContextType = (typeof ContextType)[keyof typeof ContextType];
+export type ContextType = typeof ContextType[keyof typeof ContextType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ContextType = {
-	binary: "binary",
-	"real-valued": "real-valued",
+  binary: 'binary',
+  'real-valued': 'real-valued',
 } as const;
 
 export interface CreateApiKeyResponse {
-	/** @maxLength 64 */
-	id: string;
-	datasource_id: string;
-	key: string;
+  /** @maxLength 64 */
+  id: string;
+  datasource_id: string;
+  key: string;
 }
 
 export interface CreateDatasourceRequest {
-	/** @maxLength 64 */
-	organization_id: string;
-	name: string;
-	dsn: Dsn;
+  /** @maxLength 64 */
+  organization_id: string;
+  name: string;
+  dsn: Dsn;
 }
 
 export interface CreateDatasourceResponse {
-	/** @maxLength 64 */
-	id: string;
+  /** @maxLength 64 */
+  id: string;
 }
 
 export type CreateExperimentRequestPowerAnalyses = PowerResponse | null;
 
 export interface CreateExperimentRequest {
-	design_spec: DesignSpec;
-	power_analyses?: CreateExperimentRequestPowerAnalyses;
-	webhooks?: string[];
+  design_spec: DesignSpec;
+  power_analyses?: CreateExperimentRequestPowerAnalyses;
+  webhooks?: string[];
 }
 
 export type CreateExperimentResponseStoppedAssignmentsAt = string | null;
 
-export type CreateExperimentResponseStoppedAssignmentsReason =
-	StopAssignmentReason | null;
+export type CreateExperimentResponseStoppedAssignmentsReason = StopAssignmentReason | null;
 
 export type CreateExperimentResponsePowerAnalyses = PowerResponse | null;
 
 export type CreateExperimentResponseAssignSummary = AssignSummary | null;
 
 export interface CreateExperimentResponse {
-	experiment_id: string;
-	datasource_id: string;
-	state: ExperimentState;
-	stopped_assignments_at: CreateExperimentResponseStoppedAssignmentsAt;
-	stopped_assignments_reason: CreateExperimentResponseStoppedAssignmentsReason;
-	design_spec: DesignSpec;
-	power_analyses: CreateExperimentResponsePowerAnalyses;
-	assign_summary: CreateExperimentResponseAssignSummary;
-	webhooks?: string[];
-	decision?: string;
-	impact?: Impact;
+  experiment_id: string;
+  datasource_id: string;
+  state: ExperimentState;
+  stopped_assignments_at: CreateExperimentResponseStoppedAssignmentsAt;
+  stopped_assignments_reason: CreateExperimentResponseStoppedAssignmentsReason;
+  design_spec: DesignSpec;
+  power_analyses: CreateExperimentResponsePowerAnalyses;
+  assign_summary: CreateExperimentResponseAssignSummary;
+  webhooks?: string[];
+  decision?: string;
+  impact?: Impact;
 }
 
 export interface CreateOrganizationRequest {
-	/** @maxLength 100 */
-	name: string;
+  /** @maxLength 100 */
+  name: string;
 }
 
 export interface CreateOrganizationResponse {
-	/** @maxLength 64 */
-	id: string;
+  /** @maxLength 64 */
+  id: string;
 }
 
 export interface CreateParticipantsTypeRequest {
-	/** @maxLength 100 */
-	participant_type: string;
-	schema_def: ParticipantsSchema;
+  /** @maxLength 100 */
+  participant_type: string;
+  schema_def: ParticipantsSchema;
 }
 
 export interface CreateParticipantsTypeResponse {
-	/** @maxLength 100 */
-	participant_type: string;
-	schema_def: ParticipantsSchema;
+  /** @maxLength 100 */
+  participant_type: string;
+  schema_def: ParticipantsSchema;
 }
 
 export interface CreateSnapshotResponse {
-	id: string;
+  id: string;
 }
 
 export interface CreateUserRequest {
-	/** @maxLength 64 */
-	email: string;
+  /** @maxLength 64 */
+  email: string;
 }
 
 export interface CreateUserResponse {
-	/** @maxLength 64 */
-	id: string;
+  /** @maxLength 64 */
+  id: string;
 }
 
-export type DataType = (typeof DataType)[keyof typeof DataType];
+export type DataType = typeof DataType[keyof typeof DataType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DataType = {
-	boolean: "boolean",
-	character_varying: "character varying",
-	uuid: "uuid",
-	date: "date",
-	integer: "integer",
-	double_precision: "double precision",
-	numeric: "numeric",
-	timestamp_without_time_zone: "timestamp without time zone",
-	timestamp_with_time_zone: "timestamp with time zone",
-	bigint: "bigint",
-	jsonb: "jsonb",
-	json: "json",
-	unknown: "unknown",
+  boolean: 'boolean',
+  character_varying: 'character varying',
+  uuid: 'uuid',
+  date: 'date',
+  integer: 'integer',
+  double_precision: 'double precision',
+  numeric: 'numeric',
+  timestamp_without_time_zone: 'timestamp without time zone',
+  timestamp_with_time_zone: 'timestamp with time zone',
+  bigint: 'bigint',
+  jsonb: 'jsonb',
+  json: 'json',
+  unknown: 'unknown',
 } as const;
 
 export interface DatasourceSummary {
-	/** @maxLength 64 */
-	id: string;
-	/** @maxLength 100 */
-	name: string;
-	driver: string;
-	type: string;
-	/** @maxLength 64 */
-	organization_id: string;
-	/** @maxLength 100 */
-	organization_name: string;
+  /** @maxLength 64 */
+  id: string;
+  /** @maxLength 100 */
+  name: string;
+  driver: string;
+  type: string;
+  /** @maxLength 64 */
+  organization_id: string;
+  /** @maxLength 100 */
+  organization_name: string;
 }
 
 export type DeleteExperimentDataRequestAssignments = boolean | null;
@@ -549,8 +549,8 @@ export type DeleteExperimentDataRequestAssignments = boolean | null;
 export type DeleteExperimentDataRequestSnapshots = boolean | null;
 
 export interface DeleteExperimentDataRequest {
-	assignments?: DeleteExperimentDataRequestAssignments;
-	snapshots?: DeleteExperimentDataRequestSnapshots;
+  assignments?: DeleteExperimentDataRequestAssignments;
+  snapshots?: DeleteExperimentDataRequestSnapshots;
 }
 
 export type DesignSpec = AnyFrequentistDesignSpec | AnyBanditDesignSpec;
@@ -576,18 +576,18 @@ export type DesignSpecMetricAvailableNonnullN = number | null;
 export type DesignSpecMetricAvailableN = number | null;
 
 export interface DesignSpecMetric {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-	field_name: string;
-	metric_pct_change?: DesignSpecMetricMetricPctChange;
-	metric_target?: DesignSpecMetricMetricTarget;
-	icc?: DesignSpecMetricIcc;
-	avg_cluster_size?: DesignSpecMetricAvgClusterSize;
-	cv?: DesignSpecMetricCv;
-	metric_type?: DesignSpecMetricMetricType;
-	metric_baseline?: DesignSpecMetricMetricBaseline;
-	metric_stddev?: DesignSpecMetricMetricStddev;
-	available_nonnull_n?: DesignSpecMetricAvailableNonnullN;
-	available_n?: DesignSpecMetricAvailableN;
+  /** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+  field_name: string;
+  metric_pct_change?: DesignSpecMetricMetricPctChange;
+  metric_target?: DesignSpecMetricMetricTarget;
+  icc?: DesignSpecMetricIcc;
+  avg_cluster_size?: DesignSpecMetricAvgClusterSize;
+  cv?: DesignSpecMetricCv;
+  metric_type?: DesignSpecMetricMetricType;
+  metric_baseline?: DesignSpecMetricMetricBaseline;
+  metric_stddev?: DesignSpecMetricMetricStddev;
+  available_nonnull_n?: DesignSpecMetricAvailableNonnullN;
+  available_n?: DesignSpecMetricAvailableN;
 }
 
 export type DesignSpecMetricRequestMetricPctChange = number | null;
@@ -601,17 +601,17 @@ export type DesignSpecMetricRequestAvgClusterSize = number | null;
 export type DesignSpecMetricRequestCv = number | null;
 
 export interface DesignSpecMetricRequest {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-	field_name: string;
-	metric_pct_change?: DesignSpecMetricRequestMetricPctChange;
-	metric_target?: DesignSpecMetricRequestMetricTarget;
-	icc?: DesignSpecMetricRequestIcc;
-	avg_cluster_size?: DesignSpecMetricRequestAvgClusterSize;
-	cv?: DesignSpecMetricRequestCv;
+  /** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+  field_name: string;
+  metric_pct_change?: DesignSpecMetricRequestMetricPctChange;
+  metric_target?: DesignSpecMetricRequestMetricTarget;
+  icc?: DesignSpecMetricRequestIcc;
+  avg_cluster_size?: DesignSpecMetricRequestAvgClusterSize;
+  cv?: DesignSpecMetricRequestCv;
 }
 
 export interface Drift {
-	schema_diff: TableDiff[];
+  schema_diff: TableDiff[];
 }
 
 export type Dsn = ApiOnlyDsn | PostgresDsn | BqDsn | RedshiftDsn;
@@ -622,82 +622,79 @@ export type EventSummaryDetailsAnyOf = { [key: string]: unknown };
 
 export type EventSummaryDetails = EventSummaryDetailsAnyOf | null;
 
-export type EventSummaryStatusIcon =
-	(typeof EventSummaryStatusIcon)[keyof typeof EventSummaryStatusIcon];
+export type EventSummaryStatusIcon = typeof EventSummaryStatusIcon[keyof typeof EventSummaryStatusIcon];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const EventSummaryStatusIcon = {
-	success: "success",
-	info: "info",
-	failure: "failure",
+  success: 'success',
+  info: 'info',
+  failure: 'failure',
 } as const;
 
 export interface EventSummary {
-	id: string;
-	created_at: string;
-	type: string;
-	summary: string;
-	link?: EventSummaryLink;
-	details: EventSummaryDetails;
-	status_icon?: EventSummaryStatusIcon;
+  id: string;
+  created_at: string;
+  type: string;
+  summary: string;
+  link?: EventSummaryLink;
+  details: EventSummaryDetails;
+  status_icon?: EventSummaryStatusIcon;
 }
 
-export type ExperimentAnalysisResponse =
-	| FreqExperimentAnalysisResponse
-	| BanditExperimentAnalysisResponse;
+export type ExperimentAnalysisResponse = FreqExperimentAnalysisResponse | BanditExperimentAnalysisResponse;
 
 export type ExperimentConfigStoppedAssignmentsAt = string | null;
 
-export type ExperimentConfigStoppedAssignmentsReason =
-	StopAssignmentReason | null;
+export type ExperimentConfigStoppedAssignmentsReason = StopAssignmentReason | null;
 
 export type ExperimentConfigPowerAnalyses = PowerResponse | null;
 
 export type ExperimentConfigAssignSummary = AssignSummary | null;
 
 export interface ExperimentConfig {
-	experiment_id: string;
-	datasource_id: string;
-	state: ExperimentState;
-	stopped_assignments_at: ExperimentConfigStoppedAssignmentsAt;
-	stopped_assignments_reason: ExperimentConfigStoppedAssignmentsReason;
-	design_spec: DesignSpec;
-	power_analyses: ExperimentConfigPowerAnalyses;
-	assign_summary: ExperimentConfigAssignSummary;
-	webhooks?: string[];
-	decision?: string;
-	impact?: Impact;
+  experiment_id: string;
+  datasource_id: string;
+  state: ExperimentState;
+  stopped_assignments_at: ExperimentConfigStoppedAssignmentsAt;
+  stopped_assignments_reason: ExperimentConfigStoppedAssignmentsReason;
+  design_spec: DesignSpec;
+  power_analyses: ExperimentConfigPowerAnalyses;
+  assign_summary: ExperimentConfigAssignSummary;
+  webhooks?: string[];
+  decision?: string;
+  impact?: Impact;
 }
 
-export type ExperimentState =
-	(typeof ExperimentState)[keyof typeof ExperimentState];
+export type ExperimentState = typeof ExperimentState[keyof typeof ExperimentState];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ExperimentState = {
-	designing: "designing",
-	assigned: "assigned",
-	abandoned: "abandoned",
-	committed: "committed",
-	aborted: "aborted",
+  designing: 'designing',
+  assigned: 'assigned',
+  abandoned: 'abandoned',
+  committed: 'committed',
+  aborted: 'aborted',
 } as const;
 
-export type FieldChangedTypeType =
-	(typeof FieldChangedTypeType)[keyof typeof FieldChangedTypeType];
+export type FieldChangedTypeType = typeof FieldChangedTypeType[keyof typeof FieldChangedTypeType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const FieldChangedTypeType = {
-	column_changed_type: "column_changed_type",
+  column_changed_type: 'column_changed_type',
 } as const;
 
 export interface FieldChangedType {
-	type: FieldChangedTypeType;
-	table_name: string;
-	column_name: string;
-	old_type: DataType;
-	new_type: DataType;
+  type: FieldChangedTypeType;
+  table_name: string;
+  column_name: string;
+  old_type: DataType;
+  new_type: DataType;
 }
 
-export type FieldDescriptorExtraAnyOf = { [key: string]: string };
+export type FieldDescriptorExtraAnyOf = {[key: string]: string};
 
 /**
  * @deprecated
@@ -705,66 +702,60 @@ export type FieldDescriptorExtraAnyOf = { [key: string]: string };
 export type FieldDescriptorExtra = FieldDescriptorExtraAnyOf | null;
 
 export interface FieldDescriptor {
-	field_name: string;
-	data_type: DataType;
-	description?: string;
-	is_unique_id?: boolean;
-	is_strata?: boolean;
-	is_filter?: boolean;
-	is_metric?: boolean;
-	/** @deprecated */
-	extra?: FieldDescriptorExtra;
+  field_name: string;
+  data_type: DataType;
+  description?: string;
+  is_unique_id?: boolean;
+  is_strata?: boolean;
+  is_filter?: boolean;
+  is_metric?: boolean;
+  /** @deprecated */
+  extra?: FieldDescriptorExtra;
 }
 
 export interface FieldMetadata {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-	field_name: string;
-	data_type: DataType;
-	/** @maxLength 2000 */
-	description: string;
+  /** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+  field_name: string;
+  data_type: DataType;
+  /** @maxLength 2000 */
+  description: string;
 }
 
 export interface Filter {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-	field_name: string;
-	relation: Relation;
-	value: FilterValueTypes;
+  /** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+  field_name: string;
+  relation: Relation;
+  value: FilterValueTypes;
 }
 
 export type FilterValueTypesAnyOfItem = string | null;
 
 export type FilterValueTypesAnyOfTwoItem = boolean | null;
 
-export type FilterValueTypes =
-	| StrictInt[]
-	| StrictFloat[]
-	| FilterValueTypesAnyOfItem[]
-	| FilterValueTypesAnyOfTwoItem[];
+export type FilterValueTypes = StrictInt[] | StrictFloat[] | FilterValueTypesAnyOfItem[] | FilterValueTypesAnyOfTwoItem[];
 
-export type FreqExperimentAnalysisResponseType =
-	(typeof FreqExperimentAnalysisResponseType)[keyof typeof FreqExperimentAnalysisResponseType];
+export type FreqExperimentAnalysisResponseType = typeof FreqExperimentAnalysisResponseType[keyof typeof FreqExperimentAnalysisResponseType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const FreqExperimentAnalysisResponseType = {
-	freq: "freq",
+  freq: 'freq',
 } as const;
 
-export type FreqExperimentAnalysisResponseNumMissingParticipants =
-	| number
-	| null;
+export type FreqExperimentAnalysisResponseNumMissingParticipants = number | null;
 
 export interface FreqExperimentAnalysisResponse {
-	type: FreqExperimentAnalysisResponseType;
-	experiment_id: string;
-	metric_analyses: MetricAnalysis[];
-	num_participants: number;
-	num_missing_participants?: FreqExperimentAnalysisResponseNumMissingParticipants;
-	created_at: string;
+  type: FreqExperimentAnalysisResponseType;
+  experiment_id: string;
+  metric_analyses: MetricAnalysis[];
+  num_participants: number;
+  num_missing_participants?: FreqExperimentAnalysisResponseNumMissingParticipants;
+  created_at: string;
 }
 
 export interface GcpServiceAccount {
-	type?: "serviceaccountinfo";
-	content: GcpServiceAccountBlob;
+  type?: 'serviceaccountinfo';
+  content: GcpServiceAccountBlob;
 }
 
 /**
@@ -774,281 +765,266 @@ export interface GcpServiceAccount {
 export type GcpServiceAccountBlob = string;
 
 export interface GetDatasourceResponse {
-	/** @maxLength 64 */
-	id: string;
-	/** @maxLength 100 */
-	name: string;
-	dsn: Dsn;
-	/** @maxLength 64 */
-	organization_id: string;
-	/** @maxLength 100 */
-	organization_name: string;
+  /** @maxLength 64 */
+  id: string;
+  /** @maxLength 100 */
+  name: string;
+  dsn: Dsn;
+  /** @maxLength 64 */
+  organization_id: string;
+  /** @maxLength 100 */
+  organization_name: string;
 }
 
 export type GetExperimentAssignmentsResponseBalanceCheck = BalanceCheck | null;
 
 export interface GetExperimentAssignmentsResponse {
-	balance_check?: GetExperimentAssignmentsResponseBalanceCheck;
-	experiment_id: string;
-	sample_size: number;
-	assignments: Assignment[];
+  balance_check?: GetExperimentAssignmentsResponseBalanceCheck;
+  experiment_id: string;
+  sample_size: number;
+  assignments: Assignment[];
 }
 
-export type GetExperimentForUiResponseExperimentSchema =
-	ParticipantsSchema | null;
+export type GetExperimentForUiResponseExperimentSchema = ParticipantsSchema | null;
 
 export interface GetExperimentForUiResponse {
-	config: ExperimentConfig;
-	experiment_schema: GetExperimentForUiResponseExperimentSchema;
+  config: ExperimentConfig;
+  experiment_schema: GetExperimentForUiResponseExperimentSchema;
 }
 
 export type GetExperimentResponseStoppedAssignmentsAt = string | null;
 
-export type GetExperimentResponseStoppedAssignmentsReason =
-	StopAssignmentReason | null;
+export type GetExperimentResponseStoppedAssignmentsReason = StopAssignmentReason | null;
 
 export type GetExperimentResponsePowerAnalyses = PowerResponse | null;
 
 export type GetExperimentResponseAssignSummary = AssignSummary | null;
 
 export interface GetExperimentResponse {
-	experiment_id: string;
-	datasource_id: string;
-	state: ExperimentState;
-	stopped_assignments_at: GetExperimentResponseStoppedAssignmentsAt;
-	stopped_assignments_reason: GetExperimentResponseStoppedAssignmentsReason;
-	design_spec: DesignSpec;
-	power_analyses: GetExperimentResponsePowerAnalyses;
-	assign_summary: GetExperimentResponseAssignSummary;
-	webhooks?: string[];
-	decision?: string;
-	impact?: Impact;
+  experiment_id: string;
+  datasource_id: string;
+  state: ExperimentState;
+  stopped_assignments_at: GetExperimentResponseStoppedAssignmentsAt;
+  stopped_assignments_reason: GetExperimentResponseStoppedAssignmentsReason;
+  design_spec: DesignSpec;
+  power_analyses: GetExperimentResponsePowerAnalyses;
+  assign_summary: GetExperimentResponseAssignSummary;
+  webhooks?: string[];
+  decision?: string;
+  impact?: Impact;
 }
 
 export type GetFiltersResponseDiscreteDistinctValues = string[] | null;
 
 export interface GetFiltersResponseDiscrete {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-	field_name: string;
-	data_type: DataType;
-	/**
-	 * @minItems 1
-	 * @maxItems 20
-	 */
-	relations: Relation[];
-	/** @maxLength 2000 */
-	description: string;
-	distinct_values: GetFiltersResponseDiscreteDistinctValues;
+  /** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+  field_name: string;
+  data_type: DataType;
+  /**
+   * @minItems 1
+   * @maxItems 20
+   */
+  relations: Relation[];
+  /** @maxLength 2000 */
+  description: string;
+  distinct_values: GetFiltersResponseDiscreteDistinctValues;
 }
 
-export type GetFiltersResponseElement =
-	| GetFiltersResponseNumericOrDate
-	| GetFiltersResponseDiscrete;
+export type GetFiltersResponseElement = GetFiltersResponseNumericOrDate | GetFiltersResponseDiscrete;
 
-export type GetFiltersResponseNumericOrDateMin =
-	| string
-	| string
-	| number
-	| number
-	| null;
+export type GetFiltersResponseNumericOrDateMin = string | string | number | number | null;
 
-export type GetFiltersResponseNumericOrDateMax =
-	| string
-	| string
-	| number
-	| number
-	| null;
+export type GetFiltersResponseNumericOrDateMax = string | string | number | number | null;
 
 export interface GetFiltersResponseNumericOrDate {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-	field_name: string;
-	data_type: DataType;
-	/**
-	 * @minItems 1
-	 * @maxItems 20
-	 */
-	relations: Relation[];
-	/** @maxLength 2000 */
-	description: string;
-	min: GetFiltersResponseNumericOrDateMin;
-	max: GetFiltersResponseNumericOrDateMax;
+  /** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+  field_name: string;
+  data_type: DataType;
+  /**
+   * @minItems 1
+   * @maxItems 20
+   */
+  relations: Relation[];
+  /** @maxLength 2000 */
+  description: string;
+  min: GetFiltersResponseNumericOrDateMin;
+  max: GetFiltersResponseNumericOrDateMax;
 }
 
 export interface GetMetricsResponseElement {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-	field_name: string;
-	data_type: DataType;
-	/** @maxLength 2000 */
-	description: string;
+  /** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+  field_name: string;
+  data_type: DataType;
+  /** @maxLength 2000 */
+  description: string;
 }
 
 export interface GetOrganizationResponse {
-	/** @maxLength 64 */
-	id: string;
-	/** @maxLength 100 */
-	name: string;
-	users: UserSummary[];
-	datasources: DatasourceSummary[];
+  /** @maxLength 64 */
+  id: string;
+  /** @maxLength 100 */
+  name: string;
+  users: UserSummary[];
+  datasources: DatasourceSummary[];
 }
 
 export type GetParticipantAssignmentResponseAssignment = Assignment | null;
 
 export interface GetParticipantAssignmentResponse {
-	experiment_id: string;
-	participant_id: string;
-	assignment: GetParticipantAssignmentResponseAssignment;
+  experiment_id: string;
+  participant_id: string;
+  assignment: GetParticipantAssignmentResponseAssignment;
 }
 
 export interface GetParticipantsTypeResponse {
-	current: ParticipantsDef;
-	proposed: ParticipantsDef;
-	drift: Drift;
+  current: ParticipantsDef;
+  proposed: ParticipantsDef;
+  drift: Drift;
 }
 
 export interface GetSnapshotResponse {
-	snapshot: Snapshot;
+  snapshot: Snapshot;
 }
 
 export interface GetStrataResponseElement {
-	data_type: DataType;
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-	field_name: string;
-	/** @maxLength 2000 */
-	description: string;
+  data_type: DataType;
+  /** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+  field_name: string;
+  /** @maxLength 2000 */
+  description: string;
 }
 
-export type GetTurnArmJourneyMappingResponseArmToJourneys = {
-	[key: string]: string;
-};
+export type GetTurnArmJourneyMappingResponseArmToJourneys = {[key: string]: string};
 
 export interface GetTurnArmJourneyMappingResponse {
-	arm_to_journeys: GetTurnArmJourneyMappingResponseArmToJourneys;
-	stale_arm_ids: string[];
+  arm_to_journeys: GetTurnArmJourneyMappingResponseArmToJourneys;
+  stale_arm_ids: string[];
 }
 
 export interface GetTurnConnectionResponse {
-	token_preview: string;
+  token_preview: string;
 }
 
 export interface GetTurnJourneysResponse {
-	journeys: Journey[];
+  journeys: Journey[];
 }
 
 export interface GetUserResponse {
-	id: string;
-	email: string;
-	is_privileged: boolean;
-	last_logout: string;
-	has_logged_in: boolean;
-	created_at: string;
-	organizations: OrganizationListItem[];
+  id: string;
+  email: string;
+  is_privileged: boolean;
+  last_logout: string;
+  has_logged_in: boolean;
+  created_at: string;
+  organizations: OrganizationListItem[];
 }
 
 export interface HTTPExceptionError {
-	detail: string;
+  detail: string;
 }
 
 export interface HTTPValidationError {
-	detail?: ValidationError[];
+  detail?: ValidationError[];
 }
 
 export const HiddenValue = {
-	type: "hidden",
+  type: 'hidden',
 } as const;
 export type Hidden = typeof HiddenValue;
 
-export type Impact = (typeof Impact)[keyof typeof Impact];
+export type Impact = typeof Impact[keyof typeof Impact];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const Impact = {
-	high: "high",
-	medium: "medium",
-	low: "low",
-	negative: "negative",
-	unclear: "unclear",
-	"": "",
+  high: 'high',
+  medium: 'medium',
+  low: 'low',
+  negative: 'negative',
+  unclear: 'unclear',
+  '': '',
 } as const;
 
 export interface InspectDatasourceResponse {
-	tables: string[];
+  tables: string[];
 }
 
 export interface InspectDatasourceTableResponse {
-	primary_key_fields: string[];
-	detected_unique_id_fields: string[];
-	fields: FieldMetadata[];
+  primary_key_fields: string[];
+  detected_unique_id_fields: string[];
+  fields: FieldMetadata[];
 }
 
 export interface InspectParticipantTypesResponse {
-	filters: GetFiltersResponseElement[];
-	metrics: GetMetricsResponseElement[];
-	strata: GetStrataResponseElement[];
+  filters: GetFiltersResponseElement[];
+  metrics: GetMetricsResponseElement[];
+  strata: GetStrataResponseElement[];
 }
 
 export interface Journey {
-	name: string;
-	uuid: string;
+  name: string;
+  uuid: string;
 }
 
-export type LikelihoodTypes =
-	(typeof LikelihoodTypes)[keyof typeof LikelihoodTypes];
+export type LikelihoodTypes = typeof LikelihoodTypes[keyof typeof LikelihoodTypes];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const LikelihoodTypes = {
-	binary: "binary",
-	"real-valued": "real-valued",
+  binary: 'binary',
+  'real-valued': 'real-valued',
 } as const;
 
 export interface ListApiKeysResponse {
-	items: ApiKeySummary[];
+  items: ApiKeySummary[];
 }
 
 export interface ListDatasourcesResponse {
-	items: DatasourceSummary[];
+  items: DatasourceSummary[];
 }
 
 export interface ListExperimentsResponse {
-	items: ExperimentConfig[];
+  items: ExperimentConfig[];
 }
 
 export interface ListOrganizationEventsResponse {
-	next_page_token?: string;
-	items: EventSummary[];
+  next_page_token?: string;
+  items: EventSummary[];
 }
 
 export interface ListOrganizationsResponse {
-	next_page_token?: string;
-	items: OrganizationListItem[];
+  next_page_token?: string;
+  items: OrganizationListItem[];
 }
 
 export interface ListParticipantsTypeResponse {
-	items: ParticipantsDef[];
-	has_hidden: boolean;
+  items: ParticipantsDef[];
+  has_hidden: boolean;
 }
 
 export type ListSnapshotsResponseLatestFailure = string | null;
 
 export interface ListSnapshotsResponse {
-	next_page_token?: string;
-	items: Snapshot[];
-	latest_failure: ListSnapshotsResponseLatestFailure;
+  next_page_token?: string;
+  items: Snapshot[];
+  latest_failure: ListSnapshotsResponseLatestFailure;
 }
 
 export interface ListUsersResponse {
-	next_page_token?: string;
-	items: UserDetail[];
+  next_page_token?: string;
+  items: UserDetail[];
 }
 
 export interface ListWebhooksResponse {
-	items: WebhookSummary[];
+  items: WebhookSummary[];
 }
 
-export type MABDwhExperimentSpecExperimentType =
-	(typeof MABDwhExperimentSpecExperimentType)[keyof typeof MABDwhExperimentSpecExperimentType];
+export type MABDwhExperimentSpecExperimentType = typeof MABDwhExperimentSpecExperimentType[keyof typeof MABDwhExperimentSpecExperimentType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MABDwhExperimentSpecExperimentType = {
-	mab_online_dwh: "mab_online_dwh",
+  mab_online_dwh: 'mab_online_dwh',
 } as const;
 
 export type MABDwhExperimentSpecDesignUrl = string | null;
@@ -1056,36 +1032,36 @@ export type MABDwhExperimentSpecDesignUrl = string | null;
 export type MABDwhExperimentSpecContexts = Context[] | null;
 
 export interface MABDwhExperimentSpec {
-	experiment_type: MABDwhExperimentSpecExperimentType;
-	/** @maxLength 100 */
-	experiment_name: string;
-	/** @maxLength 2000 */
-	description: string;
-	design_url?: MABDwhExperimentSpecDesignUrl;
-	start_date: string;
-	end_date: string;
-	/**
-	 * @minItems 2
-	 * @maxItems 20
-	 */
-	arms: ArmBandit[];
-	contexts?: MABDwhExperimentSpecContexts;
-	prior_type?: PriorTypes;
-	reward_type?: LikelihoodTypes;
-	/** @maxLength 100 */
-	table_name: string;
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-	primary_key: string;
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-	target_field_name: string;
+  experiment_type: MABDwhExperimentSpecExperimentType;
+  /** @maxLength 100 */
+  experiment_name: string;
+  /** @maxLength 2000 */
+  description: string;
+  design_url?: MABDwhExperimentSpecDesignUrl;
+  start_date: string;
+  end_date: string;
+  /**
+   * @minItems 2
+   * @maxItems 20
+   */
+  arms: ArmBandit[];
+  contexts?: MABDwhExperimentSpecContexts;
+  prior_type?: PriorTypes;
+  reward_type?: LikelihoodTypes;
+  /** @maxLength 100 */
+  table_name: string;
+  /** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+  primary_key: string;
+  /** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+  target_field_name: string;
 }
 
-export type MABExperimentSpecExperimentType =
-	(typeof MABExperimentSpecExperimentType)[keyof typeof MABExperimentSpecExperimentType];
+export type MABExperimentSpecExperimentType = typeof MABExperimentSpecExperimentType[keyof typeof MABExperimentSpecExperimentType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MABExperimentSpecExperimentType = {
-	mab_online: "mab_online",
+  mab_online: 'mab_online',
 } as const;
 
 export type MABExperimentSpecDesignUrl = string | null;
@@ -1093,32 +1069,32 @@ export type MABExperimentSpecDesignUrl = string | null;
 export type MABExperimentSpecContexts = Context[] | null;
 
 export interface MABExperimentSpec {
-	experiment_type: MABExperimentSpecExperimentType;
-	/** @maxLength 100 */
-	experiment_name: string;
-	/** @maxLength 2000 */
-	description: string;
-	design_url?: MABExperimentSpecDesignUrl;
-	start_date: string;
-	end_date: string;
-	/**
-	 * @minItems 2
-	 * @maxItems 20
-	 */
-	arms: ArmBandit[];
-	contexts?: MABExperimentSpecContexts;
-	prior_type?: PriorTypes;
-	reward_type?: LikelihoodTypes;
+  experiment_type: MABExperimentSpecExperimentType;
+  /** @maxLength 100 */
+  experiment_name: string;
+  /** @maxLength 2000 */
+  description: string;
+  design_url?: MABExperimentSpecDesignUrl;
+  start_date: string;
+  end_date: string;
+  /**
+   * @minItems 2
+   * @maxItems 20
+   */
+  arms: ArmBandit[];
+  contexts?: MABExperimentSpecContexts;
+  prior_type?: PriorTypes;
+  reward_type?: LikelihoodTypes;
 }
 
 export interface MessageError {
-	message: string;
+  message: string;
 }
 
 export interface MetricAnalysis {
-	metric_name: string;
-	metric: DesignSpecMetricRequest;
-	arm_analyses: ArmAnalysis[];
+  metric_name: string;
+  metric: DesignSpecMetricRequest;
+  arm_analyses: ArmAnalysis[];
 }
 
 export type MetricPowerAnalysisTargetN = number | null;
@@ -1144,67 +1120,65 @@ export type MetricPowerAnalysisDesignEffect = number | null;
 export type MetricPowerAnalysisEffectiveSampleSize = number | null;
 
 export interface MetricPowerAnalysis {
-	metric_spec: DesignSpecMetric;
-	target_n?: MetricPowerAnalysisTargetN;
-	sufficient_n?: MetricPowerAnalysisSufficientN;
-	target_possible?: MetricPowerAnalysisTargetPossible;
-	pct_change_possible?: MetricPowerAnalysisPctChangePossible;
-	pct_change_with_desired_n?: MetricPowerAnalysisPctChangeWithDesiredN;
-	msg?: MetricPowerAnalysisMsg;
-	num_clusters_total?: MetricPowerAnalysisNumClustersTotal;
-	clusters_per_arm?: MetricPowerAnalysisClustersPerArm;
-	n_per_arm?: MetricPowerAnalysisNPerArm;
-	design_effect?: MetricPowerAnalysisDesignEffect;
-	effective_sample_size?: MetricPowerAnalysisEffectiveSampleSize;
+  metric_spec: DesignSpecMetric;
+  target_n?: MetricPowerAnalysisTargetN;
+  sufficient_n?: MetricPowerAnalysisSufficientN;
+  target_possible?: MetricPowerAnalysisTargetPossible;
+  pct_change_possible?: MetricPowerAnalysisPctChangePossible;
+  pct_change_with_desired_n?: MetricPowerAnalysisPctChangeWithDesiredN;
+  msg?: MetricPowerAnalysisMsg;
+  num_clusters_total?: MetricPowerAnalysisNumClustersTotal;
+  clusters_per_arm?: MetricPowerAnalysisClustersPerArm;
+  n_per_arm?: MetricPowerAnalysisNPerArm;
+  design_effect?: MetricPowerAnalysisDesignEffect;
+  effective_sample_size?: MetricPowerAnalysisEffectiveSampleSize;
 }
 
-export type MetricPowerAnalysisMessageValuesAnyOf = {
-	[key: string]: number | number;
-};
+export type MetricPowerAnalysisMessageValuesAnyOf = {[key: string]: number | number};
 
-export type MetricPowerAnalysisMessageValues =
-	MetricPowerAnalysisMessageValuesAnyOf | null;
+export type MetricPowerAnalysisMessageValues = MetricPowerAnalysisMessageValuesAnyOf | null;
 
 export interface MetricPowerAnalysisMessage {
-	type: MetricPowerAnalysisMessageType;
-	msg: string;
-	source_msg: string;
-	values?: MetricPowerAnalysisMessageValues;
-	high_cluster_variation?: boolean;
+  type: MetricPowerAnalysisMessageType;
+  msg: string;
+  source_msg: string;
+  values?: MetricPowerAnalysisMessageValues;
+  high_cluster_variation?: boolean;
 }
 
-export type MetricPowerAnalysisMessageType =
-	(typeof MetricPowerAnalysisMessageType)[keyof typeof MetricPowerAnalysisMessageType];
+export type MetricPowerAnalysisMessageType = typeof MetricPowerAnalysisMessageType[keyof typeof MetricPowerAnalysisMessageType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MetricPowerAnalysisMessageType = {
-	sufficient: "sufficient",
-	insufficient: "insufficient",
-	no_baseline: "no baseline",
-	no_available_n: "no available n",
-	zero_effect_size: "zero effect size",
-	zero_variation: "zero variation",
+  sufficient: 'sufficient',
+  insufficient: 'insufficient',
+  no_baseline: 'no baseline',
+  no_available_n: 'no available n',
+  zero_effect_size: 'zero effect size',
+  zero_variation: 'zero variation',
 } as const;
 
-export type MetricType = (typeof MetricType)[keyof typeof MetricType];
+export type MetricType = typeof MetricType[keyof typeof MetricType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MetricType = {
-	binary: "binary",
-	numeric: "numeric",
+  binary: 'binary',
+  numeric: 'numeric',
 } as const;
 
 export interface OnlineAssignmentWithFiltersRequest {
-	/** Participant properties to match against the experiment's filters. */
-	properties: ParticipantProperty[];
+  /** Participant properties to match against the experiment's filters. */
+  properties: ParticipantProperty[];
 }
 
-export type OnlineFrequentistExperimentSpecExperimentType =
-	(typeof OnlineFrequentistExperimentSpecExperimentType)[keyof typeof OnlineFrequentistExperimentSpecExperimentType];
+export type OnlineFrequentistExperimentSpecExperimentType = typeof OnlineFrequentistExperimentSpecExperimentType[keyof typeof OnlineFrequentistExperimentSpecExperimentType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const OnlineFrequentistExperimentSpecExperimentType = {
-	freq_online: "freq_online",
+  freq_online: 'freq_online',
 } as const;
 
 export type OnlineFrequentistExperimentSpecDesignUrl = string | null;
@@ -1212,48 +1186,48 @@ export type OnlineFrequentistExperimentSpecDesignUrl = string | null;
 export type OnlineFrequentistExperimentSpecDesiredN = number | null;
 
 export interface OnlineFrequentistExperimentSpec {
-	experiment_type: OnlineFrequentistExperimentSpecExperimentType;
-	/** @maxLength 100 */
-	experiment_name: string;
-	/** @maxLength 2000 */
-	description: string;
-	design_url?: OnlineFrequentistExperimentSpecDesignUrl;
-	start_date: string;
-	end_date: string;
-	/**
-	 * @minItems 2
-	 * @maxItems 20
-	 */
-	arms: Arm[];
-	/** @maxLength 100 */
-	table_name: string;
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-	primary_key: string;
-	/** @maxItems 150 */
-	strata: Stratum[];
-	/**
-	 * @minItems 1
-	 * @maxItems 150
-	 */
-	metrics: DesignSpecMetricRequest[];
-	/** @maxItems 20 */
-	filters: Filter[];
-	desired_n?: OnlineFrequentistExperimentSpecDesiredN;
-	/**
-	 * @minimum 0
-	 * @maximum 1
-	 */
-	power?: number;
-	/**
-	 * @minimum 0
-	 * @maximum 1
-	 */
-	alpha?: number;
-	/**
-	 * @minimum 0
-	 * @maximum 1
-	 */
-	fstat_thresh?: number;
+  experiment_type: OnlineFrequentistExperimentSpecExperimentType;
+  /** @maxLength 100 */
+  experiment_name: string;
+  /** @maxLength 2000 */
+  description: string;
+  design_url?: OnlineFrequentistExperimentSpecDesignUrl;
+  start_date: string;
+  end_date: string;
+  /**
+   * @minItems 2
+   * @maxItems 20
+   */
+  arms: Arm[];
+  /** @maxLength 100 */
+  table_name: string;
+  /** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+  primary_key: string;
+  /** @maxItems 150 */
+  strata: Stratum[];
+  /**
+   * @minItems 1
+   * @maxItems 150
+   */
+  metrics: DesignSpecMetricRequest[];
+  /** @maxItems 20 */
+  filters: Filter[];
+  desired_n?: OnlineFrequentistExperimentSpecDesiredN;
+  /**
+   * @minimum 0
+   * @maximum 1
+   */
+  power?: number;
+  /**
+   * @minimum 0
+   * @maximum 1
+   */
+  alpha?: number;
+  /**
+   * @minimum 0
+   * @maximum 1
+   */
+  fstat_thresh?: number;
 }
 
 export type OrganizationListItemUserCount = number | null;
@@ -1263,101 +1237,101 @@ export type OrganizationListItemExperimentCount = number | null;
 export type OrganizationListItemJoinedAt = string | null;
 
 export interface OrganizationListItem {
-	/** @maxLength 64 */
-	id: string;
-	/** @maxLength 100 */
-	name: string;
-	created_at: string;
-	user_count?: OrganizationListItemUserCount;
-	experiment_count?: OrganizationListItemExperimentCount;
-	joined_at?: OrganizationListItemJoinedAt;
+  /** @maxLength 64 */
+  id: string;
+  /** @maxLength 100 */
+  name: string;
+  created_at: string;
+  user_count?: OrganizationListItemUserCount;
+  experiment_count?: OrganizationListItemExperimentCount;
+  joined_at?: OrganizationListItemJoinedAt;
 }
 
 export interface OrganizationSummary {
-	/** @maxLength 64 */
-	id: string;
-	/** @maxLength 100 */
-	name: string;
+  /** @maxLength 64 */
+  id: string;
+  /** @maxLength 100 */
+  name: string;
 }
 
 export interface ParticipantProperty {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-	field_name: string;
-	value: PropertyValueTypes;
+  /** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+  field_name: string;
+  value: PropertyValueTypes;
 }
 
 export interface ParticipantsDef {
-	table_name: string;
-	fields: FieldDescriptor[];
-	type: "schema";
-	participant_type: string;
-	hidden?: boolean;
+  table_name: string;
+  fields: FieldDescriptor[];
+  type: 'schema';
+  participant_type: string;
+  hidden?: boolean;
 }
 
 export interface ParticipantsSchema {
-	table_name: string;
-	fields: FieldDescriptor[];
+  table_name: string;
+  fields: FieldDescriptor[];
 }
 
 export type PatchUserRequestIsPrivileged = boolean | null;
 
 export interface PatchUserRequest {
-	is_privileged?: PatchUserRequestIsPrivileged;
+  is_privileged?: PatchUserRequestIsPrivileged;
 }
 
-export type PostgresDsnType =
-	(typeof PostgresDsnType)[keyof typeof PostgresDsnType];
+export type PostgresDsnType = typeof PostgresDsnType[keyof typeof PostgresDsnType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PostgresDsnType = {
-	postgres: "postgres",
+  postgres: 'postgres',
 } as const;
 
 export type PostgresDsnPassword = RevealedStr | Hidden;
 
-export type PostgresDsnSslmode =
-	(typeof PostgresDsnSslmode)[keyof typeof PostgresDsnSslmode];
+export type PostgresDsnSslmode = typeof PostgresDsnSslmode[keyof typeof PostgresDsnSslmode];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PostgresDsnSslmode = {
-	disable: "disable",
-	require: "require",
-	"verify-ca": "verify-ca",
-	"verify-full": "verify-full",
+  disable: 'disable',
+  require: 'require',
+  'verify-ca': 'verify-ca',
+  'verify-full': 'verify-full',
 } as const;
 
 export type PostgresDsnSearchPath = string | null;
 
 export interface PostgresDsn {
-	type: PostgresDsnType;
-	host: string;
-	/**
-	 * @minimum 1024
-	 * @maximum 65535
-	 */
-	port: number;
-	user: string;
-	password: PostgresDsnPassword;
-	dbname: string;
-	sslmode: PostgresDsnSslmode;
-	search_path: PostgresDsnSearchPath;
+  type: PostgresDsnType;
+  host: string;
+  /**
+   * @minimum 1024
+   * @maximum 65535
+   */
+  port: number;
+  user: string;
+  password: PostgresDsnPassword;
+  dbname: string;
+  sslmode: PostgresDsnSslmode;
+  search_path: PostgresDsnSearchPath;
 }
 
 export interface PowerRequest {
-	design_spec: AnyFrequentistDesignSpec;
+  design_spec: AnyFrequentistDesignSpec;
 }
 
 export interface PowerResponse {
-	/** @maxItems 150 */
-	analyses: MetricPowerAnalysis[];
+  /** @maxItems 150 */
+  analyses: MetricPowerAnalysis[];
 }
 
-export type PreassignedFrequentistExperimentSpecExperimentType =
-	(typeof PreassignedFrequentistExperimentSpecExperimentType)[keyof typeof PreassignedFrequentistExperimentSpecExperimentType];
+export type PreassignedFrequentistExperimentSpecExperimentType = typeof PreassignedFrequentistExperimentSpecExperimentType[keyof typeof PreassignedFrequentistExperimentSpecExperimentType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PreassignedFrequentistExperimentSpecExperimentType = {
-	freq_preassigned: "freq_preassigned",
+  freq_preassigned: 'freq_preassigned',
 } as const;
 
 export type PreassignedFrequentistExperimentSpecDesignUrl = string | null;
@@ -1367,72 +1341,68 @@ export type PreassignedFrequentistExperimentSpecDesiredN = number | null;
 export type PreassignedFrequentistExperimentSpecClusterKey = string | null;
 
 export interface PreassignedFrequentistExperimentSpec {
-	experiment_type: PreassignedFrequentistExperimentSpecExperimentType;
-	/** @maxLength 100 */
-	experiment_name: string;
-	/** @maxLength 2000 */
-	description: string;
-	design_url?: PreassignedFrequentistExperimentSpecDesignUrl;
-	start_date: string;
-	end_date: string;
-	/**
-	 * @minItems 2
-	 * @maxItems 20
-	 */
-	arms: Arm[];
-	/** @maxLength 100 */
-	table_name: string;
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-	primary_key: string;
-	/** @maxItems 150 */
-	strata: Stratum[];
-	/**
-	 * @minItems 1
-	 * @maxItems 150
-	 */
-	metrics: DesignSpecMetricRequest[];
-	/** @maxItems 20 */
-	filters: Filter[];
-	desired_n?: PreassignedFrequentistExperimentSpecDesiredN;
-	/**
-	 * @minimum 0
-	 * @maximum 1
-	 */
-	power?: number;
-	/**
-	 * @minimum 0
-	 * @maximum 1
-	 */
-	alpha?: number;
-	/**
-	 * @minimum 0
-	 * @maximum 1
-	 */
-	fstat_thresh?: number;
-	cluster_key?: PreassignedFrequentistExperimentSpecClusterKey;
+  experiment_type: PreassignedFrequentistExperimentSpecExperimentType;
+  /** @maxLength 100 */
+  experiment_name: string;
+  /** @maxLength 2000 */
+  description: string;
+  design_url?: PreassignedFrequentistExperimentSpecDesignUrl;
+  start_date: string;
+  end_date: string;
+  /**
+   * @minItems 2
+   * @maxItems 20
+   */
+  arms: Arm[];
+  /** @maxLength 100 */
+  table_name: string;
+  /** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+  primary_key: string;
+  /** @maxItems 150 */
+  strata: Stratum[];
+  /**
+   * @minItems 1
+   * @maxItems 150
+   */
+  metrics: DesignSpecMetricRequest[];
+  /** @maxItems 20 */
+  filters: Filter[];
+  desired_n?: PreassignedFrequentistExperimentSpecDesiredN;
+  /**
+   * @minimum 0
+   * @maximum 1
+   */
+  power?: number;
+  /**
+   * @minimum 0
+   * @maximum 1
+   */
+  alpha?: number;
+  /**
+   * @minimum 0
+   * @maximum 1
+   */
+  fstat_thresh?: number;
+  cluster_key?: PreassignedFrequentistExperimentSpecClusterKey;
 }
 
-export type PriorTypes = (typeof PriorTypes)[keyof typeof PriorTypes];
+export type PriorTypes = typeof PriorTypes[keyof typeof PriorTypes];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PriorTypes = {
-	beta: "beta",
-	normal: "normal",
+  beta: 'beta',
+  normal: 'normal',
 } as const;
 
-export type PropertyValueTypes =
-	| StrictInt
-	| StrictFloat
-	| string
-	| boolean
-	| null;
+export type PropertyValueTypes = StrictInt | StrictFloat | string | boolean | null;
 
-export type RedshiftDsnType =
-	(typeof RedshiftDsnType)[keyof typeof RedshiftDsnType];
+export type RedshiftDsnType = typeof RedshiftDsnType[keyof typeof RedshiftDsnType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const RedshiftDsnType = {
-	redshift: "redshift",
+  redshift: 'redshift',
 } as const;
 
 export type RedshiftDsnPassword = RevealedStr | Hidden;
@@ -1440,44 +1410,43 @@ export type RedshiftDsnPassword = RevealedStr | Hidden;
 export type RedshiftDsnSearchPath = string | null;
 
 export interface RedshiftDsn {
-	type: RedshiftDsnType;
-	host: string;
-	/**
-	 * @minimum 1024
-	 * @maximum 65535
-	 */
-	port: number;
-	user: string;
-	password: RedshiftDsnPassword;
-	dbname: string;
-	search_path: RedshiftDsnSearchPath;
+  type: RedshiftDsnType;
+  host: string;
+  /**
+   * @minimum 1024
+   * @maximum 65535
+   */
+  port: number;
+  user: string;
+  password: RedshiftDsnPassword;
+  dbname: string;
+  search_path: RedshiftDsnSearchPath;
 }
 
-export type Relation = (typeof Relation)[keyof typeof Relation];
+export type Relation = typeof Relation[keyof typeof Relation];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const Relation = {
-	includes: "includes",
-	excludes: "excludes",
-	between: "between",
+  includes: 'includes',
+  excludes: 'excludes',
+  between: 'between',
 } as const;
 
 export interface RevealedStr {
-	type?: "revealed";
-	value: string;
+  type?: 'revealed';
+  value: string;
 }
 
 export interface SetConnectionToTurnRequest {
-	/** @minLength 335 */
-	turn_api_token: string;
+  /** @minLength 335 */
+  turn_api_token: string;
 }
 
-export type SetTurnArmJourneyMappingRequestArmToJourneys = {
-	[key: string]: string;
-};
+export type SetTurnArmJourneyMappingRequestArmToJourneys = {[key: string]: string};
 
 export interface SetTurnArmJourneyMappingRequest {
-	arm_to_journeys: SetTurnArmJourneyMappingRequestArmToJourneys;
+  arm_to_journeys: SetTurnArmJourneyMappingRequestArmToJourneys;
 }
 
 export type SnapshotDetailsAnyOf = { [key: string]: unknown };
@@ -1487,74 +1456,74 @@ export type SnapshotDetails = SnapshotDetailsAnyOf | null;
 export type SnapshotData = ExperimentAnalysisResponse | null;
 
 export interface Snapshot {
-	experiment_id: string;
-	id: string;
-	status: SnapshotStatus;
-	details: SnapshotDetails;
-	created_at: string;
-	updated_at: string;
-	data: SnapshotData;
+  experiment_id: string;
+  id: string;
+  status: SnapshotStatus;
+  details: SnapshotDetails;
+  created_at: string;
+  updated_at: string;
+  data: SnapshotData;
 }
 
-export type SnapshotStatus =
-	(typeof SnapshotStatus)[keyof typeof SnapshotStatus];
+export type SnapshotStatus = typeof SnapshotStatus[keyof typeof SnapshotStatus];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const SnapshotStatus = {
-	success: "success",
-	running: "running",
-	failed: "failed",
+  success: 'success',
+  running: 'running',
+  failed: 'failed',
 } as const;
 
-export type StopAssignmentReason =
-	(typeof StopAssignmentReason)[keyof typeof StopAssignmentReason];
+export type StopAssignmentReason = typeof StopAssignmentReason[keyof typeof StopAssignmentReason];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const StopAssignmentReason = {
-	preassigned: "preassigned",
-	end_date: "end_date",
-	manual: "manual",
-	target_n: "target_n",
+  preassigned: 'preassigned',
+  end_date: 'end_date',
+  manual: 'manual',
+  target_n: 'target_n',
 } as const;
 
 export type StrataStrataValue = string | null;
 
 export interface Strata {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-	field_name: string;
-	strata_value?: StrataStrataValue;
+  /** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+  field_name: string;
+  strata_value?: StrataStrataValue;
 }
 
 export interface Stratum {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-	field_name: string;
+  /** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+  field_name: string;
 }
 
 export type StrictFloat = number | null;
 
 export type StrictInt = number | null;
 
-export type TableDeletedType =
-	(typeof TableDeletedType)[keyof typeof TableDeletedType];
+export type TableDeletedType = typeof TableDeletedType[keyof typeof TableDeletedType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const TableDeletedType = {
-	table_deleted: "table_deleted",
+  table_deleted: 'table_deleted',
 } as const;
 
 export interface TableDeleted {
-	type: TableDeletedType;
-	table_name: string;
+  type: TableDeletedType;
+  table_name: string;
 }
 
 export type TableDiff = ColumnDeleted | FieldChangedType | TableDeleted;
 
-export type TurnConfigResponseArmJourneyMap = { [key: string]: string };
+export type TurnConfigResponseArmJourneyMap = {[key: string]: string};
 
 export interface TurnConfigResponse {
-	experiment_id: string;
-	experiment_name: string;
-	arm_journey_map: TurnConfigResponseArmJourneyMap;
+  experiment_id: string;
+  experiment_name: string;
+  arm_journey_map: TurnConfigResponseArmJourneyMap;
 }
 
 export type UpdateArmRequestName = string | null;
@@ -1562,12 +1531,12 @@ export type UpdateArmRequestName = string | null;
 export type UpdateArmRequestDescription = string | null;
 
 export interface UpdateArmRequest {
-	name?: UpdateArmRequestName;
-	description?: UpdateArmRequestDescription;
+  name?: UpdateArmRequestName;
+  description?: UpdateArmRequestDescription;
 }
 
 export interface UpdateBanditArmOutcomeRequest {
-	outcome: number;
+  outcome: number;
 }
 
 export type UpdateDatasourceRequestName = string | null;
@@ -1575,8 +1544,8 @@ export type UpdateDatasourceRequestName = string | null;
 export type UpdateDatasourceRequestDsn = Dsn | null;
 
 export interface UpdateDatasourceRequest {
-	name?: UpdateDatasourceRequestName;
-	dsn?: UpdateDatasourceRequestDsn;
+  name?: UpdateDatasourceRequestName;
+  dsn?: UpdateDatasourceRequestDsn;
 }
 
 export type UpdateExperimentRequestName = string | null;
@@ -1594,26 +1563,26 @@ export type UpdateExperimentRequestImpact = Impact | null;
 export type UpdateExperimentRequestDecision = string | null;
 
 export interface UpdateExperimentRequest {
-	name?: UpdateExperimentRequestName;
-	description?: UpdateExperimentRequestDescription;
-	design_url?: UpdateExperimentRequestDesignUrl;
-	start_date?: UpdateExperimentRequestStartDate;
-	end_date?: UpdateExperimentRequestEndDate;
-	impact?: UpdateExperimentRequestImpact;
-	decision?: UpdateExperimentRequestDecision;
+  name?: UpdateExperimentRequestName;
+  description?: UpdateExperimentRequestDescription;
+  design_url?: UpdateExperimentRequestDesignUrl;
+  start_date?: UpdateExperimentRequestStartDate;
+  end_date?: UpdateExperimentRequestEndDate;
+  impact?: UpdateExperimentRequestImpact;
+  decision?: UpdateExperimentRequestDecision;
 }
 
 export type UpdateOrganizationRequestName = string | null;
 
 export interface UpdateOrganizationRequest {
-	name?: UpdateOrganizationRequestName;
+  name?: UpdateOrganizationRequestName;
 }
 
 export interface UpdateOrganizationWebhookRequest {
-	/** @maxLength 100 */
-	name: string;
-	/** @maxLength 500 */
-	url: string;
+  /** @maxLength 100 */
+  name: string;
+  /** @maxLength 500 */
+  url: string;
 }
 
 export type UpdateParticipantsTypeRequestParticipantType = string | null;
@@ -1623,9 +1592,9 @@ export type UpdateParticipantsTypeRequestTableName = string | null;
 export type UpdateParticipantsTypeRequestFields = FieldDescriptor[] | null;
 
 export interface UpdateParticipantsTypeRequest {
-	participant_type?: UpdateParticipantsTypeRequestParticipantType;
-	table_name?: UpdateParticipantsTypeRequestTableName;
-	fields?: UpdateParticipantsTypeRequestFields;
+  participant_type?: UpdateParticipantsTypeRequestParticipantType;
+  table_name?: UpdateParticipantsTypeRequestTableName;
+  fields?: UpdateParticipantsTypeRequestFields;
 }
 
 export type UpdateParticipantsTypeResponseTableName = string | null;
@@ -1633,28 +1602,28 @@ export type UpdateParticipantsTypeResponseTableName = string | null;
 export type UpdateParticipantsTypeResponseFields = FieldDescriptor[] | null;
 
 export interface UpdateParticipantsTypeResponse {
-	/** @maxLength 100 */
-	participant_type: string;
-	table_name?: UpdateParticipantsTypeResponseTableName;
-	fields?: UpdateParticipantsTypeResponseFields;
+  /** @maxLength 100 */
+  participant_type: string;
+  table_name?: UpdateParticipantsTypeResponseTableName;
+  fields?: UpdateParticipantsTypeResponseFields;
 }
 
 export interface UserDetail {
-	id: string;
-	email: string;
-	is_privileged: boolean;
-	last_logout: string;
-	has_logged_in: boolean;
-	created_at: string;
-	organizations: OrganizationSummary[];
+  id: string;
+  email: string;
+  is_privileged: boolean;
+  last_logout: string;
+  has_logged_in: boolean;
+  created_at: string;
+  organizations: OrganizationSummary[];
 }
 
 export interface UserSummary {
-	/** @maxLength 64 */
-	id: string;
-	/** @maxLength 64 */
-	email: string;
-	is_privileged: boolean;
+  /** @maxLength 64 */
+  id: string;
+  /** @maxLength 64 */
+  email: string;
+  is_privileged: boolean;
 }
 
 export type ValidationErrorLocItem = string | number;
@@ -1662,171 +1631,172 @@ export type ValidationErrorLocItem = string | number;
 export type ValidationErrorCtx = { [key: string]: unknown };
 
 export interface ValidationError {
-	loc: ValidationErrorLocItem[];
-	msg: string;
-	type: string;
-	input?: unknown;
-	ctx?: ValidationErrorCtx;
+  loc: ValidationErrorLocItem[];
+  msg: string;
+  type: string;
+  input?: unknown;
+  ctx?: ValidationErrorCtx;
 }
 
 export type WebhookSummaryAuthToken = string | null;
 
 export interface WebhookSummary {
-	id: string;
-	type: string;
-	name: string;
-	url: string;
-	auth_token: WebhookSummaryAuthToken;
+  id: string;
+  type: string;
+  name: string;
+  url: string;
+  auth_token: WebhookSummaryAuthToken;
 }
 
 export interface XHTTPValidationError {
-	detail: XValidationError[];
+  detail: XValidationError[];
 }
 
 export type XValidationErrorLocItem = string | number;
 
 export interface XValidationError {
-	loc: XValidationErrorLocItem[];
-	msg: string;
-	type: string;
+  loc: XValidationErrorLocItem[];
+  msg: string;
+  type: string;
 }
 
 export type ListUsersParams = {
-	email_contains?: string | null;
-	scope?: ListUsersScope;
-	/**
-	 * @minimum 1
-	 * @maximum 100
-	 */
-	page_size?: number;
-	page_token?: string | null;
-	/**
-	 * @minimum 0
-	 */
-	skip?: number;
+email_contains?: string | null;
+scope?: ListUsersScope;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+page_size?: number;
+page_token?: string | null;
+/**
+ * @minimum 0
+ */
+skip?: number;
 };
 
-export type ListUsersScope =
-	(typeof ListUsersScope)[keyof typeof ListUsersScope];
+export type ListUsersScope = typeof ListUsersScope[keyof typeof ListUsersScope];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ListUsersScope = {
-	all: "all",
-	mine: "mine",
+  all: 'all',
+  mine: 'mine',
 } as const;
 
 export type DeleteSnapshotParams = {
-	allow_missing?: boolean;
+allow_missing?: boolean;
 };
 
 export type ListSnapshotsParams = {
-	status?: SnapshotStatus[] | null;
-	/**
-	 * @minimum 1
-	 */
-	page_size?: number;
-	page_token?: string | null;
-	/**
-	 * @minimum 0
-	 */
-	skip?: number;
+status?: SnapshotStatus[] | null;
+/**
+ * @minimum 1
+ */
+page_size?: number;
+page_token?: string | null;
+/**
+ * @minimum 0
+ */
+skip?: number;
 };
 
 export type ListOrganizationsParams = {
-	scope?: ListOrganizationsScope;
-	name_contains?: string | null;
-	include_stats?: boolean;
-	/**
-	 * @minimum 1
-	 * @maximum 100
-	 */
-	page_size?: number;
-	page_token?: string | null;
-	/**
-	 * @minimum 0
-	 */
-	skip?: number;
+scope?: ListOrganizationsScope;
+name_contains?: string | null;
+include_stats?: boolean;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+page_size?: number;
+page_token?: string | null;
+/**
+ * @minimum 0
+ */
+skip?: number;
 };
 
-export type ListOrganizationsScope =
-	(typeof ListOrganizationsScope)[keyof typeof ListOrganizationsScope];
+export type ListOrganizationsScope = typeof ListOrganizationsScope[keyof typeof ListOrganizationsScope];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ListOrganizationsScope = {
-	mine: "mine",
-	all: "all",
+  mine: 'mine',
+  all: 'all',
 } as const;
 
 export type DeleteWebhookFromOrganizationParams = {
-	allow_missing?: boolean;
+allow_missing?: boolean;
 };
 
 export type ListOrganizationEventsParams = {
-	/**
-	 * @minimum 1
-	 * @maximum 100
-	 */
-	page_size?: number;
-	page_token?: string | null;
-	/**
-	 * @minimum 0
-	 */
-	skip?: number;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+page_size?: number;
+page_token?: string | null;
+/**
+ * @minimum 0
+ */
+skip?: number;
 };
 
 export type RemoveMemberFromOrganizationParams = {
-	allow_missing?: boolean;
+allow_missing?: boolean;
 };
 
 export type CreateDatasourceParams = {
-	connectivity_check?: boolean;
+connectivity_check?: boolean;
 };
 
 export type InspectDatasourceParams = {
-	refresh?: boolean;
+refresh?: boolean;
 };
 
 export type InspectTableInDatasourceParams = {
-	refresh?: boolean;
+refresh?: boolean;
 };
 
 export type DeleteDatasourceParams = {
-	allow_missing?: boolean;
+allow_missing?: boolean;
 };
 
 export type InspectParticipantTypesParams = {
-	refresh?: boolean;
-	expensive?: boolean;
+refresh?: boolean;
+expensive?: boolean;
 };
 
 export type DeleteParticipantParams = {
-	allow_missing?: boolean;
+allow_missing?: boolean;
 };
 
 export type DeleteApiKeyParams = {
-	allow_missing?: boolean;
+allow_missing?: boolean;
 };
 
 export type CreateExperimentParams = {
-	stratify_on_metrics?: boolean;
+stratify_on_metrics?: boolean;
 };
 
 export type AnalyzeExperimentParams = {
-	baseline_arm_id?: string | null;
+baseline_arm_id?: string | null;
 };
 
 export type DeleteExperimentParams = {
-	allow_missing?: boolean;
+allow_missing?: boolean;
 };
 
 export type GetOrganizationTurnConnectionParams = {
-	allow_missing?: boolean;
+allow_missing?: boolean;
 };
 
 export type DeleteTurnConnectionFromOrganizationParams = {
-	allow_missing?: boolean;
+allow_missing?: boolean;
 };
 
 export type DeleteTurnArmJourneyMappingParams = {
-	allow_missing?: boolean;
+allow_missing?: boolean;
 };
+

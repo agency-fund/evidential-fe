@@ -4,4092 +4,2904 @@
  * Evidential Experiments API
  * OpenAPI spec version: 0.9.0
  */
-import useSwr from "swr";
-import type { Arguments, Key, SWRConfiguration } from "swr";
+import useSwr from 'swr';
+import type {
+  Arguments,
+  Key,
+  SWRConfiguration
+} from 'swr';
 
-import useSWRMutation from "swr/mutation";
-import type { SWRMutationConfiguration } from "swr/mutation";
+import useSWRMutation from 'swr/mutation';
+import type {
+  SWRMutationConfiguration
+} from 'swr/mutation';
 
 import type {
-	AddMemberToOrganizationRequest,
-	AddWebhookToOrganizationRequest,
-	AddWebhookToOrganizationResponse,
-	AnalyzeExperimentParams,
-	CMABContextInputRequest,
-	CallerIdentity,
-	CreateApiKeyResponse,
-	CreateDatasourceParams,
-	CreateDatasourceRequest,
-	CreateDatasourceResponse,
-	CreateExperimentParams,
-	CreateExperimentRequest,
-	CreateExperimentResponse,
-	CreateOrganizationRequest,
-	CreateOrganizationResponse,
-	CreateParticipantsTypeRequest,
-	CreateParticipantsTypeResponse,
-	CreateSnapshotResponse,
-	CreateUserRequest,
-	CreateUserResponse,
-	DeleteApiKeyParams,
-	DeleteDatasourceParams,
-	DeleteExperimentDataRequest,
-	DeleteExperimentParams,
-	DeleteParticipantParams,
-	DeleteSnapshotParams,
-	DeleteWebhookFromOrganizationParams,
-	ExperimentAnalysisResponse,
-	GetDatasourceResponse,
-	GetExperimentForUiResponse,
-	GetOrganizationResponse,
-	GetParticipantsTypeResponse,
-	GetSnapshotResponse,
-	GetUserResponse,
-	HTTPExceptionError,
-	HTTPValidationError,
-	InspectDatasourceParams,
-	InspectDatasourceResponse,
-	InspectDatasourceTableResponse,
-	InspectParticipantTypesParams,
-	InspectParticipantTypesResponse,
-	InspectTableInDatasourceParams,
-	ListApiKeysResponse,
-	ListDatasourcesResponse,
-	ListExperimentsResponse,
-	ListOrganizationEventsParams,
-	ListOrganizationEventsResponse,
-	ListOrganizationsParams,
-	ListOrganizationsResponse,
-	ListParticipantsTypeResponse,
-	ListSnapshotsParams,
-	ListSnapshotsResponse,
-	ListUsersParams,
-	ListUsersResponse,
-	ListWebhooksResponse,
-	MessageError,
-	PatchUserRequest,
-	PowerRequest,
-	PowerResponse,
-	RemoveMemberFromOrganizationParams,
-	UpdateArmRequest,
-	UpdateDatasourceRequest,
-	UpdateExperimentRequest,
-	UpdateOrganizationRequest,
-	UpdateOrganizationWebhookRequest,
-	UpdateParticipantsTypeRequest,
-	UpdateParticipantsTypeResponse,
-	XHTTPValidationError,
-} from "./methods.schemas";
+  AddMemberToOrganizationRequest,
+  AddWebhookToOrganizationRequest,
+  AddWebhookToOrganizationResponse,
+  AnalyzeExperimentParams,
+  CMABContextInputRequest,
+  CallerIdentity,
+  CreateApiKeyResponse,
+  CreateDatasourceParams,
+  CreateDatasourceRequest,
+  CreateDatasourceResponse,
+  CreateExperimentParams,
+  CreateExperimentRequest,
+  CreateExperimentResponse,
+  CreateOrganizationRequest,
+  CreateOrganizationResponse,
+  CreateParticipantsTypeRequest,
+  CreateParticipantsTypeResponse,
+  CreateSnapshotResponse,
+  CreateUserRequest,
+  CreateUserResponse,
+  DeleteApiKeyParams,
+  DeleteDatasourceParams,
+  DeleteExperimentDataRequest,
+  DeleteExperimentParams,
+  DeleteParticipantParams,
+  DeleteSnapshotParams,
+  DeleteWebhookFromOrganizationParams,
+  ExperimentAnalysisResponse,
+  GetDatasourceResponse,
+  GetExperimentForUiResponse,
+  GetOrganizationResponse,
+  GetParticipantsTypeResponse,
+  GetSnapshotResponse,
+  GetUserResponse,
+  HTTPExceptionError,
+  HTTPValidationError,
+  InspectDatasourceParams,
+  InspectDatasourceResponse,
+  InspectDatasourceTableResponse,
+  InspectParticipantTypesParams,
+  InspectParticipantTypesResponse,
+  InspectTableInDatasourceParams,
+  ListApiKeysResponse,
+  ListDatasourcesResponse,
+  ListExperimentsResponse,
+  ListOrganizationEventsParams,
+  ListOrganizationEventsResponse,
+  ListOrganizationsParams,
+  ListOrganizationsResponse,
+  ListParticipantsTypeResponse,
+  ListSnapshotsParams,
+  ListSnapshotsResponse,
+  ListUsersParams,
+  ListUsersResponse,
+  ListWebhooksResponse,
+  MessageError,
+  PatchUserRequest,
+  PowerRequest,
+  PowerResponse,
+  RemoveMemberFromOrganizationParams,
+  UpdateArmRequest,
+  UpdateDatasourceRequest,
+  UpdateExperimentRequest,
+  UpdateOrganizationRequest,
+  UpdateOrganizationWebhookRequest,
+  UpdateParticipantsTypeRequest,
+  UpdateParticipantsTypeResponse,
+  XHTTPValidationError
+} from './methods.schemas';
 
 import { orvalFetch } from "@/services/orval-fetch";
 import type { ErrorType } from "@/services/orval-fetch";
 
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
+
+  
+  type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+
+  
 export const getCallerIdentityUrl = () => {
-	return `/v1/m/caller-identity`;
-};
 
-export const callerIdentity = async (
-	options?: RequestInit,
-): Promise<CallerIdentity> => {
-	return orvalFetch<CallerIdentity>(getCallerIdentityUrl(), {
-		...options,
-		method: "GET",
-	});
-};
+
+  
+
+  return `/v1/m/caller-identity`
+}
+
+export const callerIdentity = async ( options?: RequestInit): Promise<CallerIdentity> => {
+  
+  return orvalFetch<CallerIdentity>(getCallerIdentityUrl(),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
 
 export const getCallerIdentityKey = () => [`/v1/m/caller-identity`] as const;
 
-export type CallerIdentityQueryResult = NonNullable<
-	Awaited<ReturnType<typeof callerIdentity>>
->;
-export type CallerIdentityQueryError = ErrorType<HTTPExceptionError>;
+export type CallerIdentityQueryResult = NonNullable<Awaited<ReturnType<typeof callerIdentity>>>
+export type CallerIdentityQueryError = ErrorType<HTTPExceptionError>
 
-export const useCallerIdentity = <
-	TError = ErrorType<HTTPExceptionError>,
->(options?: {
-	swr?: SWRConfiguration<Awaited<ReturnType<typeof callerIdentity>>, TError> & {
-		swrKey?: Key;
-		enabled?: boolean;
-	};
-	request?: SecondParameter<typeof orvalFetch>;
-}) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled = swrOptions?.enabled !== false;
-	const swrKey =
-		swrOptions?.swrKey ?? (() => (isEnabled ? getCallerIdentityKey() : null));
-	const swrFn = () => callerIdentity(requestOptions);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getLogoutUrl = () => {
-	return `/v1/m/logout`;
-};
-
-export const logout = async (options?: RequestInit): Promise<void> => {
-	return orvalFetch<void>(getLogoutUrl(), {
-		...options,
-		method: "POST",
-	});
-};
-
-export const getLogoutMutationFetcher = (
-	options?: SecondParameter<typeof orvalFetch>,
+export const useCallerIdentity = <TError = ErrorType<HTTPExceptionError>>(
+   options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof callerIdentity>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
 ) => {
-	return (_: Key, __: { arg: Arguments }) => {
-		return logout(options);
-	};
-};
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getCallerIdentityKey() : null);
+  const swrFn = () => callerIdentity(requestOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getLogoutUrl = () => {
+
+
+  
+
+  return `/v1/m/logout`
+}
+
+export const logout = async ( options?: RequestInit): Promise<void> => {
+  
+  return orvalFetch<void>(getLogoutUrl(),
+  {      
+    ...options,
+    method: 'POST'
+    
+    
+  }
+);}
+
+
+
+
+export const getLogoutMutationFetcher = ( options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, __: { arg: Arguments }) => {
+    return logout(options);
+  }
+}
 export const getLogoutMutationKey = () => [`/v1/m/logout`] as const;
 
-export type LogoutMutationResult = NonNullable<
-	Awaited<ReturnType<typeof logout>>
->;
-export type LogoutMutationError = ErrorType<HTTPExceptionError>;
+export type LogoutMutationResult = NonNullable<Awaited<ReturnType<typeof logout>>>
+export type LogoutMutationError = ErrorType<HTTPExceptionError>
 
-export const useLogout = <TError = ErrorType<HTTPExceptionError>>(options?: {
-	swr?: SWRMutationConfiguration<
-		Awaited<ReturnType<typeof logout>>,
-		TError,
-		Key,
-		Arguments,
-		Awaited<ReturnType<typeof logout>>
-	> & { swrKey?: string };
-	request?: SecondParameter<typeof orvalFetch>;
-}) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey = swrOptions?.swrKey ?? getLogoutMutationKey();
-	const swrFn = getLogoutMutationFetcher(requestOptions);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getCreateUserUrl = () => {
-	return `/v1/m/users`;
-};
-
-export const createUser = async (
-	createUserRequest: CreateUserRequest,
-	options?: RequestInit,
-): Promise<CreateUserResponse> => {
-	return orvalFetch<CreateUserResponse>(getCreateUserUrl(), {
-		...options,
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(createUserRequest),
-	});
-};
-
-export const getCreateUserMutationFetcher = (
-	options?: SecondParameter<typeof orvalFetch>,
+export const useLogout = <TError = ErrorType<HTTPExceptionError>>(
+   options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof logout>>, TError, Key, Arguments, Awaited<ReturnType<typeof logout>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	return (_: Key, { arg }: { arg: CreateUserRequest }) => {
-		return createUser(arg, options);
-	};
-};
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getLogoutMutationKey();
+  const swrFn = getLogoutMutationFetcher(requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getCreateUserUrl = () => {
+
+
+  
+
+  return `/v1/m/users`
+}
+
+export const createUser = async (createUserRequest: CreateUserRequest, options?: RequestInit): Promise<CreateUserResponse> => {
+  
+  return orvalFetch<CreateUserResponse>(getCreateUserUrl(),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      createUserRequest,)
+  }
+);}
+
+
+
+
+export const getCreateUserMutationFetcher = ( options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, { arg }: { arg: CreateUserRequest }) => {
+    return createUser(arg, options);
+  }
+}
 export const getCreateUserMutationKey = () => [`/v1/m/users`] as const;
 
-export type CreateUserMutationResult = NonNullable<
-	Awaited<ReturnType<typeof createUser>>
->;
-export type CreateUserMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
+export type CreateUserMutationResult = NonNullable<Awaited<ReturnType<typeof createUser>>>
+export type CreateUserMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
 
-export const useCreateUser = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(options?: {
-	swr?: SWRMutationConfiguration<
-		Awaited<ReturnType<typeof createUser>>,
-		TError,
-		Key,
-		CreateUserRequest,
-		Awaited<ReturnType<typeof createUser>>
-	> & { swrKey?: string };
-	request?: SecondParameter<typeof orvalFetch>;
-}) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey = swrOptions?.swrKey ?? getCreateUserMutationKey();
-	const swrFn = getCreateUserMutationFetcher(requestOptions);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getListUsersUrl = (params?: ListUsersParams) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
-
-	const stringifiedParams = normalizedParams.toString();
-
-	return stringifiedParams.length > 0
-		? `/v1/m/users?${stringifiedParams}`
-		: `/v1/m/users`;
-};
-
-export const listUsers = async (
-	params?: ListUsersParams,
-	options?: RequestInit,
-): Promise<ListUsersResponse> => {
-	return orvalFetch<ListUsersResponse>(getListUsersUrl(params), {
-		...options,
-		method: "GET",
-	});
-};
-
-export const getListUsersKey = (params?: ListUsersParams) =>
-	[`/v1/m/users`, ...(params ? [params] : [])] as const;
-
-export type ListUsersQueryResult = NonNullable<
-	Awaited<ReturnType<typeof listUsers>>
->;
-export type ListUsersQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useListUsers = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	params?: ListUsersParams,
-	options?: {
-		swr?: SWRConfiguration<Awaited<ReturnType<typeof listUsers>>, TError> & {
-			swrKey?: Key;
-			enabled?: boolean;
-		};
-		request?: SecondParameter<typeof orvalFetch>;
-	},
+export const useCreateUser = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+   options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof createUser>>, TError, Key, CreateUserRequest, Awaited<ReturnType<typeof createUser>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
 
-	const isEnabled = swrOptions?.enabled !== false;
-	const swrKey =
-		swrOptions?.swrKey ?? (() => (isEnabled ? getListUsersKey(params) : null));
-	const swrFn = () => listUsers(params, requestOptions);
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
 
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
+  const swrKey = swrOptions?.swrKey ?? getCreateUserMutationKey();
+  const swrFn = getCreateUserMutationFetcher(requestOptions);
 
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getGetUserUrl = (userId: string) => {
-	return `/v1/m/users/${userId}`;
-};
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
 
-export const getUser = async (
-	userId: string,
-	options?: RequestInit,
-): Promise<GetUserResponse> => {
-	return orvalFetch<GetUserResponse>(getGetUserUrl(userId), {
-		...options,
-		method: "GET",
-	});
-};
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getListUsersUrl = (params?: ListUsersParams,) => {
+  const normalizedParams = new URLSearchParams();
 
-export const getGetUserKey = (userId: string) =>
-	[`/v1/m/users/${userId}`] as const;
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
 
-export type GetUserQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getUser>>
->;
-export type GetUserQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
+  const stringifiedParams = normalizedParams.toString();
 
-export const useGetUser = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	userId: string,
-	options?: {
-		swr?: SWRConfiguration<Awaited<ReturnType<typeof getUser>>, TError> & {
-			swrKey?: Key;
-			enabled?: boolean;
-		};
-		request?: SecondParameter<typeof orvalFetch>;
-	},
+  return stringifiedParams.length > 0 ? `/v1/m/users?${stringifiedParams}` : `/v1/m/users`
+}
+
+export const listUsers = async (params?: ListUsersParams, options?: RequestInit): Promise<ListUsersResponse> => {
+  
+  return orvalFetch<ListUsersResponse>(getListUsersUrl(params),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+export const getListUsersKey = (params?: ListUsersParams,) => [`/v1/m/users`, ...(params ? [params]: [])] as const;
+
+export type ListUsersQueryResult = NonNullable<Awaited<ReturnType<typeof listUsers>>>
+export type ListUsersQueryError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useListUsers = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  params?: ListUsersParams, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof listUsers>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
 ) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
 
-	const isEnabled = swrOptions?.enabled !== false && !!userId;
-	const swrKey =
-		swrOptions?.swrKey ?? (() => (isEnabled ? getGetUserKey(userId) : null));
-	const swrFn = () => getUser(userId, requestOptions);
+  const isEnabled = swrOptions?.enabled !== false
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getListUsersKey(params) : null);
+  const swrFn = () => listUsers(params, requestOptions)
 
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
 
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getPatchUserUrl = (userId: string) => {
-	return `/v1/m/users/${userId}`;
-};
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getGetUserUrl = (userId: string,) => {
 
-export const patchUser = async (
-	userId: string,
-	patchUserRequest: PatchUserRequest,
-	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(getPatchUserUrl(userId), {
-		...options,
-		method: "PATCH",
-		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(patchUserRequest),
-	});
-};
 
-export const getPatchUserMutationFetcher = (
-	userId: string,
-	options?: SecondParameter<typeof orvalFetch>,
+  
+
+  return `/v1/m/users/${userId}`
+}
+
+export const getUser = async (userId: string, options?: RequestInit): Promise<GetUserResponse> => {
+  
+  return orvalFetch<GetUserResponse>(getGetUserUrl(userId),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+export const getGetUserKey = (userId: string,) => [`/v1/m/users/${userId}`] as const;
+
+export type GetUserQueryResult = NonNullable<Awaited<ReturnType<typeof getUser>>>
+export type GetUserQueryError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useGetUser = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  userId: string, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof getUser>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
 ) => {
-	return (_: Key, { arg }: { arg: PatchUserRequest }) => {
-		return patchUser(userId, arg, options);
-	};
-};
-export const getPatchUserMutationKey = (userId: string) =>
-	[`/v1/m/users/${userId}`] as const;
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
 
-export type PatchUserMutationResult = NonNullable<
-	Awaited<ReturnType<typeof patchUser>>
->;
-export type PatchUserMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
+  const isEnabled = swrOptions?.enabled !== false && !!(userId)
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getGetUserKey(userId) : null);
+  const swrFn = () => getUser(userId, requestOptions)
 
-export const usePatchUser = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	userId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof patchUser>>,
-			TError,
-			Key,
-			PatchUserRequest,
-			Awaited<ReturnType<typeof patchUser>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getPatchUserUrl = (userId: string,) => {
+
+
+  
+
+  return `/v1/m/users/${userId}`
+}
+
+export const patchUser = async (userId: string,
+    patchUserRequest: PatchUserRequest, options?: RequestInit): Promise<void> => {
+  
+  return orvalFetch<void>(getPatchUserUrl(userId),
+  {      
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      patchUserRequest,)
+  }
+);}
+
+
+
+
+export const getPatchUserMutationFetcher = (userId: string, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, { arg }: { arg: PatchUserRequest }) => {
+    return patchUser(userId, arg, options);
+  }
+}
+export const getPatchUserMutationKey = (userId: string,) => [`/v1/m/users/${userId}`] as const;
+
+export type PatchUserMutationResult = NonNullable<Awaited<ReturnType<typeof patchUser>>>
+export type PatchUserMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const usePatchUser = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  userId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof patchUser>>, TError, Key, PatchUserRequest, Awaited<ReturnType<typeof patchUser>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
 
-	const swrKey = swrOptions?.swrKey ?? getPatchUserMutationKey(userId);
-	const swrFn = getPatchUserMutationFetcher(userId, requestOptions);
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
 
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+  const swrKey = swrOptions?.swrKey ?? getPatchUserMutationKey(userId);
+  const swrFn = getPatchUserMutationFetcher(userId, requestOptions);
 
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getDeleteUserUrl = (userId: string) => {
-	return `/v1/m/users/${userId}`;
-};
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
 
-export const deleteUser = async (
-	userId: string,
-	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(getDeleteUserUrl(userId), {
-		...options,
-		method: "DELETE",
-	});
-};
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getDeleteUserUrl = (userId: string,) => {
 
-export const getDeleteUserMutationFetcher = (
-	userId: string,
-	options?: SecondParameter<typeof orvalFetch>,
+
+  
+
+  return `/v1/m/users/${userId}`
+}
+
+export const deleteUser = async (userId: string, options?: RequestInit): Promise<void> => {
+  
+  return orvalFetch<void>(getDeleteUserUrl(userId),
+  {      
+    ...options,
+    method: 'DELETE'
+    
+    
+  }
+);}
+
+
+
+
+export const getDeleteUserMutationFetcher = (userId: string, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, __: { arg: Arguments }) => {
+    return deleteUser(userId, options);
+  }
+}
+export const getDeleteUserMutationKey = (userId: string,) => [`/v1/m/users/${userId}`] as const;
+
+export type DeleteUserMutationResult = NonNullable<Awaited<ReturnType<typeof deleteUser>>>
+export type DeleteUserMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useDeleteUser = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  userId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof deleteUser>>, TError, Key, Arguments, Awaited<ReturnType<typeof deleteUser>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	return (_: Key, __: { arg: Arguments }) => {
-		return deleteUser(userId, options);
-	};
-};
-export const getDeleteUserMutationKey = (userId: string) =>
-	[`/v1/m/users/${userId}`] as const;
 
-export type DeleteUserMutationResult = NonNullable<
-	Awaited<ReturnType<typeof deleteUser>>
->;
-export type DeleteUserMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
 
-export const useDeleteUser = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	userId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof deleteUser>>,
-			TError,
-			Key,
-			Arguments,
-			Awaited<ReturnType<typeof deleteUser>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
+  const swrKey = swrOptions?.swrKey ?? getDeleteUserMutationKey(userId);
+  const swrFn = getDeleteUserMutationFetcher(userId, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getGetSnapshotUrl = (organizationId: string,
+    datasourceId: string,
+    experimentId: string,
+    snapshotId: string,) => {
+
+
+  
+
+  return `/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots/${snapshotId}`
+}
+
+export const getSnapshot = async (organizationId: string,
+    datasourceId: string,
+    experimentId: string,
+    snapshotId: string, options?: RequestInit): Promise<GetSnapshotResponse> => {
+  
+  return orvalFetch<GetSnapshotResponse>(getGetSnapshotUrl(organizationId,datasourceId,experimentId,snapshotId),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+export const getGetSnapshotKey = (organizationId: string,
+    datasourceId: string,
+    experimentId: string,
+    snapshotId: string,) => [`/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots/${snapshotId}`] as const;
+
+export type GetSnapshotQueryResult = NonNullable<Awaited<ReturnType<typeof getSnapshot>>>
+export type GetSnapshotQueryError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useGetSnapshot = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  organizationId: string,
+    datasourceId: string,
+    experimentId: string,
+    snapshotId: string, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof getSnapshot>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
 ) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
 
-	const swrKey = swrOptions?.swrKey ?? getDeleteUserMutationKey(userId);
-	const swrFn = getDeleteUserMutationFetcher(userId, requestOptions);
+  const isEnabled = swrOptions?.enabled !== false && !!(organizationId && datasourceId && experimentId && snapshotId)
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getGetSnapshotKey(organizationId,datasourceId,experimentId,snapshotId) : null);
+  const swrFn = () => getSnapshot(organizationId,datasourceId,experimentId,snapshotId, requestOptions)
 
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
 
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getGetSnapshotUrl = (
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-	snapshotId: string,
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getDeleteSnapshotUrl = (organizationId: string,
+    datasourceId: string,
+    experimentId: string,
+    snapshotId: string,
+    params?: DeleteSnapshotParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots/${snapshotId}?${stringifiedParams}` : `/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots/${snapshotId}`
+}
+
+export const deleteSnapshot = async (organizationId: string,
+    datasourceId: string,
+    experimentId: string,
+    snapshotId: string,
+    params?: DeleteSnapshotParams, options?: RequestInit): Promise<void> => {
+  
+  return orvalFetch<void>(getDeleteSnapshotUrl(organizationId,datasourceId,experimentId,snapshotId,params),
+  {      
+    ...options,
+    method: 'DELETE'
+    
+    
+  }
+);}
+
+
+
+
+export const getDeleteSnapshotMutationFetcher = (organizationId: string,
+    datasourceId: string,
+    experimentId: string,
+    snapshotId: string,
+    params?: DeleteSnapshotParams, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, __: { arg: Arguments }) => {
+    return deleteSnapshot(organizationId, datasourceId, experimentId, snapshotId, params, options);
+  }
+}
+export const getDeleteSnapshotMutationKey = (organizationId: string,
+    datasourceId: string,
+    experimentId: string,
+    snapshotId: string,
+    params?: DeleteSnapshotParams,) => [`/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots/${snapshotId}`, ...(params ? [params]: [])] as const;
+
+export type DeleteSnapshotMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSnapshot>>>
+export type DeleteSnapshotMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useDeleteSnapshot = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  organizationId: string,
+    datasourceId: string,
+    experimentId: string,
+    snapshotId: string,
+    params?: DeleteSnapshotParams, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof deleteSnapshot>>, TError, Key, Arguments, Awaited<ReturnType<typeof deleteSnapshot>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	return `/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots/${snapshotId}`;
-};
 
-export const getSnapshot = async (
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-	snapshotId: string,
-	options?: RequestInit,
-): Promise<GetSnapshotResponse> => {
-	return orvalFetch<GetSnapshotResponse>(
-		getGetSnapshotUrl(organizationId, datasourceId, experimentId, snapshotId),
-		{
-			...options,
-			method: "GET",
-		},
-	);
-};
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
 
-export const getGetSnapshotKey = (
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-	snapshotId: string,
-) =>
-	[
-		`/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots/${snapshotId}`,
-	] as const;
+  const swrKey = swrOptions?.swrKey ?? getDeleteSnapshotMutationKey(organizationId,datasourceId,experimentId,snapshotId,params);
+  const swrFn = getDeleteSnapshotMutationFetcher(organizationId,datasourceId,experimentId,snapshotId,params, requestOptions);
 
-export type GetSnapshotQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getSnapshot>>
->;
-export type GetSnapshotQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
 
-export const useGetSnapshot = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-	snapshotId: string,
-	options?: {
-		swr?: SWRConfiguration<Awaited<ReturnType<typeof getSnapshot>>, TError> & {
-			swrKey?: Key;
-			enabled?: boolean;
-		};
-		request?: SecondParameter<typeof orvalFetch>;
-	},
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getListSnapshotsUrl = (organizationId: string,
+    datasourceId: string,
+    experimentId: string,
+    params?: ListSnapshotsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots?${stringifiedParams}` : `/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots`
+}
+
+export const listSnapshots = async (organizationId: string,
+    datasourceId: string,
+    experimentId: string,
+    params?: ListSnapshotsParams, options?: RequestInit): Promise<ListSnapshotsResponse> => {
+  
+  return orvalFetch<ListSnapshotsResponse>(getListSnapshotsUrl(organizationId,datasourceId,experimentId,params),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+export const getListSnapshotsKey = (organizationId: string,
+    datasourceId: string,
+    experimentId: string,
+    params?: ListSnapshotsParams,) => [`/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots`, ...(params ? [params]: [])] as const;
+
+export type ListSnapshotsQueryResult = NonNullable<Awaited<ReturnType<typeof listSnapshots>>>
+export type ListSnapshotsQueryError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useListSnapshots = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  organizationId: string,
+    datasourceId: string,
+    experimentId: string,
+    params?: ListSnapshotsParams, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof listSnapshots>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
 ) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
 
-	const isEnabled =
-		swrOptions?.enabled !== false &&
-		!!(organizationId && datasourceId && experimentId && snapshotId);
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() =>
-			isEnabled
-				? getGetSnapshotKey(
-						organizationId,
-						datasourceId,
-						experimentId,
-						snapshotId,
-					)
-				: null);
-	const swrFn = () =>
-		getSnapshot(
-			organizationId,
-			datasourceId,
-			experimentId,
-			snapshotId,
-			requestOptions,
-		);
+  const isEnabled = swrOptions?.enabled !== false && !!(organizationId && datasourceId && experimentId)
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getListSnapshotsKey(organizationId,datasourceId,experimentId,params) : null);
+  const swrFn = () => listSnapshots(organizationId,datasourceId,experimentId,params, requestOptions)
 
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
 
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getDeleteSnapshotUrl = (
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-	snapshotId: string,
-	params?: DeleteSnapshotParams,
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getCreateSnapshotUrl = (organizationId: string,
+    datasourceId: string,
+    experimentId: string,) => {
+
+
+  
+
+  return `/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots`
+}
+
+export const createSnapshot = async (organizationId: string,
+    datasourceId: string,
+    experimentId: string, options?: RequestInit): Promise<CreateSnapshotResponse> => {
+  
+  return orvalFetch<CreateSnapshotResponse>(getCreateSnapshotUrl(organizationId,datasourceId,experimentId),
+  {      
+    ...options,
+    method: 'POST'
+    
+    
+  }
+);}
+
+
+
+
+export const getCreateSnapshotMutationFetcher = (organizationId: string,
+    datasourceId: string,
+    experimentId: string, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, __: { arg: Arguments }) => {
+    return createSnapshot(organizationId, datasourceId, experimentId, options);
+  }
+}
+export const getCreateSnapshotMutationKey = (organizationId: string,
+    datasourceId: string,
+    experimentId: string,) => [`/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots`] as const;
+
+export type CreateSnapshotMutationResult = NonNullable<Awaited<ReturnType<typeof createSnapshot>>>
+export type CreateSnapshotMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useCreateSnapshot = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  organizationId: string,
+    datasourceId: string,
+    experimentId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof createSnapshot>>, TError, Key, Arguments, Awaited<ReturnType<typeof createSnapshot>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	const normalizedParams = new URLSearchParams();
 
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
 
-	const stringifiedParams = normalizedParams.toString();
+  const swrKey = swrOptions?.swrKey ?? getCreateSnapshotMutationKey(organizationId,datasourceId,experimentId);
+  const swrFn = getCreateSnapshotMutationFetcher(organizationId,datasourceId,experimentId, requestOptions);
 
-	return stringifiedParams.length > 0
-		? `/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots/${snapshotId}?${stringifiedParams}`
-		: `/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots/${snapshotId}`;
-};
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
 
-export const deleteSnapshot = async (
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-	snapshotId: string,
-	params?: DeleteSnapshotParams,
-	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(
-		getDeleteSnapshotUrl(
-			organizationId,
-			datasourceId,
-			experimentId,
-			snapshotId,
-			params,
-		),
-		{
-			...options,
-			method: "DELETE",
-		},
-	);
-};
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getListOrganizationsUrl = (params?: ListOrganizationsParams,) => {
+  const normalizedParams = new URLSearchParams();
 
-export const getDeleteSnapshotMutationFetcher = (
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-	snapshotId: string,
-	params?: DeleteSnapshotParams,
-	options?: SecondParameter<typeof orvalFetch>,
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/v1/m/organizations?${stringifiedParams}` : `/v1/m/organizations`
+}
+
+export const listOrganizations = async (params?: ListOrganizationsParams, options?: RequestInit): Promise<ListOrganizationsResponse> => {
+  
+  return orvalFetch<ListOrganizationsResponse>(getListOrganizationsUrl(params),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+export const getListOrganizationsKey = (params?: ListOrganizationsParams,) => [`/v1/m/organizations`, ...(params ? [params]: [])] as const;
+
+export type ListOrganizationsQueryResult = NonNullable<Awaited<ReturnType<typeof listOrganizations>>>
+export type ListOrganizationsQueryError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useListOrganizations = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  params?: ListOrganizationsParams, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof listOrganizations>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
 ) => {
-	return (_: Key, __: { arg: Arguments }) => {
-		return deleteSnapshot(
-			organizationId,
-			datasourceId,
-			experimentId,
-			snapshotId,
-			params,
-			options,
-		);
-	};
-};
-export const getDeleteSnapshotMutationKey = (
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-	snapshotId: string,
-	params?: DeleteSnapshotParams,
-) =>
-	[
-		`/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots/${snapshotId}`,
-		...(params ? [params] : []),
-	] as const;
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
 
-export type DeleteSnapshotMutationResult = NonNullable<
-	Awaited<ReturnType<typeof deleteSnapshot>>
->;
-export type DeleteSnapshotMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
+  const isEnabled = swrOptions?.enabled !== false
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getListOrganizationsKey(params) : null);
+  const swrFn = () => listOrganizations(params, requestOptions)
 
-export const useDeleteSnapshot = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-	snapshotId: string,
-	params?: DeleteSnapshotParams,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof deleteSnapshot>>,
-			TError,
-			Key,
-			Arguments,
-			Awaited<ReturnType<typeof deleteSnapshot>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
 
-	const swrKey =
-		swrOptions?.swrKey ??
-		getDeleteSnapshotMutationKey(
-			organizationId,
-			datasourceId,
-			experimentId,
-			snapshotId,
-			params,
-		);
-	const swrFn = getDeleteSnapshotMutationFetcher(
-		organizationId,
-		datasourceId,
-		experimentId,
-		snapshotId,
-		params,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getListSnapshotsUrl = (
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-	params?: ListSnapshotsParams,
-) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
-
-	const stringifiedParams = normalizedParams.toString();
-
-	return stringifiedParams.length > 0
-		? `/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots?${stringifiedParams}`
-		: `/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots`;
-};
-
-export const listSnapshots = async (
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-	params?: ListSnapshotsParams,
-	options?: RequestInit,
-): Promise<ListSnapshotsResponse> => {
-	return orvalFetch<ListSnapshotsResponse>(
-		getListSnapshotsUrl(organizationId, datasourceId, experimentId, params),
-		{
-			...options,
-			method: "GET",
-		},
-	);
-};
-
-export const getListSnapshotsKey = (
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-	params?: ListSnapshotsParams,
-) =>
-	[
-		`/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots`,
-		...(params ? [params] : []),
-	] as const;
-
-export type ListSnapshotsQueryResult = NonNullable<
-	Awaited<ReturnType<typeof listSnapshots>>
->;
-export type ListSnapshotsQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useListSnapshots = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-	params?: ListSnapshotsParams,
-	options?: {
-		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof listSnapshots>>,
-			TError
-		> & { swrKey?: Key; enabled?: boolean };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled =
-		swrOptions?.enabled !== false &&
-		!!(organizationId && datasourceId && experimentId);
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() =>
-			isEnabled
-				? getListSnapshotsKey(
-						organizationId,
-						datasourceId,
-						experimentId,
-						params,
-					)
-				: null);
-	const swrFn = () =>
-		listSnapshots(
-			organizationId,
-			datasourceId,
-			experimentId,
-			params,
-			requestOptions,
-		);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getCreateSnapshotUrl = (
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-) => {
-	return `/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots`;
-};
-
-export const createSnapshot = async (
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-	options?: RequestInit,
-): Promise<CreateSnapshotResponse> => {
-	return orvalFetch<CreateSnapshotResponse>(
-		getCreateSnapshotUrl(organizationId, datasourceId, experimentId),
-		{
-			...options,
-			method: "POST",
-		},
-	);
-};
-
-export const getCreateSnapshotMutationFetcher = (
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (_: Key, __: { arg: Arguments }) => {
-		return createSnapshot(organizationId, datasourceId, experimentId, options);
-	};
-};
-export const getCreateSnapshotMutationKey = (
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-) =>
-	[
-		`/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots`,
-	] as const;
-
-export type CreateSnapshotMutationResult = NonNullable<
-	Awaited<ReturnType<typeof createSnapshot>>
->;
-export type CreateSnapshotMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useCreateSnapshot = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof createSnapshot>>,
-			TError,
-			Key,
-			Arguments,
-			Awaited<ReturnType<typeof createSnapshot>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ??
-		getCreateSnapshotMutationKey(organizationId, datasourceId, experimentId);
-	const swrFn = getCreateSnapshotMutationFetcher(
-		organizationId,
-		datasourceId,
-		experimentId,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getListOrganizationsUrl = (params?: ListOrganizationsParams) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
-
-	const stringifiedParams = normalizedParams.toString();
-
-	return stringifiedParams.length > 0
-		? `/v1/m/organizations?${stringifiedParams}`
-		: `/v1/m/organizations`;
-};
-
-export const listOrganizations = async (
-	params?: ListOrganizationsParams,
-	options?: RequestInit,
-): Promise<ListOrganizationsResponse> => {
-	return orvalFetch<ListOrganizationsResponse>(
-		getListOrganizationsUrl(params),
-		{
-			...options,
-			method: "GET",
-		},
-	);
-};
-
-export const getListOrganizationsKey = (params?: ListOrganizationsParams) =>
-	[`/v1/m/organizations`, ...(params ? [params] : [])] as const;
-
-export type ListOrganizationsQueryResult = NonNullable<
-	Awaited<ReturnType<typeof listOrganizations>>
->;
-export type ListOrganizationsQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useListOrganizations = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	params?: ListOrganizationsParams,
-	options?: {
-		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof listOrganizations>>,
-			TError
-		> & { swrKey?: Key; enabled?: boolean };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled = swrOptions?.enabled !== false;
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() => (isEnabled ? getListOrganizationsKey(params) : null));
-	const swrFn = () => listOrganizations(params, requestOptions);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
+  return {
+    swrKey,
+    ...query
+  }
+}
 export const getCreateOrganizationsUrl = () => {
-	return `/v1/m/organizations`;
-};
-
-export const createOrganizations = async (
-	createOrganizationRequest: CreateOrganizationRequest,
-	options?: RequestInit,
-): Promise<CreateOrganizationResponse> => {
-	return orvalFetch<CreateOrganizationResponse>(getCreateOrganizationsUrl(), {
-		...options,
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(createOrganizationRequest),
-	});
-};
-
-export const getCreateOrganizationsMutationFetcher = (
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (_: Key, { arg }: { arg: CreateOrganizationRequest }) => {
-		return createOrganizations(arg, options);
-	};
-};
-export const getCreateOrganizationsMutationKey = () =>
-	[`/v1/m/organizations`] as const;
-
-export type CreateOrganizationsMutationResult = NonNullable<
-	Awaited<ReturnType<typeof createOrganizations>>
->;
-export type CreateOrganizationsMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useCreateOrganizations = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(options?: {
-	swr?: SWRMutationConfiguration<
-		Awaited<ReturnType<typeof createOrganizations>>,
-		TError,
-		Key,
-		CreateOrganizationRequest,
-		Awaited<ReturnType<typeof createOrganizations>>
-	> & { swrKey?: string };
-	request?: SecondParameter<typeof orvalFetch>;
-}) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey = swrOptions?.swrKey ?? getCreateOrganizationsMutationKey();
-	const swrFn = getCreateOrganizationsMutationFetcher(requestOptions);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getAddWebhookToOrganizationUrl = (organizationId: string) => {
-	return `/v1/m/organizations/${organizationId}/webhooks`;
-};
-
-export const addWebhookToOrganization = async (
-	organizationId: string,
-	addWebhookToOrganizationRequest: AddWebhookToOrganizationRequest,
-	options?: RequestInit,
-): Promise<AddWebhookToOrganizationResponse> => {
-	return orvalFetch<AddWebhookToOrganizationResponse>(
-		getAddWebhookToOrganizationUrl(organizationId),
-		{
-			...options,
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...options?.headers },
-			body: JSON.stringify(addWebhookToOrganizationRequest),
-		},
-	);
-};
-
-export const getAddWebhookToOrganizationMutationFetcher = (
-	organizationId: string,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (_: Key, { arg }: { arg: AddWebhookToOrganizationRequest }) => {
-		return addWebhookToOrganization(organizationId, arg, options);
-	};
-};
-export const getAddWebhookToOrganizationMutationKey = (
-	organizationId: string,
-) => [`/v1/m/organizations/${organizationId}/webhooks`] as const;
-
-export type AddWebhookToOrganizationMutationResult = NonNullable<
-	Awaited<ReturnType<typeof addWebhookToOrganization>>
->;
-export type AddWebhookToOrganizationMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useAddWebhookToOrganization = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	organizationId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof addWebhookToOrganization>>,
-			TError,
-			Key,
-			AddWebhookToOrganizationRequest,
-			Awaited<ReturnType<typeof addWebhookToOrganization>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ??
-		getAddWebhookToOrganizationMutationKey(organizationId);
-	const swrFn = getAddWebhookToOrganizationMutationFetcher(
-		organizationId,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getListOrganizationWebhooksUrl = (organizationId: string) => {
-	return `/v1/m/organizations/${organizationId}/webhooks`;
-};
-
-export const listOrganizationWebhooks = async (
-	organizationId: string,
-	options?: RequestInit,
-): Promise<ListWebhooksResponse> => {
-	return orvalFetch<ListWebhooksResponse>(
-		getListOrganizationWebhooksUrl(organizationId),
-		{
-			...options,
-			method: "GET",
-		},
-	);
-};
-
-export const getListOrganizationWebhooksKey = (organizationId: string) =>
-	[`/v1/m/organizations/${organizationId}/webhooks`] as const;
-
-export type ListOrganizationWebhooksQueryResult = NonNullable<
-	Awaited<ReturnType<typeof listOrganizationWebhooks>>
->;
-export type ListOrganizationWebhooksQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useListOrganizationWebhooks = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	organizationId: string,
-	options?: {
-		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof listOrganizationWebhooks>>,
-			TError
-		> & { swrKey?: Key; enabled?: boolean };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled = swrOptions?.enabled !== false && !!organizationId;
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() => (isEnabled ? getListOrganizationWebhooksKey(organizationId) : null));
-	const swrFn = () => listOrganizationWebhooks(organizationId, requestOptions);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getUpdateOrganizationWebhookUrl = (
-	organizationId: string,
-	webhookId: string,
-) => {
-	return `/v1/m/organizations/${organizationId}/webhooks/${webhookId}`;
-};
-
-export const updateOrganizationWebhook = async (
-	organizationId: string,
-	webhookId: string,
-	updateOrganizationWebhookRequest: UpdateOrganizationWebhookRequest,
-	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(
-		getUpdateOrganizationWebhookUrl(organizationId, webhookId),
-		{
-			...options,
-			method: "PATCH",
-			headers: { "Content-Type": "application/json", ...options?.headers },
-			body: JSON.stringify(updateOrganizationWebhookRequest),
-		},
-	);
-};
-
-export const getUpdateOrganizationWebhookMutationFetcher = (
-	organizationId: string,
-	webhookId: string,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (_: Key, { arg }: { arg: UpdateOrganizationWebhookRequest }) => {
-		return updateOrganizationWebhook(organizationId, webhookId, arg, options);
-	};
-};
-export const getUpdateOrganizationWebhookMutationKey = (
-	organizationId: string,
-	webhookId: string,
-) => [`/v1/m/organizations/${organizationId}/webhooks/${webhookId}`] as const;
-
-export type UpdateOrganizationWebhookMutationResult = NonNullable<
-	Awaited<ReturnType<typeof updateOrganizationWebhook>>
->;
-export type UpdateOrganizationWebhookMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useUpdateOrganizationWebhook = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	organizationId: string,
-	webhookId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof updateOrganizationWebhook>>,
-			TError,
-			Key,
-			UpdateOrganizationWebhookRequest,
-			Awaited<ReturnType<typeof updateOrganizationWebhook>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ??
-		getUpdateOrganizationWebhookMutationKey(organizationId, webhookId);
-	const swrFn = getUpdateOrganizationWebhookMutationFetcher(
-		organizationId,
-		webhookId,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getDeleteWebhookFromOrganizationUrl = (
-	organizationId: string,
-	webhookId: string,
-	params?: DeleteWebhookFromOrganizationParams,
-) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
-
-	const stringifiedParams = normalizedParams.toString();
-
-	return stringifiedParams.length > 0
-		? `/v1/m/organizations/${organizationId}/webhooks/${webhookId}?${stringifiedParams}`
-		: `/v1/m/organizations/${organizationId}/webhooks/${webhookId}`;
-};
-
-export const deleteWebhookFromOrganization = async (
-	organizationId: string,
-	webhookId: string,
-	params?: DeleteWebhookFromOrganizationParams,
-	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(
-		getDeleteWebhookFromOrganizationUrl(organizationId, webhookId, params),
-		{
-			...options,
-			method: "DELETE",
-		},
-	);
-};
-
-export const getDeleteWebhookFromOrganizationMutationFetcher = (
-	organizationId: string,
-	webhookId: string,
-	params?: DeleteWebhookFromOrganizationParams,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (_: Key, __: { arg: Arguments }) => {
-		return deleteWebhookFromOrganization(
-			organizationId,
-			webhookId,
-			params,
-			options,
-		);
-	};
-};
-export const getDeleteWebhookFromOrganizationMutationKey = (
-	organizationId: string,
-	webhookId: string,
-	params?: DeleteWebhookFromOrganizationParams,
-) =>
-	[
-		`/v1/m/organizations/${organizationId}/webhooks/${webhookId}`,
-		...(params ? [params] : []),
-	] as const;
-
-export type DeleteWebhookFromOrganizationMutationResult = NonNullable<
-	Awaited<ReturnType<typeof deleteWebhookFromOrganization>>
->;
-export type DeleteWebhookFromOrganizationMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useDeleteWebhookFromOrganization = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	organizationId: string,
-	webhookId: string,
-	params?: DeleteWebhookFromOrganizationParams,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof deleteWebhookFromOrganization>>,
-			TError,
-			Key,
-			Arguments,
-			Awaited<ReturnType<typeof deleteWebhookFromOrganization>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ??
-		getDeleteWebhookFromOrganizationMutationKey(
-			organizationId,
-			webhookId,
-			params,
-		);
-	const swrFn = getDeleteWebhookFromOrganizationMutationFetcher(
-		organizationId,
-		webhookId,
-		params,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getRegenerateWebhookAuthTokenUrl = (
-	organizationId: string,
-	webhookId: string,
-) => {
-	return `/v1/m/organizations/${organizationId}/webhooks/${webhookId}/authtoken`;
-};
-
-export const regenerateWebhookAuthToken = async (
-	organizationId: string,
-	webhookId: string,
-	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(
-		getRegenerateWebhookAuthTokenUrl(organizationId, webhookId),
-		{
-			...options,
-			method: "POST",
-		},
-	);
-};
-
-export const getRegenerateWebhookAuthTokenMutationFetcher = (
-	organizationId: string,
-	webhookId: string,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (_: Key, __: { arg: Arguments }) => {
-		return regenerateWebhookAuthToken(organizationId, webhookId, options);
-	};
-};
-export const getRegenerateWebhookAuthTokenMutationKey = (
-	organizationId: string,
-	webhookId: string,
-) =>
-	[
-		`/v1/m/organizations/${organizationId}/webhooks/${webhookId}/authtoken`,
-	] as const;
-
-export type RegenerateWebhookAuthTokenMutationResult = NonNullable<
-	Awaited<ReturnType<typeof regenerateWebhookAuthToken>>
->;
-export type RegenerateWebhookAuthTokenMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useRegenerateWebhookAuthToken = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	organizationId: string,
-	webhookId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof regenerateWebhookAuthToken>>,
-			TError,
-			Key,
-			Arguments,
-			Awaited<ReturnType<typeof regenerateWebhookAuthToken>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ??
-		getRegenerateWebhookAuthTokenMutationKey(organizationId, webhookId);
-	const swrFn = getRegenerateWebhookAuthTokenMutationFetcher(
-		organizationId,
-		webhookId,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getListOrganizationEventsUrl = (
-	organizationId: string,
-	params?: ListOrganizationEventsParams,
-) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
-
-	const stringifiedParams = normalizedParams.toString();
-
-	return stringifiedParams.length > 0
-		? `/v1/m/organizations/${organizationId}/events?${stringifiedParams}`
-		: `/v1/m/organizations/${organizationId}/events`;
-};
-
-export const listOrganizationEvents = async (
-	organizationId: string,
-	params?: ListOrganizationEventsParams,
-	options?: RequestInit,
-): Promise<ListOrganizationEventsResponse> => {
-	return orvalFetch<ListOrganizationEventsResponse>(
-		getListOrganizationEventsUrl(organizationId, params),
-		{
-			...options,
-			method: "GET",
-		},
-	);
-};
-
-export const getListOrganizationEventsKey = (
-	organizationId: string,
-	params?: ListOrganizationEventsParams,
-) =>
-	[
-		`/v1/m/organizations/${organizationId}/events`,
-		...(params ? [params] : []),
-	] as const;
-
-export type ListOrganizationEventsQueryResult = NonNullable<
-	Awaited<ReturnType<typeof listOrganizationEvents>>
->;
-export type ListOrganizationEventsQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useListOrganizationEvents = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	organizationId: string,
-	params?: ListOrganizationEventsParams,
-	options?: {
-		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof listOrganizationEvents>>,
-			TError
-		> & { swrKey?: Key; enabled?: boolean };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled = swrOptions?.enabled !== false && !!organizationId;
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() =>
-			isEnabled ? getListOrganizationEventsKey(organizationId, params) : null);
-	const swrFn = () =>
-		listOrganizationEvents(organizationId, params, requestOptions);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getResendOrganizationEventUrl = (
-	organizationId: string,
-	eventId: string,
-) => {
-	return `/v1/m/organizations/${organizationId}/events/${eventId}/resend`;
-};
-
-export const resendOrganizationEvent = async (
-	organizationId: string,
-	eventId: string,
-	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(
-		getResendOrganizationEventUrl(organizationId, eventId),
-		{
-			...options,
-			method: "POST",
-		},
-	);
-};
-
-export const getResendOrganizationEventMutationFetcher = (
-	organizationId: string,
-	eventId: string,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (_: Key, __: { arg: Arguments }) => {
-		return resendOrganizationEvent(organizationId, eventId, options);
-	};
-};
-export const getResendOrganizationEventMutationKey = (
-	organizationId: string,
-	eventId: string,
-) =>
-	[`/v1/m/organizations/${organizationId}/events/${eventId}/resend`] as const;
-
-export type ResendOrganizationEventMutationResult = NonNullable<
-	Awaited<ReturnType<typeof resendOrganizationEvent>>
->;
-export type ResendOrganizationEventMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useResendOrganizationEvent = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	organizationId: string,
-	eventId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof resendOrganizationEvent>>,
-			TError,
-			Key,
-			Arguments,
-			Awaited<ReturnType<typeof resendOrganizationEvent>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ??
-		getResendOrganizationEventMutationKey(organizationId, eventId);
-	const swrFn = getResendOrganizationEventMutationFetcher(
-		organizationId,
-		eventId,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getAddMemberToOrganizationUrl = (organizationId: string) => {
-	return `/v1/m/organizations/${organizationId}/members`;
-};
-
-export const addMemberToOrganization = async (
-	organizationId: string,
-	addMemberToOrganizationRequest: AddMemberToOrganizationRequest,
-	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(getAddMemberToOrganizationUrl(organizationId), {
-		...options,
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(addMemberToOrganizationRequest),
-	});
-};
-
-export const getAddMemberToOrganizationMutationFetcher = (
-	organizationId: string,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (_: Key, { arg }: { arg: AddMemberToOrganizationRequest }) => {
-		return addMemberToOrganization(organizationId, arg, options);
-	};
-};
-export const getAddMemberToOrganizationMutationKey = (organizationId: string) =>
-	[`/v1/m/organizations/${organizationId}/members`] as const;
-
-export type AddMemberToOrganizationMutationResult = NonNullable<
-	Awaited<ReturnType<typeof addMemberToOrganization>>
->;
-export type AddMemberToOrganizationMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useAddMemberToOrganization = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	organizationId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof addMemberToOrganization>>,
-			TError,
-			Key,
-			AddMemberToOrganizationRequest,
-			Awaited<ReturnType<typeof addMemberToOrganization>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ?? getAddMemberToOrganizationMutationKey(organizationId);
-	const swrFn = getAddMemberToOrganizationMutationFetcher(
-		organizationId,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getRemoveMemberFromOrganizationUrl = (
-	organizationId: string,
-	userId: string,
-	params?: RemoveMemberFromOrganizationParams,
-) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
-
-	const stringifiedParams = normalizedParams.toString();
-
-	return stringifiedParams.length > 0
-		? `/v1/m/organizations/${organizationId}/members/${userId}?${stringifiedParams}`
-		: `/v1/m/organizations/${organizationId}/members/${userId}`;
-};
-
-export const removeMemberFromOrganization = async (
-	organizationId: string,
-	userId: string,
-	params?: RemoveMemberFromOrganizationParams,
-	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(
-		getRemoveMemberFromOrganizationUrl(organizationId, userId, params),
-		{
-			...options,
-			method: "DELETE",
-		},
-	);
-};
-
-export const getRemoveMemberFromOrganizationMutationFetcher = (
-	organizationId: string,
-	userId: string,
-	params?: RemoveMemberFromOrganizationParams,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (_: Key, __: { arg: Arguments }) => {
-		return removeMemberFromOrganization(
-			organizationId,
-			userId,
-			params,
-			options,
-		);
-	};
-};
-export const getRemoveMemberFromOrganizationMutationKey = (
-	organizationId: string,
-	userId: string,
-	params?: RemoveMemberFromOrganizationParams,
-) =>
-	[
-		`/v1/m/organizations/${organizationId}/members/${userId}`,
-		...(params ? [params] : []),
-	] as const;
-
-export type RemoveMemberFromOrganizationMutationResult = NonNullable<
-	Awaited<ReturnType<typeof removeMemberFromOrganization>>
->;
-export type RemoveMemberFromOrganizationMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useRemoveMemberFromOrganization = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	organizationId: string,
-	userId: string,
-	params?: RemoveMemberFromOrganizationParams,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof removeMemberFromOrganization>>,
-			TError,
-			Key,
-			Arguments,
-			Awaited<ReturnType<typeof removeMemberFromOrganization>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ??
-		getRemoveMemberFromOrganizationMutationKey(organizationId, userId, params);
-	const swrFn = getRemoveMemberFromOrganizationMutationFetcher(
-		organizationId,
-		userId,
-		params,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getUpdateOrganizationUrl = (organizationId: string) => {
-	return `/v1/m/organizations/${organizationId}`;
-};
-
-export const updateOrganization = async (
-	organizationId: string,
-	updateOrganizationRequest: UpdateOrganizationRequest,
-	options?: RequestInit,
-): Promise<unknown> => {
-	return orvalFetch<unknown>(getUpdateOrganizationUrl(organizationId), {
-		...options,
-		method: "PATCH",
-		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(updateOrganizationRequest),
-	});
-};
-
-export const getUpdateOrganizationMutationFetcher = (
-	organizationId: string,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (_: Key, { arg }: { arg: UpdateOrganizationRequest }) => {
-		return updateOrganization(organizationId, arg, options);
-	};
-};
-export const getUpdateOrganizationMutationKey = (organizationId: string) =>
-	[`/v1/m/organizations/${organizationId}`] as const;
-
-export type UpdateOrganizationMutationResult = NonNullable<
-	Awaited<ReturnType<typeof updateOrganization>>
->;
-export type UpdateOrganizationMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useUpdateOrganization = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	organizationId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof updateOrganization>>,
-			TError,
-			Key,
-			UpdateOrganizationRequest,
-			Awaited<ReturnType<typeof updateOrganization>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ?? getUpdateOrganizationMutationKey(organizationId);
-	const swrFn = getUpdateOrganizationMutationFetcher(
-		organizationId,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getGetOrganizationUrl = (organizationId: string) => {
-	return `/v1/m/organizations/${organizationId}`;
-};
-
-export const getOrganization = async (
-	organizationId: string,
-	options?: RequestInit,
-): Promise<GetOrganizationResponse> => {
-	return orvalFetch<GetOrganizationResponse>(
-		getGetOrganizationUrl(organizationId),
-		{
-			...options,
-			method: "GET",
-		},
-	);
-};
-
-export const getGetOrganizationKey = (organizationId: string) =>
-	[`/v1/m/organizations/${organizationId}`] as const;
-
-export type GetOrganizationQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getOrganization>>
->;
-export type GetOrganizationQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useGetOrganization = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	organizationId: string,
-	options?: {
-		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof getOrganization>>,
-			TError
-		> & { swrKey?: Key; enabled?: boolean };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled = swrOptions?.enabled !== false && !!organizationId;
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() => (isEnabled ? getGetOrganizationKey(organizationId) : null));
-	const swrFn = () => getOrganization(organizationId, requestOptions);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getListOrganizationDatasourcesUrl = (organizationId: string) => {
-	return `/v1/m/organizations/${organizationId}/datasources`;
-};
-
-export const listOrganizationDatasources = async (
-	organizationId: string,
-	options?: RequestInit,
-): Promise<ListDatasourcesResponse> => {
-	return orvalFetch<ListDatasourcesResponse>(
-		getListOrganizationDatasourcesUrl(organizationId),
-		{
-			...options,
-			method: "GET",
-		},
-	);
-};
-
-export const getListOrganizationDatasourcesKey = (organizationId: string) =>
-	[`/v1/m/organizations/${organizationId}/datasources`] as const;
-
-export type ListOrganizationDatasourcesQueryResult = NonNullable<
-	Awaited<ReturnType<typeof listOrganizationDatasources>>
->;
-export type ListOrganizationDatasourcesQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useListOrganizationDatasources = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	organizationId: string,
-	options?: {
-		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof listOrganizationDatasources>>,
-			TError
-		> & { swrKey?: Key; enabled?: boolean };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled = swrOptions?.enabled !== false && !!organizationId;
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() =>
-			isEnabled ? getListOrganizationDatasourcesKey(organizationId) : null);
-	const swrFn = () =>
-		listOrganizationDatasources(organizationId, requestOptions);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getCreateDatasourceUrl = (params?: CreateDatasourceParams) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
-
-	const stringifiedParams = normalizedParams.toString();
-
-	return stringifiedParams.length > 0
-		? `/v1/m/datasources?${stringifiedParams}`
-		: `/v1/m/datasources`;
-};
-
-export const createDatasource = async (
-	createDatasourceRequest: CreateDatasourceRequest,
-	params?: CreateDatasourceParams,
-	options?: RequestInit,
-): Promise<CreateDatasourceResponse> => {
-	return orvalFetch<CreateDatasourceResponse>(getCreateDatasourceUrl(params), {
-		...options,
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(createDatasourceRequest),
-	});
-};
-
-export const getCreateDatasourceMutationFetcher = (
-	params?: CreateDatasourceParams,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (_: Key, { arg }: { arg: CreateDatasourceRequest }) => {
-		return createDatasource(arg, params, options);
-	};
-};
-export const getCreateDatasourceMutationKey = (
-	params?: CreateDatasourceParams,
-) => [`/v1/m/datasources`, ...(params ? [params] : [])] as const;
-
-export type CreateDatasourceMutationResult = NonNullable<
-	Awaited<ReturnType<typeof createDatasource>>
->;
-export type CreateDatasourceMutationError = ErrorType<
-	HTTPExceptionError | XHTTPValidationError | MessageError
->;
-
-export const useCreateDatasource = <
-	TError = ErrorType<HTTPExceptionError | XHTTPValidationError | MessageError>,
->(
-	params?: CreateDatasourceParams,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof createDatasource>>,
-			TError,
-			Key,
-			CreateDatasourceRequest,
-			Awaited<ReturnType<typeof createDatasource>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey = swrOptions?.swrKey ?? getCreateDatasourceMutationKey(params);
-	const swrFn = getCreateDatasourceMutationFetcher(params, requestOptions);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getUpdateDatasourceUrl = (datasourceId: string) => {
-	return `/v1/m/datasources/${datasourceId}`;
-};
-
-export const updateDatasource = async (
-	datasourceId: string,
-	updateDatasourceRequest: UpdateDatasourceRequest,
-	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(getUpdateDatasourceUrl(datasourceId), {
-		...options,
-		method: "PATCH",
-		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(updateDatasourceRequest),
-	});
-};
-
-export const getUpdateDatasourceMutationFetcher = (
-	datasourceId: string,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (_: Key, { arg }: { arg: UpdateDatasourceRequest }) => {
-		return updateDatasource(datasourceId, arg, options);
-	};
-};
-export const getUpdateDatasourceMutationKey = (datasourceId: string) =>
-	[`/v1/m/datasources/${datasourceId}`] as const;
-
-export type UpdateDatasourceMutationResult = NonNullable<
-	Awaited<ReturnType<typeof updateDatasource>>
->;
-export type UpdateDatasourceMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useUpdateDatasource = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof updateDatasource>>,
-			TError,
-			Key,
-			UpdateDatasourceRequest,
-			Awaited<ReturnType<typeof updateDatasource>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ?? getUpdateDatasourceMutationKey(datasourceId);
-	const swrFn = getUpdateDatasourceMutationFetcher(
-		datasourceId,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getGetDatasourceUrl = (datasourceId: string) => {
-	return `/v1/m/datasources/${datasourceId}`;
-};
-
-export const getDatasource = async (
-	datasourceId: string,
-	options?: RequestInit,
-): Promise<GetDatasourceResponse> => {
-	return orvalFetch<GetDatasourceResponse>(getGetDatasourceUrl(datasourceId), {
-		...options,
-		method: "GET",
-	});
-};
-
-export const getGetDatasourceKey = (datasourceId: string) =>
-	[`/v1/m/datasources/${datasourceId}`] as const;
-
-export type GetDatasourceQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getDatasource>>
->;
-export type GetDatasourceQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useGetDatasource = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	options?: {
-		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof getDatasource>>,
-			TError
-		> & { swrKey?: Key; enabled?: boolean };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled = swrOptions?.enabled !== false && !!datasourceId;
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() => (isEnabled ? getGetDatasourceKey(datasourceId) : null));
-	const swrFn = () => getDatasource(datasourceId, requestOptions);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getInspectDatasourceUrl = (
-	datasourceId: string,
-	params?: InspectDatasourceParams,
-) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
-
-	const stringifiedParams = normalizedParams.toString();
-
-	return stringifiedParams.length > 0
-		? `/v1/m/datasources/${datasourceId}/inspect?${stringifiedParams}`
-		: `/v1/m/datasources/${datasourceId}/inspect`;
-};
-
-export const inspectDatasource = async (
-	datasourceId: string,
-	params?: InspectDatasourceParams,
-	options?: RequestInit,
-): Promise<InspectDatasourceResponse> => {
-	return orvalFetch<InspectDatasourceResponse>(
-		getInspectDatasourceUrl(datasourceId, params),
-		{
-			...options,
-			method: "GET",
-		},
-	);
-};
-
-export const getInspectDatasourceKey = (
-	datasourceId: string,
-	params?: InspectDatasourceParams,
-) =>
-	[
-		`/v1/m/datasources/${datasourceId}/inspect`,
-		...(params ? [params] : []),
-	] as const;
-
-export type InspectDatasourceQueryResult = NonNullable<
-	Awaited<ReturnType<typeof inspectDatasource>>
->;
-export type InspectDatasourceQueryError = ErrorType<
-	HTTPExceptionError | MessageError | XHTTPValidationError
->;
-
-export const useInspectDatasource = <
-	TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>,
->(
-	datasourceId: string,
-	params?: InspectDatasourceParams,
-	options?: {
-		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof inspectDatasource>>,
-			TError
-		> & { swrKey?: Key; enabled?: boolean };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled = swrOptions?.enabled !== false && !!datasourceId;
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() => (isEnabled ? getInspectDatasourceKey(datasourceId, params) : null));
-	const swrFn = () => inspectDatasource(datasourceId, params, requestOptions);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getInspectTableInDatasourceUrl = (
-	datasourceId: string,
-	tableName: string,
-	params?: InspectTableInDatasourceParams,
-) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
-
-	const stringifiedParams = normalizedParams.toString();
-
-	return stringifiedParams.length > 0
-		? `/v1/m/datasources/${datasourceId}/inspect/${tableName}?${stringifiedParams}`
-		: `/v1/m/datasources/${datasourceId}/inspect/${tableName}`;
-};
-
-export const inspectTableInDatasource = async (
-	datasourceId: string,
-	tableName: string,
-	params?: InspectTableInDatasourceParams,
-	options?: RequestInit,
-): Promise<InspectDatasourceTableResponse> => {
-	return orvalFetch<InspectDatasourceTableResponse>(
-		getInspectTableInDatasourceUrl(datasourceId, tableName, params),
-		{
-			...options,
-			method: "GET",
-		},
-	);
-};
-
-export const getInspectTableInDatasourceKey = (
-	datasourceId: string,
-	tableName: string,
-	params?: InspectTableInDatasourceParams,
-) =>
-	[
-		`/v1/m/datasources/${datasourceId}/inspect/${tableName}`,
-		...(params ? [params] : []),
-	] as const;
-
-export type InspectTableInDatasourceQueryResult = NonNullable<
-	Awaited<ReturnType<typeof inspectTableInDatasource>>
->;
-export type InspectTableInDatasourceQueryError = ErrorType<
-	HTTPExceptionError | MessageError | XHTTPValidationError
->;
-
-export const useInspectTableInDatasource = <
-	TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>,
->(
-	datasourceId: string,
-	tableName: string,
-	params?: InspectTableInDatasourceParams,
-	options?: {
-		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof inspectTableInDatasource>>,
-			TError
-		> & { swrKey?: Key; enabled?: boolean };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled =
-		swrOptions?.enabled !== false && !!(datasourceId && tableName);
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() =>
-			isEnabled
-				? getInspectTableInDatasourceKey(datasourceId, tableName, params)
-				: null);
-	const swrFn = () =>
-		inspectTableInDatasource(datasourceId, tableName, params, requestOptions);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getDeleteDatasourceUrl = (
-	organizationId: string,
-	datasourceId: string,
-	params?: DeleteDatasourceParams,
-) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
-
-	const stringifiedParams = normalizedParams.toString();
-
-	return stringifiedParams.length > 0
-		? `/v1/m/organizations/${organizationId}/datasources/${datasourceId}?${stringifiedParams}`
-		: `/v1/m/organizations/${organizationId}/datasources/${datasourceId}`;
-};
-
-export const deleteDatasource = async (
-	organizationId: string,
-	datasourceId: string,
-	params?: DeleteDatasourceParams,
-	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(
-		getDeleteDatasourceUrl(organizationId, datasourceId, params),
-		{
-			...options,
-			method: "DELETE",
-		},
-	);
-};
-
-export const getDeleteDatasourceMutationFetcher = (
-	organizationId: string,
-	datasourceId: string,
-	params?: DeleteDatasourceParams,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (_: Key, __: { arg: Arguments }) => {
-		return deleteDatasource(organizationId, datasourceId, params, options);
-	};
-};
-export const getDeleteDatasourceMutationKey = (
-	organizationId: string,
-	datasourceId: string,
-	params?: DeleteDatasourceParams,
-) =>
-	[
-		`/v1/m/organizations/${organizationId}/datasources/${datasourceId}`,
-		...(params ? [params] : []),
-	] as const;
-
-export type DeleteDatasourceMutationResult = NonNullable<
-	Awaited<ReturnType<typeof deleteDatasource>>
->;
-export type DeleteDatasourceMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useDeleteDatasource = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	organizationId: string,
-	datasourceId: string,
-	params?: DeleteDatasourceParams,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof deleteDatasource>>,
-			TError,
-			Key,
-			Arguments,
-			Awaited<ReturnType<typeof deleteDatasource>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ??
-		getDeleteDatasourceMutationKey(organizationId, datasourceId, params);
-	const swrFn = getDeleteDatasourceMutationFetcher(
-		organizationId,
-		datasourceId,
-		params,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getListParticipantTypesUrl = (datasourceId: string) => {
-	return `/v1/m/datasources/${datasourceId}/participants`;
-};
-
-export const listParticipantTypes = async (
-	datasourceId: string,
-	options?: RequestInit,
-): Promise<ListParticipantsTypeResponse> => {
-	return orvalFetch<ListParticipantsTypeResponse>(
-		getListParticipantTypesUrl(datasourceId),
-		{
-			...options,
-			method: "GET",
-		},
-	);
-};
-
-export const getListParticipantTypesKey = (datasourceId: string) =>
-	[`/v1/m/datasources/${datasourceId}/participants`] as const;
-
-export type ListParticipantTypesQueryResult = NonNullable<
-	Awaited<ReturnType<typeof listParticipantTypes>>
->;
-export type ListParticipantTypesQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useListParticipantTypes = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	options?: {
-		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof listParticipantTypes>>,
-			TError
-		> & { swrKey?: Key; enabled?: boolean };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled = swrOptions?.enabled !== false && !!datasourceId;
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() => (isEnabled ? getListParticipantTypesKey(datasourceId) : null));
-	const swrFn = () => listParticipantTypes(datasourceId, requestOptions);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getCreateParticipantTypeUrl = (datasourceId: string) => {
-	return `/v1/m/datasources/${datasourceId}/participants`;
-};
-
-export const createParticipantType = async (
-	datasourceId: string,
-	createParticipantsTypeRequest: CreateParticipantsTypeRequest,
-	options?: RequestInit,
-): Promise<CreateParticipantsTypeResponse> => {
-	return orvalFetch<CreateParticipantsTypeResponse>(
-		getCreateParticipantTypeUrl(datasourceId),
-		{
-			...options,
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...options?.headers },
-			body: JSON.stringify(createParticipantsTypeRequest),
-		},
-	);
-};
-
-export const getCreateParticipantTypeMutationFetcher = (
-	datasourceId: string,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (_: Key, { arg }: { arg: CreateParticipantsTypeRequest }) => {
-		return createParticipantType(datasourceId, arg, options);
-	};
-};
-export const getCreateParticipantTypeMutationKey = (datasourceId: string) =>
-	[`/v1/m/datasources/${datasourceId}/participants`] as const;
-
-export type CreateParticipantTypeMutationResult = NonNullable<
-	Awaited<ReturnType<typeof createParticipantType>>
->;
-export type CreateParticipantTypeMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useCreateParticipantType = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof createParticipantType>>,
-			TError,
-			Key,
-			CreateParticipantsTypeRequest,
-			Awaited<ReturnType<typeof createParticipantType>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ?? getCreateParticipantTypeMutationKey(datasourceId);
-	const swrFn = getCreateParticipantTypeMutationFetcher(
-		datasourceId,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getInspectParticipantTypesUrl = (
-	datasourceId: string,
-	participantId: string,
-	params?: InspectParticipantTypesParams,
-) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
-
-	const stringifiedParams = normalizedParams.toString();
-
-	return stringifiedParams.length > 0
-		? `/v1/m/datasources/${datasourceId}/participants/${participantId}/inspect?${stringifiedParams}`
-		: `/v1/m/datasources/${datasourceId}/participants/${participantId}/inspect`;
-};
-
-export const inspectParticipantTypes = async (
-	datasourceId: string,
-	participantId: string,
-	params?: InspectParticipantTypesParams,
-	options?: RequestInit,
-): Promise<InspectParticipantTypesResponse> => {
-	return orvalFetch<InspectParticipantTypesResponse>(
-		getInspectParticipantTypesUrl(datasourceId, participantId, params),
-		{
-			...options,
-			method: "GET",
-		},
-	);
-};
-
-export const getInspectParticipantTypesKey = (
-	datasourceId: string,
-	participantId: string,
-	params?: InspectParticipantTypesParams,
-) =>
-	[
-		`/v1/m/datasources/${datasourceId}/participants/${participantId}/inspect`,
-		...(params ? [params] : []),
-	] as const;
-
-export type InspectParticipantTypesQueryResult = NonNullable<
-	Awaited<ReturnType<typeof inspectParticipantTypes>>
->;
-export type InspectParticipantTypesQueryError = ErrorType<
-	HTTPExceptionError | MessageError | XHTTPValidationError
->;
-
-export const useInspectParticipantTypes = <
-	TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>,
->(
-	datasourceId: string,
-	participantId: string,
-	params?: InspectParticipantTypesParams,
-	options?: {
-		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof inspectParticipantTypes>>,
-			TError
-		> & { swrKey?: Key; enabled?: boolean };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled =
-		swrOptions?.enabled !== false && !!(datasourceId && participantId);
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() =>
-			isEnabled
-				? getInspectParticipantTypesKey(datasourceId, participantId, params)
-				: null);
-	const swrFn = () =>
-		inspectParticipantTypes(
-			datasourceId,
-			participantId,
-			params,
-			requestOptions,
-		);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getGetParticipantTypeUrl = (
-	datasourceId: string,
-	participantId: string,
-) => {
-	return `/v1/m/datasources/${datasourceId}/participants/${participantId}`;
-};
-
-export const getParticipantType = async (
-	datasourceId: string,
-	participantId: string,
-	options?: RequestInit,
-): Promise<GetParticipantsTypeResponse> => {
-	return orvalFetch<GetParticipantsTypeResponse>(
-		getGetParticipantTypeUrl(datasourceId, participantId),
-		{
-			...options,
-			method: "GET",
-		},
-	);
-};
-
-export const getGetParticipantTypeKey = (
-	datasourceId: string,
-	participantId: string,
-) =>
-	[`/v1/m/datasources/${datasourceId}/participants/${participantId}`] as const;
-
-export type GetParticipantTypeQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getParticipantType>>
->;
-export type GetParticipantTypeQueryError = ErrorType<
-	HTTPExceptionError | MessageError | XHTTPValidationError
->;
-
-export const useGetParticipantType = <
-	TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>,
->(
-	datasourceId: string,
-	participantId: string,
-	options?: {
-		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof getParticipantType>>,
-			TError
-		> & { swrKey?: Key; enabled?: boolean };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled =
-		swrOptions?.enabled !== false && !!(datasourceId && participantId);
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() =>
-			isEnabled ? getGetParticipantTypeKey(datasourceId, participantId) : null);
-	const swrFn = () =>
-		getParticipantType(datasourceId, participantId, requestOptions);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getUpdateParticipantTypeUrl = (
-	datasourceId: string,
-	participantId: string,
-) => {
-	return `/v1/m/datasources/${datasourceId}/participants/${participantId}`;
-};
-
-export const updateParticipantType = async (
-	datasourceId: string,
-	participantId: string,
-	updateParticipantsTypeRequest: UpdateParticipantsTypeRequest,
-	options?: RequestInit,
-): Promise<UpdateParticipantsTypeResponse> => {
-	return orvalFetch<UpdateParticipantsTypeResponse>(
-		getUpdateParticipantTypeUrl(datasourceId, participantId),
-		{
-			...options,
-			method: "PATCH",
-			headers: { "Content-Type": "application/json", ...options?.headers },
-			body: JSON.stringify(updateParticipantsTypeRequest),
-		},
-	);
-};
-
-export const getUpdateParticipantTypeMutationFetcher = (
-	datasourceId: string,
-	participantId: string,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (_: Key, { arg }: { arg: UpdateParticipantsTypeRequest }) => {
-		return updateParticipantType(datasourceId, participantId, arg, options);
-	};
-};
-export const getUpdateParticipantTypeMutationKey = (
-	datasourceId: string,
-	participantId: string,
-) =>
-	[`/v1/m/datasources/${datasourceId}/participants/${participantId}`] as const;
-
-export type UpdateParticipantTypeMutationResult = NonNullable<
-	Awaited<ReturnType<typeof updateParticipantType>>
->;
-export type UpdateParticipantTypeMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useUpdateParticipantType = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	participantId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof updateParticipantType>>,
-			TError,
-			Key,
-			UpdateParticipantsTypeRequest,
-			Awaited<ReturnType<typeof updateParticipantType>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ??
-		getUpdateParticipantTypeMutationKey(datasourceId, participantId);
-	const swrFn = getUpdateParticipantTypeMutationFetcher(
-		datasourceId,
-		participantId,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getDeleteParticipantUrl = (
-	datasourceId: string,
-	participantId: string,
-	params?: DeleteParticipantParams,
-) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
-
-	const stringifiedParams = normalizedParams.toString();
-
-	return stringifiedParams.length > 0
-		? `/v1/m/datasources/${datasourceId}/participants/${participantId}?${stringifiedParams}`
-		: `/v1/m/datasources/${datasourceId}/participants/${participantId}`;
-};
-
-export const deleteParticipant = async (
-	datasourceId: string,
-	participantId: string,
-	params?: DeleteParticipantParams,
-	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(
-		getDeleteParticipantUrl(datasourceId, participantId, params),
-		{
-			...options,
-			method: "DELETE",
-		},
-	);
-};
-
-export const getDeleteParticipantMutationFetcher = (
-	datasourceId: string,
-	participantId: string,
-	params?: DeleteParticipantParams,
-	options?: SecondParameter<typeof orvalFetch>,
+
+
+  
+
+  return `/v1/m/organizations`
+}
+
+export const createOrganizations = async (createOrganizationRequest: CreateOrganizationRequest, options?: RequestInit): Promise<CreateOrganizationResponse> => {
+  
+  return orvalFetch<CreateOrganizationResponse>(getCreateOrganizationsUrl(),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      createOrganizationRequest,)
+  }
+);}
+
+
+
+
+export const getCreateOrganizationsMutationFetcher = ( options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, { arg }: { arg: CreateOrganizationRequest }) => {
+    return createOrganizations(arg, options);
+  }
+}
+export const getCreateOrganizationsMutationKey = () => [`/v1/m/organizations`] as const;
+
+export type CreateOrganizationsMutationResult = NonNullable<Awaited<ReturnType<typeof createOrganizations>>>
+export type CreateOrganizationsMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useCreateOrganizations = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+   options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof createOrganizations>>, TError, Key, CreateOrganizationRequest, Awaited<ReturnType<typeof createOrganizations>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	return (_: Key, __: { arg: Arguments }) => {
-		return deleteParticipant(datasourceId, participantId, params, options);
-	};
-};
-export const getDeleteParticipantMutationKey = (
-	datasourceId: string,
-	participantId: string,
-	params?: DeleteParticipantParams,
-) =>
-	[
-		`/v1/m/datasources/${datasourceId}/participants/${participantId}`,
-		...(params ? [params] : []),
-	] as const;
-
-export type DeleteParticipantMutationResult = NonNullable<
-	Awaited<ReturnType<typeof deleteParticipant>>
->;
-export type DeleteParticipantMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useDeleteParticipant = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	participantId: string,
-	params?: DeleteParticipantParams,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof deleteParticipant>>,
-			TError,
-			Key,
-			Arguments,
-			Awaited<ReturnType<typeof deleteParticipant>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getCreateOrganizationsMutationKey();
+  const swrFn = getCreateOrganizationsMutationFetcher(requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getAddWebhookToOrganizationUrl = (organizationId: string,) => {
+
+
+  
+
+  return `/v1/m/organizations/${organizationId}/webhooks`
+}
+
+export const addWebhookToOrganization = async (organizationId: string,
+    addWebhookToOrganizationRequest: AddWebhookToOrganizationRequest, options?: RequestInit): Promise<AddWebhookToOrganizationResponse> => {
+  
+  return orvalFetch<AddWebhookToOrganizationResponse>(getAddWebhookToOrganizationUrl(organizationId),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      addWebhookToOrganizationRequest,)
+  }
+);}
+
+
+
+
+export const getAddWebhookToOrganizationMutationFetcher = (organizationId: string, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, { arg }: { arg: AddWebhookToOrganizationRequest }) => {
+    return addWebhookToOrganization(organizationId, arg, options);
+  }
+}
+export const getAddWebhookToOrganizationMutationKey = (organizationId: string,) => [`/v1/m/organizations/${organizationId}/webhooks`] as const;
+
+export type AddWebhookToOrganizationMutationResult = NonNullable<Awaited<ReturnType<typeof addWebhookToOrganization>>>
+export type AddWebhookToOrganizationMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useAddWebhookToOrganization = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  organizationId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof addWebhookToOrganization>>, TError, Key, AddWebhookToOrganizationRequest, Awaited<ReturnType<typeof addWebhookToOrganization>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ??
-		getDeleteParticipantMutationKey(datasourceId, participantId, params);
-	const swrFn = getDeleteParticipantMutationFetcher(
-		datasourceId,
-		participantId,
-		params,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getListApiKeysUrl = (datasourceId: string) => {
-	return `/v1/m/datasources/${datasourceId}/apikeys`;
-};
-
-export const listApiKeys = async (
-	datasourceId: string,
-	options?: RequestInit,
-): Promise<ListApiKeysResponse> => {
-	return orvalFetch<ListApiKeysResponse>(getListApiKeysUrl(datasourceId), {
-		...options,
-		method: "GET",
-	});
-};
-
-export const getListApiKeysKey = (datasourceId: string) =>
-	[`/v1/m/datasources/${datasourceId}/apikeys`] as const;
-
-export type ListApiKeysQueryResult = NonNullable<
-	Awaited<ReturnType<typeof listApiKeys>>
->;
-export type ListApiKeysQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useListApiKeys = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	options?: {
-		swr?: SWRConfiguration<Awaited<ReturnType<typeof listApiKeys>>, TError> & {
-			swrKey?: Key;
-			enabled?: boolean;
-		};
-		request?: SecondParameter<typeof orvalFetch>;
-	},
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getAddWebhookToOrganizationMutationKey(organizationId);
+  const swrFn = getAddWebhookToOrganizationMutationFetcher(organizationId, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getListOrganizationWebhooksUrl = (organizationId: string,) => {
+
+
+  
+
+  return `/v1/m/organizations/${organizationId}/webhooks`
+}
+
+export const listOrganizationWebhooks = async (organizationId: string, options?: RequestInit): Promise<ListWebhooksResponse> => {
+  
+  return orvalFetch<ListWebhooksResponse>(getListOrganizationWebhooksUrl(organizationId),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+export const getListOrganizationWebhooksKey = (organizationId: string,) => [`/v1/m/organizations/${organizationId}/webhooks`] as const;
+
+export type ListOrganizationWebhooksQueryResult = NonNullable<Awaited<ReturnType<typeof listOrganizationWebhooks>>>
+export type ListOrganizationWebhooksQueryError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useListOrganizationWebhooks = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  organizationId: string, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof listOrganizationWebhooks>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
 ) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled = swrOptions?.enabled !== false && !!datasourceId;
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() => (isEnabled ? getListApiKeysKey(datasourceId) : null));
-	const swrFn = () => listApiKeys(datasourceId, requestOptions);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getCreateApiKeyUrl = (datasourceId: string) => {
-	return `/v1/m/datasources/${datasourceId}/apikeys`;
-};
-
-export const createApiKey = async (
-	datasourceId: string,
-	options?: RequestInit,
-): Promise<CreateApiKeyResponse> => {
-	return orvalFetch<CreateApiKeyResponse>(getCreateApiKeyUrl(datasourceId), {
-		...options,
-		method: "POST",
-	});
-};
-
-export const getCreateApiKeyMutationFetcher = (
-	datasourceId: string,
-	options?: SecondParameter<typeof orvalFetch>,
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false && !!(organizationId)
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getListOrganizationWebhooksKey(organizationId) : null);
+  const swrFn = () => listOrganizationWebhooks(organizationId, requestOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getUpdateOrganizationWebhookUrl = (organizationId: string,
+    webhookId: string,) => {
+
+
+  
+
+  return `/v1/m/organizations/${organizationId}/webhooks/${webhookId}`
+}
+
+export const updateOrganizationWebhook = async (organizationId: string,
+    webhookId: string,
+    updateOrganizationWebhookRequest: UpdateOrganizationWebhookRequest, options?: RequestInit): Promise<void> => {
+  
+  return orvalFetch<void>(getUpdateOrganizationWebhookUrl(organizationId,webhookId),
+  {      
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      updateOrganizationWebhookRequest,)
+  }
+);}
+
+
+
+
+export const getUpdateOrganizationWebhookMutationFetcher = (organizationId: string,
+    webhookId: string, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, { arg }: { arg: UpdateOrganizationWebhookRequest }) => {
+    return updateOrganizationWebhook(organizationId, webhookId, arg, options);
+  }
+}
+export const getUpdateOrganizationWebhookMutationKey = (organizationId: string,
+    webhookId: string,) => [`/v1/m/organizations/${organizationId}/webhooks/${webhookId}`] as const;
+
+export type UpdateOrganizationWebhookMutationResult = NonNullable<Awaited<ReturnType<typeof updateOrganizationWebhook>>>
+export type UpdateOrganizationWebhookMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useUpdateOrganizationWebhook = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  organizationId: string,
+    webhookId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof updateOrganizationWebhook>>, TError, Key, UpdateOrganizationWebhookRequest, Awaited<ReturnType<typeof updateOrganizationWebhook>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	return (_: Key, __: { arg: Arguments }) => {
-		return createApiKey(datasourceId, options);
-	};
-};
-export const getCreateApiKeyMutationKey = (datasourceId: string) =>
-	[`/v1/m/datasources/${datasourceId}/apikeys`] as const;
-
-export type CreateApiKeyMutationResult = NonNullable<
-	Awaited<ReturnType<typeof createApiKey>>
->;
-export type CreateApiKeyMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useCreateApiKey = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof createApiKey>>,
-			TError,
-			Key,
-			Arguments,
-			Awaited<ReturnType<typeof createApiKey>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getUpdateOrganizationWebhookMutationKey(organizationId,webhookId);
+  const swrFn = getUpdateOrganizationWebhookMutationFetcher(organizationId,webhookId, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getDeleteWebhookFromOrganizationUrl = (organizationId: string,
+    webhookId: string,
+    params?: DeleteWebhookFromOrganizationParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/v1/m/organizations/${organizationId}/webhooks/${webhookId}?${stringifiedParams}` : `/v1/m/organizations/${organizationId}/webhooks/${webhookId}`
+}
+
+export const deleteWebhookFromOrganization = async (organizationId: string,
+    webhookId: string,
+    params?: DeleteWebhookFromOrganizationParams, options?: RequestInit): Promise<void> => {
+  
+  return orvalFetch<void>(getDeleteWebhookFromOrganizationUrl(organizationId,webhookId,params),
+  {      
+    ...options,
+    method: 'DELETE'
+    
+    
+  }
+);}
+
+
+
+
+export const getDeleteWebhookFromOrganizationMutationFetcher = (organizationId: string,
+    webhookId: string,
+    params?: DeleteWebhookFromOrganizationParams, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, __: { arg: Arguments }) => {
+    return deleteWebhookFromOrganization(organizationId, webhookId, params, options);
+  }
+}
+export const getDeleteWebhookFromOrganizationMutationKey = (organizationId: string,
+    webhookId: string,
+    params?: DeleteWebhookFromOrganizationParams,) => [`/v1/m/organizations/${organizationId}/webhooks/${webhookId}`, ...(params ? [params]: [])] as const;
+
+export type DeleteWebhookFromOrganizationMutationResult = NonNullable<Awaited<ReturnType<typeof deleteWebhookFromOrganization>>>
+export type DeleteWebhookFromOrganizationMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useDeleteWebhookFromOrganization = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  organizationId: string,
+    webhookId: string,
+    params?: DeleteWebhookFromOrganizationParams, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof deleteWebhookFromOrganization>>, TError, Key, Arguments, Awaited<ReturnType<typeof deleteWebhookFromOrganization>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey = swrOptions?.swrKey ?? getCreateApiKeyMutationKey(datasourceId);
-	const swrFn = getCreateApiKeyMutationFetcher(datasourceId, requestOptions);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getDeleteApiKeyUrl = (
-	datasourceId: string,
-	apiKeyId: string,
-	params?: DeleteApiKeyParams,
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getDeleteWebhookFromOrganizationMutationKey(organizationId,webhookId,params);
+  const swrFn = getDeleteWebhookFromOrganizationMutationFetcher(organizationId,webhookId,params, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getRegenerateWebhookAuthTokenUrl = (organizationId: string,
+    webhookId: string,) => {
+
+
+  
+
+  return `/v1/m/organizations/${organizationId}/webhooks/${webhookId}/authtoken`
+}
+
+export const regenerateWebhookAuthToken = async (organizationId: string,
+    webhookId: string, options?: RequestInit): Promise<void> => {
+  
+  return orvalFetch<void>(getRegenerateWebhookAuthTokenUrl(organizationId,webhookId),
+  {      
+    ...options,
+    method: 'POST'
+    
+    
+  }
+);}
+
+
+
+
+export const getRegenerateWebhookAuthTokenMutationFetcher = (organizationId: string,
+    webhookId: string, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, __: { arg: Arguments }) => {
+    return regenerateWebhookAuthToken(organizationId, webhookId, options);
+  }
+}
+export const getRegenerateWebhookAuthTokenMutationKey = (organizationId: string,
+    webhookId: string,) => [`/v1/m/organizations/${organizationId}/webhooks/${webhookId}/authtoken`] as const;
+
+export type RegenerateWebhookAuthTokenMutationResult = NonNullable<Awaited<ReturnType<typeof regenerateWebhookAuthToken>>>
+export type RegenerateWebhookAuthTokenMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useRegenerateWebhookAuthToken = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  organizationId: string,
+    webhookId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof regenerateWebhookAuthToken>>, TError, Key, Arguments, Awaited<ReturnType<typeof regenerateWebhookAuthToken>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
-
-	const stringifiedParams = normalizedParams.toString();
-
-	return stringifiedParams.length > 0
-		? `/v1/m/datasources/${datasourceId}/apikeys/${apiKeyId}?${stringifiedParams}`
-		: `/v1/m/datasources/${datasourceId}/apikeys/${apiKeyId}`;
-};
-
-export const deleteApiKey = async (
-	datasourceId: string,
-	apiKeyId: string,
-	params?: DeleteApiKeyParams,
-	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(getDeleteApiKeyUrl(datasourceId, apiKeyId, params), {
-		...options,
-		method: "DELETE",
-	});
-};
-
-export const getDeleteApiKeyMutationFetcher = (
-	datasourceId: string,
-	apiKeyId: string,
-	params?: DeleteApiKeyParams,
-	options?: SecondParameter<typeof orvalFetch>,
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getRegenerateWebhookAuthTokenMutationKey(organizationId,webhookId);
+  const swrFn = getRegenerateWebhookAuthTokenMutationFetcher(organizationId,webhookId, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getListOrganizationEventsUrl = (organizationId: string,
+    params?: ListOrganizationEventsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/v1/m/organizations/${organizationId}/events?${stringifiedParams}` : `/v1/m/organizations/${organizationId}/events`
+}
+
+export const listOrganizationEvents = async (organizationId: string,
+    params?: ListOrganizationEventsParams, options?: RequestInit): Promise<ListOrganizationEventsResponse> => {
+  
+  return orvalFetch<ListOrganizationEventsResponse>(getListOrganizationEventsUrl(organizationId,params),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+export const getListOrganizationEventsKey = (organizationId: string,
+    params?: ListOrganizationEventsParams,) => [`/v1/m/organizations/${organizationId}/events`, ...(params ? [params]: [])] as const;
+
+export type ListOrganizationEventsQueryResult = NonNullable<Awaited<ReturnType<typeof listOrganizationEvents>>>
+export type ListOrganizationEventsQueryError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useListOrganizationEvents = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  organizationId: string,
+    params?: ListOrganizationEventsParams, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof listOrganizationEvents>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
 ) => {
-	return (_: Key, __: { arg: Arguments }) => {
-		return deleteApiKey(datasourceId, apiKeyId, params, options);
-	};
-};
-export const getDeleteApiKeyMutationKey = (
-	datasourceId: string,
-	apiKeyId: string,
-	params?: DeleteApiKeyParams,
-) =>
-	[
-		`/v1/m/datasources/${datasourceId}/apikeys/${apiKeyId}`,
-		...(params ? [params] : []),
-	] as const;
-
-export type DeleteApiKeyMutationResult = NonNullable<
-	Awaited<ReturnType<typeof deleteApiKey>>
->;
-export type DeleteApiKeyMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useDeleteApiKey = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	apiKeyId: string,
-	params?: DeleteApiKeyParams,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof deleteApiKey>>,
-			TError,
-			Key,
-			Arguments,
-			Awaited<ReturnType<typeof deleteApiKey>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false && !!(organizationId)
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getListOrganizationEventsKey(organizationId,params) : null);
+  const swrFn = () => listOrganizationEvents(organizationId,params, requestOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getResendOrganizationEventUrl = (organizationId: string,
+    eventId: string,) => {
+
+
+  
+
+  return `/v1/m/organizations/${organizationId}/events/${eventId}/resend`
+}
+
+export const resendOrganizationEvent = async (organizationId: string,
+    eventId: string, options?: RequestInit): Promise<void> => {
+  
+  return orvalFetch<void>(getResendOrganizationEventUrl(organizationId,eventId),
+  {      
+    ...options,
+    method: 'POST'
+    
+    
+  }
+);}
+
+
+
+
+export const getResendOrganizationEventMutationFetcher = (organizationId: string,
+    eventId: string, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, __: { arg: Arguments }) => {
+    return resendOrganizationEvent(organizationId, eventId, options);
+  }
+}
+export const getResendOrganizationEventMutationKey = (organizationId: string,
+    eventId: string,) => [`/v1/m/organizations/${organizationId}/events/${eventId}/resend`] as const;
+
+export type ResendOrganizationEventMutationResult = NonNullable<Awaited<ReturnType<typeof resendOrganizationEvent>>>
+export type ResendOrganizationEventMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useResendOrganizationEvent = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  organizationId: string,
+    eventId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof resendOrganizationEvent>>, TError, Key, Arguments, Awaited<ReturnType<typeof resendOrganizationEvent>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ??
-		getDeleteApiKeyMutationKey(datasourceId, apiKeyId, params);
-	const swrFn = getDeleteApiKeyMutationFetcher(
-		datasourceId,
-		apiKeyId,
-		params,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getCreateExperimentUrl = (
-	datasourceId: string,
-	params?: CreateExperimentParams,
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getResendOrganizationEventMutationKey(organizationId,eventId);
+  const swrFn = getResendOrganizationEventMutationFetcher(organizationId,eventId, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getAddMemberToOrganizationUrl = (organizationId: string,) => {
+
+
+  
+
+  return `/v1/m/organizations/${organizationId}/members`
+}
+
+export const addMemberToOrganization = async (organizationId: string,
+    addMemberToOrganizationRequest: AddMemberToOrganizationRequest, options?: RequestInit): Promise<void> => {
+  
+  return orvalFetch<void>(getAddMemberToOrganizationUrl(organizationId),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      addMemberToOrganizationRequest,)
+  }
+);}
+
+
+
+
+export const getAddMemberToOrganizationMutationFetcher = (organizationId: string, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, { arg }: { arg: AddMemberToOrganizationRequest }) => {
+    return addMemberToOrganization(organizationId, arg, options);
+  }
+}
+export const getAddMemberToOrganizationMutationKey = (organizationId: string,) => [`/v1/m/organizations/${organizationId}/members`] as const;
+
+export type AddMemberToOrganizationMutationResult = NonNullable<Awaited<ReturnType<typeof addMemberToOrganization>>>
+export type AddMemberToOrganizationMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useAddMemberToOrganization = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  organizationId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof addMemberToOrganization>>, TError, Key, AddMemberToOrganizationRequest, Awaited<ReturnType<typeof addMemberToOrganization>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
-
-	const stringifiedParams = normalizedParams.toString();
-
-	return stringifiedParams.length > 0
-		? `/v1/m/datasources/${datasourceId}/experiments?${stringifiedParams}`
-		: `/v1/m/datasources/${datasourceId}/experiments`;
-};
-
-export const createExperiment = async (
-	datasourceId: string,
-	createExperimentRequest: CreateExperimentRequest,
-	params?: CreateExperimentParams,
-	options?: RequestInit,
-): Promise<CreateExperimentResponse> => {
-	return orvalFetch<CreateExperimentResponse>(
-		getCreateExperimentUrl(datasourceId, params),
-		{
-			...options,
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...options?.headers },
-			body: JSON.stringify(createExperimentRequest),
-		},
-	);
-};
-
-export const getCreateExperimentMutationFetcher = (
-	datasourceId: string,
-	params?: CreateExperimentParams,
-	options?: SecondParameter<typeof orvalFetch>,
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getAddMemberToOrganizationMutationKey(organizationId);
+  const swrFn = getAddMemberToOrganizationMutationFetcher(organizationId, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getRemoveMemberFromOrganizationUrl = (organizationId: string,
+    userId: string,
+    params?: RemoveMemberFromOrganizationParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/v1/m/organizations/${organizationId}/members/${userId}?${stringifiedParams}` : `/v1/m/organizations/${organizationId}/members/${userId}`
+}
+
+export const removeMemberFromOrganization = async (organizationId: string,
+    userId: string,
+    params?: RemoveMemberFromOrganizationParams, options?: RequestInit): Promise<void> => {
+  
+  return orvalFetch<void>(getRemoveMemberFromOrganizationUrl(organizationId,userId,params),
+  {      
+    ...options,
+    method: 'DELETE'
+    
+    
+  }
+);}
+
+
+
+
+export const getRemoveMemberFromOrganizationMutationFetcher = (organizationId: string,
+    userId: string,
+    params?: RemoveMemberFromOrganizationParams, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, __: { arg: Arguments }) => {
+    return removeMemberFromOrganization(organizationId, userId, params, options);
+  }
+}
+export const getRemoveMemberFromOrganizationMutationKey = (organizationId: string,
+    userId: string,
+    params?: RemoveMemberFromOrganizationParams,) => [`/v1/m/organizations/${organizationId}/members/${userId}`, ...(params ? [params]: [])] as const;
+
+export type RemoveMemberFromOrganizationMutationResult = NonNullable<Awaited<ReturnType<typeof removeMemberFromOrganization>>>
+export type RemoveMemberFromOrganizationMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useRemoveMemberFromOrganization = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  organizationId: string,
+    userId: string,
+    params?: RemoveMemberFromOrganizationParams, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof removeMemberFromOrganization>>, TError, Key, Arguments, Awaited<ReturnType<typeof removeMemberFromOrganization>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	return (_: Key, { arg }: { arg: CreateExperimentRequest }) => {
-		return createExperiment(datasourceId, arg, params, options);
-	};
-};
-export const getCreateExperimentMutationKey = (
-	datasourceId: string,
-	params?: CreateExperimentParams,
-) =>
-	[
-		`/v1/m/datasources/${datasourceId}/experiments`,
-		...(params ? [params] : []),
-	] as const;
-
-export type CreateExperimentMutationResult = NonNullable<
-	Awaited<ReturnType<typeof createExperiment>>
->;
-export type CreateExperimentMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useCreateExperiment = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	params?: CreateExperimentParams,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof createExperiment>>,
-			TError,
-			Key,
-			CreateExperimentRequest,
-			Awaited<ReturnType<typeof createExperiment>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getRemoveMemberFromOrganizationMutationKey(organizationId,userId,params);
+  const swrFn = getRemoveMemberFromOrganizationMutationFetcher(organizationId,userId,params, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getUpdateOrganizationUrl = (organizationId: string,) => {
+
+
+  
+
+  return `/v1/m/organizations/${organizationId}`
+}
+
+export const updateOrganization = async (organizationId: string,
+    updateOrganizationRequest: UpdateOrganizationRequest, options?: RequestInit): Promise<unknown> => {
+  
+  return orvalFetch<unknown>(getUpdateOrganizationUrl(organizationId),
+  {      
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      updateOrganizationRequest,)
+  }
+);}
+
+
+
+
+export const getUpdateOrganizationMutationFetcher = (organizationId: string, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, { arg }: { arg: UpdateOrganizationRequest }) => {
+    return updateOrganization(organizationId, arg, options);
+  }
+}
+export const getUpdateOrganizationMutationKey = (organizationId: string,) => [`/v1/m/organizations/${organizationId}`] as const;
+
+export type UpdateOrganizationMutationResult = NonNullable<Awaited<ReturnType<typeof updateOrganization>>>
+export type UpdateOrganizationMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useUpdateOrganization = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  organizationId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof updateOrganization>>, TError, Key, UpdateOrganizationRequest, Awaited<ReturnType<typeof updateOrganization>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ?? getCreateExperimentMutationKey(datasourceId, params);
-	const swrFn = getCreateExperimentMutationFetcher(
-		datasourceId,
-		params,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getAnalyzeExperimentUrl = (
-	datasourceId: string,
-	experimentId: string,
-	params?: AnalyzeExperimentParams,
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getUpdateOrganizationMutationKey(organizationId);
+  const swrFn = getUpdateOrganizationMutationFetcher(organizationId, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getGetOrganizationUrl = (organizationId: string,) => {
+
+
+  
+
+  return `/v1/m/organizations/${organizationId}`
+}
+
+export const getOrganization = async (organizationId: string, options?: RequestInit): Promise<GetOrganizationResponse> => {
+  
+  return orvalFetch<GetOrganizationResponse>(getGetOrganizationUrl(organizationId),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+export const getGetOrganizationKey = (organizationId: string,) => [`/v1/m/organizations/${organizationId}`] as const;
+
+export type GetOrganizationQueryResult = NonNullable<Awaited<ReturnType<typeof getOrganization>>>
+export type GetOrganizationQueryError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useGetOrganization = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  organizationId: string, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof getOrganization>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
 ) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
-
-	const stringifiedParams = normalizedParams.toString();
-
-	return stringifiedParams.length > 0
-		? `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/analyze?${stringifiedParams}`
-		: `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/analyze`;
-};
-
-export const analyzeExperiment = async (
-	datasourceId: string,
-	experimentId: string,
-	params?: AnalyzeExperimentParams,
-	options?: RequestInit,
-): Promise<ExperimentAnalysisResponse> => {
-	return orvalFetch<ExperimentAnalysisResponse>(
-		getAnalyzeExperimentUrl(datasourceId, experimentId, params),
-		{
-			...options,
-			method: "GET",
-		},
-	);
-};
-
-export const getAnalyzeExperimentKey = (
-	datasourceId: string,
-	experimentId: string,
-	params?: AnalyzeExperimentParams,
-) =>
-	[
-		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/analyze`,
-		...(params ? [params] : []),
-	] as const;
-
-export type AnalyzeExperimentQueryResult = NonNullable<
-	Awaited<ReturnType<typeof analyzeExperiment>>
->;
-export type AnalyzeExperimentQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useAnalyzeExperiment = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	experimentId: string,
-	params?: AnalyzeExperimentParams,
-	options?: {
-		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof analyzeExperiment>>,
-			TError
-		> & { swrKey?: Key; enabled?: boolean };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false && !!(organizationId)
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getGetOrganizationKey(organizationId) : null);
+  const swrFn = () => getOrganization(organizationId, requestOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getListOrganizationDatasourcesUrl = (organizationId: string,) => {
+
+
+  
+
+  return `/v1/m/organizations/${organizationId}/datasources`
+}
+
+export const listOrganizationDatasources = async (organizationId: string, options?: RequestInit): Promise<ListDatasourcesResponse> => {
+  
+  return orvalFetch<ListDatasourcesResponse>(getListOrganizationDatasourcesUrl(organizationId),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+export const getListOrganizationDatasourcesKey = (organizationId: string,) => [`/v1/m/organizations/${organizationId}/datasources`] as const;
+
+export type ListOrganizationDatasourcesQueryResult = NonNullable<Awaited<ReturnType<typeof listOrganizationDatasources>>>
+export type ListOrganizationDatasourcesQueryError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useListOrganizationDatasources = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  organizationId: string, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof listOrganizationDatasources>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
 ) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled =
-		swrOptions?.enabled !== false && !!(datasourceId && experimentId);
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() =>
-			isEnabled
-				? getAnalyzeExperimentKey(datasourceId, experimentId, params)
-				: null);
-	const swrFn = () =>
-		analyzeExperiment(datasourceId, experimentId, params, requestOptions);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getAnalyzeCmabExperimentUrl = (
-	datasourceId: string,
-	experimentId: string,
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false && !!(organizationId)
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getListOrganizationDatasourcesKey(organizationId) : null);
+  const swrFn = () => listOrganizationDatasources(organizationId, requestOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getCreateDatasourceUrl = (params?: CreateDatasourceParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/v1/m/datasources?${stringifiedParams}` : `/v1/m/datasources`
+}
+
+export const createDatasource = async (createDatasourceRequest: CreateDatasourceRequest,
+    params?: CreateDatasourceParams, options?: RequestInit): Promise<CreateDatasourceResponse> => {
+  
+  return orvalFetch<CreateDatasourceResponse>(getCreateDatasourceUrl(params),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      createDatasourceRequest,)
+  }
+);}
+
+
+
+
+export const getCreateDatasourceMutationFetcher = (params?: CreateDatasourceParams, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, { arg }: { arg: CreateDatasourceRequest }) => {
+    return createDatasource(arg, params, options);
+  }
+}
+export const getCreateDatasourceMutationKey = (params?: CreateDatasourceParams,) => [`/v1/m/datasources`, ...(params ? [params]: [])] as const;
+
+export type CreateDatasourceMutationResult = NonNullable<Awaited<ReturnType<typeof createDatasource>>>
+export type CreateDatasourceMutationError = ErrorType<HTTPExceptionError | XHTTPValidationError | MessageError>
+
+export const useCreateDatasource = <TError = ErrorType<HTTPExceptionError | XHTTPValidationError | MessageError>>(
+  params?: CreateDatasourceParams, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof createDatasource>>, TError, Key, CreateDatasourceRequest, Awaited<ReturnType<typeof createDatasource>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/analyze_cmab`;
-};
-
-export const analyzeCmabExperiment = async (
-	datasourceId: string,
-	experimentId: string,
-	cMABContextInputRequest: CMABContextInputRequest,
-	options?: RequestInit,
-): Promise<ExperimentAnalysisResponse> => {
-	return orvalFetch<ExperimentAnalysisResponse>(
-		getAnalyzeCmabExperimentUrl(datasourceId, experimentId),
-		{
-			...options,
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...options?.headers },
-			body: JSON.stringify(cMABContextInputRequest),
-		},
-	);
-};
-
-export const getAnalyzeCmabExperimentMutationFetcher = (
-	datasourceId: string,
-	experimentId: string,
-	options?: SecondParameter<typeof orvalFetch>,
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getCreateDatasourceMutationKey(params);
+  const swrFn = getCreateDatasourceMutationFetcher(params, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getUpdateDatasourceUrl = (datasourceId: string,) => {
+
+
+  
+
+  return `/v1/m/datasources/${datasourceId}`
+}
+
+export const updateDatasource = async (datasourceId: string,
+    updateDatasourceRequest: UpdateDatasourceRequest, options?: RequestInit): Promise<void> => {
+  
+  return orvalFetch<void>(getUpdateDatasourceUrl(datasourceId),
+  {      
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      updateDatasourceRequest,)
+  }
+);}
+
+
+
+
+export const getUpdateDatasourceMutationFetcher = (datasourceId: string, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, { arg }: { arg: UpdateDatasourceRequest }) => {
+    return updateDatasource(datasourceId, arg, options);
+  }
+}
+export const getUpdateDatasourceMutationKey = (datasourceId: string,) => [`/v1/m/datasources/${datasourceId}`] as const;
+
+export type UpdateDatasourceMutationResult = NonNullable<Awaited<ReturnType<typeof updateDatasource>>>
+export type UpdateDatasourceMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useUpdateDatasource = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  datasourceId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof updateDatasource>>, TError, Key, UpdateDatasourceRequest, Awaited<ReturnType<typeof updateDatasource>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	return (_: Key, { arg }: { arg: CMABContextInputRequest }) => {
-		return analyzeCmabExperiment(datasourceId, experimentId, arg, options);
-	};
-};
-export const getAnalyzeCmabExperimentMutationKey = (
-	datasourceId: string,
-	experimentId: string,
-) =>
-	[
-		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/analyze_cmab`,
-	] as const;
-
-export type AnalyzeCmabExperimentMutationResult = NonNullable<
-	Awaited<ReturnType<typeof analyzeCmabExperiment>>
->;
-export type AnalyzeCmabExperimentMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useAnalyzeCmabExperiment = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	experimentId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof analyzeCmabExperiment>>,
-			TError,
-			Key,
-			CMABContextInputRequest,
-			Awaited<ReturnType<typeof analyzeCmabExperiment>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getUpdateDatasourceMutationKey(datasourceId);
+  const swrFn = getUpdateDatasourceMutationFetcher(datasourceId, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getGetDatasourceUrl = (datasourceId: string,) => {
+
+
+  
+
+  return `/v1/m/datasources/${datasourceId}`
+}
+
+export const getDatasource = async (datasourceId: string, options?: RequestInit): Promise<GetDatasourceResponse> => {
+  
+  return orvalFetch<GetDatasourceResponse>(getGetDatasourceUrl(datasourceId),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+export const getGetDatasourceKey = (datasourceId: string,) => [`/v1/m/datasources/${datasourceId}`] as const;
+
+export type GetDatasourceQueryResult = NonNullable<Awaited<ReturnType<typeof getDatasource>>>
+export type GetDatasourceQueryError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useGetDatasource = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  datasourceId: string, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof getDatasource>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
 ) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ??
-		getAnalyzeCmabExperimentMutationKey(datasourceId, experimentId);
-	const swrFn = getAnalyzeCmabExperimentMutationFetcher(
-		datasourceId,
-		experimentId,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getCommitExperimentUrl = (
-	datasourceId: string,
-	experimentId: string,
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false && !!(datasourceId)
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getGetDatasourceKey(datasourceId) : null);
+  const swrFn = () => getDatasource(datasourceId, requestOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getInspectDatasourceUrl = (datasourceId: string,
+    params?: InspectDatasourceParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/v1/m/datasources/${datasourceId}/inspect?${stringifiedParams}` : `/v1/m/datasources/${datasourceId}/inspect`
+}
+
+export const inspectDatasource = async (datasourceId: string,
+    params?: InspectDatasourceParams, options?: RequestInit): Promise<InspectDatasourceResponse> => {
+  
+  return orvalFetch<InspectDatasourceResponse>(getInspectDatasourceUrl(datasourceId,params),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+export const getInspectDatasourceKey = (datasourceId: string,
+    params?: InspectDatasourceParams,) => [`/v1/m/datasources/${datasourceId}/inspect`, ...(params ? [params]: [])] as const;
+
+export type InspectDatasourceQueryResult = NonNullable<Awaited<ReturnType<typeof inspectDatasource>>>
+export type InspectDatasourceQueryError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>
+
+export const useInspectDatasource = <TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>>(
+  datasourceId: string,
+    params?: InspectDatasourceParams, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof inspectDatasource>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
 ) => {
-	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/commit`;
-};
-
-export const commitExperiment = async (
-	datasourceId: string,
-	experimentId: string,
-	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(getCommitExperimentUrl(datasourceId, experimentId), {
-		...options,
-		method: "POST",
-	});
-};
-
-export const getCommitExperimentMutationFetcher = (
-	datasourceId: string,
-	experimentId: string,
-	options?: SecondParameter<typeof orvalFetch>,
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false && !!(datasourceId)
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getInspectDatasourceKey(datasourceId,params) : null);
+  const swrFn = () => inspectDatasource(datasourceId,params, requestOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getInspectTableInDatasourceUrl = (datasourceId: string,
+    tableName: string,
+    params?: InspectTableInDatasourceParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/v1/m/datasources/${datasourceId}/inspect/${tableName}?${stringifiedParams}` : `/v1/m/datasources/${datasourceId}/inspect/${tableName}`
+}
+
+export const inspectTableInDatasource = async (datasourceId: string,
+    tableName: string,
+    params?: InspectTableInDatasourceParams, options?: RequestInit): Promise<InspectDatasourceTableResponse> => {
+  
+  return orvalFetch<InspectDatasourceTableResponse>(getInspectTableInDatasourceUrl(datasourceId,tableName,params),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+export const getInspectTableInDatasourceKey = (datasourceId: string,
+    tableName: string,
+    params?: InspectTableInDatasourceParams,) => [`/v1/m/datasources/${datasourceId}/inspect/${tableName}`, ...(params ? [params]: [])] as const;
+
+export type InspectTableInDatasourceQueryResult = NonNullable<Awaited<ReturnType<typeof inspectTableInDatasource>>>
+export type InspectTableInDatasourceQueryError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>
+
+export const useInspectTableInDatasource = <TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>>(
+  datasourceId: string,
+    tableName: string,
+    params?: InspectTableInDatasourceParams, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof inspectTableInDatasource>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
 ) => {
-	return (_: Key, __: { arg: Arguments }) => {
-		return commitExperiment(datasourceId, experimentId, options);
-	};
-};
-export const getCommitExperimentMutationKey = (
-	datasourceId: string,
-	experimentId: string,
-) =>
-	[
-		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/commit`,
-	] as const;
-
-export type CommitExperimentMutationResult = NonNullable<
-	Awaited<ReturnType<typeof commitExperiment>>
->;
-export type CommitExperimentMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useCommitExperiment = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	experimentId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof commitExperiment>>,
-			TError,
-			Key,
-			Arguments,
-			Awaited<ReturnType<typeof commitExperiment>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false && !!(datasourceId && tableName)
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getInspectTableInDatasourceKey(datasourceId,tableName,params) : null);
+  const swrFn = () => inspectTableInDatasource(datasourceId,tableName,params, requestOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getDeleteDatasourceUrl = (organizationId: string,
+    datasourceId: string,
+    params?: DeleteDatasourceParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/v1/m/organizations/${organizationId}/datasources/${datasourceId}?${stringifiedParams}` : `/v1/m/organizations/${organizationId}/datasources/${datasourceId}`
+}
+
+export const deleteDatasource = async (organizationId: string,
+    datasourceId: string,
+    params?: DeleteDatasourceParams, options?: RequestInit): Promise<void> => {
+  
+  return orvalFetch<void>(getDeleteDatasourceUrl(organizationId,datasourceId,params),
+  {      
+    ...options,
+    method: 'DELETE'
+    
+    
+  }
+);}
+
+
+
+
+export const getDeleteDatasourceMutationFetcher = (organizationId: string,
+    datasourceId: string,
+    params?: DeleteDatasourceParams, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, __: { arg: Arguments }) => {
+    return deleteDatasource(organizationId, datasourceId, params, options);
+  }
+}
+export const getDeleteDatasourceMutationKey = (organizationId: string,
+    datasourceId: string,
+    params?: DeleteDatasourceParams,) => [`/v1/m/organizations/${organizationId}/datasources/${datasourceId}`, ...(params ? [params]: [])] as const;
+
+export type DeleteDatasourceMutationResult = NonNullable<Awaited<ReturnType<typeof deleteDatasource>>>
+export type DeleteDatasourceMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useDeleteDatasource = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  organizationId: string,
+    datasourceId: string,
+    params?: DeleteDatasourceParams, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof deleteDatasource>>, TError, Key, Arguments, Awaited<ReturnType<typeof deleteDatasource>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ??
-		getCommitExperimentMutationKey(datasourceId, experimentId);
-	const swrFn = getCommitExperimentMutationFetcher(
-		datasourceId,
-		experimentId,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getAbandonExperimentUrl = (
-	datasourceId: string,
-	experimentId: string,
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getDeleteDatasourceMutationKey(organizationId,datasourceId,params);
+  const swrFn = getDeleteDatasourceMutationFetcher(organizationId,datasourceId,params, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getListParticipantTypesUrl = (datasourceId: string,) => {
+
+
+  
+
+  return `/v1/m/datasources/${datasourceId}/participants`
+}
+
+export const listParticipantTypes = async (datasourceId: string, options?: RequestInit): Promise<ListParticipantsTypeResponse> => {
+  
+  return orvalFetch<ListParticipantsTypeResponse>(getListParticipantTypesUrl(datasourceId),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+export const getListParticipantTypesKey = (datasourceId: string,) => [`/v1/m/datasources/${datasourceId}/participants`] as const;
+
+export type ListParticipantTypesQueryResult = NonNullable<Awaited<ReturnType<typeof listParticipantTypes>>>
+export type ListParticipantTypesQueryError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useListParticipantTypes = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  datasourceId: string, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof listParticipantTypes>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
 ) => {
-	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/abandon`;
-};
-
-export const abandonExperiment = async (
-	datasourceId: string,
-	experimentId: string,
-	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(getAbandonExperimentUrl(datasourceId, experimentId), {
-		...options,
-		method: "POST",
-	});
-};
-
-export const getAbandonExperimentMutationFetcher = (
-	datasourceId: string,
-	experimentId: string,
-	options?: SecondParameter<typeof orvalFetch>,
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false && !!(datasourceId)
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getListParticipantTypesKey(datasourceId) : null);
+  const swrFn = () => listParticipantTypes(datasourceId, requestOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getCreateParticipantTypeUrl = (datasourceId: string,) => {
+
+
+  
+
+  return `/v1/m/datasources/${datasourceId}/participants`
+}
+
+export const createParticipantType = async (datasourceId: string,
+    createParticipantsTypeRequest: CreateParticipantsTypeRequest, options?: RequestInit): Promise<CreateParticipantsTypeResponse> => {
+  
+  return orvalFetch<CreateParticipantsTypeResponse>(getCreateParticipantTypeUrl(datasourceId),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      createParticipantsTypeRequest,)
+  }
+);}
+
+
+
+
+export const getCreateParticipantTypeMutationFetcher = (datasourceId: string, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, { arg }: { arg: CreateParticipantsTypeRequest }) => {
+    return createParticipantType(datasourceId, arg, options);
+  }
+}
+export const getCreateParticipantTypeMutationKey = (datasourceId: string,) => [`/v1/m/datasources/${datasourceId}/participants`] as const;
+
+export type CreateParticipantTypeMutationResult = NonNullable<Awaited<ReturnType<typeof createParticipantType>>>
+export type CreateParticipantTypeMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useCreateParticipantType = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  datasourceId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof createParticipantType>>, TError, Key, CreateParticipantsTypeRequest, Awaited<ReturnType<typeof createParticipantType>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	return (_: Key, __: { arg: Arguments }) => {
-		return abandonExperiment(datasourceId, experimentId, options);
-	};
-};
-export const getAbandonExperimentMutationKey = (
-	datasourceId: string,
-	experimentId: string,
-) =>
-	[
-		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/abandon`,
-	] as const;
-
-export type AbandonExperimentMutationResult = NonNullable<
-	Awaited<ReturnType<typeof abandonExperiment>>
->;
-export type AbandonExperimentMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useAbandonExperiment = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	experimentId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof abandonExperiment>>,
-			TError,
-			Key,
-			Arguments,
-			Awaited<ReturnType<typeof abandonExperiment>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getCreateParticipantTypeMutationKey(datasourceId);
+  const swrFn = getCreateParticipantTypeMutationFetcher(datasourceId, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getInspectParticipantTypesUrl = (datasourceId: string,
+    participantId: string,
+    params?: InspectParticipantTypesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/v1/m/datasources/${datasourceId}/participants/${participantId}/inspect?${stringifiedParams}` : `/v1/m/datasources/${datasourceId}/participants/${participantId}/inspect`
+}
+
+export const inspectParticipantTypes = async (datasourceId: string,
+    participantId: string,
+    params?: InspectParticipantTypesParams, options?: RequestInit): Promise<InspectParticipantTypesResponse> => {
+  
+  return orvalFetch<InspectParticipantTypesResponse>(getInspectParticipantTypesUrl(datasourceId,participantId,params),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+export const getInspectParticipantTypesKey = (datasourceId: string,
+    participantId: string,
+    params?: InspectParticipantTypesParams,) => [`/v1/m/datasources/${datasourceId}/participants/${participantId}/inspect`, ...(params ? [params]: [])] as const;
+
+export type InspectParticipantTypesQueryResult = NonNullable<Awaited<ReturnType<typeof inspectParticipantTypes>>>
+export type InspectParticipantTypesQueryError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>
+
+export const useInspectParticipantTypes = <TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>>(
+  datasourceId: string,
+    participantId: string,
+    params?: InspectParticipantTypesParams, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof inspectParticipantTypes>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
 ) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ??
-		getAbandonExperimentMutationKey(datasourceId, experimentId);
-	const swrFn = getAbandonExperimentMutationFetcher(
-		datasourceId,
-		experimentId,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getListOrganizationExperimentsUrl = (organizationId: string) => {
-	return `/v1/m/organizations/${organizationId}/experiments`;
-};
-
-export const listOrganizationExperiments = async (
-	organizationId: string,
-	options?: RequestInit,
-): Promise<ListExperimentsResponse> => {
-	return orvalFetch<ListExperimentsResponse>(
-		getListOrganizationExperimentsUrl(organizationId),
-		{
-			...options,
-			method: "GET",
-		},
-	);
-};
-
-export const getListOrganizationExperimentsKey = (organizationId: string) =>
-	[`/v1/m/organizations/${organizationId}/experiments`] as const;
-
-export type ListOrganizationExperimentsQueryResult = NonNullable<
-	Awaited<ReturnType<typeof listOrganizationExperiments>>
->;
-export type ListOrganizationExperimentsQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useListOrganizationExperiments = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	organizationId: string,
-	options?: {
-		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof listOrganizationExperiments>>,
-			TError
-		> & { swrKey?: Key; enabled?: boolean };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false && !!(datasourceId && participantId)
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getInspectParticipantTypesKey(datasourceId,participantId,params) : null);
+  const swrFn = () => inspectParticipantTypes(datasourceId,participantId,params, requestOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getGetParticipantTypeUrl = (datasourceId: string,
+    participantId: string,) => {
+
+
+  
+
+  return `/v1/m/datasources/${datasourceId}/participants/${participantId}`
+}
+
+export const getParticipantType = async (datasourceId: string,
+    participantId: string, options?: RequestInit): Promise<GetParticipantsTypeResponse> => {
+  
+  return orvalFetch<GetParticipantsTypeResponse>(getGetParticipantTypeUrl(datasourceId,participantId),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+export const getGetParticipantTypeKey = (datasourceId: string,
+    participantId: string,) => [`/v1/m/datasources/${datasourceId}/participants/${participantId}`] as const;
+
+export type GetParticipantTypeQueryResult = NonNullable<Awaited<ReturnType<typeof getParticipantType>>>
+export type GetParticipantTypeQueryError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>
+
+export const useGetParticipantType = <TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>>(
+  datasourceId: string,
+    participantId: string, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof getParticipantType>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
 ) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled = swrOptions?.enabled !== false && !!organizationId;
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() =>
-			isEnabled ? getListOrganizationExperimentsKey(organizationId) : null);
-	const swrFn = () =>
-		listOrganizationExperiments(organizationId, requestOptions);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getGetExperimentForUiUrl = (
-	datasourceId: string,
-	experimentId: string,
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false && !!(datasourceId && participantId)
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getGetParticipantTypeKey(datasourceId,participantId) : null);
+  const swrFn = () => getParticipantType(datasourceId,participantId, requestOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getUpdateParticipantTypeUrl = (datasourceId: string,
+    participantId: string,) => {
+
+
+  
+
+  return `/v1/m/datasources/${datasourceId}/participants/${participantId}`
+}
+
+export const updateParticipantType = async (datasourceId: string,
+    participantId: string,
+    updateParticipantsTypeRequest: UpdateParticipantsTypeRequest, options?: RequestInit): Promise<UpdateParticipantsTypeResponse> => {
+  
+  return orvalFetch<UpdateParticipantsTypeResponse>(getUpdateParticipantTypeUrl(datasourceId,participantId),
+  {      
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      updateParticipantsTypeRequest,)
+  }
+);}
+
+
+
+
+export const getUpdateParticipantTypeMutationFetcher = (datasourceId: string,
+    participantId: string, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, { arg }: { arg: UpdateParticipantsTypeRequest }) => {
+    return updateParticipantType(datasourceId, participantId, arg, options);
+  }
+}
+export const getUpdateParticipantTypeMutationKey = (datasourceId: string,
+    participantId: string,) => [`/v1/m/datasources/${datasourceId}/participants/${participantId}`] as const;
+
+export type UpdateParticipantTypeMutationResult = NonNullable<Awaited<ReturnType<typeof updateParticipantType>>>
+export type UpdateParticipantTypeMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useUpdateParticipantType = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  datasourceId: string,
+    participantId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof updateParticipantType>>, TError, Key, UpdateParticipantsTypeRequest, Awaited<ReturnType<typeof updateParticipantType>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}`;
-};
-
-export const getExperimentForUi = async (
-	datasourceId: string,
-	experimentId: string,
-	options?: RequestInit,
-): Promise<GetExperimentForUiResponse> => {
-	return orvalFetch<GetExperimentForUiResponse>(
-		getGetExperimentForUiUrl(datasourceId, experimentId),
-		{
-			...options,
-			method: "GET",
-		},
-	);
-};
-
-export const getGetExperimentForUiKey = (
-	datasourceId: string,
-	experimentId: string,
-) => [`/v1/m/datasources/${datasourceId}/experiments/${experimentId}`] as const;
-
-export type GetExperimentForUiQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getExperimentForUi>>
->;
-export type GetExperimentForUiQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useGetExperimentForUi = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	experimentId: string,
-	options?: {
-		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof getExperimentForUi>>,
-			TError
-		> & { swrKey?: Key; enabled?: boolean };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getUpdateParticipantTypeMutationKey(datasourceId,participantId);
+  const swrFn = getUpdateParticipantTypeMutationFetcher(datasourceId,participantId, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getDeleteParticipantUrl = (datasourceId: string,
+    participantId: string,
+    params?: DeleteParticipantParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/v1/m/datasources/${datasourceId}/participants/${participantId}?${stringifiedParams}` : `/v1/m/datasources/${datasourceId}/participants/${participantId}`
+}
+
+export const deleteParticipant = async (datasourceId: string,
+    participantId: string,
+    params?: DeleteParticipantParams, options?: RequestInit): Promise<void> => {
+  
+  return orvalFetch<void>(getDeleteParticipantUrl(datasourceId,participantId,params),
+  {      
+    ...options,
+    method: 'DELETE'
+    
+    
+  }
+);}
+
+
+
+
+export const getDeleteParticipantMutationFetcher = (datasourceId: string,
+    participantId: string,
+    params?: DeleteParticipantParams, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, __: { arg: Arguments }) => {
+    return deleteParticipant(datasourceId, participantId, params, options);
+  }
+}
+export const getDeleteParticipantMutationKey = (datasourceId: string,
+    participantId: string,
+    params?: DeleteParticipantParams,) => [`/v1/m/datasources/${datasourceId}/participants/${participantId}`, ...(params ? [params]: [])] as const;
+
+export type DeleteParticipantMutationResult = NonNullable<Awaited<ReturnType<typeof deleteParticipant>>>
+export type DeleteParticipantMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useDeleteParticipant = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  datasourceId: string,
+    participantId: string,
+    params?: DeleteParticipantParams, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof deleteParticipant>>, TError, Key, Arguments, Awaited<ReturnType<typeof deleteParticipant>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled =
-		swrOptions?.enabled !== false && !!(datasourceId && experimentId);
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() =>
-			isEnabled ? getGetExperimentForUiKey(datasourceId, experimentId) : null);
-	const swrFn = () =>
-		getExperimentForUi(datasourceId, experimentId, requestOptions);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getUpdateExperimentUrl = (
-	datasourceId: string,
-	experimentId: string,
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getDeleteParticipantMutationKey(datasourceId,participantId,params);
+  const swrFn = getDeleteParticipantMutationFetcher(datasourceId,participantId,params, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getListApiKeysUrl = (datasourceId: string,) => {
+
+
+  
+
+  return `/v1/m/datasources/${datasourceId}/apikeys`
+}
+
+export const listApiKeys = async (datasourceId: string, options?: RequestInit): Promise<ListApiKeysResponse> => {
+  
+  return orvalFetch<ListApiKeysResponse>(getListApiKeysUrl(datasourceId),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+export const getListApiKeysKey = (datasourceId: string,) => [`/v1/m/datasources/${datasourceId}/apikeys`] as const;
+
+export type ListApiKeysQueryResult = NonNullable<Awaited<ReturnType<typeof listApiKeys>>>
+export type ListApiKeysQueryError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useListApiKeys = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  datasourceId: string, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof listApiKeys>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
 ) => {
-	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}`;
-};
-
-export const updateExperiment = async (
-	datasourceId: string,
-	experimentId: string,
-	updateExperimentRequest: UpdateExperimentRequest,
-	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(getUpdateExperimentUrl(datasourceId, experimentId), {
-		...options,
-		method: "PATCH",
-		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(updateExperimentRequest),
-	});
-};
-
-export const getUpdateExperimentMutationFetcher = (
-	datasourceId: string,
-	experimentId: string,
-	options?: SecondParameter<typeof orvalFetch>,
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false && !!(datasourceId)
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getListApiKeysKey(datasourceId) : null);
+  const swrFn = () => listApiKeys(datasourceId, requestOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getCreateApiKeyUrl = (datasourceId: string,) => {
+
+
+  
+
+  return `/v1/m/datasources/${datasourceId}/apikeys`
+}
+
+export const createApiKey = async (datasourceId: string, options?: RequestInit): Promise<CreateApiKeyResponse> => {
+  
+  return orvalFetch<CreateApiKeyResponse>(getCreateApiKeyUrl(datasourceId),
+  {      
+    ...options,
+    method: 'POST'
+    
+    
+  }
+);}
+
+
+
+
+export const getCreateApiKeyMutationFetcher = (datasourceId: string, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, __: { arg: Arguments }) => {
+    return createApiKey(datasourceId, options);
+  }
+}
+export const getCreateApiKeyMutationKey = (datasourceId: string,) => [`/v1/m/datasources/${datasourceId}/apikeys`] as const;
+
+export type CreateApiKeyMutationResult = NonNullable<Awaited<ReturnType<typeof createApiKey>>>
+export type CreateApiKeyMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useCreateApiKey = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  datasourceId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof createApiKey>>, TError, Key, Arguments, Awaited<ReturnType<typeof createApiKey>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	return (_: Key, { arg }: { arg: UpdateExperimentRequest }) => {
-		return updateExperiment(datasourceId, experimentId, arg, options);
-	};
-};
-export const getUpdateExperimentMutationKey = (
-	datasourceId: string,
-	experimentId: string,
-) => [`/v1/m/datasources/${datasourceId}/experiments/${experimentId}`] as const;
-
-export type UpdateExperimentMutationResult = NonNullable<
-	Awaited<ReturnType<typeof updateExperiment>>
->;
-export type UpdateExperimentMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useUpdateExperiment = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	experimentId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof updateExperiment>>,
-			TError,
-			Key,
-			UpdateExperimentRequest,
-			Awaited<ReturnType<typeof updateExperiment>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getCreateApiKeyMutationKey(datasourceId);
+  const swrFn = getCreateApiKeyMutationFetcher(datasourceId, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getDeleteApiKeyUrl = (datasourceId: string,
+    apiKeyId: string,
+    params?: DeleteApiKeyParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/v1/m/datasources/${datasourceId}/apikeys/${apiKeyId}?${stringifiedParams}` : `/v1/m/datasources/${datasourceId}/apikeys/${apiKeyId}`
+}
+
+export const deleteApiKey = async (datasourceId: string,
+    apiKeyId: string,
+    params?: DeleteApiKeyParams, options?: RequestInit): Promise<void> => {
+  
+  return orvalFetch<void>(getDeleteApiKeyUrl(datasourceId,apiKeyId,params),
+  {      
+    ...options,
+    method: 'DELETE'
+    
+    
+  }
+);}
+
+
+
+
+export const getDeleteApiKeyMutationFetcher = (datasourceId: string,
+    apiKeyId: string,
+    params?: DeleteApiKeyParams, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, __: { arg: Arguments }) => {
+    return deleteApiKey(datasourceId, apiKeyId, params, options);
+  }
+}
+export const getDeleteApiKeyMutationKey = (datasourceId: string,
+    apiKeyId: string,
+    params?: DeleteApiKeyParams,) => [`/v1/m/datasources/${datasourceId}/apikeys/${apiKeyId}`, ...(params ? [params]: [])] as const;
+
+export type DeleteApiKeyMutationResult = NonNullable<Awaited<ReturnType<typeof deleteApiKey>>>
+export type DeleteApiKeyMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useDeleteApiKey = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  datasourceId: string,
+    apiKeyId: string,
+    params?: DeleteApiKeyParams, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof deleteApiKey>>, TError, Key, Arguments, Awaited<ReturnType<typeof deleteApiKey>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ??
-		getUpdateExperimentMutationKey(datasourceId, experimentId);
-	const swrFn = getUpdateExperimentMutationFetcher(
-		datasourceId,
-		experimentId,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getDeleteExperimentUrl = (
-	datasourceId: string,
-	experimentId: string,
-	params?: DeleteExperimentParams,
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getDeleteApiKeyMutationKey(datasourceId,apiKeyId,params);
+  const swrFn = getDeleteApiKeyMutationFetcher(datasourceId,apiKeyId,params, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getCreateExperimentUrl = (datasourceId: string,
+    params?: CreateExperimentParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/v1/m/datasources/${datasourceId}/experiments?${stringifiedParams}` : `/v1/m/datasources/${datasourceId}/experiments`
+}
+
+export const createExperiment = async (datasourceId: string,
+    createExperimentRequest: CreateExperimentRequest,
+    params?: CreateExperimentParams, options?: RequestInit): Promise<CreateExperimentResponse> => {
+  
+  return orvalFetch<CreateExperimentResponse>(getCreateExperimentUrl(datasourceId,params),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      createExperimentRequest,)
+  }
+);}
+
+
+
+
+export const getCreateExperimentMutationFetcher = (datasourceId: string,
+    params?: CreateExperimentParams, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, { arg }: { arg: CreateExperimentRequest }) => {
+    return createExperiment(datasourceId, arg, params, options);
+  }
+}
+export const getCreateExperimentMutationKey = (datasourceId: string,
+    params?: CreateExperimentParams,) => [`/v1/m/datasources/${datasourceId}/experiments`, ...(params ? [params]: [])] as const;
+
+export type CreateExperimentMutationResult = NonNullable<Awaited<ReturnType<typeof createExperiment>>>
+export type CreateExperimentMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useCreateExperiment = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  datasourceId: string,
+    params?: CreateExperimentParams, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof createExperiment>>, TError, Key, CreateExperimentRequest, Awaited<ReturnType<typeof createExperiment>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
-
-	const stringifiedParams = normalizedParams.toString();
-
-	return stringifiedParams.length > 0
-		? `/v1/m/datasources/${datasourceId}/experiments/${experimentId}?${stringifiedParams}`
-		: `/v1/m/datasources/${datasourceId}/experiments/${experimentId}`;
-};
-
-export const deleteExperiment = async (
-	datasourceId: string,
-	experimentId: string,
-	params?: DeleteExperimentParams,
-	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(
-		getDeleteExperimentUrl(datasourceId, experimentId, params),
-		{
-			...options,
-			method: "DELETE",
-		},
-	);
-};
-
-export const getDeleteExperimentMutationFetcher = (
-	datasourceId: string,
-	experimentId: string,
-	params?: DeleteExperimentParams,
-	options?: SecondParameter<typeof orvalFetch>,
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getCreateExperimentMutationKey(datasourceId,params);
+  const swrFn = getCreateExperimentMutationFetcher(datasourceId,params, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getAnalyzeExperimentUrl = (datasourceId: string,
+    experimentId: string,
+    params?: AnalyzeExperimentParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/analyze?${stringifiedParams}` : `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/analyze`
+}
+
+export const analyzeExperiment = async (datasourceId: string,
+    experimentId: string,
+    params?: AnalyzeExperimentParams, options?: RequestInit): Promise<ExperimentAnalysisResponse> => {
+  
+  return orvalFetch<ExperimentAnalysisResponse>(getAnalyzeExperimentUrl(datasourceId,experimentId,params),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+export const getAnalyzeExperimentKey = (datasourceId: string,
+    experimentId: string,
+    params?: AnalyzeExperimentParams,) => [`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/analyze`, ...(params ? [params]: [])] as const;
+
+export type AnalyzeExperimentQueryResult = NonNullable<Awaited<ReturnType<typeof analyzeExperiment>>>
+export type AnalyzeExperimentQueryError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useAnalyzeExperiment = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  datasourceId: string,
+    experimentId: string,
+    params?: AnalyzeExperimentParams, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof analyzeExperiment>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
 ) => {
-	return (_: Key, __: { arg: Arguments }) => {
-		return deleteExperiment(datasourceId, experimentId, params, options);
-	};
-};
-export const getDeleteExperimentMutationKey = (
-	datasourceId: string,
-	experimentId: string,
-	params?: DeleteExperimentParams,
-) =>
-	[
-		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}`,
-		...(params ? [params] : []),
-	] as const;
-
-export type DeleteExperimentMutationResult = NonNullable<
-	Awaited<ReturnType<typeof deleteExperiment>>
->;
-export type DeleteExperimentMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useDeleteExperiment = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	experimentId: string,
-	params?: DeleteExperimentParams,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof deleteExperiment>>,
-			TError,
-			Key,
-			Arguments,
-			Awaited<ReturnType<typeof deleteExperiment>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false && !!(datasourceId && experimentId)
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getAnalyzeExperimentKey(datasourceId,experimentId,params) : null);
+  const swrFn = () => analyzeExperiment(datasourceId,experimentId,params, requestOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getAnalyzeCmabExperimentUrl = (datasourceId: string,
+    experimentId: string,) => {
+
+
+  
+
+  return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/analyze_cmab`
+}
+
+export const analyzeCmabExperiment = async (datasourceId: string,
+    experimentId: string,
+    cMABContextInputRequest: CMABContextInputRequest, options?: RequestInit): Promise<ExperimentAnalysisResponse> => {
+  
+  return orvalFetch<ExperimentAnalysisResponse>(getAnalyzeCmabExperimentUrl(datasourceId,experimentId),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      cMABContextInputRequest,)
+  }
+);}
+
+
+
+
+export const getAnalyzeCmabExperimentMutationFetcher = (datasourceId: string,
+    experimentId: string, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, { arg }: { arg: CMABContextInputRequest }) => {
+    return analyzeCmabExperiment(datasourceId, experimentId, arg, options);
+  }
+}
+export const getAnalyzeCmabExperimentMutationKey = (datasourceId: string,
+    experimentId: string,) => [`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/analyze_cmab`] as const;
+
+export type AnalyzeCmabExperimentMutationResult = NonNullable<Awaited<ReturnType<typeof analyzeCmabExperiment>>>
+export type AnalyzeCmabExperimentMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useAnalyzeCmabExperiment = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  datasourceId: string,
+    experimentId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof analyzeCmabExperiment>>, TError, Key, CMABContextInputRequest, Awaited<ReturnType<typeof analyzeCmabExperiment>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ??
-		getDeleteExperimentMutationKey(datasourceId, experimentId, params);
-	const swrFn = getDeleteExperimentMutationFetcher(
-		datasourceId,
-		experimentId,
-		params,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getGetExperimentAssignmentsAsCsvForUiUrl = (
-	datasourceId: string,
-	experimentId: string,
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getAnalyzeCmabExperimentMutationKey(datasourceId,experimentId);
+  const swrFn = getAnalyzeCmabExperimentMutationFetcher(datasourceId,experimentId, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getCommitExperimentUrl = (datasourceId: string,
+    experimentId: string,) => {
+
+
+  
+
+  return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/commit`
+}
+
+export const commitExperiment = async (datasourceId: string,
+    experimentId: string, options?: RequestInit): Promise<void> => {
+  
+  return orvalFetch<void>(getCommitExperimentUrl(datasourceId,experimentId),
+  {      
+    ...options,
+    method: 'POST'
+    
+    
+  }
+);}
+
+
+
+
+export const getCommitExperimentMutationFetcher = (datasourceId: string,
+    experimentId: string, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, __: { arg: Arguments }) => {
+    return commitExperiment(datasourceId, experimentId, options);
+  }
+}
+export const getCommitExperimentMutationKey = (datasourceId: string,
+    experimentId: string,) => [`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/commit`] as const;
+
+export type CommitExperimentMutationResult = NonNullable<Awaited<ReturnType<typeof commitExperiment>>>
+export type CommitExperimentMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useCommitExperiment = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  datasourceId: string,
+    experimentId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof commitExperiment>>, TError, Key, Arguments, Awaited<ReturnType<typeof commitExperiment>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments/csv`;
-};
-
-export const getExperimentAssignmentsAsCsvForUi = async (
-	datasourceId: string,
-	experimentId: string,
-	options?: RequestInit,
-): Promise<string> => {
-	return orvalFetch<string>(
-		getGetExperimentAssignmentsAsCsvForUiUrl(datasourceId, experimentId),
-		{
-			...options,
-			method: "GET",
-		},
-	);
-};
-
-export const getGetExperimentAssignmentsAsCsvForUiKey = (
-	datasourceId: string,
-	experimentId: string,
-) =>
-	[
-		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments/csv`,
-	] as const;
-
-export type GetExperimentAssignmentsAsCsvForUiQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getExperimentAssignmentsAsCsvForUi>>
->;
-export type GetExperimentAssignmentsAsCsvForUiQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useGetExperimentAssignmentsAsCsvForUi = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	experimentId: string,
-	options?: {
-		swr?: SWRConfiguration<
-			Awaited<ReturnType<typeof getExperimentAssignmentsAsCsvForUi>>,
-			TError
-		> & { swrKey?: Key; enabled?: boolean };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getCommitExperimentMutationKey(datasourceId,experimentId);
+  const swrFn = getCommitExperimentMutationFetcher(datasourceId,experimentId, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getAbandonExperimentUrl = (datasourceId: string,
+    experimentId: string,) => {
+
+
+  
+
+  return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/abandon`
+}
+
+export const abandonExperiment = async (datasourceId: string,
+    experimentId: string, options?: RequestInit): Promise<void> => {
+  
+  return orvalFetch<void>(getAbandonExperimentUrl(datasourceId,experimentId),
+  {      
+    ...options,
+    method: 'POST'
+    
+    
+  }
+);}
+
+
+
+
+export const getAbandonExperimentMutationFetcher = (datasourceId: string,
+    experimentId: string, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, __: { arg: Arguments }) => {
+    return abandonExperiment(datasourceId, experimentId, options);
+  }
+}
+export const getAbandonExperimentMutationKey = (datasourceId: string,
+    experimentId: string,) => [`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/abandon`] as const;
+
+export type AbandonExperimentMutationResult = NonNullable<Awaited<ReturnType<typeof abandonExperiment>>>
+export type AbandonExperimentMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useAbandonExperiment = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  datasourceId: string,
+    experimentId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof abandonExperiment>>, TError, Key, Arguments, Awaited<ReturnType<typeof abandonExperiment>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const isEnabled =
-		swrOptions?.enabled !== false && !!(datasourceId && experimentId);
-	const swrKey =
-		swrOptions?.swrKey ??
-		(() =>
-			isEnabled
-				? getGetExperimentAssignmentsAsCsvForUiKey(datasourceId, experimentId)
-				: null);
-	const swrFn = () =>
-		getExperimentAssignmentsAsCsvForUi(
-			datasourceId,
-			experimentId,
-			requestOptions,
-		);
-
-	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
-		swrKey,
-		swrFn,
-		swrOptions,
-	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getDeleteExperimentDataUrl = (
-	datasourceId: string,
-	experimentId: string,
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getAbandonExperimentMutationKey(datasourceId,experimentId);
+  const swrFn = getAbandonExperimentMutationFetcher(datasourceId,experimentId, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getListOrganizationExperimentsUrl = (organizationId: string,) => {
+
+
+  
+
+  return `/v1/m/organizations/${organizationId}/experiments`
+}
+
+export const listOrganizationExperiments = async (organizationId: string, options?: RequestInit): Promise<ListExperimentsResponse> => {
+  
+  return orvalFetch<ListExperimentsResponse>(getListOrganizationExperimentsUrl(organizationId),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+export const getListOrganizationExperimentsKey = (organizationId: string,) => [`/v1/m/organizations/${organizationId}/experiments`] as const;
+
+export type ListOrganizationExperimentsQueryResult = NonNullable<Awaited<ReturnType<typeof listOrganizationExperiments>>>
+export type ListOrganizationExperimentsQueryError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useListOrganizationExperiments = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  organizationId: string, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof listOrganizationExperiments>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
 ) => {
-	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/data`;
-};
-
-export const deleteExperimentData = async (
-	datasourceId: string,
-	experimentId: string,
-	deleteExperimentDataRequest: DeleteExperimentDataRequest,
-	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(
-		getDeleteExperimentDataUrl(datasourceId, experimentId),
-		{
-			...options,
-			method: "DELETE",
-			headers: { "Content-Type": "application/json", ...options?.headers },
-			body: JSON.stringify(deleteExperimentDataRequest),
-		},
-	);
-};
-
-export const getDeleteExperimentDataMutationFetcher = (
-	datasourceId: string,
-	experimentId: string,
-	options?: SecondParameter<typeof orvalFetch>,
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false && !!(organizationId)
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getListOrganizationExperimentsKey(organizationId) : null);
+  const swrFn = () => listOrganizationExperiments(organizationId, requestOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getGetExperimentForUiUrl = (datasourceId: string,
+    experimentId: string,) => {
+
+
+  
+
+  return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}`
+}
+
+export const getExperimentForUi = async (datasourceId: string,
+    experimentId: string, options?: RequestInit): Promise<GetExperimentForUiResponse> => {
+  
+  return orvalFetch<GetExperimentForUiResponse>(getGetExperimentForUiUrl(datasourceId,experimentId),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+export const getGetExperimentForUiKey = (datasourceId: string,
+    experimentId: string,) => [`/v1/m/datasources/${datasourceId}/experiments/${experimentId}`] as const;
+
+export type GetExperimentForUiQueryResult = NonNullable<Awaited<ReturnType<typeof getExperimentForUi>>>
+export type GetExperimentForUiQueryError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useGetExperimentForUi = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  datasourceId: string,
+    experimentId: string, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof getExperimentForUi>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
 ) => {
-	return (_: Key, { arg }: { arg: DeleteExperimentDataRequest }) => {
-		return deleteExperimentData(datasourceId, experimentId, arg, options);
-	};
-};
-export const getDeleteExperimentDataMutationKey = (
-	datasourceId: string,
-	experimentId: string,
-) =>
-	[
-		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/data`,
-	] as const;
-
-export type DeleteExperimentDataMutationResult = NonNullable<
-	Awaited<ReturnType<typeof deleteExperimentData>>
->;
-export type DeleteExperimentDataMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useDeleteExperimentData = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	experimentId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof deleteExperimentData>>,
-			TError,
-			Key,
-			DeleteExperimentDataRequest,
-			Awaited<ReturnType<typeof deleteExperimentData>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false && !!(datasourceId && experimentId)
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getGetExperimentForUiKey(datasourceId,experimentId) : null);
+  const swrFn = () => getExperimentForUi(datasourceId,experimentId, requestOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getUpdateExperimentUrl = (datasourceId: string,
+    experimentId: string,) => {
+
+
+  
+
+  return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}`
+}
+
+export const updateExperiment = async (datasourceId: string,
+    experimentId: string,
+    updateExperimentRequest: UpdateExperimentRequest, options?: RequestInit): Promise<void> => {
+  
+  return orvalFetch<void>(getUpdateExperimentUrl(datasourceId,experimentId),
+  {      
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      updateExperimentRequest,)
+  }
+);}
+
+
+
+
+export const getUpdateExperimentMutationFetcher = (datasourceId: string,
+    experimentId: string, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, { arg }: { arg: UpdateExperimentRequest }) => {
+    return updateExperiment(datasourceId, experimentId, arg, options);
+  }
+}
+export const getUpdateExperimentMutationKey = (datasourceId: string,
+    experimentId: string,) => [`/v1/m/datasources/${datasourceId}/experiments/${experimentId}`] as const;
+
+export type UpdateExperimentMutationResult = NonNullable<Awaited<ReturnType<typeof updateExperiment>>>
+export type UpdateExperimentMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useUpdateExperiment = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  datasourceId: string,
+    experimentId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof updateExperiment>>, TError, Key, UpdateExperimentRequest, Awaited<ReturnType<typeof updateExperiment>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ??
-		getDeleteExperimentDataMutationKey(datasourceId, experimentId);
-	const swrFn = getDeleteExperimentDataMutationFetcher(
-		datasourceId,
-		experimentId,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getUpdateArmUrl = (
-	datasourceId: string,
-	experimentId: string,
-	armId: string,
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getUpdateExperimentMutationKey(datasourceId,experimentId);
+  const swrFn = getUpdateExperimentMutationFetcher(datasourceId,experimentId, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getDeleteExperimentUrl = (datasourceId: string,
+    experimentId: string,
+    params?: DeleteExperimentParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/v1/m/datasources/${datasourceId}/experiments/${experimentId}?${stringifiedParams}` : `/v1/m/datasources/${datasourceId}/experiments/${experimentId}`
+}
+
+export const deleteExperiment = async (datasourceId: string,
+    experimentId: string,
+    params?: DeleteExperimentParams, options?: RequestInit): Promise<void> => {
+  
+  return orvalFetch<void>(getDeleteExperimentUrl(datasourceId,experimentId,params),
+  {      
+    ...options,
+    method: 'DELETE'
+    
+    
+  }
+);}
+
+
+
+
+export const getDeleteExperimentMutationFetcher = (datasourceId: string,
+    experimentId: string,
+    params?: DeleteExperimentParams, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, __: { arg: Arguments }) => {
+    return deleteExperiment(datasourceId, experimentId, params, options);
+  }
+}
+export const getDeleteExperimentMutationKey = (datasourceId: string,
+    experimentId: string,
+    params?: DeleteExperimentParams,) => [`/v1/m/datasources/${datasourceId}/experiments/${experimentId}`, ...(params ? [params]: [])] as const;
+
+export type DeleteExperimentMutationResult = NonNullable<Awaited<ReturnType<typeof deleteExperiment>>>
+export type DeleteExperimentMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useDeleteExperiment = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  datasourceId: string,
+    experimentId: string,
+    params?: DeleteExperimentParams, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof deleteExperiment>>, TError, Key, Arguments, Awaited<ReturnType<typeof deleteExperiment>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/arms/${armId}`;
-};
-
-export const updateArm = async (
-	datasourceId: string,
-	experimentId: string,
-	armId: string,
-	updateArmRequest: UpdateArmRequest,
-	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(getUpdateArmUrl(datasourceId, experimentId, armId), {
-		...options,
-		method: "PATCH",
-		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(updateArmRequest),
-	});
-};
-
-export const getUpdateArmMutationFetcher = (
-	datasourceId: string,
-	experimentId: string,
-	armId: string,
-	options?: SecondParameter<typeof orvalFetch>,
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getDeleteExperimentMutationKey(datasourceId,experimentId,params);
+  const swrFn = getDeleteExperimentMutationFetcher(datasourceId,experimentId,params, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getGetExperimentAssignmentsAsCsvForUiUrl = (datasourceId: string,
+    experimentId: string,) => {
+
+
+  
+
+  return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments/csv`
+}
+
+export const getExperimentAssignmentsAsCsvForUi = async (datasourceId: string,
+    experimentId: string, options?: RequestInit): Promise<string> => {
+  
+  return orvalFetch<string>(getGetExperimentAssignmentsAsCsvForUiUrl(datasourceId,experimentId),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+export const getGetExperimentAssignmentsAsCsvForUiKey = (datasourceId: string,
+    experimentId: string,) => [`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/assignments/csv`] as const;
+
+export type GetExperimentAssignmentsAsCsvForUiQueryResult = NonNullable<Awaited<ReturnType<typeof getExperimentAssignmentsAsCsvForUi>>>
+export type GetExperimentAssignmentsAsCsvForUiQueryError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useGetExperimentAssignmentsAsCsvForUi = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  datasourceId: string,
+    experimentId: string, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof getExperimentAssignmentsAsCsvForUi>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
 ) => {
-	return (_: Key, { arg }: { arg: UpdateArmRequest }) => {
-		return updateArm(datasourceId, experimentId, armId, arg, options);
-	};
-};
-export const getUpdateArmMutationKey = (
-	datasourceId: string,
-	experimentId: string,
-	armId: string,
-) =>
-	[
-		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/arms/${armId}`,
-	] as const;
-
-export type UpdateArmMutationResult = NonNullable<
-	Awaited<ReturnType<typeof updateArm>>
->;
-export type UpdateArmMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useUpdateArm = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	datasourceId: string,
-	experimentId: string,
-	armId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof updateArm>>,
-			TError,
-			Key,
-			UpdateArmRequest,
-			Awaited<ReturnType<typeof updateArm>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false && !!(datasourceId && experimentId)
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getGetExperimentAssignmentsAsCsvForUiKey(datasourceId,experimentId) : null);
+  const swrFn = () => getExperimentAssignmentsAsCsvForUi(datasourceId,experimentId, requestOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getDeleteExperimentDataUrl = (datasourceId: string,
+    experimentId: string,) => {
+
+
+  
+
+  return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/data`
+}
+
+export const deleteExperimentData = async (datasourceId: string,
+    experimentId: string,
+    deleteExperimentDataRequest: DeleteExperimentDataRequest, options?: RequestInit): Promise<void> => {
+  
+  return orvalFetch<void>(getDeleteExperimentDataUrl(datasourceId,experimentId),
+  {      
+    ...options,
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      deleteExperimentDataRequest,)
+  }
+);}
+
+
+
+
+export const getDeleteExperimentDataMutationFetcher = (datasourceId: string,
+    experimentId: string, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, { arg }: { arg: DeleteExperimentDataRequest }) => {
+    return deleteExperimentData(datasourceId, experimentId, arg, options);
+  }
+}
+export const getDeleteExperimentDataMutationKey = (datasourceId: string,
+    experimentId: string,) => [`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/data`] as const;
+
+export type DeleteExperimentDataMutationResult = NonNullable<Awaited<ReturnType<typeof deleteExperimentData>>>
+export type DeleteExperimentDataMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useDeleteExperimentData = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  datasourceId: string,
+    experimentId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof deleteExperimentData>>, TError, Key, DeleteExperimentDataRequest, Awaited<ReturnType<typeof deleteExperimentData>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ??
-		getUpdateArmMutationKey(datasourceId, experimentId, armId);
-	const swrFn = getUpdateArmMutationFetcher(
-		datasourceId,
-		experimentId,
-		armId,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getPowerCheckUrl = (datasourceId: string) => {
-	return `/v1/m/datasources/${datasourceId}/power`;
-};
-
-export const powerCheck = async (
-	datasourceId: string,
-	powerRequest: PowerRequest,
-	options?: RequestInit,
-): Promise<PowerResponse> => {
-	return orvalFetch<PowerResponse>(getPowerCheckUrl(datasourceId), {
-		...options,
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(powerRequest),
-	});
-};
-
-export const getPowerCheckMutationFetcher = (
-	datasourceId: string,
-	options?: SecondParameter<typeof orvalFetch>,
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getDeleteExperimentDataMutationKey(datasourceId,experimentId);
+  const swrFn = getDeleteExperimentDataMutationFetcher(datasourceId,experimentId, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getUpdateArmUrl = (datasourceId: string,
+    experimentId: string,
+    armId: string,) => {
+
+
+  
+
+  return `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/arms/${armId}`
+}
+
+export const updateArm = async (datasourceId: string,
+    experimentId: string,
+    armId: string,
+    updateArmRequest: UpdateArmRequest, options?: RequestInit): Promise<void> => {
+  
+  return orvalFetch<void>(getUpdateArmUrl(datasourceId,experimentId,armId),
+  {      
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      updateArmRequest,)
+  }
+);}
+
+
+
+
+export const getUpdateArmMutationFetcher = (datasourceId: string,
+    experimentId: string,
+    armId: string, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, { arg }: { arg: UpdateArmRequest }) => {
+    return updateArm(datasourceId, experimentId, armId, arg, options);
+  }
+}
+export const getUpdateArmMutationKey = (datasourceId: string,
+    experimentId: string,
+    armId: string,) => [`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/arms/${armId}`] as const;
+
+export type UpdateArmMutationResult = NonNullable<Awaited<ReturnType<typeof updateArm>>>
+export type UpdateArmMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
+
+export const useUpdateArm = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
+  datasourceId: string,
+    experimentId: string,
+    armId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof updateArm>>, TError, Key, UpdateArmRequest, Awaited<ReturnType<typeof updateArm>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	return (_: Key, { arg }: { arg: PowerRequest }) => {
-		return powerCheck(datasourceId, arg, options);
-	};
-};
-export const getPowerCheckMutationKey = (datasourceId: string) =>
-	[`/v1/m/datasources/${datasourceId}/power`] as const;
-
-export type PowerCheckMutationResult = NonNullable<
-	Awaited<ReturnType<typeof powerCheck>>
->;
-export type PowerCheckMutationError = ErrorType<
-	HTTPExceptionError | MessageError | XHTTPValidationError
->;
-
-export const usePowerCheck = <
-	TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>,
->(
-	datasourceId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof powerCheck>>,
-			TError,
-			Key,
-			PowerRequest,
-			Awaited<ReturnType<typeof powerCheck>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getUpdateArmMutationKey(datasourceId,experimentId,armId);
+  const swrFn = getUpdateArmMutationFetcher(datasourceId,experimentId,armId, requestOptions);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+export const getPowerCheckUrl = (datasourceId: string,) => {
+
+
+  
+
+  return `/v1/m/datasources/${datasourceId}/power`
+}
+
+export const powerCheck = async (datasourceId: string,
+    powerRequest: PowerRequest, options?: RequestInit): Promise<PowerResponse> => {
+  
+  return orvalFetch<PowerResponse>(getPowerCheckUrl(datasourceId),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      powerRequest,)
+  }
+);}
+
+
+
+
+export const getPowerCheckMutationFetcher = (datasourceId: string, options?: SecondParameter<typeof orvalFetch>) => {
+  return (_: Key, { arg }: { arg: PowerRequest }) => {
+    return powerCheck(datasourceId, arg, options);
+  }
+}
+export const getPowerCheckMutationKey = (datasourceId: string,) => [`/v1/m/datasources/${datasourceId}/power`] as const;
+
+export type PowerCheckMutationResult = NonNullable<Awaited<ReturnType<typeof powerCheck>>>
+export type PowerCheckMutationError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>
+
+export const usePowerCheck = <TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>>(
+  datasourceId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof powerCheck>>, TError, Key, PowerRequest, Awaited<ReturnType<typeof powerCheck>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
 ) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+  const {swr: swrOptions, request: requestOptions} = options ?? {}
 
-	const swrKey = swrOptions?.swrKey ?? getPowerCheckMutationKey(datasourceId);
-	const swrFn = getPowerCheckMutationFetcher(datasourceId, requestOptions);
+  const swrKey = swrOptions?.swrKey ?? getPowerCheckMutationKey(datasourceId);
+  const swrFn = getPowerCheckMutationFetcher(datasourceId, requestOptions);
 
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
 
-	return {
-		swrKey,
-		...query,
-	};
-};
+  return {
+    swrKey,
+    ...query
+  }
+}
