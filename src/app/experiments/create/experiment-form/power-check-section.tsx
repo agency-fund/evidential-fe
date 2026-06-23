@@ -198,7 +198,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
           {primaryPower && (
             <Callout.Root color={primaryPower.sufficient_n ? 'green' : 'red'}>
               <Callout.Icon>{primaryPower.sufficient_n ? <CheckCircledIcon /> : <CrossCircledIcon />}</Callout.Icon>
-              <Callout.Text>
+              <Callout.Text as="div">
                 <Flex direction="column" gap="2">
                   <Text>
                     {primaryPower.msg?.msg ||
