@@ -3,14 +3,21 @@
 import { Badge, Button, DataList, Flex, Text, Tooltip } from '@radix-ui/themes';
 import { Pencil2Icon, InfoCircledIcon } from '@radix-ui/react-icons';
 import { AssignSummary, MetricPowerAnalysis } from '@/api/methods.schemas';
+import { MetricSampleSizeDisplay } from '@/app/experiments/create/experiment-form/metric-sample-size-display';
+import { getPowerAnalysis } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import { SectionCard } from '@/components/ui/cards/section-card';
+
+const formatClusterStat = (value: number | null | undefined, decimalPlaces = 2): string =>
+  value == null ? '—' : value.toFixed(decimalPlaces);
 
 export interface PowerBalanceSectionProps {
   confidence: number;
   power: number;
   desiredN?: number;
   assignSummary: AssignSummary | null | undefined;
-  primaryPowerAnalysis?: MetricPowerAnalysis;
+  powerAnalyses?: MetricPowerAnalysis[];
+  primaryMetricFieldName?: string;
+  isClustered?: boolean;
   onEdit?: () => void;
   showDesiredSampleSize?: boolean;
   showActualSampleSize?: boolean;
@@ -22,20 +29,27 @@ export function PowerBalanceSection({
   power,
   desiredN,
   assignSummary,
-  primaryPowerAnalysis,
+  powerAnalyses,
+  primaryMetricFieldName,
+  isClustered = false,
   onEdit,
   showDesiredSampleSize = true,
   showActualSampleSize = true,
   showTitle = true,
 }: PowerBalanceSectionProps) {
   const balanceCheck = assignSummary?.balance_check;
-  const numClustersTotal = primaryPowerAnalysis?.num_clusters_total;
   // Actual sample size should only differ from the desired if the datasource lost eligible
   // participants between the time of power calculation and the time of assignment, which hopefully
   // is a very rare event.
   const actualSampleSize = assignSummary?.sample_size;
   const shouldShowActualSampleSize =
     showActualSampleSize && actualSampleSize !== undefined && actualSampleSize !== desiredN;
+  const primaryPowerAnalysis = getPowerAnalysis(
+    powerAnalyses ? { analyses: powerAnalyses } : undefined,
+    primaryMetricFieldName,
+  );
+  const clusterMetricSpec = primaryPowerAnalysis?.metric_spec;
+  const showClusteringStats = isClustered && clusterMetricSpec !== undefined;
 
   const confidenceBadge = (
     <Badge>
@@ -93,17 +107,56 @@ export function PowerBalanceSection({
                 <DataList.Value>{desiredN ?? 'N/A'} participants</DataList.Value>
               </DataList.Item>
             )}
-            {numClustersTotal != null && (
-              <DataList.Item>
-                <DataList.Label>Clusters</DataList.Label>
-                <DataList.Value>{numClustersTotal.toLocaleString()}</DataList.Value>
-              </DataList.Item>
-            )}
             {shouldShowActualSampleSize && (
               <DataList.Item>
                 <DataList.Label>Actual Sample Size</DataList.Label>
                 <DataList.Value>{actualSampleSize} participants</DataList.Value>
               </DataList.Item>
+            )}
+
+            {powerAnalyses && powerAnalyses.length > 0 && (
+              <>
+                <DataList.Item>
+                  <DataList.Label>
+                    <b>Min Sample Sizes</b>
+                  </DataList.Label>
+                </DataList.Item>
+                {powerAnalyses.map((analysis) => (
+                  <DataList.Item key={analysis.metric_spec.field_name}>
+                    <DataList.Label>{analysis.metric_spec.field_name}</DataList.Label>
+                    <DataList.Value>
+                      <MetricSampleSizeDisplay
+                        analysis={analysis}
+                        isClustered={isClustered}
+                        variant="required"
+                        align="start"
+                      />
+                    </DataList.Value>
+                  </DataList.Item>
+                ))}
+              </>
+            )}
+
+            {showClusteringStats && powerAnalyses && powerAnalyses.length > 0 && (
+              <>
+                <DataList.Item>
+                  <DataList.Label>
+                    <b>Clustering Stats</b>
+                  </DataList.Label>
+                </DataList.Item>
+                <DataList.Item>
+                  <DataList.Label>Average Cluster Size</DataList.Label>
+                  <DataList.Value>{formatClusterStat(clusterMetricSpec.avg_cluster_size)}</DataList.Value>
+                </DataList.Item>
+                <DataList.Item>
+                  <DataList.Label>Coefficient of Variation</DataList.Label>
+                  <DataList.Value>{formatClusterStat(clusterMetricSpec.cv)}</DataList.Value>
+                </DataList.Item>
+                <DataList.Item>
+                  <DataList.Label>Intracluster Correlation</DataList.Label>
+                  <DataList.Value>{formatClusterStat(clusterMetricSpec.icc, 3)}</DataList.Value>
+                </DataList.Item>
+              </>
             )}
           </DataList.Root>
         </Flex>

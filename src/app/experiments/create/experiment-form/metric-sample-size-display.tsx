@@ -28,7 +28,7 @@ interface SampleSizeDisplayImplProps {
   participantN: number | undefined;
   clusterN: number | undefined;
   color?: SampleSizeColor;
-  align?: 'center' | 'end';
+  align?: 'start' | 'center' | 'end';
 }
 
 function SampleSizeDisplayImpl({ participantN, clusterN, color, align = 'end' }: SampleSizeDisplayImplProps) {
@@ -65,7 +65,7 @@ export interface MetricSampleSizeDisplayProps {
   analysis: MetricPowerAnalysis;
   isClustered: boolean;
   variant: MetricSampleSizeVariant;
-  align?: 'center' | 'end';
+  align?: 'start' | 'center' | 'end';
 }
 
 const getDisplayModel = (

@@ -2,7 +2,6 @@
 
 import { Flex, Grid } from '@radix-ui/themes';
 import { CreateExperimentResponse, Filter } from '@/api/methods.schemas';
-import { getPowerAnalysis } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import {
   isBanditSpec,
   isClusteredPreassignedSpec,
@@ -76,10 +75,6 @@ export function ExperimentConfirmationDisplay({
   const priorType = isBandit ? designSpec.prior_type : undefined;
   const rewardType = isBandit ? designSpec.reward_type : undefined;
   const contexts = isCmab ? (designSpec.contexts ?? []) : [];
-  const primaryPowerAnalysis = isFreqPreassigned
-    ? getPowerAnalysis(response.power_analyses, designSpec.metrics[0]?.field_name)
-    : undefined;
-
   return (
     <Flex direction="column" gap="4">
       <Grid columns={'2'} gap={'3'}>
@@ -102,7 +97,9 @@ export function ExperimentConfirmationDisplay({
                 power={power}
                 desiredN={designSpec.desired_n ?? undefined}
                 assignSummary={response.assign_summary}
-                primaryPowerAnalysis={primaryPowerAnalysis}
+                powerAnalyses={response.power_analyses?.analyses}
+                primaryMetricFieldName={designSpec.metrics[0]?.field_name}
+                isClustered={clusterKey !== undefined}
                 onEdit={onEditPowerBalance}
               />
             )}
