@@ -11,6 +11,7 @@ import {
   estimateParticipantNFromClusters,
 } from './metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { getPowerAnalysis } from './experiment-form-helpers';
 
 /**
  * `sampleSizeOption` is the selected sample size option.
@@ -117,7 +118,7 @@ export function PowerCheckSampleSizeSelector({
     swr: { swrKey: `${datasourceId}/power/mde-estimate` },
   });
 
-  const primaryAnalysis = powerCheckResponse.analyses.find((a) => a.metric_spec.field_name === primaryMetricFieldName);
+  const primaryAnalysis = getPowerAnalysis(powerCheckResponse, primaryMetricFieldName);
   const targetN = primaryAnalysis?.target_n ?? undefined;
   const nonNullSamples = primaryAnalysis?.metric_spec.available_nonnull_n ?? 0;
   const allSamples = primaryAnalysis?.metric_spec.available_n ?? 0;
@@ -130,9 +131,7 @@ export function PowerCheckSampleSizeSelector({
       : '';
   const showClusteredCustomInput = isClustered && avgClusterSize !== undefined && avgClusterSize > 0;
 
-  const mdePrimaryAnalysis = mdePowerCheckResponse?.analyses.find(
-    (a) => a.metric_spec.field_name === primaryMetricFieldName,
-  );
+  const mdePrimaryAnalysis = getPowerAnalysis(mdePowerCheckResponse, primaryMetricFieldName);
   const estimatedMdePct =
     mdePrimaryAnalysis === undefined
       ? undefined
@@ -298,7 +297,7 @@ export function PowerCheckSampleSizeSelector({
                   />
                   <Flex direction="column" gap="1" align="start">
                     <Text as="label" size="1" weight="medium">
-                      Participants
+                      Estimated Participants
                     </Text>
                     <TextField.Root
                       readOnly

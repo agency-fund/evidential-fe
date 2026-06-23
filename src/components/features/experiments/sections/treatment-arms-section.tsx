@@ -3,6 +3,7 @@
 import { Badge, Button, Flex, Separator, Text } from '@radix-ui/themes';
 import { LayersIcon, Pencil2Icon, PersonIcon } from '@radix-ui/react-icons';
 import { ArmBandit, CreateExperimentResponse, PriorTypes } from '@/api/methods.schemas';
+import { getPowerAnalysis } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import {
   isClusteredPreassignedSpec,
   isBanditSpec,
@@ -17,9 +18,7 @@ function getPrimaryMetricClustersPerArm(response: CreateExperimentResponse): num
   }
 
   const primaryMetricFieldName = designSpec.metrics[0]?.field_name;
-  const primaryAnalysis =
-    response.power_analyses?.analyses.find((analysis) => analysis.metric_spec.field_name === primaryMetricFieldName) ??
-    response.power_analyses?.analyses[0];
+  const primaryAnalysis = getPowerAnalysis(response.power_analyses, primaryMetricFieldName);
 
   return primaryAnalysis?.clusters_per_arm ?? undefined;
 }

@@ -2,7 +2,7 @@
 
 import { Flex, Grid } from '@radix-ui/themes';
 import { CreateExperimentResponse, Filter } from '@/api/methods.schemas';
-import { getPrimaryPowerAnalysis } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
+import { getPowerAnalysis } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import {
   isBanditSpec,
   isCmabSpec,
@@ -82,7 +82,7 @@ export function ExperimentConfirmationDisplay({
   const rewardType = isBandit ? designSpec.reward_type : undefined;
   const contexts = isCmab ? (designSpec.contexts ?? []) : [];
   const primaryPowerAnalysis = isFreqPreassigned
-    ? getPrimaryPowerAnalysis(response.power_analyses, designSpec.metrics[0]?.field_name)
+    ? getPowerAnalysis(response.power_analyses, designSpec.metrics[0]?.field_name)
     : undefined;
 
   return (

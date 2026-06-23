@@ -66,19 +66,14 @@ const getPrimaryMetricClusterStats = (data: ExperimentFormData) => {
   return { icc, cv, avg_cluster_size: avgClusterSize };
 };
 
-export const getPrimaryPowerAnalysis = (
+export const getPowerAnalysis = (
   powerAnalyses: Pick<PowerResponse, 'analyses'> | null | undefined,
-  primaryMetricFieldName: string | undefined,
+  metricName: string | undefined,
 ): MetricPowerAnalysis | undefined => {
   const analyses = powerAnalyses?.analyses;
-  if (!analyses?.length) return undefined;
+  if (!analyses?.length || !metricName) return undefined;
 
-  if (primaryMetricFieldName) {
-    const match = analyses.find((analysis) => analysis.metric_spec.field_name === primaryMetricFieldName);
-    if (match) return match;
-  }
-
-  return analyses[0];
+  return analyses.find((analysis) => analysis.metric_spec.field_name === metricName);
 };
 
 export const getClusterStatsFromPowerCheckResponse = (
@@ -87,7 +82,7 @@ export const getClusterStatsFromPowerCheckResponse = (
 ): Pick<ExperimentFormData, 'clusterIcc' | 'clusterCv' | 'clusterAvgClusterSize'> | undefined => {
   if (!data.clusterKey || !data.primaryMetric) return undefined;
 
-  const primary = response.analyses.find((a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name);
+  const primary = getPowerAnalysis(response, data.primaryMetric.metric.field_name);
   const metricSpec = primary?.metric_spec;
   if (!metricSpec) return undefined;
 

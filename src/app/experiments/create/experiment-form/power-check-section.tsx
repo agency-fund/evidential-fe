@@ -23,7 +23,7 @@ import {
 import { CheckCircledIcon, CrossCircledIcon, ExclamationTriangleIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData, isClusteredExperiment, PowerCheckOption } from './experiment-form-types';
 import { usePowerCheck } from '@/api/admin';
-import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
+import { convertToFrequentistDesignSpec, getPowerAnalysis } from './experiment-form-helpers';
 import { MetricSampleSizeDisplay } from './metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ZodError } from 'zod';
@@ -101,7 +101,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
       const designSpec = convertToFrequentistDesignSpec({ ...data, desiredN: undefined });
       const response = await triggerEstimateSampleSize({ design_spec: designSpec });
 
-      const primary = response.analyses.find((a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name);
+      const primary = getPowerAnalysis(response, data.primaryMetric.metric.field_name);
       const desiredN = primary?.sufficient_n ? (primary.target_n ?? undefined) : undefined;
       const sampleSizeOption = desiredN === undefined ? PowerCheckOption.NONE : PowerCheckOption.USE_POWER_CHECK;
       dispatch({ type: 'set-power-check-response', response, desiredN, sampleSizeOption, designSpec });
@@ -126,7 +126,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const isClustered = isClusteredExperiment(data);
   const primaryPower =
     data.powerCheckResponse !== undefined && !validationError
-      ? data.powerCheckResponse.analyses.find((a) => a.metric_spec.field_name === primaryMetricFieldName)
+      ? getPowerAnalysis(data.powerCheckResponse, primaryMetricFieldName)
       : undefined;
   const restPower =
     data.powerCheckResponse !== undefined && !validationError

@@ -3,60 +3,13 @@ import { MetricPowerAnalysis } from '@/api/methods.schemas';
 
 export type MetricSampleSizeVariant = 'required' | 'available' | 'available-nonnull';
 
-const getAvailableParticipantColor = (
-  available: number | null | undefined,
-  target: number | null | undefined,
-): 'crimson' | undefined => {
-  if (available == null || available === 0 || (target != null && available < target)) {
-    return 'crimson';
-  }
-  return undefined;
-};
+type SampleSizeColor = 'crimson' | 'green';
 
-const getAvailableNonnullParticipantColor = (
-  availableNonnull: number | null | undefined,
-  available: number | null | undefined,
-  target: number | null | undefined,
-): 'crimson' | undefined => {
-  if (
-    availableNonnull == null ||
-    availableNonnull === 0 ||
-    (target != null && availableNonnull < target) ||
-    (available != null && availableNonnull < available)
-  ) {
-    return 'crimson';
-  }
-  return undefined;
-};
-
-const getDisplayColor = (
-  analysis: MetricPowerAnalysis,
-  variant: MetricSampleSizeVariant,
-): 'crimson' | 'green' | undefined => {
-  switch (variant) {
-    case 'required':
-      return analysis.sufficient_n ? 'green' : undefined;
-    case 'available':
-      return getAvailableParticipantColor(analysis.metric_spec.available_n, analysis.target_n);
-    case 'available-nonnull':
-      return getAvailableNonnullParticipantColor(
-        analysis.metric_spec.available_nonnull_n,
-        analysis.metric_spec.available_n,
-        analysis.target_n,
-      );
-  }
-};
-
-const getParticipantN = (analysis: MetricPowerAnalysis, variant: MetricSampleSizeVariant): number | undefined => {
-  switch (variant) {
-    case 'required':
-      return analysis.target_n ?? undefined;
-    case 'available':
-      return analysis.metric_spec.available_n ?? undefined;
-    case 'available-nonnull':
-      return analysis.metric_spec.available_nonnull_n ?? undefined;
-  }
-};
+interface SampleSizeDisplayModel {
+  participantN: number | undefined;
+  clusterN: number | undefined;
+  color: SampleSizeColor | undefined;
+}
 
 export const estimateClusterN = (
   participantN: number | undefined,
@@ -74,7 +27,7 @@ export const estimateParticipantNFromClusters = (clusterN: number, avgClusterSiz
 interface SampleSizeDisplayImplProps {
   participantN: number | undefined;
   clusterN: number | undefined;
-  color?: 'crimson' | 'green';
+  color?: SampleSizeColor;
   align?: 'center' | 'end';
 }
 
@@ -115,25 +68,57 @@ export interface MetricSampleSizeDisplayProps {
   align?: 'center' | 'end';
 }
 
+const getDisplayModel = (
+  analysis: MetricPowerAnalysis,
+  isClustered: boolean,
+  variant: MetricSampleSizeVariant,
+): SampleSizeDisplayModel => {
+  const avgClusterSize = analysis.metric_spec.avg_cluster_size ?? undefined;
+  const targetN = analysis.target_n;
+
+  switch (variant) {
+    case 'required': {
+      const participantN = targetN ?? undefined;
+      return {
+        participantN,
+        clusterN: isClustered ? (analysis.num_clusters_total ?? undefined) : undefined,
+        color: analysis.sufficient_n ? 'green' : undefined,
+      };
+    }
+    case 'available': {
+      const participantN = analysis.metric_spec.available_n ?? undefined;
+      return {
+        participantN,
+        clusterN: isClustered ? estimateClusterN(participantN, avgClusterSize) : undefined,
+        color:
+          participantN === undefined || participantN === 0 || (targetN != null && participantN < targetN)
+            ? 'crimson'
+            : undefined,
+      };
+    }
+    case 'available-nonnull': {
+      const participantN = analysis.metric_spec.available_nonnull_n ?? undefined;
+      const availableN = analysis.metric_spec.available_n;
+      return {
+        participantN,
+        clusterN: isClustered ? estimateClusterN(participantN, avgClusterSize) : undefined,
+        color:
+          participantN === undefined ||
+          participantN === 0 ||
+          (targetN != null && participantN < targetN) ||
+          (availableN != null && participantN < availableN)
+            ? 'crimson'
+            : undefined,
+      };
+    }
+  }
+};
+
 export function MetricSampleSizeDisplay({
   analysis,
   isClustered,
   variant,
   align = 'end',
 }: MetricSampleSizeDisplayProps) {
-  const participantN = getParticipantN(analysis, variant);
-  const color = getDisplayColor(analysis, variant);
-
-  if (!isClustered) {
-    return <SampleSizeDisplayImpl participantN={participantN} clusterN={undefined} color={color} align={align} />;
-  }
-
-  const clusterN =
-    variant === 'required'
-      ? analysis.num_clusters_total
-      : estimateClusterN(participantN, analysis.metric_spec.avg_cluster_size ?? undefined);
-
-  return (
-    <SampleSizeDisplayImpl participantN={participantN} clusterN={clusterN ?? undefined} color={color} align={align} />
-  );
+  return <SampleSizeDisplayImpl {...getDisplayModel(analysis, isClustered, variant)} align={align} />;
 }

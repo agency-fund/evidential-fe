@@ -90,7 +90,7 @@ export function PowerBalanceSection({
             {showDesiredSampleSize && (
               <DataList.Item>
                 <DataList.Label>Desired Sample Size</DataList.Label>
-                <DataList.Value>{desiredN ?? 'N/A'}</DataList.Value>
+                <DataList.Value>{desiredN ?? 'N/A'} participants</DataList.Value>
               </DataList.Item>
             )}
             {numClustersTotal != null && (

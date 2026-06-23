@@ -12,6 +12,7 @@ import { ClusterStatisticsSectionAction } from './cluster-statistics-section';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import {
   convertToFrequentistDesignSpec,
+  getPowerAnalysis,
   removeFieldByName,
 } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import { createExperimentBody } from '@/api/admin.zod';
@@ -29,9 +30,7 @@ export type ExperimentFreqStackScreenMessage =
 
 const getPrimaryAnalysisAvailableN = (data: ExperimentFormData): number | undefined => {
   if (!data.powerCheckResponse || !data.primaryMetric) return undefined;
-  const primaryAnalysis = data.powerCheckResponse.analyses.find(
-    (a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
-  );
+  const primaryAnalysis = getPowerAnalysis(data.powerCheckResponse, data.primaryMetric.metric.field_name);
   return primaryAnalysis?.metric_spec.available_n ?? undefined;
 };
 
