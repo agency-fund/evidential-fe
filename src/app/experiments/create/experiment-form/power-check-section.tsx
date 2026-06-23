@@ -2,6 +2,7 @@
 
 import {
   Badge,
+  Box,
   Button,
   Callout,
   Card,
@@ -206,16 +207,25 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                       : 'The experiment does not have sufficient power.')}
                 </Callout.Text>
                 {primaryPower.msg?.high_cluster_variation && primaryPowerClusterSizeCv != null && (
-                  <Callout.Root color="amber" size="1" variant="surface">
-                    <Callout.Icon>
-                      <ExclamationTriangleIcon />
-                    </Callout.Icon>
-                    <Callout.Text>
-                      Because your cluster sizes vary so widely, your experiment is sensitive to enrolling fewer
-                      participants or clusters. Consider adding filters to exclude extreme cluster sizes or adding more
-                      clusters to be safer.
-                    </Callout.Text>
-                  </Callout.Root>
+                  <Box
+                    p="2"
+                    style={{
+                      backgroundColor: 'var(--amber-a3)',
+                      border: '1px solid var(--amber-a5)',
+                      borderRadius: 'var(--radius-3)',
+                    }}
+                  >
+                    <Flex gap="2" align="start">
+                      <Flex flexShrink="0">
+                        <ExclamationTriangleIcon color="var(--amber-11)" />
+                      </Flex>
+                      <Text size="2" color="amber">
+                        Because your cluster sizes vary so widely, your experiment is sensitive to enrolling fewer
+                        participants or clusters. Consider adding filters to exclude extreme cluster sizes or adding
+                        more clusters to be safer.
+                      </Text>
+                    </Flex>
+                  </Box>
                 )}
               </Flex>
             </Callout.Root>
