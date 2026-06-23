@@ -11,6 +11,7 @@ import {
   ExclamationTriangleIcon,
   FileTextIcon,
   InfoCircledIcon,
+  LayersIcon,
   PersonIcon,
 } from '@radix-ui/react-icons';
 import {
@@ -66,6 +67,7 @@ import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date
 import { ContextConfigBox } from '@/components/features/experiments/context-config-box';
 import {
   isBanditSpec,
+  isClusteredPreassignedSpec,
   isCmabExperiment,
   isCmabSpec,
   isFrequentistSpec,
@@ -362,6 +364,9 @@ export default function ExperimentViewPage() {
   const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
   const isFrequentistExperiment = isFrequentistSpec(design_spec);
   const contexts = isBanditSpec(design_spec) ? (design_spec.contexts ?? []) : [];
+  const showTotalClusterCount = isClusteredPreassignedSpec(design_spec);
+  const totalClusterCount =
+    assign_summary?.arm_sizes?.reduce((sum, armSize) => sum + (armSize.cluster_count ?? 0), 0) ?? 0;
 
   const metricPowerAnalysis = experiment.config.power_analyses?.analyses?.find(
     (analysis) => analysis.metric_spec.field_name === selectedMetricAnalysis?.metric?.field_name,
@@ -477,10 +482,18 @@ export default function ExperimentViewPage() {
               </Flex>
             }
             headerRight={
-              <Badge>
-                <PersonIcon />
-                <Text size="2">{assign_summary.sample_size.toLocaleString()} participants</Text>
-              </Badge>
+              <Flex gap="2" align="center">
+                {showTotalClusterCount && (
+                  <Badge color="green" variant="soft">
+                    <LayersIcon />
+                    <Text size="2">{totalClusterCount.toLocaleString()} clusters</Text>
+                  </Badge>
+                )}
+                <Badge>
+                  <PersonIcon />
+                  <Text size="2">{assign_summary.sample_size.toLocaleString()} participants</Text>
+                </Badge>
+              </Flex>
             }
           >
             <ArmsAndAllocationsTable
