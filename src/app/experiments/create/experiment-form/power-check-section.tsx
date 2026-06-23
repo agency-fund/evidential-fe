@@ -198,28 +198,26 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
           {primaryPower && (
             <Callout.Root color={primaryPower.sufficient_n ? 'green' : 'red'}>
               <Callout.Icon>{primaryPower.sufficient_n ? <CheckCircledIcon /> : <CrossCircledIcon />}</Callout.Icon>
-              <Callout.Text as="div">
-                <Flex direction="column" gap="2">
-                  <Text>
-                    {primaryPower.msg?.msg ||
-                      (primaryPower.sufficient_n
-                        ? 'The experiment has sufficient power.'
-                        : 'The experiment does not have sufficient power.')}
-                  </Text>
-                  {primaryPower.msg?.high_cluster_variation && primaryPowerClusterSizeCv != null && (
-                    <Callout.Root color="amber" size="1" variant="surface">
-                      <Callout.Icon>
-                        <ExclamationTriangleIcon />
-                      </Callout.Icon>
-                      <Callout.Text>
-                        Because your cluster sizes vary so widely, your experiment is sensitive to enrolling fewer
-                        participants or clusters. Consider adding filters to exclude extreme cluster sizes or adding
-                        more clusters to be safer.
-                      </Callout.Text>
-                    </Callout.Root>
-                  )}
-                </Flex>
-              </Callout.Text>
+              <Flex direction="column" gap="2">
+                <Callout.Text>
+                  {primaryPower.msg?.msg ||
+                    (primaryPower.sufficient_n
+                      ? 'The experiment has sufficient power.'
+                      : 'The experiment does not have sufficient power.')}
+                </Callout.Text>
+                {primaryPower.msg?.high_cluster_variation && primaryPowerClusterSizeCv != null && (
+                  <Callout.Root color="amber" size="1" variant="surface">
+                    <Callout.Icon>
+                      <ExclamationTriangleIcon />
+                    </Callout.Icon>
+                    <Callout.Text>
+                      Because your cluster sizes vary so widely, your experiment is sensitive to enrolling fewer
+                      participants or clusters. Consider adding filters to exclude extreme cluster sizes or adding more
+                      clusters to be safer.
+                    </Callout.Text>
+                  </Callout.Root>
+                )}
+              </Flex>
             </Callout.Root>
           )}
 
