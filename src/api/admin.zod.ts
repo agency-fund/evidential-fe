@@ -22,14 +22,21 @@ export const createOrganizationsBody = zod.object({
 	name: zod.string().max(createOrganizationsBodyNameMax),
 });
 
+export const addWebhookToOrganizationBodyDirectionDefault = "outbound";
 export const addWebhookToOrganizationBodyNameMax = 100;
 
-export const addWebhookToOrganizationBodyUrlMax = 500;
+export const addWebhookToOrganizationBodyUrlMaxOne = 500;
 
 export const addWebhookToOrganizationBody = zod.object({
-	type: zod.literal("experiment.created"),
+	direction: zod
+		.enum(["inbound", "outbound"])
+		.default(addWebhookToOrganizationBodyDirectionDefault),
+	type: zod.enum(["experiment.created", "turn.journeys_changed"]),
 	name: zod.string().max(addWebhookToOrganizationBodyNameMax),
-	url: zod.string().max(addWebhookToOrganizationBodyUrlMax),
+	url: zod.union([
+		zod.string().max(addWebhookToOrganizationBodyUrlMaxOne),
+		zod.null(),
+	]),
 });
 
 export const updateOrganizationWebhookBodyNameMax = 100;

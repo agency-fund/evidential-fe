@@ -81,44 +81,46 @@ export function WebhooksTable({
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {webhooks.map((webhook) => (
-              <Table.Row key={webhook.id}>
-                <Table.Cell>{webhook.name}</Table.Cell>
-                <Table.Cell>{webhook.type}</Table.Cell>
-                <Table.Cell>{webhook.url}</Table.Cell>
-                <Table.Cell>
-                  <Flex align="center" gap="2">
-                    {webhook.auth_token && (
-                      <>
-                        <Code variant="ghost">
-                          {visibleTokens[webhook.id] ? webhook.auth_token : '••••••••••••••••'}
-                        </Code>
-                        <IconButton
-                          size="1"
-                          aria-label={visibleTokens[webhook.id] ? 'Hide auth token' : 'Show auth token'}
-                          color="gray"
-                          variant="ghost"
-                          onClick={() => toggleTokenVisibility(webhook.id)}
-                        >
-                          <Tooltip content={visibleTokens[webhook.id] ? 'Hide auth token' : 'Show auth token'}>
-                            {visibleTokens[webhook.id] ? <EyeOpenIcon /> : <EyeClosedIcon />}
-                          </Tooltip>
-                        </IconButton>
-                        <CopyToClipBoard tooltipContent="Copy auth key" content={webhook.auth_token || ''} />
-                      </>
-                    )}
-                  </Flex>
-                </Table.Cell>
-                <Table.Cell>
-                  <Flex gap="2">
-                    <WebhookInfoDialog webhook={webhook} />
-                    <EditWebhookDialog organizationId={organizationId} webhook={webhook} />
-                    <RegenerateWebhookAuthDialog organizationId={organizationId} webhookId={webhook.id} />
-                    <DeleteWebhookDialog organizationId={organizationId} webhookId={webhook.id} />
-                  </Flex>
-                </Table.Cell>
-              </Table.Row>
-            ))}
+            {webhooks.map((webhook) =>
+              webhook.type !== 'turn.journeys_changed' ? (
+                <Table.Row key={webhook.id}>
+                  <Table.Cell>{webhook.name}</Table.Cell>
+                  <Table.Cell>{webhook.type}</Table.Cell>
+                  <Table.Cell>{webhook.url}</Table.Cell>
+                  <Table.Cell>
+                    <Flex align="center" gap="2">
+                      {webhook.auth_token && (
+                        <>
+                          <Code variant="ghost">
+                            {visibleTokens[webhook.id] ? webhook.auth_token : '••••••••••••••••'}
+                          </Code>
+                          <IconButton
+                            size="1"
+                            aria-label={visibleTokens[webhook.id] ? 'Hide auth token' : 'Show auth token'}
+                            color="gray"
+                            variant="ghost"
+                            onClick={() => toggleTokenVisibility(webhook.id)}
+                          >
+                            <Tooltip content={visibleTokens[webhook.id] ? 'Hide auth token' : 'Show auth token'}>
+                              {visibleTokens[webhook.id] ? <EyeOpenIcon /> : <EyeClosedIcon />}
+                            </Tooltip>
+                          </IconButton>
+                          <CopyToClipBoard tooltipContent="Copy auth key" content={webhook.auth_token || ''} />
+                        </>
+                      )}
+                    </Flex>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Flex gap="2">
+                      <WebhookInfoDialog webhook={webhook} />
+                      <EditWebhookDialog organizationId={organizationId} webhook={webhook} />
+                      <RegenerateWebhookAuthDialog organizationId={organizationId} webhookId={webhook.id} />
+                      <DeleteWebhookDialog organizationId={organizationId} webhookId={webhook.id} />
+                    </Flex>
+                  </Table.Cell>
+                </Table.Row>
+              ) : null,
+            )}
           </Table.Body>
         </Table.Root>
       )}
