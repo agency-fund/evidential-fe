@@ -19,15 +19,11 @@ import { PowerBalanceSection } from '@/components/features/experiments/sections/
 import { OutcomesPriorSection } from '@/components/features/experiments/sections/outcomes-prior-section';
 export interface ExperimentConfirmationDisplayProps {
   response: CreateExperimentResponse;
-
-  tableName?: string;
-  primaryKey?: string;
   // Data not available in response (frequentist-specific)
   metrics?: {
     primary?: MetricDisplay;
     secondary?: MetricDisplay[];
   };
-  desiredN?: number;
   onEditMetadata?: () => void;
   onEditTreatmentArms?: () => void;
   onEditDatasource?: () => void;
@@ -42,10 +38,7 @@ export interface ExperimentConfirmationDisplayProps {
 
 export function ExperimentConfirmationDisplay({
   response,
-  tableName,
-  primaryKey,
   metrics,
-  desiredN,
   onEditMetadata,
   onEditTreatmentArms,
   onEditDatasource,
@@ -95,8 +88,8 @@ export function ExperimentConfirmationDisplay({
         {isFreq && (
           <>
             <DatasourceTargetingSection
-              tableName={tableName}
-              primaryKey={primaryKey}
+              tableName={designSpec.table_name}
+              primaryKey={designSpec.primary_key}
               clusterKey={clusterKey}
               filters={filters}
               onEditDatasource={onEditDatasource}
@@ -107,7 +100,7 @@ export function ExperimentConfirmationDisplay({
               <PowerBalanceSection
                 confidence={confidence}
                 power={power}
-                desiredN={desiredN}
+                desiredN={designSpec.desired_n ?? undefined}
                 assignSummary={response.assign_summary}
                 primaryPowerAnalysis={primaryPowerAnalysis}
                 onEdit={onEditPowerBalance}
