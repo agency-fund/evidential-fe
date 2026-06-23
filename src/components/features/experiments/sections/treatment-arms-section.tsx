@@ -3,25 +3,9 @@
 import { Badge, Button, Flex, Separator, Text } from '@radix-ui/themes';
 import { LayersIcon, Pencil2Icon, PersonIcon } from '@radix-ui/react-icons';
 import { ArmBandit, CreateExperimentResponse, PriorTypes } from '@/api/methods.schemas';
-import { getPowerAnalysis } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
-import {
-  isClusteredPreassignedSpec,
-  isBanditSpec,
-} from '@/app/experiments/create/experiment-form/experiment-form-types';
+import { isBanditSpec } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { ReadMoreText } from '@/components/ui/read-more-text';
-
-function getPrimaryMetricClustersPerArm(response: CreateExperimentResponse): number[] | undefined {
-  const designSpec = response.design_spec;
-  if (!isClusteredPreassignedSpec(designSpec)) {
-    return undefined;
-  }
-
-  const primaryMetricFieldName = designSpec.metrics[0]?.field_name;
-  const primaryAnalysis = getPowerAnalysis(response.power_analyses, primaryMetricFieldName);
-
-  return primaryAnalysis?.clusters_per_arm ?? undefined;
-}
 
 interface ArmAssignmentBadgesProps {
   armSize: number;
@@ -60,7 +44,6 @@ export function TreatmentArmsSection({ response, onEdit }: TreatmentArmsSectionP
   const designSpec = response.design_spec;
   const arms = designSpec.arms;
   const assignSummary = response.assign_summary;
-  const clustersPerArm = getPrimaryMetricClustersPerArm(response);
   const isBandit = isBanditSpec(designSpec);
   const priorType: PriorTypes | undefined = isBandit ? designSpec.prior_type : undefined;
   const isBetaPrior = priorType === 'beta';
@@ -132,7 +115,7 @@ export function TreatmentArmsSection({ response, onEdit }: TreatmentArmsSectionP
       <Flex direction="column" gap="4">
         {arms.map((arm, index) => {
           const armSize = assignSummary?.arm_sizes?.[index]?.size || 0;
-          const clusterCount = clustersPerArm?.[index];
+          const clusterCount = assignSummary?.arm_sizes?.[index]?.cluster_count ?? undefined;
           const armWeight = arm.arm_weight ?? undefined;
 
           return (
