@@ -4,412 +4,596 @@
  * Evidential Experiments API
  * OpenAPI spec version: 0.9.0
  */
-import useSwr from 'swr';
-import type {
-  Arguments,
-  Key,
-  SWRConfiguration
-} from 'swr';
+import useSwr from "swr";
+import type { Arguments, Key, SWRConfiguration } from "swr";
 
-import useSWRMutation from 'swr/mutation';
-import type {
-  SWRMutationConfiguration
-} from 'swr/mutation';
+import useSWRMutation from "swr/mutation";
+import type { SWRMutationConfiguration } from "swr/mutation";
 
 import type {
-  DeleteTurnArmJourneyMappingParams,
-  DeleteTurnConnectionFromOrganizationParams,
-  GetOrganizationTurnConnectionParams,
-  GetTurnArmJourneyMappingResponse,
-  GetTurnConnectionResponse,
-  GetTurnJourneysResponse,
-  HTTPExceptionError,
-  HTTPValidationError,
-  SetConnectionToTurnRequest,
-  SetTurnArmJourneyMappingRequest
-} from './methods.schemas';
+	DeleteTurnArmJourneyMappingParams,
+	DeleteTurnConnectionFromOrganizationParams,
+	GetOrganizationTurnConnectionParams,
+	GetTurnArmJourneyMappingResponse,
+	GetTurnConnectionResponse,
+	GetTurnJourneysResponse,
+	HTTPExceptionError,
+	HTTPValidationError,
+	SetConnectionToTurnRequest,
+	SetTurnArmJourneyMappingRequest,
+} from "./methods.schemas";
 
 import { orvalFetch } from "@/services/orval-fetch";
 import type { ErrorType } from "@/services/orval-fetch";
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
+export const getSetOrganizationTurnConnectionUrl = (organizationId: string) => {
+	return `/v1/m/integrations/turn-connection/${organizationId}`;
+};
 
-  
-  type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+export const setOrganizationTurnConnection = async (
+	organizationId: string,
+	setConnectionToTurnRequest: SetConnectionToTurnRequest,
+	options?: RequestInit,
+): Promise<void> => {
+	return orvalFetch<void>(getSetOrganizationTurnConnectionUrl(organizationId), {
+		...options,
+		method: "PUT",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(setConnectionToTurnRequest),
+	});
+};
 
-
-  
-export const getSetOrganizationTurnConnectionUrl = (organizationId: string,) => {
-
-
-  
-
-  return `/v1/m/integrations/turn-connection/${organizationId}`
-}
-
-export const setOrganizationTurnConnection = async (organizationId: string,
-    setConnectionToTurnRequest: SetConnectionToTurnRequest, options?: RequestInit): Promise<void> => {
-  
-  return orvalFetch<void>(getSetOrganizationTurnConnectionUrl(organizationId),
-  {      
-    ...options,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      setConnectionToTurnRequest,)
-  }
-);}
-
-
-
-
-export const getSetOrganizationTurnConnectionMutationFetcher = (organizationId: string, options?: SecondParameter<typeof orvalFetch>) => {
-  return (_: Key, { arg }: { arg: SetConnectionToTurnRequest }) => {
-    return setOrganizationTurnConnection(organizationId, arg, options);
-  }
-}
-export const getSetOrganizationTurnConnectionMutationKey = (organizationId: string,) => [`/v1/m/integrations/turn-connection/${organizationId}`] as const;
-
-export type SetOrganizationTurnConnectionMutationResult = NonNullable<Awaited<ReturnType<typeof setOrganizationTurnConnection>>>
-export type SetOrganizationTurnConnectionMutationError = ErrorType<HTTPExceptionError>
-
-export const useSetOrganizationTurnConnection = <TError = ErrorType<HTTPExceptionError>>(
-  organizationId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof setOrganizationTurnConnection>>, TError, Key, SetConnectionToTurnRequest, Awaited<ReturnType<typeof setOrganizationTurnConnection>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
+export const getSetOrganizationTurnConnectionMutationFetcher = (
+	organizationId: string,
+	options?: SecondParameter<typeof orvalFetch>,
 ) => {
+	return (_: Key, { arg }: { arg: SetConnectionToTurnRequest }) => {
+		return setOrganizationTurnConnection(organizationId, arg, options);
+	};
+};
+export const getSetOrganizationTurnConnectionMutationKey = (
+	organizationId: string,
+) => [`/v1/m/integrations/turn-connection/${organizationId}`] as const;
 
-  const {swr: swrOptions, request: requestOptions} = options ?? {}
+export type SetOrganizationTurnConnectionMutationResult = NonNullable<
+	Awaited<ReturnType<typeof setOrganizationTurnConnection>>
+>;
+export type SetOrganizationTurnConnectionMutationError =
+	ErrorType<HTTPExceptionError>;
 
-  const swrKey = swrOptions?.swrKey ?? getSetOrganizationTurnConnectionMutationKey(organizationId);
-  const swrFn = getSetOrganizationTurnConnectionMutationFetcher(organizationId, requestOptions);
-
-  const query = useSWRMutation(swrKey, swrFn, swrOptions)
-
-  return {
-    swrKey,
-    ...query
-  }
-}
-export const getGetOrganizationTurnConnectionUrl = (organizationId: string,
-    params?: GetOrganizationTurnConnectionParams,) => {
-  const normalizedParams = new URLSearchParams();
-
-  Object.entries(params || {}).forEach(([key, value]) => {
-    
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
-    }
-  });
-
-  const stringifiedParams = normalizedParams.toString();
-
-  return stringifiedParams.length > 0 ? `/v1/m/integrations/turn-connection/${organizationId}?${stringifiedParams}` : `/v1/m/integrations/turn-connection/${organizationId}`
-}
-
-export const getOrganizationTurnConnection = async (organizationId: string,
-    params?: GetOrganizationTurnConnectionParams, options?: RequestInit): Promise<GetTurnConnectionResponse> => {
-  
-  return orvalFetch<GetTurnConnectionResponse>(getGetOrganizationTurnConnectionUrl(organizationId,params),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
-
-
-
-
-export const getGetOrganizationTurnConnectionKey = (organizationId: string,
-    params?: GetOrganizationTurnConnectionParams,) => [`/v1/m/integrations/turn-connection/${organizationId}`, ...(params ? [params]: [])] as const;
-
-export type GetOrganizationTurnConnectionQueryResult = NonNullable<Awaited<ReturnType<typeof getOrganizationTurnConnection>>>
-export type GetOrganizationTurnConnectionQueryError = ErrorType<HTTPExceptionError | HTTPValidationError>
-
-export const useGetOrganizationTurnConnection = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
-  organizationId: string,
-    params?: GetOrganizationTurnConnectionParams, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof getOrganizationTurnConnection>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
+export const useSetOrganizationTurnConnection = <
+	TError = ErrorType<HTTPExceptionError>,
+>(
+	organizationId: string,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof setOrganizationTurnConnection>>,
+			TError,
+			Key,
+			SetConnectionToTurnRequest,
+			Awaited<ReturnType<typeof setOrganizationTurnConnection>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
 ) => {
-  const {swr: swrOptions, request: requestOptions} = options ?? {}
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
 
-  const isEnabled = swrOptions?.enabled !== false && !!(organizationId)
-  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getGetOrganizationTurnConnectionKey(organizationId,params) : null);
-  const swrFn = () => getOrganizationTurnConnection(organizationId,params, requestOptions)
+	const swrKey =
+		swrOptions?.swrKey ??
+		getSetOrganizationTurnConnectionMutationKey(organizationId);
+	const swrFn = getSetOrganizationTurnConnectionMutationFetcher(
+		organizationId,
+		requestOptions,
+	);
 
-  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
-  return {
-    swrKey,
-    ...query
-  }
-}
-export const getDeleteTurnConnectionFromOrganizationUrl = (organizationId: string,
-    params?: DeleteTurnConnectionFromOrganizationParams,) => {
-  const normalizedParams = new URLSearchParams();
-
-  Object.entries(params || {}).forEach(([key, value]) => {
-    
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
-    }
-  });
-
-  const stringifiedParams = normalizedParams.toString();
-
-  return stringifiedParams.length > 0 ? `/v1/m/integrations/turn-connection/${organizationId}?${stringifiedParams}` : `/v1/m/integrations/turn-connection/${organizationId}`
-}
-
-export const deleteTurnConnectionFromOrganization = async (organizationId: string,
-    params?: DeleteTurnConnectionFromOrganizationParams, options?: RequestInit): Promise<void> => {
-  
-  return orvalFetch<void>(getDeleteTurnConnectionFromOrganizationUrl(organizationId,params),
-  {      
-    ...options,
-    method: 'DELETE'
-    
-    
-  }
-);}
-
-
-
-
-export const getDeleteTurnConnectionFromOrganizationMutationFetcher = (organizationId: string,
-    params?: DeleteTurnConnectionFromOrganizationParams, options?: SecondParameter<typeof orvalFetch>) => {
-  return (_: Key, __: { arg: Arguments }) => {
-    return deleteTurnConnectionFromOrganization(organizationId, params, options);
-  }
-}
-export const getDeleteTurnConnectionFromOrganizationMutationKey = (organizationId: string,
-    params?: DeleteTurnConnectionFromOrganizationParams,) => [`/v1/m/integrations/turn-connection/${organizationId}`, ...(params ? [params]: [])] as const;
-
-export type DeleteTurnConnectionFromOrganizationMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTurnConnectionFromOrganization>>>
-export type DeleteTurnConnectionFromOrganizationMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
-
-export const useDeleteTurnConnectionFromOrganization = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
-  organizationId: string,
-    params?: DeleteTurnConnectionFromOrganizationParams, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof deleteTurnConnectionFromOrganization>>, TError, Key, Arguments, Awaited<ReturnType<typeof deleteTurnConnectionFromOrganization>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
+	return {
+		swrKey,
+		...query,
+	};
+};
+export const getGetOrganizationTurnConnectionUrl = (
+	organizationId: string,
+	params?: GetOrganizationTurnConnectionParams,
 ) => {
+	const normalizedParams = new URLSearchParams();
 
-  const {swr: swrOptions, request: requestOptions} = options ?? {}
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
 
-  const swrKey = swrOptions?.swrKey ?? getDeleteTurnConnectionFromOrganizationMutationKey(organizationId,params);
-  const swrFn = getDeleteTurnConnectionFromOrganizationMutationFetcher(organizationId,params, requestOptions);
+	const stringifiedParams = normalizedParams.toString();
 
-  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+	return stringifiedParams.length > 0
+		? `/v1/m/integrations/turn-connection/${organizationId}?${stringifiedParams}`
+		: `/v1/m/integrations/turn-connection/${organizationId}`;
+};
 
-  return {
-    swrKey,
-    ...query
-  }
-}
-export const getGetOrganizationTurnJourneysUrl = (organizationId: string,) => {
+export const getOrganizationTurnConnection = async (
+	organizationId: string,
+	params?: GetOrganizationTurnConnectionParams,
+	options?: RequestInit,
+): Promise<GetTurnConnectionResponse> => {
+	return orvalFetch<GetTurnConnectionResponse>(
+		getGetOrganizationTurnConnectionUrl(organizationId, params),
+		{
+			...options,
+			method: "GET",
+		},
+	);
+};
 
+export const getGetOrganizationTurnConnectionKey = (
+	organizationId: string,
+	params?: GetOrganizationTurnConnectionParams,
+) =>
+	[
+		`/v1/m/integrations/turn-connection/${organizationId}`,
+		...(params ? [params] : []),
+	] as const;
 
-  
+export type GetOrganizationTurnConnectionQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getOrganizationTurnConnection>>
+>;
+export type GetOrganizationTurnConnectionQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
-  return `/v1/m/integrations/turn-connection/${organizationId}/journeys`
-}
-
-export const getOrganizationTurnJourneys = async (organizationId: string, options?: RequestInit): Promise<GetTurnJourneysResponse> => {
-  
-  return orvalFetch<GetTurnJourneysResponse>(getGetOrganizationTurnJourneysUrl(organizationId),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
-
-
-
-
-export const getGetOrganizationTurnJourneysKey = (organizationId: string,) => [`/v1/m/integrations/turn-connection/${organizationId}/journeys`] as const;
-
-export type GetOrganizationTurnJourneysQueryResult = NonNullable<Awaited<ReturnType<typeof getOrganizationTurnJourneys>>>
-export type GetOrganizationTurnJourneysQueryError = ErrorType<HTTPExceptionError>
-
-export const useGetOrganizationTurnJourneys = <TError = ErrorType<HTTPExceptionError>>(
-  organizationId: string, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof getOrganizationTurnJourneys>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
+export const useGetOrganizationTurnConnection = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	organizationId: string,
+	params?: GetOrganizationTurnConnectionParams,
+	options?: {
+		swr?: SWRConfiguration<
+			Awaited<ReturnType<typeof getOrganizationTurnConnection>>,
+			TError
+		> & { swrKey?: Key; enabled?: boolean };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
 ) => {
-  const {swr: swrOptions, request: requestOptions} = options ?? {}
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
 
-  const isEnabled = swrOptions?.enabled !== false && !!(organizationId)
-  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getGetOrganizationTurnJourneysKey(organizationId) : null);
-  const swrFn = () => getOrganizationTurnJourneys(organizationId, requestOptions)
+	const isEnabled = swrOptions?.enabled !== false && !!organizationId;
+	const swrKey =
+		swrOptions?.swrKey ??
+		(() =>
+			isEnabled
+				? getGetOrganizationTurnConnectionKey(organizationId, params)
+				: null);
+	const swrFn = () =>
+		getOrganizationTurnConnection(organizationId, params, requestOptions);
 
-  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
+		swrKey,
+		swrFn,
+		swrOptions,
+	);
 
-  return {
-    swrKey,
-    ...query
-  }
-}
-export const getSetTurnArmJourneyMappingUrl = (datasourceId: string,
-    experimentId: string,) => {
-
-
-  
-
-  return `/v1/m/integrations/turn-journey-mapping/datasources/${datasourceId}/experiments/${experimentId}`
-}
-
-export const setTurnArmJourneyMapping = async (datasourceId: string,
-    experimentId: string,
-    setTurnArmJourneyMappingRequest: SetTurnArmJourneyMappingRequest, options?: RequestInit): Promise<void> => {
-  
-  return orvalFetch<void>(getSetTurnArmJourneyMappingUrl(datasourceId,experimentId),
-  {      
-    ...options,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      setTurnArmJourneyMappingRequest,)
-  }
-);}
-
-
-
-
-export const getSetTurnArmJourneyMappingMutationFetcher = (datasourceId: string,
-    experimentId: string, options?: SecondParameter<typeof orvalFetch>) => {
-  return (_: Key, { arg }: { arg: SetTurnArmJourneyMappingRequest }) => {
-    return setTurnArmJourneyMapping(datasourceId, experimentId, arg, options);
-  }
-}
-export const getSetTurnArmJourneyMappingMutationKey = (datasourceId: string,
-    experimentId: string,) => [`/v1/m/integrations/turn-journey-mapping/datasources/${datasourceId}/experiments/${experimentId}`] as const;
-
-export type SetTurnArmJourneyMappingMutationResult = NonNullable<Awaited<ReturnType<typeof setTurnArmJourneyMapping>>>
-export type SetTurnArmJourneyMappingMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
-
-export const useSetTurnArmJourneyMapping = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
-  datasourceId: string,
-    experimentId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof setTurnArmJourneyMapping>>, TError, Key, SetTurnArmJourneyMappingRequest, Awaited<ReturnType<typeof setTurnArmJourneyMapping>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
+	return {
+		swrKey,
+		...query,
+	};
+};
+export const getDeleteTurnConnectionFromOrganizationUrl = (
+	organizationId: string,
+	params?: DeleteTurnConnectionFromOrganizationParams,
 ) => {
+	const normalizedParams = new URLSearchParams();
 
-  const {swr: swrOptions, request: requestOptions} = options ?? {}
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
 
-  const swrKey = swrOptions?.swrKey ?? getSetTurnArmJourneyMappingMutationKey(datasourceId,experimentId);
-  const swrFn = getSetTurnArmJourneyMappingMutationFetcher(datasourceId,experimentId, requestOptions);
+	const stringifiedParams = normalizedParams.toString();
 
-  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+	return stringifiedParams.length > 0
+		? `/v1/m/integrations/turn-connection/${organizationId}?${stringifiedParams}`
+		: `/v1/m/integrations/turn-connection/${organizationId}`;
+};
 
-  return {
-    swrKey,
-    ...query
-  }
-}
-export const getGetTurnArmJourneyMappingUrl = (datasourceId: string,
-    experimentId: string,) => {
+export const deleteTurnConnectionFromOrganization = async (
+	organizationId: string,
+	params?: DeleteTurnConnectionFromOrganizationParams,
+	options?: RequestInit,
+): Promise<void> => {
+	return orvalFetch<void>(
+		getDeleteTurnConnectionFromOrganizationUrl(organizationId, params),
+		{
+			...options,
+			method: "DELETE",
+		},
+	);
+};
 
-
-  
-
-  return `/v1/m/integrations/turn-journey-mapping/datasources/${datasourceId}/experiments/${experimentId}`
-}
-
-export const getTurnArmJourneyMapping = async (datasourceId: string,
-    experimentId: string, options?: RequestInit): Promise<GetTurnArmJourneyMappingResponse> => {
-  
-  return orvalFetch<GetTurnArmJourneyMappingResponse>(getGetTurnArmJourneyMappingUrl(datasourceId,experimentId),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
-
-
-
-
-export const getGetTurnArmJourneyMappingKey = (datasourceId: string,
-    experimentId: string,) => [`/v1/m/integrations/turn-journey-mapping/datasources/${datasourceId}/experiments/${experimentId}`] as const;
-
-export type GetTurnArmJourneyMappingQueryResult = NonNullable<Awaited<ReturnType<typeof getTurnArmJourneyMapping>>>
-export type GetTurnArmJourneyMappingQueryError = ErrorType<HTTPExceptionError | HTTPValidationError>
-
-export const useGetTurnArmJourneyMapping = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
-  datasourceId: string,
-    experimentId: string, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof getTurnArmJourneyMapping>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof orvalFetch> }
+export const getDeleteTurnConnectionFromOrganizationMutationFetcher = (
+	organizationId: string,
+	params?: DeleteTurnConnectionFromOrganizationParams,
+	options?: SecondParameter<typeof orvalFetch>,
 ) => {
-  const {swr: swrOptions, request: requestOptions} = options ?? {}
+	return (_: Key, __: { arg: Arguments }) => {
+		return deleteTurnConnectionFromOrganization(
+			organizationId,
+			params,
+			options,
+		);
+	};
+};
+export const getDeleteTurnConnectionFromOrganizationMutationKey = (
+	organizationId: string,
+	params?: DeleteTurnConnectionFromOrganizationParams,
+) =>
+	[
+		`/v1/m/integrations/turn-connection/${organizationId}`,
+		...(params ? [params] : []),
+	] as const;
 
-  const isEnabled = swrOptions?.enabled !== false && !!(datasourceId && experimentId)
-  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getGetTurnArmJourneyMappingKey(datasourceId,experimentId) : null);
-  const swrFn = () => getTurnArmJourneyMapping(datasourceId,experimentId, requestOptions)
+export type DeleteTurnConnectionFromOrganizationMutationResult = NonNullable<
+	Awaited<ReturnType<typeof deleteTurnConnectionFromOrganization>>
+>;
+export type DeleteTurnConnectionFromOrganizationMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
 
-  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
-
-  return {
-    swrKey,
-    ...query
-  }
-}
-export const getDeleteTurnArmJourneyMappingUrl = (datasourceId: string,
-    experimentId: string,
-    params?: DeleteTurnArmJourneyMappingParams,) => {
-  const normalizedParams = new URLSearchParams();
-
-  Object.entries(params || {}).forEach(([key, value]) => {
-    
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
-    }
-  });
-
-  const stringifiedParams = normalizedParams.toString();
-
-  return stringifiedParams.length > 0 ? `/v1/m/integrations/turn-journey-mapping/datasources/${datasourceId}/experiments/${experimentId}?${stringifiedParams}` : `/v1/m/integrations/turn-journey-mapping/datasources/${datasourceId}/experiments/${experimentId}`
-}
-
-export const deleteTurnArmJourneyMapping = async (datasourceId: string,
-    experimentId: string,
-    params?: DeleteTurnArmJourneyMappingParams, options?: RequestInit): Promise<void> => {
-  
-  return orvalFetch<void>(getDeleteTurnArmJourneyMappingUrl(datasourceId,experimentId,params),
-  {      
-    ...options,
-    method: 'DELETE'
-    
-    
-  }
-);}
-
-
-
-
-export const getDeleteTurnArmJourneyMappingMutationFetcher = (datasourceId: string,
-    experimentId: string,
-    params?: DeleteTurnArmJourneyMappingParams, options?: SecondParameter<typeof orvalFetch>) => {
-  return (_: Key, __: { arg: Arguments }) => {
-    return deleteTurnArmJourneyMapping(datasourceId, experimentId, params, options);
-  }
-}
-export const getDeleteTurnArmJourneyMappingMutationKey = (datasourceId: string,
-    experimentId: string,
-    params?: DeleteTurnArmJourneyMappingParams,) => [`/v1/m/integrations/turn-journey-mapping/datasources/${datasourceId}/experiments/${experimentId}`, ...(params ? [params]: [])] as const;
-
-export type DeleteTurnArmJourneyMappingMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTurnArmJourneyMapping>>>
-export type DeleteTurnArmJourneyMappingMutationError = ErrorType<HTTPExceptionError | HTTPValidationError>
-
-export const useDeleteTurnArmJourneyMapping = <TError = ErrorType<HTTPExceptionError | HTTPValidationError>>(
-  datasourceId: string,
-    experimentId: string,
-    params?: DeleteTurnArmJourneyMappingParams, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof deleteTurnArmJourneyMapping>>, TError, Key, Arguments, Awaited<ReturnType<typeof deleteTurnArmJourneyMapping>>> & { swrKey?: string }, request?: SecondParameter<typeof orvalFetch>}
+export const useDeleteTurnConnectionFromOrganization = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	organizationId: string,
+	params?: DeleteTurnConnectionFromOrganizationParams,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof deleteTurnConnectionFromOrganization>>,
+			TError,
+			Key,
+			Arguments,
+			Awaited<ReturnType<typeof deleteTurnConnectionFromOrganization>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
 ) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
 
-  const {swr: swrOptions, request: requestOptions} = options ?? {}
+	const swrKey =
+		swrOptions?.swrKey ??
+		getDeleteTurnConnectionFromOrganizationMutationKey(organizationId, params);
+	const swrFn = getDeleteTurnConnectionFromOrganizationMutationFetcher(
+		organizationId,
+		params,
+		requestOptions,
+	);
 
-  const swrKey = swrOptions?.swrKey ?? getDeleteTurnArmJourneyMappingMutationKey(datasourceId,experimentId,params);
-  const swrFn = getDeleteTurnArmJourneyMappingMutationFetcher(datasourceId,experimentId,params, requestOptions);
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
-  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+	return {
+		swrKey,
+		...query,
+	};
+};
+export const getGetOrganizationTurnJourneysUrl = (organizationId: string) => {
+	return `/v1/m/integrations/turn-connection/${organizationId}/journeys`;
+};
 
-  return {
-    swrKey,
-    ...query
-  }
-}
+export const getOrganizationTurnJourneys = async (
+	organizationId: string,
+	options?: RequestInit,
+): Promise<GetTurnJourneysResponse> => {
+	return orvalFetch<GetTurnJourneysResponse>(
+		getGetOrganizationTurnJourneysUrl(organizationId),
+		{
+			...options,
+			method: "GET",
+		},
+	);
+};
+
+export const getGetOrganizationTurnJourneysKey = (organizationId: string) =>
+	[`/v1/m/integrations/turn-connection/${organizationId}/journeys`] as const;
+
+export type GetOrganizationTurnJourneysQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getOrganizationTurnJourneys>>
+>;
+export type GetOrganizationTurnJourneysQueryError =
+	ErrorType<HTTPExceptionError>;
+
+export const useGetOrganizationTurnJourneys = <
+	TError = ErrorType<HTTPExceptionError>,
+>(
+	organizationId: string,
+	options?: {
+		swr?: SWRConfiguration<
+			Awaited<ReturnType<typeof getOrganizationTurnJourneys>>,
+			TError
+		> & { swrKey?: Key; enabled?: boolean };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const isEnabled = swrOptions?.enabled !== false && !!organizationId;
+	const swrKey =
+		swrOptions?.swrKey ??
+		(() =>
+			isEnabled ? getGetOrganizationTurnJourneysKey(organizationId) : null);
+	const swrFn = () =>
+		getOrganizationTurnJourneys(organizationId, requestOptions);
+
+	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
+		swrKey,
+		swrFn,
+		swrOptions,
+	);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+export const getSetTurnArmJourneyMappingUrl = (
+	datasourceId: string,
+	experimentId: string,
+) => {
+	return `/v1/m/integrations/turn-journey-mapping/datasources/${datasourceId}/experiments/${experimentId}`;
+};
+
+export const setTurnArmJourneyMapping = async (
+	datasourceId: string,
+	experimentId: string,
+	setTurnArmJourneyMappingRequest: SetTurnArmJourneyMappingRequest,
+	options?: RequestInit,
+): Promise<void> => {
+	return orvalFetch<void>(
+		getSetTurnArmJourneyMappingUrl(datasourceId, experimentId),
+		{
+			...options,
+			method: "PUT",
+			headers: { "Content-Type": "application/json", ...options?.headers },
+			body: JSON.stringify(setTurnArmJourneyMappingRequest),
+		},
+	);
+};
+
+export const getSetTurnArmJourneyMappingMutationFetcher = (
+	datasourceId: string,
+	experimentId: string,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, { arg }: { arg: SetTurnArmJourneyMappingRequest }) => {
+		return setTurnArmJourneyMapping(datasourceId, experimentId, arg, options);
+	};
+};
+export const getSetTurnArmJourneyMappingMutationKey = (
+	datasourceId: string,
+	experimentId: string,
+) =>
+	[
+		`/v1/m/integrations/turn-journey-mapping/datasources/${datasourceId}/experiments/${experimentId}`,
+	] as const;
+
+export type SetTurnArmJourneyMappingMutationResult = NonNullable<
+	Awaited<ReturnType<typeof setTurnArmJourneyMapping>>
+>;
+export type SetTurnArmJourneyMappingMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+export const useSetTurnArmJourneyMapping = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	datasourceId: string,
+	experimentId: string,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof setTurnArmJourneyMapping>>,
+			TError,
+			Key,
+			SetTurnArmJourneyMappingRequest,
+			Awaited<ReturnType<typeof setTurnArmJourneyMapping>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey =
+		swrOptions?.swrKey ??
+		getSetTurnArmJourneyMappingMutationKey(datasourceId, experimentId);
+	const swrFn = getSetTurnArmJourneyMappingMutationFetcher(
+		datasourceId,
+		experimentId,
+		requestOptions,
+	);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+export const getGetTurnArmJourneyMappingUrl = (
+	datasourceId: string,
+	experimentId: string,
+) => {
+	return `/v1/m/integrations/turn-journey-mapping/datasources/${datasourceId}/experiments/${experimentId}`;
+};
+
+export const getTurnArmJourneyMapping = async (
+	datasourceId: string,
+	experimentId: string,
+	options?: RequestInit,
+): Promise<GetTurnArmJourneyMappingResponse> => {
+	return orvalFetch<GetTurnArmJourneyMappingResponse>(
+		getGetTurnArmJourneyMappingUrl(datasourceId, experimentId),
+		{
+			...options,
+			method: "GET",
+		},
+	);
+};
+
+export const getGetTurnArmJourneyMappingKey = (
+	datasourceId: string,
+	experimentId: string,
+) =>
+	[
+		`/v1/m/integrations/turn-journey-mapping/datasources/${datasourceId}/experiments/${experimentId}`,
+	] as const;
+
+export type GetTurnArmJourneyMappingQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getTurnArmJourneyMapping>>
+>;
+export type GetTurnArmJourneyMappingQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+export const useGetTurnArmJourneyMapping = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	datasourceId: string,
+	experimentId: string,
+	options?: {
+		swr?: SWRConfiguration<
+			Awaited<ReturnType<typeof getTurnArmJourneyMapping>>,
+			TError
+		> & { swrKey?: Key; enabled?: boolean };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const isEnabled =
+		swrOptions?.enabled !== false && !!(datasourceId && experimentId);
+	const swrKey =
+		swrOptions?.swrKey ??
+		(() =>
+			isEnabled
+				? getGetTurnArmJourneyMappingKey(datasourceId, experimentId)
+				: null);
+	const swrFn = () =>
+		getTurnArmJourneyMapping(datasourceId, experimentId, requestOptions);
+
+	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
+		swrKey,
+		swrFn,
+		swrOptions,
+	);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+export const getDeleteTurnArmJourneyMappingUrl = (
+	datasourceId: string,
+	experimentId: string,
+	params?: DeleteTurnArmJourneyMappingParams,
+) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/v1/m/integrations/turn-journey-mapping/datasources/${datasourceId}/experiments/${experimentId}?${stringifiedParams}`
+		: `/v1/m/integrations/turn-journey-mapping/datasources/${datasourceId}/experiments/${experimentId}`;
+};
+
+export const deleteTurnArmJourneyMapping = async (
+	datasourceId: string,
+	experimentId: string,
+	params?: DeleteTurnArmJourneyMappingParams,
+	options?: RequestInit,
+): Promise<void> => {
+	return orvalFetch<void>(
+		getDeleteTurnArmJourneyMappingUrl(datasourceId, experimentId, params),
+		{
+			...options,
+			method: "DELETE",
+		},
+	);
+};
+
+export const getDeleteTurnArmJourneyMappingMutationFetcher = (
+	datasourceId: string,
+	experimentId: string,
+	params?: DeleteTurnArmJourneyMappingParams,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, __: { arg: Arguments }) => {
+		return deleteTurnArmJourneyMapping(
+			datasourceId,
+			experimentId,
+			params,
+			options,
+		);
+	};
+};
+export const getDeleteTurnArmJourneyMappingMutationKey = (
+	datasourceId: string,
+	experimentId: string,
+	params?: DeleteTurnArmJourneyMappingParams,
+) =>
+	[
+		`/v1/m/integrations/turn-journey-mapping/datasources/${datasourceId}/experiments/${experimentId}`,
+		...(params ? [params] : []),
+	] as const;
+
+export type DeleteTurnArmJourneyMappingMutationResult = NonNullable<
+	Awaited<ReturnType<typeof deleteTurnArmJourneyMapping>>
+>;
+export type DeleteTurnArmJourneyMappingMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+export const useDeleteTurnArmJourneyMapping = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	datasourceId: string,
+	experimentId: string,
+	params?: DeleteTurnArmJourneyMappingParams,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof deleteTurnArmJourneyMapping>>,
+			TError,
+			Key,
+			Arguments,
+			Awaited<ReturnType<typeof deleteTurnArmJourneyMapping>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey =
+		swrOptions?.swrKey ??
+		getDeleteTurnArmJourneyMappingMutationKey(
+			datasourceId,
+			experimentId,
+			params,
+		);
+	const swrFn = getDeleteTurnArmJourneyMappingMutationFetcher(
+		datasourceId,
+		experimentId,
+		params,
+		requestOptions,
+	);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};

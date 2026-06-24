@@ -4,238 +4,401 @@
  * Evidential Experiments API
  * OpenAPI spec version: 0.9.0
  */
-import * as zod from 'zod';
-
-
+import * as zod from "zod";
 
 export const createUserBodyEmailMax = 64;
 
-
-
 export const createUserBody = zod.object({
-  "email": zod.string().max(createUserBodyEmailMax)
-})
+	email: zod.string().max(createUserBodyEmailMax),
+});
 
 export const patchUserBody = zod.object({
-  "is_privileged": zod.union([zod.boolean(),zod.null()]).optional()
-})
+	is_privileged: zod.union([zod.boolean(), zod.null()]).optional(),
+});
 
 export const createOrganizationsBodyNameMax = 100;
 
-
-
 export const createOrganizationsBody = zod.object({
-  "name": zod.string().max(createOrganizationsBodyNameMax)
-})
+	name: zod.string().max(createOrganizationsBodyNameMax),
+});
 
 export const addWebhookToOrganizationBodyNameMax = 100;
 
 export const addWebhookToOrganizationBodyUrlMax = 500;
 
-
-
 export const addWebhookToOrganizationBody = zod.object({
-  "type": zod.literal("experiment.created"),
-  "name": zod.string().max(addWebhookToOrganizationBodyNameMax),
-  "url": zod.string().max(addWebhookToOrganizationBodyUrlMax)
-})
+	type: zod.literal("experiment.created"),
+	name: zod.string().max(addWebhookToOrganizationBodyNameMax),
+	url: zod.string().max(addWebhookToOrganizationBodyUrlMax),
+});
 
 export const updateOrganizationWebhookBodyNameMax = 100;
 
 export const updateOrganizationWebhookBodyUrlMax = 500;
 
-
-
 export const updateOrganizationWebhookBody = zod.object({
-  "name": zod.string().max(updateOrganizationWebhookBodyNameMax),
-  "url": zod.string().max(updateOrganizationWebhookBodyUrlMax)
-})
+	name: zod.string().max(updateOrganizationWebhookBodyNameMax),
+	url: zod.string().max(updateOrganizationWebhookBodyUrlMax),
+});
 
 export const addMemberToOrganizationBody = zod.object({
-  "email": zod.string()
-})
+	email: zod.string(),
+});
 
 export const updateOrganizationBodyNameMaxOne = 100;
 
-
-
 export const updateOrganizationBody = zod.object({
-  "name": zod.union([zod.string().max(updateOrganizationBodyNameMaxOne),zod.null()]).optional()
-})
+	name: zod
+		.union([zod.string().max(updateOrganizationBodyNameMaxOne), zod.null()])
+		.optional(),
+});
 
 export const createDatasourceBodyOrganizationIdMax = 64;
 
 export const createDatasourceBodyDsnPortMin = 1024;
 export const createDatasourceBodyDsnPortMax = 65535;
 
-export const createDatasourceBodyDsnPasswordTypeDefault = "revealed";export const createDatasourceBodyDsnPasswordTypeDefaultOne = "hidden";export const createDatasourceBodyDsnProjectIdMin = 6;
+export const createDatasourceBodyDsnPasswordTypeDefault = "revealed";
+export const createDatasourceBodyDsnPasswordTypeDefaultOne = "hidden";
+export const createDatasourceBodyDsnProjectIdMin = 6;
 export const createDatasourceBodyDsnProjectIdMax = 30;
 
-
-export const createDatasourceBodyDsnProjectIdRegExp = new RegExp('^[a-z0-9-]+$');
+export const createDatasourceBodyDsnProjectIdRegExp = new RegExp(
+	"^[a-z0-9-]+$",
+);
 export const createDatasourceBodyDsnDatasetIdMax = 1024;
 
-
-export const createDatasourceBodyDsnDatasetIdRegExp = new RegExp('^[a-zA-Z0-9_]+$');
-export const createDatasourceBodyDsnCredentialsTypeDefault = "serviceaccountinfo";export const createDatasourceBodyDsnCredentialsContentMin = 4;
+export const createDatasourceBodyDsnDatasetIdRegExp = new RegExp(
+	"^[a-zA-Z0-9_]+$",
+);
+export const createDatasourceBodyDsnCredentialsTypeDefault =
+	"serviceaccountinfo";
+export const createDatasourceBodyDsnCredentialsContentMin = 4;
 export const createDatasourceBodyDsnCredentialsContentMax = 8000;
 
-export const createDatasourceBodyDsnCredentialsTypeDefaultOne = "hidden";export const createDatasourceBodyDsnPortMinOne = 1024;
+export const createDatasourceBodyDsnCredentialsTypeDefaultOne = "hidden";
+export const createDatasourceBodyDsnPortMinOne = 1024;
 export const createDatasourceBodyDsnPortMaxOne = 65535;
 
-export const createDatasourceBodyDsnPasswordTypeDefaultTwo = "revealed";export const createDatasourceBodyDsnPasswordTypeDefaultThree = "hidden";
+export const createDatasourceBodyDsnPasswordTypeDefaultTwo = "revealed";
+export const createDatasourceBodyDsnPasswordTypeDefaultThree = "hidden";
 
 export const createDatasourceBody = zod.object({
-  "organization_id": zod.string().max(createDatasourceBodyOrganizationIdMax),
-  "name": zod.string(),
-  "dsn": zod.union([zod.object({
-  "type": zod.enum(['api_only'])
-}),zod.object({
-  "type": zod.enum(['postgres']),
-  "host": zod.string(),
-  "port": zod.number().min(createDatasourceBodyDsnPortMin).max(createDatasourceBodyDsnPortMax),
-  "user": zod.string(),
-  "password": zod.union([zod.object({
-  "type": zod.literal("revealed").default(createDatasourceBodyDsnPasswordTypeDefault),
-  "value": zod.string()
-}),zod.object({
-  "type": zod.literal("hidden").default(createDatasourceBodyDsnPasswordTypeDefaultOne)
-})]),
-  "dbname": zod.string(),
-  "sslmode": zod.enum(['disable', 'require', 'verify-ca', 'verify-full']),
-  "search_path": zod.union([zod.string(),zod.null()])
-}),zod.object({
-  "type": zod.enum(['bigquery']),
-  "project_id": zod.string().min(createDatasourceBodyDsnProjectIdMin).max(createDatasourceBodyDsnProjectIdMax).regex(createDatasourceBodyDsnProjectIdRegExp),
-  "dataset_id": zod.string().min(1).max(createDatasourceBodyDsnDatasetIdMax).regex(createDatasourceBodyDsnDatasetIdRegExp),
-  "credentials": zod.union([zod.object({
-  "type": zod.literal("serviceaccountinfo").default(createDatasourceBodyDsnCredentialsTypeDefault),
-  "content": zod.string().min(createDatasourceBodyDsnCredentialsContentMin).max(createDatasourceBodyDsnCredentialsContentMax)
-}),zod.object({
-  "type": zod.literal("hidden").default(createDatasourceBodyDsnCredentialsTypeDefaultOne)
-})])
-}),zod.object({
-  "type": zod.enum(['redshift']),
-  "host": zod.string(),
-  "port": zod.number().min(createDatasourceBodyDsnPortMinOne).max(createDatasourceBodyDsnPortMaxOne),
-  "user": zod.string(),
-  "password": zod.union([zod.object({
-  "type": zod.literal("revealed").default(createDatasourceBodyDsnPasswordTypeDefaultTwo),
-  "value": zod.string()
-}),zod.object({
-  "type": zod.literal("hidden").default(createDatasourceBodyDsnPasswordTypeDefaultThree)
-})]),
-  "dbname": zod.string(),
-  "search_path": zod.union([zod.string(),zod.null()])
-})])
-})
+	organization_id: zod.string().max(createDatasourceBodyOrganizationIdMax),
+	name: zod.string(),
+	dsn: zod.union([
+		zod.object({
+			type: zod.enum(["api_only"]),
+		}),
+		zod.object({
+			type: zod.enum(["postgres"]),
+			host: zod.string(),
+			port: zod
+				.number()
+				.min(createDatasourceBodyDsnPortMin)
+				.max(createDatasourceBodyDsnPortMax),
+			user: zod.string(),
+			password: zod.union([
+				zod.object({
+					type: zod
+						.literal("revealed")
+						.default(createDatasourceBodyDsnPasswordTypeDefault),
+					value: zod.string(),
+				}),
+				zod.object({
+					type: zod
+						.literal("hidden")
+						.default(createDatasourceBodyDsnPasswordTypeDefaultOne),
+				}),
+			]),
+			dbname: zod.string(),
+			sslmode: zod.enum(["disable", "require", "verify-ca", "verify-full"]),
+			search_path: zod.union([zod.string(), zod.null()]),
+		}),
+		zod.object({
+			type: zod.enum(["bigquery"]),
+			project_id: zod
+				.string()
+				.min(createDatasourceBodyDsnProjectIdMin)
+				.max(createDatasourceBodyDsnProjectIdMax)
+				.regex(createDatasourceBodyDsnProjectIdRegExp),
+			dataset_id: zod
+				.string()
+				.min(1)
+				.max(createDatasourceBodyDsnDatasetIdMax)
+				.regex(createDatasourceBodyDsnDatasetIdRegExp),
+			credentials: zod.union([
+				zod.object({
+					type: zod
+						.literal("serviceaccountinfo")
+						.default(createDatasourceBodyDsnCredentialsTypeDefault),
+					content: zod
+						.string()
+						.min(createDatasourceBodyDsnCredentialsContentMin)
+						.max(createDatasourceBodyDsnCredentialsContentMax),
+				}),
+				zod.object({
+					type: zod
+						.literal("hidden")
+						.default(createDatasourceBodyDsnCredentialsTypeDefaultOne),
+				}),
+			]),
+		}),
+		zod.object({
+			type: zod.enum(["redshift"]),
+			host: zod.string(),
+			port: zod
+				.number()
+				.min(createDatasourceBodyDsnPortMinOne)
+				.max(createDatasourceBodyDsnPortMaxOne),
+			user: zod.string(),
+			password: zod.union([
+				zod.object({
+					type: zod
+						.literal("revealed")
+						.default(createDatasourceBodyDsnPasswordTypeDefaultTwo),
+					value: zod.string(),
+				}),
+				zod.object({
+					type: zod
+						.literal("hidden")
+						.default(createDatasourceBodyDsnPasswordTypeDefaultThree),
+				}),
+			]),
+			dbname: zod.string(),
+			search_path: zod.union([zod.string(), zod.null()]),
+		}),
+	]),
+});
 
 export const updateDatasourceBodyNameMaxOne = 100;
 
 export const updateDatasourceBodyDsnPortMin = 1024;
 export const updateDatasourceBodyDsnPortMax = 65535;
 
-export const updateDatasourceBodyDsnPasswordTypeDefault = "revealed";export const updateDatasourceBodyDsnPasswordTypeDefaultOne = "hidden";export const updateDatasourceBodyDsnProjectIdMin = 6;
+export const updateDatasourceBodyDsnPasswordTypeDefault = "revealed";
+export const updateDatasourceBodyDsnPasswordTypeDefaultOne = "hidden";
+export const updateDatasourceBodyDsnProjectIdMin = 6;
 export const updateDatasourceBodyDsnProjectIdMax = 30;
 
-
-export const updateDatasourceBodyDsnProjectIdRegExp = new RegExp('^[a-z0-9-]+$');
+export const updateDatasourceBodyDsnProjectIdRegExp = new RegExp(
+	"^[a-z0-9-]+$",
+);
 export const updateDatasourceBodyDsnDatasetIdMax = 1024;
 
-
-export const updateDatasourceBodyDsnDatasetIdRegExp = new RegExp('^[a-zA-Z0-9_]+$');
-export const updateDatasourceBodyDsnCredentialsTypeDefault = "serviceaccountinfo";export const updateDatasourceBodyDsnCredentialsContentMin = 4;
+export const updateDatasourceBodyDsnDatasetIdRegExp = new RegExp(
+	"^[a-zA-Z0-9_]+$",
+);
+export const updateDatasourceBodyDsnCredentialsTypeDefault =
+	"serviceaccountinfo";
+export const updateDatasourceBodyDsnCredentialsContentMin = 4;
 export const updateDatasourceBodyDsnCredentialsContentMax = 8000;
 
-export const updateDatasourceBodyDsnCredentialsTypeDefaultOne = "hidden";export const updateDatasourceBodyDsnPortMinOne = 1024;
+export const updateDatasourceBodyDsnCredentialsTypeDefaultOne = "hidden";
+export const updateDatasourceBodyDsnPortMinOne = 1024;
 export const updateDatasourceBodyDsnPortMaxOne = 65535;
 
-export const updateDatasourceBodyDsnPasswordTypeDefaultTwo = "revealed";export const updateDatasourceBodyDsnPasswordTypeDefaultThree = "hidden";
+export const updateDatasourceBodyDsnPasswordTypeDefaultTwo = "revealed";
+export const updateDatasourceBodyDsnPasswordTypeDefaultThree = "hidden";
 
 export const updateDatasourceBody = zod.object({
-  "name": zod.union([zod.string().max(updateDatasourceBodyNameMaxOne),zod.null()]).optional(),
-  "dsn": zod.union([zod.union([zod.object({
-  "type": zod.enum(['api_only'])
-}),zod.object({
-  "type": zod.enum(['postgres']),
-  "host": zod.string(),
-  "port": zod.number().min(updateDatasourceBodyDsnPortMin).max(updateDatasourceBodyDsnPortMax),
-  "user": zod.string(),
-  "password": zod.union([zod.object({
-  "type": zod.literal("revealed").default(updateDatasourceBodyDsnPasswordTypeDefault),
-  "value": zod.string()
-}),zod.object({
-  "type": zod.literal("hidden").default(updateDatasourceBodyDsnPasswordTypeDefaultOne)
-})]),
-  "dbname": zod.string(),
-  "sslmode": zod.enum(['disable', 'require', 'verify-ca', 'verify-full']),
-  "search_path": zod.union([zod.string(),zod.null()])
-}),zod.object({
-  "type": zod.enum(['bigquery']),
-  "project_id": zod.string().min(updateDatasourceBodyDsnProjectIdMin).max(updateDatasourceBodyDsnProjectIdMax).regex(updateDatasourceBodyDsnProjectIdRegExp),
-  "dataset_id": zod.string().min(1).max(updateDatasourceBodyDsnDatasetIdMax).regex(updateDatasourceBodyDsnDatasetIdRegExp),
-  "credentials": zod.union([zod.object({
-  "type": zod.literal("serviceaccountinfo").default(updateDatasourceBodyDsnCredentialsTypeDefault),
-  "content": zod.string().min(updateDatasourceBodyDsnCredentialsContentMin).max(updateDatasourceBodyDsnCredentialsContentMax)
-}),zod.object({
-  "type": zod.literal("hidden").default(updateDatasourceBodyDsnCredentialsTypeDefaultOne)
-})])
-}),zod.object({
-  "type": zod.enum(['redshift']),
-  "host": zod.string(),
-  "port": zod.number().min(updateDatasourceBodyDsnPortMinOne).max(updateDatasourceBodyDsnPortMaxOne),
-  "user": zod.string(),
-  "password": zod.union([zod.object({
-  "type": zod.literal("revealed").default(updateDatasourceBodyDsnPasswordTypeDefaultTwo),
-  "value": zod.string()
-}),zod.object({
-  "type": zod.literal("hidden").default(updateDatasourceBodyDsnPasswordTypeDefaultThree)
-})]),
-  "dbname": zod.string(),
-  "search_path": zod.union([zod.string(),zod.null()])
-})]),zod.null()]).optional()
-})
+	name: zod
+		.union([zod.string().max(updateDatasourceBodyNameMaxOne), zod.null()])
+		.optional(),
+	dsn: zod
+		.union([
+			zod.union([
+				zod.object({
+					type: zod.enum(["api_only"]),
+				}),
+				zod.object({
+					type: zod.enum(["postgres"]),
+					host: zod.string(),
+					port: zod
+						.number()
+						.min(updateDatasourceBodyDsnPortMin)
+						.max(updateDatasourceBodyDsnPortMax),
+					user: zod.string(),
+					password: zod.union([
+						zod.object({
+							type: zod
+								.literal("revealed")
+								.default(updateDatasourceBodyDsnPasswordTypeDefault),
+							value: zod.string(),
+						}),
+						zod.object({
+							type: zod
+								.literal("hidden")
+								.default(updateDatasourceBodyDsnPasswordTypeDefaultOne),
+						}),
+					]),
+					dbname: zod.string(),
+					sslmode: zod.enum(["disable", "require", "verify-ca", "verify-full"]),
+					search_path: zod.union([zod.string(), zod.null()]),
+				}),
+				zod.object({
+					type: zod.enum(["bigquery"]),
+					project_id: zod
+						.string()
+						.min(updateDatasourceBodyDsnProjectIdMin)
+						.max(updateDatasourceBodyDsnProjectIdMax)
+						.regex(updateDatasourceBodyDsnProjectIdRegExp),
+					dataset_id: zod
+						.string()
+						.min(1)
+						.max(updateDatasourceBodyDsnDatasetIdMax)
+						.regex(updateDatasourceBodyDsnDatasetIdRegExp),
+					credentials: zod.union([
+						zod.object({
+							type: zod
+								.literal("serviceaccountinfo")
+								.default(updateDatasourceBodyDsnCredentialsTypeDefault),
+							content: zod
+								.string()
+								.min(updateDatasourceBodyDsnCredentialsContentMin)
+								.max(updateDatasourceBodyDsnCredentialsContentMax),
+						}),
+						zod.object({
+							type: zod
+								.literal("hidden")
+								.default(updateDatasourceBodyDsnCredentialsTypeDefaultOne),
+						}),
+					]),
+				}),
+				zod.object({
+					type: zod.enum(["redshift"]),
+					host: zod.string(),
+					port: zod
+						.number()
+						.min(updateDatasourceBodyDsnPortMinOne)
+						.max(updateDatasourceBodyDsnPortMaxOne),
+					user: zod.string(),
+					password: zod.union([
+						zod.object({
+							type: zod
+								.literal("revealed")
+								.default(updateDatasourceBodyDsnPasswordTypeDefaultTwo),
+							value: zod.string(),
+						}),
+						zod.object({
+							type: zod
+								.literal("hidden")
+								.default(updateDatasourceBodyDsnPasswordTypeDefaultThree),
+						}),
+					]),
+					dbname: zod.string(),
+					search_path: zod.union([zod.string(), zod.null()]),
+				}),
+			]),
+			zod.null(),
+		])
+		.optional(),
+});
 
 export const createParticipantTypeBodyParticipantTypeMax = 100;
 
-export const createParticipantTypeBodySchemaDefFieldsItemDescriptionDefault = "";export const createParticipantTypeBodySchemaDefFieldsItemIsUniqueIdDefault = false;export const createParticipantTypeBodySchemaDefFieldsItemIsStrataDefault = false;export const createParticipantTypeBodySchemaDefFieldsItemIsFilterDefault = false;export const createParticipantTypeBodySchemaDefFieldsItemIsMetricDefault = false;
+export const createParticipantTypeBodySchemaDefFieldsItemDescriptionDefault =
+	"";
+export const createParticipantTypeBodySchemaDefFieldsItemIsUniqueIdDefault = false;
+export const createParticipantTypeBodySchemaDefFieldsItemIsStrataDefault = false;
+export const createParticipantTypeBodySchemaDefFieldsItemIsFilterDefault = false;
+export const createParticipantTypeBodySchemaDefFieldsItemIsMetricDefault = false;
 
 export const createParticipantTypeBody = zod.object({
-  "participant_type": zod.string().max(createParticipantTypeBodyParticipantTypeMax),
-  "schema_def": zod.object({
-  "table_name": zod.string(),
-  "fields": zod.array(zod.object({
-  "field_name": zod.string(),
-  "data_type": zod.enum(['boolean', 'character varying', 'uuid', 'date', 'integer', 'double precision', 'numeric', 'timestamp without time zone', 'timestamp with time zone', 'bigint', 'jsonb', 'json', 'unknown']),
-  "description": zod.string().optional(),
-  "is_unique_id": zod.boolean().optional(),
-  "is_strata": zod.boolean().optional(),
-  "is_filter": zod.boolean().optional(),
-  "is_metric": zod.boolean().optional(),
-  "extra": zod.union([zod.record(zod.string(), zod.string()),zod.null()]).optional()
-}))
-})
-})
+	participant_type: zod
+		.string()
+		.max(createParticipantTypeBodyParticipantTypeMax),
+	schema_def: zod.object({
+		table_name: zod.string(),
+		fields: zod.array(
+			zod.object({
+				field_name: zod.string(),
+				data_type: zod.enum([
+					"boolean",
+					"character varying",
+					"uuid",
+					"date",
+					"integer",
+					"double precision",
+					"numeric",
+					"timestamp without time zone",
+					"timestamp with time zone",
+					"bigint",
+					"jsonb",
+					"json",
+					"unknown",
+				]),
+				description: zod.string().optional(),
+				is_unique_id: zod.boolean().optional(),
+				is_strata: zod.boolean().optional(),
+				is_filter: zod.boolean().optional(),
+				is_metric: zod.boolean().optional(),
+				extra: zod
+					.union([zod.record(zod.string(), zod.string()), zod.null()])
+					.optional(),
+			}),
+		),
+	}),
+});
 
 export const updateParticipantTypeBodyParticipantTypeMaxOne = 100;
 
-export const updateParticipantTypeBodyTableNameRegExpOne = new RegExp('^[a-zA-Z_][a-zA-Z0-9_]*$');
-export const updateParticipantTypeBodyFieldsItemDescriptionDefault = "";export const updateParticipantTypeBodyFieldsItemIsUniqueIdDefault = false;export const updateParticipantTypeBodyFieldsItemIsStrataDefault = false;export const updateParticipantTypeBodyFieldsItemIsFilterDefault = false;export const updateParticipantTypeBodyFieldsItemIsMetricDefault = false;
+export const updateParticipantTypeBodyTableNameRegExpOne = new RegExp(
+	"^[a-zA-Z_][a-zA-Z0-9_]*$",
+);
+export const updateParticipantTypeBodyFieldsItemDescriptionDefault = "";
+export const updateParticipantTypeBodyFieldsItemIsUniqueIdDefault = false;
+export const updateParticipantTypeBodyFieldsItemIsStrataDefault = false;
+export const updateParticipantTypeBodyFieldsItemIsFilterDefault = false;
+export const updateParticipantTypeBodyFieldsItemIsMetricDefault = false;
 
 export const updateParticipantTypeBody = zod.object({
-  "participant_type": zod.union([zod.string().max(updateParticipantTypeBodyParticipantTypeMaxOne),zod.null()]).optional(),
-  "table_name": zod.union([zod.string().regex(updateParticipantTypeBodyTableNameRegExpOne),zod.null()]).optional(),
-  "fields": zod.union([zod.array(zod.object({
-  "field_name": zod.string(),
-  "data_type": zod.enum(['boolean', 'character varying', 'uuid', 'date', 'integer', 'double precision', 'numeric', 'timestamp without time zone', 'timestamp with time zone', 'bigint', 'jsonb', 'json', 'unknown']),
-  "description": zod.string().optional(),
-  "is_unique_id": zod.boolean().optional(),
-  "is_strata": zod.boolean().optional(),
-  "is_filter": zod.boolean().optional(),
-  "is_metric": zod.boolean().optional(),
-  "extra": zod.union([zod.record(zod.string(), zod.string()),zod.null()]).optional()
-})),zod.null()]).optional()
-})
+	participant_type: zod
+		.union([
+			zod.string().max(updateParticipantTypeBodyParticipantTypeMaxOne),
+			zod.null(),
+		])
+		.optional(),
+	table_name: zod
+		.union([
+			zod.string().regex(updateParticipantTypeBodyTableNameRegExpOne),
+			zod.null(),
+		])
+		.optional(),
+	fields: zod
+		.union([
+			zod.array(
+				zod.object({
+					field_name: zod.string(),
+					data_type: zod.enum([
+						"boolean",
+						"character varying",
+						"uuid",
+						"date",
+						"integer",
+						"double precision",
+						"numeric",
+						"timestamp without time zone",
+						"timestamp with time zone",
+						"bigint",
+						"jsonb",
+						"json",
+						"unknown",
+					]),
+					description: zod.string().optional(),
+					is_unique_id: zod.boolean().optional(),
+					is_strata: zod.boolean().optional(),
+					is_filter: zod.boolean().optional(),
+					is_metric: zod.boolean().optional(),
+					extra: zod
+						.union([zod.record(zod.string(), zod.string()), zod.null()])
+						.optional(),
+				}),
+			),
+			zod.null(),
+		])
+		.optional(),
+});
 
 export const createExperimentBodyDesignSpecExperimentNameMax = 100;
 
@@ -252,14 +415,19 @@ export const createExperimentBodyDesignSpecArmsMax = 20;
 
 export const createExperimentBodyDesignSpecTableNameMax = 100;
 
-export const createExperimentBodyDesignSpecPrimaryKeyRegExp = new RegExp('^[a-zA-Z_][a-zA-Z0-9_]*$');
-export const createExperimentBodyDesignSpecStrataItemFieldNameRegExp = new RegExp('^[a-zA-Z_][a-zA-Z0-9_]*$');
+export const createExperimentBodyDesignSpecPrimaryKeyRegExp = new RegExp(
+	"^[a-zA-Z_][a-zA-Z0-9_]*$",
+);
+export const createExperimentBodyDesignSpecStrataItemFieldNameRegExp =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyDesignSpecStrataMax = 150;
 
-export const createExperimentBodyDesignSpecMetricsItemFieldNameRegExp = new RegExp('^[a-zA-Z_][a-zA-Z0-9_]*$');
+export const createExperimentBodyDesignSpecMetricsItemFieldNameRegExp =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyDesignSpecMetricsMax = 150;
 
-export const createExperimentBodyDesignSpecFiltersItemFieldNameRegExp = new RegExp('^[a-zA-Z_][a-zA-Z0-9_]*$');
+export const createExperimentBodyDesignSpecFiltersItemFieldNameRegExp =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyDesignSpecFiltersMax = 20;
 
 export const createExperimentBodyDesignSpecDesiredNMinOne = 0;
@@ -291,14 +459,19 @@ export const createExperimentBodyDesignSpecArmsMaxOne = 20;
 
 export const createExperimentBodyDesignSpecTableNameMaxOne = 100;
 
-export const createExperimentBodyDesignSpecPrimaryKeyRegExpOne = new RegExp('^[a-zA-Z_][a-zA-Z0-9_]*$');
-export const createExperimentBodyDesignSpecStrataItemFieldNameRegExpOne = new RegExp('^[a-zA-Z_][a-zA-Z0-9_]*$');
+export const createExperimentBodyDesignSpecPrimaryKeyRegExpOne = new RegExp(
+	"^[a-zA-Z_][a-zA-Z0-9_]*$",
+);
+export const createExperimentBodyDesignSpecStrataItemFieldNameRegExpOne =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyDesignSpecStrataMaxOne = 150;
 
-export const createExperimentBodyDesignSpecMetricsItemFieldNameRegExpOne = new RegExp('^[a-zA-Z_][a-zA-Z0-9_]*$');
+export const createExperimentBodyDesignSpecMetricsItemFieldNameRegExpOne =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyDesignSpecMetricsMaxOne = 150;
 
-export const createExperimentBodyDesignSpecFiltersItemFieldNameRegExpOne = new RegExp('^[a-zA-Z_][a-zA-Z0-9_]*$');
+export const createExperimentBodyDesignSpecFiltersItemFieldNameRegExpOne =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyDesignSpecFiltersMaxOne = 20;
 
 export const createExperimentBodyDesignSpecDesiredNMinFour = 0;
@@ -355,8 +528,12 @@ export const createExperimentBodyDesignSpecContextsMaxFour = 150;
 
 export const createExperimentBodyDesignSpecTableNameMaxTwo = 100;
 
-export const createExperimentBodyDesignSpecPrimaryKeyRegExpTwo = new RegExp('^[a-zA-Z_][a-zA-Z0-9_]*$');
-export const createExperimentBodyDesignSpecTargetFieldNameRegExp = new RegExp('^[a-zA-Z_][a-zA-Z0-9_]*$');
+export const createExperimentBodyDesignSpecPrimaryKeyRegExpTwo = new RegExp(
+	"^[a-zA-Z_][a-zA-Z0-9_]*$",
+);
+export const createExperimentBodyDesignSpecTargetFieldNameRegExp = new RegExp(
+	"^[a-zA-Z_][a-zA-Z0-9_]*$",
+);
 export const createExperimentBodyDesignSpecExperimentNameMaxFour = 100;
 
 export const createExperimentBodyDesignSpecDescriptionMaxFour = 2000;
@@ -376,220 +553,627 @@ export const createExperimentBodyDesignSpecContextsItemContextDescriptionMaxSeve
 
 export const createExperimentBodyDesignSpecContextsMaxSeven = 150;
 
-export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp = new RegExp('^[a-zA-Z_][a-zA-Z0-9_]*$');
-export const createExperimentBodyPowerAnalysesAnalysesItemMsgHighClusterVariationDefault = false;export const createExperimentBodyPowerAnalysesAnalysesMax = 150;
+export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
+	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentBodyPowerAnalysesAnalysesItemMsgHighClusterVariationDefault = false;
+export const createExperimentBodyPowerAnalysesAnalysesMax = 150;
 
 export const createExperimentBodyWebhooksDefault = [];
 
 export const createExperimentBody = zod.object({
-  "design_spec": zod.union([zod.union([zod.object({
-  "experiment_type": zod.enum(['freq_preassigned']),
-  "experiment_name": zod.string().max(createExperimentBodyDesignSpecExperimentNameMax),
-  "description": zod.string().max(createExperimentBodyDesignSpecDescriptionMax),
-  "design_url": zod.union([zod.string().url().min(1).max(createExperimentBodyDesignSpecDesignUrlMaxOne),zod.null()]).optional(),
-  "start_date": zod.string().datetime({}),
-  "end_date": zod.string().datetime({}),
-  "arms": zod.array(zod.object({
-  "arm_id": zod.union([zod.string(),zod.null()]).optional(),
-  "arm_name": zod.string().max(createExperimentBodyDesignSpecArmsItemArmNameMax),
-  "arm_description": zod.union([zod.string().max(createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOne),zod.null()]).optional(),
-  "arm_weight": zod.union([zod.number(),zod.null()]).optional()
-})).min(createExperimentBodyDesignSpecArmsMin).max(createExperimentBodyDesignSpecArmsMax),
-  "table_name": zod.string().max(createExperimentBodyDesignSpecTableNameMax),
-  "primary_key": zod.string().regex(createExperimentBodyDesignSpecPrimaryKeyRegExp),
-  "strata": zod.array(zod.object({
-  "field_name": zod.string().regex(createExperimentBodyDesignSpecStrataItemFieldNameRegExp)
-})).max(createExperimentBodyDesignSpecStrataMax),
-  "metrics": zod.array(zod.object({
-  "field_name": zod.string().regex(createExperimentBodyDesignSpecMetricsItemFieldNameRegExp),
-  "metric_pct_change": zod.union([zod.number(),zod.null()]).optional(),
-  "metric_target": zod.union([zod.number(),zod.null()]).optional(),
-  "icc": zod.union([zod.number(),zod.null()]).optional(),
-  "avg_cluster_size": zod.union([zod.number(),zod.null()]).optional(),
-  "cv": zod.union([zod.number(),zod.null()]).optional()
-})).min(1).max(createExperimentBodyDesignSpecMetricsMax),
-  "filters": zod.array(zod.object({
-  "field_name": zod.string().regex(createExperimentBodyDesignSpecFiltersItemFieldNameRegExp),
-  "relation": zod.enum(['includes', 'excludes', 'between']),
-  "value": zod.union([zod.array(zod.union([zod.number(),zod.null()])),zod.array(zod.union([zod.number(),zod.null()])),zod.array(zod.union([zod.string(),zod.null()])),zod.array(zod.union([zod.boolean(),zod.null()]))])
-})).max(createExperimentBodyDesignSpecFiltersMax),
-  "desired_n": zod.union([zod.number().min(createExperimentBodyDesignSpecDesiredNMinOne),zod.null()]).optional(),
-  "power": zod.number().min(createExperimentBodyDesignSpecPowerMin).max(createExperimentBodyDesignSpecPowerMax).default(createExperimentBodyDesignSpecPowerDefault),
-  "alpha": zod.number().min(createExperimentBodyDesignSpecAlphaMin).max(createExperimentBodyDesignSpecAlphaMax).default(createExperimentBodyDesignSpecAlphaDefault),
-  "fstat_thresh": zod.number().min(createExperimentBodyDesignSpecFstatThreshMin).max(createExperimentBodyDesignSpecFstatThreshMax).default(createExperimentBodyDesignSpecFstatThreshDefault),
-  "cluster_key": zod.union([zod.string(),zod.null()]).optional()
-}),zod.object({
-  "experiment_type": zod.enum(['freq_online']),
-  "experiment_name": zod.string().max(createExperimentBodyDesignSpecExperimentNameMaxOne),
-  "description": zod.string().max(createExperimentBodyDesignSpecDescriptionMaxOne),
-  "design_url": zod.union([zod.string().url().min(1).max(createExperimentBodyDesignSpecDesignUrlMaxFour),zod.null()]).optional(),
-  "start_date": zod.string().datetime({}),
-  "end_date": zod.string().datetime({}),
-  "arms": zod.array(zod.object({
-  "arm_id": zod.union([zod.string(),zod.null()]).optional(),
-  "arm_name": zod.string().max(createExperimentBodyDesignSpecArmsItemArmNameMaxOne),
-  "arm_description": zod.union([zod.string().max(createExperimentBodyDesignSpecArmsItemArmDescriptionMaxFour),zod.null()]).optional(),
-  "arm_weight": zod.union([zod.number(),zod.null()]).optional()
-})).min(createExperimentBodyDesignSpecArmsMinOne).max(createExperimentBodyDesignSpecArmsMaxOne),
-  "table_name": zod.string().max(createExperimentBodyDesignSpecTableNameMaxOne),
-  "primary_key": zod.string().regex(createExperimentBodyDesignSpecPrimaryKeyRegExpOne),
-  "strata": zod.array(zod.object({
-  "field_name": zod.string().regex(createExperimentBodyDesignSpecStrataItemFieldNameRegExpOne)
-})).max(createExperimentBodyDesignSpecStrataMaxOne),
-  "metrics": zod.array(zod.object({
-  "field_name": zod.string().regex(createExperimentBodyDesignSpecMetricsItemFieldNameRegExpOne),
-  "metric_pct_change": zod.union([zod.number(),zod.null()]).optional(),
-  "metric_target": zod.union([zod.number(),zod.null()]).optional(),
-  "icc": zod.union([zod.number(),zod.null()]).optional(),
-  "avg_cluster_size": zod.union([zod.number(),zod.null()]).optional(),
-  "cv": zod.union([zod.number(),zod.null()]).optional()
-})).min(1).max(createExperimentBodyDesignSpecMetricsMaxOne),
-  "filters": zod.array(zod.object({
-  "field_name": zod.string().regex(createExperimentBodyDesignSpecFiltersItemFieldNameRegExpOne),
-  "relation": zod.enum(['includes', 'excludes', 'between']),
-  "value": zod.union([zod.array(zod.union([zod.number(),zod.null()])),zod.array(zod.union([zod.number(),zod.null()])),zod.array(zod.union([zod.string(),zod.null()])),zod.array(zod.union([zod.boolean(),zod.null()]))])
-})).max(createExperimentBodyDesignSpecFiltersMaxOne),
-  "desired_n": zod.union([zod.number().min(createExperimentBodyDesignSpecDesiredNMinFour),zod.null()]).optional(),
-  "power": zod.number().min(createExperimentBodyDesignSpecPowerMinOne).max(createExperimentBodyDesignSpecPowerMaxOne).default(createExperimentBodyDesignSpecPowerDefaultOne),
-  "alpha": zod.number().min(createExperimentBodyDesignSpecAlphaMinOne).max(createExperimentBodyDesignSpecAlphaMaxOne).default(createExperimentBodyDesignSpecAlphaDefaultOne),
-  "fstat_thresh": zod.number().min(createExperimentBodyDesignSpecFstatThreshMinOne).max(createExperimentBodyDesignSpecFstatThreshMaxOne).default(createExperimentBodyDesignSpecFstatThreshDefaultOne)
-})]),zod.union([zod.object({
-  "experiment_type": zod.enum(['mab_online']),
-  "experiment_name": zod.string().max(createExperimentBodyDesignSpecExperimentNameMaxTwo),
-  "description": zod.string().max(createExperimentBodyDesignSpecDescriptionMaxTwo),
-  "design_url": zod.union([zod.string().url().min(1).max(createExperimentBodyDesignSpecDesignUrlMaxSeven),zod.null()]).optional(),
-  "start_date": zod.string().datetime({}),
-  "end_date": zod.string().datetime({}),
-  "arms": zod.array(zod.object({
-  "arm_id": zod.union([zod.string(),zod.null()]).optional(),
-  "arm_name": zod.string().max(createExperimentBodyDesignSpecArmsItemArmNameMaxTwo),
-  "arm_description": zod.union([zod.string().max(createExperimentBodyDesignSpecArmsItemArmDescriptionMaxSeven),zod.null()]).optional(),
-  "arm_weight": zod.union([zod.number(),zod.null()]).optional(),
-  "alpha_init": zod.union([zod.number(),zod.null()]).optional(),
-  "beta_init": zod.union([zod.number(),zod.null()]).optional(),
-  "mu_init": zod.union([zod.number(),zod.null()]).optional(),
-  "sigma_init": zod.union([zod.number(),zod.null()]).optional(),
-  "alpha": zod.union([zod.number(),zod.null()]).optional(),
-  "beta": zod.union([zod.number(),zod.null()]).optional(),
-  "mu": zod.union([zod.array(zod.number()),zod.null()]).optional(),
-  "covariance": zod.union([zod.array(zod.array(zod.number())),zod.null()]).optional()
-})).min(createExperimentBodyDesignSpecArmsMinTwo).max(createExperimentBodyDesignSpecArmsMaxTwo),
-  "contexts": zod.union([zod.array(zod.object({
-  "context_id": zod.union([zod.string(),zod.null()]).optional(),
-  "context_name": zod.string().max(createExperimentBodyDesignSpecContextsItemContextNameMax),
-  "context_description": zod.union([zod.string().max(createExperimentBodyDesignSpecContextsItemContextDescriptionMaxOne),zod.null()]).optional(),
-  "value_type": zod.enum(['binary', 'real-valued']).optional()
-})).max(createExperimentBodyDesignSpecContextsMaxOne),zod.null()]).optional(),
-  "prior_type": zod.enum(['beta', 'normal']).optional(),
-  "reward_type": zod.enum(['binary', 'real-valued']).optional()
-}),zod.object({
-  "experiment_type": zod.enum(['mab_online_dwh']),
-  "experiment_name": zod.string().max(createExperimentBodyDesignSpecExperimentNameMaxThree),
-  "description": zod.string().max(createExperimentBodyDesignSpecDescriptionMaxThree),
-  "design_url": zod.union([zod.string().url().min(1).max(createExperimentBodyDesignSpecDesignUrlMaxOnezero),zod.null()]).optional(),
-  "start_date": zod.string().datetime({}),
-  "end_date": zod.string().datetime({}),
-  "arms": zod.array(zod.object({
-  "arm_id": zod.union([zod.string(),zod.null()]).optional(),
-  "arm_name": zod.string().max(createExperimentBodyDesignSpecArmsItemArmNameMaxThree),
-  "arm_description": zod.union([zod.string().max(createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnezero),zod.null()]).optional(),
-  "arm_weight": zod.union([zod.number(),zod.null()]).optional(),
-  "alpha_init": zod.union([zod.number(),zod.null()]).optional(),
-  "beta_init": zod.union([zod.number(),zod.null()]).optional(),
-  "mu_init": zod.union([zod.number(),zod.null()]).optional(),
-  "sigma_init": zod.union([zod.number(),zod.null()]).optional(),
-  "alpha": zod.union([zod.number(),zod.null()]).optional(),
-  "beta": zod.union([zod.number(),zod.null()]).optional(),
-  "mu": zod.union([zod.array(zod.number()),zod.null()]).optional(),
-  "covariance": zod.union([zod.array(zod.array(zod.number())),zod.null()]).optional()
-})).min(createExperimentBodyDesignSpecArmsMinThree).max(createExperimentBodyDesignSpecArmsMaxThree),
-  "contexts": zod.union([zod.array(zod.object({
-  "context_id": zod.union([zod.string(),zod.null()]).optional(),
-  "context_name": zod.string().max(createExperimentBodyDesignSpecContextsItemContextNameMaxOne),
-  "context_description": zod.union([zod.string().max(createExperimentBodyDesignSpecContextsItemContextDescriptionMaxFour),zod.null()]).optional(),
-  "value_type": zod.enum(['binary', 'real-valued']).optional()
-})).max(createExperimentBodyDesignSpecContextsMaxFour),zod.null()]).optional(),
-  "prior_type": zod.enum(['beta', 'normal']).optional(),
-  "reward_type": zod.enum(['binary', 'real-valued']).optional(),
-  "table_name": zod.string().max(createExperimentBodyDesignSpecTableNameMaxTwo),
-  "primary_key": zod.string().regex(createExperimentBodyDesignSpecPrimaryKeyRegExpTwo),
-  "target_field_name": zod.string().regex(createExperimentBodyDesignSpecTargetFieldNameRegExp)
-}),zod.object({
-  "experiment_type": zod.enum(['cmab_online']),
-  "experiment_name": zod.string().max(createExperimentBodyDesignSpecExperimentNameMaxFour),
-  "description": zod.string().max(createExperimentBodyDesignSpecDescriptionMaxFour),
-  "design_url": zod.union([zod.string().url().min(1).max(createExperimentBodyDesignSpecDesignUrlMaxOnethree),zod.null()]).optional(),
-  "start_date": zod.string().datetime({}),
-  "end_date": zod.string().datetime({}),
-  "arms": zod.array(zod.object({
-  "arm_id": zod.union([zod.string(),zod.null()]).optional(),
-  "arm_name": zod.string().max(createExperimentBodyDesignSpecArmsItemArmNameMaxFour),
-  "arm_description": zod.union([zod.string().max(createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnethree),zod.null()]).optional(),
-  "arm_weight": zod.union([zod.number(),zod.null()]).optional(),
-  "alpha_init": zod.union([zod.number(),zod.null()]).optional(),
-  "beta_init": zod.union([zod.number(),zod.null()]).optional(),
-  "mu_init": zod.union([zod.number(),zod.null()]).optional(),
-  "sigma_init": zod.union([zod.number(),zod.null()]).optional(),
-  "alpha": zod.union([zod.number(),zod.null()]).optional(),
-  "beta": zod.union([zod.number(),zod.null()]).optional(),
-  "mu": zod.union([zod.array(zod.number()),zod.null()]).optional(),
-  "covariance": zod.union([zod.array(zod.array(zod.number())),zod.null()]).optional()
-})).min(createExperimentBodyDesignSpecArmsMinFour).max(createExperimentBodyDesignSpecArmsMaxFour),
-  "contexts": zod.union([zod.array(zod.object({
-  "context_id": zod.union([zod.string(),zod.null()]).optional(),
-  "context_name": zod.string().max(createExperimentBodyDesignSpecContextsItemContextNameMaxTwo),
-  "context_description": zod.union([zod.string().max(createExperimentBodyDesignSpecContextsItemContextDescriptionMaxSeven),zod.null()]).optional(),
-  "value_type": zod.enum(['binary', 'real-valued']).optional()
-})).max(createExperimentBodyDesignSpecContextsMaxSeven),zod.null()]).optional(),
-  "prior_type": zod.enum(['beta', 'normal']).optional(),
-  "reward_type": zod.enum(['binary', 'real-valued']).optional()
-})])]),
-  "power_analyses": zod.union([zod.object({
-  "analyses": zod.array(zod.object({
-  "metric_spec": zod.object({
-  "field_name": zod.string().regex(createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp),
-  "metric_pct_change": zod.union([zod.number(),zod.null()]).optional(),
-  "metric_target": zod.union([zod.number(),zod.null()]).optional(),
-  "icc": zod.union([zod.number(),zod.null()]).optional(),
-  "avg_cluster_size": zod.union([zod.number(),zod.null()]).optional(),
-  "cv": zod.union([zod.number(),zod.null()]).optional(),
-  "metric_type": zod.union([zod.enum(['binary', 'numeric']),zod.null()]).optional(),
-  "metric_baseline": zod.union([zod.number(),zod.null()]).optional(),
-  "metric_stddev": zod.union([zod.number(),zod.null()]).optional(),
-  "available_nonnull_n": zod.union([zod.number(),zod.null()]).optional(),
-  "available_n": zod.union([zod.number(),zod.null()]).optional()
-}),
-  "target_n": zod.union([zod.number(),zod.null()]).optional(),
-  "sufficient_n": zod.union([zod.boolean(),zod.null()]).optional(),
-  "target_possible": zod.union([zod.number(),zod.null()]).optional(),
-  "pct_change_possible": zod.union([zod.number(),zod.null()]).optional(),
-  "pct_change_with_desired_n": zod.union([zod.number(),zod.null()]).optional(),
-  "msg": zod.union([zod.object({
-  "type": zod.enum(['sufficient', 'insufficient', 'no baseline', 'no available n', 'zero effect size', 'zero variation']),
-  "msg": zod.string(),
-  "source_msg": zod.string(),
-  "values": zod.union([zod.record(zod.string(), zod.union([zod.number(),zod.number()])),zod.null()]).optional(),
-  "high_cluster_variation": zod.boolean().optional()
-}),zod.null()]).optional(),
-  "num_clusters_total": zod.union([zod.number(),zod.null()]).optional(),
-  "clusters_per_arm": zod.union([zod.array(zod.number()),zod.null()]).optional(),
-  "n_per_arm": zod.union([zod.array(zod.number()),zod.null()]).optional(),
-  "design_effect": zod.union([zod.number(),zod.null()]).optional(),
-  "effective_sample_size": zod.union([zod.number(),zod.null()]).optional()
-})).max(createExperimentBodyPowerAnalysesAnalysesMax)
-}),zod.null()]).optional(),
-  "webhooks": zod.array(zod.string()).default(createExperimentBodyWebhooksDefault)
-})
+	design_spec: zod.union([
+		zod.union([
+			zod.object({
+				experiment_type: zod.enum(["freq_preassigned"]),
+				experiment_name: zod
+					.string()
+					.max(createExperimentBodyDesignSpecExperimentNameMax),
+				description: zod
+					.string()
+					.max(createExperimentBodyDesignSpecDescriptionMax),
+				design_url: zod
+					.union([
+						zod
+							.string()
+							.url()
+							.min(1)
+							.max(createExperimentBodyDesignSpecDesignUrlMaxOne),
+						zod.null(),
+					])
+					.optional(),
+				start_date: zod.string().datetime({}),
+				end_date: zod.string().datetime({}),
+				arms: zod
+					.array(
+						zod.object({
+							arm_id: zod.union([zod.string(), zod.null()]).optional(),
+							arm_name: zod
+								.string()
+								.max(createExperimentBodyDesignSpecArmsItemArmNameMax),
+							arm_description: zod
+								.union([
+									zod
+										.string()
+										.max(
+											createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOne,
+										),
+									zod.null(),
+								])
+								.optional(),
+							arm_weight: zod.union([zod.number(), zod.null()]).optional(),
+						}),
+					)
+					.min(createExperimentBodyDesignSpecArmsMin)
+					.max(createExperimentBodyDesignSpecArmsMax),
+				table_name: zod
+					.string()
+					.max(createExperimentBodyDesignSpecTableNameMax),
+				primary_key: zod
+					.string()
+					.regex(createExperimentBodyDesignSpecPrimaryKeyRegExp),
+				strata: zod
+					.array(
+						zod.object({
+							field_name: zod
+								.string()
+								.regex(createExperimentBodyDesignSpecStrataItemFieldNameRegExp),
+						}),
+					)
+					.max(createExperimentBodyDesignSpecStrataMax),
+				metrics: zod
+					.array(
+						zod.object({
+							field_name: zod
+								.string()
+								.regex(
+									createExperimentBodyDesignSpecMetricsItemFieldNameRegExp,
+								),
+							metric_pct_change: zod
+								.union([zod.number(), zod.null()])
+								.optional(),
+							metric_target: zod.union([zod.number(), zod.null()]).optional(),
+							icc: zod.union([zod.number(), zod.null()]).optional(),
+							avg_cluster_size: zod
+								.union([zod.number(), zod.null()])
+								.optional(),
+							cv: zod.union([zod.number(), zod.null()]).optional(),
+						}),
+					)
+					.min(1)
+					.max(createExperimentBodyDesignSpecMetricsMax),
+				filters: zod
+					.array(
+						zod.object({
+							field_name: zod
+								.string()
+								.regex(
+									createExperimentBodyDesignSpecFiltersItemFieldNameRegExp,
+								),
+							relation: zod.enum(["includes", "excludes", "between"]),
+							value: zod.union([
+								zod.array(zod.union([zod.number(), zod.null()])),
+								zod.array(zod.union([zod.number(), zod.null()])),
+								zod.array(zod.union([zod.string(), zod.null()])),
+								zod.array(zod.union([zod.boolean(), zod.null()])),
+							]),
+						}),
+					)
+					.max(createExperimentBodyDesignSpecFiltersMax),
+				desired_n: zod
+					.union([
+						zod.number().min(createExperimentBodyDesignSpecDesiredNMinOne),
+						zod.null(),
+					])
+					.optional(),
+				power: zod
+					.number()
+					.min(createExperimentBodyDesignSpecPowerMin)
+					.max(createExperimentBodyDesignSpecPowerMax)
+					.default(createExperimentBodyDesignSpecPowerDefault),
+				alpha: zod
+					.number()
+					.min(createExperimentBodyDesignSpecAlphaMin)
+					.max(createExperimentBodyDesignSpecAlphaMax)
+					.default(createExperimentBodyDesignSpecAlphaDefault),
+				fstat_thresh: zod
+					.number()
+					.min(createExperimentBodyDesignSpecFstatThreshMin)
+					.max(createExperimentBodyDesignSpecFstatThreshMax)
+					.default(createExperimentBodyDesignSpecFstatThreshDefault),
+				cluster_key: zod.union([zod.string(), zod.null()]).optional(),
+			}),
+			zod.object({
+				experiment_type: zod.enum(["freq_online"]),
+				experiment_name: zod
+					.string()
+					.max(createExperimentBodyDesignSpecExperimentNameMaxOne),
+				description: zod
+					.string()
+					.max(createExperimentBodyDesignSpecDescriptionMaxOne),
+				design_url: zod
+					.union([
+						zod
+							.string()
+							.url()
+							.min(1)
+							.max(createExperimentBodyDesignSpecDesignUrlMaxFour),
+						zod.null(),
+					])
+					.optional(),
+				start_date: zod.string().datetime({}),
+				end_date: zod.string().datetime({}),
+				arms: zod
+					.array(
+						zod.object({
+							arm_id: zod.union([zod.string(), zod.null()]).optional(),
+							arm_name: zod
+								.string()
+								.max(createExperimentBodyDesignSpecArmsItemArmNameMaxOne),
+							arm_description: zod
+								.union([
+									zod
+										.string()
+										.max(
+											createExperimentBodyDesignSpecArmsItemArmDescriptionMaxFour,
+										),
+									zod.null(),
+								])
+								.optional(),
+							arm_weight: zod.union([zod.number(), zod.null()]).optional(),
+						}),
+					)
+					.min(createExperimentBodyDesignSpecArmsMinOne)
+					.max(createExperimentBodyDesignSpecArmsMaxOne),
+				table_name: zod
+					.string()
+					.max(createExperimentBodyDesignSpecTableNameMaxOne),
+				primary_key: zod
+					.string()
+					.regex(createExperimentBodyDesignSpecPrimaryKeyRegExpOne),
+				strata: zod
+					.array(
+						zod.object({
+							field_name: zod
+								.string()
+								.regex(
+									createExperimentBodyDesignSpecStrataItemFieldNameRegExpOne,
+								),
+						}),
+					)
+					.max(createExperimentBodyDesignSpecStrataMaxOne),
+				metrics: zod
+					.array(
+						zod.object({
+							field_name: zod
+								.string()
+								.regex(
+									createExperimentBodyDesignSpecMetricsItemFieldNameRegExpOne,
+								),
+							metric_pct_change: zod
+								.union([zod.number(), zod.null()])
+								.optional(),
+							metric_target: zod.union([zod.number(), zod.null()]).optional(),
+							icc: zod.union([zod.number(), zod.null()]).optional(),
+							avg_cluster_size: zod
+								.union([zod.number(), zod.null()])
+								.optional(),
+							cv: zod.union([zod.number(), zod.null()]).optional(),
+						}),
+					)
+					.min(1)
+					.max(createExperimentBodyDesignSpecMetricsMaxOne),
+				filters: zod
+					.array(
+						zod.object({
+							field_name: zod
+								.string()
+								.regex(
+									createExperimentBodyDesignSpecFiltersItemFieldNameRegExpOne,
+								),
+							relation: zod.enum(["includes", "excludes", "between"]),
+							value: zod.union([
+								zod.array(zod.union([zod.number(), zod.null()])),
+								zod.array(zod.union([zod.number(), zod.null()])),
+								zod.array(zod.union([zod.string(), zod.null()])),
+								zod.array(zod.union([zod.boolean(), zod.null()])),
+							]),
+						}),
+					)
+					.max(createExperimentBodyDesignSpecFiltersMaxOne),
+				desired_n: zod
+					.union([
+						zod.number().min(createExperimentBodyDesignSpecDesiredNMinFour),
+						zod.null(),
+					])
+					.optional(),
+				power: zod
+					.number()
+					.min(createExperimentBodyDesignSpecPowerMinOne)
+					.max(createExperimentBodyDesignSpecPowerMaxOne)
+					.default(createExperimentBodyDesignSpecPowerDefaultOne),
+				alpha: zod
+					.number()
+					.min(createExperimentBodyDesignSpecAlphaMinOne)
+					.max(createExperimentBodyDesignSpecAlphaMaxOne)
+					.default(createExperimentBodyDesignSpecAlphaDefaultOne),
+				fstat_thresh: zod
+					.number()
+					.min(createExperimentBodyDesignSpecFstatThreshMinOne)
+					.max(createExperimentBodyDesignSpecFstatThreshMaxOne)
+					.default(createExperimentBodyDesignSpecFstatThreshDefaultOne),
+			}),
+		]),
+		zod.union([
+			zod.object({
+				experiment_type: zod.enum(["mab_online"]),
+				experiment_name: zod
+					.string()
+					.max(createExperimentBodyDesignSpecExperimentNameMaxTwo),
+				description: zod
+					.string()
+					.max(createExperimentBodyDesignSpecDescriptionMaxTwo),
+				design_url: zod
+					.union([
+						zod
+							.string()
+							.url()
+							.min(1)
+							.max(createExperimentBodyDesignSpecDesignUrlMaxSeven),
+						zod.null(),
+					])
+					.optional(),
+				start_date: zod.string().datetime({}),
+				end_date: zod.string().datetime({}),
+				arms: zod
+					.array(
+						zod.object({
+							arm_id: zod.union([zod.string(), zod.null()]).optional(),
+							arm_name: zod
+								.string()
+								.max(createExperimentBodyDesignSpecArmsItemArmNameMaxTwo),
+							arm_description: zod
+								.union([
+									zod
+										.string()
+										.max(
+											createExperimentBodyDesignSpecArmsItemArmDescriptionMaxSeven,
+										),
+									zod.null(),
+								])
+								.optional(),
+							arm_weight: zod.union([zod.number(), zod.null()]).optional(),
+							alpha_init: zod.union([zod.number(), zod.null()]).optional(),
+							beta_init: zod.union([zod.number(), zod.null()]).optional(),
+							mu_init: zod.union([zod.number(), zod.null()]).optional(),
+							sigma_init: zod.union([zod.number(), zod.null()]).optional(),
+							alpha: zod.union([zod.number(), zod.null()]).optional(),
+							beta: zod.union([zod.number(), zod.null()]).optional(),
+							mu: zod.union([zod.array(zod.number()), zod.null()]).optional(),
+							covariance: zod
+								.union([zod.array(zod.array(zod.number())), zod.null()])
+								.optional(),
+						}),
+					)
+					.min(createExperimentBodyDesignSpecArmsMinTwo)
+					.max(createExperimentBodyDesignSpecArmsMaxTwo),
+				contexts: zod
+					.union([
+						zod
+							.array(
+								zod.object({
+									context_id: zod.union([zod.string(), zod.null()]).optional(),
+									context_name: zod
+										.string()
+										.max(
+											createExperimentBodyDesignSpecContextsItemContextNameMax,
+										),
+									context_description: zod
+										.union([
+											zod
+												.string()
+												.max(
+													createExperimentBodyDesignSpecContextsItemContextDescriptionMaxOne,
+												),
+											zod.null(),
+										])
+										.optional(),
+									value_type: zod.enum(["binary", "real-valued"]).optional(),
+								}),
+							)
+							.max(createExperimentBodyDesignSpecContextsMaxOne),
+						zod.null(),
+					])
+					.optional(),
+				prior_type: zod.enum(["beta", "normal"]).optional(),
+				reward_type: zod.enum(["binary", "real-valued"]).optional(),
+			}),
+			zod.object({
+				experiment_type: zod.enum(["mab_online_dwh"]),
+				experiment_name: zod
+					.string()
+					.max(createExperimentBodyDesignSpecExperimentNameMaxThree),
+				description: zod
+					.string()
+					.max(createExperimentBodyDesignSpecDescriptionMaxThree),
+				design_url: zod
+					.union([
+						zod
+							.string()
+							.url()
+							.min(1)
+							.max(createExperimentBodyDesignSpecDesignUrlMaxOnezero),
+						zod.null(),
+					])
+					.optional(),
+				start_date: zod.string().datetime({}),
+				end_date: zod.string().datetime({}),
+				arms: zod
+					.array(
+						zod.object({
+							arm_id: zod.union([zod.string(), zod.null()]).optional(),
+							arm_name: zod
+								.string()
+								.max(createExperimentBodyDesignSpecArmsItemArmNameMaxThree),
+							arm_description: zod
+								.union([
+									zod
+										.string()
+										.max(
+											createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnezero,
+										),
+									zod.null(),
+								])
+								.optional(),
+							arm_weight: zod.union([zod.number(), zod.null()]).optional(),
+							alpha_init: zod.union([zod.number(), zod.null()]).optional(),
+							beta_init: zod.union([zod.number(), zod.null()]).optional(),
+							mu_init: zod.union([zod.number(), zod.null()]).optional(),
+							sigma_init: zod.union([zod.number(), zod.null()]).optional(),
+							alpha: zod.union([zod.number(), zod.null()]).optional(),
+							beta: zod.union([zod.number(), zod.null()]).optional(),
+							mu: zod.union([zod.array(zod.number()), zod.null()]).optional(),
+							covariance: zod
+								.union([zod.array(zod.array(zod.number())), zod.null()])
+								.optional(),
+						}),
+					)
+					.min(createExperimentBodyDesignSpecArmsMinThree)
+					.max(createExperimentBodyDesignSpecArmsMaxThree),
+				contexts: zod
+					.union([
+						zod
+							.array(
+								zod.object({
+									context_id: zod.union([zod.string(), zod.null()]).optional(),
+									context_name: zod
+										.string()
+										.max(
+											createExperimentBodyDesignSpecContextsItemContextNameMaxOne,
+										),
+									context_description: zod
+										.union([
+											zod
+												.string()
+												.max(
+													createExperimentBodyDesignSpecContextsItemContextDescriptionMaxFour,
+												),
+											zod.null(),
+										])
+										.optional(),
+									value_type: zod.enum(["binary", "real-valued"]).optional(),
+								}),
+							)
+							.max(createExperimentBodyDesignSpecContextsMaxFour),
+						zod.null(),
+					])
+					.optional(),
+				prior_type: zod.enum(["beta", "normal"]).optional(),
+				reward_type: zod.enum(["binary", "real-valued"]).optional(),
+				table_name: zod
+					.string()
+					.max(createExperimentBodyDesignSpecTableNameMaxTwo),
+				primary_key: zod
+					.string()
+					.regex(createExperimentBodyDesignSpecPrimaryKeyRegExpTwo),
+				target_field_name: zod
+					.string()
+					.regex(createExperimentBodyDesignSpecTargetFieldNameRegExp),
+			}),
+			zod.object({
+				experiment_type: zod.enum(["cmab_online"]),
+				experiment_name: zod
+					.string()
+					.max(createExperimentBodyDesignSpecExperimentNameMaxFour),
+				description: zod
+					.string()
+					.max(createExperimentBodyDesignSpecDescriptionMaxFour),
+				design_url: zod
+					.union([
+						zod
+							.string()
+							.url()
+							.min(1)
+							.max(createExperimentBodyDesignSpecDesignUrlMaxOnethree),
+						zod.null(),
+					])
+					.optional(),
+				start_date: zod.string().datetime({}),
+				end_date: zod.string().datetime({}),
+				arms: zod
+					.array(
+						zod.object({
+							arm_id: zod.union([zod.string(), zod.null()]).optional(),
+							arm_name: zod
+								.string()
+								.max(createExperimentBodyDesignSpecArmsItemArmNameMaxFour),
+							arm_description: zod
+								.union([
+									zod
+										.string()
+										.max(
+											createExperimentBodyDesignSpecArmsItemArmDescriptionMaxOnethree,
+										),
+									zod.null(),
+								])
+								.optional(),
+							arm_weight: zod.union([zod.number(), zod.null()]).optional(),
+							alpha_init: zod.union([zod.number(), zod.null()]).optional(),
+							beta_init: zod.union([zod.number(), zod.null()]).optional(),
+							mu_init: zod.union([zod.number(), zod.null()]).optional(),
+							sigma_init: zod.union([zod.number(), zod.null()]).optional(),
+							alpha: zod.union([zod.number(), zod.null()]).optional(),
+							beta: zod.union([zod.number(), zod.null()]).optional(),
+							mu: zod.union([zod.array(zod.number()), zod.null()]).optional(),
+							covariance: zod
+								.union([zod.array(zod.array(zod.number())), zod.null()])
+								.optional(),
+						}),
+					)
+					.min(createExperimentBodyDesignSpecArmsMinFour)
+					.max(createExperimentBodyDesignSpecArmsMaxFour),
+				contexts: zod
+					.union([
+						zod
+							.array(
+								zod.object({
+									context_id: zod.union([zod.string(), zod.null()]).optional(),
+									context_name: zod
+										.string()
+										.max(
+											createExperimentBodyDesignSpecContextsItemContextNameMaxTwo,
+										),
+									context_description: zod
+										.union([
+											zod
+												.string()
+												.max(
+													createExperimentBodyDesignSpecContextsItemContextDescriptionMaxSeven,
+												),
+											zod.null(),
+										])
+										.optional(),
+									value_type: zod.enum(["binary", "real-valued"]).optional(),
+								}),
+							)
+							.max(createExperimentBodyDesignSpecContextsMaxSeven),
+						zod.null(),
+					])
+					.optional(),
+				prior_type: zod.enum(["beta", "normal"]).optional(),
+				reward_type: zod.enum(["binary", "real-valued"]).optional(),
+			}),
+		]),
+	]),
+	power_analyses: zod
+		.union([
+			zod.object({
+				analyses: zod
+					.array(
+						zod.object({
+							metric_spec: zod.object({
+								field_name: zod
+									.string()
+									.regex(
+										createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp,
+									),
+								metric_pct_change: zod
+									.union([zod.number(), zod.null()])
+									.optional(),
+								metric_target: zod.union([zod.number(), zod.null()]).optional(),
+								icc: zod.union([zod.number(), zod.null()]).optional(),
+								avg_cluster_size: zod
+									.union([zod.number(), zod.null()])
+									.optional(),
+								cv: zod.union([zod.number(), zod.null()]).optional(),
+								metric_type: zod
+									.union([zod.enum(["binary", "numeric"]), zod.null()])
+									.optional(),
+								metric_baseline: zod
+									.union([zod.number(), zod.null()])
+									.optional(),
+								metric_stddev: zod.union([zod.number(), zod.null()]).optional(),
+								available_nonnull_n: zod
+									.union([zod.number(), zod.null()])
+									.optional(),
+								available_n: zod.union([zod.number(), zod.null()]).optional(),
+							}),
+							target_n: zod.union([zod.number(), zod.null()]).optional(),
+							sufficient_n: zod.union([zod.boolean(), zod.null()]).optional(),
+							target_possible: zod.union([zod.number(), zod.null()]).optional(),
+							pct_change_possible: zod
+								.union([zod.number(), zod.null()])
+								.optional(),
+							pct_change_with_desired_n: zod
+								.union([zod.number(), zod.null()])
+								.optional(),
+							msg: zod
+								.union([
+									zod.object({
+										type: zod.enum([
+											"sufficient",
+											"insufficient",
+											"no baseline",
+											"no available n",
+											"zero effect size",
+											"zero variation",
+										]),
+										msg: zod.string(),
+										source_msg: zod.string(),
+										values: zod
+											.union([
+												zod.record(
+													zod.string(),
+													zod.union([zod.number(), zod.number()]),
+												),
+												zod.null(),
+											])
+											.optional(),
+										high_cluster_variation: zod.boolean().optional(),
+									}),
+									zod.null(),
+								])
+								.optional(),
+							num_clusters_total: zod
+								.union([zod.number(), zod.null()])
+								.optional(),
+							clusters_per_arm: zod
+								.union([zod.array(zod.number()), zod.null()])
+								.optional(),
+							n_per_arm: zod
+								.union([zod.array(zod.number()), zod.null()])
+								.optional(),
+							design_effect: zod.union([zod.number(), zod.null()]).optional(),
+							effective_sample_size: zod
+								.union([zod.number(), zod.null()])
+								.optional(),
+						}),
+					)
+					.max(createExperimentBodyPowerAnalysesAnalysesMax),
+			}),
+			zod.null(),
+		])
+		.optional(),
+	webhooks: zod
+		.array(zod.string())
+		.default(createExperimentBodyWebhooksDefault),
+});
 
 export const analyzeCmabExperimentBodyTypeDefault = "cmab_assignment";
 
 export const analyzeCmabExperimentBody = zod.object({
-  "type": zod.literal("cmab_assignment").default(analyzeCmabExperimentBodyTypeDefault),
-  "context_inputs": zod.union([zod.array(zod.object({
-  "context_id": zod.string(),
-  "context_value": zod.number()
-})),zod.null()])
-})
+	type: zod
+		.literal("cmab_assignment")
+		.default(analyzeCmabExperimentBodyTypeDefault),
+	context_inputs: zod.union([
+		zod.array(
+			zod.object({
+				context_id: zod.string(),
+				context_value: zod.number(),
+			}),
+		),
+		zod.null(),
+	]),
+});
 
 export const updateExperimentBodyNameMaxOne = 100;
 
@@ -597,33 +1181,47 @@ export const updateExperimentBodyDescriptionMaxOne = 2000;
 
 export const updateExperimentBodyDesignUrlMaxOne = 500;
 
-
-
 export const updateExperimentBody = zod.object({
-  "name": zod.union([zod.string().max(updateExperimentBodyNameMaxOne),zod.null()]).optional(),
-  "description": zod.union([zod.string().max(updateExperimentBodyDescriptionMaxOne),zod.null()]).optional(),
-  "design_url": zod.union([zod.string().max(updateExperimentBodyDesignUrlMaxOne),zod.null()]).optional(),
-  "start_date": zod.union([zod.string().datetime({}),zod.null()]).optional(),
-  "end_date": zod.union([zod.string().datetime({}),zod.null()]).optional(),
-  "impact": zod.union([zod.enum(['high', 'medium', 'low', 'negative', 'unclear', '']),zod.null()]).optional(),
-  "decision": zod.union([zod.string(),zod.null()]).optional()
-})
+	name: zod
+		.union([zod.string().max(updateExperimentBodyNameMaxOne), zod.null()])
+		.optional(),
+	description: zod
+		.union([
+			zod.string().max(updateExperimentBodyDescriptionMaxOne),
+			zod.null(),
+		])
+		.optional(),
+	design_url: zod
+		.union([zod.string().max(updateExperimentBodyDesignUrlMaxOne), zod.null()])
+		.optional(),
+	start_date: zod.union([zod.string().datetime({}), zod.null()]).optional(),
+	end_date: zod.union([zod.string().datetime({}), zod.null()]).optional(),
+	impact: zod
+		.union([
+			zod.enum(["high", "medium", "low", "negative", "unclear", ""]),
+			zod.null(),
+		])
+		.optional(),
+	decision: zod.union([zod.string(), zod.null()]).optional(),
+});
 
 export const deleteExperimentDataBody = zod.object({
-  "assignments": zod.union([zod.boolean(),zod.null()]).optional(),
-  "snapshots": zod.union([zod.boolean(),zod.null()]).optional()
-})
+	assignments: zod.union([zod.boolean(), zod.null()]).optional(),
+	snapshots: zod.union([zod.boolean(), zod.null()]).optional(),
+});
 
 export const updateArmBodyNameMaxOne = 100;
 
 export const updateArmBodyDescriptionMaxOne = 2000;
 
-
-
 export const updateArmBody = zod.object({
-  "name": zod.union([zod.string().max(updateArmBodyNameMaxOne),zod.null()]).optional(),
-  "description": zod.union([zod.string().max(updateArmBodyDescriptionMaxOne),zod.null()]).optional()
-})
+	name: zod
+		.union([zod.string().max(updateArmBodyNameMaxOne), zod.null()])
+		.optional(),
+	description: zod
+		.union([zod.string().max(updateArmBodyDescriptionMaxOne), zod.null()])
+		.optional(),
+});
 
 export const powerCheckBodyDesignSpecExperimentNameMax = 100;
 
@@ -640,14 +1238,22 @@ export const powerCheckBodyDesignSpecArmsMax = 20;
 
 export const powerCheckBodyDesignSpecTableNameMax = 100;
 
-export const powerCheckBodyDesignSpecPrimaryKeyRegExp = new RegExp('^[a-zA-Z_][a-zA-Z0-9_]*$');
-export const powerCheckBodyDesignSpecStrataItemFieldNameRegExp = new RegExp('^[a-zA-Z_][a-zA-Z0-9_]*$');
+export const powerCheckBodyDesignSpecPrimaryKeyRegExp = new RegExp(
+	"^[a-zA-Z_][a-zA-Z0-9_]*$",
+);
+export const powerCheckBodyDesignSpecStrataItemFieldNameRegExp = new RegExp(
+	"^[a-zA-Z_][a-zA-Z0-9_]*$",
+);
 export const powerCheckBodyDesignSpecStrataMax = 150;
 
-export const powerCheckBodyDesignSpecMetricsItemFieldNameRegExp = new RegExp('^[a-zA-Z_][a-zA-Z0-9_]*$');
+export const powerCheckBodyDesignSpecMetricsItemFieldNameRegExp = new RegExp(
+	"^[a-zA-Z_][a-zA-Z0-9_]*$",
+);
 export const powerCheckBodyDesignSpecMetricsMax = 150;
 
-export const powerCheckBodyDesignSpecFiltersItemFieldNameRegExp = new RegExp('^[a-zA-Z_][a-zA-Z0-9_]*$');
+export const powerCheckBodyDesignSpecFiltersItemFieldNameRegExp = new RegExp(
+	"^[a-zA-Z_][a-zA-Z0-9_]*$",
+);
 export const powerCheckBodyDesignSpecFiltersMax = 20;
 
 export const powerCheckBodyDesignSpecDesiredNMinOne = 0;
@@ -679,14 +1285,22 @@ export const powerCheckBodyDesignSpecArmsMaxOne = 20;
 
 export const powerCheckBodyDesignSpecTableNameMaxOne = 100;
 
-export const powerCheckBodyDesignSpecPrimaryKeyRegExpOne = new RegExp('^[a-zA-Z_][a-zA-Z0-9_]*$');
-export const powerCheckBodyDesignSpecStrataItemFieldNameRegExpOne = new RegExp('^[a-zA-Z_][a-zA-Z0-9_]*$');
+export const powerCheckBodyDesignSpecPrimaryKeyRegExpOne = new RegExp(
+	"^[a-zA-Z_][a-zA-Z0-9_]*$",
+);
+export const powerCheckBodyDesignSpecStrataItemFieldNameRegExpOne = new RegExp(
+	"^[a-zA-Z_][a-zA-Z0-9_]*$",
+);
 export const powerCheckBodyDesignSpecStrataMaxOne = 150;
 
-export const powerCheckBodyDesignSpecMetricsItemFieldNameRegExpOne = new RegExp('^[a-zA-Z_][a-zA-Z0-9_]*$');
+export const powerCheckBodyDesignSpecMetricsItemFieldNameRegExpOne = new RegExp(
+	"^[a-zA-Z_][a-zA-Z0-9_]*$",
+);
 export const powerCheckBodyDesignSpecMetricsMaxOne = 150;
 
-export const powerCheckBodyDesignSpecFiltersItemFieldNameRegExpOne = new RegExp('^[a-zA-Z_][a-zA-Z0-9_]*$');
+export const powerCheckBodyDesignSpecFiltersItemFieldNameRegExpOne = new RegExp(
+	"^[a-zA-Z_][a-zA-Z0-9_]*$",
+);
 export const powerCheckBodyDesignSpecFiltersMaxOne = 20;
 
 export const powerCheckBodyDesignSpecDesiredNMinFour = 0;
@@ -703,80 +1317,214 @@ export const powerCheckBodyDesignSpecFstatThreshDefaultOne = 0.6;
 export const powerCheckBodyDesignSpecFstatThreshMinOne = 0;
 export const powerCheckBodyDesignSpecFstatThreshMaxOne = 1;
 
-
-
 export const powerCheckBody = zod.object({
-  "design_spec": zod.union([zod.object({
-  "experiment_type": zod.enum(['freq_preassigned']),
-  "experiment_name": zod.string().max(powerCheckBodyDesignSpecExperimentNameMax),
-  "description": zod.string().max(powerCheckBodyDesignSpecDescriptionMax),
-  "design_url": zod.union([zod.string().url().min(1).max(powerCheckBodyDesignSpecDesignUrlMaxOne),zod.null()]).optional(),
-  "start_date": zod.string().datetime({}),
-  "end_date": zod.string().datetime({}),
-  "arms": zod.array(zod.object({
-  "arm_id": zod.union([zod.string(),zod.null()]).optional(),
-  "arm_name": zod.string().max(powerCheckBodyDesignSpecArmsItemArmNameMax),
-  "arm_description": zod.union([zod.string().max(powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOne),zod.null()]).optional(),
-  "arm_weight": zod.union([zod.number(),zod.null()]).optional()
-})).min(powerCheckBodyDesignSpecArmsMin).max(powerCheckBodyDesignSpecArmsMax),
-  "table_name": zod.string().max(powerCheckBodyDesignSpecTableNameMax),
-  "primary_key": zod.string().regex(powerCheckBodyDesignSpecPrimaryKeyRegExp),
-  "strata": zod.array(zod.object({
-  "field_name": zod.string().regex(powerCheckBodyDesignSpecStrataItemFieldNameRegExp)
-})).max(powerCheckBodyDesignSpecStrataMax),
-  "metrics": zod.array(zod.object({
-  "field_name": zod.string().regex(powerCheckBodyDesignSpecMetricsItemFieldNameRegExp),
-  "metric_pct_change": zod.union([zod.number(),zod.null()]).optional(),
-  "metric_target": zod.union([zod.number(),zod.null()]).optional(),
-  "icc": zod.union([zod.number(),zod.null()]).optional(),
-  "avg_cluster_size": zod.union([zod.number(),zod.null()]).optional(),
-  "cv": zod.union([zod.number(),zod.null()]).optional()
-})).min(1).max(powerCheckBodyDesignSpecMetricsMax),
-  "filters": zod.array(zod.object({
-  "field_name": zod.string().regex(powerCheckBodyDesignSpecFiltersItemFieldNameRegExp),
-  "relation": zod.enum(['includes', 'excludes', 'between']),
-  "value": zod.union([zod.array(zod.union([zod.number(),zod.null()])),zod.array(zod.union([zod.number(),zod.null()])),zod.array(zod.union([zod.string(),zod.null()])),zod.array(zod.union([zod.boolean(),zod.null()]))])
-})).max(powerCheckBodyDesignSpecFiltersMax),
-  "desired_n": zod.union([zod.number().min(powerCheckBodyDesignSpecDesiredNMinOne),zod.null()]).optional(),
-  "power": zod.number().min(powerCheckBodyDesignSpecPowerMin).max(powerCheckBodyDesignSpecPowerMax).default(powerCheckBodyDesignSpecPowerDefault),
-  "alpha": zod.number().min(powerCheckBodyDesignSpecAlphaMin).max(powerCheckBodyDesignSpecAlphaMax).default(powerCheckBodyDesignSpecAlphaDefault),
-  "fstat_thresh": zod.number().min(powerCheckBodyDesignSpecFstatThreshMin).max(powerCheckBodyDesignSpecFstatThreshMax).default(powerCheckBodyDesignSpecFstatThreshDefault),
-  "cluster_key": zod.union([zod.string(),zod.null()]).optional()
-}),zod.object({
-  "experiment_type": zod.enum(['freq_online']),
-  "experiment_name": zod.string().max(powerCheckBodyDesignSpecExperimentNameMaxOne),
-  "description": zod.string().max(powerCheckBodyDesignSpecDescriptionMaxOne),
-  "design_url": zod.union([zod.string().url().min(1).max(powerCheckBodyDesignSpecDesignUrlMaxFour),zod.null()]).optional(),
-  "start_date": zod.string().datetime({}),
-  "end_date": zod.string().datetime({}),
-  "arms": zod.array(zod.object({
-  "arm_id": zod.union([zod.string(),zod.null()]).optional(),
-  "arm_name": zod.string().max(powerCheckBodyDesignSpecArmsItemArmNameMaxOne),
-  "arm_description": zod.union([zod.string().max(powerCheckBodyDesignSpecArmsItemArmDescriptionMaxFour),zod.null()]).optional(),
-  "arm_weight": zod.union([zod.number(),zod.null()]).optional()
-})).min(powerCheckBodyDesignSpecArmsMinOne).max(powerCheckBodyDesignSpecArmsMaxOne),
-  "table_name": zod.string().max(powerCheckBodyDesignSpecTableNameMaxOne),
-  "primary_key": zod.string().regex(powerCheckBodyDesignSpecPrimaryKeyRegExpOne),
-  "strata": zod.array(zod.object({
-  "field_name": zod.string().regex(powerCheckBodyDesignSpecStrataItemFieldNameRegExpOne)
-})).max(powerCheckBodyDesignSpecStrataMaxOne),
-  "metrics": zod.array(zod.object({
-  "field_name": zod.string().regex(powerCheckBodyDesignSpecMetricsItemFieldNameRegExpOne),
-  "metric_pct_change": zod.union([zod.number(),zod.null()]).optional(),
-  "metric_target": zod.union([zod.number(),zod.null()]).optional(),
-  "icc": zod.union([zod.number(),zod.null()]).optional(),
-  "avg_cluster_size": zod.union([zod.number(),zod.null()]).optional(),
-  "cv": zod.union([zod.number(),zod.null()]).optional()
-})).min(1).max(powerCheckBodyDesignSpecMetricsMaxOne),
-  "filters": zod.array(zod.object({
-  "field_name": zod.string().regex(powerCheckBodyDesignSpecFiltersItemFieldNameRegExpOne),
-  "relation": zod.enum(['includes', 'excludes', 'between']),
-  "value": zod.union([zod.array(zod.union([zod.number(),zod.null()])),zod.array(zod.union([zod.number(),zod.null()])),zod.array(zod.union([zod.string(),zod.null()])),zod.array(zod.union([zod.boolean(),zod.null()]))])
-})).max(powerCheckBodyDesignSpecFiltersMaxOne),
-  "desired_n": zod.union([zod.number().min(powerCheckBodyDesignSpecDesiredNMinFour),zod.null()]).optional(),
-  "power": zod.number().min(powerCheckBodyDesignSpecPowerMinOne).max(powerCheckBodyDesignSpecPowerMaxOne).default(powerCheckBodyDesignSpecPowerDefaultOne),
-  "alpha": zod.number().min(powerCheckBodyDesignSpecAlphaMinOne).max(powerCheckBodyDesignSpecAlphaMaxOne).default(powerCheckBodyDesignSpecAlphaDefaultOne),
-  "fstat_thresh": zod.number().min(powerCheckBodyDesignSpecFstatThreshMinOne).max(powerCheckBodyDesignSpecFstatThreshMaxOne).default(powerCheckBodyDesignSpecFstatThreshDefaultOne)
-})])
-})
-
+	design_spec: zod.union([
+		zod.object({
+			experiment_type: zod.enum(["freq_preassigned"]),
+			experiment_name: zod
+				.string()
+				.max(powerCheckBodyDesignSpecExperimentNameMax),
+			description: zod.string().max(powerCheckBodyDesignSpecDescriptionMax),
+			design_url: zod
+				.union([
+					zod
+						.string()
+						.url()
+						.min(1)
+						.max(powerCheckBodyDesignSpecDesignUrlMaxOne),
+					zod.null(),
+				])
+				.optional(),
+			start_date: zod.string().datetime({}),
+			end_date: zod.string().datetime({}),
+			arms: zod
+				.array(
+					zod.object({
+						arm_id: zod.union([zod.string(), zod.null()]).optional(),
+						arm_name: zod
+							.string()
+							.max(powerCheckBodyDesignSpecArmsItemArmNameMax),
+						arm_description: zod
+							.union([
+								zod
+									.string()
+									.max(powerCheckBodyDesignSpecArmsItemArmDescriptionMaxOne),
+								zod.null(),
+							])
+							.optional(),
+						arm_weight: zod.union([zod.number(), zod.null()]).optional(),
+					}),
+				)
+				.min(powerCheckBodyDesignSpecArmsMin)
+				.max(powerCheckBodyDesignSpecArmsMax),
+			table_name: zod.string().max(powerCheckBodyDesignSpecTableNameMax),
+			primary_key: zod.string().regex(powerCheckBodyDesignSpecPrimaryKeyRegExp),
+			strata: zod
+				.array(
+					zod.object({
+						field_name: zod
+							.string()
+							.regex(powerCheckBodyDesignSpecStrataItemFieldNameRegExp),
+					}),
+				)
+				.max(powerCheckBodyDesignSpecStrataMax),
+			metrics: zod
+				.array(
+					zod.object({
+						field_name: zod
+							.string()
+							.regex(powerCheckBodyDesignSpecMetricsItemFieldNameRegExp),
+						metric_pct_change: zod.union([zod.number(), zod.null()]).optional(),
+						metric_target: zod.union([zod.number(), zod.null()]).optional(),
+						icc: zod.union([zod.number(), zod.null()]).optional(),
+						avg_cluster_size: zod.union([zod.number(), zod.null()]).optional(),
+						cv: zod.union([zod.number(), zod.null()]).optional(),
+					}),
+				)
+				.min(1)
+				.max(powerCheckBodyDesignSpecMetricsMax),
+			filters: zod
+				.array(
+					zod.object({
+						field_name: zod
+							.string()
+							.regex(powerCheckBodyDesignSpecFiltersItemFieldNameRegExp),
+						relation: zod.enum(["includes", "excludes", "between"]),
+						value: zod.union([
+							zod.array(zod.union([zod.number(), zod.null()])),
+							zod.array(zod.union([zod.number(), zod.null()])),
+							zod.array(zod.union([zod.string(), zod.null()])),
+							zod.array(zod.union([zod.boolean(), zod.null()])),
+						]),
+					}),
+				)
+				.max(powerCheckBodyDesignSpecFiltersMax),
+			desired_n: zod
+				.union([
+					zod.number().min(powerCheckBodyDesignSpecDesiredNMinOne),
+					zod.null(),
+				])
+				.optional(),
+			power: zod
+				.number()
+				.min(powerCheckBodyDesignSpecPowerMin)
+				.max(powerCheckBodyDesignSpecPowerMax)
+				.default(powerCheckBodyDesignSpecPowerDefault),
+			alpha: zod
+				.number()
+				.min(powerCheckBodyDesignSpecAlphaMin)
+				.max(powerCheckBodyDesignSpecAlphaMax)
+				.default(powerCheckBodyDesignSpecAlphaDefault),
+			fstat_thresh: zod
+				.number()
+				.min(powerCheckBodyDesignSpecFstatThreshMin)
+				.max(powerCheckBodyDesignSpecFstatThreshMax)
+				.default(powerCheckBodyDesignSpecFstatThreshDefault),
+			cluster_key: zod.union([zod.string(), zod.null()]).optional(),
+		}),
+		zod.object({
+			experiment_type: zod.enum(["freq_online"]),
+			experiment_name: zod
+				.string()
+				.max(powerCheckBodyDesignSpecExperimentNameMaxOne),
+			description: zod.string().max(powerCheckBodyDesignSpecDescriptionMaxOne),
+			design_url: zod
+				.union([
+					zod
+						.string()
+						.url()
+						.min(1)
+						.max(powerCheckBodyDesignSpecDesignUrlMaxFour),
+					zod.null(),
+				])
+				.optional(),
+			start_date: zod.string().datetime({}),
+			end_date: zod.string().datetime({}),
+			arms: zod
+				.array(
+					zod.object({
+						arm_id: zod.union([zod.string(), zod.null()]).optional(),
+						arm_name: zod
+							.string()
+							.max(powerCheckBodyDesignSpecArmsItemArmNameMaxOne),
+						arm_description: zod
+							.union([
+								zod
+									.string()
+									.max(powerCheckBodyDesignSpecArmsItemArmDescriptionMaxFour),
+								zod.null(),
+							])
+							.optional(),
+						arm_weight: zod.union([zod.number(), zod.null()]).optional(),
+					}),
+				)
+				.min(powerCheckBodyDesignSpecArmsMinOne)
+				.max(powerCheckBodyDesignSpecArmsMaxOne),
+			table_name: zod.string().max(powerCheckBodyDesignSpecTableNameMaxOne),
+			primary_key: zod
+				.string()
+				.regex(powerCheckBodyDesignSpecPrimaryKeyRegExpOne),
+			strata: zod
+				.array(
+					zod.object({
+						field_name: zod
+							.string()
+							.regex(powerCheckBodyDesignSpecStrataItemFieldNameRegExpOne),
+					}),
+				)
+				.max(powerCheckBodyDesignSpecStrataMaxOne),
+			metrics: zod
+				.array(
+					zod.object({
+						field_name: zod
+							.string()
+							.regex(powerCheckBodyDesignSpecMetricsItemFieldNameRegExpOne),
+						metric_pct_change: zod.union([zod.number(), zod.null()]).optional(),
+						metric_target: zod.union([zod.number(), zod.null()]).optional(),
+						icc: zod.union([zod.number(), zod.null()]).optional(),
+						avg_cluster_size: zod.union([zod.number(), zod.null()]).optional(),
+						cv: zod.union([zod.number(), zod.null()]).optional(),
+					}),
+				)
+				.min(1)
+				.max(powerCheckBodyDesignSpecMetricsMaxOne),
+			filters: zod
+				.array(
+					zod.object({
+						field_name: zod
+							.string()
+							.regex(powerCheckBodyDesignSpecFiltersItemFieldNameRegExpOne),
+						relation: zod.enum(["includes", "excludes", "between"]),
+						value: zod.union([
+							zod.array(zod.union([zod.number(), zod.null()])),
+							zod.array(zod.union([zod.number(), zod.null()])),
+							zod.array(zod.union([zod.string(), zod.null()])),
+							zod.array(zod.union([zod.boolean(), zod.null()])),
+						]),
+					}),
+				)
+				.max(powerCheckBodyDesignSpecFiltersMaxOne),
+			desired_n: zod
+				.union([
+					zod.number().min(powerCheckBodyDesignSpecDesiredNMinFour),
+					zod.null(),
+				])
+				.optional(),
+			power: zod
+				.number()
+				.min(powerCheckBodyDesignSpecPowerMinOne)
+				.max(powerCheckBodyDesignSpecPowerMaxOne)
+				.default(powerCheckBodyDesignSpecPowerDefaultOne),
+			alpha: zod
+				.number()
+				.min(powerCheckBodyDesignSpecAlphaMinOne)
+				.max(powerCheckBodyDesignSpecAlphaMaxOne)
+				.default(powerCheckBodyDesignSpecAlphaDefaultOne),
+			fstat_thresh: zod
+				.number()
+				.min(powerCheckBodyDesignSpecFstatThreshMinOne)
+				.max(powerCheckBodyDesignSpecFstatThreshMaxOne)
+				.default(powerCheckBodyDesignSpecFstatThreshDefaultOne),
+		}),
+	]),
+});
