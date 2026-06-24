@@ -8,8 +8,10 @@ import {
   GetExperimentResponse,
   MABExperimentSpec,
   MABExperimentSpecExperimentType,
+  MetricPowerAnalysis,
   OnlineFrequentistExperimentSpec,
   OnlineFrequentistExperimentSpecExperimentType,
+  PowerResponse,
   PreassignedFrequentistExperimentSpec,
   PreassignedFrequentistExperimentSpecExperimentType,
 } from '@/api/methods.schemas';
@@ -28,6 +30,16 @@ export const getExperimentStatus = (startDate: string, endDate: string): Experim
   } else {
     return 'current';
   }
+};
+
+export const getPowerAnalysis = (
+  powerAnalyses: Pick<PowerResponse, 'analyses'> | null | undefined,
+  metricName: string | undefined,
+): MetricPowerAnalysis | undefined => {
+  const analyses = powerAnalyses?.analyses;
+  if (!analyses?.length || !metricName) return undefined;
+
+  return analyses.find((analysis) => analysis.metric_spec.field_name === metricName);
 };
 
 export const isFreqExperimentType = (

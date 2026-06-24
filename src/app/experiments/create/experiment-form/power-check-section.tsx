@@ -24,7 +24,8 @@ import {
 import { CheckCircledIcon, CrossCircledIcon, ExclamationTriangleIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData, isClusteredExperimentFormData, PowerCheckOption } from './experiment-form-types';
 import { usePowerCheck } from '@/api/admin';
-import { convertToFrequentistDesignSpec, getPowerAnalysis } from './experiment-form-helpers';
+import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
+import { getPowerAnalysis } from '@/services/experiment-utils';
 import { MetricSampleSizeDisplay } from './metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ZodError } from 'zod';

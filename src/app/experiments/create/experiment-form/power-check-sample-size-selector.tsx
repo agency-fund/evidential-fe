@@ -11,7 +11,7 @@ import {
   estimateParticipantNFromClusters,
 } from './metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { getPowerAnalysis } from './experiment-form-helpers';
+import { getPowerAnalysis } from '@/services/experiment-utils';
 
 /**
  * `sampleSizeOption` is the selected sample size option.

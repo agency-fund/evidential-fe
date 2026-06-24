@@ -5,7 +5,6 @@ import {
   CMABExperimentSpecExperimentType,
   CreateExperimentRequest,
   DesignSpecMetricRequest,
-  MetricPowerAnalysis,
   MABExperimentSpecExperimentType,
   OnlineFrequentistExperimentSpecExperimentType,
   PowerResponse,
@@ -15,7 +14,7 @@ import {
 import { createExperimentBody } from '@/api/admin.zod';
 import { ExperimentFormData } from './experiment-form-types';
 import { getCanonicalRewardType } from '@/app/experiments/create/experiment-form/experiment-bandit-helpers';
-import { isFreqExperimentType, isFrequentistSpec } from '@/services/experiment-utils';
+import { isFreqExperimentType, isFrequentistSpec, getPowerAnalysis } from '@/services/experiment-utils';
 
 /**
  * Drops entries whose `field_name` matches `fieldNameToRemove` (e.g. exclude the primary key from
@@ -64,16 +63,6 @@ const getPrimaryMetricClusterStats = (data: ExperimentFormData) => {
   const avgClusterSize = data.clusterAvgClusterSize;
   if (icc === undefined && cv === undefined && avgClusterSize === undefined) return undefined;
   return { icc, cv, avg_cluster_size: avgClusterSize };
-};
-
-export const getPowerAnalysis = (
-  powerAnalyses: Pick<PowerResponse, 'analyses'> | null | undefined,
-  metricName: string | undefined,
-): MetricPowerAnalysis | undefined => {
-  const analyses = powerAnalyses?.analyses;
-  if (!analyses?.length || !metricName) return undefined;
-
-  return analyses.find((analysis) => analysis.metric_spec.field_name === metricName);
 };
 
 export const getClusterStatsFromPowerCheckResponse = (

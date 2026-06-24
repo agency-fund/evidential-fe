@@ -4,7 +4,7 @@ import { Badge, Button, DataList, Flex, Text, Tooltip } from '@radix-ui/themes';
 import { Pencil2Icon, InfoCircledIcon } from '@radix-ui/react-icons';
 import { AssignSummary, MetricPowerAnalysis } from '@/api/methods.schemas';
 import { MetricSampleSizeDisplay } from '@/app/experiments/create/experiment-form/metric-sample-size-display';
-import { getPowerAnalysis } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
+import { getPowerAnalysis } from '@/services/experiment-utils';
 import { SectionCard } from '@/components/ui/cards/section-card';
 
 const formatClusterStat = (value: number | null | undefined, decimalPlaces = 2): string =>

@@ -12,9 +12,9 @@ import { ClusterStatisticsSectionAction } from './cluster-statistics-section';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import {
   convertToFrequentistDesignSpec,
-  getPowerAnalysis,
   removeFieldByName,
 } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
+import { getPowerAnalysis } from '@/services/experiment-utils';
 import { createExperimentBody } from '@/api/admin.zod';
 import { ErrorType } from '@/services/orval-fetch';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
