@@ -37,12 +37,14 @@ import {
 import {
   ExperimentFormData,
   ExperimentScreenId,
-  ExperimentType,
+  PowerCheckOption,
+} from '@/app/experiments/create/experiment-form/experiment-form-types';
+import {
+  type ExperimentType,
   isBanditExperimentType,
   isCmabExperimentType,
   isFreqExperimentType,
-  PowerCheckOption,
-} from '@/app/experiments/create/experiment-form/experiment-form-types';
+} from '@/services/experiment-utils';
 
 // Helper to create screens with proper type inference
 const screen = packScreen<ExperimentFormData, ExperimentScreenId>();

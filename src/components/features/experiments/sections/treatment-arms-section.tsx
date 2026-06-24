@@ -3,7 +3,7 @@
 import { Badge, Button, Flex, Separator, Text } from '@radix-ui/themes';
 import { LayersIcon, Pencil2Icon, PersonIcon } from '@radix-ui/react-icons';
 import { ArmBandit, CreateExperimentResponse, PriorTypes } from '@/api/methods.schemas';
-import { isBanditSpec } from '@/app/experiments/create/experiment-form/experiment-form-types';
+import { isBanditSpec } from '@/services/experiment-utils';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { ReadMoreText } from '@/components/ui/read-more-text';
 

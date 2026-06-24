@@ -8,7 +8,7 @@ import {
   isCmabSpec,
   isFreqPreassignedSpec,
   isFrequentistSpec,
-} from '@/app/experiments/create/experiment-form/experiment-form-types';
+} from '@/services/experiment-utils';
 import { MetricDisplay, MetricsSection } from '@/components/features/experiments/sections/metrics-section';
 import { ExperimentDescriptionSection } from '@/components/features/experiments/sections/experiment-description-section';
 import { TreatmentArmsSection } from '@/components/features/experiments/sections/treatment-arms-section';

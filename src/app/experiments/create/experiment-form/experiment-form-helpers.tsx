@@ -15,7 +15,7 @@ import {
 import { createExperimentBody } from '@/api/admin.zod';
 import { ExperimentFormData } from './experiment-form-types';
 import { getCanonicalRewardType } from '@/app/experiments/create/experiment-form/experiment-bandit-helpers';
-import { isFreqExperimentType, isFrequentistSpec } from './experiment-form-types';
+import { isFreqExperimentType, isFrequentistSpec } from '@/services/experiment-utils';
 
 /**
  * Drops entries whose `field_name` matches `fieldNameToRemove` (e.g. exclude the primary key from

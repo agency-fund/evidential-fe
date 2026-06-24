@@ -62,16 +62,16 @@ import { EditableTextArea } from '@/components/ui/inputs/editable-text-area';
 import { ReadMoreText } from '@/components/ui/read-more-text';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { prettyJSON } from '@/services/json-utils';
-import { getExperimentStatus } from '@/services/experiment-utils';
-import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date-utils';
-import { ContextConfigBox } from '@/components/features/experiments/context-config-box';
 import {
+  getExperimentStatus,
   isBanditSpec,
   isClusteredPreassignedSpec,
   isCmabExperiment,
   isCmabSpec,
   isFrequentistSpec,
-} from '@/app/experiments/create/experiment-form/experiment-form-types';
+} from '@/services/experiment-utils';
+import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date-utils';
+import { ContextConfigBox } from '@/components/features/experiments/context-config-box';
 import { TableNameBadge } from '@/components/features/participants/table-name-badge';
 import { TargetingDialog } from '@/components/features/experiments/targeting-dialog';
 import { FreqDesignDetailsDialog } from '@/components/features/experiments/freq-design-details-dialog';

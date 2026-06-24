@@ -12,7 +12,7 @@ import {
 } from '@/api/methods.schemas';
 import { MetricDisplay, MetricsSection } from '@/components/features/experiments/sections/metrics-section';
 import { PowerBalanceSection } from '@/components/features/experiments/sections/power-balance-section';
-import { isClusteredPreassignedSpec } from '@/app/experiments/create/experiment-form/experiment-form-types';
+import { isClusteredPreassignedSpec } from '@/services/experiment-utils';
 
 interface DesignDetailsDialogProps {
   designSpec: AnyFrequentistDesignSpec;

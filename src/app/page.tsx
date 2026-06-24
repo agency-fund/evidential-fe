@@ -18,7 +18,7 @@ import { ExperimentImpactFilter } from '@/components/features/experiments/experi
 import { ExperimentFieldFilter } from '@/components/features/experiments/experiment-field-filter';
 import type { ExperimentStatus, ExperimentWithStatus } from '@/components/features/experiments/types';
 import { getExperimentStatus } from '@/services/experiment-utils';
-import { isFrequentistSpec } from '@/app/experiments/create/experiment-form/experiment-form-types';
+import { isFrequentistSpec } from '@/services/experiment-utils';
 import type { ExperimentConfig } from '@/api/methods.schemas';
 
 // Returns the data warehouse field names an experiment references via its filters, metrics, or
