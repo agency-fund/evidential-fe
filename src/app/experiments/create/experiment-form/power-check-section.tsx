@@ -26,7 +26,7 @@ import { ExperimentFormData, isClusteredExperimentFormData, PowerCheckOption } f
 import { usePowerCheck } from '@/api/admin';
 import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
 import { getPowerAnalysis } from '@/services/experiment-utils';
-import { MetricSampleSizeDisplay } from './metric-sample-size-display';
+import { MetricSampleSizeDisplay } from '@/components/features/experiments/metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ZodError } from 'zod';
 import { useState } from 'react';

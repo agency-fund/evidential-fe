@@ -9,7 +9,7 @@ import {
   MetricSampleSizeDisplay,
   estimateClusterN,
   estimateParticipantNFromClusters,
-} from './metric-sample-size-display';
+} from '@/components/features/experiments/metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { getPowerAnalysis } from '@/services/experiment-utils';
 
