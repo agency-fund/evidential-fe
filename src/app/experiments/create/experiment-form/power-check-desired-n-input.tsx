@@ -4,10 +4,13 @@ import { Flex, Text, TextField } from '@radix-ui/themes';
 import { useEffect, useRef, useState } from 'react';
 import { useDebounced } from '@/providers/use-debounced';
 
-function getValidDraftN(input: string): number | undefined {
+const getValidDraftN = (input: string): number | undefined => {
   const parsed = input === '' ? undefined : Number(input);
   return parsed !== undefined && !isNaN(parsed) && parsed > 0 ? parsed : undefined;
-}
+};
+
+/** Input is valid if it's the empty string or a positive number. */
+const isInvalidDraftN = (input: string): boolean => input !== '' && getValidDraftN(input) === undefined;
 
 interface PowerCheckDesiredNInputProps {
   value: string;
@@ -30,6 +33,7 @@ export function PowerCheckDesiredNInput({ value, onChange, max, label, placehold
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
   const debouncedValidN = useDebounced(getValidDraftN(draftN), 400);
+  const highlightInvalid = isInvalidDraftN(draftN);
 
   // Allow updates to the input due to prop changes, as can happen if the user chose all samples.
   useEffect(() => {
@@ -53,6 +57,7 @@ export function PowerCheckDesiredNInput({ value, onChange, max, label, placehold
         type="number"
         min={1}
         max={max}
+        color={highlightInvalid ? 'red' : undefined}
         value={draftN}
         onChange={(e) => setDraftN(e.target.value)}
         placeholder={placeholder ?? 'Enter your desired N'}

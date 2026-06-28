@@ -140,6 +140,9 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
   if (data.experimentType === 'freq_preassigned' && data.clusterKey) {
     designSpec.cluster_key = data.clusterKey;
   }
+  if (data.experimentType === 'freq_preassigned' && data.clusterKey && data.desiredNClusters !== undefined) {
+    designSpec.desired_n_clusters = data.desiredNClusters;
+  }
   if (data.experimentType === 'freq_preassigned' && data.desiredN !== undefined) {
     designSpec.desired_n = data.desiredN;
   }

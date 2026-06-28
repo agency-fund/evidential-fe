@@ -1369,6 +1369,10 @@ export type PreassignedFrequentistExperimentSpecDesiredN = number | null;
 
 export type PreassignedFrequentistExperimentSpecClusterKey = string | null;
 
+export type PreassignedFrequentistExperimentSpecDesiredNClusters =
+	| number
+	| null;
+
 export interface PreassignedFrequentistExperimentSpec {
 	experiment_type: PreassignedFrequentistExperimentSpecExperimentType;
 	/** @maxLength 100 */
@@ -1413,6 +1417,7 @@ export interface PreassignedFrequentistExperimentSpec {
 	 */
 	fstat_thresh?: number;
 	cluster_key?: PreassignedFrequentistExperimentSpecClusterKey;
+	desired_n_clusters?: PreassignedFrequentistExperimentSpecDesiredNClusters;
 }
 
 export type PriorTypes = (typeof PriorTypes)[keyof typeof PriorTypes];

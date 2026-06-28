@@ -19,12 +19,14 @@ import { getPowerAnalysis } from '@/services/experiment-utils';
  * `desiredN` is the final sample size selection from the user, regardless of wheather it was
  * derived from the minimum sample size, max available, or other user-entered value.
  * `desiredN` may be set with `response` undefined, signaling an upcoming MDE estimate.
+ * `desiredNClusters` is the selected cluster count for cluster-randomized experiments.
  *
- * `response` if set should always correspond to the `desiredN` in this same message.
+ * `response` if set should always correspond to the `desiredN`/`desiredNClusters` in this same message.
  */
 export type PowerCheckSampleOptionChange = {
   sampleSizeOption: PowerCheckOption;
   desiredN: number | undefined;
+  desiredNClusters?: number;
   response: PowerResponse | undefined;
 };
 
@@ -50,8 +52,9 @@ interface PowerCheckSampleSizeSelectorProps {
    */
   mdePowerCheckResponse?: PowerResponse;
   desiredN?: number;
+  desiredNClusters?: number;
   /** Used for making MDE estimates. Creates a design spec for the given desired N. */
-  makeDesignSpec: (desiredN: number) => AnyFrequentistDesignSpec;
+  makeDesignSpec: (desiredN: number, desiredNClusters?: number) => AnyFrequentistDesignSpec;
   /**
    * Handles the radio button selection immediately.
    */
@@ -106,6 +109,7 @@ export function PowerCheckSampleSizeSelector({
   targetMde,
   mdePowerCheckResponse,
   desiredN,
+  desiredNClusters,
   makeDesignSpec,
   onOptionChange,
   onEstimatedMDEChange,
@@ -120,15 +124,14 @@ export function PowerCheckSampleSizeSelector({
 
   const primaryAnalysis = getPowerAnalysis(powerCheckResponse, primaryMetricFieldName);
   const targetN = primaryAnalysis?.target_n ?? undefined;
+  const targetNClusters = primaryAnalysis?.num_clusters_total ?? undefined;
   const nonNullSamples = primaryAnalysis?.metric_spec.available_nonnull_n ?? 0;
   const allSamples = primaryAnalysis?.metric_spec.available_n ?? 0;
   const avgClusterSize = primaryAnalysis?.metric_spec.avg_cluster_size ?? undefined;
+  const nonNullClusters = estimateClusterN(nonNullSamples, avgClusterSize);
   const maxClusters =
     avgClusterSize !== undefined && avgClusterSize > 0 ? Math.floor(allSamples / avgClusterSize) : undefined;
-  const clusterInputValue =
-    desiredN !== undefined && avgClusterSize !== undefined
-      ? String(estimateClusterN(desiredN, avgClusterSize) ?? '')
-      : '';
+  const clusterInputValue = desiredNClusters !== undefined ? String(desiredNClusters) : '';
   const showClusteredCustomInput = isClustered && avgClusterSize !== undefined && avgClusterSize > 0;
 
   const mdePrimaryAnalysis = getPowerAnalysis(mdePowerCheckResponse, primaryMetricFieldName);
@@ -144,8 +147,8 @@ export function PowerCheckSampleSizeSelector({
    *
    * We always dispatch a valid response even if stale, letting the parent handle it.
    */
-  const estimateMde = (sampleSizeOption: PowerCheckOption, desiredN: number) => {
-    const designSpec = makeDesignSpec(desiredN);
+  const estimateMde = (sampleSizeOption: PowerCheckOption, desiredN: number, desiredNClusters?: number) => {
+    const designSpec = makeDesignSpec(desiredN, desiredNClusters);
     void (async () => {
       const response = await triggerEstimateMde({ design_spec: designSpec });
       if (!response) {
@@ -153,7 +156,7 @@ export function PowerCheckSampleSizeSelector({
         // Stale requests that succeed will be handled by the parent.
         return;
       }
-      onEstimatedMDEChange({ sampleSizeOption, desiredN, response, designSpec });
+      onEstimatedMDEChange({ sampleSizeOption, desiredN, desiredNClusters, response, designSpec });
     })();
   };
 
@@ -172,6 +175,7 @@ export function PowerCheckSampleSizeSelector({
         onOptionChange({
           sampleSizeOption: option,
           desiredN: undefined,
+          desiredNClusters: undefined,
           response: powerCheckResponse,
         });
         break;
@@ -179,50 +183,83 @@ export function PowerCheckSampleSizeSelector({
         onOptionChange({
           sampleSizeOption: option,
           desiredN: targetN,
+          desiredNClusters: isClustered ? targetNClusters : undefined,
           response: powerCheckResponse,
         });
         break;
       case PowerCheckOption.USE_ALL_NON_NULL_SAMPLES:
-        useCachedResponse = mdePowerCheckResponse !== undefined && desiredN === nonNullSamples;
+        useCachedResponse =
+          mdePowerCheckResponse !== undefined &&
+          desiredN === nonNullSamples &&
+          (!isClustered || desiredNClusters === nonNullClusters);
         onOptionChange({
           sampleSizeOption: option,
           desiredN: nonNullSamples,
+          desiredNClusters: isClustered ? nonNullClusters : undefined,
           response: useCachedResponse ? mdePowerCheckResponse : undefined,
         });
         if (!useCachedResponse) {
-          estimateMde(option, nonNullSamples);
+          estimateMde(option, nonNullSamples, isClustered ? nonNullClusters : undefined);
         }
         break;
       case PowerCheckOption.ENTER_OWN:
         // Switching away from ENTER_OWN will either keep desiredN set to nonNullSamples or change
         // it away, so switching back to ENTER_OWN will not reuse a stale custom response with the
         // following restricted reuse check.
-        useCachedResponse = mdePowerCheckResponse !== undefined && desiredN === nonNullSamples;
+        useCachedResponse =
+          mdePowerCheckResponse !== undefined &&
+          desiredN === nonNullSamples &&
+          (!isClustered || desiredNClusters === nonNullClusters);
         onOptionChange({
           sampleSizeOption: option,
           desiredN: desiredN,
+          desiredNClusters: isClustered ? desiredNClusters : undefined,
           response: useCachedResponse ? mdePowerCheckResponse : undefined,
         });
         if (!useCachedResponse && desiredN !== undefined) {
-          estimateMde(option, desiredN);
+          estimateMde(option, desiredN, isClustered ? desiredNClusters : undefined);
         }
         break;
     }
   };
 
-  const handleInputChange = (newN: number | undefined) => {
-    if (newN === undefined || selectedSampleOption !== PowerCheckOption.ENTER_OWN || newN === desiredN) {
+  const handleInputChange = (newN: number | undefined, newNClusters?: number) => {
+    if (newN === undefined) {
+      // Wipe the form data if the user entered an invalid newN.
+      if (desiredN !== undefined || desiredNClusters !== undefined) {
+        onOptionChange({
+          sampleSizeOption: selectedSampleOption,
+          desiredN: undefined,
+          desiredNClusters: undefined,
+          response: undefined,
+        });
+      }
       return;
     }
-    onOptionChange({ sampleSizeOption: selectedSampleOption, desiredN: newN, response: undefined });
-    estimateMde(PowerCheckOption.ENTER_OWN, newN);
+    if (
+      selectedSampleOption !== PowerCheckOption.ENTER_OWN ||
+      (newN === desiredN && (!isClustered || newNClusters === desiredNClusters))
+    ) {
+      return;
+    }
+    onOptionChange({
+      sampleSizeOption: selectedSampleOption,
+      desiredN: newN,
+      desiredNClusters: newNClusters,
+      response: undefined,
+    });
+    estimateMde(PowerCheckOption.ENTER_OWN, newN, newNClusters);
   };
 
   const handleClusterInputChange = (clusterN: number | undefined) => {
-    if (clusterN === undefined || avgClusterSize === undefined) {
+    if (avgClusterSize === undefined) {
       return;
     }
-    handleInputChange(estimateParticipantNFromClusters(clusterN, avgClusterSize));
+    if (clusterN === undefined) {
+      handleInputChange(undefined);
+      return;
+    }
+    handleInputChange(estimateParticipantNFromClusters(clusterN, avgClusterSize), clusterN);
   };
 
   return (

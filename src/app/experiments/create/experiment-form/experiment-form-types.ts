@@ -103,6 +103,8 @@ export type ExperimentFormData = {
   power?: string;
   // Populated when user clicks "Power Check" on DesignForm
   desiredN?: number;
+  // Cluster count to sample for cluster-randomized preassigned experiments.
+  desiredNClusters?: number;
   sampleSizeOption?: PowerCheckOption;
   powerCheckResponse?: PowerResponse;
   // Populated by the MDE estimate for the currently-active custom N (ENTER_OWN or USE_ALL_NON_NULL_SAMPLES).

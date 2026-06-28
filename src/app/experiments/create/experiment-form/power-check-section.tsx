@@ -99,14 +99,25 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     }
 
     try {
-      // We always estimate the minimum sample size with this handler, so clear out desiredN.
-      const designSpec = convertToFrequentistDesignSpec({ ...data, desiredN: undefined });
+      // We always estimate the minimum sample size with this handler, so clear out selected sample size fields.
+      const designSpec = convertToFrequentistDesignSpec({
+        ...data,
+        desiredN: undefined,
+        desiredNClusters: undefined,
+      });
       const response = await triggerEstimateSampleSize({ design_spec: designSpec });
 
       const primary = getPowerAnalysis(response, data.primaryMetric.metric.field_name);
       const desiredN = primary?.sufficient_n ? (primary.target_n ?? undefined) : undefined;
       const sampleSizeOption = desiredN === undefined ? PowerCheckOption.NONE : PowerCheckOption.USE_POWER_CHECK;
-      dispatch({ type: 'set-power-check-response', response, desiredN, sampleSizeOption, designSpec });
+      dispatch({
+        type: 'set-power-check-response',
+        response,
+        desiredN,
+        desiredNClusters: isClusteredExperimentFormData(data) ? (primary?.num_clusters_total ?? undefined) : undefined,
+        sampleSizeOption,
+        designSpec,
+      });
     } catch (err) {
       if (err instanceof ZodError) {
         setValidationError(err);
@@ -116,12 +127,23 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     }
   };
 
-  const handleEstimatedMDEChange = ({ sampleSizeOption, desiredN, response, designSpec }: PowerCheckResponseChange) => {
-    dispatch({ type: 'set-power-check-response', sampleSizeOption, desiredN, response, designSpec });
+  const handleEstimatedMDEChange = ({
+    sampleSizeOption,
+    desiredN,
+    desiredNClusters,
+    response,
+    designSpec,
+  }: PowerCheckResponseChange) => {
+    dispatch({ type: 'set-power-check-response', sampleSizeOption, desiredN, desiredNClusters, response, designSpec });
   };
 
-  const handleSampleOptionChange = ({ sampleSizeOption, desiredN, response }: PowerCheckSampleOptionChange) => {
-    dispatch({ type: 'set-chosen-n', sampleSizeOption, desiredN, response });
+  const handleSampleOptionChange = ({
+    sampleSizeOption,
+    desiredN,
+    desiredNClusters,
+    response,
+  }: PowerCheckSampleOptionChange) => {
+    dispatch({ type: 'set-chosen-n', sampleSizeOption, desiredN, desiredNClusters, response });
   };
 
   const primaryMetricFieldName = data.primaryMetric?.metric.field_name ?? '';
@@ -371,8 +393,11 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                 targetMde={data.primaryMetric?.mde}
                 selectedSampleOption={data.sampleSizeOption ?? PowerCheckOption.USE_POWER_CHECK}
                 desiredN={data.desiredN}
+                desiredNClusters={data.desiredNClusters}
                 mdePowerCheckResponse={data.mdePowerCheckResponse}
-                makeDesignSpec={(desiredN) => convertToFrequentistDesignSpec({ ...data, desiredN })}
+                makeDesignSpec={(desiredN, desiredNClusters) =>
+                  convertToFrequentistDesignSpec({ ...data, desiredN, desiredNClusters })
+                }
                 onOptionChange={handleSampleOptionChange}
                 onEstimatedMDEChange={handleEstimatedMDEChange}
               />

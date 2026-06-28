@@ -84,6 +84,10 @@ const getNextDisabledReasons = (data: ExperimentFormData): string[] => {
       );
     }
 
+    if (data.clusterKey && (data.desiredNClusters === undefined || data.desiredNClusters < 1)) {
+      reasons.push('Select a valid cluster sample size.');
+    }
+
     // If in MDE mode, must have an MDE estimate
     if (
       (data.sampleSizeOption === PowerCheckOption.ENTER_OWN ||
