@@ -236,16 +236,12 @@ export function PowerCheckSampleSizeSelector({
             <Flex align="center" direction="column" gap="2">
               <Text size="2">Use the minimum required sample:</Text>
               <Flex height="32px" align="center">
-                {primaryAnalysis ? (
-                  <MetricSampleSizeDisplay
-                    analysis={primaryAnalysis}
-                    isClustered={isClustered}
-                    variant="required"
-                    align="center"
-                  />
-                ) : (
-                  <Text size="2">N/A</Text>
-                )}
+                <MetricSampleSizeDisplay
+                  analysis={primaryAnalysis}
+                  isClustered={isClustered}
+                  variant="required"
+                  align="center"
+                />
               </Flex>
               <Flex align="center" style={{ minHeight: '24px' }}>
                 {targetMde !== undefined ? (
@@ -263,16 +259,12 @@ export function PowerCheckSampleSizeSelector({
             <Flex align="center" direction="column" gap="2">
               <Text size="2">Use all non-null samples:</Text>
               <Flex height="32px" align="center">
-                {primaryAnalysis ? (
-                  <MetricSampleSizeDisplay
-                    analysis={primaryAnalysis}
-                    isClustered={isClustered}
-                    variant="available-nonnull"
-                    align="center"
-                  />
-                ) : (
-                  <Text size="2">N/A</Text>
-                )}
+                <MetricSampleSizeDisplay
+                  analysis={primaryAnalysis}
+                  isClustered={isClustered}
+                  variant="available-nonnull"
+                  align="center"
+                />
               </Flex>
 
               <EstimatedMdeBadge

@@ -27,8 +27,8 @@ export const estimateParticipantNFromClusters = (clusterN: number, avgClusterSiz
 interface SampleSizeDisplayImplProps {
   participantN: number | undefined;
   clusterN: number | undefined;
-  color?: SampleSizeColor;
-  align?: 'start' | 'center' | 'end';
+  color: SampleSizeColor | undefined;
+  align: 'start' | 'center' | 'end';
 }
 
 function SampleSizeDisplayImpl({ participantN, clusterN, color, align = 'end' }: SampleSizeDisplayImplProps) {
@@ -62,17 +62,24 @@ function SampleSizeDisplayImpl({ participantN, clusterN, color, align = 'end' }:
 }
 
 export interface MetricSampleSizeDisplayProps {
-  analysis: MetricPowerAnalysis;
+  analysis?: MetricPowerAnalysis;
   isClustered: boolean;
   variant: MetricSampleSizeVariant;
   align?: 'start' | 'center' | 'end';
 }
 
 const getDisplayModel = (
-  analysis: MetricPowerAnalysis,
   isClustered: boolean,
   variant: MetricSampleSizeVariant,
+  analysis?: MetricPowerAnalysis,
 ): SampleSizeDisplayModel => {
+  if (analysis === undefined) {
+    return {
+      participantN: undefined,
+      clusterN: undefined,
+      color: undefined,
+    };
+  }
   const avgClusterSize = analysis.metric_spec.avg_cluster_size ?? undefined;
   const targetN = analysis.target_n;
 
@@ -120,5 +127,5 @@ export function MetricSampleSizeDisplay({
   variant,
   align = 'end',
 }: MetricSampleSizeDisplayProps) {
-  return <SampleSizeDisplayImpl {...getDisplayModel(analysis, isClustered, variant)} align={align} />;
+  return <SampleSizeDisplayImpl {...getDisplayModel(isClustered, variant, analysis)} align={align} />;
 }
