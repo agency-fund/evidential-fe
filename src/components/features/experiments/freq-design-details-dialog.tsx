@@ -12,6 +12,7 @@ import {
 } from '@/api/methods.schemas';
 import { MetricDisplay, MetricsSection } from '@/components/features/experiments/sections/metrics-section';
 import { PowerBalanceSection } from '@/components/features/experiments/sections/power-balance-section';
+import { isClusteredPreassignedSpec } from '@/services/experiment-utils';
 
 interface DesignDetailsDialogProps {
   designSpec: AnyFrequentistDesignSpec;
@@ -54,6 +55,7 @@ export function FreqDesignDetailsDialog({
   const confidence = Math.round((1 - (designSpec.alpha ?? 0.05)) * 100);
   const power = Math.round((designSpec.power ?? 0.8) * 100);
   const desiredN = designSpec.desired_n ?? undefined;
+  const clusterKey = isClusteredPreassignedSpec(designSpec) ? (designSpec.cluster_key ?? undefined) : undefined;
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -73,6 +75,9 @@ export function FreqDesignDetailsDialog({
                 power={power}
                 desiredN={desiredN}
                 assignSummary={assignSummary}
+                powerAnalyses={powerAnalyses}
+                primaryMetricFieldName={primary?.field_name}
+                isClustered={clusterKey !== undefined}
                 showActualSampleSize={false}
               />
             </Flex>

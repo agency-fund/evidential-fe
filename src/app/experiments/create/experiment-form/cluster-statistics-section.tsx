@@ -59,9 +59,8 @@ export function ClusterStatisticsSection({ data, dispatch }: ClusterStatisticsSe
   return (
     <Flex direction="column" gap="3">
       <Text size="2" color="gray">
-        Cluster statistics are needed to estimate sample size. These will be derived from your data source, but you can
-        enter your own values below. The Intracluster Correlation Coefficient (ICC) from the primary metric or entered
-        here is also applied to all other metrics.
+        We derive cluster statistics from your data source as part of estimating the sample size. You may provide your
+        own estimates below if necessary.
       </Text>
 
       <Flex align="center" gap="2">
@@ -98,7 +97,12 @@ export function ClusterStatisticsSection({ data, dispatch }: ClusterStatisticsSe
         <Flex direction="column" gap="1">
           <LabelWithTooltip
             label="Intracluster Correlation Coefficient"
-            tooltip="How similar individual primary metric values are within the same cluster. Values range from 0 to 1; higher values mean more similarity within clusters, which increases the total sample size you need."
+            tooltip={
+              'How similar individual primary metric values are within the same cluster. ' +
+              'Values range from 0 to 1; higher values mean more similarity within clusters, ' +
+              'which increases the total sample size you need. ' +
+              'This value will be applied to all metrics.'
+            }
           />
           <EditableTextField
             value={formatStatValue(data.clusterIcc, 3)}
@@ -119,7 +123,7 @@ export function ClusterStatisticsSection({ data, dispatch }: ClusterStatisticsSe
         <Flex direction="column" gap="1">
           <LabelWithTooltip
             label="Coefficient of Variation"
-            tooltip="How much your cluster sizes vary from one another. Higher values mean more variability, which increases the total sample size you need."
+            tooltip="How much your cluster sizes vary from one another. A value of 0 means all are of equal size; higher values mean more variability, which increases the total sample size you need."
           />
           <EditableTextField
             value={formatStatValue(data.clusterCv, 2)}

@@ -1,55 +1,28 @@
 'use client';
 
 import { Flex, Grid } from '@radix-ui/themes';
+import { CreateExperimentResponse, Filter } from '@/api/methods.schemas';
 import {
-  CMABExperimentSpec,
-  CreateExperimentResponse,
-  Filter,
-  MABExperimentSpec,
-  OnlineFrequentistExperimentSpec,
-  PreassignedFrequentistExperimentSpec,
-} from '@/api/methods.schemas';
+  isBanditSpec,
+  isClusteredPreassignedSpec,
+  isCmabSpec,
+  isFreqPreassignedSpec,
+  isFrequentistSpec,
+} from '@/services/experiment-utils';
 import { MetricDisplay, MetricsSection } from '@/components/features/experiments/sections/metrics-section';
 import { ExperimentDescriptionSection } from '@/components/features/experiments/sections/experiment-description-section';
 import { TreatmentArmsSection } from '@/components/features/experiments/sections/treatment-arms-section';
 import { ContextsSection } from '@/components/features/experiments/sections/contexts-section';
 import { DatasourceTargetingSection } from '@/components/features/experiments/sections/datasource-targeting-section';
 import { PowerBalanceSection } from '@/components/features/experiments/sections/power-balance-section';
-import { OutcomesPriorSection } from '@/components/features/experiments/sections/outcomes-prior-section'; // Type guard to check if design spec is frequentist (has alpha, power, filters, strata)
-
-// Type guard to check if design spec is frequentist (has alpha, power, filters, strata)
-function isFrequentistSpec(
-  spec: CreateExperimentResponse['design_spec'],
-): spec is OnlineFrequentistExperimentSpec | PreassignedFrequentistExperimentSpec {
-  return spec.experiment_type === 'freq_online' || spec.experiment_type === 'freq_preassigned';
-}
-
-// Type guard for MAB experiments
-function isMABSpec(spec: CreateExperimentResponse['design_spec']): spec is MABExperimentSpec {
-  return spec.experiment_type === 'mab_online';
-}
-
-// Type guard for CMAB experiments
-function isCMABSpec(spec: CreateExperimentResponse['design_spec']): spec is CMABExperimentSpec {
-  return spec.experiment_type === 'cmab_online';
-}
-
-// Type guard for any bandit experiment
-function isBanditSpec(spec: CreateExperimentResponse['design_spec']): spec is MABExperimentSpec | CMABExperimentSpec {
-  return isMABSpec(spec) || isCMABSpec(spec);
-}
-
+import { OutcomesPriorSection } from '@/components/features/experiments/sections/outcomes-prior-section';
 export interface ExperimentConfirmationDisplayProps {
   response: CreateExperimentResponse;
-
-  tableName?: string;
-  primaryKey?: string;
   // Data not available in response (frequentist-specific)
   metrics?: {
     primary?: MetricDisplay;
     secondary?: MetricDisplay[];
   };
-  desiredN?: number;
   onEditMetadata?: () => void;
   onEditTreatmentArms?: () => void;
   onEditDatasource?: () => void;
@@ -64,10 +37,7 @@ export interface ExperimentConfirmationDisplayProps {
 
 export function ExperimentConfirmationDisplay({
   response,
-  tableName,
-  primaryKey,
   metrics,
-  desiredN,
   onEditMetadata,
   onEditTreatmentArms,
   onEditDatasource,
@@ -80,9 +50,10 @@ export function ExperimentConfirmationDisplay({
 }: ExperimentConfirmationDisplayProps) {
   const designSpec = response.design_spec;
   const isFreq = isFrequentistSpec(designSpec);
-  const isFreqPreassigned = designSpec.experiment_type === 'freq_preassigned';
+  const isFreqPreassigned = isFreqPreassignedSpec(designSpec);
   const isBandit = isBanditSpec(designSpec);
-  const isCmab = isCMABSpec(designSpec);
+  const isCmab = isCmabSpec(designSpec);
+  const clusterKey = isClusteredPreassignedSpec(designSpec) ? (designSpec.cluster_key ?? undefined) : undefined;
 
   // Extract frequentist-specific properties (confidence/power/filters/strata)
   // For non-frequentist experiments, these will be undefined
@@ -104,7 +75,6 @@ export function ExperimentConfirmationDisplay({
   const priorType = isBandit ? designSpec.prior_type : undefined;
   const rewardType = isBandit ? designSpec.reward_type : undefined;
   const contexts = isCmab ? (designSpec.contexts ?? []) : [];
-
   return (
     <Flex direction="column" gap="4">
       <Grid columns={'2'} gap={'3'}>
@@ -113,8 +83,9 @@ export function ExperimentConfirmationDisplay({
         {isFreq && (
           <>
             <DatasourceTargetingSection
-              tableName={tableName}
-              primaryKey={primaryKey}
+              tableName={designSpec.table_name}
+              primaryKey={designSpec.primary_key}
+              clusterKey={clusterKey}
               filters={filters}
               onEditDatasource={onEditDatasource}
               onEditFilters={onEditFilters}
@@ -124,8 +95,11 @@ export function ExperimentConfirmationDisplay({
               <PowerBalanceSection
                 confidence={confidence}
                 power={power}
-                desiredN={desiredN}
+                desiredN={designSpec.desired_n ?? undefined}
                 assignSummary={response.assign_summary}
+                powerAnalyses={response.power_analyses?.analyses}
+                primaryMetricFieldName={designSpec.metrics[0]?.field_name}
+                isClustered={clusterKey !== undefined}
                 onEdit={onEditPowerBalance}
               />
             )}

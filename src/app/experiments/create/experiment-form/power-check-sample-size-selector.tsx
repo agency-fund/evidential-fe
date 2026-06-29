@@ -1,11 +1,17 @@
 'use client';
 
-import { Badge, Flex, RadioCards, Spinner, Text } from '@radix-ui/themes';
+import { Badge, Flex, RadioCards, Spinner, Text, TextField } from '@radix-ui/themes';
 import { usePowerCheck } from '@/api/admin';
 import { AnyFrequentistDesignSpec, PowerResponse } from '@/api/methods.schemas';
 import { PowerCheckDesiredNInput } from './power-check-desired-n-input';
 import { PowerCheckOption } from './experiment-form-types';
+import {
+  MetricSampleSizeDisplay,
+  estimateClusterN,
+  estimateParticipantNFromClusters,
+} from '@/components/features/experiments/metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { getPowerAnalysis } from '@/services/experiment-utils';
 
 /**
  * `sampleSizeOption` is the selected sample size option.
@@ -13,12 +19,14 @@ import { GenericErrorCallout } from '@/components/ui/generic-error';
  * `desiredN` is the final sample size selection from the user, regardless of wheather it was
  * derived from the minimum sample size, max available, or other user-entered value.
  * `desiredN` may be set with `response` undefined, signaling an upcoming MDE estimate.
+ * `desiredNClusters` is the selected cluster count for cluster-randomized experiments.
  *
- * `response` if set should always correspond to the `desiredN` in this same message.
+ * `response` if set should always correspond to the `desiredN`/`desiredNClusters` in this same message.
  */
 export type PowerCheckSampleOptionChange = {
   sampleSizeOption: PowerCheckOption;
   desiredN: number | undefined;
+  desiredNClusters?: number;
   response: PowerResponse | undefined;
 };
 
@@ -34,6 +42,7 @@ interface PowerCheckSampleSizeSelectorProps {
   datasourceId: string;
   selectedSampleOption: PowerCheckOption;
   primaryMetricFieldName: string;
+  isClustered: boolean;
   /** Values for display in sample size mode (USE_POWER_CHECK) */
   powerCheckResponse: PowerResponse;
   targetMde?: string;
@@ -43,8 +52,9 @@ interface PowerCheckSampleSizeSelectorProps {
    */
   mdePowerCheckResponse?: PowerResponse;
   desiredN?: number;
+  desiredNClusters?: number;
   /** Used for making MDE estimates. Creates a design spec for the given desired N. */
-  makeDesignSpec: (desiredN: number) => AnyFrequentistDesignSpec;
+  makeDesignSpec: (desiredN: number, desiredNClusters?: number) => AnyFrequentistDesignSpec;
   /**
    * Handles the radio button selection immediately.
    */
@@ -94,10 +104,12 @@ export function PowerCheckSampleSizeSelector({
   datasourceId,
   selectedSampleOption,
   primaryMetricFieldName,
+  isClustered,
   powerCheckResponse,
   targetMde,
   mdePowerCheckResponse,
   desiredN,
+  desiredNClusters,
   makeDesignSpec,
   onOptionChange,
   onEstimatedMDEChange,
@@ -110,14 +122,19 @@ export function PowerCheckSampleSizeSelector({
     swr: { swrKey: `${datasourceId}/power/mde-estimate` },
   });
 
-  const primaryAnalysis = powerCheckResponse.analyses.find((a) => a.metric_spec.field_name === primaryMetricFieldName);
+  const primaryAnalysis = getPowerAnalysis(powerCheckResponse, primaryMetricFieldName);
   const targetN = primaryAnalysis?.target_n ?? undefined;
+  const targetNClusters = primaryAnalysis?.num_clusters_total ?? undefined;
   const nonNullSamples = primaryAnalysis?.metric_spec.available_nonnull_n ?? 0;
   const allSamples = primaryAnalysis?.metric_spec.available_n ?? 0;
+  const avgClusterSize = primaryAnalysis?.metric_spec.avg_cluster_size ?? undefined;
+  const nonNullClusters = estimateClusterN(nonNullSamples, avgClusterSize);
+  const maxClusters =
+    avgClusterSize !== undefined && avgClusterSize > 0 ? Math.floor(allSamples / avgClusterSize) : undefined;
+  const clusterInputValue = desiredNClusters !== undefined ? String(desiredNClusters) : '';
+  const showClusteredCustomInput = isClustered && avgClusterSize !== undefined && avgClusterSize > 0;
 
-  const mdePrimaryAnalysis = mdePowerCheckResponse?.analyses.find(
-    (a) => a.metric_spec.field_name === primaryMetricFieldName,
-  );
+  const mdePrimaryAnalysis = getPowerAnalysis(mdePowerCheckResponse, primaryMetricFieldName);
   const estimatedMdePct =
     mdePrimaryAnalysis === undefined
       ? undefined
@@ -130,8 +147,8 @@ export function PowerCheckSampleSizeSelector({
    *
    * We always dispatch a valid response even if stale, letting the parent handle it.
    */
-  const estimateMde = (sampleSizeOption: PowerCheckOption, desiredN: number) => {
-    const designSpec = makeDesignSpec(desiredN);
+  const estimateMde = (sampleSizeOption: PowerCheckOption, desiredN: number, desiredNClusters?: number) => {
+    const designSpec = makeDesignSpec(desiredN, desiredNClusters);
     void (async () => {
       const response = await triggerEstimateMde({ design_spec: designSpec });
       if (!response) {
@@ -139,7 +156,7 @@ export function PowerCheckSampleSizeSelector({
         // Stale requests that succeed will be handled by the parent.
         return;
       }
-      onEstimatedMDEChange({ sampleSizeOption, desiredN, response, designSpec });
+      onEstimatedMDEChange({ sampleSizeOption, desiredN, desiredNClusters, response, designSpec });
     })();
   };
 
@@ -158,6 +175,7 @@ export function PowerCheckSampleSizeSelector({
         onOptionChange({
           sampleSizeOption: option,
           desiredN: undefined,
+          desiredNClusters: undefined,
           response: powerCheckResponse,
         });
         break;
@@ -165,44 +183,83 @@ export function PowerCheckSampleSizeSelector({
         onOptionChange({
           sampleSizeOption: option,
           desiredN: targetN,
+          desiredNClusters: isClustered ? targetNClusters : undefined,
           response: powerCheckResponse,
         });
         break;
       case PowerCheckOption.USE_ALL_NON_NULL_SAMPLES:
-        useCachedResponse = mdePowerCheckResponse !== undefined && desiredN === nonNullSamples;
+        useCachedResponse =
+          mdePowerCheckResponse !== undefined &&
+          desiredN === nonNullSamples &&
+          (!isClustered || desiredNClusters === nonNullClusters);
         onOptionChange({
           sampleSizeOption: option,
           desiredN: nonNullSamples,
+          desiredNClusters: isClustered ? nonNullClusters : undefined,
           response: useCachedResponse ? mdePowerCheckResponse : undefined,
         });
         if (!useCachedResponse) {
-          estimateMde(option, nonNullSamples);
+          estimateMde(option, nonNullSamples, isClustered ? nonNullClusters : undefined);
         }
         break;
       case PowerCheckOption.ENTER_OWN:
         // Switching away from ENTER_OWN will either keep desiredN set to nonNullSamples or change
         // it away, so switching back to ENTER_OWN will not reuse a stale custom response with the
         // following restricted reuse check.
-        useCachedResponse = mdePowerCheckResponse !== undefined && desiredN === nonNullSamples;
+        useCachedResponse =
+          mdePowerCheckResponse !== undefined &&
+          desiredN === nonNullSamples &&
+          (!isClustered || desiredNClusters === nonNullClusters);
         onOptionChange({
           sampleSizeOption: option,
           desiredN: desiredN,
+          desiredNClusters: isClustered ? desiredNClusters : undefined,
           response: useCachedResponse ? mdePowerCheckResponse : undefined,
         });
         if (!useCachedResponse && desiredN !== undefined) {
-          estimateMde(option, desiredN);
+          estimateMde(option, desiredN, isClustered ? desiredNClusters : undefined);
         }
         break;
     }
   };
 
-  const handleInputChange = (newN: number | undefined) => {
-    if (newN === undefined || selectedSampleOption !== PowerCheckOption.ENTER_OWN) {
+  const handleInputChange = (newN: number | undefined, newNClusters?: number) => {
+    if (newN === undefined) {
+      // Wipe the form data if the user entered an invalid newN.
+      if (desiredN !== undefined || desiredNClusters !== undefined) {
+        onOptionChange({
+          sampleSizeOption: selectedSampleOption,
+          desiredN: undefined,
+          desiredNClusters: undefined,
+          response: undefined,
+        });
+      }
       return;
     }
-    // Notify parent that we want a new desiredN.
-    onOptionChange({ sampleSizeOption: selectedSampleOption, desiredN: newN, response: undefined });
-    estimateMde(PowerCheckOption.ENTER_OWN, newN);
+    if (
+      selectedSampleOption !== PowerCheckOption.ENTER_OWN ||
+      (newN === desiredN && (!isClustered || newNClusters === desiredNClusters))
+    ) {
+      return;
+    }
+    onOptionChange({
+      sampleSizeOption: selectedSampleOption,
+      desiredN: newN,
+      desiredNClusters: newNClusters,
+      response: undefined,
+    });
+    estimateMde(PowerCheckOption.ENTER_OWN, newN, newNClusters);
+  };
+
+  const handleClusterInputChange = (clusterN: number | undefined) => {
+    if (avgClusterSize === undefined) {
+      return;
+    }
+    if (clusterN === undefined) {
+      handleInputChange(undefined);
+      return;
+    }
+    handleInputChange(estimateParticipantNFromClusters(clusterN, avgClusterSize), clusterN);
   };
 
   return (
@@ -216,7 +273,12 @@ export function PowerCheckSampleSizeSelector({
             <Flex align="center" direction="column" gap="2">
               <Text size="2">Use the minimum required sample:</Text>
               <Flex height="32px" align="center">
-                <Text size="2">{targetN ?? 'N/A'}</Text>
+                <MetricSampleSizeDisplay
+                  analysis={primaryAnalysis}
+                  isClustered={isClustered}
+                  variant="required"
+                  align="center"
+                />
               </Flex>
               <Flex align="center" style={{ minHeight: '24px' }}>
                 {targetMde !== undefined ? (
@@ -234,7 +296,12 @@ export function PowerCheckSampleSizeSelector({
             <Flex align="center" direction="column" gap="2">
               <Text size="2">Use all non-null samples:</Text>
               <Flex height="32px" align="center">
-                <Text size="2">{nonNullSamples ?? 'N/A'}</Text>
+                <MetricSampleSizeDisplay
+                  analysis={primaryAnalysis}
+                  isClustered={isClustered}
+                  variant="available-nonnull"
+                  align="center"
+                />
               </Flex>
 
               <EstimatedMdeBadge
@@ -248,11 +315,36 @@ export function PowerCheckSampleSizeSelector({
           <RadioCards.Item value={PowerCheckOption.ENTER_OWN} disabled={allSamples === undefined || allSamples === 0}>
             <Flex align="center" direction="column" gap="2" style={{ pointerEvents: 'auto' }}>
               <Text size="2">Use a custom sample size:</Text>
-              <PowerCheckDesiredNInput
-                value={String(desiredN ?? '')}
-                onChange={handleInputChange}
-                max={allSamples ?? undefined}
-              />
+              {showClusteredCustomInput ? (
+                <Flex direction="column" gap="2" align="center">
+                  <PowerCheckDesiredNInput
+                    label="Clusters"
+                    value={clusterInputValue}
+                    onChange={handleClusterInputChange}
+                    max={maxClusters}
+                    placeholder="# of clusters"
+                  />
+                  <Flex direction="column" gap="1" align="start">
+                    <Text as="label" size="1" weight="medium">
+                      Estimated Participants
+                    </Text>
+                    <TextField.Root
+                      readOnly
+                      style={{ width: '150px' }}
+                      size="2"
+                      value={desiredN !== undefined ? String(desiredN) : ''}
+                      placeholder="—"
+                    />
+                  </Flex>
+                </Flex>
+              ) : (
+                <PowerCheckDesiredNInput
+                  value={String(desiredN ?? '')}
+                  onChange={handleInputChange}
+                  max={allSamples ?? undefined}
+                  placeholder="# of participants"
+                />
+              )}
               <EstimatedMdeBadge
                 isSelectedOption={selectedSampleOption === PowerCheckOption.ENTER_OWN}
                 isEstimatingMde={isEstimatingMde}

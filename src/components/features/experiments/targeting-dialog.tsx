@@ -2,13 +2,8 @@
 
 import { useState } from 'react';
 import { Box, Button, Dialog, Flex } from '@radix-ui/themes';
-import {
-  CMABExperimentSpec,
-  DesignSpec,
-  MABExperimentSpec,
-  OnlineFrequentistExperimentSpec,
-  PreassignedFrequentistExperimentSpec,
-} from '@/api/methods.schemas';
+import { DesignSpec } from '@/api/methods.schemas';
+import { isBanditSpec, isClusteredPreassignedSpec, isCmabSpec, isFrequentistSpec } from '@/services/experiment-utils';
 import { DatasourceTargetingSection } from '@/components/features/experiments/sections/datasource-targeting-section';
 import { ContextsSection } from '@/components/features/experiments/sections/contexts-section';
 import { OutcomesPriorSection } from '@/components/features/experiments/sections/outcomes-prior-section';
@@ -19,16 +14,6 @@ interface TargetingDialogProps {
   designSpec: DesignSpec;
   webhookIds: string[];
 }
-
-const isFrequentistSpec = (
-  spec: DesignSpec,
-): spec is OnlineFrequentistExperimentSpec | PreassignedFrequentistExperimentSpec =>
-  spec.experiment_type === 'freq_online' || spec.experiment_type === 'freq_preassigned';
-
-const isBanditSpec = (spec: DesignSpec): spec is MABExperimentSpec | CMABExperimentSpec =>
-  spec.experiment_type === 'mab_online' || spec.experiment_type === 'cmab_online';
-
-const isCmabSpec = (spec: DesignSpec): spec is CMABExperimentSpec => spec.experiment_type === 'cmab_online';
 
 export function TargetingDialog({ designSpec, webhookIds }: TargetingDialogProps) {
   const [open, setOpen] = useState(false);
@@ -49,6 +34,9 @@ export function TargetingDialog({ designSpec, webhookIds }: TargetingDialogProps
                 <DatasourceTargetingSection
                   tableName={designSpec.table_name}
                   primaryKey={designSpec.primary_key}
+                  clusterKey={
+                    isClusteredPreassignedSpec(designSpec) ? (designSpec.cluster_key ?? undefined) : undefined
+                  }
                   filters={designSpec.filters}
                 />
               )}

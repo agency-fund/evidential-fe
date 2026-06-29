@@ -1,26 +1,17 @@
 import {
-  AnyFrequentistDesignSpecExperimentType,
   Arm,
-  CMABExperimentSpec,
-  CMABExperimentSpecExperimentType,
   ContextType,
   CreateExperimentResponse,
-  DesignSpec,
-  ExperimentConfig,
   FieldMetadata,
   Filter,
-  GetExperimentResponse,
   GetFiltersResponseElement,
   GetMetricsResponseElement,
   MABExperimentSpec,
-  MABExperimentSpecExperimentType,
-  OnlineFrequentistExperimentSpec,
-  OnlineFrequentistExperimentSpecExperimentType,
   PowerResponse,
-  PreassignedFrequentistExperimentSpec,
   PreassignedFrequentistExperimentSpecExperimentType,
 } from '@/api/methods.schemas';
 import { ErrorType } from '@/services/orval-fetch';
+import type { ExperimentType } from '@/services/experiment-utils';
 
 export type ContextVariableType = ContextType;
 
@@ -81,8 +72,6 @@ export type MetricWithMDE = {
   mde: string; // desired minimum detectable effect as a percentage of the metric's baseline value
 };
 
-export type ExperimentType = DesignSpec['experiment_type'];
-
 // Defines the entirety of the editable data collected via this wizard flow.
 export type ExperimentFormData = {
   // experiment-metadata-screen
@@ -114,6 +103,8 @@ export type ExperimentFormData = {
   power?: string;
   // Populated when user clicks "Power Check" on DesignForm
   desiredN?: number;
+  // Cluster count to sample for cluster-randomized preassigned experiments.
+  desiredNClusters?: number;
   sampleSizeOption?: PowerCheckOption;
   powerCheckResponse?: PowerResponse;
   // Populated by the MDE estimate for the currently-active custom N (ENTER_OWN or USE_ALL_NON_NULL_SAMPLES).
@@ -153,33 +144,5 @@ export type ExperimentScreenId =
   | 'summarize-freq'
   | 'summarize-bandit';
 
-// Define the type alias using imported types
-export const isFreqExperimentType = (
-  experimentType?: ExperimentType,
-): experimentType is AnyFrequentistDesignSpecExperimentType =>
-  experimentType === PreassignedFrequentistExperimentSpecExperimentType.freq_preassigned ||
-  experimentType === OnlineFrequentistExperimentSpecExperimentType.freq_online;
-
-export const isCmabExperimentType = (
-  experimentType?: ExperimentType,
-): experimentType is CMABExperimentSpecExperimentType =>
-  experimentType === CMABExperimentSpecExperimentType.cmab_online;
-
-export const isBanditExperimentType = (experimentType?: ExperimentType): experimentType is BanditExperimentType =>
-  experimentType === MABExperimentSpecExperimentType.mab_online ||
-  experimentType === CMABExperimentSpecExperimentType.cmab_online;
-
-export const isFrequentistSpec = (
-  spec: DesignSpec | undefined,
-): spec is OnlineFrequentistExperimentSpec | PreassignedFrequentistExperimentSpec =>
-  !!spec && isFreqExperimentType(spec.experiment_type);
-
-export const isBanditSpec = (spec: DesignSpec | undefined): spec is MABExperimentSpec | CMABExperimentSpec =>
-  !!spec && isBanditExperimentType(spec.experiment_type);
-
-export function isCmabSpec(spec: DesignSpec | undefined): spec is CMABExperimentSpec {
-  return !!spec && spec.experiment_type === CMABExperimentSpecExperimentType.cmab_online;
-}
-
-export const isCmabExperiment = (experiment: GetExperimentResponse | ExperimentConfig | undefined): boolean =>
-  !!experiment && isCmabSpec(experiment.design_spec);
+export const isClusteredExperimentFormData = (data: ExperimentFormData): boolean =>
+  data.experimentType === PreassignedFrequentistExperimentSpecExperimentType.freq_preassigned && !!data.clusterKey;

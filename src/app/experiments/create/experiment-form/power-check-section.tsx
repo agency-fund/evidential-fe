@@ -2,6 +2,7 @@
 
 import {
   Badge,
+  Box,
   Button,
   Callout,
   Card,
@@ -20,11 +21,12 @@ import {
   PowerCheckSampleOptionChange,
   PowerCheckSampleSizeSelector,
 } from './power-check-sample-size-selector';
-import { CheckCircledIcon, CrossCircledIcon, LightningBoltIcon } from '@radix-ui/react-icons';
-import { ExperimentFormData } from './experiment-form-types';
-import { PowerCheckOption } from './experiment-form-types';
+import { CheckCircledIcon, CrossCircledIcon, ExclamationTriangleIcon, LightningBoltIcon } from '@radix-ui/react-icons';
+import { ExperimentFormData, isClusteredExperimentFormData, PowerCheckOption } from './experiment-form-types';
 import { usePowerCheck } from '@/api/admin';
 import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
+import { getPowerAnalysis } from '@/services/experiment-utils';
+import { MetricSampleSizeDisplay } from '@/components/features/experiments/metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ZodError } from 'zod';
 import { useState } from 'react';
@@ -97,14 +99,25 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     }
 
     try {
-      // We always estimate the minimum sample size with this handler, so clear out desiredN.
-      const designSpec = convertToFrequentistDesignSpec({ ...data, desiredN: undefined });
+      // We always estimate the minimum sample size with this handler, so clear out selected sample size fields.
+      const designSpec = convertToFrequentistDesignSpec({
+        ...data,
+        desiredN: undefined,
+        desiredNClusters: undefined,
+      });
       const response = await triggerEstimateSampleSize({ design_spec: designSpec });
 
-      const primary = response.analyses.find((a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name);
+      const primary = getPowerAnalysis(response, data.primaryMetric.metric.field_name);
       const desiredN = primary?.sufficient_n ? (primary.target_n ?? undefined) : undefined;
       const sampleSizeOption = desiredN === undefined ? PowerCheckOption.NONE : PowerCheckOption.USE_POWER_CHECK;
-      dispatch({ type: 'set-power-check-response', response, desiredN, sampleSizeOption, designSpec });
+      dispatch({
+        type: 'set-power-check-response',
+        response,
+        desiredN,
+        desiredNClusters: isClusteredExperimentFormData(data) ? (primary?.num_clusters_total ?? undefined) : undefined,
+        sampleSizeOption,
+        designSpec,
+      });
     } catch (err) {
       if (err instanceof ZodError) {
         setValidationError(err);
@@ -114,23 +127,36 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     }
   };
 
-  const handleEstimatedMDEChange = ({ sampleSizeOption, desiredN, response, designSpec }: PowerCheckResponseChange) => {
-    dispatch({ type: 'set-power-check-response', sampleSizeOption, desiredN, response, designSpec });
+  const handleEstimatedMDEChange = ({
+    sampleSizeOption,
+    desiredN,
+    desiredNClusters,
+    response,
+    designSpec,
+  }: PowerCheckResponseChange) => {
+    dispatch({ type: 'set-power-check-response', sampleSizeOption, desiredN, desiredNClusters, response, designSpec });
   };
 
-  const handleSampleOptionChange = ({ sampleSizeOption, desiredN, response }: PowerCheckSampleOptionChange) => {
-    dispatch({ type: 'set-chosen-n', sampleSizeOption, desiredN, response });
+  const handleSampleOptionChange = ({
+    sampleSizeOption,
+    desiredN,
+    desiredNClusters,
+    response,
+  }: PowerCheckSampleOptionChange) => {
+    dispatch({ type: 'set-chosen-n', sampleSizeOption, desiredN, desiredNClusters, response });
   };
 
   const primaryMetricFieldName = data.primaryMetric?.metric.field_name ?? '';
+  const isClustered = isClusteredExperimentFormData(data);
   const primaryPower =
     data.powerCheckResponse !== undefined && !validationError
-      ? data.powerCheckResponse.analyses.find((a) => a.metric_spec.field_name === primaryMetricFieldName)
+      ? getPowerAnalysis(data.powerCheckResponse, primaryMetricFieldName)
       : undefined;
   const restPower =
     data.powerCheckResponse !== undefined && !validationError
       ? data.powerCheckResponse.analyses.filter((a) => a.metric_spec.field_name !== primaryMetricFieldName)
       : undefined;
+  const primaryPowerClusterSizeCv = primaryPower?.msg?.values?.cluster_size_cv ?? primaryPower?.metric_spec.cv;
 
   return (
     <Flex direction="column" gap={'3'}>
@@ -196,12 +222,35 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
           {primaryPower && (
             <Callout.Root color={primaryPower.sufficient_n ? 'green' : 'red'}>
               <Callout.Icon>{primaryPower.sufficient_n ? <CheckCircledIcon /> : <CrossCircledIcon />}</Callout.Icon>
-              <Callout.Text>
-                {primaryPower.msg?.msg ||
-                  (primaryPower.sufficient_n
-                    ? `The experiment has sufficient power.`
-                    : `The experiment does not have sufficient power.`)}
-              </Callout.Text>
+              <Flex direction="column" gap="2">
+                <Callout.Text>
+                  {primaryPower.msg?.msg ||
+                    (primaryPower.sufficient_n
+                      ? 'The experiment has sufficient power.'
+                      : 'The experiment does not have sufficient power.')}
+                </Callout.Text>
+                {primaryPower.msg?.high_cluster_variation && primaryPowerClusterSizeCv != null && (
+                  <Box
+                    p="2"
+                    style={{
+                      backgroundColor: 'var(--amber-a3)',
+                      border: '1px solid var(--amber-a5)',
+                      borderRadius: 'var(--radius-3)',
+                    }}
+                  >
+                    <Flex gap="2" align="start">
+                      <Flex flexShrink="0">
+                        <ExclamationTriangleIcon color="var(--amber-11)" />
+                      </Flex>
+                      <Text size="2" color="amber">
+                        Because your cluster sizes vary so widely, your experiment is sensitive to enrolling fewer
+                        participants or clusters. Consider adding filters to exclude extreme cluster sizes or adding
+                        more clusters to be safer.
+                      </Text>
+                    </Flex>
+                  </Box>
+                )}
+              </Flex>
             </Callout.Root>
           )}
 
@@ -216,43 +265,40 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                         <DataList.Label>Status</DataList.Label>
                         <DataList.Value>
                           {primaryPower.sufficient_n ? (
-                            <Badge color={'green'}>Pass</Badge>
+                            <Badge color={'green'}>OK</Badge>
                           ) : (
-                            <Badge color={'red'}>Failed</Badge>
+                            <Badge color={'red'}>Too Few</Badge>
                           )}
                         </DataList.Value>
                       </DataList.Item>
                       <DataList.Item>
                         <DataList.Label>Required</DataList.Label>
-                        <DataList.Value>{primaryPower.target_n || '?'}</DataList.Value>
+                        <DataList.Value>
+                          <MetricSampleSizeDisplay
+                            analysis={primaryPower}
+                            isClustered={isClustered}
+                            variant="required"
+                          />
+                        </DataList.Value>
                       </DataList.Item>
                       <DataList.Item>
                         <DataList.Label>Available</DataList.Label>
                         <DataList.Value>
-                          {' '}
-                          {primaryPower.metric_spec.available_n == null ? (
-                            '?'
-                          ) : primaryPower.metric_spec.available_n === 0 ||
-                            primaryPower.metric_spec.available_n < (primaryPower.target_n ?? 0) ? (
-                            <span color="crimson">{primaryPower.metric_spec.available_n}</span>
-                          ) : (
-                            primaryPower.metric_spec.available_n
-                          )}
+                          <MetricSampleSizeDisplay
+                            analysis={primaryPower}
+                            isClustered={isClustered}
+                            variant="available"
+                          />
                         </DataList.Value>
                       </DataList.Item>
                       <DataList.Item>
                         <DataList.Label>Available (non-null)</DataList.Label>
                         <DataList.Value>
-                          {primaryPower.metric_spec.available_nonnull_n == null ? (
-                            '?'
-                          ) : primaryPower.metric_spec.available_nonnull_n === 0 ||
-                            primaryPower.metric_spec.available_nonnull_n < (primaryPower.target_n ?? 0) ||
-                            primaryPower.metric_spec.available_nonnull_n <
-                              (primaryPower.metric_spec.available_n ?? 0) ? (
-                            <Text color="orange">{primaryPower.metric_spec.available_nonnull_n}</Text>
-                          ) : (
-                            primaryPower.metric_spec.available_nonnull_n
-                          )}
+                          <MetricSampleSizeDisplay
+                            analysis={primaryPower}
+                            isClustered={isClustered}
+                            variant="available-nonnull"
+                          />
                         </DataList.Value>
                       </DataList.Item>
                       {primaryPower.pct_change_possible !== null && primaryPower.pct_change_possible !== undefined && (
@@ -286,31 +332,31 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                           <Table.Cell>{metricAnalysis.metric_spec.field_name}</Table.Cell>
                           <Table.Cell>
                             {metricAnalysis.sufficient_n ? (
-                              <Badge color={'green'}>Pass</Badge>
+                              <Badge color={'green'}>OK</Badge>
                             ) : (
-                              <Badge color={'orange'}>Failed</Badge>
-                            )}
-                          </Table.Cell>
-                          <Table.Cell align={'right'}>{metricAnalysis.target_n ?? ''}</Table.Cell>
-                          <Table.Cell align={'right'}>
-                            {metricAnalysis.metric_spec.available_n == null ? (
-                              '?'
-                            ) : metricAnalysis.metric_spec.available_n === 0 ||
-                              metricAnalysis.metric_spec.available_n < (metricAnalysis.target_n ?? 0) ? (
-                              <Text color="crimson">{metricAnalysis.metric_spec.available_n}</Text>
-                            ) : (
-                              metricAnalysis.metric_spec.available_n
+                              <Badge color={'red'}>Too Few</Badge>
                             )}
                           </Table.Cell>
                           <Table.Cell align={'right'}>
-                            {metricAnalysis.metric_spec.available_nonnull_n == null ? (
-                              '?'
-                            ) : metricAnalysis.metric_spec.available_nonnull_n === 0 ||
-                              metricAnalysis.metric_spec.available_nonnull_n < (metricAnalysis.target_n ?? 0) ? (
-                              <Text color="crimson">{metricAnalysis.metric_spec.available_nonnull_n}</Text>
-                            ) : (
-                              metricAnalysis.metric_spec.available_nonnull_n
-                            )}
+                            <MetricSampleSizeDisplay
+                              analysis={metricAnalysis}
+                              isClustered={isClustered}
+                              variant="required"
+                            />
+                          </Table.Cell>
+                          <Table.Cell align={'right'}>
+                            <MetricSampleSizeDisplay
+                              analysis={metricAnalysis}
+                              isClustered={isClustered}
+                              variant="available"
+                            />
+                          </Table.Cell>
+                          <Table.Cell align={'right'}>
+                            <MetricSampleSizeDisplay
+                              analysis={metricAnalysis}
+                              isClustered={isClustered}
+                              variant="available-nonnull"
+                            />
                           </Table.Cell>
                         </Table.Row>
                       ))}
@@ -341,13 +387,17 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
               )}
               <PowerCheckSampleSizeSelector
                 datasourceId={data.datasourceId!}
+                isClustered={isClustered}
                 powerCheckResponse={data.powerCheckResponse}
                 primaryMetricFieldName={primaryMetricFieldName}
                 targetMde={data.primaryMetric?.mde}
                 selectedSampleOption={data.sampleSizeOption ?? PowerCheckOption.USE_POWER_CHECK}
                 desiredN={data.desiredN}
+                desiredNClusters={data.desiredNClusters}
                 mdePowerCheckResponse={data.mdePowerCheckResponse}
-                makeDesignSpec={(desiredN) => convertToFrequentistDesignSpec({ ...data, desiredN })}
+                makeDesignSpec={(desiredN, desiredNClusters) =>
+                  convertToFrequentistDesignSpec({ ...data, desiredN, desiredNClusters })
+                }
                 onOptionChange={handleSampleOptionChange}
                 onEstimatedMDEChange={handleEstimatedMDEChange}
               />

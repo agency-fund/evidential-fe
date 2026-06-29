@@ -1,9 +1,6 @@
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import {
-  ExperimentFormData,
-  ExperimentScreenId,
-  ExperimentType,
-} from '@/app/experiments/create/experiment-form/experiment-form-types';
+import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-types';
+import type { ExperimentType } from '@/services/experiment-utils';
 import { Badge, Flex, RadioCards, Text } from '@radix-ui/themes';
 import { ExperimentTypeOptions } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 

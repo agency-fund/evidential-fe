@@ -21,11 +21,13 @@ export function ArmsAndAllocationsTable({
     if (!a.arm_id || !b.arm_id) return 0;
     return a.arm_id.localeCompare(b.arm_id);
   });
+  const showClusterCounts = armSizes?.some((armSize) => armSize.cluster_count != null) ?? false;
   return (
     <Table.Root>
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+          {showClusterCounts && <Table.ColumnHeaderCell>Clusters</Table.ColumnHeaderCell>}
           <Table.ColumnHeaderCell>Participants</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>Split</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
@@ -33,7 +35,9 @@ export function ArmsAndAllocationsTable({
       </Table.Header>
       <Table.Body>
         {sortedArms.map((arm) => {
-          const armSize = armSizes?.find((a) => a.arm.arm_id === arm.arm_id)?.size || 0;
+          const armSizeEntry = armSizes?.find((a) => a.arm.arm_id === arm.arm_id);
+          const armSize = armSizeEntry?.size || 0;
+          const clusterCount = armSizeEntry?.cluster_count ?? undefined;
           const percentage = (armSize / sampleSize) * 100;
           return (
             <ArmsAndAllocationsTableRow
@@ -42,6 +46,8 @@ export function ArmsAndAllocationsTable({
               experimentId={experimentId}
               arm={arm}
               armSize={armSize}
+              clusterCount={clusterCount}
+              showClusterCounts={showClusterCounts}
               percentage={percentage}
             />
           );

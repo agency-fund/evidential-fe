@@ -15,7 +15,7 @@ import {
   TimeSeriesDataPoint,
 } from './forest-plot-models';
 import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
-import { isFrequentistSpec } from '@/app/experiments/create/experiment-form/experiment-form-types';
+import { isFrequentistSpec } from '@/services/experiment-utils';
 
 // Base Radix colors for use as color props.
 // NOTE: keep in sync with ARM_COLORS used for plotting.
