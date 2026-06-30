@@ -241,13 +241,19 @@ export function PowerCheckSampleSizeSelector({
       });
       return;
     }
+
+    // Immediately notify of new input and wipe the old response as it is now stale.
     onOptionChange({
       sampleSizeOption: selectedSampleOption,
       desiredN: newN,
       desiredNClusters: newNClusters,
       response: undefined,
     });
-    estimateMde(PowerCheckOption.ENTER_OWN, newN, newNClusters);
+
+    // But only estimate MDE if the user entered a valid new value.
+    if (newN > 1 || (newNClusters && newNClusters > 1)) {
+      estimateMde(PowerCheckOption.ENTER_OWN, newN, newNClusters);
+    }
   };
 
   const handleClusterInputChange = (clusterN: number | undefined) => {
