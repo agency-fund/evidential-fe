@@ -1,5 +1,6 @@
 'use client';
 import '@radix-ui/themes/styles.css';
+import '@/services/feature-flags/feature-flag-dev-tools';
 
 import { Geist, Geist_Mono } from 'next/font/google';
 import { Container, Flex, Theme } from '@radix-ui/themes';
