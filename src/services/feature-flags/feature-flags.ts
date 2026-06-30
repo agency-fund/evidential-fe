@@ -15,5 +15,5 @@ function isTrue(val: string | undefined | null): boolean {
  * To permanently enable a feature, we require a code change that sets the default to true.
  */
 export const FLAG_DEFAULTS: Record<FlagKey, boolean> = {
-  [FLAGS.CLUSTER_EXPERIMENTS]: isTrue(process.env.NEXT_PUBLIC_FF_CLUSTER_EXPERIMENTS),
+  [FLAGS.CLUSTER_EXPERIMENTS]: true,
 };

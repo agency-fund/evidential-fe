@@ -8,7 +8,7 @@ import { useLocalStorage } from '@/providers/use-local-storage';
  *
  * Resolution order:
  * 1. `localStorage` override at `ff_<flagKey>` (developer tooling)
- * 2. Build-time default from `FLAG_DEFAULTS` (env vars)
+ * 2. Build-time default from `FLAG_DEFAULTS` (env vars or hard-coded)
  *
  * Usage:
  * ```tsx
