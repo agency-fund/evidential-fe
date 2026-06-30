@@ -2,6 +2,7 @@ import {
   Arm,
   ContextType,
   CreateExperimentResponse,
+  DataType,
   FieldMetadata,
   Filter,
   GetFiltersResponseElement,
@@ -89,6 +90,12 @@ export type ExperimentFormData = {
   tableName?: string;
   primaryKey?: string;
   clusterKey?: string;
+  // mab-select-datasource-screen: the DWH column read as each participant's outcome. When set, a MAB
+  // experiment is created as mab_online_dwh instead of mab_online. Left undefined for API-only MAB.
+  targetFieldName?: string;
+  // The target column's data type, captured at selection. Drives (and locks) the binary/real outcome
+  // choice on the Outcomes step, so the two can't disagree.
+  targetFieldType?: DataType;
 
   // experiment-freq-stack-screen
   primaryMetric?: MetricWithMDE;
@@ -136,6 +143,7 @@ export type ExperimentScreenId =
   | 'metadata'
   | 'experiment-type'
   | 'freq-select-datasource'
+  | 'mab-select-datasource'
   | 'bandit-binary-or-real'
   | 'describe-contexts'
   | 'describe-arms'

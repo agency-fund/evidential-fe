@@ -8,6 +8,10 @@ import { ExperimentTypeScreen } from '@/app/experiments/create/experiment-form/e
 import { ContextType } from '@/api/methods.schemas';
 import { abandonExperiment } from '@/api/admin';
 import { ExperimentSelectDatasourceScreen } from '@/app/experiments/create/experiment-form/experiment-select-datasource-screen';
+import {
+  ExperimentMabSelectDatasourceMessages,
+  ExperimentMabSelectDatasourceScreen,
+} from '@/app/experiments/create/experiment-form/experiment-mab-select-datasource-screen';
 import { ExperimentSelectBinaryOrRealOutcomes } from '@/app/experiments/create/experiment-form/experiment-select-binary-or-real-outcomes';
 import {
   ExperimentDescribeArmsMessage,
@@ -30,6 +34,7 @@ import {
 } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import {
   createDefaultBanditParams,
+  outcomeTypeForTargetDataType,
   toBanditParamsForExperimentType,
   toCmabBanditParams,
   toMabBanditParams,
@@ -70,6 +75,7 @@ const CMAB_BREADCRUMBS: Array<ExperimentScreenId> = [
 const MAB_BREADCRUMBS: Array<ExperimentScreenId> = [
   'metadata',
   'experiment-type',
+  'mab-select-datasource',
   'bandit-binary-or-real',
   'describe-bandit-arms',
   'summarize-bandit',
@@ -213,6 +219,49 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       isNextEnabled: (data) => !!data.datasourceId && !!data.tableName,
 
       hideNavigation: () => true, // hide navigation because this screen uses a nested wizard.
+    }),
+    'mab-select-datasource': screen({
+      breadcrumbTitle: 'Datasource',
+      render: ExperimentMabSelectDatasourceScreen,
+      reducer: (data, msg: ExperimentMabSelectDatasourceMessages) => {
+        if (msg.type === 'set-datasource') {
+          // A boolean target implies a binary outcome, a numeric one a real-valued outcome. Apply that
+          // to the bandit here so the (now-locked) Outcomes step and the arms config can't drift from
+          // the chosen column, even if the user breadcrumb-jumps past Outcomes.
+          const derivedOutcome = outcomeTypeForTargetDataType(msg.targetFieldType);
+          const bandit =
+            derivedOutcome && data.bandit?.experimentType === 'mab_online'
+              ? toMabBanditParams(derivedOutcome, data.bandit.arms)
+              : data.bandit;
+          return {
+            ...data,
+            datasourceId: msg.datasourceId,
+            tableName: msg.tableName,
+            primaryKey: msg.primaryKey,
+            targetFieldName: msg.targetFieldName,
+            targetFieldType: msg.targetFieldType,
+            bandit,
+            createExperimentResponse: undefined,
+            createExperimentError: undefined,
+          };
+        }
+        if (msg.type === 'skip-dwh-target') {
+          // No DWH binding: clear any previously-selected target so the experiment is created API-only.
+          return {
+            ...data,
+            datasourceId: undefined,
+            tableName: undefined,
+            primaryKey: undefined,
+            targetFieldName: undefined,
+            targetFieldType: undefined,
+            createExperimentResponse: undefined,
+            createExperimentError: undefined,
+          };
+        }
+        return data;
+      },
+      isBreadcrumbClickable: ({ bandit }) => bandit !== undefined,
+      hideNavigation: () => true, // nested datasource wizard + Skip button own navigation.
     }),
     'bandit-binary-or-real': screen({
       breadcrumbTitle: 'Outcomes',

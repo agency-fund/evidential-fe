@@ -6,11 +6,30 @@ import {
   FormOutcomeType,
   PriorType,
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
+import { DataType } from '@/api/methods.schemas';
 
 type RewardType = 'binary' | 'real-valued';
 
 export const getCanonicalRewardType = (outcomeType?: FormOutcomeType): RewardType =>
   outcomeType === 'binary' ? 'binary' : 'real-valued';
+
+/**
+ * The bandit outcome type implied by a DWH target column's type: a boolean column backs a binary
+ * (Bernoulli) outcome, a numeric column backs a real-valued (Normal) one. Returns undefined for any
+ * other type (those columns are filtered out of the target picker, so a bound target always maps).
+ */
+export const outcomeTypeForTargetDataType = (dataType?: DataType): FormOutcomeType | undefined => {
+  if (dataType === DataType.boolean) return 'binary';
+  if (
+    dataType === DataType.bigint ||
+    dataType === DataType.integer ||
+    dataType === DataType.numeric ||
+    dataType === DataType.double_precision
+  ) {
+    return 'real';
+  }
+  return undefined;
+};
 
 const maybeConvertArm = (arm: BanditArm, priorType: PriorType): BanditArm => {
   const baseArm = {

@@ -2,12 +2,17 @@
 import { ScreenProps } from '@/services/wizard/wizard-types';
 import { DatasourceFormData, DatasourceScreenId } from './datasource-form-def';
 import { useInspectDatasource, useInspectTableInDatasource } from '@/api/admin';
-import { PreassignedFrequentistExperimentSpecExperimentType } from '@/api/methods.schemas';
+import {
+  DataType,
+  MABExperimentSpecExperimentType,
+  PreassignedFrequentistExperimentSpecExperimentType,
+} from '@/api/methods.schemas';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { Box, Flex, IconButton, Select, Text } from '@radix-ui/themes';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { SelectClusterKey } from '@/app/experiments/create/experiment-form/select-cluster-key';
 import { SelectPrimaryKey } from '@/app/experiments/create/experiment-form/select-primary-key';
+import { SelectTargetField } from '@/app/experiments/create/experiment-form/select-target-field';
 import { useFeatureFlag } from '@/services/feature-flags/use-feature-flag';
 import { ReloadIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
@@ -15,7 +20,8 @@ import { useState } from 'react';
 type SelectTableMessages =
   | { type: 'set-table'; value: string }
   | { type: 'set-primary-key'; value: string | undefined }
-  | { type: 'set-cluster-key'; value: string | undefined };
+  | { type: 'set-cluster-key'; value: string | undefined }
+  | { type: 'set-target-field'; value: string | undefined; dataType: DataType | undefined };
 
 export const SelectTableScreen = ({
   data,
@@ -25,6 +31,7 @@ export const SelectTableScreen = ({
   const [refresh, setRefresh] = useState(false);
   const [selectPrimaryKeyInput, setSelectPrimaryKeyInput] = useState(data.primaryKey ?? '');
   const [selectClusterKeyInput, setSelectClusterKeyInput] = useState(data.clusterKey ?? '');
+  const [selectTargetFieldInput, setSelectTargetFieldInput] = useState(data.targetFieldName ?? '');
 
   const {
     data: inspectData,
@@ -69,10 +76,13 @@ export const SelectTableScreen = ({
   const showClusterKeyField =
     ffClusterExperimentsEnabled &&
     data.experimentType === PreassignedFrequentistExperimentSpecExperimentType.freq_preassigned;
+  // The target column is only meaningful for DWH-backed MAB experiments.
+  const showTargetField = data.experimentType === MABExperimentSpecExperimentType.mab_online;
 
   function handleTableChange(tableName: string) {
     setSelectPrimaryKeyInput('');
     setSelectClusterKeyInput('');
+    setSelectTargetFieldInput('');
     dispatch({ type: 'set-table', value: tableName });
   }
 
@@ -84,6 +94,12 @@ export const SelectTableScreen = ({
   function handleClusterKeyChange(inputText: string, selectedKey?: string) {
     setSelectClusterKeyInput(inputText);
     dispatch({ type: 'set-cluster-key', value: selectedKey });
+  }
+
+  function handleTargetFieldChange(inputText: string, selectedKey?: string) {
+    setSelectTargetFieldInput(inputText);
+    const dataType = selectedKey ? tableData?.fields.find((f) => f.field_name === selectedKey)?.data_type : undefined;
+    dispatch({ type: 'set-target-field', value: selectedKey, dataType });
   }
 
   if (isLoading) {
@@ -160,6 +176,19 @@ export const SelectTableScreen = ({
             isLoading={isLoadingTable}
             inputValue={selectClusterKeyInput}
             onChange={handleClusterKeyChange}
+            disabled={primaryKeyDisabled}
+            excludeFieldName={data.primaryKey}
+          />
+        </Box>
+      )}
+
+      {showTargetField && (
+        <Box maxWidth={'50%'}>
+          <SelectTargetField
+            tableData={tableData}
+            isLoading={isLoadingTable}
+            inputValue={selectTargetFieldInput}
+            onChange={handleTargetFieldChange}
             disabled={primaryKeyDisabled}
             excludeFieldName={data.primaryKey}
           />
