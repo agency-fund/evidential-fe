@@ -14,7 +14,7 @@ import {
 import { createExperimentBody } from '@/api/admin.zod';
 import { ExperimentFormData } from './experiment-form-types';
 import { getCanonicalRewardType } from '@/app/experiments/create/experiment-form/experiment-bandit-helpers';
-import { isFreqExperimentType, isFrequentistSpec } from './experiment-form-types';
+import { isFreqExperimentType, isFrequentistSpec, getPowerAnalysis } from '@/services/experiment-utils';
 
 /**
  * Drops entries whose `field_name` matches `fieldNameToRemove` (e.g. exclude the primary key from
@@ -71,7 +71,7 @@ export const getClusterStatsFromPowerCheckResponse = (
 ): Pick<ExperimentFormData, 'clusterIcc' | 'clusterCv' | 'clusterAvgClusterSize'> | undefined => {
   if (!data.clusterKey || !data.primaryMetric) return undefined;
 
-  const primary = response.analyses.find((a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name);
+  const primary = getPowerAnalysis(response, data.primaryMetric.metric.field_name);
   const metricSpec = primary?.metric_spec;
   if (!metricSpec) return undefined;
 
@@ -139,6 +139,9 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
   };
   if (data.experimentType === 'freq_preassigned' && data.clusterKey) {
     designSpec.cluster_key = data.clusterKey;
+  }
+  if (data.experimentType === 'freq_preassigned' && data.clusterKey && data.desiredNClusters !== undefined) {
+    designSpec.desired_n_clusters = data.desiredNClusters;
   }
   if (data.experimentType === 'freq_preassigned' && data.desiredN !== undefined) {
     designSpec.desired_n = data.desiredN;

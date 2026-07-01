@@ -24,6 +24,8 @@ export const ExperimentsSummarizeFreqScreen = ({
     return raw != null ? (raw * 100).toFixed(1) : null;
   };
 
+  // Specifically, data_type is not available in the createExperimentResponse, so we provide it here
+  // along with other related info for convenience.
   const metrics: ExperimentConfirmationDisplayProps['metrics'] = {
     primary: data.primaryMetric
       ? {
@@ -60,7 +62,7 @@ export const ExperimentsSummarizeFreqScreen = ({
         metrics: 'freq-stack',
         powerBalance: 'freq-stack',
       }}
-      frequentistInfo={{ metrics, desiredN: data.desiredN }}
+      frequentistInfo={{ metrics }}
     />
   );
 };

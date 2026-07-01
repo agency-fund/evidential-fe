@@ -1,5 +1,5 @@
 import { Table, Heading, Badge, Text } from '@radix-ui/themes';
-import { PersonIcon } from '@radix-ui/react-icons';
+import { LayersIcon, PersonIcon } from '@radix-ui/react-icons';
 import { useUpdateArm, getGetExperimentForUiKey } from '@/api/admin';
 import { Arm } from '@/api/methods.schemas';
 import { EditableTextField } from '@/components/ui/inputs/editable-text-field';
@@ -12,6 +12,8 @@ interface ArmsAndAllocationsTableRowProps {
   experimentId: string;
   arm: Arm;
   armSize: number;
+  clusterCount: number | undefined;
+  showClusterCounts: boolean;
   percentage: number;
 }
 
@@ -20,6 +22,8 @@ export function ArmsAndAllocationsTableRow({
   experimentId,
   arm,
   armSize,
+  clusterCount,
+  showClusterCounts,
   percentage,
 }: ArmsAndAllocationsTableRowProps) {
   const { trigger: updateArm } = useUpdateArm(datasourceId, experimentId, arm.arm_id!, {
@@ -37,6 +41,18 @@ export function ArmsAndAllocationsTableRow({
           <Heading size="2">{arm.arm_name}</Heading>
         </EditableTextField>
       </Table.Cell>
+      {showClusterCounts && (
+        <Table.Cell>
+          {clusterCount != null && clusterCount > 0 ? (
+            <Badge color="green" variant="soft">
+              <LayersIcon />
+              <Text>{clusterCount.toLocaleString()}</Text>
+            </Badge>
+          ) : (
+            <Text color="gray">—</Text>
+          )}
+        </Table.Cell>
+      )}
       <Table.Cell>
         <Badge>
           <PersonIcon />

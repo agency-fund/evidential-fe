@@ -688,6 +688,9 @@ export const createExperimentBody = zod.object({
 					.max(createExperimentBodyDesignSpecFstatThreshMax)
 					.default(createExperimentBodyDesignSpecFstatThreshDefault),
 				cluster_key: zod.union([zod.string(), zod.null()]).optional(),
+				desired_n_clusters: zod
+					.union([zod.number().min(1), zod.null()])
+					.optional(),
 			}),
 			zod.object({
 				experiment_type: zod.enum(["freq_online"]),
@@ -1428,6 +1431,9 @@ export const powerCheckBody = zod.object({
 				.max(powerCheckBodyDesignSpecFstatThreshMax)
 				.default(powerCheckBodyDesignSpecFstatThreshDefault),
 			cluster_key: zod.union([zod.string(), zod.null()]).optional(),
+			desired_n_clusters: zod
+				.union([zod.number().min(1), zod.null()])
+				.optional(),
 		}),
 		zod.object({
 			experiment_type: zod.enum(["freq_online"]),

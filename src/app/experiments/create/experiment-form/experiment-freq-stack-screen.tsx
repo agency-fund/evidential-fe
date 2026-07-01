@@ -14,6 +14,7 @@ import {
   convertToFrequentistDesignSpec,
   removeFieldByName,
 } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
+import { getPowerAnalysis } from '@/services/experiment-utils';
 import { createExperimentBody } from '@/api/admin.zod';
 import { ErrorType } from '@/services/orval-fetch';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -29,9 +30,7 @@ export type ExperimentFreqStackScreenMessage =
 
 const getPrimaryAnalysisAvailableN = (data: ExperimentFormData): number | undefined => {
   if (!data.powerCheckResponse || !data.primaryMetric) return undefined;
-  const primaryAnalysis = data.powerCheckResponse.analyses.find(
-    (a) => a.metric_spec.field_name === data.primaryMetric?.metric.field_name,
-  );
+  const primaryAnalysis = getPowerAnalysis(data.powerCheckResponse, data.primaryMetric.metric.field_name);
   return primaryAnalysis?.metric_spec.available_n ?? undefined;
 };
 
@@ -83,6 +82,10 @@ const getNextDisabledReasons = (data: ExperimentFormData): string[] => {
       reasons.push(
         `Desired N (${data.desiredN.toLocaleString()}) exceeds the primary metric's available samples (${availableN.toLocaleString()}).`,
       );
+    }
+
+    if (data.clusterKey && (data.desiredNClusters === undefined || data.desiredNClusters < 1)) {
+      reasons.push('Select a valid cluster sample size.');
     }
 
     // If in MDE mode, must have an MDE estimate

@@ -7,7 +7,7 @@ import {
   DatasourceFormData as CreateDatasourceFormData,
   defaultDatasourceFormData,
 } from '@/components/features/datasources/add-datasource-form';
-import { ExperimentType } from '@/app/experiments/create/experiment-form/experiment-form-types';
+import type { ExperimentType } from '@/services/experiment-utils';
 
 export type DatasourceFormInputData = {
   datasourceId?: string;
