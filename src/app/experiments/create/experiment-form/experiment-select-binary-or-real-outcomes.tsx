@@ -1,5 +1,9 @@
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-types';
+import {
+  ExperimentFormData,
+  ExperimentScreenId,
+  getMabDwhTarget,
+} from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { Callout, Flex, Heading, RadioCards, Text } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { FormOutcomeType } from '@/app/experiments/create/experiment-form/experiment-form-types';
@@ -11,11 +15,9 @@ export const ExperimentSelectBinaryOrRealOutcomes = ({
   data,
   dispatch,
 }: ScreenProps<ExperimentFormData, ExperimentSelectBinaryOrRealMessages, ExperimentScreenId>) => {
-  // When the bandit is bound to a DWH target column, the column's type fixes the outcome type
-  // (boolean → binary, numeric → real-valued). Lock the choice so it can't disagree with the column;
-  // the value itself is applied upstream when the target is selected.
-  const isDwhTargetBound = !!(data.targetFieldName && data.datasourceId);
-  const lockedOutcomeType = isDwhTargetBound ? outcomeTypeForTargetDataType(data.targetFieldType) : undefined;
+  // A DWH target locks the outcome type to the column's type, so it can't disagree.
+  const dwhTarget = getMabDwhTarget(data);
+  const lockedOutcomeType = dwhTarget ? outcomeTypeForTargetDataType(dwhTarget.targetFieldType) : undefined;
   const locked = lockedOutcomeType !== undefined;
 
   return (

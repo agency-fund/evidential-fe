@@ -1,7 +1,11 @@
 'use client';
 
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-types';
+import {
+  ExperimentFormData,
+  ExperimentScreenId,
+  getMabDwhTarget,
+} from '@/app/experiments/create/experiment-form/experiment-form-types';
 import {
   Badge,
   Box,
@@ -201,13 +205,11 @@ export const ExperimentDescribeBanditArmsScreen = ({
     swr: { enabled: !!organizationId },
   });
 
-  // A MAB bound to a DWH target is created against the datasource the user picked on the datasource
-  // step. Otherwise (API-only MAB, or CMAB) we use the NoDWH datasource (driver === 'none'), falling
-  // back to the first datasource in the list if none exists.
-  const isDwhTargetMab = data.bandit?.experimentType === 'mab_online' && !!data.targetFieldName && !!data.datasourceId;
+  // DWH-target MAB uses the picked datasource; otherwise the NoDWH one (or the first as fallback).
+  const dwhTarget = getMabDwhTarget(data);
   let datasource;
-  if (isDwhTargetMab) {
-    datasource = datasourcesData?.items.find((ds) => ds.id === data.datasourceId);
+  if (dwhTarget) {
+    datasource = datasourcesData?.items.find((ds) => ds.id === dwhTarget.datasourceId);
   } else {
     const noDwhDatasource = datasourcesData?.items?.find((ds) => ds.driver === 'none');
     datasource = noDwhDatasource ?? datasourcesData?.items[0];

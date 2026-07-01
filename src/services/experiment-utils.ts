@@ -54,8 +54,7 @@ export const isCmabExperimentType = (
 ): experimentType is CMABExperimentSpecExperimentType =>
   experimentType === CMABExperimentSpecExperimentType.cmab_online;
 
-// The plain MAB type selectable in the creation wizard (a DWH-target MAB is derived from this plus a
-// target column, so it never appears as the wizard's experimentType — hence mab_online only here).
+// Only mab_online: a DWH-target MAB is this type plus a target column, never its own wizard type.
 export const isMabExperimentType = (
   experimentType?: ExperimentType,
 ): experimentType is MABExperimentSpecExperimentType => experimentType === MABExperimentSpecExperimentType.mab_online;

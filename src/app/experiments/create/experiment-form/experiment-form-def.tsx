@@ -49,6 +49,7 @@ import {
   isBanditExperimentType,
   isCmabExperimentType,
   isFreqExperimentType,
+  isMabExperimentType,
 } from '@/services/experiment-utils';
 
 // Helper to create screens with proper type inference
@@ -149,6 +150,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       reducer: (data, msg) => {
         if (msg.type === 'set-experiment-type') {
           const experimentType = msg.value;
+          const stillMab = isMabExperimentType(experimentType);
           const nextData = {
             ...data,
             experimentType,
@@ -156,6 +158,9 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
               isBanditExperimentType(data.experimentType) != isBanditExperimentType(experimentType)
                 ? undefined
                 : data.datasourceId,
+            // Drop the DWH target when leaving MAB so stale fields can't leak into a later screen.
+            targetFieldName: stillMab ? data.targetFieldName : undefined,
+            targetFieldType: stillMab ? data.targetFieldType : undefined,
             createExperimentResponse: undefined,
             createExperimentError: undefined,
             commitError: undefined,
@@ -225,9 +230,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       render: ExperimentMabSelectDatasourceScreen,
       reducer: (data, msg: ExperimentMabSelectDatasourceMessages) => {
         if (msg.type === 'set-datasource') {
-          // A boolean target implies a binary outcome, a numeric one a real-valued outcome. Apply that
-          // to the bandit here so the (now-locked) Outcomes step and the arms config can't drift from
-          // the chosen column, even if the user breadcrumb-jumps past Outcomes.
+          // Boolean target => binary outcome, numeric => real-valued; lock the bandit to it here.
           const derivedOutcome = outcomeTypeForTargetDataType(msg.targetFieldType);
           const bandit =
             derivedOutcome && data.bandit?.experimentType === 'mab_online'

@@ -13,7 +13,7 @@ import {
   Stratum,
 } from '@/api/methods.schemas';
 import { createExperimentBody } from '@/api/admin.zod';
-import { ExperimentFormData } from './experiment-form-types';
+import { ExperimentFormData, getMabDwhTarget } from './experiment-form-types';
 import { getCanonicalRewardType } from '@/app/experiments/create/experiment-form/experiment-bandit-helpers';
 import { isFreqExperimentType, isFrequentistSpec, getPowerAnalysis } from '@/services/experiment-utils';
 
@@ -202,20 +202,12 @@ export function convertToBanditCreateRequest(data: ExperimentFormData): CreateEx
 
   // A MAB experiment bound to a DWH target column is created as the distinct mab_online_dwh spec,
   // carrying the table / primary key / target column. Without a target it stays API-only (mab_online).
-  // datasourceId is required so this stays in lockstep with the datasource the create call targets
-  // (see experiment-describe-bandit-arms-screen) — a stale target from a since-cleared datasource
-  // must not flip the spec type.
-  if (
-    experimentType === 'mab_online' &&
-    data.datasourceId &&
-    data.targetFieldName &&
-    data.tableName &&
-    data.primaryKey
-  ) {
+  const dwhTarget = getMabDwhTarget(data);
+  if (dwhTarget) {
     designSpec.experiment_type = MABDwhExperimentSpecExperimentType.mab_online_dwh;
-    designSpec.table_name = data.tableName;
-    designSpec.primary_key = data.primaryKey;
-    designSpec.target_field_name = data.targetFieldName;
+    designSpec.table_name = dwhTarget.tableName;
+    designSpec.primary_key = dwhTarget.primaryKey;
+    designSpec.target_field_name = dwhTarget.targetFieldName;
   }
 
   return createExperimentBody.strict().parse({
@@ -255,9 +247,7 @@ export const ExperimentTypeOptions = [
   },
 ];
 
-// mab_online_dwh has no wizard card of its own (it's a MAB created against a DWH target), so it
-// isn't in ExperimentTypeOptions. This is its human-readable label, used wherever an existing
-// experiment's type is displayed (summary, badge).
+// mab_online_dwh has no wizard card, so its label isn't in ExperimentTypeOptions; used for display.
 export const MAB_DWH_LABEL = 'Multi-Armed Bandit (DWH-connected)';
 
 /** Human-readable label for an experiment type. Single source of truth for type display names. */

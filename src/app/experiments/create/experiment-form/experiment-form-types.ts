@@ -12,7 +12,7 @@ import {
   PreassignedFrequentistExperimentSpecExperimentType,
 } from '@/api/methods.schemas';
 import { ErrorType } from '@/services/orval-fetch';
-import type { ExperimentType } from '@/services/experiment-utils';
+import { type ExperimentType, isMabExperimentType } from '@/services/experiment-utils';
 
 export type ContextVariableType = ContextType;
 
@@ -154,3 +154,29 @@ export type ExperimentScreenId =
 
 export const isClusteredExperimentFormData = (data: ExperimentFormData): boolean =>
   data.experimentType === PreassignedFrequentistExperimentSpecExperimentType.freq_preassigned && !!data.clusterKey;
+
+/** The resolved DWH-target binding for a wizard form. */
+export type MabDwhTarget = {
+  datasourceId: string;
+  tableName: string;
+  primaryKey: string;
+  targetFieldName: string;
+  targetFieldType: DataType;
+};
+
+// Single source of truth for the MAB DWH-target binding. Null unless it's a MAB with every field set,
+// so stale fields from a since-changed type are ignored. undefined (not empty/0) means "not selected".
+export function getMabDwhTarget(data: ExperimentFormData): MabDwhTarget | null {
+  if (!isMabExperimentType(data.experimentType)) return null;
+  const { datasourceId, tableName, primaryKey, targetFieldName, targetFieldType } = data;
+  if (
+    datasourceId === undefined ||
+    tableName === undefined ||
+    primaryKey === undefined ||
+    targetFieldName === undefined ||
+    targetFieldType === undefined
+  ) {
+    return null;
+  }
+  return { datasourceId, tableName, primaryKey, targetFieldName, targetFieldType };
+}
