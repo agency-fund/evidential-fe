@@ -82,8 +82,7 @@ const getNextDisabledReasons = (data: ExperimentFormData): string[] => {
     // Must have selected a valid sample size for pre-assigned frequentist experiments
     if (data.clusterKey && (data.desiredNClusters === undefined || data.desiredNClusters <= 1)) {
       reasons.push('Select a valid cluster sample size.');
-    } else if (data.desiredN === undefined || data.desiredN <= 1) {
-      // Individual-level scenario
+    } else if (!data.clusterKey && (data.desiredN === undefined || data.desiredN <= 1)) {
       reasons.push('Select a valid sample size.');
     }
 
