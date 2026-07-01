@@ -8,21 +8,63 @@ export interface AddMemberToOrganizationRequest {
 	email: string;
 }
 
+export type AddWebhookToOrganizationRequestDirection =
+	(typeof AddWebhookToOrganizationRequestDirection)[keyof typeof AddWebhookToOrganizationRequestDirection];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const AddWebhookToOrganizationRequestDirection = {
+	inbound: "inbound",
+	outbound: "outbound",
+} as const;
+
+export type AddWebhookToOrganizationRequestType =
+	(typeof AddWebhookToOrganizationRequestType)[keyof typeof AddWebhookToOrganizationRequestType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const AddWebhookToOrganizationRequestType = {
+	experimentcreated: "experiment.created",
+	turnjourneys_changed: "turn.journeys_changed",
+} as const;
+
+export type AddWebhookToOrganizationRequestUrl = string | null;
+
 export interface AddWebhookToOrganizationRequest {
-	type: "experiment.created";
+	direction?: AddWebhookToOrganizationRequestDirection;
+	type: AddWebhookToOrganizationRequestType;
 	/** @maxLength 100 */
 	name: string;
-	/** @maxLength 500 */
-	url: string;
+	url: AddWebhookToOrganizationRequestUrl;
 }
+
+export type AddWebhookToOrganizationResponseDirection =
+	(typeof AddWebhookToOrganizationResponseDirection)[keyof typeof AddWebhookToOrganizationResponseDirection];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const AddWebhookToOrganizationResponseDirection = {
+	inbound: "inbound",
+	outbound: "outbound",
+} as const;
+
+export type AddWebhookToOrganizationResponseType =
+	(typeof AddWebhookToOrganizationResponseType)[keyof typeof AddWebhookToOrganizationResponseType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const AddWebhookToOrganizationResponseType = {
+	experimentcreated: "experiment.created",
+	turnjourneys_changed: "turn.journeys_changed",
+} as const;
+
+export type AddWebhookToOrganizationResponseUrl = string | null;
 
 export type AddWebhookToOrganizationResponseAuthToken = string | null;
 
 export interface AddWebhookToOrganizationResponse {
-	id: string;
-	type: string;
+	direction?: AddWebhookToOrganizationResponseDirection;
+	type: AddWebhookToOrganizationResponseType;
+	/** @maxLength 100 */
 	name: string;
-	url: string;
+	url: AddWebhookToOrganizationResponseUrl;
+	id: string;
 	auth_token: AddWebhookToOrganizationResponseAuthToken;
 }
 
@@ -931,6 +973,8 @@ export interface GetTurnArmJourneyMappingResponse {
 
 export interface GetTurnConnectionResponse {
 	token_preview: string;
+	webhook_id: string;
+	webhook_auth_token: string;
 }
 
 export interface GetTurnJourneysResponse {
@@ -1677,13 +1721,35 @@ export interface ValidationError {
 	ctx?: ValidationErrorCtx;
 }
 
+export type WebhookSummaryDirection =
+	(typeof WebhookSummaryDirection)[keyof typeof WebhookSummaryDirection];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const WebhookSummaryDirection = {
+	inbound: "inbound",
+	outbound: "outbound",
+} as const;
+
+export type WebhookSummaryType =
+	(typeof WebhookSummaryType)[keyof typeof WebhookSummaryType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const WebhookSummaryType = {
+	experimentcreated: "experiment.created",
+	turnjourneys_changed: "turn.journeys_changed",
+} as const;
+
+export type WebhookSummaryUrl = string | null;
+
 export type WebhookSummaryAuthToken = string | null;
 
 export interface WebhookSummary {
-	id: string;
-	type: string;
+	direction?: WebhookSummaryDirection;
+	type: WebhookSummaryType;
+	/** @maxLength 100 */
 	name: string;
-	url: string;
+	url: WebhookSummaryUrl;
+	id: string;
 	auth_token: WebhookSummaryAuthToken;
 }
 
@@ -1832,6 +1898,10 @@ export type GetOrganizationTurnConnectionParams = {
 };
 
 export type DeleteTurnConnectionFromOrganizationParams = {
+	allow_missing?: boolean;
+};
+
+export type RegenerateTurnWebhookTokenParams = {
 	allow_missing?: boolean;
 };
 
