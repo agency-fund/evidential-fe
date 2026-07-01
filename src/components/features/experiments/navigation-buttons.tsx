@@ -9,6 +9,9 @@ interface NavigationButtonsProps {
   // The text to render on the next button.
   nextLabel?: string;
 
+  // The text to render on the skip button.
+  skipLabel?: string;
+
   // If true, the "prev" button will be rendered in a disabled state.
   prevDisabled?: boolean;
 
@@ -24,6 +27,10 @@ interface NavigationButtonsProps {
   // Handler for the "next" button. If undefined, the next button will not be rendered.
   onNext?: () => void;
 
+  // Handler for an optional "Skip" button, rendered to the left of Back/Next. If undefined, no skip
+  // button is shown.
+  onSkip?: () => void;
+
   // Tooltip to display over the "next" button when nextDisabled is true.
   nextTooltipContent?: string;
 }
@@ -37,6 +44,8 @@ export function NavigationButtons({
   nextLoading = false,
   prevDisabled = false,
   nextTooltipContent,
+  onSkip,
+  skipLabel = 'Skip',
 }: NavigationButtonsProps) {
   let nextButton = (
     <Button onClick={onNext} disabled={!onNext || nextDisabled} loading={nextLoading}>
@@ -55,8 +64,14 @@ export function NavigationButtons({
       {prevLabel}
     </Button>
   );
+  const skipButton = (
+    <Button onClick={onSkip} variant="soft" color="gray">
+      {skipLabel}
+    </Button>
+  );
   return (
     <Flex gap="3" justify="end" align="center" mt="6">
+      {onSkip ? skipButton : null}
       {onPrev ? prevButton : <div />}
       {onNext ? nextButton : <div />}
     </Flex>

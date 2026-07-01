@@ -201,14 +201,16 @@ export const ExperimentDescribeBanditArmsScreen = ({
     swr: { enabled: !!organizationId },
   });
 
-  // Find the NoDWH datasource (driver === 'none')
-  // If it doesn't exist, fall back to the first datasource in the list (if any)
+  // A MAB bound to a DWH target is created against the datasource the user picked on the datasource
+  // step. Otherwise (API-only MAB, or CMAB) we use the NoDWH datasource (driver === 'none'), falling
+  // back to the first datasource in the list if none exists.
+  const isDwhTargetMab = data.bandit?.experimentType === 'mab_online' && !!data.targetFieldName && !!data.datasourceId;
   let datasource;
-  const noDwhDatasource = datasourcesData?.items?.find((ds) => ds.driver === 'none');
-  if (noDwhDatasource) {
-    datasource = noDwhDatasource;
+  if (isDwhTargetMab) {
+    datasource = datasourcesData?.items?.find((ds) => ds.id === data.datasourceId);
   } else {
-    datasource = datasourcesData?.items[0];
+    const noDwhDatasource = datasourcesData?.items?.find((ds) => ds.driver === 'none');
+    datasource = noDwhDatasource ?? datasourcesData?.items[0];
   }
   const datasourceId = datasource?.id ?? '';
 
@@ -234,7 +236,7 @@ export const ExperimentDescribeBanditArmsScreen = ({
 
   const handleCreate = async () => {
     if (!datasourceId) {
-      console.error('No NoDWH datasource found');
+      console.error('No datasource available to create the experiment against.');
       return;
     }
     if (!isFormValid(data, showPriors)) {
@@ -278,7 +280,7 @@ export const ExperimentDescribeBanditArmsScreen = ({
   if (!datasource) {
     return (
       <Flex direction="column" gap="3">
-        <GenericErrorCallout title="Configuration error" message="No NoDWH datasource found. Please contact support." />
+        <GenericErrorCallout title="Configuration error" message="No datasource found. Please contact support." />
       </Flex>
     );
   }

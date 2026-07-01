@@ -17,11 +17,13 @@ import { useCreateApiKey } from '@/api/admin';
 import {
   getGetOrganizationTurnJourneysKey,
   getGetTurnArmJourneyMappingKey,
+  useGetExperimentSampleCalls,
   useGetOrganizationTurnConnection,
   useGetOrganizationTurnJourneys,
   useGetTurnArmJourneyMapping,
   useSetTurnArmJourneyMapping,
 } from '@/api/admin-third-party-tools-integrations';
+import { SampleCallsList } from './sample-calls';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ApiError } from '@/services/orval-fetch';
 import Link from 'next/link';
@@ -60,6 +62,11 @@ export function IntegrationGuideDialog({
   const hasTurnConnection = !isLoadingTurnConnection && !turnConnectionError;
 
   const turnSectionEnabled = open && showTurnConfig && hasTurnConnection;
+
+  // Example API calls are integration docs, only needed once the guide is open — so lazy-load them.
+  const { data: sampleCalls } = useGetExperimentSampleCalls(datasourceId, experimentId, {
+    swr: { enabled: open },
+  });
 
   const {
     data: journeysData,
@@ -240,6 +247,15 @@ export function IntegrationGuideDialog({
                     </DataList.Item>
                   ))}
                 </DataList.Root>
+              </Flex>
+            )}
+
+            {sampleCalls && sampleCalls.calls.length > 0 && (
+              <Flex direction="column" gap="3">
+                <Dialog.Description size="3" weight="bold">
+                  Example API Calls
+                </Dialog.Description>
+                <SampleCallsList sampleCalls={sampleCalls} />
               </Flex>
             )}
 
