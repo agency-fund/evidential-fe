@@ -6,7 +6,6 @@ import { DatasourceForm, DatasourceFormData, DatasourceFormInputData } from '../
 import { DataType } from '@/api/methods.schemas';
 import { Callout, Card, Flex } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
-import { useMemo } from 'react';
 
 export type ExperimentMabSelectDatasourceMessages =
   | {
@@ -47,24 +46,14 @@ export const ExperimentMabSelectDatasourceScreen = ({
     navigateNext();
   };
 
-  const inputData: DatasourceFormInputData = useMemo(
-    () => ({
-      datasourceId: data.datasourceId,
-      tableName: data.tableName,
-      primaryKey: data.primaryKey,
-      targetFieldName: data.targetFieldName,
-      targetFieldType: data.targetFieldType,
-      experimentType: data.experimentType,
-    }),
-    [
-      data.datasourceId,
-      data.experimentType,
-      data.primaryKey,
-      data.tableName,
-      data.targetFieldName,
-      data.targetFieldType,
-    ],
-  );
+  const inputData: DatasourceFormInputData = {
+    datasourceId: data.datasourceId,
+    tableName: data.tableName,
+    primaryKey: data.primaryKey,
+    targetFieldName: data.targetFieldName,
+    targetFieldType: data.targetFieldType,
+    experimentType: data.experimentType,
+  };
 
   return (
     <Flex direction="column" gap={'3'}>
