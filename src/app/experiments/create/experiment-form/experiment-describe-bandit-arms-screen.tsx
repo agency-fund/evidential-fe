@@ -207,7 +207,7 @@ export const ExperimentDescribeBanditArmsScreen = ({
   const isDwhTargetMab = data.bandit?.experimentType === 'mab_online' && !!data.targetFieldName && !!data.datasourceId;
   let datasource;
   if (isDwhTargetMab) {
-    datasource = datasourcesData?.items?.find((ds) => ds.id === data.datasourceId);
+    datasource = datasourcesData?.items.find((ds) => ds.id === data.datasourceId);
   } else {
     const noDwhDatasource = datasourcesData?.items?.find((ds) => ds.driver === 'none');
     datasource = noDwhDatasource ?? datasourcesData?.items[0];
