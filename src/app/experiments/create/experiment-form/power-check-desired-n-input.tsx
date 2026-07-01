@@ -6,7 +6,8 @@ import { useDebounced } from '@/providers/use-debounced';
 
 const getValidDraftN = (input: string): number | undefined => {
   const parsed = input === '' ? undefined : Number(input);
-  return parsed !== undefined && !isNaN(parsed) && parsed > 0 ? parsed : undefined;
+  // Allow 1 assuming it was typed as a leading 1 digit for a more stable UX.
+  return parsed !== undefined && !isNaN(parsed) && parsed >= 1 ? parsed : undefined;
 };
 
 /** Input is valid if it's the empty string or a positive number. */
@@ -26,6 +27,9 @@ interface PowerCheckDesiredNInputProps {
  * - `value`: external sync/reset string (e.g. when parent changes desiredN from outside typing).
  * - `onChange`: latest ref called after debounce delay with a parsed positive integer, or
  * `undefined` for empty/invalid input.
+ *
+ * Input field sets a min of 2 preventing arrow keys from decrementing below, but a user can type in
+ * 1 to allow it to be a leading digit. Parent should handle the special case of 1.
  */
 export function PowerCheckDesiredNInput({ value, onChange, max, label, placeholder }: PowerCheckDesiredNInputProps) {
   const [draftN, setDraftN] = useState(value);
@@ -55,7 +59,7 @@ export function PowerCheckDesiredNInput({ value, onChange, max, label, placehold
         style={{ width: '150px' }}
         size="2"
         type="number"
-        min={1}
+        min={2}
         max={max}
         color={highlightInvalid ? 'red' : undefined}
         value={draftN}
