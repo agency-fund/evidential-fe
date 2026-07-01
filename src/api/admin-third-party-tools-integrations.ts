@@ -13,6 +13,7 @@ import type { SWRMutationConfiguration } from "swr/mutation";
 import type {
 	DeleteTurnArmJourneyMappingParams,
 	DeleteTurnConnectionFromOrganizationParams,
+	GetExperimentSampleCalls200,
 	GetOrganizationTurnConnectionParams,
 	GetTurnArmJourneyMappingResponse,
 	GetTurnConnectionResponse,
@@ -591,6 +592,79 @@ export const useDeleteTurnArmJourneyMapping = <
 	);
 
 	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+export const getGetExperimentSampleCallsUrl = (
+	datasourceId: string,
+	experimentId: string,
+) => {
+	return `/v1/m/integrations/datasources/${datasourceId}/experiments/${experimentId}/sample-calls`;
+};
+
+export const getExperimentSampleCalls = async (
+	datasourceId: string,
+	experimentId: string,
+	options?: RequestInit,
+): Promise<GetExperimentSampleCalls200> => {
+	return orvalFetch<GetExperimentSampleCalls200>(
+		getGetExperimentSampleCallsUrl(datasourceId, experimentId),
+		{
+			...options,
+			method: "GET",
+		},
+	);
+};
+
+export const getGetExperimentSampleCallsKey = (
+	datasourceId: string,
+	experimentId: string,
+) =>
+	[
+		`/v1/m/integrations/datasources/${datasourceId}/experiments/${experimentId}/sample-calls`,
+	] as const;
+
+export type GetExperimentSampleCallsQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getExperimentSampleCalls>>
+>;
+export type GetExperimentSampleCallsQueryError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+export const useGetExperimentSampleCalls = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	datasourceId: string,
+	experimentId: string,
+	options?: {
+		swr?: SWRConfiguration<
+			Awaited<ReturnType<typeof getExperimentSampleCalls>>,
+			TError
+		> & { swrKey?: Key; enabled?: boolean };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const isEnabled =
+		swrOptions?.enabled !== false && !!(datasourceId && experimentId);
+	const swrKey =
+		swrOptions?.swrKey ??
+		(() =>
+			isEnabled
+				? getGetExperimentSampleCallsKey(datasourceId, experimentId)
+				: null);
+	const swrFn = () =>
+		getExperimentSampleCalls(datasourceId, experimentId, requestOptions);
+
+	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
+		swrKey,
+		swrFn,
+		swrOptions,
+	);
 
 	return {
 		swrKey,
