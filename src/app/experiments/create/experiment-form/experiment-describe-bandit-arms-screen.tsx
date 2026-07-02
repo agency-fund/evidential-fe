@@ -1,7 +1,11 @@
 'use client';
 
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-types';
+import {
+  ExperimentFormData,
+  ExperimentScreenId,
+  getMabDwhTarget,
+} from '@/app/experiments/create/experiment-form/experiment-form-types';
 import {
   Badge,
   Box,
@@ -24,6 +28,7 @@ import { convertToBanditCreateRequest } from '@/app/experiments/create/experimen
 import { CreateExperimentResponse } from '@/api/methods.schemas';
 import { ErrorType } from '@/services/orval-fetch';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { isUsableDatasource } from '@/services/genapi-helpers';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { BanditArm, PriorType } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { ArmWeightsDialog } from '@/components/features/experiments/arm-weights-dialog';
@@ -201,14 +206,14 @@ export const ExperimentDescribeBanditArmsScreen = ({
     swr: { enabled: !!organizationId },
   });
 
-  // Find the NoDWH datasource (driver === 'none')
-  // If it doesn't exist, fall back to the first datasource in the list (if any)
+  // DWH-target MAB uses the picked datasource; otherwise the NoDWH one (or the first as fallback).
+  const dwhTarget = getMabDwhTarget(data);
   let datasource;
-  const noDwhDatasource = datasourcesData?.items?.find((ds) => ds.driver === 'none');
-  if (noDwhDatasource) {
-    datasource = noDwhDatasource;
+  if (dwhTarget) {
+    datasource = datasourcesData?.items.find((ds) => ds.id === dwhTarget.datasourceId);
   } else {
-    datasource = datasourcesData?.items[0];
+    const noDwhDatasource = datasourcesData?.items?.find((ds) => !isUsableDatasource(ds));
+    datasource = noDwhDatasource ?? datasourcesData?.items[0];
   }
   const datasourceId = datasource?.id ?? '';
 
@@ -234,7 +239,7 @@ export const ExperimentDescribeBanditArmsScreen = ({
 
   const handleCreate = async () => {
     if (!datasourceId) {
-      console.error('No NoDWH datasource found');
+      console.error('No datasource available to create the experiment against.');
       return;
     }
     if (!isFormValid(data, showPriors)) {
@@ -278,7 +283,7 @@ export const ExperimentDescribeBanditArmsScreen = ({
   if (!datasource) {
     return (
       <Flex direction="column" gap="3">
-        <GenericErrorCallout title="Configuration error" message="No NoDWH datasource found. Please contact support." />
+        <GenericErrorCallout title="Configuration error" message="No datasource found. Please contact support." />
       </Flex>
     );
   }

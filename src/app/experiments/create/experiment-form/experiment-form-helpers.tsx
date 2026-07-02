@@ -5,6 +5,7 @@ import {
   CMABExperimentSpecExperimentType,
   CreateExperimentRequest,
   DesignSpecMetricRequest,
+  MABDwhExperimentSpecExperimentType,
   MABExperimentSpecExperimentType,
   OnlineFrequentistExperimentSpecExperimentType,
   PowerResponse,
@@ -12,7 +13,7 @@ import {
   Stratum,
 } from '@/api/methods.schemas';
 import { createExperimentBody } from '@/api/admin.zod';
-import { ExperimentFormData } from './experiment-form-types';
+import { ExperimentFormData, getMabDwhTarget } from './experiment-form-types';
 import { getCanonicalRewardType } from '@/app/experiments/create/experiment-form/experiment-bandit-helpers';
 import { isFreqExperimentType, isFrequentistSpec, getPowerAnalysis } from '@/services/experiment-utils';
 
@@ -185,20 +186,32 @@ export function convertToBanditCreateRequest(data: ExperimentFormData): CreateEx
     }));
   }
 
+  const designSpec: Record<string, unknown> = {
+    experiment_name: data.name!,
+    experiment_type: experimentType,
+    arms: standardArms,
+    end_date: new Date(Date.parse(data.endDate!)).toISOString(),
+    start_date: new Date(Date.parse(data.startDate!)).toISOString(),
+    description: data.hypothesis ?? '',
+    design_url: data.designUrl ?? null,
+    prior_type: priorType,
+    reward_type: canonicalRewardType,
+    contexts: standardContexts,
+    desired_n: 0,
+  };
+
+  // A MAB experiment bound to a DWH target column is created as the distinct mab_online_dwh spec,
+  // carrying the table / primary key / target column. Without a target it stays API-only (mab_online).
+  const dwhTarget = getMabDwhTarget(data);
+  if (dwhTarget) {
+    designSpec.experiment_type = MABDwhExperimentSpecExperimentType.mab_online_dwh;
+    designSpec.table_name = dwhTarget.tableName;
+    designSpec.primary_key = dwhTarget.primaryKey;
+    designSpec.target_field_name = dwhTarget.targetFieldName;
+  }
+
   return createExperimentBody.strict().parse({
-    design_spec: {
-      experiment_name: data.name!,
-      experiment_type: experimentType,
-      arms: standardArms,
-      end_date: new Date(Date.parse(data.endDate!)).toISOString(),
-      start_date: new Date(Date.parse(data.startDate!)).toISOString(),
-      description: data.hypothesis ?? '',
-      design_url: data.designUrl ?? null,
-      prior_type: priorType,
-      reward_type: canonicalRewardType,
-      contexts: standardContexts,
-      desired_n: 0,
-    },
+    design_spec: designSpec,
     webhooks: data.selectedWebhookIds && data.selectedWebhookIds.length > 0 ? data.selectedWebhookIds : [],
   });
 }
@@ -233,3 +246,14 @@ export const ExperimentTypeOptions = [
       'Context-aware optimization for personalized experiences. Adapts recommendations based on user or environmental context.',
   },
 ];
+
+// mab_online_dwh has no wizard card, so its label isn't in ExperimentTypeOptions; used for display.
+export const MAB_DWH_LABEL = 'Multi-Armed Bandit (DWH-connected)';
+
+/** Human-readable label for an experiment type. Single source of truth for type display names. */
+export function experimentTypeLabel(experimentType: string): string {
+  if (experimentType === MABDwhExperimentSpecExperimentType.mab_online_dwh) {
+    return MAB_DWH_LABEL;
+  }
+  return ExperimentTypeOptions.find((v) => v.value === experimentType)?.title ?? experimentType;
+}

@@ -6,6 +6,7 @@ import {
   DesignSpec,
   ExperimentConfig,
   GetExperimentResponse,
+  MABDwhExperimentSpecExperimentType,
   MABExperimentSpec,
   MABExperimentSpecExperimentType,
   MetricPowerAnalysis,
@@ -53,10 +54,17 @@ export const isCmabExperimentType = (
 ): experimentType is CMABExperimentSpecExperimentType =>
   experimentType === CMABExperimentSpecExperimentType.cmab_online;
 
+// Only mab_online: a DWH-target MAB is this type plus a target column, never its own wizard type.
+export const isMabExperimentType = (
+  experimentType?: ExperimentType,
+): experimentType is MABExperimentSpecExperimentType => experimentType === MABExperimentSpecExperimentType.mab_online;
+
 export const isBanditExperimentType = (
   experimentType?: ExperimentType,
 ): experimentType is MABExperimentSpecExperimentType | CMABExperimentSpecExperimentType =>
   experimentType === MABExperimentSpecExperimentType.mab_online ||
+  // A DWH-target MAB is a MAB for every read/display purpose (arms, priors, contexts).
+  experimentType === MABDwhExperimentSpecExperimentType.mab_online_dwh ||
   experimentType === CMABExperimentSpecExperimentType.cmab_online;
 
 export const isFrequentistSpec = (
@@ -72,7 +80,12 @@ export const isClusteredPreassignedSpec = (
 ): spec is PreassignedFrequentistExperimentSpec => isFreqPreassignedSpec(spec) && !!spec.cluster_key;
 
 export function isMabSpec(spec: DesignSpec | undefined): spec is MABExperimentSpec {
-  return !!spec && spec.experiment_type === MABExperimentSpecExperimentType.mab_online;
+  return (
+    !!spec &&
+    (spec.experiment_type === MABExperimentSpecExperimentType.mab_online ||
+      // A DWH-target MAB is structurally a MAB for display (same arms/priors/contexts).
+      spec.experiment_type === MABDwhExperimentSpecExperimentType.mab_online_dwh)
+  );
 }
 
 export function isCmabSpec(spec: DesignSpec | undefined): spec is CMABExperimentSpec {
