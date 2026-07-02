@@ -5,6 +5,7 @@ import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create
 import { ErrorType } from '@/services/orval-fetch';
 import { ExperimentConfirmationDisplayProps } from '@/components/features/experiments/experiment-confirmation-display';
 import { ExperimentsSummarizeScreenBase } from '@/app/experiments/create/experiment-form/experiment-summarize-screen-base';
+import { metricHasMissingValues } from '@/services/experiment-utils';
 
 type ExperimentsSummarizeFreqScreenMessage = { type: 'set-commit-error'; response: ErrorType<unknown> };
 
@@ -24,6 +25,11 @@ export const ExperimentsSummarizeFreqScreen = ({
     return raw != null ? (raw * 100).toFixed(1) : null;
   };
 
+  const missingValuesByField = new Map(
+    (data.powerCheckResponse?.analyses ?? []).map((a) => [a.metric_spec.field_name, metricHasMissingValues(a)]),
+  );
+  const hasMissingValuesFor = (fieldName: string): boolean => missingValuesByField.get(fieldName) ?? false;
+
   // Specifically, data_type is not available in the createExperimentResponse, so we provide it here
   // along with other related info for convenience.
   const metrics: ExperimentConfirmationDisplayProps['metrics'] = {
@@ -33,6 +39,7 @@ export const ExperimentsSummarizeFreqScreen = ({
           data_type: data.primaryMetric.metric.data_type,
           mde: data.primaryMetric.mde,
           estimatedMde: estimatedMdeFor(data.primaryMetric.metric.field_name),
+          hasMissingValues: hasMissingValuesFor(data.primaryMetric.metric.field_name),
         }
       : undefined,
     secondary: (data.secondaryMetrics ?? []).map((m) => ({
@@ -40,6 +47,7 @@ export const ExperimentsSummarizeFreqScreen = ({
       data_type: m.metric.data_type,
       mde: m.mde,
       estimatedMde: estimatedMdeFor(m.metric.field_name),
+      hasMissingValues: hasMissingValuesFor(m.metric.field_name),
     })),
   };
 

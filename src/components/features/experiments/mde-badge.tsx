@@ -1,6 +1,6 @@
 'use client';
 
-import { InfoCircledIcon } from '@radix-ui/react-icons';
+import { ExclamationTriangleIcon, InfoCircledIcon } from '@radix-ui/react-icons';
 import { Badge, Flex, Heading, Text, Tooltip as RadixTooltip } from '@radix-ui/themes';
 
 type MdeKind = 'target' | 'estimated';
@@ -9,6 +9,7 @@ type MdeBadgeProps = {
   value?: string | number | null;
   size?: '1' | '2' | '3';
   kind?: MdeKind;
+  hasMissingValues?: boolean;
 };
 
 const MDE_COPY: Record<MdeKind, { label: string; tooltip: string }> = {
@@ -24,7 +25,10 @@ const MDE_COPY: Record<MdeKind, { label: string; tooltip: string }> = {
   },
 };
 
-export function MdeBadge({ value, size = '2', kind = 'target' }: MdeBadgeProps) {
+const MISSING_VALUES_NOTE =
+  'Some participants are missing values for this metric. This MDE assumes they will be filled in during the experiment; otherwise the experiment can only detect a larger effect.';
+
+export function MdeBadge({ value, size = '2', kind = 'target', hasMissingValues = false }: MdeBadgeProps) {
   const displayValue = value === null || value === undefined ? 'unknown' : String(value);
   const { label, tooltip } = MDE_COPY[kind];
   return (
@@ -36,6 +40,11 @@ export function MdeBadge({ value, size = '2', kind = 'target' }: MdeBadgeProps) 
           <RadixTooltip content={tooltip}>
             <InfoCircledIcon />
           </RadixTooltip>
+          {hasMissingValues ? (
+            <RadixTooltip content={MISSING_VALUES_NOTE}>
+              <ExclamationTriangleIcon color="var(--amber-11)" />
+            </RadixTooltip>
+          ) : null}
         </Flex>
       </Flex>
     </Badge>
