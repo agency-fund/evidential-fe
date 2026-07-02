@@ -1,7 +1,7 @@
 'use client';
 import { ScreenProps } from '@/services/wizard/wizard-types';
 import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-types';
-import { DataType, DatasourceSummary } from '@/api/methods.schemas';
+import { DataType } from '@/api/methods.schemas';
 import { Card, Flex, RadioGroup, Text } from '@radix-ui/themes';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { useListOrganizationDatasources } from '@/api/admin';
@@ -9,6 +9,7 @@ import { XSpinner } from '@/components/ui/x-spinner';
 import { DatasourceCardsGrid } from '../datasource-form/datasource-cards-grid';
 import { CreateDatasourceForm } from '../datasource-form/create-datasource-form';
 import { SelectTableFields } from './select-table-fields';
+import { isUsableDatasource } from '@/services/genapi-helpers';
 
 export type DwhMode = 'none' | 'existing' | 'create';
 
@@ -18,8 +19,6 @@ export type ExperimentMabSelectDatasourceMessages =
   | { type: 'set-table'; tableName: string }
   | { type: 'set-primary-key'; primaryKey?: string }
   | { type: 'set-target-field'; targetFieldName?: string; targetFieldType?: DataType };
-
-const isUsableDatasource = (ds: DatasourceSummary) => ds.driver !== 'none';
 
 /**
  * Optional MAB step for binding the bandit to a data-warehouse target column. A single radio picks how

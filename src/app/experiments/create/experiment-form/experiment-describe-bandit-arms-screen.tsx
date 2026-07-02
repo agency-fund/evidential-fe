@@ -28,6 +28,7 @@ import { convertToBanditCreateRequest } from '@/app/experiments/create/experimen
 import { CreateExperimentResponse } from '@/api/methods.schemas';
 import { ErrorType } from '@/services/orval-fetch';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { isUsableDatasource } from '@/services/genapi-helpers';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { BanditArm, PriorType } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { ArmWeightsDialog } from '@/components/features/experiments/arm-weights-dialog';
@@ -211,7 +212,7 @@ export const ExperimentDescribeBanditArmsScreen = ({
   if (dwhTarget) {
     datasource = datasourcesData?.items.find((ds) => ds.id === dwhTarget.datasourceId);
   } else {
-    const noDwhDatasource = datasourcesData?.items?.find((ds) => ds.driver === 'none');
+    const noDwhDatasource = datasourcesData?.items?.find((ds) => !isUsableDatasource(ds));
     datasource = noDwhDatasource ?? datasourcesData?.items[0];
   }
   const datasourceId = datasource?.id ?? '';
