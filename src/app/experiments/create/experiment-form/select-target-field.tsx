@@ -3,9 +3,9 @@ import { isEligibleForUseAsMetric } from '@/services/genapi-helpers';
 import { SelectField } from './select-field';
 
 const TARGET_TOOLTIP =
-  'The data-warehouse column read as each participant outcome for this bandit. Its type ' +
-  'sets what a valid outcome looks like — a boolean column expects 0/1, a numeric column ' +
-  'expects a number. Validity is enforced when the experiment is created.';
+  "The data-warehouse column for this bandit's outcome. Its type sets what a valid outcome looks " +
+  'like — a boolean column expects 0/1, a numeric column expects a number. Validity is enforced ' +
+  'when the results are sent to Evidential.';
 
 // Only boolean/numeric columns can back a bandit outcome (the chosen type locks binary vs real-valued
 // downstream), so don't offer columns we'd reject at create time.

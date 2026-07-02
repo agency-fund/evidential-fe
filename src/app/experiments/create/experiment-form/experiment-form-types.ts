@@ -90,6 +90,8 @@ export type ExperimentFormData = {
   tableName?: string;
   primaryKey?: string;
   clusterKey?: string;
+  // mab-select-datasource-screen options
+  dwhMode?: 'none' | 'existing' | 'create';
   // mab-select-datasource-screen: the DWH column read as each participant's outcome. When set, a MAB
   // experiment is created as mab_online_dwh instead of mab_online. Left undefined for API-only MAB.
   targetFieldName?: string;

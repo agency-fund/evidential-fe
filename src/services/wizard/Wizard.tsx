@@ -40,11 +40,6 @@ type WizardProps<FormData, ScreenId extends string, InputData> = {
   // If true, a debugging drawer will be rendered at the bottom of the screen, showing navigation state and current
   // form data.
   debug?: boolean;
-  // Optional "Skip" button rendered in the Next/Prev button row, e.g. to bypass an optional nested
-  // wizard. Shown on every screen that renders navigation. If undefined, no skip button is shown.
-  onSkip?: (data: FormData) => void;
-  // The text to render on the skip button (defaults to "Skip").
-  skipLabel?: string;
 };
 
 // language=Markdown
@@ -153,8 +148,6 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
   onPrev,
   debug,
   inputData,
-  onSkip,
-  skipLabel,
 }: WizardProps<FormData, ScreenId, InputData>) {
   const [data, setData] = useState<FormData>(() => form.initialData(inputData));
   const [currentScreenId, setCurrentScreenId] = useState<ScreenId>(() => form.initialScreenId(data));
@@ -307,8 +300,6 @@ export function Wizard<FormData, ScreenId extends string, InputData>({
                   prevDisabled={!isPrevEnabled || isTransitioning}
                   nextDisabled={!isNextEnabled || isTransitioning}
                   nextTooltipContent={nextButtonTooltip}
-                  onSkip={onSkip ? () => onSkip(data) : undefined}
-                  skipLabel={skipLabel}
                 />
               )}
             </Flex>

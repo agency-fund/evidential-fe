@@ -42,6 +42,7 @@ import {
 import {
   ExperimentFormData,
   ExperimentScreenId,
+  getMabDwhTarget,
   PowerCheckOption,
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import {
@@ -58,8 +59,8 @@ const screen = packScreen<ExperimentFormData, ExperimentScreenId>();
 const FREQUENTIST_BREADCRUMBS: Array<ExperimentScreenId> = [
   'metadata',
   'experiment-type',
-  'describe-arms',
   'freq-select-datasource',
+  'describe-arms',
   'freq-stack',
   'summarize-freq',
 ] as const;
@@ -158,7 +159,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
               isBanditExperimentType(data.experimentType) != isBanditExperimentType(experimentType)
                 ? undefined
                 : data.datasourceId,
-            // Drop the DWH target when leaving MAB so stale fields can't leak into a later screen.
+            dwhMode: stillMab ? data.dwhMode : undefined,
             targetFieldName: stillMab ? data.targetFieldName : undefined,
             targetFieldType: stillMab ? data.targetFieldType : undefined,
             createExperimentResponse: undefined,
@@ -229,29 +230,10 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       breadcrumbTitle: 'Datasource',
       render: ExperimentMabSelectDatasourceScreen,
       reducer: (data, msg: ExperimentMabSelectDatasourceMessages) => {
-        if (msg.type === 'set-datasource') {
-          // Boolean target => binary outcome, numeric => real-valued; lock the bandit to it here.
-          const derivedOutcome = outcomeTypeForTargetDataType(msg.targetFieldType);
-          const bandit =
-            derivedOutcome && data.bandit?.experimentType === 'mab_online'
-              ? toMabBanditParams(derivedOutcome, data.bandit.arms)
-              : data.bandit;
+        if (msg.type === 'set-dwh-mode') {
           return {
             ...data,
-            datasourceId: msg.datasourceId,
-            tableName: msg.tableName,
-            primaryKey: msg.primaryKey,
-            targetFieldName: msg.targetFieldName,
-            targetFieldType: msg.targetFieldType,
-            bandit,
-            createExperimentResponse: undefined,
-            createExperimentError: undefined,
-          };
-        }
-        if (msg.type === 'skip-dwh-target') {
-          // No DWH binding: clear any previously-selected target so the experiment is created API-only.
-          return {
-            ...data,
+            dwhMode: msg.value,
             datasourceId: undefined,
             tableName: undefined,
             primaryKey: undefined,
@@ -261,10 +243,50 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             createExperimentError: undefined,
           };
         }
+        if (msg.type === 'set-datasource') {
+          // A new datasource invalidates the downstream table/key/target choices.
+          return {
+            ...data,
+            datasourceId: msg.datasourceId,
+            tableName: undefined,
+            primaryKey: undefined,
+            targetFieldName: undefined,
+            targetFieldType: undefined,
+          };
+        }
+        if (msg.type === 'set-table') {
+          return {
+            ...data,
+            tableName: msg.tableName,
+            primaryKey: undefined,
+            targetFieldName: undefined,
+            targetFieldType: undefined,
+          };
+        }
+        if (msg.type === 'set-primary-key') {
+          return { ...data, primaryKey: msg.primaryKey };
+        }
+        if (msg.type === 'set-target-field') {
+          // Boolean target => binary outcome, numeric => real-valued; lock the bandit to it here.
+          const derivedOutcome = outcomeTypeForTargetDataType(msg.targetFieldType);
+          const bandit =
+            derivedOutcome && data.bandit?.experimentType === 'mab_online'
+              ? toMabBanditParams(derivedOutcome, data.bandit.arms)
+              : data.bandit;
+          return {
+            ...data,
+            targetFieldName: msg.targetFieldName,
+            targetFieldType: msg.targetFieldType,
+            bandit,
+            createExperimentResponse: undefined,
+            createExperimentError: undefined,
+          };
+        }
         return data;
       },
       isBreadcrumbClickable: ({ bandit }) => bandit !== undefined,
-      hideNavigation: () => true, // nested datasource wizard + Skip button own navigation.
+      // Next needs a complete target if connecting DWH; no DWH lets it through without one.
+      isNextEnabled: (data) => data.dwhMode === 'none' || getMabDwhTarget(data) !== null,
     }),
     'bandit-binary-or-real': screen({
       breadcrumbTitle: 'Outcomes',
