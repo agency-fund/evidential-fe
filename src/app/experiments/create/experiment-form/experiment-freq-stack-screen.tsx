@@ -187,7 +187,7 @@ export const ExperimentFreqStackScreen = ({
           />
         </Card>
 
-        {!data.clusterKey && (
+        {!data.clusterKey && data.experimentType !== 'freq_online' && (
           <>
             <Heading as="h3" size="3">
               Strata
@@ -200,8 +200,9 @@ export const ExperimentFreqStackScreen = ({
               />
             </Card>
           </>
-        )}
-
+        )}     
+          
+        
         {data.experimentType == 'freq_preassigned' && (
           <Flex direction="column" gap={'3'}>
             <Heading as="h3" size="3">
