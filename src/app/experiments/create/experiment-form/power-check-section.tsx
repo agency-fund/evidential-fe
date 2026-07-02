@@ -27,6 +27,7 @@ import { usePowerCheck } from '@/api/admin';
 import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
 import { getPowerAnalysis } from '@/services/experiment-utils';
 import { MetricSampleSizeDisplay } from '@/components/features/experiments/metric-sample-size-display';
+import { MetricPowerAnalysis } from '@/api/methods.schemas';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ZodError } from 'zod';
 import { useState } from 'react';
@@ -43,6 +44,11 @@ interface PowerCheckSectionProps {
   data: ExperimentFormData;
   dispatch: (action: PowerCheckSectionAction | ClusterStatisticsSectionAction) => void;
 }
+
+const metricHasMissingValues = (analysis: MetricPowerAnalysis): boolean => {
+  const { available_n, available_nonnull_n } = analysis.metric_spec;
+  return available_n != null && available_nonnull_n != null && available_n !== available_nonnull_n;
+};
 
 const isPowerCheckButtonEnabled = (isMutating: boolean, data: ExperimentFormData) => {
   const reasons = [];
@@ -157,6 +163,11 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
       ? data.powerCheckResponse.analyses.filter((a) => a.metric_spec.field_name !== primaryMetricFieldName)
       : undefined;
   const primaryPowerClusterSizeCv = primaryPower?.msg?.values?.cluster_size_cv ?? primaryPower?.metric_spec.cv;
+  const primaryHasMissingValues = primaryPower != null && metricHasMissingValues(primaryPower);
+  const metricsWithMissingValues = [
+    ...(primaryPower != null && primaryHasMissingValues ? [`${primaryPower.metric_spec.field_name} (primary)`] : []),
+    ...(restPower ?? []).filter(metricHasMissingValues).map((analysis) => analysis.metric_spec.field_name),
+  ];
 
   return (
     <Flex direction="column" gap={'3'}>
@@ -250,6 +261,28 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                     </Flex>
                   </Box>
                 )}
+                {metricsWithMissingValues.length > 0 ? (
+                  <Box
+                    p="2"
+                    style={{
+                      backgroundColor: 'var(--amber-a3)',
+                      border: '1px solid var(--amber-a5)',
+                      borderRadius: 'var(--radius-3)',
+                    }}
+                  >
+                    <Flex gap="2" align="start">
+                      <Flex flexShrink="0">
+                        <ExclamationTriangleIcon color="var(--amber-11)" />
+                      </Flex>
+                      <Text size="2" color="amber">
+                        Some participants are missing a value for{' '}
+                        {metricsWithMissingValues.length === 1 ? 'this metric' : 'these metrics'}:{' '}
+                        {metricsWithMissingValues.join(', ')}. Estimates assume the values will be filled in — if not,
+                        add a filter to exclude these participants.
+                      </Text>
+                    </Flex>
+                  </Box>
+                ) : null}
               </Flex>
             </Callout.Root>
           )}
@@ -282,7 +315,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                         </DataList.Value>
                       </DataList.Item>
                       <DataList.Item>
-                        <DataList.Label>Available</DataList.Label>
+                        <DataList.Label>{primaryHasMissingValues ? 'All available' : 'Available'}</DataList.Label>
                         <DataList.Value>
                           <MetricSampleSizeDisplay
                             analysis={primaryPower}
@@ -291,16 +324,18 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                           />
                         </DataList.Value>
                       </DataList.Item>
-                      <DataList.Item>
-                        <DataList.Label>Available (non-null)</DataList.Label>
-                        <DataList.Value>
-                          <MetricSampleSizeDisplay
-                            analysis={primaryPower}
-                            isClustered={isClustered}
-                            variant="available-nonnull"
-                          />
-                        </DataList.Value>
-                      </DataList.Item>
+                      {primaryHasMissingValues ? (
+                        <DataList.Item>
+                          <DataList.Label>Available with data</DataList.Label>
+                          <DataList.Value>
+                            <MetricSampleSizeDisplay
+                              analysis={primaryPower}
+                              isClustered={isClustered}
+                              variant="available-nonnull"
+                            />
+                          </DataList.Value>
+                        </DataList.Item>
+                      ) : null}
                       {primaryPower.pct_change_possible !== null && primaryPower.pct_change_possible !== undefined && (
                         <DataList.Item>
                           <DataList.Label>MDE</DataList.Label>
@@ -322,8 +357,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                         <Table.ColumnHeaderCell>Metric</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell></Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell>Required</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell>Available</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell>Available (non-null)</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell>Available with data</Table.ColumnHeaderCell>
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
@@ -345,18 +379,20 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                             />
                           </Table.Cell>
                           <Table.Cell align={'right'}>
-                            <MetricSampleSizeDisplay
-                              analysis={metricAnalysis}
-                              isClustered={isClustered}
-                              variant="available"
-                            />
-                          </Table.Cell>
-                          <Table.Cell align={'right'}>
-                            <MetricSampleSizeDisplay
-                              analysis={metricAnalysis}
-                              isClustered={isClustered}
-                              variant="available-nonnull"
-                            />
+                            {metricHasMissingValues(metricAnalysis) ? (
+                              <Flex direction="column" align="end" gap="0">
+                                <Text>{metricAnalysis.metric_spec.available_nonnull_n?.toLocaleString()}</Text>
+                                <Text size="1" color="gray">
+                                  of {metricAnalysis.metric_spec.available_n?.toLocaleString()}
+                                </Text>
+                              </Flex>
+                            ) : (
+                              <MetricSampleSizeDisplay
+                                analysis={metricAnalysis}
+                                isClustered={isClustered}
+                                variant="available-nonnull"
+                              />
+                            )}
                           </Table.Cell>
                         </Table.Row>
                       ))}

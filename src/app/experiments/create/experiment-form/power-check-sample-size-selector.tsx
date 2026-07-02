@@ -7,7 +7,6 @@ import { PowerCheckDesiredNInput } from './power-check-desired-n-input';
 import { PowerCheckOption } from './experiment-form-types';
 import {
   MetricSampleSizeDisplay,
-  estimateClusterN,
   estimateParticipantNFromClusters,
 } from '@/components/features/experiments/metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -125,10 +124,8 @@ export function PowerCheckSampleSizeSelector({
   const primaryAnalysis = getPowerAnalysis(powerCheckResponse, primaryMetricFieldName);
   const targetN = primaryAnalysis?.target_n ?? undefined;
   const targetNClusters = primaryAnalysis?.num_clusters_total ?? undefined;
-  const nonNullSamples = primaryAnalysis?.metric_spec.available_nonnull_n ?? 0;
   const allSamples = primaryAnalysis?.metric_spec.available_n ?? 0;
   const avgClusterSize = primaryAnalysis?.metric_spec.avg_cluster_size ?? undefined;
-  const nonNullClusters = estimateClusterN(nonNullSamples, avgClusterSize);
   const maxClusters =
     avgClusterSize !== undefined && avgClusterSize > 0 ? Math.floor(allSamples / avgClusterSize) : undefined;
   const clusterInputValue = desiredNClusters !== undefined ? String(desiredNClusters) : '';
@@ -190,26 +187,26 @@ export function PowerCheckSampleSizeSelector({
       case PowerCheckOption.USE_ALL_NON_NULL_SAMPLES:
         useCachedResponse =
           mdePowerCheckResponse !== undefined &&
-          desiredN === nonNullSamples &&
-          (!isClustered || desiredNClusters === nonNullClusters);
+          desiredN === allSamples &&
+          (!isClustered || desiredNClusters === maxClusters);
         onOptionChange({
           sampleSizeOption: option,
-          desiredN: nonNullSamples,
-          desiredNClusters: isClustered ? nonNullClusters : undefined,
+          desiredN: allSamples,
+          desiredNClusters: isClustered ? maxClusters : undefined,
           response: useCachedResponse ? mdePowerCheckResponse : undefined,
         });
         if (!useCachedResponse) {
-          estimateMde(option, nonNullSamples, isClustered ? nonNullClusters : undefined);
+          estimateMde(option, allSamples, isClustered ? maxClusters : undefined);
         }
         break;
       case PowerCheckOption.ENTER_OWN:
-        // Switching away from ENTER_OWN will either keep desiredN set to nonNullSamples or change
+        // Switching away from ENTER_OWN will either keep desiredN set to allSamples or change
         // it away, so switching back to ENTER_OWN will not reuse a stale custom response with the
         // following restricted reuse check.
         useCachedResponse =
           mdePowerCheckResponse !== undefined &&
-          desiredN === nonNullSamples &&
-          (!isClustered || desiredNClusters === nonNullClusters);
+          desiredN === allSamples &&
+          (!isClustered || desiredNClusters === maxClusters);
         onOptionChange({
           sampleSizeOption: option,
           desiredN: desiredN,
@@ -296,15 +293,15 @@ export function PowerCheckSampleSizeSelector({
           </RadioCards.Item>
           <RadioCards.Item
             value={PowerCheckOption.USE_ALL_NON_NULL_SAMPLES}
-            disabled={nonNullSamples === undefined || nonNullSamples === 0}
+            disabled={allSamples === undefined || allSamples === 0}
           >
             <Flex align="center" direction="column" gap="2">
-              <Text size="2">Use all non-null samples:</Text>
+              <Text size="2">Use all available samples:</Text>
               <Flex height="32px" align="center">
                 <MetricSampleSizeDisplay
                   analysis={primaryAnalysis}
                   isClustered={isClustered}
-                  variant="available-nonnull"
+                  variant="available"
                   align="center"
                 />
               </Flex>
