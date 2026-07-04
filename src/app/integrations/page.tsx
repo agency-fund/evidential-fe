@@ -10,19 +10,7 @@ import {
   useRegenerateTurnWebhookToken,
 } from '@/api/admin-third-party-tools-integrations';
 import { mutate } from 'swr';
-import {
-  Box,
-  Heading,
-  Flex,
-  Spinner,
-  Text,
-  Button,
-  Code,
-  Tooltip,
-  IconButton,
-  Grid,
-  Separator,
-} from '@radix-ui/themes';
+import { Box, Heading, Flex, Spinner, Text, Button, Code, Tooltip, IconButton, Grid } from '@radix-ui/themes';
 import { DeleteAlertDialog } from '@/components/ui/delete-alert-dialog';
 import { SetApiKeyAlertDialog } from '@/components/features/integrations/set-api-key-alert-dialog';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
@@ -56,11 +44,7 @@ export default function IntegrationsPage() {
     },
   });
 
-  const {
-    trigger: regenerateTurnWebhookToken,
-    isMutating: isRegeneratingTurnWebhookToken,
-    error: regenerateTurnWebhookTokenError,
-  } = useRegenerateTurnWebhookToken(
+  const { trigger: regenerateTurnWebhookToken } = useRegenerateTurnWebhookToken(
     organizationId,
     { allow_missing: false },
     {
@@ -70,7 +54,7 @@ export default function IntegrationsPage() {
     },
   );
 
-  const tokenPreview = turnConnectionData?.token_preview ?? '';
+  const tokenPreview = turnConnectionData?.auth_token ?? '';
 
   const handleAddOrRotateTurnConnection = async (newApiKey: string) => {
     await setTurnConnection({ turn_api_token: newApiKey });
@@ -125,12 +109,9 @@ export default function IntegrationsPage() {
                       >
                         <Flex align="center" gap="2">
                           <Flex align="center" style={{ width: '100%' }}>
-                            <Text>{turnConnectionData?.webhook_id}</Text>
+                            <Text>{turnConnectionData?.id}</Text>
                           </Flex>
-                          <CopyToClipBoard
-                            tooltipContent="Copy webhook ID"
-                            content={turnConnectionData?.webhook_id || ''}
-                          />
+                          <CopyToClipBoard tooltipContent="Copy webhook ID" content={turnConnectionData?.id || ''} />
                         </Flex>
                       </Box>
                     </Flex>
@@ -151,7 +132,7 @@ export default function IntegrationsPage() {
                         <Flex align="center" gap="2">
                           <Flex align="center" style={{ width: '100%' }}>
                             <Code variant="ghost">
-                              {isWebhookTokenVisible ? turnConnectionData?.webhook_auth_token : '••••••••••••••••'}
+                              {isWebhookTokenVisible ? turnConnectionData?.auth_token : '••••••••••••••••'}
                             </Code>
                           </Flex>
                           <IconButton
@@ -178,7 +159,7 @@ export default function IntegrationsPage() {
                           </IconButton>
                           <CopyToClipBoard
                             tooltipContent="Copy auth token"
-                            content={turnConnectionData?.webhook_auth_token || ''}
+                            content={turnConnectionData?.auth_token || ''}
                           />
                         </Flex>
                       </Box>

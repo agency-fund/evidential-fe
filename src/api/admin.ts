@@ -12,7 +12,7 @@ import type { SWRMutationConfiguration } from "swr/mutation";
 
 import type {
 	AddMemberToOrganizationRequest,
-	AddWebhookToOrganizationRequest,
+	AddWebhookToOrganizationBody,
 	AddWebhookToOrganizationResponse,
 	AnalyzeExperimentParams,
 	CMABContextInputRequest,
@@ -1023,7 +1023,7 @@ export const getAddWebhookToOrganizationUrl = (organizationId: string) => {
 
 export const addWebhookToOrganization = async (
 	organizationId: string,
-	addWebhookToOrganizationRequest: AddWebhookToOrganizationRequest,
+	addWebhookToOrganizationBody: AddWebhookToOrganizationBody,
 	options?: RequestInit,
 ): Promise<AddWebhookToOrganizationResponse> => {
 	return orvalFetch<AddWebhookToOrganizationResponse>(
@@ -1032,7 +1032,7 @@ export const addWebhookToOrganization = async (
 			...options,
 			method: "POST",
 			headers: { "Content-Type": "application/json", ...options?.headers },
-			body: JSON.stringify(addWebhookToOrganizationRequest),
+			body: JSON.stringify(addWebhookToOrganizationBody),
 		},
 	);
 };
@@ -1041,7 +1041,7 @@ export const getAddWebhookToOrganizationMutationFetcher = (
 	organizationId: string,
 	options?: SecondParameter<typeof orvalFetch>,
 ) => {
-	return (_: Key, { arg }: { arg: AddWebhookToOrganizationRequest }) => {
+	return (_: Key, { arg }: { arg: AddWebhookToOrganizationBody }) => {
 		return addWebhookToOrganization(organizationId, arg, options);
 	};
 };
@@ -1065,7 +1065,7 @@ export const useAddWebhookToOrganization = <
 			Awaited<ReturnType<typeof addWebhookToOrganization>>,
 			TError,
 			Key,
-			AddWebhookToOrganizationRequest,
+			AddWebhookToOrganizationBody,
 			Awaited<ReturnType<typeof addWebhookToOrganization>>
 		> & { swrKey?: string };
 		request?: SecondParameter<typeof orvalFetch>;

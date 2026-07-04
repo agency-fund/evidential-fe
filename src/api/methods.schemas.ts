@@ -4,67 +4,46 @@
  * Evidential Experiments API
  * OpenAPI spec version: 0.9.0
  */
+export type AddExperimentCreatedWebhookRequestDirection =
+	(typeof AddExperimentCreatedWebhookRequestDirection)[keyof typeof AddExperimentCreatedWebhookRequestDirection];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const AddExperimentCreatedWebhookRequestDirection = {
+	inbound: "inbound",
+	outbound: "outbound",
+} as const;
+
+export type AddExperimentCreatedWebhookRequestUrl = string | null;
+
+export interface AddExperimentCreatedWebhookRequest {
+	type?: "experiment.created";
+	direction?: AddExperimentCreatedWebhookRequestDirection;
+	/** @maxLength 100 */
+	name: string;
+	url: AddExperimentCreatedWebhookRequestUrl;
+}
+
 export interface AddMemberToOrganizationRequest {
 	email: string;
 }
 
-export type AddWebhookToOrganizationRequestDirection =
-	(typeof AddWebhookToOrganizationRequestDirection)[keyof typeof AddWebhookToOrganizationRequestDirection];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const AddWebhookToOrganizationRequestDirection = {
-	inbound: "inbound",
-	outbound: "outbound",
-} as const;
-
-export type AddWebhookToOrganizationRequestType =
-	(typeof AddWebhookToOrganizationRequestType)[keyof typeof AddWebhookToOrganizationRequestType];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const AddWebhookToOrganizationRequestType = {
-	experimentcreated: "experiment.created",
-	turnjourneys_changed: "turn.journeys_changed",
-} as const;
-
-export type AddWebhookToOrganizationRequestUrl = string | null;
-
-export interface AddWebhookToOrganizationRequest {
-	direction?: AddWebhookToOrganizationRequestDirection;
-	type: AddWebhookToOrganizationRequestType;
+export interface AddTurnJourneysChangedWebhookRequest {
+	type?: "turn.journeys_changed";
+	direction?: "inbound";
 	/** @maxLength 100 */
 	name: string;
-	url: AddWebhookToOrganizationRequestUrl;
 }
-
-export type AddWebhookToOrganizationResponseDirection =
-	(typeof AddWebhookToOrganizationResponseDirection)[keyof typeof AddWebhookToOrganizationResponseDirection];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const AddWebhookToOrganizationResponseDirection = {
-	inbound: "inbound",
-	outbound: "outbound",
-} as const;
-
-export type AddWebhookToOrganizationResponseType =
-	(typeof AddWebhookToOrganizationResponseType)[keyof typeof AddWebhookToOrganizationResponseType];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const AddWebhookToOrganizationResponseType = {
-	experimentcreated: "experiment.created",
-	turnjourneys_changed: "turn.journeys_changed",
-} as const;
 
 export type AddWebhookToOrganizationResponseUrl = string | null;
 
 export type AddWebhookToOrganizationResponseAuthToken = string | null;
 
 export interface AddWebhookToOrganizationResponse {
-	direction?: AddWebhookToOrganizationResponseDirection;
-	type: AddWebhookToOrganizationResponseType;
-	/** @maxLength 100 */
-	name: string;
-	url: AddWebhookToOrganizationResponseUrl;
 	id: string;
+	type: string;
+	direction: string;
+	name: string;
+	url?: AddWebhookToOrganizationResponseUrl;
 	auth_token: AddWebhookToOrganizationResponseAuthToken;
 }
 
@@ -971,10 +950,18 @@ export interface GetTurnArmJourneyMappingResponse {
 	stale_arm_ids: string[];
 }
 
+export type GetTurnConnectionResponseUrl = string | null;
+
+export type GetTurnConnectionResponseAuthToken = string | null;
+
 export interface GetTurnConnectionResponse {
-	token_preview: string;
-	webhook_id: string;
-	webhook_auth_token: string;
+	id: string;
+	type: string;
+	direction: string;
+	name: string;
+	url?: GetTurnConnectionResponseUrl;
+	auth_token: GetTurnConnectionResponseAuthToken;
+	turn_api_token_preview: string;
 }
 
 export interface GetTurnJourneysResponse {
@@ -1721,35 +1708,16 @@ export interface ValidationError {
 	ctx?: ValidationErrorCtx;
 }
 
-export type WebhookSummaryDirection =
-	(typeof WebhookSummaryDirection)[keyof typeof WebhookSummaryDirection];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const WebhookSummaryDirection = {
-	inbound: "inbound",
-	outbound: "outbound",
-} as const;
-
-export type WebhookSummaryType =
-	(typeof WebhookSummaryType)[keyof typeof WebhookSummaryType];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const WebhookSummaryType = {
-	experimentcreated: "experiment.created",
-	turnjourneys_changed: "turn.journeys_changed",
-} as const;
-
 export type WebhookSummaryUrl = string | null;
 
 export type WebhookSummaryAuthToken = string | null;
 
 export interface WebhookSummary {
-	direction?: WebhookSummaryDirection;
-	type: WebhookSummaryType;
-	/** @maxLength 100 */
-	name: string;
-	url: WebhookSummaryUrl;
 	id: string;
+	type: string;
+	direction: string;
+	name: string;
+	url?: WebhookSummaryUrl;
 	auth_token: WebhookSummaryAuthToken;
 }
 
@@ -1830,6 +1798,10 @@ export const ListOrganizationsScope = {
 	mine: "mine",
 	all: "all",
 } as const;
+
+export type AddWebhookToOrganizationBody =
+	| AddExperimentCreatedWebhookRequest
+	| AddTurnJourneysChangedWebhookRequest;
 
 export type DeleteWebhookFromOrganizationParams = {
 	allow_missing?: boolean;

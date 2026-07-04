@@ -87,6 +87,7 @@ export function AddWebhookDialog({ organizationId, open, onOpenChange }: AddWebh
             <WebhookInfoContent
               webhook={{
                 id: webhookResponse.id,
+                direction: webhookResponse.direction,
                 type: webhookResponse.type,
                 name: webhookResponse.name,
                 url: webhookResponse.url,
