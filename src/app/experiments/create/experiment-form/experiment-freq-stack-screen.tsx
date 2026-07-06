@@ -187,7 +187,7 @@ export const ExperimentFreqStackScreen = ({
           />
         </Card>
 
-        {!data.clusterKey && (
+        {!data.clusterKey && data.experimentType !== 'freq_online' && (
           <>
             <Heading as="h3" size="3">
               Strata
