@@ -200,7 +200,7 @@ export const ExperimentFreqStackScreen = ({
               />
             </Card>
           </>
-        )}     
+        )}
         {data.experimentType == 'freq_preassigned' && (
           <Flex direction="column" gap={'3'}>
             <Heading as="h3" size="3">
