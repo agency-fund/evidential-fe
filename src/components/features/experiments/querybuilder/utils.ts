@@ -45,69 +45,20 @@ export function applyMissingValuesOption(filter: Filter, option: MissingValuesOp
     return { ...filter, relation: 'includes', value: [null] as Filter['value'] };
   }
   const base = filter.relation === 'between' ? filter.value.slice(0, 2) : filter.value.filter((v) => v !== null);
+  const hasPredicate = base.some((v) => v !== null);
+  if (!hasPredicate) {
+    // No value predicate ("No condition"): express presence alone.
+    // 'has-value' -> IS NOT NULL; 'any' -> match everyone (no filter).
+    return { ...filter, relation: 'excludes', value: (option === 'has-value' ? [null] : []) as Filter['value'] };
+  }
   const wantMissing = option === 'any' ? filter.relation !== 'excludes' : filter.relation === 'excludes';
   return { ...filter, value: (wantMissing ? [...base, null] : base) as Filter['value'] };
 }
 
-// New filters default to "with or without a value", so missing values are included until the user
-// narrows them out.
-export function getDefaultFilterForType(fieldName: string, dataType: DataType): Filter {
-  return applyMissingValuesOption(defaultPredicateForType(fieldName, dataType), 'any');
-}
-
-// The bare value predicate for a field type, before missing-values handling is applied.
-function defaultPredicateForType(fieldName: string, dataType: DataType): Filter {
-  switch (dataType) {
-    case 'boolean':
-      return {
-        field_name: fieldName,
-        relation: 'includes',
-        value: [true],
-      };
-
-    case 'bigint':
-      return {
-        field_name: fieldName,
-        relation: 'includes',
-        value: ['0'], // Ensure this is a number, not a string
-      };
-
-    case 'integer':
-      return {
-        field_name: fieldName,
-        relation: 'includes',
-        value: [0], // Ensure this is a number, not a string
-      };
-
-    case 'double precision':
-    case 'numeric':
-      return {
-        field_name: fieldName,
-        relation: 'between',
-        value: [0.0, null], // Ensure this is a number, not a string
-      };
-
-    case 'date':
-    case 'timestamp without time zone':
-      return {
-        field_name: fieldName,
-        relation: 'includes',
-        value: [formatDateUtcYYYYMMDD(new Date())],
-      };
-
-    case 'character varying':
-    case 'json':
-    case 'jsonb':
-    case 'timestamp with time zone':
-    case 'unknown':
-    case 'uuid':
-    default:
-      return {
-        field_name: fieldName,
-        relation: 'includes',
-        value: [''],
-      };
-  }
+// New filters start with no condition (missing values still included), so a fresh row filters
+// nothing until the user adds a condition or changes the missing-values option.
+export function getDefaultFilterForType(fieldName: string): Filter {
+  return { field_name: fieldName, relation: 'excludes', value: [] };
 }
 
 // Convert user-friendly operator to API relation

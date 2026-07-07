@@ -2,7 +2,6 @@
 
 import { Flex, Grid, IconButton, Text } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
-import { useState } from 'react';
 import { DataType, Filter } from '@/api/methods.schemas';
 import { TypeSpecificFilter } from '@/components/features/experiments/querybuilder/type-specific-filter-input';
 import { MissingValuesSelect } from '@/components/features/experiments/querybuilder/missing-values-select';
@@ -46,20 +45,14 @@ const ComboboxRow = ({ field_name, data_type }: ComboboxRowProps) => {
 };
 
 export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpdate, onRemove }: FilterRowProps) {
-  // Remembers the value predicate while "Is missing" is selected, so switching back restores it.
-  const [stashedFilter, setStashedFilter] = useState<Filter | null>(null);
-
   const exactMatchField = availableOptions.find((f) => f.field_name === filter.field_name);
   const missingValuesOption = getMissingValuesOption(filter);
 
   const handleMissingValuesChange = (option: MissingValuesOption) => {
-    if (option === 'is-missing') {
-      setStashedFilter(filter);
-      onUpdate(applyMissingValuesOption(filter, 'is-missing'));
-      return;
-    }
-    // Leaving "Is missing": rebuild from the stashed predicate if we have one.
-    const baseFilter = missingValuesOption === 'is-missing' && stashedFilter ? stashedFilter : filter;
+    // Leaving "Is missing" starts from a clean, no-condition predicate (its value was irrelevant),
+    // so the row returns to the neutral "Add a condition" default.
+    const baseFilter =
+      missingValuesOption === 'is-missing' ? { ...filter, relation: 'includes' as const, value: [] } : filter;
     onUpdate(applyMissingValuesOption(baseFilter, option));
   };
 

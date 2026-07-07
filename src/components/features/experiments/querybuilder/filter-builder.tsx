@@ -57,8 +57,10 @@ export function FilterBuilder({ availableFields, initialFilters, onChange }: Fil
   });
 
   const commitFilters = (filtersWithIds: FilterWithId[]) => {
-    // Strip the IDs before passing to parent.
-    onChange(filtersWithIds.map((item) => item.filter));
+    // Strip the IDs before passing to parent, and drop rows that don't constrain anything: an
+    // unselected field or "no condition" + "with or without a value" both have an empty value list,
+    // match everyone, and are rejected by the API. They stay in the UI but aren't sent.
+    onChange(filtersWithIds.map((item) => item.filter).filter((f) => f.value.length > 0));
   };
 
   const addFilter = (e: React.MouseEvent) => {
@@ -137,7 +139,7 @@ export function FilterBuilder({ availableFields, initialFilters, onChange }: Fil
             isNewRow={index === filtersWithIds.length - 1 && filter.field_name === ''}
             onSelect={(selectedOption) => {
               // Reset the filter with appropriate defaults for the new field type
-              const defaultFilter = getDefaultFilterForType(selectedOption.field_name, selectedOption.data_type);
+              const defaultFilter = getDefaultFilterForType(selectedOption.field_name);
               updateFilter(id, defaultFilter);
             }}
             onUpdate={(updatedFilter) => updateFilter(id, updatedFilter)}

@@ -20,6 +20,7 @@ export interface StringFilterProps {
 export function StringFilter({ filter, onChange, dataType }: StringFilterProps) {
   // Initialize operator state based on filter configuration
   const [operator, setOperator] = useState(() => {
+    if (!filter.value.some((v) => v !== null)) return 'none';
     if (filter.relation === 'excludes') {
       return 'not-in-list';
     }
@@ -29,6 +30,10 @@ export function StringFilter({ filter, onChange, dataType }: StringFilterProps) 
 
   const handleOperatorChange = (newOperator: string) => {
     setOperator(newOperator);
+    if (newOperator === 'none') {
+      onChange({ ...filter, relation: 'includes', value: [] });
+      return;
+    }
     const relation = operatorToRelation(newOperator);
     const defaultValue = createDefaultValueForOperator(newOperator, dataType);
 
@@ -73,6 +78,7 @@ export function StringFilter({ filter, onChange, dataType }: StringFilterProps) 
   };
 
   const renderValueInputs = () => {
+    if (operator === 'none') return null;
     const nonNullValues = filter.value.filter((v) => v !== null);
 
     return (
@@ -101,9 +107,10 @@ export function StringFilter({ filter, onChange, dataType }: StringFilterProps) 
 
   return (
     <Flex gap="2" wrap="wrap">
-      <Select.Root value={operator} onValueChange={handleOperatorChange}>
-        <Select.Trigger style={{ width: 128 }} />
+      <Select.Root value={operator === 'none' ? undefined : operator} onValueChange={handleOperatorChange}>
+        <Select.Trigger style={{ width: 160 }} placeholder="Add a condition…" />
         <Select.Content>
+          <Select.Item value="none">No condition</Select.Item>
           <Select.Item value="in-list">Is one of</Select.Item>
           <Select.Item value="not-in-list">is not one of</Select.Item>
         </Select.Content>
