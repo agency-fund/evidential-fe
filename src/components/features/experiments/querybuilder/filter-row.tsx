@@ -2,8 +2,15 @@
 
 import { Flex, Grid, IconButton, Text } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
+import { useState } from 'react';
 import { DataType, Filter } from '@/api/methods.schemas';
 import { TypeSpecificFilter } from '@/components/features/experiments/querybuilder/type-specific-filter-input';
+import { MissingValuesSelect } from '@/components/features/experiments/querybuilder/missing-values-select';
+import {
+  applyMissingValuesOption,
+  getMissingValuesOption,
+  MissingValuesOption,
+} from '@/components/features/experiments/querybuilder/utils';
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
 import { Combobox } from '@/components/ui/combobox';
 
@@ -39,7 +46,28 @@ const ComboboxRow = ({ field_name, data_type }: ComboboxRowProps) => {
 };
 
 export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpdate, onRemove }: FilterRowProps) {
+  // Remembers the value predicate while "Is missing" is selected, so switching back restores it.
+  const [stashedFilter, setStashedFilter] = useState<Filter | null>(null);
+
   const exactMatchField = availableOptions.find((f) => f.field_name === filter.field_name);
+  const missingValuesOption = getMissingValuesOption(filter);
+
+  const handleMissingValuesChange = (option: MissingValuesOption) => {
+    if (option === 'is-missing') {
+      setStashedFilter(filter);
+      onUpdate(applyMissingValuesOption(filter, 'is-missing'));
+      return;
+    }
+    // Leaving "Is missing": rebuild from the stashed predicate if we have one.
+    const baseFilter = missingValuesOption === 'is-missing' && stashedFilter ? stashedFilter : filter;
+    onUpdate(applyMissingValuesOption(baseFilter, option));
+  };
+
+  // The type-specific inputs manage only the value predicate; FilterRow re-applies the current
+  // missing-values choice so the NULL stays consistent whenever the predicate changes.
+  const handlePredicateChange = (predicateFilter: Filter) => {
+    onUpdate(applyMissingValuesOption(predicateFilter, missingValuesOption));
+  };
 
   const handleComboboxChange = (value: string) => {
     // User selected the current value.
@@ -87,9 +115,18 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
       </Flex>
 
       {/* Filter options for the selected filter field or help text */}
-      <Flex gap={'2'} align={'center'}>
+      <Flex direction={'column'} gap={'2'} align={'start'}>
         {exactMatchField ? (
-          <TypeSpecificFilter dataType={exactMatchField.data_type} filter={filter} onChange={onUpdate} />
+          <>
+            <MissingValuesSelect value={missingValuesOption} onChange={handleMissingValuesChange} />
+            {missingValuesOption !== 'is-missing' ? (
+              <TypeSpecificFilter
+                dataType={exactMatchField.data_type}
+                filter={filter}
+                onChange={handlePredicateChange}
+              />
+            ) : null}
+          </>
         ) : filter.field_name === '' ? (
           <Text size="2" color="gray">
             ← Select a field or type the name

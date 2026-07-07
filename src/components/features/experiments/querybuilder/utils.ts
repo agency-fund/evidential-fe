@@ -10,8 +10,53 @@ export const BETWEEN_WITH_NULL_LENGTH = 3;
 export type SingleTypeArray<T> = Array<T | null>;
 export type TypedFilter<T> = Filter & { value: SingleTypeArray<T> };
 
-// Get default filter configuration for a given field type
+// How a filter treats participants that are missing a value for the field.
+export type MissingValuesOption = 'any' | 'has-value' | 'is-missing';
+
+// Whether a filter's value array carries the "missing" NULL. For between-based operators the
+// missing NULL only lives at the third position; positional NULLs at 0/1 are open bounds, not
+// missing markers.
+function filterIncludesMissing(filter: Filter): boolean {
+  if (filter.relation === 'between') {
+    return filter.value.length === BETWEEN_WITH_NULL_LENGTH && filter.value[filter.value.length - 1] === null;
+  }
+  return filter.value.includes(null);
+}
+
+// Read the current missing-values option off a filter. NULL means opposite things per relation:
+// on `includes`/`between` a present NULL includes missing rows; on `excludes` a present NULL
+// excludes them (see the backend query constructors), so the mapping is relation-aware.
+export function getMissingValuesOption(filter: Filter): MissingValuesOption {
+  if (filter.relation === 'includes' && filter.value.length === 1 && filter.value[0] === null) {
+    return 'is-missing';
+  }
+  const includesMissing = filterIncludesMissing(filter);
+  if (filter.relation === 'excludes') {
+    return includesMissing ? 'has-value' : 'any';
+  }
+  return includesMissing ? 'any' : 'has-value';
+}
+
+// Apply a missing-values option to a filter, returning a new filter with the NULL added or removed
+// so it compiles to the intended SQL regardless of the operator. Callers that also need to restore
+// a hidden predicate after leaving 'is-missing' must stash it separately (the value is replaced here).
+export function applyMissingValuesOption(filter: Filter, option: MissingValuesOption): Filter {
+  if (option === 'is-missing') {
+    return { ...filter, relation: 'includes', value: [null] as Filter['value'] };
+  }
+  const base = filter.relation === 'between' ? filter.value.slice(0, 2) : filter.value.filter((v) => v !== null);
+  const wantMissing = option === 'any' ? filter.relation !== 'excludes' : filter.relation === 'excludes';
+  return { ...filter, value: (wantMissing ? [...base, null] : base) as Filter['value'] };
+}
+
+// New filters default to "with or without a value", so missing values are included until the user
+// narrows them out.
 export function getDefaultFilterForType(fieldName: string, dataType: DataType): Filter {
+  return applyMissingValuesOption(defaultPredicateForType(fieldName, dataType), 'any');
+}
+
+// The bare value predicate for a field type, before missing-values handling is applied.
+function defaultPredicateForType(fieldName: string, dataType: DataType): Filter {
   switch (dataType) {
     case 'boolean':
       return {
