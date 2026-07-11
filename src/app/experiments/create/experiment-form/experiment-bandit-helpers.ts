@@ -130,10 +130,11 @@ export const toCmabBanditParams = (
 });
 
 export const createDefaultBanditParams = (experimentType: BanditExperimentType): BanditParams => {
-  if (experimentType === 'mab_online') {
-    return toMabBanditParams('binary', getDefaultBanditArms('beta'));
+  // Flipped from checking mab_online so mab_online_dwh gets MAB defaults, not CMAB ones.
+  if (experimentType === 'cmab_online') {
+    return toCmabBanditParams('real', getDefaultBanditArms('normal'), getDefaultContexts());
   }
-  return toCmabBanditParams('real', getDefaultBanditArms('normal'), getDefaultContexts());
+  return toMabBanditParams('binary', getDefaultBanditArms('beta'));
 };
 
 export const toBanditParamsForExperimentType = (
@@ -145,6 +146,7 @@ export const toBanditParamsForExperimentType = (
   }
   switch (experimentType) {
     case 'mab_online':
+    case 'mab_online_dwh':
       return toMabBanditParams(current.outcomeType, current.arms);
     case 'cmab_online':
       return toCmabBanditParams(current.outcomeType, getDefaultBanditArms('normal'), getDefaultContexts());

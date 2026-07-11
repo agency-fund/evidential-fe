@@ -24,7 +24,7 @@ export type Context = {
 };
 export type PriorType = MABExperimentSpec['prior_type'];
 export type FormOutcomeType = 'binary' | 'real';
-export type BanditExperimentType = 'mab_online' | 'cmab_online';
+export type BanditExperimentType = 'mab_online' | 'mab_online_dwh' | 'cmab_online';
 
 // Sample-size selection mode on the Power Analysis screen (power-check-section).
 export enum PowerCheckOption {
