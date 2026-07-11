@@ -264,6 +264,9 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           };
         }
         if (msg.type === 'set-primary-key') {
+          if (data.targetFieldName === msg.primaryKey) {
+            return { ...data, primaryKey: msg.primaryKey, targetFieldName: undefined, targetFieldType: undefined };
+          }
           return { ...data, primaryKey: msg.primaryKey };
         }
         if (msg.type === 'set-target-field') {
