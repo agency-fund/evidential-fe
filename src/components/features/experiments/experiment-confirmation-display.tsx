@@ -8,6 +8,7 @@ import {
   isCmabSpec,
   isFreqPreassignedSpec,
   isFrequentistSpec,
+  isMabDwhSpec,
 } from '@/services/experiment-utils';
 import { MetricDisplay, MetricsSection } from '@/components/features/experiments/sections/metrics-section';
 import { ExperimentDescriptionSection } from '@/components/features/experiments/sections/experiment-description-section';
@@ -53,6 +54,7 @@ export function ExperimentConfirmationDisplay({
   const isFreqPreassigned = isFreqPreassignedSpec(designSpec);
   const isBandit = isBanditSpec(designSpec);
   const isCmab = isCmabSpec(designSpec);
+  const isMabDwh = isMabDwhSpec(designSpec);
   const clusterKey = isClusteredPreassignedSpec(designSpec) ? (designSpec.cluster_key ?? undefined) : undefined;
 
   // Extract frequentist-specific properties (confidence/power/filters/strata)
@@ -104,6 +106,14 @@ export function ExperimentConfirmationDisplay({
               />
             )}
           </>
+        )}
+        {isMabDwh && (
+          <DatasourceTargetingSection
+            tableName={designSpec.table_name}
+            primaryKey={designSpec.primary_key}
+            targetField={designSpec.target_field_name}
+            onEditDatasource={onEditDatasource}
+          />
         )}
         {isBandit && (
           <OutcomesPriorSection priorType={priorType} rewardType={rewardType} onEdit={onEditOutcomesPrior} />
