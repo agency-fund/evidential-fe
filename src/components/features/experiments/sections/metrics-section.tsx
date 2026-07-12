@@ -12,7 +12,7 @@ export interface MetricDisplay {
   data_type: DataType;
   mde: string | number;
   estimatedMde?: string | number | null;
-  hasMissingValues?: boolean;
+  hasMissingValues: boolean;
 }
 
 export interface MetricsSectionProps {

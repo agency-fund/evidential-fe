@@ -26,7 +26,7 @@ const MDE_COPY: Record<MdeKind, { label: string; tooltip: string }> = {
 };
 
 const MISSING_VALUES_NOTE =
-  'Some participants are missing values for this metric. This MDE assumes they will be filled in during the experiment; otherwise the experiment can only detect a larger effect.';
+  "Some participants are missing values for this metric. This MDE assumes they will be filled in during the experiment; otherwise the experiment can only reliably detect effects larger than what's shown.";
 
 export function MdeBadge({ value, size = '2', kind = 'target', hasMissingValues = false }: MdeBadgeProps) {
   const displayValue = value === null || value === undefined ? 'unknown' : String(value);

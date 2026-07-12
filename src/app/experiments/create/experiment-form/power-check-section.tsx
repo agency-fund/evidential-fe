@@ -252,7 +252,8 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                     </Callout.Icon>
                     <Callout.Text>
                       Some participants are missing a value for: {metricsWithMissingValues.join(', ')}. Estimates assume
-                      the values will be filled in — if not, add a filter to exclude these participants.
+                      that these participants will receive a value during the experiment. If you&apos;re unsure, add a
+                      filter to exclude these participants.
                     </Callout.Text>
                   </Callout.Root>
                 ) : null}
@@ -330,6 +331,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                         <Table.ColumnHeaderCell>Metric</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell></Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell>Required</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell>Available</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell>Available with values</Table.ColumnHeaderCell>
                       </Table.Row>
                     </Table.Header>
@@ -352,20 +354,18 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                             />
                           </Table.Cell>
                           <Table.Cell align={'right'}>
-                            {metricHasMissingValues(metricAnalysis) ? (
-                              <Flex direction="column" align="end" gap="0">
-                                <Text>{metricAnalysis.metric_spec.available_nonnull_n?.toLocaleString()}</Text>
-                                <Text size="1" color="gray">
-                                  of {metricAnalysis.metric_spec.available_n?.toLocaleString()}
-                                </Text>
-                              </Flex>
-                            ) : (
-                              <MetricSampleSizeDisplay
-                                analysis={metricAnalysis}
-                                isClustered={isClustered}
-                                variant="available-nonnull"
-                              />
-                            )}
+                            <MetricSampleSizeDisplay
+                              analysis={metricAnalysis}
+                              isClustered={isClustered}
+                              variant="available"
+                            />
+                          </Table.Cell>
+                          <Table.Cell align={'right'}>
+                            <MetricSampleSizeDisplay
+                              analysis={metricAnalysis}
+                              isClustered={isClustered}
+                              variant="available-nonnull"
+                            />
                           </Table.Cell>
                         </Table.Row>
                       ))}

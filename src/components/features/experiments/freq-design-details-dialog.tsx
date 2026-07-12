@@ -12,7 +12,7 @@ import {
 } from '@/api/methods.schemas';
 import { MetricDisplay, MetricsSection } from '@/components/features/experiments/sections/metrics-section';
 import { PowerBalanceSection } from '@/components/features/experiments/sections/power-balance-section';
-import { isClusteredPreassignedSpec } from '@/services/experiment-utils';
+import { isClusteredPreassignedSpec, metricHasMissingValues } from '@/services/experiment-utils';
 
 interface DesignDetailsDialogProps {
   designSpec: AnyFrequentistDesignSpec;
@@ -36,6 +36,9 @@ export function FreqDesignDetailsDialog({
   const estimatedMdeByField = new Map(
     (powerAnalyses ?? []).map((analysis) => [analysis.metric_spec.field_name, analysis.pct_change_with_desired_n]),
   );
+  const missingValuesByField = new Map(
+    (powerAnalyses ?? []).map((analysis) => [analysis.metric_spec.field_name, metricHasMissingValues(analysis)]),
+  );
   const toMetricDisplay = (fieldName: string, mdePct: number | null | undefined): MetricDisplay => {
     const estimatedRaw = estimatedMdeByField.get(fieldName);
     return {
@@ -43,6 +46,7 @@ export function FreqDesignDetailsDialog({
       data_type: fieldTypeByName.get(fieldName) ?? DataType.unknown,
       mde: toMdePercent(mdePct),
       estimatedMde: estimatedRaw != null ? (estimatedRaw * 100).toFixed(1) : null,
+      hasMissingValues: missingValuesByField.get(fieldName) ?? false,
     };
   };
 
