@@ -152,13 +152,14 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         if (msg.type === 'set-experiment-type') {
           const experimentType = msg.value;
           const stillMab = isMabExperimentType(experimentType);
+          const shouldClearDatasourceFields =
+            isBanditExperimentType(data.experimentType) != isBanditExperimentType(experimentType);
           const nextData = {
             ...data,
             experimentType,
-            datasourceId:
-              isBanditExperimentType(data.experimentType) != isBanditExperimentType(experimentType)
-                ? undefined
-                : data.datasourceId,
+            datasourceId: shouldClearDatasourceFields ? undefined : data.datasourceId,
+            tableName: shouldClearDatasourceFields ? undefined : data.tableName,
+            primaryKey: shouldClearDatasourceFields ? undefined : data.primaryKey,
             dwhMode: stillMab ? data.dwhMode : undefined,
             targetFieldName: stillMab ? data.targetFieldName : undefined,
             targetFieldType: stillMab ? data.targetFieldType : undefined,
