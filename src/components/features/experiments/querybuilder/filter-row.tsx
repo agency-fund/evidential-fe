@@ -114,6 +114,7 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
             <MissingValuesSelect value={missingValuesOption} onChange={handleMissingValuesChange} />
             {missingValuesOption !== 'is-missing' ? (
               <TypeSpecificFilter
+                key={exactMatchField.field_name}
                 dataType={exactMatchField.data_type}
                 filter={filter}
                 onChange={handlePredicateChange}

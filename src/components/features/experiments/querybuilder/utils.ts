@@ -55,10 +55,10 @@ export function applyMissingValuesOption(filter: Filter, option: MissingValuesOp
   return { ...filter, value: (wantMissing ? [...base, null] : base) as Filter['value'] };
 }
 
-// New filters start with no condition (missing values still included), so a fresh row filters
-// nothing until the user adds a condition or changes the missing-values option.
+// New filters default to "Has a value" (IS NOT NULL): adding a filter excludes rows missing a
+// value for the field, matching the previous behavior — but now shown explicitly in the dropdown.
 export function getDefaultFilterForType(fieldName: string): Filter {
-  return { field_name: fieldName, relation: 'excludes', value: [] };
+  return { field_name: fieldName, relation: 'excludes', value: [null] };
 }
 
 // Convert user-friendly operator to API relation
