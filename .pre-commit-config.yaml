@@ -42,3 +42,7 @@ repos:
           - mdformat-gfm-alerts
           - mdformat-ruff
           - mdformat-toc
+  - repo: https://github.com/betterleaks/betterleaks
+    rev: v1.3.1
+    hooks:
+      - id: betterleaks
