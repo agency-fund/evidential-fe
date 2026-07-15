@@ -1,0 +1,16 @@
+[extend]
+
+[[rules]]
+id = "xata-api-key"
+description = "Xata API Key"
+regex = '''xat_[a-zA-Z0-9]{20,}'''
+keywords = ["xat_"]
+
+[allowlist]
+paths = [
+  '''src/services/gcp-schema\.ts$''',
+  '''Taskfile\.yml$''',
+  '''Dockerfile\.railway$''',
+  '''\.betterleaks\.toml$''',
+  '''\.pre-commit-config\.yaml$''',
+]
