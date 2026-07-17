@@ -66,11 +66,6 @@ const getNextDisabledReasons = (data: ExperimentFormData): string[] => {
       return reasons;
     }
 
-    // Must have selected a sample size for pre-assigned frequentist experiment
-    if (data.desiredN === undefined || data.desiredN === 0) {
-      reasons.push('Select a sample size.');
-    }
-
     // desiredN must not exceed the primary metric's available samples
     const availableN = getPrimaryAnalysisAvailableN(data);
     const hasAvailableN = availableN !== undefined && availableN !== 0;
@@ -84,8 +79,11 @@ const getNextDisabledReasons = (data: ExperimentFormData): string[] => {
       );
     }
 
-    if (data.clusterKey && (data.desiredNClusters === undefined || data.desiredNClusters < 1)) {
+    // Must have selected a valid sample size for pre-assigned frequentist experiments
+    if (data.clusterKey && (data.desiredNClusters === undefined || data.desiredNClusters <= 1)) {
       reasons.push('Select a valid cluster sample size.');
+    } else if (!data.clusterKey && (data.desiredN === undefined || data.desiredN <= 1)) {
+      reasons.push('Select a valid sample size.');
     }
 
     // If in MDE mode, must have an MDE estimate
@@ -189,7 +187,7 @@ export const ExperimentFreqStackScreen = ({
           />
         </Card>
 
-        {!data.clusterKey && (
+        {!data.clusterKey && data.experimentType !== 'freq_online' && (
           <>
             <Heading as="h3" size="3">
               Strata
@@ -203,7 +201,7 @@ export const ExperimentFreqStackScreen = ({
             </Card>
           </>
         )}
-
+        
         {data.experimentType == 'freq_preassigned' && (
           <Flex direction="column" gap={'3'}>
             <Heading as="h3" size="3">

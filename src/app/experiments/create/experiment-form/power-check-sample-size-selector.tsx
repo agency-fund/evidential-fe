@@ -163,10 +163,10 @@ export function PowerCheckSampleSizeSelector({
   /**
    * Handler immediately reports back:
    * - the selected option,
-   * - the desiredN if appropriate for the option, and
+   * - the desiredN / desiredNClusters if appropriate for the option, and
    * - its current power estimate if it doesn't need updating.
    *
-   * If the cached response doesn't match the desiredN, we also trigger a new MDE estimate.
+   * If the cached response doesn't match the desiredN / desiredNClusters, we also trigger a new MDE estimate.
    */
   const handleOptionChange = (option: PowerCheckOption) => {
     let useCachedResponse = false;
@@ -224,31 +224,36 @@ export function PowerCheckSampleSizeSelector({
   };
 
   const handleInputChange = (newN: number | undefined, newNClusters?: number) => {
-    if (newN === undefined) {
-      // Wipe the form data if the user entered an invalid newN.
-      if (desiredN !== undefined || desiredNClusters !== undefined) {
-        onOptionChange({
-          sampleSizeOption: selectedSampleOption,
-          desiredN: undefined,
-          desiredNClusters: undefined,
-          response: undefined,
-        });
-      }
-      return;
-    }
     if (
       selectedSampleOption !== PowerCheckOption.ENTER_OWN ||
       (newN === desiredN && (!isClustered || newNClusters === desiredNClusters))
     ) {
+      // User either switched selection or entered the same stored value, so nothing to change.
       return;
     }
+    if (newN === undefined) {
+      // Wipe the form data if the user entered an invalid newN.
+      onOptionChange({
+        sampleSizeOption: selectedSampleOption,
+        desiredN: undefined,
+        desiredNClusters: undefined,
+        response: undefined,
+      });
+      return;
+    }
+
+    // Immediately notify of new input and wipe the old response as it is now stale.
     onOptionChange({
       sampleSizeOption: selectedSampleOption,
       desiredN: newN,
       desiredNClusters: newNClusters,
       response: undefined,
     });
-    estimateMde(PowerCheckOption.ENTER_OWN, newN, newNClusters);
+
+    // But only estimate MDE if the user entered a valid new value.
+    if (newN > 1 || (newNClusters && newNClusters > 1)) {
+      estimateMde(PowerCheckOption.ENTER_OWN, newN, newNClusters);
+    }
   };
 
   const handleClusterInputChange = (clusterN: number | undefined) => {
