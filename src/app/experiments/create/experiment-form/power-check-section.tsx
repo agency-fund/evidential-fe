@@ -151,12 +151,14 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     data.powerCheckResponse !== undefined && !validationError
       ? getPowerAnalysis(data.powerCheckResponse, primaryMetricFieldName)
       : undefined;
-  const restPower =
+  const restPowerAnalyses =
     data.powerCheckResponse !== undefined && !validationError
       ? data.powerCheckResponse.analyses.filter((a) => a.metric_spec.field_name !== primaryMetricFieldName)
       : undefined;
+  const restPower = restPowerAnalyses !== undefined && restPowerAnalyses.length > 0 ? restPowerAnalyses : undefined;
   const primaryPowerClusterSizeCv = primaryPower?.msg?.values?.cluster_size_cv ?? primaryPower?.metric_spec.cv;
   const primaryHasMissingValues = primaryPower != null && metricHasMissingValues(primaryPower);
+  const secondaryHasMissingValues = (restPower ?? []).some(metricHasMissingValues);
   const metricsWithMissingValues = [
     ...(primaryPower != null && primaryHasMissingValues ? [`${primaryPower.metric_spec.field_name} (primary)`] : []),
     ...(restPower ?? []).filter(metricHasMissingValues).map((analysis) => analysis.metric_spec.field_name),
@@ -331,8 +333,12 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                         <Table.ColumnHeaderCell>Metric</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell></Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell>Required</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell>Available</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell>Available with values</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell>
+                          {secondaryHasMissingValues ? 'All available' : 'Available'}
+                        </Table.ColumnHeaderCell>
+                        {secondaryHasMissingValues ? (
+                          <Table.ColumnHeaderCell>Available with values</Table.ColumnHeaderCell>
+                        ) : null}
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
@@ -360,13 +366,15 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                               variant="available"
                             />
                           </Table.Cell>
-                          <Table.Cell align={'right'}>
-                            <MetricSampleSizeDisplay
-                              analysis={metricAnalysis}
-                              isClustered={isClustered}
-                              variant="available-nonnull"
-                            />
-                          </Table.Cell>
+                          {secondaryHasMissingValues ? (
+                            <Table.Cell align={'right'}>
+                              <MetricSampleSizeDisplay
+                                analysis={metricAnalysis}
+                                isClustered={isClustered}
+                                variant="available-nonnull"
+                              />
+                            </Table.Cell>
+                          ) : null}
                         </Table.Row>
                       ))}
                     </Table.Body>

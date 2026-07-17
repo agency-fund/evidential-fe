@@ -48,7 +48,7 @@ export const getPowerAnalysis = (
  */
 export const metricHasMissingValues = (analysis: MetricPowerAnalysis): boolean => {
   const { available_n, available_nonnull_n } = analysis.metric_spec;
-  return available_n != null && available_nonnull_n != null && available_n !== available_nonnull_n;
+  return available_n != null && available_nonnull_n != null && available_n > available_nonnull_n;
 };
 
 export const isFreqExperimentType = (

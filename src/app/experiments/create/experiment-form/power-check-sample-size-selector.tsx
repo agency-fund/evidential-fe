@@ -274,7 +274,7 @@ export function PowerCheckSampleSizeSelector({
           >
             <Flex align="center" direction="column" gap="2">
               <Text size="2">Use the minimum required sample size:</Text>
-              <Flex height="32px" align="center">
+              <Flex minHeight="32px" align="center">
                 <MetricSampleSizeDisplay
                   analysis={primaryAnalysis}
                   isClustered={isClustered}
@@ -297,7 +297,7 @@ export function PowerCheckSampleSizeSelector({
           >
             <Flex align="center" direction="column" gap="2">
               <Text size="2">Use the maximum available sample size:</Text>
-              <Flex height="32px" align="center">
+              <Flex minHeight="32px" align="center">
                 <MetricSampleSizeDisplay
                   analysis={primaryAnalysis}
                   isClustered={isClustered}

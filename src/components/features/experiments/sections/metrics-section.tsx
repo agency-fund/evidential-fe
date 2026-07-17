@@ -55,7 +55,12 @@ export function MetricsSection({ metrics, strata, onEdit }: MetricsSectionProps)
                     hasMissingValues={metrics.primary.hasMissingValues}
                   />
                   {metrics.primary.estimatedMde != null && (
-                    <MdeBadge value={metrics.primary.estimatedMde} kind="estimated" size="1" />
+                    <MdeBadge
+                      value={metrics.primary.estimatedMde}
+                      kind="estimated"
+                      size="1"
+                      hasMissingValues={metrics.primary.hasMissingValues}
+                    />
                   )}
                 </Flex>
               </Flex>
@@ -78,7 +83,12 @@ export function MetricsSection({ metrics, strata, onEdit }: MetricsSectionProps)
                     <Flex direction="row" gap="2" align="start">
                       <MdeBadge value={metric.mde} kind="target" size="1" hasMissingValues={metric.hasMissingValues} />
                       {metric.estimatedMde != null && (
-                        <MdeBadge value={metric.estimatedMde} kind="estimated" size="1" />
+                        <MdeBadge
+                          value={metric.estimatedMde}
+                          kind="estimated"
+                          size="1"
+                          hasMissingValues={metric.hasMissingValues}
+                        />
                       )}
                     </Flex>
                   </Flex>
