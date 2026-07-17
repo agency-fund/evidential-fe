@@ -183,8 +183,6 @@ export default function IntegrationsPage() {
               </Button>
             )}
           </Flex>
-
-          {tokenPreview && <></>}
         </Box>
       )}
 
