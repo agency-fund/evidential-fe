@@ -77,12 +77,12 @@ function EstimatedMdeBadge({ isSelectedOption, isEstimatingMde, estimatedMdePct,
     <Flex align="center" style={{ minHeight: '24px' }}>
       {isSelectedOption &&
         (isEstimatingMde ? (
-          <Badge color="purple" variant="soft" size="2">
+          <Badge variant="soft" size="2">
             Estimated MDE: …
             <Spinner size="1" />
           </Badge>
         ) : estimatedMdePct !== undefined ? (
-          <Badge color="purple" variant="soft" size="2">
+          <Badge variant="soft" size="2">
             Estimated MDE: {estimatedMdePct}%
           </Badge>
         ) : error ? (
@@ -284,7 +284,7 @@ export function PowerCheckSampleSizeSelector({
               </Flex>
               <Flex align="center" style={{ minHeight: '24px' }}>
                 {targetMde !== undefined ? (
-                  <Badge color="purple" variant="soft" size="2">
+                  <Badge variant="soft" size="2">
                     Target MDE: {targetMde}%
                   </Badge>
                 ) : null}
