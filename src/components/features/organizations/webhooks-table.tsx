@@ -1,5 +1,6 @@
 'use client';
-import { Button, Code, Flex, Heading, IconButton, Table, Tooltip } from '@radix-ui/themes';
+import Link from 'next/link';
+import { Button, Code, Flex, Heading, IconButton, Table, Tooltip, Link as RadixLink } from '@radix-ui/themes';
 import { WebhookSummary } from '@/api/methods.schemas';
 import { EyeClosedIcon, EyeOpenIcon, PlusIcon } from '@radix-ui/react-icons';
 import { DeleteWebhookDialog } from '@/components/features/organizations/delete-webhook-dialog';
@@ -34,6 +35,8 @@ export function WebhooksTable({
   const [addWebhookDialogOpen, setAddWebhookDialogOpen] = useState(false);
 
   const isLimitReached = webhookCount >= webhookLimit;
+  const displayWebhooks = webhooks.filter((webhook) => webhook.type !== 'turn.journeys_changed');
+  const hasTurnWebhook = webhooks.some((webhook) => webhook.type === 'turn.journeys_changed');
 
   const toggleTokenVisibility = (webhookId: string) => {
     setVisibleTokens((prev) => ({
@@ -62,13 +65,44 @@ export function WebhooksTable({
         <XSpinner message="Loading webhooks..." />
       ) : error ? (
         <GenericErrorCallout title="Failed to fetch webhooks" error={error} />
-      ) : webhooks.length === 0 ? (
-        <EmptyStateCard title="No webhooks found" description="Add a webhook to get started">
-          <Button disabled={isLimitReached} onClick={() => setAddWebhookDialogOpen(true)}>
-            <PlusIcon />
-            Add Webhook
-          </Button>
-        </EmptyStateCard>
+      ) : displayWebhooks.length === 0 ? (
+        hasTurnWebhook ? (
+          <EmptyStateCard
+            title="Only Turn.io webhooks found"
+            description={
+              <>
+                Turn.io webhooks can be accessed on the{' '}
+                <RadixLink asChild>
+                  <Link href="/integrations">Integrations</Link>
+                </RadixLink>{' '}
+                page. You can add other webhooks here.
+              </>
+            }
+          >
+            <Button disabled={isLimitReached} onClick={() => setAddWebhookDialogOpen(true)}>
+              <PlusIcon />
+              Add Webhook
+            </Button>
+          </EmptyStateCard>
+        ) : (
+          <EmptyStateCard
+            title="No webhooks found"
+            description={
+              <>
+                Add a webhook to get started. Note: Turn.io webhooks are handled on the{' '}
+                <RadixLink asChild>
+                  <Link href="/integrations">Integrations</Link>
+                </RadixLink>{' '}
+                page.
+              </>
+            }
+          >
+            <Button disabled={isLimitReached} onClick={() => setAddWebhookDialogOpen(true)}>
+              <PlusIcon />
+              Add Webhook
+            </Button>
+          </EmptyStateCard>
+        )
       ) : (
         <Table.Root variant="surface">
           <Table.Header>
@@ -81,7 +115,7 @@ export function WebhooksTable({
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {webhooks.map((webhook) =>
+            {displayWebhooks.map((webhook) =>
               webhook.type !== 'turn.journeys_changed' ? (
                 <Table.Row key={webhook.id}>
                   <Table.Cell>{webhook.name}</Table.Cell>
