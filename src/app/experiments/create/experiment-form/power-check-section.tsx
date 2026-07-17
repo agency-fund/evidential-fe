@@ -2,7 +2,6 @@
 
 import {
   Badge,
-  Box,
   Button,
   Callout,
   Card,
@@ -25,7 +24,7 @@ import { CheckCircledIcon, CrossCircledIcon, ExclamationTriangleIcon, LightningB
 import { ExperimentFormData, isClusteredExperimentFormData, PowerCheckOption } from './experiment-form-types';
 import { usePowerCheck } from '@/api/admin';
 import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
-import { getPowerAnalysis } from '@/services/experiment-utils';
+import { getPowerAnalysis, metricHasMissingValues } from '@/services/experiment-utils';
 import { MetricSampleSizeDisplay } from '@/components/features/experiments/metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ZodError } from 'zod';
@@ -152,11 +151,18 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     data.powerCheckResponse !== undefined && !validationError
       ? getPowerAnalysis(data.powerCheckResponse, primaryMetricFieldName)
       : undefined;
-  const restPower =
+  const restPowerAnalyses =
     data.powerCheckResponse !== undefined && !validationError
       ? data.powerCheckResponse.analyses.filter((a) => a.metric_spec.field_name !== primaryMetricFieldName)
       : undefined;
+  const restPower = restPowerAnalyses !== undefined && restPowerAnalyses.length > 0 ? restPowerAnalyses : undefined;
   const primaryPowerClusterSizeCv = primaryPower?.msg?.values?.cluster_size_cv ?? primaryPower?.metric_spec.cv;
+  const primaryHasMissingValues = primaryPower != null && metricHasMissingValues(primaryPower);
+  const secondaryHasMissingValues = (restPower ?? []).some(metricHasMissingValues);
+  const metricsWithMissingValues = [
+    ...(primaryPower != null && primaryHasMissingValues ? [`${primaryPower.metric_spec.field_name} (primary)`] : []),
+    ...(restPower ?? []).filter(metricHasMissingValues).map((analysis) => analysis.metric_spec.field_name),
+  ];
 
   return (
     <Flex direction="column" gap={'3'}>
@@ -230,26 +236,29 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                       : 'The experiment does not have sufficient power.')}
                 </Callout.Text>
                 {primaryPower.msg?.high_cluster_variation && primaryPowerClusterSizeCv != null && (
-                  <Box
-                    p="2"
-                    style={{
-                      backgroundColor: 'var(--amber-a3)',
-                      border: '1px solid var(--amber-a5)',
-                      borderRadius: 'var(--radius-3)',
-                    }}
-                  >
-                    <Flex gap="2" align="start">
-                      <Flex flexShrink="0">
-                        <ExclamationTriangleIcon color="var(--amber-11)" />
-                      </Flex>
-                      <Text size="2" color="amber">
-                        Because your cluster sizes vary so widely, your experiment is sensitive to enrolling fewer
-                        participants or clusters. Consider adding filters to exclude extreme cluster sizes or adding
-                        more clusters to be safer.
-                      </Text>
-                    </Flex>
-                  </Box>
+                  <Callout.Root color="amber" variant="surface" size="1">
+                    <Callout.Icon>
+                      <ExclamationTriangleIcon />
+                    </Callout.Icon>
+                    <Callout.Text>
+                      Because your cluster sizes vary so widely, your experiment is sensitive to enrolling fewer
+                      participants or clusters. Consider adding filters to exclude extreme cluster sizes or adding more
+                      clusters to be safer.
+                    </Callout.Text>
+                  </Callout.Root>
                 )}
+                {metricsWithMissingValues.length > 0 ? (
+                  <Callout.Root color="amber" variant="surface" size="1">
+                    <Callout.Icon>
+                      <ExclamationTriangleIcon />
+                    </Callout.Icon>
+                    <Callout.Text>
+                      Some participants are missing a value for: {metricsWithMissingValues.join(', ')}. Estimates assume
+                      that these participants will receive a value during the experiment. If you&apos;re unsure, add a
+                      filter to exclude these participants.
+                    </Callout.Text>
+                  </Callout.Root>
+                ) : null}
               </Flex>
             </Callout.Root>
           )}
@@ -282,7 +291,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                         </DataList.Value>
                       </DataList.Item>
                       <DataList.Item>
-                        <DataList.Label>Available</DataList.Label>
+                        <DataList.Label>{primaryHasMissingValues ? 'All available' : 'Available'}</DataList.Label>
                         <DataList.Value>
                           <MetricSampleSizeDisplay
                             analysis={primaryPower}
@@ -291,16 +300,18 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                           />
                         </DataList.Value>
                       </DataList.Item>
-                      <DataList.Item>
-                        <DataList.Label>Available (non-null)</DataList.Label>
-                        <DataList.Value>
-                          <MetricSampleSizeDisplay
-                            analysis={primaryPower}
-                            isClustered={isClustered}
-                            variant="available-nonnull"
-                          />
-                        </DataList.Value>
-                      </DataList.Item>
+                      {primaryHasMissingValues ? (
+                        <DataList.Item>
+                          <DataList.Label>Available with values</DataList.Label>
+                          <DataList.Value>
+                            <MetricSampleSizeDisplay
+                              analysis={primaryPower}
+                              isClustered={isClustered}
+                              variant="available-nonnull"
+                            />
+                          </DataList.Value>
+                        </DataList.Item>
+                      ) : null}
                       {primaryPower.pct_change_possible !== null && primaryPower.pct_change_possible !== undefined && (
                         <DataList.Item>
                           <DataList.Label>MDE</DataList.Label>
@@ -322,8 +333,12 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                         <Table.ColumnHeaderCell>Metric</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell></Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell>Required</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell>Available</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell>Available (non-null)</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell>
+                          {secondaryHasMissingValues ? 'All available' : 'Available'}
+                        </Table.ColumnHeaderCell>
+                        {secondaryHasMissingValues ? (
+                          <Table.ColumnHeaderCell>Available with values</Table.ColumnHeaderCell>
+                        ) : null}
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
@@ -351,13 +366,15 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                               variant="available"
                             />
                           </Table.Cell>
-                          <Table.Cell align={'right'}>
-                            <MetricSampleSizeDisplay
-                              analysis={metricAnalysis}
-                              isClustered={isClustered}
-                              variant="available-nonnull"
-                            />
-                          </Table.Cell>
+                          {secondaryHasMissingValues ? (
+                            <Table.Cell align={'right'}>
+                              <MetricSampleSizeDisplay
+                                analysis={metricAnalysis}
+                                isClustered={isClustered}
+                                variant="available-nonnull"
+                              />
+                            </Table.Cell>
+                          ) : null}
                         </Table.Row>
                       ))}
                     </Table.Body>

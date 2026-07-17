@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, DataList, Flex, Text } from '@radix-ui/themes';
+import { Button, DataList, Flex, Separator, Text } from '@radix-ui/themes';
 import { Pencil2Icon } from '@radix-ui/react-icons';
 import { DataType } from '@/api/methods.schemas';
 import { SectionCard } from '@/components/ui/cards/section-card';
@@ -12,6 +12,7 @@ export interface MetricDisplay {
   data_type: DataType;
   mde: string | number;
   estimatedMde?: string | number | null;
+  hasMissingValues: boolean;
 }
 
 export interface MetricsSectionProps {
@@ -46,12 +47,23 @@ export function MetricsSection({ metrics, strata, onEdit }: MetricsSectionProps)
                   <Text>{metrics.primary.field_name}</Text>
                   <DataTypeBadge type={metrics.primary.data_type} />
                 </Flex>
-                <Flex direction="row" gap="2" align="start">
-                  <MdeBadge value={metrics.primary.mde} kind="target" size="1" />
+                <Flex direction="row" gap="2" align="start" wrap="wrap">
+                  <MdeBadge
+                    value={metrics.primary.mde}
+                    kind="target"
+                    size="1"
+                    hasMissingValues={metrics.primary.hasMissingValues}
+                  />
                   {metrics.primary.estimatedMde != null && (
-                    <MdeBadge value={metrics.primary.estimatedMde} kind="estimated" size="1" />
+                    <MdeBadge
+                      value={metrics.primary.estimatedMde}
+                      kind="estimated"
+                      size="1"
+                      hasMissingValues={metrics.primary.hasMissingValues}
+                    />
                   )}
                 </Flex>
+                {metrics?.secondary && metrics.secondary.length >= 1 && <Separator orientation="horizontal" size="4" />}
               </Flex>
             ) : (
               <Text>-</Text>
@@ -69,12 +81,18 @@ export function MetricsSection({ metrics, strata, onEdit }: MetricsSectionProps)
                       <Text>{metric.field_name}</Text>
                       <DataTypeBadge type={metric.data_type} />
                     </Flex>
-                    <Flex direction="row" gap="2" align="start">
-                      <MdeBadge value={metric.mde} kind="target" size="1" />
+                    <Flex direction="row" gap="2" align="start" wrap="wrap">
+                      <MdeBadge value={metric.mde} kind="target" size="1" hasMissingValues={metric.hasMissingValues} />
                       {metric.estimatedMde != null && (
-                        <MdeBadge value={metric.estimatedMde} kind="estimated" size="1" />
+                        <MdeBadge
+                          value={metric.estimatedMde}
+                          kind="estimated"
+                          size="1"
+                          hasMissingValues={metric.hasMissingValues}
+                        />
                       )}
                     </Flex>
+                    <Separator orientation="horizontal" size="4" />
                   </Flex>
                 ))}
               </Flex>

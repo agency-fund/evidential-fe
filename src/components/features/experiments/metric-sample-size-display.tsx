@@ -105,15 +105,12 @@ const getDisplayModel = (
     }
     case 'available-nonnull': {
       const participantN = analysis.metric_spec.available_nonnull_n ?? undefined;
-      const availableN = analysis.metric_spec.available_n;
       return {
         participantN,
         clusterN: isClustered ? estimateClusterN(participantN, avgClusterSize) : undefined,
+        // Crimson only when the non-null count is insufficient for the required n.
         color:
-          participantN === undefined ||
-          participantN === 0 ||
-          (targetN != null && participantN < targetN) ||
-          (availableN != null && participantN < availableN)
+          participantN === undefined || participantN === 0 || (targetN != null && participantN < targetN)
             ? 'crimson'
             : undefined,
       };

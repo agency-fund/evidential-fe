@@ -42,6 +42,15 @@ export const getPowerAnalysis = (
   return analyses.find((analysis) => analysis.metric_spec.field_name === metricName);
 };
 
+/**
+ * True when a metric has participants that meet the filters but are missing a value for it, i.e. the
+ * targeted population (available_n) is larger than those with a value (available_nonnull_n).
+ */
+export const metricHasMissingValues = (analysis: MetricPowerAnalysis): boolean => {
+  const { available_n, available_nonnull_n } = analysis.metric_spec;
+  return available_n != null && available_nonnull_n != null && available_n > available_nonnull_n;
+};
+
 export const isFreqExperimentType = (
   experimentType?: ExperimentType,
 ): experimentType is AnyFrequentistDesignSpecExperimentType =>
