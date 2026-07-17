@@ -7,19 +7,22 @@ import {
   useGetOrganizationTurnConnection,
   useDeleteTurnConnectionFromOrganization,
   getGetOrganizationTurnConnectionKey,
+  useRegenerateTurnWebhookToken,
 } from '@/api/admin-third-party-tools-integrations';
 import { mutate } from 'swr';
-import { Box, Heading, Flex, Spinner, Text, Button } from '@radix-ui/themes';
+import { Box, Heading, Flex, Spinner, Text, Button, Code, Tooltip, IconButton, Grid, Link } from '@radix-ui/themes';
 import { DeleteAlertDialog } from '@/components/ui/delete-alert-dialog';
 import { SetApiKeyAlertDialog } from '@/components/features/integrations/set-api-key-alert-dialog';
+import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
+import { EyeClosedIcon, EyeOpenIcon, ReloadIcon, TrashIcon } from '@radix-ui/react-icons';
 
 export default function IntegrationsPage() {
   const organizationCtx = useCurrentOrganization();
   const organizationId = organizationCtx?.current.id || '';
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openSetApiKeyDialog, setOpenSetApiKeyDialog] = useState(false);
+  const [isWebhookTokenVisible, setIsWebhookTokenVisible] = useState(false);
   const turnConnectionGetKey = getGetOrganizationTurnConnectionKey(organizationId, { allow_missing: true });
-
   const { data: turnConnectionData, isLoading: isTurnConnectionLoadingData } = useGetOrganizationTurnConnection(
     organizationId,
     { allow_missing: true },
@@ -41,7 +44,17 @@ export default function IntegrationsPage() {
     },
   });
 
-  const tokenPreview = turnConnectionData?.token_preview ?? '';
+  const { trigger: regenerateTurnWebhookToken } = useRegenerateTurnWebhookToken(
+    organizationId,
+    { allow_missing: false },
+    {
+      swr: {
+        onSuccess: () => mutate(turnConnectionGetKey),
+      },
+    },
+  );
+
+  const tokenPreview = turnConnectionData?.auth_token ?? '';
 
   const handleAddOrRotateTurnConnection = async (newApiKey: string) => {
     await setTurnConnection({ turn_api_token: newApiKey });
@@ -49,55 +62,153 @@ export default function IntegrationsPage() {
   const handleDeleteTurnConnection = async () => {
     await deleteTurnConnection();
   };
+  const handleRegenerateTurnWebhookToken = async () => {
+    await regenerateTurnWebhookToken();
+  };
 
   return (
-    <Flex direction="column" gap="6" align="center">
+    <Flex direction="column" gap="6">
       <Heading size="8">Third-Party Tools Integrations</Heading>
-      <Box>
-        <Flex direction="column" gap="2" align="center">
-          <Heading size="4">Turn.io API Key</Heading>
-          <Text size="1">We use this API key to integrate with Turn.io for Journey management:</Text>
-          {isTurnConnectionLoadingData ? (
-            <Spinner />
-          ) : tokenPreview ? (
-            <Flex direction="column" gap="2" align="center">
-              <Box>
-                <Text>***********{tokenPreview}</Text>
-              </Box>
-              <Flex direction="row" gap="4">
-                <Button variant="soft" color="blue" onClick={() => setOpenSetApiKeyDialog(true)}>
-                  Rotate API Key
-                </Button>
-                <Button variant="soft" color="red" onClick={() => setOpenDeleteDialog(true)}>
-                  Delete API Key
-                </Button>
+
+      {isTurnConnectionLoadingData ? (
+        <Spinner />
+      ) : (
+        <Box style={{ border: '1px solid var(--gray-a6)', borderRadius: 'var(--radius-3)' }}>
+          {/* Turn.io API Key section */}
+          <Flex direction="column" gap="3" p="5">
+            <Heading size="4">Turn.io API Key</Heading>
+            <Text size="2" color="gray">
+              We use this API key to integrate with Turn.io for Journey management.
+              <br />
+              You can create one from{' '}
+              <Link href="https://whatsapp.turn.io/" target="_blank">
+                Turn.io
+              </Link>
+              . Go to Settings &gt; API & Webhooks &gt; Create a Token:
+            </Text>
+            {tokenPreview ? (
+              <Flex direction="column" gap="5">
+                <Flex
+                  align="center"
+                  justify="between"
+                  style={{ border: '1px solid var(--gray-a6)', borderRadius: 'var(--radius-2)', padding: '8px 12px' }}
+                >
+                  <Text>***********{turnConnectionData?.turn_api_token_preview}</Text>
+                </Flex>
+                <Flex direction="row" gap="3">
+                  <Button radius="full" variant="soft" color="blue" onClick={() => setOpenSetApiKeyDialog(true)}>
+                    <ReloadIcon />
+                    Rotate API Key
+                  </Button>
+                  <Button radius="full" variant="soft" color="red" onClick={() => setOpenDeleteDialog(true)}>
+                    <TrashIcon />
+                    Delete API Key
+                  </Button>
+                </Flex>
+                <Flex direction="column" gap="3">
+                  <Heading size="3">Autogenerated Webhook ID and token for Turn.io.</Heading>
+                  <Text size="2" color="gray">
+                    Copy these values into the appropriate fields in the Turn.io Evidential App, to notify Evidential
+                    when there are changes to Journeys:
+                  </Text>
+                  <Grid columns="2" gap="4">
+                    <Flex direction="column" gap="1">
+                      <Text size="2" weight="bold">
+                        Webhook ID
+                      </Text>
+                      <Box
+                        style={{
+                          border: '1px solid var(--gray-a6)',
+                          borderRadius: 'var(--radius-2)',
+                          padding: '5.5px 12px',
+                        }}
+                      >
+                        <Flex align="center" gap="2">
+                          <Flex align="center" style={{ width: '100%' }}>
+                            <Text>{turnConnectionData?.id}</Text>
+                          </Flex>
+                          <CopyToClipBoard tooltipContent="Copy webhook ID" content={turnConnectionData?.id || ''} />
+                        </Flex>
+                      </Box>
+                    </Flex>
+
+                    <Flex direction="column" gap="1">
+                      <Flex direction="row" gap="2" align="center">
+                        <Text size="2" weight="bold">
+                          Webhook Auth Token
+                        </Text>
+                      </Flex>
+                      <Box
+                        style={{
+                          border: '1px solid var(--gray-a6)',
+                          borderRadius: 'var(--radius-2)',
+                          padding: '8px 12px',
+                        }}
+                      >
+                        <Flex align="center" gap="2">
+                          <Flex align="center" style={{ width: '100%' }}>
+                            <Code variant="ghost">
+                              {isWebhookTokenVisible ? turnConnectionData?.auth_token : '••••••••••••••••'}
+                            </Code>
+                          </Flex>
+                          <IconButton
+                            size="1"
+                            aria-label={isWebhookTokenVisible ? 'Hide auth token' : 'Show auth token'}
+                            color="gray"
+                            variant="ghost"
+                            onClick={() => setIsWebhookTokenVisible(!isWebhookTokenVisible)}
+                          >
+                            <Tooltip content={isWebhookTokenVisible ? 'Hide auth token' : 'Show auth token'}>
+                              {isWebhookTokenVisible ? <EyeOpenIcon /> : <EyeClosedIcon />}
+                            </Tooltip>
+                          </IconButton>
+                          <IconButton
+                            size="1"
+                            aria-label={'Rotate auth token'}
+                            color="blue"
+                            variant="soft"
+                            onClick={handleRegenerateTurnWebhookToken}
+                          >
+                            <Tooltip content="Rotate auth token">
+                              <ReloadIcon />
+                            </Tooltip>
+                          </IconButton>
+                          <CopyToClipBoard
+                            tooltipContent="Copy auth token"
+                            content={turnConnectionData?.auth_token || ''}
+                          />
+                        </Flex>
+                      </Box>
+                    </Flex>
+                  </Grid>
+                </Flex>
               </Flex>
-            </Flex>
-          ) : (
-            <Button variant="soft" color="blue" onClick={() => setOpenSetApiKeyDialog(true)}>
-              Add API Key
-            </Button>
-          )}
+            ) : (
+              <Button radius="full" variant="soft" color="blue" onClick={() => setOpenSetApiKeyDialog(true)}>
+                Add API Key
+              </Button>
+            )}
+          </Flex>
+        </Box>
+      )}
 
-          <SetApiKeyAlertDialog
-            trigger={handleAddOrRotateTurnConnection}
-            loading={isSettingTurnConnection}
-            error={setError}
-            open={openSetApiKeyDialog}
-            onOpenChange={setOpenSetApiKeyDialog}
-          />
+      <SetApiKeyAlertDialog
+        trigger={handleAddOrRotateTurnConnection}
+        loading={isSettingTurnConnection}
+        error={setError}
+        open={openSetApiKeyDialog}
+        onOpenChange={setOpenSetApiKeyDialog}
+      />
 
-          <DeleteAlertDialog
-            title="Delete Turn.io Connection"
-            description="Are you sure you want to delete this Turn.io connection? This deletes the stored API key, all Journeys, and arm-to-Journey mappings, including those for experiments that are still running. This action cannot be undone."
-            trigger={handleDeleteTurnConnection}
-            loading={isDeletingTurnConnection}
-            error={deleteError}
-            open={openDeleteDialog}
-            onOpenChange={setOpenDeleteDialog}
-          ></DeleteAlertDialog>
-        </Flex>
-      </Box>
+      <DeleteAlertDialog
+        title="Delete Turn.io Connection"
+        description="Are you sure you want to delete this Turn.io connection? This deletes the stored API key, webhook, all stored Journeys on Evidential, and arm-to-Journey mappings, including those for experiments that are still running. This action cannot be undone."
+        trigger={handleDeleteTurnConnection}
+        loading={isDeletingTurnConnection}
+        error={deleteError}
+        open={openDeleteDialog}
+        onOpenChange={setOpenDeleteDialog}
+      />
     </Flex>
   );
 }

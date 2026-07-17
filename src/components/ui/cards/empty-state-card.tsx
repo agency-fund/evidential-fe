@@ -3,7 +3,7 @@ import { Button, Card, Flex, Heading, Text } from '@radix-ui/themes';
 
 interface EmptyStateCardProps {
   title: string;
-  description: string;
+  description: string | React.ReactNode;
   buttonText?: string;
   buttonIcon?: React.ReactNode;
   onClick?: () => void;

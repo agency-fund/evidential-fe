@@ -11,6 +11,7 @@ import useSWRMutation from "swr/mutation";
 import type { SWRMutationConfiguration } from "swr/mutation";
 
 import type {
+	AddWebhookToOrganizationResponse,
 	DeleteTurnArmJourneyMappingParams,
 	DeleteTurnConnectionFromOrganizationParams,
 	GetOrganizationTurnConnectionParams,
@@ -19,6 +20,7 @@ import type {
 	GetTurnJourneysResponse,
 	HTTPExceptionError,
 	HTTPValidationError,
+	RegenerateTurnWebhookTokenParams,
 	SetConnectionToTurnRequest,
 	SetTurnArmJourneyMappingRequest,
 } from "./methods.schemas";
@@ -36,13 +38,16 @@ export const setOrganizationTurnConnection = async (
 	organizationId: string,
 	setConnectionToTurnRequest: SetConnectionToTurnRequest,
 	options?: RequestInit,
-): Promise<void> => {
-	return orvalFetch<void>(getSetOrganizationTurnConnectionUrl(organizationId), {
-		...options,
-		method: "PUT",
-		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(setConnectionToTurnRequest),
-	});
+): Promise<AddWebhookToOrganizationResponse> => {
+	return orvalFetch<AddWebhookToOrganizationResponse>(
+		getSetOrganizationTurnConnectionUrl(organizationId),
+		{
+			...options,
+			method: "PUT",
+			headers: { "Content-Type": "application/json", ...options?.headers },
+			body: JSON.stringify(setConnectionToTurnRequest),
+		},
+	);
 };
 
 export const getSetOrganizationTurnConnectionMutationFetcher = (
@@ -264,6 +269,97 @@ export const useDeleteTurnConnectionFromOrganization = <
 		swrOptions?.swrKey ??
 		getDeleteTurnConnectionFromOrganizationMutationKey(organizationId, params);
 	const swrFn = getDeleteTurnConnectionFromOrganizationMutationFetcher(
+		organizationId,
+		params,
+		requestOptions,
+	);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+export const getRegenerateTurnWebhookTokenUrl = (
+	organizationId: string,
+	params?: RegenerateTurnWebhookTokenParams,
+) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/v1/m/integrations/turn-connection/${organizationId}/regenerate-webhook-token?${stringifiedParams}`
+		: `/v1/m/integrations/turn-connection/${organizationId}/regenerate-webhook-token`;
+};
+
+export const regenerateTurnWebhookToken = async (
+	organizationId: string,
+	params?: RegenerateTurnWebhookTokenParams,
+	options?: RequestInit,
+): Promise<AddWebhookToOrganizationResponse> => {
+	return orvalFetch<AddWebhookToOrganizationResponse>(
+		getRegenerateTurnWebhookTokenUrl(organizationId, params),
+		{
+			...options,
+			method: "PUT",
+		},
+	);
+};
+
+export const getRegenerateTurnWebhookTokenMutationFetcher = (
+	organizationId: string,
+	params?: RegenerateTurnWebhookTokenParams,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, __: { arg: Arguments }) => {
+		return regenerateTurnWebhookToken(organizationId, params, options);
+	};
+};
+export const getRegenerateTurnWebhookTokenMutationKey = (
+	organizationId: string,
+	params?: RegenerateTurnWebhookTokenParams,
+) =>
+	[
+		`/v1/m/integrations/turn-connection/${organizationId}/regenerate-webhook-token`,
+		...(params ? [params] : []),
+	] as const;
+
+export type RegenerateTurnWebhookTokenMutationResult = NonNullable<
+	Awaited<ReturnType<typeof regenerateTurnWebhookToken>>
+>;
+export type RegenerateTurnWebhookTokenMutationError =
+	ErrorType<HTTPExceptionError>;
+
+export const useRegenerateTurnWebhookToken = <
+	TError = ErrorType<HTTPExceptionError>,
+>(
+	organizationId: string,
+	params?: RegenerateTurnWebhookTokenParams,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof regenerateTurnWebhookToken>>,
+			TError,
+			Key,
+			Arguments,
+			Awaited<ReturnType<typeof regenerateTurnWebhookToken>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey =
+		swrOptions?.swrKey ??
+		getRegenerateTurnWebhookTokenMutationKey(organizationId, params);
+	const swrFn = getRegenerateTurnWebhookTokenMutationFetcher(
 		organizationId,
 		params,
 		requestOptions,

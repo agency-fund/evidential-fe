@@ -21,7 +21,7 @@ interface FormFields {
 
 const defaultFormData = (webhook: WebhookSummary): FormFields => ({
   name: webhook.name,
-  url: webhook.url,
+  url: webhook.url ?? '',
 });
 
 export function EditWebhookDialog({ organizationId, webhook }: EditWebhookDialogProps) {

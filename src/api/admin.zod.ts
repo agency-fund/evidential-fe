@@ -22,15 +22,41 @@ export const createOrganizationsBody = zod.object({
 	name: zod.string().max(createOrganizationsBodyNameMax),
 });
 
+export const addWebhookToOrganizationBodyTypeDefault = "experiment.created";
+export const addWebhookToOrganizationBodyDirectionDefault = "outbound";
 export const addWebhookToOrganizationBodyNameMax = 100;
 
-export const addWebhookToOrganizationBodyUrlMax = 500;
+export const addWebhookToOrganizationBodyUrlMaxOne = 500;
 
-export const addWebhookToOrganizationBody = zod.object({
-	type: zod.literal("experiment.created"),
-	name: zod.string().max(addWebhookToOrganizationBodyNameMax),
-	url: zod.string().max(addWebhookToOrganizationBodyUrlMax),
-});
+export const addWebhookToOrganizationBodyTypeDefaultOne =
+	"turn.journeys_changed";
+export const addWebhookToOrganizationBodyDirectionDefaultOne = "inbound";
+export const addWebhookToOrganizationBodyNameMaxOne = 100;
+
+export const addWebhookToOrganizationBody = zod.union([
+	zod.object({
+		type: zod
+			.literal("experiment.created")
+			.default(addWebhookToOrganizationBodyTypeDefault),
+		direction: zod
+			.enum(["inbound", "outbound"])
+			.default(addWebhookToOrganizationBodyDirectionDefault),
+		name: zod.string().max(addWebhookToOrganizationBodyNameMax),
+		url: zod.union([
+			zod.string().max(addWebhookToOrganizationBodyUrlMaxOne),
+			zod.null(),
+		]),
+	}),
+	zod.object({
+		type: zod
+			.literal("turn.journeys_changed")
+			.default(addWebhookToOrganizationBodyTypeDefaultOne),
+		direction: zod
+			.literal("inbound")
+			.default(addWebhookToOrganizationBodyDirectionDefaultOne),
+		name: zod.string().max(addWebhookToOrganizationBodyNameMaxOne),
+	}),
+]);
 
 export const updateOrganizationWebhookBodyNameMax = 100;
 

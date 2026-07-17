@@ -4,25 +4,46 @@
  * Evidential Experiments API
  * OpenAPI spec version: 0.9.0
  */
+export type AddExperimentCreatedWebhookRequestDirection =
+	(typeof AddExperimentCreatedWebhookRequestDirection)[keyof typeof AddExperimentCreatedWebhookRequestDirection];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const AddExperimentCreatedWebhookRequestDirection = {
+	inbound: "inbound",
+	outbound: "outbound",
+} as const;
+
+export type AddExperimentCreatedWebhookRequestUrl = string | null;
+
+export interface AddExperimentCreatedWebhookRequest {
+	type?: "experiment.created";
+	direction?: AddExperimentCreatedWebhookRequestDirection;
+	/** @maxLength 100 */
+	name: string;
+	url: AddExperimentCreatedWebhookRequestUrl;
+}
+
 export interface AddMemberToOrganizationRequest {
 	email: string;
 }
 
-export interface AddWebhookToOrganizationRequest {
-	type: "experiment.created";
+export interface AddTurnJourneysChangedWebhookRequest {
+	type?: "turn.journeys_changed";
+	direction?: "inbound";
 	/** @maxLength 100 */
 	name: string;
-	/** @maxLength 500 */
-	url: string;
 }
+
+export type AddWebhookToOrganizationResponseUrl = string | null;
 
 export type AddWebhookToOrganizationResponseAuthToken = string | null;
 
 export interface AddWebhookToOrganizationResponse {
 	id: string;
 	type: string;
+	direction: string;
 	name: string;
-	url: string;
+	url?: AddWebhookToOrganizationResponseUrl;
 	auth_token: AddWebhookToOrganizationResponseAuthToken;
 }
 
@@ -929,8 +950,18 @@ export interface GetTurnArmJourneyMappingResponse {
 	stale_arm_ids: string[];
 }
 
+export type GetTurnConnectionResponseUrl = string | null;
+
+export type GetTurnConnectionResponseAuthToken = string | null;
+
 export interface GetTurnConnectionResponse {
-	token_preview: string;
+	id: string;
+	type: string;
+	direction: string;
+	name: string;
+	url?: GetTurnConnectionResponseUrl;
+	auth_token: GetTurnConnectionResponseAuthToken;
+	turn_api_token_preview: string;
 }
 
 export interface GetTurnJourneysResponse {
@@ -1677,13 +1708,16 @@ export interface ValidationError {
 	ctx?: ValidationErrorCtx;
 }
 
+export type WebhookSummaryUrl = string | null;
+
 export type WebhookSummaryAuthToken = string | null;
 
 export interface WebhookSummary {
 	id: string;
 	type: string;
+	direction: string;
 	name: string;
-	url: string;
+	url?: WebhookSummaryUrl;
 	auth_token: WebhookSummaryAuthToken;
 }
 
@@ -1765,6 +1799,10 @@ export const ListOrganizationsScope = {
 	all: "all",
 } as const;
 
+export type AddWebhookToOrganizationBody =
+	| AddExperimentCreatedWebhookRequest
+	| AddTurnJourneysChangedWebhookRequest;
+
 export type DeleteWebhookFromOrganizationParams = {
 	allow_missing?: boolean;
 };
@@ -1832,6 +1870,10 @@ export type GetOrganizationTurnConnectionParams = {
 };
 
 export type DeleteTurnConnectionFromOrganizationParams = {
+	allow_missing?: boolean;
+};
+
+export type RegenerateTurnWebhookTokenParams = {
 	allow_missing?: boolean;
 };
 
