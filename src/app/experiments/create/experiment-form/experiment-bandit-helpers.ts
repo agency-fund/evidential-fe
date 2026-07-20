@@ -6,12 +6,10 @@ import {
   FormOutcomeType,
   PriorType,
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
-import { DataType } from '@/api/methods.schemas';
+import { DataType, LikelihoodTypes } from '@/api/methods.schemas';
 
-type RewardType = 'binary' | 'real-valued';
-
-export const getCanonicalRewardType = (outcomeType?: FormOutcomeType): RewardType =>
-  outcomeType === 'binary' ? 'binary' : 'real-valued';
+export const getCanonicalRewardType = (outcomeType?: FormOutcomeType): LikelihoodTypes =>
+  outcomeType === 'binary' ? LikelihoodTypes.binary : LikelihoodTypes['real-valued'];
 
 /**
  * The bandit outcome type implied by a DWH target column's type: a boolean column backs a binary
