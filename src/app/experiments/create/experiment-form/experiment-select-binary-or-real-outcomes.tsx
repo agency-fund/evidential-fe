@@ -44,7 +44,7 @@ export const ExperimentSelectBinaryOrRealOutcomes = ({
           dispatch({ type: 'set-outcome-type', value: v as FormOutcomeType });
         }}
       >
-        <RadioCards.Item value="binary" disabled={locked}>
+        <RadioCards.Item value="binary" disabled={locked && lockedOutcomeType !== 'binary'}>
           <Flex direction="column" width="100%">
             <Text weight="bold">Binary</Text>
             <Text>
@@ -52,7 +52,7 @@ export const ExperimentSelectBinaryOrRealOutcomes = ({
             </Text>
           </Flex>
         </RadioCards.Item>
-        <RadioCards.Item value="real" disabled={locked}>
+        <RadioCards.Item value="real" disabled={locked && lockedOutcomeType !== 'real'}>
           <Flex direction="column" width="100%">
             <Text weight="bold">Real-valued</Text>
             <Text>
