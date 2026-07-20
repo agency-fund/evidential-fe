@@ -64,7 +64,7 @@ export function IntegrationGuideDialog({
   const turnSectionEnabled = open && showTurnConfig && hasTurnConnection;
 
   // Example API calls are integration docs, only needed once the guide is open — so lazy-load them.
-  const { data: sampleCalls } = useGetExperimentSampleCalls(datasourceId, experimentId, {
+  const { data: sampleCalls, error: sampleCallsError } = useGetExperimentSampleCalls(datasourceId, experimentId, {
     swr: { enabled: open },
   });
 
@@ -248,6 +248,10 @@ export function IntegrationGuideDialog({
                   ))}
                 </DataList.Root>
               </Flex>
+            )}
+
+            {sampleCallsError && (
+              <GenericErrorCallout title="Error loading example API calls" error={sampleCallsError} />
             )}
 
             {sampleCalls && sampleCalls.calls.length > 0 && (
