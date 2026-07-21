@@ -4,7 +4,7 @@ import { Flex, Grid, IconButton, Text } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
 import { DataType, Filter } from '@/api/methods.schemas';
 import { TypeSpecificFilter } from '@/components/features/experiments/querybuilder/type-specific-filter-input';
-import { MissingValuesSelect } from '@/components/features/experiments/querybuilder/missing-values-select';
+import { MissingValuesPicker } from '@/components/features/experiments/querybuilder/missing-values-picker';
 import {
   applyMissingValuesOption,
   getMissingValuesOption,
@@ -108,10 +108,10 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
       </Flex>
 
       {/* Filter options for the selected filter field or help text */}
-      <Flex direction={'column'} gap={'2'} align={'start'}>
+      <Flex direction={'column'} gap={'3'} align={'start'}>
         {exactMatchField ? (
           <>
-            <MissingValuesSelect value={missingValuesOption} onChange={handleMissingValuesChange} />
+            <MissingValuesPicker value={missingValuesOption} onChange={handleMissingValuesChange} />
             {missingValuesOption !== 'is-missing' ? (
               <TypeSpecificFilter
                 key={exactMatchField.field_name}
