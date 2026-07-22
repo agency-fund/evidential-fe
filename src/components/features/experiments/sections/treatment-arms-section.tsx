@@ -1,7 +1,7 @@
 'use client';
 
 import { Badge, Button, Flex, Separator, Text, Tooltip } from '@radix-ui/themes';
-import { InfoCircledIcon, LayersIcon, Pencil2Icon, PersonIcon } from '@radix-ui/react-icons';
+import { LayersIcon, Pencil2Icon, PersonIcon } from '@radix-ui/react-icons';
 import { ArmBandit, CreateExperimentResponse, PriorTypes } from '@/api/methods.schemas';
 import { isBanditSpec } from '@/services/experiment-utils';
 import { SectionCard } from '@/components/ui/cards/section-card';
@@ -107,7 +107,6 @@ export function TreatmentArmsSection({ response, onEdit }: TreatmentArmsSectionP
     <Tooltip content="Participants are split evenly across all arms.">
       <Badge color="green" variant="soft">
         Balanced
-        <InfoCircledIcon />
       </Badge>
     </Tooltip>
   ) : undefined;

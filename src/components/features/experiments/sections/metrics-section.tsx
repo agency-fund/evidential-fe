@@ -1,7 +1,7 @@
 'use client';
 
 import { Badge, Button, DataList, Flex, Separator, Text, Tooltip } from '@radix-ui/themes';
-import { InfoCircledIcon, Pencil2Icon } from '@radix-ui/react-icons';
+import { Pencil2Icon } from '@radix-ui/react-icons';
 import { DataType } from '@/api/methods.schemas';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
@@ -20,17 +20,11 @@ export interface MetricDisplay {
 function SampleSufficiencyBadge({ sufficientN }: { sufficientN: boolean }) {
   return sufficientN ? (
     <Tooltip content="There are enough eligible participants to detect this metric's target MDE.">
-      <Badge color="green">
-        OK
-        <InfoCircledIcon />
-      </Badge>
+      <Badge color="green">OK</Badge>
     </Tooltip>
   ) : (
     <Tooltip content="There are not enough eligible participants to detect this metric's target MDE.">
-      <Badge color="red">
-        Too Few
-        <InfoCircledIcon />
-      </Badge>
+      <Badge color="red">Too Few</Badge>
     </Tooltip>
   );
 }
