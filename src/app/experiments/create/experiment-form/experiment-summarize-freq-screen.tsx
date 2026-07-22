@@ -30,6 +30,11 @@ export const ExperimentsSummarizeFreqScreen = ({
   );
   const hasMissingValuesFor = (fieldName: string): boolean => missingValuesByField.get(fieldName) ?? false;
 
+  const sufficientNByField = new Map(
+    (data.powerCheckResponse?.analyses ?? []).map((a) => [a.metric_spec.field_name, a.sufficient_n]),
+  );
+  const sufficientNFor = (fieldName: string): boolean | null | undefined => sufficientNByField.get(fieldName);
+
   // Specifically, data_type is not available in the createExperimentResponse, so we provide it here
   // along with other related info for convenience.
   const metrics: ExperimentConfirmationDisplayProps['metrics'] = {
@@ -40,6 +45,7 @@ export const ExperimentsSummarizeFreqScreen = ({
           mde: data.primaryMetric.mde,
           estimatedMde: estimatedMdeFor(data.primaryMetric.metric.field_name),
           hasMissingValues: hasMissingValuesFor(data.primaryMetric.metric.field_name),
+          sufficientN: sufficientNFor(data.primaryMetric.metric.field_name),
         }
       : undefined,
     secondary: (data.secondaryMetrics ?? []).map((m) => ({
@@ -48,6 +54,7 @@ export const ExperimentsSummarizeFreqScreen = ({
       mde: m.mde,
       estimatedMde: estimatedMdeFor(m.metric.field_name),
       hasMissingValues: hasMissingValuesFor(m.metric.field_name),
+      sufficientN: sufficientNFor(m.metric.field_name),
     })),
   };
 
@@ -68,7 +75,6 @@ export const ExperimentsSummarizeFreqScreen = ({
         datasource: 'freq-select-datasource',
         filters: 'freq-stack',
         metrics: 'freq-stack',
-        powerBalance: 'freq-stack',
       }}
       frequentistInfo={{ metrics }}
     />

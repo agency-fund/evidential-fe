@@ -511,6 +511,48 @@ export default function ExperimentViewPage() {
           headerLeft={
             <Flex gap="3" align="center" wrap="wrap">
               <Heading size="3">Analysis</Heading>
+              <Badge size="2" style={{ height: '26px' }}>
+                <Flex gap="2" align="center">
+                  <Heading size="2">Viewing:</Heading>
+                  {analysisHistory.length == 0 ? (
+                    <Text>{liveAnalysis.label}</Text>
+                  ) : (
+                    <>
+                      <Select.Root size="1" value={activeAnalysisKey} onValueChange={handleSelectAnalysis}>
+                        <Select.Trigger style={{ height: 18 }} />
+                        <Select.Content>
+                          <Select.Group>
+                            <Select.Item key="live" value="live">
+                              <Box minWidth="136px">{liveAnalysis.label}</Box>
+                            </Select.Item>
+                          </Select.Group>
+                          <Select.Separator />
+                          <Select.Group>
+                            {analysisHistory.map((opt) => (
+                              <Select.Item key={opt.key} value={opt.key}>
+                                <Box minWidth="136px">{opt.label}</Box>
+                              </Select.Item>
+                            ))}
+                          </Select.Group>
+                        </Select.Content>
+                      </Select.Root>
+                      {isLastSnapshotErrorRelevant ? (
+                        <Tooltip content={'Last snapshot error: ' + lastErrorTimestamp?.toLocaleTimeString()}>
+                          <Link href={`/datasources/${datasourceId}/experiments/${experimentId}/snapshots`}>
+                            <ExclamationTriangleIcon color={'red'} />
+                          </Link>
+                        </Tooltip>
+                      ) : (
+                        <Tooltip content={'View snapshot log'}>
+                          <Link href={`/datasources/${datasourceId}/experiments/${experimentId}/snapshots`}>
+                            <ActivityLogIcon />
+                          </Link>
+                        </Tooltip>
+                      )}
+                    </>
+                  )}
+                </Flex>
+              </Badge>
               {isFrequentistSpec(design_spec) ? (
                 <Flex gap="3" align="center" wrap="wrap">
                   <Badge size="2">
@@ -541,12 +583,6 @@ export default function ExperimentViewPage() {
                     </Flex>
                   </Badge>
                   <MdeBadge value={mdePct} kind={estimatedMdePct != null ? 'estimated' : 'target'} />
-                  <FreqDesignDetailsDialog
-                    designSpec={design_spec}
-                    experimentSchema={experiment.experiment_schema}
-                    assignSummary={assign_summary}
-                    powerAnalyses={experiment.config.power_analyses?.analyses}
-                  />
                 </Flex>
               ) : isBanditAnalysis(selectedAnalysisState.data) &&
                 selectedAnalysisState.banditEffects &&
@@ -577,51 +613,15 @@ export default function ExperimentViewPage() {
             </Flex>
           }
           headerRight={
-            <Flex gap="3" wrap="wrap">
-              <Flex gap="3" wrap="wrap" align="center" justify="between">
-                <Badge size="2" style={{ height: '26px' }}>
-                  <Flex gap="2" align="center">
-                    <Heading size="2">Viewing:</Heading>
-                    {analysisHistory.length == 0 ? (
-                      <Text>{liveAnalysis.label}</Text>
-                    ) : (
-                      <>
-                        <Select.Root size="1" value={activeAnalysisKey} onValueChange={handleSelectAnalysis}>
-                          <Select.Trigger style={{ height: 18 }} />
-                          <Select.Content>
-                            <Select.Group>
-                              <Select.Item key="live" value="live">
-                                <Box minWidth="136px">{liveAnalysis.label}</Box>
-                              </Select.Item>
-                            </Select.Group>
-                            <Select.Separator />
-                            <Select.Group>
-                              {analysisHistory.map((opt) => (
-                                <Select.Item key={opt.key} value={opt.key}>
-                                  <Box minWidth="136px">{opt.label}</Box>
-                                </Select.Item>
-                              ))}
-                            </Select.Group>
-                          </Select.Content>
-                        </Select.Root>
-                        {isLastSnapshotErrorRelevant ? (
-                          <Tooltip content={'Last snapshot error: ' + lastErrorTimestamp?.toLocaleTimeString()}>
-                            <Link href={`/datasources/${datasourceId}/experiments/${experimentId}/snapshots`}>
-                              <ExclamationTriangleIcon color={'red'} />
-                            </Link>
-                          </Tooltip>
-                        ) : (
-                          <Tooltip content={'View snapshot log'}>
-                            <Link href={`/datasources/${datasourceId}/experiments/${experimentId}/snapshots`}>
-                              <ActivityLogIcon />
-                            </Link>
-                          </Tooltip>
-                        )}
-                      </>
-                    )}
-                  </Flex>
-                </Badge>
-              </Flex>
+            <Flex gap="3" wrap="wrap" align="center">
+              {isFrequentistSpec(design_spec) ? (
+                <FreqDesignDetailsDialog
+                  designSpec={design_spec}
+                  experimentSchema={experiment.experiment_schema}
+                  assignSummary={assign_summary}
+                  powerAnalyses={experiment.config.power_analyses?.analyses}
+                />
+              ) : null}
               {!isFrequentistExperiment && (
                 <Badge size="2">
                   <Flex gap="4" align="center">

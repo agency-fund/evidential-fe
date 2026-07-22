@@ -16,9 +16,14 @@ import { isClusteredPreassignedSpec, metricHasMissingValues } from '@/services/e
 
 interface DesignDetailsDialogProps {
   designSpec: AnyFrequentistDesignSpec;
-  experimentSchema: ParticipantsSchema | null | undefined;
+  experimentSchema?: ParticipantsSchema | null;
   assignSummary: AssignSummary | null | undefined;
   powerAnalyses?: MetricPowerAnalysis[];
+  /** Precomputed metric displays; when omitted, they are derived from the design spec and schema. */
+  metrics?: {
+    primary?: MetricDisplay;
+    secondary?: MetricDisplay[];
+  };
 }
 
 const toMdePercent = (value: number | null | undefined): string =>
@@ -29,29 +34,27 @@ export function FreqDesignDetailsDialog({
   experimentSchema,
   assignSummary,
   powerAnalyses,
+  metrics: metricsOverride,
 }: DesignDetailsDialogProps) {
   const [open, setOpen] = useState(false);
 
   const fieldTypeByName = new Map((experimentSchema?.fields ?? []).map((field) => [field.field_name, field.data_type]));
-  const estimatedMdeByField = new Map(
-    (powerAnalyses ?? []).map((analysis) => [analysis.metric_spec.field_name, analysis.pct_change_with_desired_n]),
-  );
-  const missingValuesByField = new Map(
-    (powerAnalyses ?? []).map((analysis) => [analysis.metric_spec.field_name, metricHasMissingValues(analysis)]),
-  );
+  const analysisByField = new Map((powerAnalyses ?? []).map((analysis) => [analysis.metric_spec.field_name, analysis]));
   const toMetricDisplay = (fieldName: string, mdePct: number | null | undefined): MetricDisplay => {
-    const estimatedRaw = estimatedMdeByField.get(fieldName);
+    const analysis = analysisByField.get(fieldName);
+    const estimatedRaw = analysis?.pct_change_with_desired_n;
     return {
       field_name: fieldName,
       data_type: fieldTypeByName.get(fieldName) ?? DataType.unknown,
       mde: toMdePercent(mdePct),
       estimatedMde: estimatedRaw != null ? (estimatedRaw * 100).toFixed(1) : null,
-      hasMissingValues: missingValuesByField.get(fieldName) ?? false,
+      hasMissingValues: analysis !== undefined && metricHasMissingValues(analysis),
+      sufficientN: analysis?.sufficient_n,
     };
   };
 
   const [primary, ...secondary] = designSpec.metrics;
-  const metrics = {
+  const metrics = metricsOverride ?? {
     primary: primary ? toMetricDisplay(primary.field_name, primary.metric_pct_change) : undefined,
     secondary: secondary.map((m) => toMetricDisplay(m.field_name, m.metric_pct_change)),
   };

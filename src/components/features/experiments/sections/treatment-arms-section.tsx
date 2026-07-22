@@ -1,7 +1,7 @@
 'use client';
 
-import { Badge, Button, Flex, Separator, Text } from '@radix-ui/themes';
-import { LayersIcon, Pencil2Icon, PersonIcon } from '@radix-ui/react-icons';
+import { Badge, Button, Flex, Separator, Text, Tooltip } from '@radix-ui/themes';
+import { InfoCircledIcon, LayersIcon, Pencil2Icon, PersonIcon } from '@radix-ui/react-icons';
 import { ArmBandit, CreateExperimentResponse, PriorTypes } from '@/api/methods.schemas';
 import { isBanditSpec } from '@/services/experiment-utils';
 import { SectionCard } from '@/components/ui/cards/section-card';
@@ -28,9 +28,11 @@ function ArmAssignmentBadges({ armSize, clusterCount, armWeight }: ArmAssignment
           {armSize.toLocaleString()} participants
         </Badge>
       )}
-      <Badge color="gray" variant="soft">
-        {armWeight == null ? 'balanced' : `${armWeight.toFixed(1)}%`}
-      </Badge>
+      {armWeight != null ? (
+        <Badge color="gray" variant="soft">
+          {armWeight.toFixed(1)}%
+        </Badge>
+      ) : null}
     </Flex>
   );
 }
@@ -100,15 +102,31 @@ export function TreatmentArmsSection({ response, onEdit }: TreatmentArmsSectionP
   }
 
   // Frequentist experiment display
+  const allArmsBalanced = arms.every((arm) => arm.arm_weight == null);
+  const balanceBadge = allArmsBalanced ? (
+    <Tooltip content="Participants are split evenly across all arms.">
+      <Badge color="green" variant="soft">
+        Balanced
+        <InfoCircledIcon />
+      </Badge>
+    </Tooltip>
+  ) : undefined;
+  const editButton = onEdit ? (
+    <Button size="1" onClick={onEdit}>
+      <Pencil2Icon />
+      Edit
+    </Button>
+  ) : undefined;
+
   return (
     <SectionCard
       title="Treatment Arms"
       headerRight={
-        onEdit ? (
-          <Button size="1" onClick={onEdit}>
-            <Pencil2Icon />
-            Edit
-          </Button>
+        balanceBadge || editButton ? (
+          <Flex gap="3" align="center">
+            {balanceBadge}
+            {editButton}
+          </Flex>
         ) : undefined
       }
     >
