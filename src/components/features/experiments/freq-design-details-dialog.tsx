@@ -38,8 +38,25 @@ export function FreqDesignDetailsDialog({
 }: DesignDetailsDialogProps) {
   const [open, setOpen] = useState(false);
 
+  const desiredN = designSpec.desired_n ?? undefined;
+  const isClustered = isClusteredPreassignedSpec(designSpec);
+  const clusterKey = isClustered ? (designSpec.cluster_key ?? undefined) : undefined;
+  const desiredNClusters = isClustered ? (designSpec.desired_n_clusters ?? undefined) : undefined;
+
   const fieldTypeByName = new Map((experimentSchema?.fields ?? []).map((field) => [field.field_name, field.data_type]));
   const analysisByField = new Map((powerAnalyses ?? []).map((analysis) => [analysis.metric_spec.field_name, analysis]));
+  // Sufficiency compares the chosen sample size against the minimum required for the metric's
+  // target MDE, since assignment enrolls exactly the chosen sample (including participants with
+  // missing values) regardless of how many participants the datasource could supply.
+  const sufficientNFor = (analysis: MetricPowerAnalysis | undefined): boolean | undefined => {
+    if (analysis === undefined) return undefined;
+    if (isClustered) {
+      return analysis.num_clusters_total != null && desiredNClusters != null
+        ? desiredNClusters >= analysis.num_clusters_total
+        : undefined;
+    }
+    return analysis.target_n != null && desiredN != null ? desiredN >= analysis.target_n : undefined;
+  };
   const toMetricDisplay = (fieldName: string, mdePct: number | null | undefined): MetricDisplay => {
     const analysis = analysisByField.get(fieldName);
     const estimatedRaw = analysis?.pct_change_with_desired_n;
@@ -49,7 +66,7 @@ export function FreqDesignDetailsDialog({
       mde: toMdePercent(mdePct),
       estimatedMde: estimatedRaw != null ? (estimatedRaw * 100).toFixed(1) : null,
       hasMissingValues: analysis !== undefined && metricHasMissingValues(analysis),
-      sufficientN: analysis?.sufficient_n,
+      sufficientN: sufficientNFor(analysis),
     };
   };
 
@@ -61,8 +78,6 @@ export function FreqDesignDetailsDialog({
   const strata = designSpec.strata?.map((s) => s.field_name) ?? [];
   const confidence = Math.round((1 - (designSpec.alpha ?? 0.05)) * 100);
   const power = Math.round((designSpec.power ?? 0.8) * 100);
-  const desiredN = designSpec.desired_n ?? undefined;
-  const clusterKey = isClusteredPreassignedSpec(designSpec) ? (designSpec.cluster_key ?? undefined) : undefined;
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>

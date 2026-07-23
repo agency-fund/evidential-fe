@@ -1,7 +1,11 @@
 'use client';
 
 import { ScreenProps } from '@/services/wizard/wizard-types';
-import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-types';
+import {
+  ExperimentFormData,
+  ExperimentScreenId,
+  isClusteredExperimentFormData,
+} from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { ErrorType } from '@/services/orval-fetch';
 import { ExperimentConfirmationDisplayProps } from '@/components/features/experiments/experiment-confirmation-display';
 import { ExperimentsSummarizeScreenBase } from '@/app/experiments/create/experiment-form/experiment-summarize-screen-base';
@@ -30,10 +34,21 @@ export const ExperimentsSummarizeFreqScreen = ({
   );
   const hasMissingValuesFor = (fieldName: string): boolean => missingValuesByField.get(fieldName) ?? false;
 
-  const sufficientNByField = new Map(
-    (data.powerCheckResponse?.analyses ?? []).map((a) => [a.metric_spec.field_name, a.sufficient_n]),
-  );
-  const sufficientNFor = (fieldName: string): boolean | null | undefined => sufficientNByField.get(fieldName);
+  const isClustered = isClusteredExperimentFormData(data);
+  const analysisByField = new Map((data.powerCheckResponse?.analyses ?? []).map((a) => [a.metric_spec.field_name, a]));
+  // Sufficiency compares the chosen sample size against the minimum required for the metric's
+  // target MDE, since assignment enrolls exactly the chosen sample (including participants with
+  // missing values) regardless of how many participants the datasource could supply.
+  const sufficientNFor = (fieldName: string): boolean | undefined => {
+    const analysis = analysisByField.get(fieldName);
+    if (analysis === undefined) return undefined;
+    if (isClustered) {
+      return analysis.num_clusters_total != null && data.desiredNClusters != null
+        ? data.desiredNClusters >= analysis.num_clusters_total
+        : undefined;
+    }
+    return analysis.target_n != null && data.desiredN != null ? data.desiredN >= analysis.target_n : undefined;
+  };
 
   // Specifically, data_type is not available in the createExperimentResponse, so we provide it here
   // along with other related info for convenience.

@@ -1,7 +1,7 @@
 'use client';
 
 import { Badge, Button, Flex, Separator, Text, Tooltip } from '@radix-ui/themes';
-import { LayersIcon, Pencil2Icon, PersonIcon } from '@radix-ui/react-icons';
+import { InfoCircledIcon, LayersIcon, Pencil2Icon, PersonIcon } from '@radix-ui/react-icons';
 import { ArmBandit, CreateExperimentResponse, PriorTypes } from '@/api/methods.schemas';
 import { isBanditSpec } from '@/services/experiment-utils';
 import { SectionCard } from '@/components/ui/cards/section-card';
@@ -102,14 +102,23 @@ export function TreatmentArmsSection({ response, onEdit }: TreatmentArmsSectionP
   }
 
   // Frequentist experiment display
-  const allArmsBalanced = arms.every((arm) => arm.arm_weight == null);
-  const balanceBadge = allArmsBalanced ? (
-    <Tooltip content="Participants are split evenly across all arms.">
-      <Badge color="green" variant="soft">
-        Balanced
-      </Badge>
-    </Tooltip>
-  ) : undefined;
+  const balanceOk = assignSummary?.balance_check?.balance_ok;
+  const balanceBadge =
+    balanceOk == null ? undefined : balanceOk ? (
+      <Tooltip content="A statistical check found your metric and strata values evenly distributed across the arms at assignment.">
+        <Badge color="green" variant="soft">
+          Balanced
+          <InfoCircledIcon />
+        </Badge>
+      </Tooltip>
+    ) : (
+      <Tooltip content="A statistical check suggests your metric and strata values are unevenly distributed across the arms. See Design Details on the Metrics card for the test results.">
+        <Badge color="red" variant="soft">
+          Unbalanced
+          <InfoCircledIcon />
+        </Badge>
+      </Tooltip>
+    );
   const editButton = onEdit ? (
     <Button size="1" onClick={onEdit}>
       <Pencil2Icon />

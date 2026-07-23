@@ -1,7 +1,7 @@
 'use client';
 
 import { Badge, Button, DataList, Flex, Separator, Text, Tooltip } from '@radix-ui/themes';
-import { Pencil2Icon } from '@radix-ui/react-icons';
+import { InfoCircledIcon, Pencil2Icon } from '@radix-ui/react-icons';
 import { DataType } from '@/api/methods.schemas';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
@@ -13,18 +13,24 @@ export interface MetricDisplay {
   mde: string | number;
   estimatedMde?: string | number | null;
   hasMissingValues: boolean;
-  /** Whether the sample size is sufficient to detect the target MDE. Omitted when no power analysis is available. */
+  /** Whether the chosen sample size reaches the minimum required to detect the target MDE. Omitted when unknown. */
   sufficientN?: boolean | null;
 }
 
 function SampleSufficiencyBadge({ sufficientN }: { sufficientN: boolean }) {
   return sufficientN ? (
-    <Tooltip content="There are enough eligible participants to detect this metric's target MDE.">
-      <Badge color="green">OK</Badge>
+    <Tooltip content="The chosen sample size is large enough to detect this metric's target MDE.">
+      <Badge color="green">
+        Sufficient
+        <InfoCircledIcon />
+      </Badge>
     </Tooltip>
   ) : (
-    <Tooltip content="There are not enough eligible participants to detect this metric's target MDE.">
-      <Badge color="red">Too Few</Badge>
+    <Tooltip content="The chosen sample size is too small to detect this metric's target MDE.">
+      <Badge color="red">
+        Insufficient
+        <InfoCircledIcon />
+      </Badge>
     </Tooltip>
   );
 }
