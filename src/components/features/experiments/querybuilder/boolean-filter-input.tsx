@@ -23,10 +23,12 @@ export function BooleanFilter({ filter, onChange }: BooleanFilterProps) {
 
   return (
     <Flex gap="2" wrap="wrap">
-      <Select.Root value={selected} onValueChange={handleChange}>
-        <Select.Trigger style={{ width: 160 }} placeholder="Add a condition…" />
+      {/* An empty string keeps the Select controlled while matching no item, so the placeholder shows. */}
+      <Select.Root value={selected ?? ''} onValueChange={handleChange}>
+        <Select.Trigger style={{ width: 160 }} placeholder="Add a constraint…" />
         <Select.Content>
-          <Select.Item value="none">No condition</Select.Item>
+          <Select.Item value="none">No constraint</Select.Item>
+          <Select.Separator />
           <Select.Item value="true">Is true</Select.Item>
           <Select.Item value="false">Is false</Select.Item>
         </Select.Content>

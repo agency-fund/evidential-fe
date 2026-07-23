@@ -49,8 +49,8 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
   const missingValuesOption = getMissingValuesOption(filter);
 
   const handleMissingValuesChange = (option: MissingValuesOption) => {
-    // Leaving "Is missing" starts from a clean, no-condition predicate (its value was irrelevant),
-    // so the row returns to the neutral "Add a condition" default.
+    // Leaving "Is missing" starts from a clean, no-constraint predicate (its value was irrelevant),
+    // so the row returns to the neutral "Add a constraint" default.
     const baseFilter =
       missingValuesOption === 'is-missing' ? { ...filter, relation: 'includes' as const, value: [] } : filter;
     onUpdate(applyMissingValuesOption(baseFilter, option));
