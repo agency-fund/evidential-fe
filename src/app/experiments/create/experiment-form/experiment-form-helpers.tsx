@@ -14,7 +14,6 @@ import {
 } from '@/api/methods.schemas';
 import { createExperimentBody } from '@/api/admin.zod';
 import { ExperimentFormData, getMabDwhTarget } from './experiment-form-types';
-import { getCanonicalRewardType } from '@/app/experiments/create/experiment-form/experiment-bandit-helpers';
 import { isFreqExperimentType, isFrequentistSpec, getPowerAnalysis } from '@/services/experiment-utils';
 
 /**
@@ -160,7 +159,6 @@ export function convertToBanditCreateRequest(data: ExperimentFormData): CreateEx
     throw new Error('Bandit configuration is required.');
   }
   const { experimentType, outcomeType, priorType, arms } = data.bandit;
-  const canonicalRewardType = getCanonicalRewardType(outcomeType);
 
   // Map bandit arms to standard arms format with prior parameters
   const standardArms = arms.map((arm) => ({
@@ -195,7 +193,7 @@ export function convertToBanditCreateRequest(data: ExperimentFormData): CreateEx
     description: data.hypothesis ?? '',
     design_url: data.designUrl ?? null,
     prior_type: priorType,
-    reward_type: canonicalRewardType,
+    reward_type: outcomeType,
     contexts: standardContexts,
     desired_n: 0,
   };

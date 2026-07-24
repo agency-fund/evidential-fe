@@ -6,10 +6,10 @@ import {
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { Callout, Flex, Heading, RadioCards, Text } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
-import { FormOutcomeType } from '@/app/experiments/create/experiment-form/experiment-form-types';
+import { LikelihoodTypes } from '@/api/methods.schemas';
 import { outcomeTypeForTargetDataType } from '@/app/experiments/create/experiment-form/experiment-bandit-helpers';
 
-type ExperimentSelectBinaryOrRealMessages = { type: 'set-outcome-type'; value: FormOutcomeType };
+type ExperimentSelectBinaryOrRealMessages = { type: 'set-outcome-type'; value: LikelihoodTypes };
 
 export const ExperimentSelectBinaryOrRealOutcomes = ({
   data,
@@ -41,7 +41,7 @@ export const ExperimentSelectBinaryOrRealOutcomes = ({
         columns={{ initial: '1', sm: '3' }}
         onValueChange={(v) => {
           if (locked) return;
-          dispatch({ type: 'set-outcome-type', value: v as FormOutcomeType });
+          dispatch({ type: 'set-outcome-type', value: v as LikelihoodTypes });
         }}
       >
         <RadioCards.Item value="binary" disabled={locked && lockedOutcomeType !== 'binary'}>
@@ -52,7 +52,7 @@ export const ExperimentSelectBinaryOrRealOutcomes = ({
             </Text>
           </Flex>
         </RadioCards.Item>
-        <RadioCards.Item value="real" disabled={locked && lockedOutcomeType !== 'real'}>
+        <RadioCards.Item value="real-valued" disabled={locked && lockedOutcomeType !== 'real-valued'}>
           <Flex direction="column" width="100%">
             <Text weight="bold">Real-valued</Text>
             <Text>

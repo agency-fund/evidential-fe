@@ -3,20 +3,16 @@ import {
   BanditExperimentType,
   BanditParams,
   Context,
-  FormOutcomeType,
   PriorType,
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { DataType, LikelihoodTypes } from '@/api/methods.schemas';
-
-export const getCanonicalRewardType = (outcomeType?: FormOutcomeType): LikelihoodTypes =>
-  outcomeType === 'binary' ? LikelihoodTypes.binary : LikelihoodTypes['real-valued'];
 
 /**
  * The bandit outcome type implied by a DWH target column's type: a boolean column backs a binary
  * (Bernoulli) outcome, a numeric column backs a real-valued (Normal) one. Returns undefined for any
  * other type (those columns are filtered out of the target picker, so a bound target always maps).
  */
-export const outcomeTypeForTargetDataType = (dataType?: DataType): FormOutcomeType | undefined => {
+export const outcomeTypeForTargetDataType = (dataType?: DataType): LikelihoodTypes | undefined => {
   if (dataType === DataType.boolean) return 'binary';
   if (
     dataType === DataType.bigint ||
@@ -24,7 +20,7 @@ export const outcomeTypeForTargetDataType = (dataType?: DataType): FormOutcomeTy
     dataType === DataType.numeric ||
     dataType === DataType.double_precision
   ) {
-    return 'real';
+    return 'real-valued';
   }
   return undefined;
 };
@@ -98,7 +94,7 @@ const getDefaultBanditArms = (priorType: PriorType): BanditArm[] => {
 
 const getDefaultContexts = (): Context[] => [{ name: 'Context', description: '', type: 'real-valued' }];
 
-export const toMabBanditParams = (outcomeType: FormOutcomeType, arms: BanditArm[]): BanditParams => {
+export const toMabBanditParams = (outcomeType: LikelihoodTypes, arms: BanditArm[]): BanditParams => {
   if (outcomeType === 'binary') {
     return {
       experimentType: 'mab_online',
@@ -109,14 +105,14 @@ export const toMabBanditParams = (outcomeType: FormOutcomeType, arms: BanditArm[
   }
   return {
     experimentType: 'mab_online',
-    outcomeType: 'real',
+    outcomeType: 'real-valued',
     priorType: 'normal',
     arms: maybeConvertArms(arms, 'normal'),
   };
 };
 
 export const toCmabBanditParams = (
-  outcomeType: FormOutcomeType,
+  outcomeType: LikelihoodTypes,
   arms: BanditArm[],
   contexts?: Context[],
 ): BanditParams => ({
@@ -128,9 +124,8 @@ export const toCmabBanditParams = (
 });
 
 export const createDefaultBanditParams = (experimentType: BanditExperimentType): BanditParams => {
-  // Flipped from checking mab_online so mab_online_dwh gets MAB defaults, not CMAB ones.
   if (experimentType === 'cmab_online') {
-    return toCmabBanditParams('real', getDefaultBanditArms('normal'), getDefaultContexts());
+    return toCmabBanditParams('real-valued', getDefaultBanditArms('normal'), getDefaultContexts());
   }
   return toMabBanditParams('binary', getDefaultBanditArms('beta'));
 };

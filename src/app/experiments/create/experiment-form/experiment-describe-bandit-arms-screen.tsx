@@ -331,8 +331,7 @@ export const ExperimentDescribeBanditArmsScreen = ({
             <InfoCircledIcon />
           </Callout.Icon>
           <Callout.Text>
-            Using {priorType === 'beta' ? 'Beta' : 'Normal'} distribution for{' '}
-            {outcomeType === 'binary' ? 'binary' : 'real-valued'} outcomes.
+            Using {priorType === 'beta' ? 'Beta' : 'Normal'} distribution for {outcomeType} outcomes.
           </Callout.Text>
         </Callout.Root>
 

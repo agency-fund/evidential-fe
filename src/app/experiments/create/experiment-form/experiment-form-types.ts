@@ -7,6 +7,7 @@ import {
   Filter,
   GetFiltersResponseElement,
   GetMetricsResponseElement,
+  LikelihoodTypes,
   MABExperimentSpec,
   PowerResponse,
   PreassignedFrequentistExperimentSpecExperimentType,
@@ -23,7 +24,6 @@ export type Context = {
   type: ContextVariableType;
 };
 export type PriorType = MABExperimentSpec['prior_type'];
-export type FormOutcomeType = 'binary' | 'real';
 export type BanditExperimentType = 'mab_online' | 'mab_online_dwh' | 'cmab_online';
 
 // Sample-size selection mode on the Power Analysis screen (power-check-section).
@@ -55,14 +55,14 @@ export type BanditParams =
     }
   | {
       experimentType: 'mab_online';
-      outcomeType: 'real';
+      outcomeType: 'real-valued';
       priorType: 'normal';
       arms: BanditArm[];
       contexts?: never;
     }
   | {
       experimentType: 'cmab_online';
-      outcomeType: FormOutcomeType;
+      outcomeType: LikelihoodTypes;
       priorType: 'normal';
       arms: BanditArm[];
       contexts: Context[];
