@@ -3,6 +3,7 @@ import { Button, Callout, Card, DataList, Dialog, Flex, Select, Text, Tooltip } 
 import {
   ChevronDownIcon,
   ChevronRightIcon,
+  CodeIcon,
   FileIcon,
   GearIcon,
   PlusIcon,
@@ -45,6 +46,7 @@ export function IntegrationGuideDialog({
 }: IntegrationGuideDialogProps) {
   const [open, setOpen] = useState(false);
   const [showTurnConfig, setShowTurnConfig] = useState(true);
+  const [showSampleCalls, setShowSampleCalls] = useState(false);
   const [armJourneyDraft, setArmJourneyDraft] = useState<Record<string, string>>({});
   const [staleArmIds, setStaleArmIds] = useState<string[]>([]); // List of arm IDs that have stale mappings
 
@@ -255,12 +257,26 @@ export function IntegrationGuideDialog({
             )}
 
             {sampleCalls && sampleCalls.calls.length > 0 && (
-              <Flex direction="column" gap="3">
-                <Dialog.Description size="3" weight="bold">
-                  Example API Calls
-                </Dialog.Description>
-                <SampleCallsList sampleCalls={sampleCalls} />
-              </Flex>
+              <Card>
+                <Collapsible.Root open={showSampleCalls} onOpenChange={setShowSampleCalls}>
+                  <Collapsible.Trigger style={{ all: 'unset', cursor: 'pointer', width: '100%' }}>
+                    <Flex align="center" justify="between">
+                      <Flex align="center" gap="2">
+                        <CodeIcon />
+                        <Text size="2" weight="medium">
+                          Example API Calls
+                        </Text>
+                      </Flex>
+                      {showSampleCalls ? <ChevronDownIcon /> : <ChevronRightIcon />}
+                    </Flex>
+                  </Collapsible.Trigger>
+                  <Collapsible.Content>
+                    <Flex direction="column" gap="3" mt="3">
+                      <SampleCallsList sampleCalls={sampleCalls} />
+                    </Flex>
+                  </Collapsible.Content>
+                </Collapsible.Root>
+              </Card>
             )}
 
             <Card>
