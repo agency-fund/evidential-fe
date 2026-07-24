@@ -3,7 +3,13 @@
 import { useState } from 'react';
 import { Box, Button, Dialog, Flex } from '@radix-ui/themes';
 import { DesignSpec } from '@/api/methods.schemas';
-import { isBanditSpec, isClusteredPreassignedSpec, isCmabSpec, isFrequentistSpec } from '@/services/experiment-utils';
+import {
+  isBanditSpec,
+  isClusteredPreassignedSpec,
+  isCmabSpec,
+  isFrequentistSpec,
+  isMabDwhSpec,
+} from '@/services/experiment-utils';
 import { DatasourceTargetingSection } from '@/components/features/experiments/sections/datasource-targeting-section';
 import { ContextsSection } from '@/components/features/experiments/sections/contexts-section';
 import { OutcomesPriorSection } from '@/components/features/experiments/sections/outcomes-prior-section';
@@ -38,6 +44,13 @@ export function TargetingDialog({ designSpec, webhookIds }: TargetingDialogProps
                     isClusteredPreassignedSpec(designSpec) ? (designSpec.cluster_key ?? undefined) : undefined
                   }
                   filters={designSpec.filters}
+                />
+              )}
+              {isMabDwhSpec(designSpec) && (
+                <DatasourceTargetingSection
+                  tableName={designSpec.table_name}
+                  primaryKey={designSpec.primary_key}
+                  targetField={designSpec.target_field_name}
                 />
               )}
               {isBanditSpec(designSpec) && (

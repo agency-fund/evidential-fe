@@ -7,7 +7,7 @@ import {
   DatasourceFormData as CreateDatasourceFormData,
   defaultDatasourceFormData,
 } from '@/components/features/datasources/add-datasource-form';
-import type { ExperimentType } from '@/services/experiment-utils';
+import { type ExperimentType } from '@/services/experiment-utils';
 
 export type DatasourceFormInputData = {
   datasourceId?: string;
@@ -94,7 +94,12 @@ export const DatasourceForm: WizardForm<DatasourceFormData, DatasourceScreenId, 
       render: SelectTableScreen,
       reducer: (data, msg) => {
         if (msg.type === 'set-table') {
-          return { ...data, tableName: msg.value, primaryKey: undefined, clusterKey: undefined };
+          return {
+            ...data,
+            tableName: msg.value,
+            primaryKey: undefined,
+            clusterKey: undefined,
+          };
         }
         if (msg.type === 'set-primary-key') {
           return {

@@ -2,16 +2,18 @@ import {
   Arm,
   ContextType,
   CreateExperimentResponse,
+  DataType,
   FieldMetadata,
   Filter,
   GetFiltersResponseElement,
   GetMetricsResponseElement,
+  LikelihoodTypes,
   MABExperimentSpec,
   PowerResponse,
   PreassignedFrequentistExperimentSpecExperimentType,
 } from '@/api/methods.schemas';
 import { ErrorType } from '@/services/orval-fetch';
-import type { ExperimentType } from '@/services/experiment-utils';
+import { type ExperimentType, isMabExperimentType } from '@/services/experiment-utils';
 
 export type ContextVariableType = ContextType;
 
@@ -22,8 +24,7 @@ export type Context = {
   type: ContextVariableType;
 };
 export type PriorType = MABExperimentSpec['prior_type'];
-export type FormOutcomeType = 'binary' | 'real';
-export type BanditExperimentType = 'mab_online' | 'cmab_online';
+export type BanditExperimentType = 'mab_online' | 'mab_online_dwh' | 'cmab_online';
 
 // Sample-size selection mode on the Power Analysis screen (power-check-section).
 export enum PowerCheckOption {
@@ -54,14 +55,14 @@ export type BanditParams =
     }
   | {
       experimentType: 'mab_online';
-      outcomeType: 'real';
+      outcomeType: 'real-valued';
       priorType: 'normal';
       arms: BanditArm[];
       contexts?: never;
     }
   | {
       experimentType: 'cmab_online';
-      outcomeType: FormOutcomeType;
+      outcomeType: LikelihoodTypes;
       priorType: 'normal';
       arms: BanditArm[];
       contexts: Context[];
@@ -89,6 +90,14 @@ export type ExperimentFormData = {
   tableName?: string;
   primaryKey?: string;
   clusterKey?: string;
+  // mab-select-datasource-screen options
+  dwhMode?: 'none' | 'existing' | 'create';
+  // mab-select-datasource-screen: the DWH column read as each participant's outcome. When set, a MAB
+  // experiment is created as mab_online_dwh instead of mab_online. Left undefined for API-only MAB.
+  targetFieldName?: string;
+  // The target column's data type, captured at selection. Drives (and locks) the binary/real outcome
+  // choice on the Outcomes step, so the two can't disagree.
+  targetFieldType?: DataType;
 
   // experiment-freq-stack-screen
   primaryMetric?: MetricWithMDE;
@@ -136,6 +145,7 @@ export type ExperimentScreenId =
   | 'metadata'
   | 'experiment-type'
   | 'freq-select-datasource'
+  | 'mab-select-datasource'
   | 'bandit-binary-or-real'
   | 'describe-contexts'
   | 'describe-arms'
@@ -146,3 +156,29 @@ export type ExperimentScreenId =
 
 export const isClusteredExperimentFormData = (data: ExperimentFormData): boolean =>
   data.experimentType === PreassignedFrequentistExperimentSpecExperimentType.freq_preassigned && !!data.clusterKey;
+
+/** The resolved DWH-target binding for a wizard form. */
+export type MabDwhTarget = {
+  datasourceId: string;
+  tableName: string;
+  primaryKey: string;
+  targetFieldName: string;
+  targetFieldType: DataType;
+};
+
+// Single source of truth for the MAB DWH-target binding. Null unless it's a MAB with every field set,
+// so stale fields from a since-changed type are ignored. undefined (not empty/0) means "not selected".
+export function getMabDwhTarget(data: ExperimentFormData): MabDwhTarget | null {
+  if (!isMabExperimentType(data.experimentType)) return null;
+  const { datasourceId, tableName, primaryKey, targetFieldName, targetFieldType } = data;
+  if (
+    datasourceId === undefined ||
+    tableName === undefined ||
+    primaryKey === undefined ||
+    targetFieldName === undefined ||
+    targetFieldType === undefined
+  ) {
+    return null;
+  }
+  return { datasourceId, tableName, primaryKey, targetFieldName, targetFieldType };
+}

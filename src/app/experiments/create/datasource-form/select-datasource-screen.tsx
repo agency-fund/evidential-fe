@@ -8,15 +8,14 @@ import { XSpinner } from '@/components/ui/x-spinner';
 import { CreateDatasourceForm } from './create-datasource-form';
 import { DatasourceCardsGrid } from '@/app/experiments/create/datasource-form/datasource-cards-grid';
 import { DatasourceSummary } from '@/api/methods.schemas';
+import { isUsableDatasource } from '@/services/genapi-helpers';
 
 type SelectDatasourceMessages =
   | { type: 'set-datasource'; value: string }
   | { type: 'set-mode'; value: 'existing' | 'create' }
   | { type: 'datasource-created'; datasourceId: string };
 
-const is_usable_datasource = (ds: DatasourceSummary) => ds.driver !== 'none';
-
-const find_first_remote_datasource = (datasources: DatasourceSummary[]) => datasources.find(is_usable_datasource);
+const find_first_remote_datasource = (datasources: DatasourceSummary[]) => datasources.find(isUsableDatasource);
 
 export const SelectDatasourceScreen = ({
   data,
@@ -41,7 +40,7 @@ export const SelectDatasourceScreen = ({
     },
   });
 
-  const availableDatasources = datasourcesData?.items?.filter(is_usable_datasource) ?? [];
+  const availableDatasources = datasourcesData?.items?.filter(isUsableDatasource) ?? [];
   const hasDatasources = availableDatasources.length > 0;
 
   if (isLoading) {

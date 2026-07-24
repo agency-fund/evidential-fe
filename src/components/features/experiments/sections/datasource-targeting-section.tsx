@@ -9,7 +9,8 @@ interface DatasourceTargetingSectionProps {
   tableName?: string;
   primaryKey?: string;
   clusterKey?: string;
-  filters: Filter[];
+  targetField?: string;
+  filters?: Filter[];
   onEditDatasource?: () => void;
   onEditFilters?: () => void;
 }
@@ -44,6 +45,7 @@ export function DatasourceTargetingSection({
   tableName,
   primaryKey,
   clusterKey,
+  targetField,
   filters,
   onEditDatasource,
   onEditFilters,
@@ -85,35 +87,43 @@ export function DatasourceTargetingSection({
             <DataList.Value>{clusterKey}</DataList.Value>
           </DataList.Item>
         )}
-        <DataList.Item>
-          <DataList.Label>Filters</DataList.Label>
-          <DataList.Value>
-            {filters.length === 0 ? (
-              <Text color="gray">No filters defined</Text>
-            ) : (
-              <Table.Root>
-                <Table.Header>
-                  <Table.Row>
-                    <Table.ColumnHeaderCell>Field</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Operator</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Values</Table.ColumnHeaderCell>
-                  </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                  {filters.map((filter, index) => {
-                    return (
-                      <Table.Row key={`${filter.field_name}-${index}`}>
-                        <Table.Cell>{filter.field_name}</Table.Cell>
-                        <Table.Cell align={'center'}>{getFilterOperatorLabel(filter)}</Table.Cell>
-                        <Table.Cell>{formatFilterValueDisplay(filter)}</Table.Cell>
-                      </Table.Row>
-                    );
-                  })}
-                </Table.Body>
-              </Table.Root>
-            )}
-          </DataList.Value>
-        </DataList.Item>
+        {targetField && (
+          <DataList.Item>
+            <DataList.Label>Target column</DataList.Label>
+            <DataList.Value>{targetField}</DataList.Value>
+          </DataList.Item>
+        )}
+        {filters !== undefined && (
+          <DataList.Item>
+            <DataList.Label>Filters</DataList.Label>
+            <DataList.Value>
+              {filters.length === 0 ? (
+                <Text color="gray">No filters defined</Text>
+              ) : (
+                <Table.Root>
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.ColumnHeaderCell>Field</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Operator</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Values</Table.ColumnHeaderCell>
+                    </Table.Row>
+                  </Table.Header>
+                  <Table.Body>
+                    {filters.map((filter, index) => {
+                      return (
+                        <Table.Row key={`${filter.field_name}-${index}`}>
+                          <Table.Cell>{filter.field_name}</Table.Cell>
+                          <Table.Cell align={'center'}>{getFilterOperatorLabel(filter)}</Table.Cell>
+                          <Table.Cell>{formatFilterValueDisplay(filter)}</Table.Cell>
+                        </Table.Row>
+                      );
+                    })}
+                  </Table.Body>
+                </Table.Root>
+              )}
+            </DataList.Value>
+          </DataList.Item>
+        )}
       </DataList.Root>
     </SectionCard>
   );

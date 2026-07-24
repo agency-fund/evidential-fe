@@ -1,4 +1,6 @@
-import { DataType } from '@/api/methods.schemas';
+import { DataType, DatasourceSummary } from '@/api/methods.schemas';
+
+export const isUsableDatasource = (ds: DatasourceSummary): boolean => ds.driver !== 'none';
 
 export const isEligibleForUseAsMetric = (data_type: DataType): boolean => {
   const numericTypes: DataType[] = [
