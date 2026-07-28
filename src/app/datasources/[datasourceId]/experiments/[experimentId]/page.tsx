@@ -3,7 +3,19 @@ import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { mutate } from 'swr';
-import { Badge, Box, Flex, Heading, IconButton, Select, Separator, Tabs, Text, Tooltip } from '@radix-ui/themes';
+import {
+  Badge,
+  Box,
+  Flex,
+  Heading,
+  IconButton,
+  Select,
+  Separator,
+  Spinner,
+  Tabs,
+  Text,
+  Tooltip,
+} from '@radix-ui/themes';
 import {
   ActivityLogIcon,
   CalendarIcon,
@@ -606,19 +618,22 @@ export default function ExperimentViewPage() {
                       </Select.Root>
                     )}
                     {activeAnalysisKey === 'live' ? (
-                      <Tooltip content="Refresh live analysis">
-                        <IconButton
-                          size="1"
-                          variant="ghost"
-                          color="gray"
-                          aria-label="Refresh live analysis"
-                          disabled={isLoadingLiveAnalysis || isLoadingLiveCmabAnalysis}
-                          // ensure we don't pass the click event to triggerLiveAnalysis
-                          onClick={() => triggerLiveAnalysis()}
-                        >
-                          <ReloadIcon />
-                        </IconButton>
-                      </Tooltip>
+                      isLoadingLiveAnalysis || isLoadingLiveCmabAnalysis ? (
+                        <Spinner size="1" />
+                      ) : (
+                        <Tooltip content="Refresh live analysis">
+                          <IconButton
+                            size="1"
+                            variant="ghost"
+                            color="gray"
+                            aria-label="Refresh live analysis"
+                            // ensure we don't pass the click event to triggerLiveAnalysis
+                            onClick={() => triggerLiveAnalysis()}
+                          >
+                            <ReloadIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )
                     ) : null}
                     {analysisHistory.length > 0 ? (
                       isLastSnapshotErrorRelevant ? (
