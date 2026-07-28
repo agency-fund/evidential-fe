@@ -3,7 +3,19 @@ import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { mutate } from 'swr';
-import { Badge, Box, Flex, Heading, Select, Separator, Tabs, Text, Tooltip } from '@radix-ui/themes';
+import {
+  Badge,
+  Box,
+  Flex,
+  Heading,
+  IconButton,
+  Select,
+  Separator,
+  Spinner,
+  Tabs,
+  Text,
+  Tooltip,
+} from '@radix-ui/themes';
 import {
   ActivityLogIcon,
   CalendarIcon,
@@ -13,6 +25,7 @@ import {
   InfoCircledIcon,
   LayersIcon,
   PersonIcon,
+  ReloadIcon,
 } from '@radix-ui/react-icons';
 import {
   getGetExperimentForUiKey,
@@ -585,40 +598,58 @@ export default function ExperimentViewPage() {
                     {analysisHistory.length == 0 ? (
                       <Text>{liveAnalysis.label}</Text>
                     ) : (
-                      <>
-                        <Select.Root size="1" value={activeAnalysisKey} onValueChange={handleSelectAnalysis}>
-                          <Select.Trigger style={{ height: 18 }} />
-                          <Select.Content>
-                            <Select.Group>
-                              <Select.Item key="live" value="live">
-                                <Box minWidth="136px">{liveAnalysis.label}</Box>
+                      <Select.Root size="1" value={activeAnalysisKey} onValueChange={handleSelectAnalysis}>
+                        <Select.Trigger style={{ height: 18 }} />
+                        <Select.Content>
+                          <Select.Group>
+                            <Select.Item key="live" value="live">
+                              <Box minWidth="136px">{liveAnalysis.label}</Box>
+                            </Select.Item>
+                          </Select.Group>
+                          <Select.Separator />
+                          <Select.Group>
+                            {analysisHistory.map((opt) => (
+                              <Select.Item key={opt.key} value={opt.key}>
+                                <Box minWidth="136px">{opt.label}</Box>
                               </Select.Item>
-                            </Select.Group>
-                            <Select.Separator />
-                            <Select.Group>
-                              {analysisHistory.map((opt) => (
-                                <Select.Item key={opt.key} value={opt.key}>
-                                  <Box minWidth="136px">{opt.label}</Box>
-                                </Select.Item>
-                              ))}
-                            </Select.Group>
-                          </Select.Content>
-                        </Select.Root>
-                        {isLastSnapshotErrorRelevant ? (
-                          <Tooltip content={'Last snapshot error: ' + lastErrorTimestamp?.toLocaleTimeString()}>
-                            <Link href={`/datasources/${datasourceId}/experiments/${experimentId}/snapshots`}>
-                              <ExclamationTriangleIcon color={'red'} />
-                            </Link>
-                          </Tooltip>
-                        ) : (
-                          <Tooltip content={'View snapshot log'}>
-                            <Link href={`/datasources/${datasourceId}/experiments/${experimentId}/snapshots`}>
-                              <ActivityLogIcon />
-                            </Link>
-                          </Tooltip>
-                        )}
-                      </>
+                            ))}
+                          </Select.Group>
+                        </Select.Content>
+                      </Select.Root>
                     )}
+                    {activeAnalysisKey === 'live' ? (
+                      isLoadingLiveAnalysis || isLoadingLiveCmabAnalysis ? (
+                        <Spinner size="1" />
+                      ) : (
+                        <Tooltip content="Refresh live analysis">
+                          <IconButton
+                            size="1"
+                            variant="ghost"
+                            color="gray"
+                            aria-label="Refresh live analysis"
+                            // ensure we don't pass the click event to triggerLiveAnalysis
+                            onClick={() => triggerLiveAnalysis()}
+                          >
+                            <ReloadIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )
+                    ) : null}
+                    {analysisHistory.length > 0 ? (
+                      isLastSnapshotErrorRelevant ? (
+                        <Tooltip content={'Last snapshot error: ' + lastErrorTimestamp?.toLocaleTimeString()}>
+                          <Link href={`/datasources/${datasourceId}/experiments/${experimentId}/snapshots`}>
+                            <ExclamationTriangleIcon color={'red'} />
+                          </Link>
+                        </Tooltip>
+                      ) : (
+                        <Tooltip content={'View snapshot log'}>
+                          <Link href={`/datasources/${datasourceId}/experiments/${experimentId}/snapshots`}>
+                            <ActivityLogIcon />
+                          </Link>
+                        </Tooltip>
+                      )
+                    ) : null}
                   </Flex>
                 </Badge>
               </Flex>
