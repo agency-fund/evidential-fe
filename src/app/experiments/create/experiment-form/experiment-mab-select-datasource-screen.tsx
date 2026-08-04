@@ -2,16 +2,17 @@
 import { ScreenProps } from '@/services/wizard/wizard-types';
 import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import { DataType } from '@/api/methods.schemas';
-import { Card, Flex, RadioGroup, Text } from '@radix-ui/themes';
+import { Card, Flex } from '@radix-ui/themes';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { useListOrganizationDatasources } from '@/api/admin';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { DatasourceCardsGrid } from '../datasource-form/datasource-cards-grid';
-import { CreateDatasourceForm } from '../datasource-form/create-datasource-form';
+import { CreateDatasourceForm } from '@/components/features/datasources/create-datasource-form';
+import { DatasourceMode, DatasourceModeSelector } from '../datasource-form/datasource-mode-selector';
 import { SelectTableFields } from './select-table-fields';
 import { isUsableDatasource } from '@/services/genapi-helpers';
 
-export type DwhMode = 'none' | 'existing' | 'create';
+export type DwhMode = DatasourceMode;
 
 export type ExperimentMabSelectDatasourceMessages =
   | { type: 'set-dwh-mode'; value: DwhMode }
@@ -23,7 +24,7 @@ export type ExperimentMabSelectDatasourceMessages =
 /**
  * Optional MAB step for binding the bandit to a data-warehouse target column. A single radio picks how
  * outcomes are recorded — no warehouse (API-only), an existing datasource, or a new one — and the
- * shared table / primary key / target-column picker appears inline once a datasource is chosen.
+ * shared table / primary key / target-column picker appears below the options once a datasource is chosen.
  */
 export const ExperimentMabSelectDatasourceScreen = ({
   data,
@@ -66,46 +67,33 @@ export const ExperimentMabSelectDatasourceScreen = ({
   return (
     <Flex direction="column" gap="3">
       <Card>
-        <RadioGroup.Root
-          value={mode}
-          onValueChange={(value) => dispatch({ type: 'set-dwh-mode', value: value as DwhMode })}
-        >
-          <Flex direction="column" gap="3">
-            {hasDatasources && (
-              <RadioGroup.Item value="existing">
-                <Text weight="bold">Use an existing datasource</Text>
-                {mode === 'existing' && (
-                  <Flex direction="column" gap="3">
-                    <DatasourceCardsGrid
-                      datasources={availableDatasources}
-                      selectedDatasourceId={data.datasourceId}
-                      onSelect={(id) => dispatch({ type: 'set-datasource', datasourceId: id })}
-                    />
-                    {picker}
-                  </Flex>
-                )}
-              </RadioGroup.Item>
-            )}
-
-            <RadioGroup.Item value="create">
-              <Text weight="bold">Create a new datasource</Text>
-              {mode === 'create' &&
-                (data.datasourceId ? (
-                  picker
-                ) : (
-                  <Card>
-                    <CreateDatasourceForm
-                      onDatasourceCreated={(id) => dispatch({ type: 'set-datasource', datasourceId: id })}
-                    />
-                  </Card>
-                ))}
-            </RadioGroup.Item>
-
-            <RadioGroup.Item value="none">
-              <Text weight="bold">No data warehouse</Text>
-            </RadioGroup.Item>
-          </Flex>
-        </RadioGroup.Root>
+        <DatasourceModeSelector
+          mode={mode}
+          onModeChange={(value) => dispatch({ type: 'set-dwh-mode', value })}
+          hasDatasources={hasDatasources}
+          showNoDwhOption
+          existingContent={
+            <Flex direction="column" gap="3">
+              <DatasourceCardsGrid
+                datasources={availableDatasources}
+                selectedDatasourceId={data.datasourceId}
+                onSelect={(id) => dispatch({ type: 'set-datasource', datasourceId: id })}
+              />
+              {picker}
+            </Flex>
+          }
+          createContent={
+            data.datasourceId ? (
+              picker
+            ) : (
+              <Card>
+                <CreateDatasourceForm
+                  onDatasourceCreated={(id) => dispatch({ type: 'set-datasource', datasourceId: id })}
+                />
+              </Card>
+            )
+          }
+        />
       </Card>
     </Flex>
   );
