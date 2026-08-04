@@ -1,12 +1,6 @@
 import { packScreen, WizardForm } from '@/services/wizard/wizard-types';
 import { SelectDatasourceScreen } from './select-datasource-screen';
 import { SelectTableScreen } from './select-table-screen';
-
-// Delegate to the existing datasource form reducer
-import {
-  DatasourceFormData as CreateDatasourceFormData,
-  defaultDatasourceFormData,
-} from '@/components/features/datasources/add-datasource-form';
 import { type ExperimentType } from '@/services/experiment-utils';
 
 export type DatasourceFormInputData = {
@@ -30,8 +24,6 @@ export type DatasourceFormData = {
   experimentType?: ExperimentType;
   // Selection mode: existing or create
   selectionMode: 'existing' | 'create';
-  // Create datasource form state (reuse existing interface)
-  createForm: CreateDatasourceFormData;
 };
 
 // Screen identifiers for the datasource wizard
@@ -42,7 +34,6 @@ const screen = packScreen<DatasourceFormData, DatasourceScreenId>();
 
 export const DatasourceForm: WizardForm<DatasourceFormData, DatasourceScreenId, DatasourceFormInputData> = {
   initialData: (inputData) => ({
-    createForm: defaultDatasourceFormData(),
     datasourceId: inputData?.datasourceId,
     tableName: inputData?.tableName,
     primaryKey: inputData?.primaryKey,
@@ -80,7 +71,6 @@ export const DatasourceForm: WizardForm<DatasourceFormData, DatasourceScreenId, 
             tableName: undefined,
             primaryKey: undefined,
             clusterKey: undefined,
-            createForm: defaultDatasourceFormData(),
           };
         }
         return data;
