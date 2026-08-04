@@ -7,7 +7,6 @@ import {
   ClockIcon,
   ExclamationTriangleIcon,
   IdCardIcon,
-  LapTimerIcon,
   QuestionMarkCircledIcon,
   TextIcon,
 } from '@radix-ui/react-icons';
