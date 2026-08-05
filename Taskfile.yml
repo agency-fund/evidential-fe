@@ -35,7 +35,7 @@ tasks:
         echo "Tip: Run 'nvm install' from the repo root to install and then run 'nvm use' to switch to the correct version."
         exit 1
       fi
-      corepack pnpm install --frozen-lockfile
+      corepack pnpm install --frozen-lockfile --yes
   start:
     desc: 'Starts the development server'
     interactive: true
