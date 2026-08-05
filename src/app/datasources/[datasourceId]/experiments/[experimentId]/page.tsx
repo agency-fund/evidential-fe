@@ -502,6 +502,15 @@ export default function ExperimentViewPage() {
                     <Text size="2">{totalClusterCount.toLocaleString()} clusters</Text>
                   </Badge>
                 )}
+                {isBanditSpec(design_spec) && design_spec.enable_autofail && (
+                  <Badge variant="soft">
+                    <InfoCircledIcon />
+                    <Text size="2">
+                      Autofail enabled: (time: {design_spec.autofail_window}h, outcome:{' '}
+                      {design_spec.autofail_outcome_value})
+                    </Text>
+                  </Badge>
+                )}
                 <Badge>
                   <PersonIcon />
                   <Text size="2">{assign_summary.sample_size.toLocaleString()} participants</Text>
