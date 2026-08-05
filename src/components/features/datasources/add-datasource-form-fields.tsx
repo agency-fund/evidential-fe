@@ -1,7 +1,8 @@
 'use client';
 import { Button, Flex, RadioGroup, Text, TextField } from '@radix-ui/themes';
 import { EyeClosedIcon, EyeOpenIcon, InfoCircledIcon } from '@radix-ui/react-icons';
-import { ApiOnlyDsn, Dsn, PostgresDsnSslmode } from '@/api/methods.schemas';
+import { ApiOnlyDsn, BqDsn, Dsn, PostgresDsn, PostgresDsnSslmode, RedshiftDsn } from '@/api/methods.schemas';
+import { PostgresSslModes } from '@/services/typehelper';
 import { ServiceAccountJsonField } from '@/components/features/datasources/service-account-json-field';
 
 const portMap: Record<string, string> = {
@@ -100,13 +101,48 @@ export function datasourceFormReducer(data: DatasourceFormData, msg: AddDatasour
   }
 }
 
-interface AddDatasourceFormProps {
+export function buildDsn(data: DatasourceFormData): PostgresDsn | RedshiftDsn | BqDsn {
+  if (data.dwhType === 'postgres') {
+    return {
+      type: 'postgres',
+      host: data.host,
+      port: parseInt(data.port),
+      dbname: data.database,
+      user: data.user,
+      password: { type: 'revealed', value: data.password },
+      sslmode: data.sslmode as PostgresSslModes,
+      search_path: data.search_path || null,
+    };
+  }
+  if (data.dwhType === 'redshift') {
+    return {
+      type: 'redshift',
+      host: data.host,
+      port: parseInt(data.port),
+      dbname: data.database,
+      user: data.user,
+      password: { type: 'revealed', value: data.password },
+      search_path: data.search_path || null,
+    };
+  }
+  return {
+    type: 'bigquery',
+    project_id: data.project_id,
+    dataset_id: data.dataset,
+    credentials: {
+      type: 'serviceaccountinfo',
+      content: data.credentials_json,
+    },
+  };
+}
+
+interface AddDatasourceFormFieldsProps {
   data: DatasourceFormData;
   dispatch: (msg: AddDatasourceFormMessage) => void;
   isDNSError?: boolean;
 }
 
-export function AddDatasourceForm({ data, dispatch, isDNSError }: AddDatasourceFormProps) {
+export function AddDatasourceFormFields({ data, dispatch, isDNSError }: AddDatasourceFormFieldsProps) {
   const { dwhType, showPassword } = data;
 
   return (

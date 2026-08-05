@@ -1,12 +1,13 @@
 'use client';
 import { ScreenProps } from '@/services/wizard/wizard-types';
 import { DatasourceFormData, DatasourceScreenId } from './datasource-form-def';
-import { Card, Flex, RadioGroup, Text } from '@radix-ui/themes';
+import { Card, Flex } from '@radix-ui/themes';
 import { useListOrganizationDatasources } from '@/api/admin';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { XSpinner } from '@/components/ui/x-spinner';
-import { CreateDatasourceForm } from './create-datasource-form';
+import { CreateDatasourceForm } from '@/components/features/datasources/create-datasource-form';
 import { DatasourceCardsGrid } from '@/app/experiments/create/datasource-form/datasource-cards-grid';
+import { DatasourceModeSelector } from '@/app/experiments/create/datasource-form/datasource-mode-selector';
 import { DatasourceSummary } from '@/api/methods.schemas';
 import { isUsableDatasource } from '@/services/genapi-helpers';
 
@@ -61,40 +62,29 @@ export const SelectDatasourceScreen = ({
     );
   }
 
-  // Case 2: Has datasources - show RadioCards toggle
+  // Case 2: Has datasources - show mode toggle with the active option's content below
   return (
-    <Flex direction="column" gap="3">
-      <Flex direction={'column'} gap={'3'}>
-        <RadioGroup.Root
-          value={data.selectionMode}
-          onValueChange={(value) => dispatch({ type: 'set-mode', value: value as 'existing' | 'create' })}
-        >
-          <RadioGroup.Item value="existing">
-            <Text weight="bold">Use an existing datasource</Text>
-            {data.selectionMode === 'existing' && (
-              <DatasourceCardsGrid
-                datasources={availableDatasources}
-                selectedDatasourceId={data.datasourceId}
-                onSelect={(id) => dispatch({ type: 'set-datasource', value: id })}
-              />
-            )}
-          </RadioGroup.Item>
-
-          <RadioGroup.Item value="create">
-            <Text weight="bold">Create a new datasource</Text>
-            {data.selectionMode === 'create' && (
-              <Card>
-                <CreateDatasourceForm
-                  onDatasourceCreated={(id) => {
-                    dispatch({ type: 'datasource-created', datasourceId: id });
-                    navigateNext();
-                  }}
-                />
-              </Card>
-            )}
-          </RadioGroup.Item>
-        </RadioGroup.Root>
-      </Flex>
-    </Flex>
+    <DatasourceModeSelector
+      mode={data.selectionMode}
+      onModeChange={(mode) => dispatch({ type: 'set-mode', value: mode as 'existing' | 'create' })}
+      hasDatasources={hasDatasources}
+      existingContent={
+        <DatasourceCardsGrid
+          datasources={availableDatasources}
+          selectedDatasourceId={data.datasourceId}
+          onSelect={(id) => dispatch({ type: 'set-datasource', value: id })}
+        />
+      }
+      createContent={
+        <Card>
+          <CreateDatasourceForm
+            onDatasourceCreated={(id) => {
+              dispatch({ type: 'datasource-created', datasourceId: id });
+              navigateNext();
+            }}
+          />
+        </Card>
+      }
+    />
   );
 };

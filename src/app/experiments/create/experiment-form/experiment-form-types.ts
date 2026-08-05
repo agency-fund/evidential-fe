@@ -14,6 +14,7 @@ import {
 } from '@/api/methods.schemas';
 import { ErrorType } from '@/services/orval-fetch';
 import { type ExperimentType, isMabExperimentType } from '@/services/experiment-utils';
+import { type DatasourceMode } from '@/app/experiments/create/datasource-form/datasource-mode';
 
 export type ContextVariableType = ContextType;
 
@@ -91,7 +92,7 @@ export type ExperimentFormData = {
   primaryKey?: string;
   clusterKey?: string;
   // mab-select-datasource-screen options
-  dwhMode?: 'none' | 'existing' | 'create';
+  dwhMode?: DatasourceMode;
   // mab-select-datasource-screen: the DWH column read as each participant's outcome. When set, a MAB
   // experiment is created as mab_online_dwh instead of mab_online. Left undefined for API-only MAB.
   targetFieldName?: string;
