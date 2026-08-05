@@ -8,14 +8,13 @@ import { useListOrganizationDatasources } from '@/api/admin';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { DatasourceCardsGrid } from '../datasource-form/datasource-cards-grid';
 import { CreateDatasourceForm } from '@/components/features/datasources/create-datasource-form';
-import { DatasourceMode, DatasourceModeSelector } from '../datasource-form/datasource-mode-selector';
+import { DatasourceMode } from '../datasource-form/datasource-mode';
+import { DatasourceModeSelector } from '../datasource-form/datasource-mode-selector';
 import { SelectTableFields } from './select-table-fields';
 import { isUsableDatasource } from '@/services/genapi-helpers';
 
-export type DwhMode = DatasourceMode;
-
 export type ExperimentMabSelectDatasourceMessages =
-  | { type: 'set-dwh-mode'; value: DwhMode }
+  | { type: 'set-dwh-mode'; value: DatasourceMode }
   | { type: 'set-datasource'; datasourceId: string }
   | { type: 'set-table'; tableName: string }
   | { type: 'set-primary-key'; primaryKey?: string }
@@ -44,7 +43,7 @@ export const ExperimentMabSelectDatasourceScreen = ({
 
   const hasDatasources = availableDatasources.length > 0;
   // Default to connecting a warehouse; fall back to create when there are none yet.
-  const mode: DwhMode = data.dwhMode ?? (hasDatasources ? 'existing' : 'create');
+  const mode: DatasourceMode = data.dwhMode ?? (hasDatasources ? 'existing' : 'create');
 
   // The table/target picker, shown inside whichever datasource option is active once one is chosen.
   const datasourceId = data.datasourceId;

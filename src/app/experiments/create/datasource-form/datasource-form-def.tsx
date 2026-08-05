@@ -2,6 +2,7 @@ import { packScreen, WizardForm } from '@/services/wizard/wizard-types';
 import { SelectDatasourceScreen } from './select-datasource-screen';
 import { SelectTableScreen } from './select-table-screen';
 import { type ExperimentType } from '@/services/experiment-utils';
+import { type DatasourceMode } from './datasource-mode';
 
 export type DatasourceFormInputData = {
   datasourceId?: string;
@@ -23,7 +24,7 @@ export type DatasourceFormData = {
   // Experiment type context from the parent wizard (read-only)
   experimentType?: ExperimentType;
   // Selection mode: existing or create
-  selectionMode: 'existing' | 'create';
+  selectionMode: Exclude<DatasourceMode, 'none'>;
 };
 
 // Screen identifiers for the datasource wizard

@@ -1,8 +1,7 @@
 'use client';
 import { Flex, RadioGroup, Text } from '@radix-ui/themes';
 import { ReactNode } from 'react';
-
-export type DatasourceMode = 'existing' | 'create' | 'none';
+import { DatasourceMode } from './datasource-mode';
 
 interface DatasourceModeSelectorProps {
   mode: DatasourceMode;
