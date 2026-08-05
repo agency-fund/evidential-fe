@@ -39,7 +39,7 @@ export const DatasourceModeSelector = ({
         )}
       </Flex>
     </RadioGroup.Root>
-    {mode === 'existing' && existingContent}
+    {hasDatasources && mode === 'existing' && existingContent}
     {mode === 'create' && createContent}
   </Flex>
 );
