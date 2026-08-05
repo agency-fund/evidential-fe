@@ -116,7 +116,14 @@ export function ExperimentConfirmationDisplay({
           />
         )}
         {isBandit && (
-          <OutcomesPriorSection priorType={priorType} rewardType={rewardType} onEdit={onEditOutcomesPrior} />
+          <OutcomesPriorSection
+            priorType={priorType}
+            rewardType={rewardType}
+            autofailEnabled={designSpec.enable_autofail === true}
+            autofailWindow={designSpec.autofail_window}
+            autofailOutcomeValue={designSpec.autofail_outcome_value}
+            onEdit={onEditOutcomesPrior}
+          />
         )}
         {isCmab && contexts.length > 0 && <ContextsSection contexts={contexts} onEdit={onEditContexts} />}
         {footer}

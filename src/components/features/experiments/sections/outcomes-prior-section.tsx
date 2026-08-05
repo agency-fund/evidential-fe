@@ -8,10 +8,20 @@ import { LikelihoodTypes, PriorTypes } from '@/api/methods.schemas';
 interface OutcomesPriorSectionProps {
   priorType?: PriorTypes;
   rewardType?: LikelihoodTypes;
+  autofailEnabled?: boolean;
+  autofailWindow?: number;
+  autofailOutcomeValue?: number;
   onEdit?: () => void;
 }
 
-export function OutcomesPriorSection({ priorType, rewardType, onEdit }: OutcomesPriorSectionProps) {
+export function OutcomesPriorSection({
+  priorType,
+  rewardType,
+  autofailEnabled,
+  autofailWindow,
+  autofailOutcomeValue,
+  onEdit,
+}: OutcomesPriorSectionProps) {
   const outcomeLabel = rewardType === 'binary' ? 'Binary' : 'Real-valued';
   const priorLabel = priorType === 'beta' ? 'Beta' : 'Normal';
 
@@ -36,6 +46,18 @@ export function OutcomesPriorSection({ priorType, rewardType, onEdit }: Outcomes
           <DataList.Label>Prior Distribution</DataList.Label>
           <DataList.Value>{priorLabel}</DataList.Value>
         </DataList.Item>
+        {autofailEnabled && (
+          <>
+            <DataList.Item>
+              <DataList.Label>Autofail Window</DataList.Label>
+              <DataList.Value>{autofailWindow} hour(s)</DataList.Value>
+            </DataList.Item>
+            <DataList.Item>
+              <DataList.Label>Autofail Outcome Value</DataList.Label>
+              <DataList.Value>{autofailOutcomeValue}</DataList.Value>
+            </DataList.Item>
+          </>
+        )}
       </DataList.Root>
     </SectionCard>
   );

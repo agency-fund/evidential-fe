@@ -45,6 +45,12 @@ export type BanditArm = Omit<Arm, 'arm_id'> & {
   stddev_prior?: number;
 };
 
+export type AutofailConfig = {
+  enableAutofail?: boolean;
+  autofailWindow?: number;
+  autofailOutcomeValue?: number;
+};
+
 export type BanditParams =
   | {
       experimentType: 'mab_online';
@@ -133,6 +139,7 @@ export type ExperimentFormData = {
 
   // bandit flow config
   bandit?: BanditParams;
+  autofail?: AutofailConfig;
 
   // experiment-summarize-freq-screen (populated after createExperiment API call)
   experimentId?: string;

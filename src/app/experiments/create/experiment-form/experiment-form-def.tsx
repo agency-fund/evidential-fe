@@ -309,7 +309,50 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
                 : toCmabBanditParams(msg.value, data.bandit.arms, data.bandit.contexts),
           };
         }
+        if (msg.type === 'set-autofail-enabled') {
+          return {
+            ...data,
+            autofail: { ...data.autofail, enableAutofail: msg.value },
+          };
+        }
+        if (msg.type === 'set-autofail-window') {
+          return {
+            ...data,
+            autofail: { ...data.autofail, autofailWindow: msg.value },
+          };
+        }
+        if (msg.type === 'set-autofail-outcome-value') {
+          return {
+            ...data,
+            autofail: { ...data.autofail, autofailOutcomeValue: msg.value },
+          };
+        }
         return data;
+      },
+      isNextEnabled: (data) => {
+        const is_enabled = data.autofail?.enableAutofail === true;
+        const is_non_binary_value =
+          data.bandit?.outcomeType === 'binary' &&
+          !(data.autofail?.autofailOutcomeValue === 0 || data.autofail?.autofailOutcomeValue === 1);
+        return is_enabled
+          ? !(
+              data.autofail?.autofailWindow === undefined ||
+              data.autofail?.autofailWindow < 1 ||
+              data.autofail?.autofailOutcomeValue === undefined ||
+              is_non_binary_value
+            )
+          : true;
+      },
+      nextButtonTooltip: (data) => {
+        const is_enabled = data.autofail?.enableAutofail === true;
+        const is_non_binary_value =
+          data.bandit?.outcomeType === 'binary' &&
+          !(data.autofail?.autofailOutcomeValue === 0 || data.autofail?.autofailOutcomeValue === 1);
+        if (is_enabled && data.autofail?.autofailWindow === undefined) return 'Autofail window is required.';
+        if (is_enabled && data.autofail?.autofailWindow !== undefined && data.autofail?.autofailWindow < 1)
+          return 'Autofail window must be greater than or equal to 1.';
+        if (is_enabled && is_non_binary_value) return 'Autofail outcome value must be 0 or 1 for binary outcomes.';
+        return undefined;
       },
     }),
     'describe-contexts': screen({
