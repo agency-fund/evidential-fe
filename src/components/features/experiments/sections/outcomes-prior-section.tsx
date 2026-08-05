@@ -50,7 +50,9 @@ export function OutcomesPriorSection({
           <>
             <DataList.Item>
               <DataList.Label>Autofail Window</DataList.Label>
-              <DataList.Value>{autofailWindow} hour(s)</DataList.Value>
+              <DataList.Value>
+                {autofailWindow} {autofailWindow === 1 ? 'hour' : 'hours'}
+              </DataList.Value>
             </DataList.Item>
             <DataList.Item>
               <DataList.Label>Autofail Outcome Value</DataList.Label>

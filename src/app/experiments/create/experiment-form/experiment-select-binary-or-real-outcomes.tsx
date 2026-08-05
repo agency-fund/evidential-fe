@@ -1,11 +1,9 @@
-import { useState } from 'react';
 import { ScreenProps } from '@/services/wizard/wizard-types';
 import {
   ExperimentFormData,
   ExperimentScreenId,
   getMabDwhTarget,
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
-import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import { Callout, Flex, Heading, RadioCards, Switch, Text, TextField } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { LikelihoodTypes } from '@/api/methods.schemas';
@@ -84,8 +82,7 @@ export const ExperimentSelectBinaryOrRealOutcomes = ({
           </Flex>
         </Text>
         <Text size="1" color="gray">
-          Enable automatically filling in outcome values for participants do not complete the experiment within a
-          specified time window.
+          Automatically assigns an outcome to participants who don't complete the experiment within a set time window.
         </Text>
       </Flex>
       {autofailEnabled && (
@@ -105,8 +102,8 @@ export const ExperimentSelectBinaryOrRealOutcomes = ({
               }
             />
             <Text size="1" color="gray">
-              The time window after which participants who have not completed the experiment will be automatically
-              assigned an outcome value.
+              Participants who haven't completed the experiment after this many hours are assigned an outcome
+              automatically.
             </Text>
           </Flex>
           <Flex direction="column" gap="1" flexGrow="1">
@@ -124,8 +121,7 @@ export const ExperimentSelectBinaryOrRealOutcomes = ({
               }
             />
             <Text size="1" color="gray">
-              The outcome value that will be automatically assigned to participants who do not complete the experiment
-              within the specified time window.
+              The value automatically assigned as the outcome when a participant doesn't complete in time.
             </Text>
           </Flex>
         </Flex>

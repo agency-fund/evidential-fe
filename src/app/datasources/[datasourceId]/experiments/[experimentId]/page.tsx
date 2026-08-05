@@ -506,8 +506,7 @@ export default function ExperimentViewPage() {
                   <Badge variant="soft">
                     <InfoCircledIcon />
                     <Text size="2">
-                      Autofail enabled: (time: {design_spec.autofail_window}h, outcome:{' '}
-                      {design_spec.autofail_outcome_value})
+                      Autofail: {design_spec.autofail_window}h window, outcome {design_spec.autofail_outcome_value}
                     </Text>
                   </Badge>
                 )}

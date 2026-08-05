@@ -109,6 +109,19 @@ const abandonDraftExperiment = async (data: ExperimentFormData) => {
   }
 };
 
+const compute_autofail_conditions = (data: ExperimentFormData) => {
+  const isEnabled = data.autofail?.enableAutofail === true;
+  const isOutcomeValueUndefined = isEnabled && data.autofail?.autofailOutcomeValue === undefined;
+  const isNonBinaryValue =
+    isEnabled &&
+    data.bandit?.outcomeType === 'binary' &&
+    !(data.autofail?.autofailOutcomeValue === 0 || data.autofail?.autofailOutcomeValue === 1);
+  const isWindowInvalid =
+    isEnabled && (data.autofail?.autofailWindow === undefined || data.autofail?.autofailWindow < 1);
+  const isAutofailOutcomeInvalid = isNonBinaryValue || isOutcomeValueUndefined;
+  return { isEnabled, isNonBinaryValue, isWindowInvalid, isAutofailOutcomeInvalid };
+};
+
 export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, undefined> = {
   initialData: () => ({
     name: 'New Hypothesis',
@@ -294,7 +307,6 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
     }),
     'bandit-binary-or-real': screen({
       breadcrumbTitle: 'Outcomes',
-
       render: ExperimentSelectBinaryOrRealOutcomes,
       reducer: (data, msg) => {
         if (msg.type === 'set-outcome-type') {
@@ -329,29 +341,18 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         }
         return data;
       },
+
       isNextEnabled: (data) => {
-        const is_enabled = data.autofail?.enableAutofail === true;
-        const is_non_binary_value =
-          data.bandit?.outcomeType === 'binary' &&
-          !(data.autofail?.autofailOutcomeValue === 0 || data.autofail?.autofailOutcomeValue === 1);
-        return is_enabled
-          ? !(
-              data.autofail?.autofailWindow === undefined ||
-              data.autofail?.autofailWindow < 1 ||
-              data.autofail?.autofailOutcomeValue === undefined ||
-              is_non_binary_value
-            )
-          : true;
+        const { isEnabled, isWindowInvalid, isAutofailOutcomeInvalid } = compute_autofail_conditions(data);
+        return !isEnabled || (!isWindowInvalid && !isAutofailOutcomeInvalid);
       },
       nextButtonTooltip: (data) => {
-        const is_enabled = data.autofail?.enableAutofail === true;
-        const is_non_binary_value =
-          data.bandit?.outcomeType === 'binary' &&
-          !(data.autofail?.autofailOutcomeValue === 0 || data.autofail?.autofailOutcomeValue === 1);
-        if (is_enabled && data.autofail?.autofailWindow === undefined) return 'Autofail window is required.';
-        if (is_enabled && data.autofail?.autofailWindow !== undefined && data.autofail?.autofailWindow < 1)
-          return 'Autofail window must be greater than or equal to 1.';
-        if (is_enabled && is_non_binary_value) return 'Autofail outcome value must be 0 or 1 for binary outcomes.';
+        const { isEnabled, isNonBinaryValue, isWindowInvalid, isAutofailOutcomeInvalid } =
+          compute_autofail_conditions(data);
+
+        if (isEnabled && isWindowInvalid) return 'Autofail window must be greater than or equal to 1.';
+        if (isEnabled && isNonBinaryValue) return 'Autofail outcome value must be 0 or 1 for binary outcomes.';
+        if (isEnabled && isAutofailOutcomeInvalid) return 'Autofail outcome value is required.';
         return undefined;
       },
     }),
