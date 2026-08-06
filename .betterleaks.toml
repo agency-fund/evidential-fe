@@ -1,0 +1,17 @@
+title = "evidential-fe betterleaks config"
+
+[extend]
+useDefault = true
+[[allowlists]]
+description = "Ignore Next.js build output and other generated files"
+paths = [
+    '''\.next/''',
+    '''node_modules/''',
+    '''dist/''',
+    '''build/''',
+]
+[[allowlists]]
+description = "Ignore scanner reports"
+paths = [
+    '''findings?.*\.json$''',
+]
