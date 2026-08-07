@@ -1,10 +1,11 @@
 'use client';
 
-import { Badge, Button, DataList, Flex, Separator, Text, Tooltip } from '@radix-ui/themes';
-import { InfoCircledIcon, Pencil2Icon } from '@radix-ui/react-icons';
+import { Button, DataList, Flex, Separator, Text } from '@radix-ui/themes';
+import { Pencil2Icon } from '@radix-ui/react-icons';
 import { DataType } from '@/api/methods.schemas';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
+import { InfoBadge } from '@/components/ui/info-badge';
 import { MdeBadge } from '@/components/features/experiments/mde-badge';
 
 export interface MetricDisplay {
@@ -17,25 +18,31 @@ export interface MetricDisplay {
   sufficientN?: boolean | null;
 }
 
-function SampleSufficiencyBadge({ sufficientN }: { sufficientN: boolean }) {
+interface SampleSufficiencyBadgeProps {
+  sufficientN: boolean;
+}
+
+function SampleSufficiencyBadge({ sufficientN }: SampleSufficiencyBadgeProps) {
   return sufficientN ? (
-    <Tooltip content="The chosen sample size is large enough to detect this metric's target MDE.">
-      <Badge color="green">
-        Sufficient
-        <InfoCircledIcon />
-      </Badge>
-    </Tooltip>
+    <InfoBadge
+      label="Sufficient"
+      color="green"
+      tooltip="The chosen sample size is large enough to detect this metric's target MDE."
+    />
   ) : (
-    <Tooltip content="The chosen sample size is too small to detect this metric's target MDE.">
-      <Badge color="red">
-        Insufficient
-        <InfoCircledIcon />
-      </Badge>
-    </Tooltip>
+    <InfoBadge
+      label="Insufficient"
+      color="red"
+      tooltip="The chosen sample size is too small to detect this metric's target MDE."
+    />
   );
 }
 
-function MetricBadges({ metric }: { metric: MetricDisplay }) {
+interface MetricBadgesProps {
+  metric: MetricDisplay;
+}
+
+function MetricBadges({ metric }: MetricBadgesProps) {
   return (
     <Flex direction="column" gap="2" align="start" width="100%">
       <Flex direction="row" gap="2" align="center" justify="between" wrap="wrap" width="100%">

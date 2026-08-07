@@ -1,10 +1,11 @@
 'use client';
 
-import { Badge, Button, Flex, Separator, Text, Tooltip } from '@radix-ui/themes';
-import { InfoCircledIcon, LayersIcon, Pencil2Icon, PersonIcon } from '@radix-ui/react-icons';
+import { Badge, Button, Flex, Separator, Text } from '@radix-ui/themes';
+import { LayersIcon, Pencil2Icon, PersonIcon } from '@radix-ui/react-icons';
 import { ArmBandit, CreateExperimentResponse, PriorTypes } from '@/api/methods.schemas';
 import { isBanditSpec } from '@/services/experiment-utils';
 import { SectionCard } from '@/components/ui/cards/section-card';
+import { InfoBadge } from '@/components/ui/info-badge';
 import { ReadMoreText } from '@/components/ui/read-more-text';
 
 interface ArmAssignmentBadgesProps {
@@ -105,19 +106,19 @@ export function TreatmentArmsSection({ response, onEdit }: TreatmentArmsSectionP
   const balanceOk = assignSummary?.balance_check?.balance_ok;
   const balanceBadge =
     balanceOk == null ? undefined : balanceOk ? (
-      <Tooltip content="A statistical check found your metric and strata values evenly distributed across the arms at assignment.">
-        <Badge color="green" variant="soft">
-          Balanced
-          <InfoCircledIcon />
-        </Badge>
-      </Tooltip>
+      <InfoBadge
+        label="Balanced"
+        color="green"
+        variant="soft"
+        tooltip="A statistical check found your metric and strata values evenly distributed across the arms at assignment."
+      />
     ) : (
-      <Tooltip content="A statistical check suggests your metric and strata values are unevenly distributed across the arms. See Design Details on the Metrics card for the test results.">
-        <Badge color="red" variant="soft">
-          Unbalanced
-          <InfoCircledIcon />
-        </Badge>
-      </Tooltip>
+      <InfoBadge
+        label="Unbalanced"
+        color="red"
+        variant="soft"
+        tooltip="A statistical check suggests your metric and strata values are unevenly distributed across the arms. See Design Details on the Metrics card for the test results."
+      />
     );
   const editButton = onEdit ? (
     <Button size="1" onClick={onEdit}>

@@ -274,9 +274,9 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                         <DataList.Label>Status</DataList.Label>
                         <DataList.Value>
                           {primaryPower.sufficient_n ? (
-                            <Badge color={'green'}>OK</Badge>
+                            <Badge color={'green'}>Sufficient</Badge>
                           ) : (
-                            <Badge color={'red'}>Too Few</Badge>
+                            <Badge color={'red'}>Insufficient</Badge>
                           )}
                         </DataList.Value>
                       </DataList.Item>
@@ -347,9 +347,9 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                           <Table.Cell>{metricAnalysis.metric_spec.field_name}</Table.Cell>
                           <Table.Cell>
                             {metricAnalysis.sufficient_n ? (
-                              <Badge color={'green'}>OK</Badge>
+                              <Badge color={'green'}>Sufficient</Badge>
                             ) : (
-                              <Badge color={'red'}>Too Few</Badge>
+                              <Badge color={'red'}>Insufficient</Badge>
                             )}
                           </Table.Cell>
                           <Table.Cell align={'right'}>
