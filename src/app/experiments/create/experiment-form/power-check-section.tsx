@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  Badge,
   Button,
   Callout,
   Card,
@@ -27,6 +26,7 @@ import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
 import { getPowerAnalysis, metricHasMissingValues } from '@/services/experiment-utils';
 import { MetricSampleSizeDisplay } from '@/components/features/experiments/metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { InfoBadge } from '@/components/ui/info-badge';
 import { ZodError } from 'zod';
 import { useState } from 'react';
 import { SectionCard } from '@/components/ui/cards/section-card';
@@ -42,6 +42,22 @@ interface PowerCheckSectionProps {
   data: ExperimentFormData;
   dispatch: (action: PowerCheckSectionAction | ClusterStatisticsSectionAction) => void;
 }
+
+const availableSampleSufficientBadge = (
+  <InfoBadge
+    label="Sufficient"
+    color="green"
+    tooltip="There are enough participants available to sample to detect this metric's target MDE."
+  />
+);
+
+const availableSampleInsufficientBadge = (
+  <InfoBadge
+    label="Insufficient"
+    color="red"
+    tooltip="There are not enough participants available to sample to detect this metric's target MDE."
+  />
+);
 
 const isPowerCheckButtonEnabled = (isMutating: boolean, data: ExperimentFormData) => {
   const reasons = [];
@@ -273,11 +289,9 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                       <DataList.Item>
                         <DataList.Label>Status</DataList.Label>
                         <DataList.Value>
-                          {primaryPower.sufficient_n ? (
-                            <Badge color={'green'}>Sufficient</Badge>
-                          ) : (
-                            <Badge color={'red'}>Insufficient</Badge>
-                          )}
+                          {primaryPower.sufficient_n
+                            ? availableSampleSufficientBadge
+                            : availableSampleInsufficientBadge}
                         </DataList.Value>
                       </DataList.Item>
                       <DataList.Item>
@@ -346,11 +360,9 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                         <Table.Row key={`rest${i}`}>
                           <Table.Cell>{metricAnalysis.metric_spec.field_name}</Table.Cell>
                           <Table.Cell>
-                            {metricAnalysis.sufficient_n ? (
-                              <Badge color={'green'}>Sufficient</Badge>
-                            ) : (
-                              <Badge color={'red'}>Insufficient</Badge>
-                            )}
+                            {metricAnalysis.sufficient_n
+                              ? availableSampleSufficientBadge
+                              : availableSampleInsufficientBadge}
                           </Table.Cell>
                           <Table.Cell align={'right'}>
                             <MetricSampleSizeDisplay

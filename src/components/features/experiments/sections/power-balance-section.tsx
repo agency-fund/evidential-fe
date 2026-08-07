@@ -96,12 +96,10 @@ export function PowerBalanceSection({
               <DataList.Label>Confidence</DataList.Label>
               <DataList.Value>{confidenceBadge}</DataList.Value>
             </DataList.Item>
-            {hasPowerAnalyses ? (
-              <DataList.Item>
-                <DataList.Label>Power</DataList.Label>
-                <DataList.Value>{powerBadge}</DataList.Value>
-              </DataList.Item>
-            ) : null}
+            <DataList.Item>
+              <DataList.Label>Power</DataList.Label>
+              <DataList.Value>{hasPowerAnalyses ? powerBadge : <Text>No analysis</Text>}</DataList.Value>
+            </DataList.Item>
             <DataList.Item>
               <DataList.Label>Desired Sample Size</DataList.Label>
               <DataList.Value>{desiredN ?? 'N/A'} participants</DataList.Value>

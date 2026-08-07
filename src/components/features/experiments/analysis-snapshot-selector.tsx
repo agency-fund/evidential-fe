@@ -85,7 +85,7 @@ export function AnalysisSnapshotSelector({
         ) : null}
         {analysisHistory.length > 0 ? (
           isLastSnapshotErrorRelevant ? (
-            <Tooltip content={'Last snapshot error: ' + lastErrorTimestamp?.toLocaleTimeString()}>
+            <Tooltip content={`Last snapshot error at ${lastErrorTimestamp?.toLocaleTimeString()}.`}>
               <IconButton size="1" variant="ghost" color="red" asChild>
                 <Link href={snapshotsHref} aria-label="View snapshot log">
                   <ExclamationTriangleIcon />
@@ -93,7 +93,7 @@ export function AnalysisSnapshotSelector({
               </IconButton>
             </Tooltip>
           ) : (
-            <Tooltip content={'View snapshot log'}>
+            <Tooltip content="View snapshot log">
               <IconButton size="1" variant="ghost" color="gray" asChild>
                 <Link href={snapshotsHref} aria-label="View snapshot log">
                   <ActivityLogIcon />
