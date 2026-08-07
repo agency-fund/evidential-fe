@@ -506,6 +506,8 @@ export default function ExperimentViewPage() {
                 activeAnalysisKey={activeAnalysisKey}
                 onSelectAnalysis={handleSelectAnalysis}
                 lastErrorTimestamp={lastErrorTimestamp}
+                isRefreshingLiveAnalysis={isLoadingLiveAnalysis || isLoadingLiveCmabAnalysis}
+                onRefreshLiveAnalysis={() => triggerLiveAnalysis()}
               />
               {isFrequentistSpec(design_spec) ? (
                 <Flex gap="3" align="center" wrap="wrap">

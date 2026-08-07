@@ -1506,6 +1506,33 @@ export interface RevealedStr {
 	value: string;
 }
 
+/**
+ * Request headers; secrets are placeholders, never real values.
+ */
+export type SampleCallHeaders = { [key: string]: string };
+
+export type SampleCallBodyAnyOf = { [key: string]: unknown };
+
+export type SampleCallBody = SampleCallBodyAnyOf | null;
+
+export type SampleCallExampleResponseAnyOf = { [key: string]: unknown };
+
+export type SampleCallExampleResponse = SampleCallExampleResponseAnyOf | null;
+
+export interface SampleCall {
+	label: string;
+	method: string;
+	path: string;
+	/** Request headers; secrets are placeholders, never real values. */
+	headers: SampleCallHeaders;
+	body?: SampleCallBody;
+	example_response?: SampleCallExampleResponse;
+}
+
+export interface SampleCalls {
+	calls: SampleCall[];
+}
+
 export interface SetConnectionToTurnRequest {
 	/** @minLength 335 */
 	turn_api_token: string;
@@ -1880,3 +1907,5 @@ export type RegenerateTurnWebhookTokenParams = {
 export type DeleteTurnArmJourneyMappingParams = {
 	allow_missing?: boolean;
 };
+
+export type GetExperimentSampleCalls200 = SampleCalls | null;

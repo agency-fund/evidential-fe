@@ -4,15 +4,14 @@ import { useReducer, useState } from 'react';
 import { Button, Dialog, Flex, Text } from '@radix-ui/themes';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { PlusIcon } from '@radix-ui/react-icons';
-import { BqDsn, PostgresDsn, RedshiftDsn } from '@/api/methods.schemas';
 import { mutate } from 'swr';
-import { PostgresSslModes } from '@/services/typehelper';
 import { ApiError } from '@/services/orval-fetch';
 import {
-  AddDatasourceForm,
+  AddDatasourceFormFields,
+  buildDsn,
   datasourceFormReducer,
   defaultDatasourceFormData,
-} from '@/components/features/datasources/add-datasource-form';
+} from '@/components/features/datasources/add-datasource-form-fields';
 
 export function AddDatasourceDialog({ organizationId }: { organizationId: string }) {
   const [open, setOpen] = useState(false);
@@ -40,45 +39,11 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    let dsn: PostgresDsn | RedshiftDsn | BqDsn;
-    if (formData.dwhType === 'postgres') {
-      dsn = {
-        type: 'postgres',
-        host: formData.host,
-        port: parseInt(formData.port),
-        dbname: formData.database,
-        user: formData.user,
-        password: { type: 'revealed', value: formData.password },
-        sslmode: formData.sslmode as PostgresSslModes,
-        search_path: formData.search_path || null,
-      };
-    } else if (formData.dwhType === 'redshift') {
-      dsn = {
-        type: 'redshift',
-        host: formData.host,
-        port: parseInt(formData.port),
-        dbname: formData.database,
-        user: formData.user,
-        password: { type: 'revealed', value: formData.password },
-        search_path: formData.search_path || null,
-      };
-    } else {
-      dsn = {
-        type: 'bigquery',
-        project_id: formData.project_id,
-        dataset_id: formData.dataset,
-        credentials: {
-          type: 'serviceaccountinfo',
-          content: formData.credentials_json,
-        },
-      };
-    }
-
     await trigger(
       {
         organization_id: organizationId,
         name: formData.name,
-        dsn,
+        dsn: buildDsn(formData),
       },
       {
         throwOnError: false,
@@ -113,7 +78,7 @@ export function AddDatasourceDialog({ organizationId }: { organizationId: string
           {error && !isDNSError && <GenericErrorCallout title="Failed to add datasource" error={error} />}
 
           <Flex direction="column" gap="3">
-            <AddDatasourceForm data={formData} dispatch={dispatch} isDNSError={isDNSError} />
+            <AddDatasourceFormFields data={formData} dispatch={dispatch} isDNSError={isDNSError} />
           </Flex>
 
           <Flex gap="3" mt="4" justify="end">

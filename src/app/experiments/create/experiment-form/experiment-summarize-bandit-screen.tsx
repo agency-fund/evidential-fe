@@ -31,6 +31,8 @@ export const ExperimentsSummarizeBanditScreen = ({
         treatmentArms: 'describe-bandit-arms',
         outcomesPrior: 'bandit-binary-or-real',
         contexts: isCmab ? 'describe-contexts' : undefined,
+        // The optional DWH-target step exists only in the MAB flow, not CMAB.
+        datasource: isCmab ? undefined : 'mab-select-datasource',
       }}
     />
   );

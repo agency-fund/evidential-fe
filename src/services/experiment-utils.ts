@@ -6,6 +6,8 @@ import {
   DesignSpec,
   ExperimentConfig,
   GetExperimentResponse,
+  MABDwhExperimentSpec,
+  MABDwhExperimentSpecExperimentType,
   MABExperimentSpec,
   MABExperimentSpecExperimentType,
   MetricPowerAnalysis,
@@ -83,10 +85,20 @@ export const isCmabExperimentType = (
 ): experimentType is CMABExperimentSpecExperimentType =>
   experimentType === CMABExperimentSpecExperimentType.cmab_online;
 
+// Only mab_online: a DWH-target MAB is this type plus a target column, never its own wizard type.
+export const isMabExperimentType = (
+  experimentType?: ExperimentType,
+): experimentType is MABExperimentSpecExperimentType => experimentType === MABExperimentSpecExperimentType.mab_online;
+
 export const isBanditExperimentType = (
   experimentType?: ExperimentType,
-): experimentType is MABExperimentSpecExperimentType | CMABExperimentSpecExperimentType =>
+): experimentType is
+  | MABExperimentSpecExperimentType
+  | MABDwhExperimentSpecExperimentType
+  | CMABExperimentSpecExperimentType =>
   experimentType === MABExperimentSpecExperimentType.mab_online ||
+  // A DWH-target MAB is a MAB for every read/display purpose (arms, priors, contexts).
+  experimentType === MABDwhExperimentSpecExperimentType.mab_online_dwh ||
   experimentType === CMABExperimentSpecExperimentType.cmab_online;
 
 export const isFrequentistSpec = (
@@ -101,16 +113,26 @@ export const isClusteredPreassignedSpec = (
   spec: DesignSpec | undefined,
 ): spec is PreassignedFrequentistExperimentSpec => isFreqPreassignedSpec(spec) && !!spec.cluster_key;
 
-export function isMabSpec(spec: DesignSpec | undefined): spec is MABExperimentSpec {
-  return !!spec && spec.experiment_type === MABExperimentSpecExperimentType.mab_online;
+export function isMabSpec(spec: DesignSpec | undefined): spec is MABExperimentSpec | MABDwhExperimentSpec {
+  return (
+    !!spec &&
+    (spec.experiment_type === MABExperimentSpecExperimentType.mab_online ||
+      // A DWH-target MAB is structurally a MAB for display (same arms/priors/contexts).
+      spec.experiment_type === MABDwhExperimentSpecExperimentType.mab_online_dwh)
+  );
+}
+
+export function isMabDwhSpec(spec: DesignSpec | undefined): spec is MABDwhExperimentSpec {
+  return !!spec && spec.experiment_type === MABDwhExperimentSpecExperimentType.mab_online_dwh;
 }
 
 export function isCmabSpec(spec: DesignSpec | undefined): spec is CMABExperimentSpec {
   return !!spec && spec.experiment_type === CMABExperimentSpecExperimentType.cmab_online;
 }
 
-export const isBanditSpec = (spec: DesignSpec | undefined): spec is MABExperimentSpec | CMABExperimentSpec =>
-  isMabSpec(spec) || isCmabSpec(spec);
+export const isBanditSpec = (
+  spec: DesignSpec | undefined,
+): spec is MABExperimentSpec | MABDwhExperimentSpec | CMABExperimentSpec => isMabSpec(spec) || isCmabSpec(spec);
 
 export const isCmabExperiment = (experiment: GetExperimentResponse | ExperimentConfig | undefined): boolean =>
   !!experiment && isCmabSpec(experiment.design_spec);

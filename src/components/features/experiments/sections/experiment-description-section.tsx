@@ -9,7 +9,7 @@ import { ReadMoreText } from '@/components/ui/read-more-text';
 import { formatIsoDateLocal } from '@/services/date-utils';
 import { useListOrganizationWebhooks } from '@/api/admin';
 import { useCurrentOrganization } from '@/providers/organization-provider';
-import { ExperimentTypeOptions } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
+import { experimentTypeLabel } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import { XSpinner } from '@/components/ui/x-spinner';
 
 interface ExperimentDescriptionSectionProps {
@@ -26,8 +26,7 @@ export function ExperimentDescriptionSection({ response, onEdit }: ExperimentDes
     swr: { enabled: !!organizationId },
   });
   const selectedWebhooks = webhooksData?.items?.filter((webhook) => webhookIds.includes(webhook.id)) ?? [];
-  const experimentTypeTitle =
-    ExperimentTypeOptions.find((v) => v.value == designSpec.experiment_type)?.title ?? designSpec.experiment_type;
+  const experimentTypeTitle = experimentTypeLabel(designSpec.experiment_type);
   return (
     <SectionCard
       title="Experiment Description"

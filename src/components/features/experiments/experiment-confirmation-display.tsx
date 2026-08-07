@@ -2,7 +2,13 @@
 
 import { Flex, Grid } from '@radix-ui/themes';
 import { CreateExperimentResponse, Filter } from '@/api/methods.schemas';
-import { isBanditSpec, isClusteredPreassignedSpec, isCmabSpec, isFrequentistSpec } from '@/services/experiment-utils';
+import {
+  isBanditSpec,
+  isClusteredPreassignedSpec,
+  isCmabSpec,
+  isFrequentistSpec,
+  isMabDwhSpec,
+} from '@/services/experiment-utils';
 import { MetricDisplay, MetricsSection } from '@/components/features/experiments/sections/metrics-section';
 import { ExperimentDescriptionSection } from '@/components/features/experiments/sections/experiment-description-section';
 import { TreatmentArmsSection } from '@/components/features/experiments/sections/treatment-arms-section';
@@ -44,6 +50,7 @@ export function ExperimentConfirmationDisplay({
   const isFreq = isFrequentistSpec(designSpec);
   const isBandit = isBanditSpec(designSpec);
   const isCmab = isCmabSpec(designSpec);
+  const isMabDwh = isMabDwhSpec(designSpec);
   const clusterKey = isClusteredPreassignedSpec(designSpec) ? (designSpec.cluster_key ?? undefined) : undefined;
 
   // Extract frequentist-specific properties (filters/strata)
@@ -90,6 +97,14 @@ export function ExperimentConfirmationDisplay({
               }
             />
           </>
+        )}
+        {isMabDwh && (
+          <DatasourceTargetingSection
+            tableName={designSpec.table_name}
+            primaryKey={designSpec.primary_key}
+            targetField={designSpec.target_field_name}
+            onEditDatasource={onEditDatasource}
+          />
         )}
         {isBandit && (
           <OutcomesPriorSection priorType={priorType} rewardType={rewardType} onEdit={onEditOutcomesPrior} />

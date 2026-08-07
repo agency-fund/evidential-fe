@@ -3,6 +3,7 @@ import { Button, Callout, Card, DataList, Dialog, Flex, Select, Text, Tooltip } 
 import {
   ChevronDownIcon,
   ChevronRightIcon,
+  CodeIcon,
   FileIcon,
   GearIcon,
   PlusIcon,
@@ -17,11 +18,13 @@ import { useCreateApiKey } from '@/api/admin';
 import {
   getGetOrganizationTurnJourneysKey,
   getGetTurnArmJourneyMappingKey,
+  useGetExperimentSampleCalls,
   useGetOrganizationTurnConnection,
   useGetOrganizationTurnJourneys,
   useGetTurnArmJourneyMapping,
   useSetTurnArmJourneyMapping,
 } from '@/api/admin-third-party-tools-integrations';
+import { SampleCallsList } from './sample-calls';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { ApiError } from '@/services/orval-fetch';
 import Link from 'next/link';
@@ -43,6 +46,7 @@ export function IntegrationGuideDialog({
 }: IntegrationGuideDialogProps) {
   const [open, setOpen] = useState(false);
   const [showTurnConfig, setShowTurnConfig] = useState(true);
+  const [showSampleCalls, setShowSampleCalls] = useState(false);
   const [armJourneyDraft, setArmJourneyDraft] = useState<Record<string, string>>({});
   const [staleArmIds, setStaleArmIds] = useState<string[]>([]); // List of arm IDs that have stale mappings
 
@@ -60,6 +64,11 @@ export function IntegrationGuideDialog({
   const hasTurnConnection = !isLoadingTurnConnection && !turnConnectionError;
 
   const turnSectionEnabled = open && showTurnConfig && hasTurnConnection;
+
+  // Example API calls are integration docs, only needed once the guide is open — so lazy-load them.
+  const { data: sampleCalls, error: sampleCallsError } = useGetExperimentSampleCalls(datasourceId, experimentId, {
+    swr: { enabled: open },
+  });
 
   const {
     data: journeysData,
@@ -241,6 +250,33 @@ export function IntegrationGuideDialog({
                   ))}
                 </DataList.Root>
               </Flex>
+            )}
+
+            {sampleCallsError && (
+              <GenericErrorCallout title="Error loading example API calls" error={sampleCallsError} />
+            )}
+
+            {sampleCalls && sampleCalls.calls.length > 0 && (
+              <Card>
+                <Collapsible.Root open={showSampleCalls} onOpenChange={setShowSampleCalls}>
+                  <Collapsible.Trigger style={{ all: 'unset', cursor: 'pointer', width: '100%' }}>
+                    <Flex align="center" justify="between">
+                      <Flex align="center" gap="2">
+                        <CodeIcon />
+                        <Text size="2" weight="medium">
+                          Example API Calls
+                        </Text>
+                      </Flex>
+                      {showSampleCalls ? <ChevronDownIcon /> : <ChevronRightIcon />}
+                    </Flex>
+                  </Collapsible.Trigger>
+                  <Collapsible.Content>
+                    <Flex direction="column" gap="3" mt="3">
+                      <SampleCallsList sampleCalls={sampleCalls} />
+                    </Flex>
+                  </Collapsible.Content>
+                </Collapsible.Root>
+              </Card>
             )}
 
             <Card>

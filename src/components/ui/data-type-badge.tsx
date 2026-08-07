@@ -7,7 +7,6 @@ import {
   ClockIcon,
   ExclamationTriangleIcon,
   IdCardIcon,
-  LapTimerIcon,
   QuestionMarkCircledIcon,
   TextIcon,
 } from '@radix-ui/react-icons';
@@ -30,7 +29,7 @@ const dataTypeConfig: Record<
   integer: { color: 'purple', icon: <BarChartIcon /> },
   'double precision': { color: 'purple', icon: <BarChartIcon />, label: 'double' },
   numeric: { color: 'purple', icon: <BarChartIcon /> },
-  bigint: { color: 'purple', icon: <LapTimerIcon /> },
+  bigint: { color: 'purple', icon: <BarChartIcon /> },
   uuid: { color: 'orange', icon: <IdCardIcon /> },
   json: { color: 'red', icon: <ExclamationTriangleIcon /> },
   jsonb: { color: 'red', icon: <ExclamationTriangleIcon /> },
