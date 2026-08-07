@@ -51,6 +51,27 @@ export const metricHasMissingValues = (analysis: MetricPowerAnalysis): boolean =
   return available_n != null && available_nonnull_n != null && available_n > available_nonnull_n;
 };
 
+/**
+ * Whether the chosen sample size reaches the minimum required to detect the metric's target MDE.
+ * Assignment enrolls exactly the chosen sample (including participants with missing values),
+ * regardless of how many participants the datasource could supply.
+ * Returns undefined when the analysis or the relevant sample size value is missing.
+ */
+export const isChosenSampleSufficient = (
+  analysis: MetricPowerAnalysis | undefined,
+  isClustered: boolean,
+  desiredN?: number | null,
+  desiredNClusters?: number | null,
+): boolean | undefined => {
+  if (analysis === undefined) return undefined;
+  if (isClustered) {
+    return analysis.num_clusters_total != null && desiredNClusters != null
+      ? desiredNClusters >= analysis.num_clusters_total
+      : undefined;
+  }
+  return analysis.target_n != null && desiredN != null ? desiredN >= analysis.target_n : undefined;
+};
+
 export const isFreqExperimentType = (
   experimentType?: ExperimentType,
 ): experimentType is AnyFrequentistDesignSpecExperimentType =>

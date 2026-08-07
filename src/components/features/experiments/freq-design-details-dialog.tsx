@@ -12,7 +12,11 @@ import {
 } from '@/api/methods.schemas';
 import { MetricDisplay, MetricsSection } from '@/components/features/experiments/sections/metrics-section';
 import { PowerBalanceSection } from '@/components/features/experiments/sections/power-balance-section';
-import { isClusteredPreassignedSpec, metricHasMissingValues } from '@/services/experiment-utils';
+import {
+  isChosenSampleSufficient,
+  isClusteredPreassignedSpec,
+  metricHasMissingValues,
+} from '@/services/experiment-utils';
 
 interface DesignDetailsDialogProps {
   designSpec: AnyFrequentistDesignSpec;
@@ -45,18 +49,6 @@ export function FreqDesignDetailsDialog({
 
   const fieldTypeByName = new Map((experimentSchema?.fields ?? []).map((field) => [field.field_name, field.data_type]));
   const analysisByField = new Map((powerAnalyses ?? []).map((analysis) => [analysis.metric_spec.field_name, analysis]));
-  // Sufficiency compares the chosen sample size against the minimum required for the metric's
-  // target MDE, since assignment enrolls exactly the chosen sample (including participants with
-  // missing values) regardless of how many participants the datasource could supply.
-  const sufficientNFor = (analysis: MetricPowerAnalysis | undefined): boolean | undefined => {
-    if (analysis === undefined) return undefined;
-    if (isClustered) {
-      return analysis.num_clusters_total != null && desiredNClusters != null
-        ? desiredNClusters >= analysis.num_clusters_total
-        : undefined;
-    }
-    return analysis.target_n != null && desiredN != null ? desiredN >= analysis.target_n : undefined;
-  };
   const toMetricDisplay = (fieldName: string, mdePct: number | null | undefined): MetricDisplay => {
     const analysis = analysisByField.get(fieldName);
     const estimatedRaw = analysis?.pct_change_with_desired_n;
@@ -66,7 +58,7 @@ export function FreqDesignDetailsDialog({
       mde: toMdePercent(mdePct),
       estimatedMde: estimatedRaw != null ? (estimatedRaw * 100).toFixed(1) : null,
       hasMissingValues: analysis !== undefined && metricHasMissingValues(analysis),
-      sufficientN: sufficientNFor(analysis),
+      sufficientN: isChosenSampleSufficient(analysis, isClustered, desiredN, desiredNClusters),
     };
   };
 
