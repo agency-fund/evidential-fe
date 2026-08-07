@@ -2,12 +2,7 @@
 
 import { Flex, Grid } from '@radix-ui/themes';
 import { CreateExperimentResponse, Filter } from '@/api/methods.schemas';
-import {
-  isBanditSpec,
-  isClusteredPreassignedSpec,
-  isCmabSpec,
-  isFrequentistSpec,
-} from '@/services/experiment-utils';
+import { isBanditSpec, isClusteredPreassignedSpec, isCmabSpec, isFrequentistSpec } from '@/services/experiment-utils';
 import { MetricDisplay, MetricsSection } from '@/components/features/experiments/sections/metrics-section';
 import { ExperimentDescriptionSection } from '@/components/features/experiments/sections/experiment-description-section';
 import { TreatmentArmsSection } from '@/components/features/experiments/sections/treatment-arms-section';
@@ -90,7 +85,7 @@ export function ExperimentConfirmationDisplay({
                   designSpec={designSpec}
                   assignSummary={response.assign_summary}
                   powerAnalyses={response.power_analyses?.analyses}
-                  metrics={metrics}
+                  showMetrics={false}
                 />
               }
             />

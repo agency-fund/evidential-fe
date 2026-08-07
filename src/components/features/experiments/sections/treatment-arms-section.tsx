@@ -110,14 +110,14 @@ export function TreatmentArmsSection({ response, onEdit }: TreatmentArmsSectionP
         label="Balanced"
         color="green"
         variant="soft"
-        tooltip="A statistical check found your metric and strata values evenly distributed across the arms at assignment."
+        tooltip="A statistical check found your metric and strata values evenly distributed across the arms at assignment. View the Design Details for test results."
       />
     ) : (
       <InfoBadge
         label="Unbalanced"
         color="red"
         variant="soft"
-        tooltip="A statistical check suggests your metric and strata values are unevenly distributed across the arms. See Design Details on the Metrics card for the test results."
+        tooltip="A statistical check suggests your metric and strata values are unevenly distributed across the arms. View the Design Details for test results."
       />
     );
   const editButton = onEdit ? (
