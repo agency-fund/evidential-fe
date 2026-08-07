@@ -19,6 +19,7 @@ export interface PowerBalanceSectionProps {
   primaryMetricFieldName?: string;
   isClustered?: boolean;
   onEdit?: () => void;
+  showPower?: boolean;
   showDesiredSampleSize?: boolean;
   showActualSampleSize?: boolean;
   showTitle?: boolean;
@@ -33,6 +34,7 @@ export function PowerBalanceSection({
   primaryMetricFieldName,
   isClustered = false,
   onEdit,
+  showPower = true,
   showDesiredSampleSize = true,
   showActualSampleSize = true,
   showTitle = true,
@@ -97,16 +99,18 @@ export function PowerBalanceSection({
               <DataList.Label>Confidence</DataList.Label>
               <DataList.Value>{confidenceBadge}</DataList.Value>
             </DataList.Item>
-            <DataList.Item>
-              <DataList.Label>Power</DataList.Label>
-              <DataList.Value>{powerBadge}</DataList.Value>
-            </DataList.Item>
-            {showDesiredSampleSize && (
+            {showPower ? (
+              <DataList.Item>
+                <DataList.Label>Power</DataList.Label>
+                <DataList.Value>{powerBadge}</DataList.Value>
+              </DataList.Item>
+            ) : null}
+            {showDesiredSampleSize ? (
               <DataList.Item>
                 <DataList.Label>Desired Sample Size</DataList.Label>
                 <DataList.Value>{desiredN ?? 'N/A'} participants</DataList.Value>
               </DataList.Item>
-            )}
+            ) : null}
             {shouldShowActualSampleSize && (
               <DataList.Item>
                 <DataList.Label>Actual Sample Size</DataList.Label>

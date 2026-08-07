@@ -15,6 +15,7 @@ import { PowerBalanceSection } from '@/components/features/experiments/sections/
 import {
   isChosenSampleSufficient,
   isClusteredPreassignedSpec,
+  isFreqPreassignedSpec,
   metricHasMissingValues,
 } from '@/services/experiment-utils';
 
@@ -43,6 +44,7 @@ export function FreqDesignDetailsDialog({
   const [open, setOpen] = useState(false);
 
   const desiredN = designSpec.desired_n ?? undefined;
+  const isPreassigned = isFreqPreassignedSpec(designSpec);
   const isClustered = isClusteredPreassignedSpec(designSpec);
   const clusterKey = isClustered ? (designSpec.cluster_key ?? undefined) : undefined;
   const desiredNClusters = isClustered ? (designSpec.desired_n_clusters ?? undefined) : undefined;
@@ -92,6 +94,8 @@ export function FreqDesignDetailsDialog({
                 powerAnalyses={powerAnalyses}
                 primaryMetricFieldName={primary?.field_name}
                 isClustered={clusterKey !== undefined}
+                showPower={isPreassigned}
+                showDesiredSampleSize={isPreassigned}
                 showActualSampleSize={false}
               />
             </Flex>
