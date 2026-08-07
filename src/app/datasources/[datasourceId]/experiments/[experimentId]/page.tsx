@@ -3,30 +3,8 @@ import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { mutate } from 'swr';
-import {
-  Badge,
-  Box,
-  Flex,
-  Heading,
-  IconButton,
-  Select,
-  Separator,
-  Spinner,
-  Tabs,
-  Text,
-  Tooltip,
-} from '@radix-ui/themes';
-import {
-  ActivityLogIcon,
-  CalendarIcon,
-  CodeIcon,
-  ExclamationTriangleIcon,
-  FileTextIcon,
-  InfoCircledIcon,
-  LayersIcon,
-  PersonIcon,
-  ReloadIcon,
-} from '@radix-ui/react-icons';
+import { Badge, Box, Flex, Heading, Select, Separator, Tabs, Text, Tooltip } from '@radix-ui/themes';
+import { CalendarIcon, CodeIcon, FileTextIcon, InfoCircledIcon, LayersIcon, PersonIcon } from '@radix-ui/react-icons';
 import {
   getGetExperimentForUiKey,
   useAnalyzeCmabExperiment,
@@ -59,6 +37,7 @@ import ForestTimeseriesPlot from '@/components/features/experiments/plots/forest
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import { ExperimentStatusBadge } from '@/components/features/experiments/experiment-status-badge';
 import { MdeBadge } from '@/components/features/experiments/mde-badge';
+import { AnalysisSnapshotSelector } from '@/components/features/experiments/analysis-snapshot-selector';
 import { ArmsAndAllocationsTable } from '@/components/features/experiments/arms-and-allocations-table';
 import { IntegrationGuideDialog } from '@/components/features/experiments/integration-guide-dialog';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
@@ -88,8 +67,6 @@ import { ContextConfigBox } from '@/components/features/experiments/context-conf
 import { TableNameBadge } from '@/components/features/participants/table-name-badge';
 import { TargetingDialog } from '@/components/features/experiments/targeting-dialog';
 import { FreqDesignDetailsDialog } from '@/components/features/experiments/freq-design-details-dialog';
-
-const SNAPSHOT_ERROR_ALERT_THRESHOLD_MS = 8 * 60 * 60 * 1000;
 
 /**
  * Returns the metric's analysis corresponding to the selectedMetricName from a list of analyses.
@@ -402,9 +379,6 @@ export default function ExperimentViewPage() {
     activeMetricName,
   );
 
-  const isLastSnapshotErrorRelevant =
-    lastErrorTimestamp !== null && Date.now() - lastErrorTimestamp.getTime() <= SNAPSHOT_ERROR_ALERT_THRESHOLD_MS;
-
   return (
     <Flex direction="column" gap="6">
       <Flex direction="column" gap="3">
@@ -524,6 +498,17 @@ export default function ExperimentViewPage() {
           headerLeft={
             <Flex gap="3" align="center" wrap="wrap">
               <Heading size="3">Analysis</Heading>
+              <AnalysisSnapshotSelector
+                datasourceId={datasourceId}
+                experimentId={experimentId}
+                liveAnalysisLabel={liveAnalysis.label}
+                analysisHistory={analysisHistory}
+                activeAnalysisKey={activeAnalysisKey}
+                onSelectAnalysis={handleSelectAnalysis}
+                lastErrorTimestamp={lastErrorTimestamp}
+                isRefreshingLiveAnalysis={isLoadingLiveAnalysis || isLoadingLiveCmabAnalysis}
+                onRefreshLiveAnalysis={() => triggerLiveAnalysis()}
+              />
               {isFrequentistSpec(design_spec) ? (
                 <Flex gap="3" align="center" wrap="wrap">
                   <Badge size="2">
@@ -554,12 +539,6 @@ export default function ExperimentViewPage() {
                     </Flex>
                   </Badge>
                   <MdeBadge value={mdePct} kind={estimatedMdePct != null ? 'estimated' : 'target'} />
-                  <FreqDesignDetailsDialog
-                    designSpec={design_spec}
-                    experimentSchema={experiment.experiment_schema}
-                    assignSummary={assign_summary}
-                    powerAnalyses={experiment.config.power_analyses?.analyses}
-                  />
                 </Flex>
               ) : isBanditAnalysis(selectedAnalysisState.data) &&
                 selectedAnalysisState.banditEffects &&
@@ -590,69 +569,15 @@ export default function ExperimentViewPage() {
             </Flex>
           }
           headerRight={
-            <Flex gap="3" wrap="wrap">
-              <Flex gap="3" wrap="wrap" align="center" justify="between">
-                <Badge size="2" style={{ height: '26px' }}>
-                  <Flex gap="2" align="center">
-                    <Heading size="2">Viewing:</Heading>
-                    {analysisHistory.length == 0 ? (
-                      <Text>{liveAnalysis.label}</Text>
-                    ) : (
-                      <Select.Root size="1" value={activeAnalysisKey} onValueChange={handleSelectAnalysis}>
-                        <Select.Trigger style={{ height: 18 }} />
-                        <Select.Content>
-                          <Select.Group>
-                            <Select.Item key="live" value="live">
-                              <Box minWidth="136px">{liveAnalysis.label}</Box>
-                            </Select.Item>
-                          </Select.Group>
-                          <Select.Separator />
-                          <Select.Group>
-                            {analysisHistory.map((opt) => (
-                              <Select.Item key={opt.key} value={opt.key}>
-                                <Box minWidth="136px">{opt.label}</Box>
-                              </Select.Item>
-                            ))}
-                          </Select.Group>
-                        </Select.Content>
-                      </Select.Root>
-                    )}
-                    {activeAnalysisKey === 'live' ? (
-                      isLoadingLiveAnalysis || isLoadingLiveCmabAnalysis ? (
-                        <Spinner size="1" />
-                      ) : (
-                        <Tooltip content="Refresh live analysis">
-                          <IconButton
-                            size="1"
-                            variant="ghost"
-                            color="gray"
-                            aria-label="Refresh live analysis"
-                            // ensure we don't pass the click event to triggerLiveAnalysis
-                            onClick={() => triggerLiveAnalysis()}
-                          >
-                            <ReloadIcon />
-                          </IconButton>
-                        </Tooltip>
-                      )
-                    ) : null}
-                    {analysisHistory.length > 0 ? (
-                      isLastSnapshotErrorRelevant ? (
-                        <Tooltip content={'Last snapshot error: ' + lastErrorTimestamp?.toLocaleTimeString()}>
-                          <Link href={`/datasources/${datasourceId}/experiments/${experimentId}/snapshots`}>
-                            <ExclamationTriangleIcon color={'red'} />
-                          </Link>
-                        </Tooltip>
-                      ) : (
-                        <Tooltip content={'View snapshot log'}>
-                          <Link href={`/datasources/${datasourceId}/experiments/${experimentId}/snapshots`}>
-                            <ActivityLogIcon />
-                          </Link>
-                        </Tooltip>
-                      )
-                    ) : null}
-                  </Flex>
-                </Badge>
-              </Flex>
+            <Flex gap="3" wrap="wrap" align="center">
+              {isFrequentistSpec(design_spec) ? (
+                <FreqDesignDetailsDialog
+                  designSpec={design_spec}
+                  experimentSchema={experiment.experiment_schema}
+                  assignSummary={assign_summary}
+                  powerAnalyses={experiment.config.power_analyses?.analyses}
+                />
+              ) : null}
               {!isFrequentistExperiment && (
                 <Badge size="2">
                   <Flex gap="4" align="center">

@@ -6,7 +6,6 @@ import {
   isBanditSpec,
   isClusteredPreassignedSpec,
   isCmabSpec,
-  isFreqPreassignedSpec,
   isFrequentistSpec,
   isMabDwhSpec,
 } from '@/services/experiment-utils';
@@ -15,7 +14,7 @@ import { ExperimentDescriptionSection } from '@/components/features/experiments/
 import { TreatmentArmsSection } from '@/components/features/experiments/sections/treatment-arms-section';
 import { ContextsSection } from '@/components/features/experiments/sections/contexts-section';
 import { DatasourceTargetingSection } from '@/components/features/experiments/sections/datasource-targeting-section';
-import { PowerBalanceSection } from '@/components/features/experiments/sections/power-balance-section';
+import { FreqDesignDetailsDialog } from '@/components/features/experiments/freq-design-details-dialog';
 import { OutcomesPriorSection } from '@/components/features/experiments/sections/outcomes-prior-section';
 export interface ExperimentConfirmationDisplayProps {
   response: CreateExperimentResponse;
@@ -31,7 +30,6 @@ export interface ExperimentConfirmationDisplayProps {
   onEditOutcomesPrior?: () => void;
   onEditContexts?: () => void;
   onEditMetrics?: () => void;
-  onEditPowerBalance?: () => void;
   // Optional footer for actions (commit/abandon in old flow, nothing in new flow)
   footer?: React.ReactNode;
 }
@@ -46,28 +44,21 @@ export function ExperimentConfirmationDisplay({
   onEditOutcomesPrior,
   onEditContexts,
   onEditMetrics,
-  onEditPowerBalance,
   footer,
 }: ExperimentConfirmationDisplayProps) {
   const designSpec = response.design_spec;
   const isFreq = isFrequentistSpec(designSpec);
-  const isFreqPreassigned = isFreqPreassignedSpec(designSpec);
   const isBandit = isBanditSpec(designSpec);
   const isCmab = isCmabSpec(designSpec);
   const isMabDwh = isMabDwhSpec(designSpec);
   const clusterKey = isClusteredPreassignedSpec(designSpec) ? (designSpec.cluster_key ?? undefined) : undefined;
 
-  // Extract frequentist-specific properties (confidence/power/filters/strata)
+  // Extract frequentist-specific properties (filters/strata)
   // For non-frequentist experiments, these will be undefined
-  let confidence = 95;
-  let power = 80;
   let filters: Filter[] = [];
   let strata: string[] | undefined;
 
   if (isFreq) {
-    const alpha = designSpec.alpha ?? 0.05;
-    confidence = Math.round((1 - alpha) * 100);
-    power = Math.round((designSpec.power ?? 0.8) * 100);
     filters = designSpec.filters;
     strata = designSpec.strata?.map((s) => s.field_name);
   }
@@ -92,19 +83,19 @@ export function ExperimentConfirmationDisplay({
               onEditDatasource={onEditDatasource}
               onEditFilters={onEditFilters}
             />
-            <MetricsSection metrics={metrics} strata={strata} onEdit={onEditMetrics} />
-            {isFreqPreassigned && (
-              <PowerBalanceSection
-                confidence={confidence}
-                power={power}
-                desiredN={designSpec.desired_n ?? undefined}
-                assignSummary={response.assign_summary}
-                powerAnalyses={response.power_analyses?.analyses}
-                primaryMetricFieldName={designSpec.metrics[0]?.field_name}
-                isClustered={clusterKey !== undefined}
-                onEdit={onEditPowerBalance}
-              />
-            )}
+            <MetricsSection
+              metrics={metrics}
+              strata={strata}
+              onEdit={onEditMetrics}
+              headerRight={
+                <FreqDesignDetailsDialog
+                  designSpec={designSpec}
+                  assignSummary={response.assign_summary}
+                  powerAnalyses={response.power_analyses?.analyses}
+                  showMetrics={false}
+                />
+              }
+            />
           </>
         )}
         {isMabDwh && (

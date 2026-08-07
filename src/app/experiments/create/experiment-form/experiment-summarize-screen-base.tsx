@@ -24,7 +24,6 @@ type EditTargets = {
   outcomesPrior?: ExperimentScreenId;
   contexts?: ExperimentScreenId;
   metrics?: ExperimentScreenId;
-  powerBalance?: ExperimentScreenId;
 };
 
 interface ExperimentsSummarizeScreenBaseProps {
@@ -101,7 +100,6 @@ export function ExperimentsSummarizeScreenBase({
               onEditOutcomesPrior={toEditHandler(editTargets.outcomesPrior)}
               onEditContexts={toEditHandler(editTargets.contexts)}
               onEditMetrics={toEditHandler(editTargets.metrics)}
-              onEditPowerBalance={toEditHandler(editTargets.powerBalance)}
             />
             <Callout.Root>
               <Callout.Icon>

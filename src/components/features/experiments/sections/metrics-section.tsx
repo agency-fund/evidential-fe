@@ -5,6 +5,7 @@ import { Pencil2Icon } from '@radix-ui/react-icons';
 import { DataType } from '@/api/methods.schemas';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
+import { InfoBadge } from '@/components/ui/info-badge';
 import { MdeBadge } from '@/components/features/experiments/mde-badge';
 
 export interface MetricDisplay {
@@ -13,6 +14,46 @@ export interface MetricDisplay {
   mde: string | number;
   estimatedMde?: string | number | null;
   hasMissingValues: boolean;
+  /** Whether the chosen sample size reaches the minimum required to detect the target MDE. Omitted when unknown. */
+  sufficientN?: boolean | null;
+}
+
+interface SampleSufficiencyBadgeProps {
+  sufficientN: boolean;
+}
+
+function SampleSufficiencyBadge({ sufficientN }: SampleSufficiencyBadgeProps) {
+  return sufficientN ? (
+    <InfoBadge
+      label="Sufficient"
+      color="green"
+      tooltip="The chosen sample size is large enough to detect this metric's target MDE."
+    />
+  ) : (
+    <InfoBadge
+      label="Insufficient"
+      color="red"
+      tooltip="The chosen sample size is too small to detect this metric's target MDE."
+    />
+  );
+}
+
+interface MetricBadgesProps {
+  metric: MetricDisplay;
+}
+
+function MetricBadges({ metric }: MetricBadgesProps) {
+  return (
+    <Flex direction="column" gap="2" align="start" width="100%">
+      <Flex direction="row" gap="2" align="center" justify="between" wrap="wrap" width="100%">
+        <MdeBadge value={metric.mde} kind="target" size="1" hasMissingValues={metric.hasMissingValues} />
+        {metric.sufficientN != null ? <SampleSufficiencyBadge sufficientN={metric.sufficientN} /> : null}
+      </Flex>
+      {metric.estimatedMde != null ? (
+        <MdeBadge value={metric.estimatedMde} kind="estimated" size="1" hasMissingValues={metric.hasMissingValues} />
+      ) : null}
+    </Flex>
+  );
 }
 
 export interface MetricsSectionProps {
@@ -22,18 +63,26 @@ export interface MetricsSectionProps {
   };
   strata?: string[];
   onEdit?: () => void;
+  headerRight?: React.ReactNode;
 }
 
-export function MetricsSection({ metrics, strata, onEdit }: MetricsSectionProps) {
+export function MetricsSection({ metrics, strata, onEdit, headerRight }: MetricsSectionProps) {
+  const editButton = onEdit ? (
+    <Button size="1" onClick={onEdit}>
+      <Pencil2Icon />
+      Edit
+    </Button>
+  ) : undefined;
+
   return (
     <SectionCard
       title="Metrics"
       headerRight={
-        onEdit ? (
-          <Button size="1" onClick={onEdit}>
-            <Pencil2Icon />
-            Edit
-          </Button>
+        headerRight || editButton ? (
+          <Flex gap="3" align="center">
+            {headerRight}
+            {editButton}
+          </Flex>
         ) : undefined
       }
     >
@@ -47,22 +96,7 @@ export function MetricsSection({ metrics, strata, onEdit }: MetricsSectionProps)
                   <Text>{metrics.primary.field_name}</Text>
                   <DataTypeBadge type={metrics.primary.data_type} />
                 </Flex>
-                <Flex direction="row" gap="2" align="start" wrap="wrap">
-                  <MdeBadge
-                    value={metrics.primary.mde}
-                    kind="target"
-                    size="1"
-                    hasMissingValues={metrics.primary.hasMissingValues}
-                  />
-                  {metrics.primary.estimatedMde != null && (
-                    <MdeBadge
-                      value={metrics.primary.estimatedMde}
-                      kind="estimated"
-                      size="1"
-                      hasMissingValues={metrics.primary.hasMissingValues}
-                    />
-                  )}
-                </Flex>
+                <MetricBadges metric={metrics.primary} />
                 {metrics?.secondary && metrics.secondary.length >= 1 && <Separator orientation="horizontal" size="4" />}
               </Flex>
             ) : (
@@ -81,17 +115,7 @@ export function MetricsSection({ metrics, strata, onEdit }: MetricsSectionProps)
                       <Text>{metric.field_name}</Text>
                       <DataTypeBadge type={metric.data_type} />
                     </Flex>
-                    <Flex direction="row" gap="2" align="start" wrap="wrap">
-                      <MdeBadge value={metric.mde} kind="target" size="1" hasMissingValues={metric.hasMissingValues} />
-                      {metric.estimatedMde != null && (
-                        <MdeBadge
-                          value={metric.estimatedMde}
-                          kind="estimated"
-                          size="1"
-                          hasMissingValues={metric.hasMissingValues}
-                        />
-                      )}
-                    </Flex>
+                    <MetricBadges metric={metric} />
                     <Separator orientation="horizontal" size="4" />
                   </Flex>
                 ))}

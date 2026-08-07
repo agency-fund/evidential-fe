@@ -19,7 +19,6 @@ export interface PowerBalanceSectionProps {
   primaryMetricFieldName?: string;
   isClustered?: boolean;
   onEdit?: () => void;
-  showDesiredSampleSize?: boolean;
   showActualSampleSize?: boolean;
   showTitle?: boolean;
 }
@@ -33,7 +32,6 @@ export function PowerBalanceSection({
   primaryMetricFieldName,
   isClustered = false,
   onEdit,
-  showDesiredSampleSize = true,
   showActualSampleSize = true,
   showTitle = true,
 }: PowerBalanceSectionProps) {
@@ -44,6 +42,7 @@ export function PowerBalanceSection({
   const actualSampleSize = assignSummary?.sample_size;
   const shouldShowActualSampleSize =
     showActualSampleSize && actualSampleSize !== undefined && actualSampleSize !== desiredN;
+  const hasPowerAnalyses = powerAnalyses != null && powerAnalyses.length > 0;
   const primaryPowerAnalysis = getPowerAnalysis(
     powerAnalyses ? { analyses: powerAnalyses } : undefined,
     primaryMetricFieldName,
@@ -99,22 +98,20 @@ export function PowerBalanceSection({
             </DataList.Item>
             <DataList.Item>
               <DataList.Label>Power</DataList.Label>
-              <DataList.Value>{powerBadge}</DataList.Value>
+              <DataList.Value>{hasPowerAnalyses ? powerBadge : <Text>No analysis</Text>}</DataList.Value>
             </DataList.Item>
-            {showDesiredSampleSize && (
-              <DataList.Item>
-                <DataList.Label>Desired Sample Size</DataList.Label>
-                <DataList.Value>{desiredN ?? 'N/A'} participants</DataList.Value>
-              </DataList.Item>
-            )}
-            {shouldShowActualSampleSize && (
+            <DataList.Item>
+              <DataList.Label>Desired Sample Size</DataList.Label>
+              <DataList.Value>{desiredN ?? 'N/A'} participants</DataList.Value>
+            </DataList.Item>
+            {shouldShowActualSampleSize ? (
               <DataList.Item>
                 <DataList.Label>Actual Sample Size</DataList.Label>
                 <DataList.Value>{actualSampleSize} participants</DataList.Value>
               </DataList.Item>
-            )}
+            ) : null}
 
-            {powerAnalyses && powerAnalyses.length > 0 && (
+            {hasPowerAnalyses ? (
               <>
                 <DataList.Item>
                   <DataList.Label>
@@ -135,9 +132,9 @@ export function PowerBalanceSection({
                   </DataList.Item>
                 ))}
               </>
-            )}
+            ) : null}
 
-            {showClusteringStats && powerAnalyses && powerAnalyses.length > 0 && (
+            {showClusteringStats && hasPowerAnalyses ? (
               <>
                 <DataList.Item>
                   <DataList.Label>
@@ -157,7 +154,7 @@ export function PowerBalanceSection({
                   <DataList.Value>{formatClusterStat(clusterMetricSpec.icc, 3)}</DataList.Value>
                 </DataList.Item>
               </>
-            )}
+            ) : null}
           </DataList.Root>
         </Flex>
 
