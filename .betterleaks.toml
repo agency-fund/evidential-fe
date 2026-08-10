@@ -2,16 +2,50 @@ title = "evidential-fe betterleaks config"
 
 [extend]
 useDefault = true
+
+[[rules]]
+id = "internal-xa-token"
+description = "Internal xa_ prefixed token"
+keywords = ["xa_"]
+regex = '''xa_[A-Za-z0-9_\-=]{40,}'''
+
+[[rules]]
+id = "tailscale-key"
+description = "Tailscale auth/API/SCIM/OAuth key (tskey-*)"
+keywords = ["tskey"]
+regex = '''tskey-(?:auth|api|scim|client)-[A-Za-z0-9]{10,}-[A-Za-z0-9]{20,}'''
+
+# Railway tokens are raw UUIDs with no dedicated prefix, so anchor on the
+# "railway" keyword to avoid flagging every UUID in the codebase.
+[[rules]]
+id = "railway-token"
+description = "Railway API/project token (UUID anchored to 'railway' keyword)"
+keywords = ["railway"]
+regex = '''(?i)railway[a-z_\-]*[\s=:"']+([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})'''
+secretGroup = 1
+
 [[allowlists]]
-description = "Ignore Next.js build output and other generated files"
-paths = [
-    '''\.next/''',
-    '''node_modules/''',
-    '''dist/''',
-    '''build/''',
-]
+description = "Third-party code — not our secrets"
+paths = ['''node_modules/''']
+
 [[allowlists]]
 description = "Ignore scanner reports"
-paths = [
-    '''findings?.*\.json$''',
-]
+paths = ['''findings?.*\.json$''']
+
+# Suppress the noisiest default rule in build output only.
+# Specific rules (github-pat, gcp-*, cloudflare-*, tailscale-key, railway-token,
+# internal-xa-token) still scan .next/, build/, dist/.
+[[rules]]
+id = "generic-api-key"
+
+  [[rules.allowlists]]
+  description = "generic-api-key is too noisy on webpack/minified bundles"
+  paths = ['''\.next/''', '''build/''', '''dist/''']
+
+# linkedin-client-id false-positives on Radix UI icon source maps.
+[[rules]]
+id = "linkedin-client-id"
+
+  [[rules.allowlists]]
+  description = "linkedin-client-id false-positives on bundled JS/source maps"
+  paths = ['''\.next/''', '''build/''', '''dist/''']

@@ -43,6 +43,6 @@ repos:
           - mdformat-ruff
           - mdformat-toc
   - repo: https://github.com/betterleaks/betterleaks
-    rev: v1.3.1
+    rev: v1.7.3
     hooks:
       - id: betterleaks
