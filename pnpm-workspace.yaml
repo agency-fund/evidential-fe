@@ -1,6 +1,4 @@
-autoInstallPeers: true
 strictPeerDependencies: true
-ignoreScripts: true
 saveExact: true
 # min age is in minutes for pnpm; 5d=7200
 minimumReleaseAge: 7200
@@ -15,3 +13,9 @@ allowBuilds:
   sharp: true
 
 updateNotifier: false
+
+overrides:
+  # Orval pins a vulnerable js-yaml; remove after its dependency is patched.
+  'js-yaml@>=4 <4.3.1': 4.3.1
+  # Orval's Spectral toolchain resolves vulnerable lodash versions.
+  'lodash@<=4.17.23': 4.18.1

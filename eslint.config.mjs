@@ -1,16 +1,12 @@
-import { FlatCompat } from '@eslint/eslintrc';
+import { defineConfig, globalIgnores } from 'eslint/config';
+import nextTs from 'eslint-config-next/typescript';
+import nextVitals from 'eslint-config-next/core-web-vitals';
 import eslintConfigPrettier from 'eslint-config-prettier/flat';
 
-const compat = new FlatCompat({
-  baseDirectory: import.meta.dirname,
-});
-
 /** @type { import("eslint").Linter.Config[] } */
-const eslintConfig = [
-  {
-    ignores: ['.next/**', 'next-env.d.ts', 'src/api/**/*', 'orval.config.ts'],
-  },
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTs,
   eslintConfigPrettier,
   {
     files: ['**/*.ts', '**/*.tsx'],
@@ -21,6 +17,10 @@ const eslintConfig = [
       },
     },
     rules: {
+      'react-hooks/immutability': 'off',
+      'react-hooks/purity': 'off',
+      'react-hooks/refs': 'off',
+      'react-hooks/set-state-in-effect': 'off',
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-unused-vars': [
         'warn',
@@ -31,6 +31,7 @@ const eslintConfig = [
       '@typescript-eslint/switch-exhaustiveness-check': 'error',
     },
   },
-];
+  globalIgnores(['src/api/**/*', 'orval.config.ts']),
+]);
 
 export default eslintConfig;
