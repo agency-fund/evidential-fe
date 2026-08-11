@@ -67,8 +67,9 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: dortort/betterleaks-action@cd0b905aa4befb8f42f8b1ab98150180c9e77515 # v1.7.3
+      - uses: dortort/betterleaks-action@cd0b905aa4befb8f42f8b1ab98150180c9e77515 # v0.1.0
         with:
+          version: 'v1.7.4'
           scan-mode: 'auto'
           fail-on-leak: 'true'
           redact: 'true'
