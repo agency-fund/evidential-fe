@@ -10,6 +10,12 @@ keywords = ["xa_"]
 regex = '''xa_[A-Za-z0-9_\-=]{40,}'''
 
 [[rules]]
+id = "internal-xat-token"
+description = "Internal xat_ prefixed access token"
+keywords = ["xat_"]
+regex = '''xat_[A-Za-z0-9_\-=]{40,}'''
+
+[[rules]]
 id = "tailscale-key"
 description = "Tailscale auth/API/SCIM/OAuth key (tskey-*)"
 keywords = ["tskey"]
