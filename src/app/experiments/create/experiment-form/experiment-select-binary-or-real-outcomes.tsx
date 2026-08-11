@@ -89,29 +89,33 @@ export const ExperimentSelectBinaryOrRealOutcomes = ({
       {autofailEnabled && (
         <Flex direction="row" gap="4">
           <Flex direction="column" gap="1" flexGrow="1">
-            <Text as="label" size="2" weight="medium">
+            <Text htmlFor="autofail-window" size="2" weight="medium">
               Autofail time window (hours)
             </Text>
             <TextField.Root
+              id="autofail-window"
               type="number"
+              step="1"
               value={data.autofail?.autofailWindow ?? ''}
-              onChange={(e) =>
+              onChange={(e) => {
+                const parsed = parseInt(e.target.value, 10);
                 dispatch({
                   type: 'set-autofail-window',
-                  value: e.target.value === '' ? undefined : Number(e.target.value),
-                })
-              }
+                  value: Number.isNaN(parsed) ? undefined : parsed,
+                });
+              }}
             />
-            <Text size="1" color="gray">
+            <Text size="1" color="gray" id="autofail-window-description">
               Participants who haven&apos;t completed the experiment after this many hours are assigned an outcome
               automatically.
             </Text>
           </Flex>
           <Flex direction="column" gap="1" flexGrow="1">
-            <Text as="label" size="2" weight="medium">
+            <Text htmlFor="autofail-outcome-value" size="2" weight="medium">
               Autofail outcome value
             </Text>
             <TextField.Root
+              id="autofail-outcome-value"
               type="number"
               value={data.autofail?.autofailOutcomeValue ?? ''}
               onChange={(e) =>
@@ -121,7 +125,7 @@ export const ExperimentSelectBinaryOrRealOutcomes = ({
                 })
               }
             />
-            <Text size="1" color="gray">
+            <Text size="1" color="gray" id="autofail-outcome-value-description">
               The value automatically assigned as the outcome when a participant doesn&apos;t complete in time.
             </Text>
           </Flex>

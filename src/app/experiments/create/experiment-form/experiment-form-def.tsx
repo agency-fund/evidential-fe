@@ -109,7 +109,7 @@ const abandonDraftExperiment = async (data: ExperimentFormData) => {
   }
 };
 
-const compute_autofail_conditions = (data: ExperimentFormData) => {
+const getAutofailValidationState = (data: ExperimentFormData) => {
   const isEnabled = data.autofail?.enableAutofail === true;
   const isOutcomeValueUndefined = isEnabled && data.autofail?.autofailOutcomeValue === undefined;
   const isNonBinaryValue =
@@ -133,6 +133,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       { arm_name: 'Treatment', arm_description: 'Treatment' },
     ],
     bandit: createDefaultBanditParams('mab_online'),
+    autofail: { enableAutofail: false, autofailWindow: 24, autofailOutcomeValue: 0 },
     confidence: '95',
     power: '80',
   }),
@@ -343,12 +344,12 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       },
 
       isNextEnabled: (data) => {
-        const { isEnabled, isWindowInvalid, isAutofailOutcomeInvalid } = compute_autofail_conditions(data);
+        const { isEnabled, isWindowInvalid, isAutofailOutcomeInvalid } = getAutofailValidationState(data);
         return !isEnabled || (!isWindowInvalid && !isAutofailOutcomeInvalid);
       },
       nextButtonTooltip: (data) => {
         const { isEnabled, isNonBinaryValue, isWindowInvalid, isAutofailOutcomeInvalid } =
-          compute_autofail_conditions(data);
+          getAutofailValidationState(data);
 
         if (isEnabled && isWindowInvalid) return 'Autofail window must be greater than or equal to 1.';
         if (isEnabled && isNonBinaryValue) return 'Autofail outcome value must be 0 or 1 for binary outcomes.';
