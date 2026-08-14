@@ -15,7 +15,7 @@ type DeleteExperimentDialogProps = {
 };
 
 export function DeleteExperimentDialog(props: DeleteExperimentDialogProps) {
-  const { organizationId, datasourceId, experimentId } = props;
+  const { organizationId, datasourceId, experimentId, open, onOpenChange } = props;
   const { trigger, isMutating } = useDeleteExperiment(
     datasourceId,
     experimentId,
@@ -33,8 +33,8 @@ export function DeleteExperimentDialog(props: DeleteExperimentDialogProps) {
       description={DELETE_DESCRIPTION}
       trigger={trigger}
       loading={isMutating}
-      open={props.open}
-      onOpenChange={props.onOpenChange}
+      open={open}
+      onOpenChange={onOpenChange}
     >
       {DELETE_WARNING}
     </DeleteAlertDialog>
