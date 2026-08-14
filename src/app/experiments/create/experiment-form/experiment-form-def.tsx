@@ -350,10 +350,12 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       nextButtonTooltip: (data) => {
         const { isEnabled, isNonBinaryValue, isWindowInvalid, isAutofailOutcomeInvalid } =
           getAutofailValidationState(data);
-
-        if (isEnabled && isWindowInvalid) return 'Autofail window must be greater than or equal to 1.';
-        if (isEnabled && isNonBinaryValue) return 'Autofail outcome value must be 0 or 1 for binary outcomes.';
-        if (isEnabled && isAutofailOutcomeInvalid) return 'Autofail outcome value is required.';
+        if (!isEnabled) {
+          return undefined;
+        }
+        if (isWindowInvalid) return 'Autofail window must be greater than or equal to 1.';
+        if (isNonBinaryValue) return 'Autofail outcome value must be 0 or 1 for binary outcomes.';
+        if (isAutofailOutcomeInvalid) return 'Autofail outcome value is required.';
         return undefined;
       },
     }),
