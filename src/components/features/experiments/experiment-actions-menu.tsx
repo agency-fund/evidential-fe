@@ -1,10 +1,8 @@
 'use client';
 import { useState } from 'react';
-import { mutate } from 'swr';
 import { DropdownMenu, IconButton } from '@radix-ui/themes';
 import { DotsVerticalIcon, TrashIcon } from '@radix-ui/react-icons';
-import { getListOrganizationExperimentsKey, useDeleteExperiment } from '@/api/admin';
-import { DeleteAlertDialog } from '@/components/ui/delete-alert-dialog';
+import { DeleteExperimentDialog } from '@/components/features/experiments/delete-experiment-dialog';
 
 interface ExperimentActionsMenuProps {
   organizationId: string;
@@ -14,17 +12,6 @@ interface ExperimentActionsMenuProps {
 
 export function ExperimentActionsMenu({ datasourceId, experimentId, organizationId }: ExperimentActionsMenuProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-
-  const { trigger, isMutating } = useDeleteExperiment(
-    datasourceId,
-    experimentId,
-    { allow_missing: true },
-    {
-      swr: {
-        onSuccess: () => mutate(getListOrganizationExperimentsKey(organizationId)),
-      },
-    },
-  );
 
   return (
     <>
@@ -41,16 +28,13 @@ export function ExperimentActionsMenu({ datasourceId, experimentId, organization
         </DropdownMenu.Content>
       </DropdownMenu.Root>
 
-      <DeleteAlertDialog
-        title="Delete Experiment"
-        description="Are you sure you want to delete this experiment? This action cannot be undone."
-        trigger={trigger}
-        loading={isMutating}
+      <DeleteExperimentDialog
+        organizationId={organizationId}
+        datasourceId={datasourceId}
+        experimentId={experimentId}
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-      >
-        Deleting an experiment will delete all associated assignments, state, and snapshots.
-      </DeleteAlertDialog>
+      />
     </>
   );
 }
