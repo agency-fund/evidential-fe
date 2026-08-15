@@ -315,14 +315,13 @@ export function NumericFilter({ filter, onChange, dataType }: NumericFilterProps
 
   return (
     <Flex gap="2" wrap="wrap">
-      {/* An empty string keeps the Select controlled while matching no item, so the placeholder shows. */}
-      <Select.Root value={operator === 'none' ? '' : operator} onValueChange={handleOperatorChange}>
-        <Select.Trigger style={{ width: 160 }} placeholder="Add a constraint…" />
+      <Select.Root value={operator} onValueChange={handleOperatorChange}>
+        <Select.Trigger style={{ width: 160 }} />
         <Select.Content>
-          <Select.Item value="none">No constraint</Select.Item>
+          <Select.Item value="none">All participants</Select.Item>
           <Select.Separator />
-          <Select.Item value="in-list">Is one of</Select.Item>
-          <Select.Item value="not-in-list">is not one of</Select.Item>
+          <Select.Item value="in-list">One of</Select.Item>
+          <Select.Item value="not-in-list">Not one of</Select.Item>
           <Select.Item value="gte">&#x2265;</Select.Item>
           <Select.Item value="lte">&#x2264;</Select.Item>
           <Select.Item value="between">Between</Select.Item>

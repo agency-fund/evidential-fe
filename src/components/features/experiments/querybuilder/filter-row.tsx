@@ -49,8 +49,8 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
   const missingValuesOption = getMissingValuesOption(filter);
 
   const handleMissingValuesChange = (option: MissingValuesOption) => {
-    // Leaving "Is missing" starts from a clean, no-constraint predicate (its value was irrelevant),
-    // so the row returns to the neutral "Add a constraint" default.
+    // Re-checking "with a value" starts from a clean predicate (its value was irrelevant while
+    // unchecked), so the row returns to the neutral "All participants" default.
     const baseFilter =
       missingValuesOption === 'is-missing' ? { ...filter, relation: 'includes' as const, value: [] } : filter;
     onUpdate(applyMissingValuesOption(baseFilter, option));
@@ -100,7 +100,7 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
           getDisplayTextForOption={getSearchTextFromOption}
           getKeyForOption={getSearchTextFromOption}
           autoFocus={isNewRow}
-          placeholder="Search fields..."
+          placeholder="Select or type a field…"
           noMatchText="No matching fields"
           rightSlot={exactMatchField && <DataTypeBadge type={exactMatchField.data_type} />}
           dropdownRow={({ option }) => <ComboboxRow field_name={option.field_name} data_type={option.data_type} />}
@@ -110,8 +110,7 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
       {/* Filter options for the selected filter field or help text */}
       <Flex direction={'column'} gap={'3'} align={'start'}>
         {exactMatchField ? (
-          <>
-            <MissingValuesPicker value={missingValuesOption} onChange={handleMissingValuesChange} />
+          <MissingValuesPicker value={missingValuesOption} onChange={handleMissingValuesChange}>
             {missingValuesOption !== 'is-missing' ? (
               <TypeSpecificFilter
                 key={exactMatchField.field_name}
@@ -120,12 +119,8 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
                 onChange={handlePredicateChange}
               />
             ) : null}
-          </>
-        ) : filter.field_name === '' ? (
-          <Text size="2" color="gray">
-            ← Select a field or type the name
-          </Text>
-        ) : (
+          </MissingValuesPicker>
+        ) : filter.field_name === '' ? null : (
           <Text size="2" color="red">
             Invalid field
           </Text>

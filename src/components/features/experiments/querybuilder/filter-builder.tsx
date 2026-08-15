@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Flex, Separator } from '@radix-ui/themes';
+import { Button, Flex, Grid, Separator, Text } from '@radix-ui/themes';
 import { PlusIcon } from '@radix-ui/react-icons';
 import { Filter } from '@/api/methods.schemas';
 import { FilterRow, FilterRowOption } from '@/components/features/experiments/querybuilder/filter-row';
@@ -131,6 +131,16 @@ export function FilterBuilder({ availableFields, initialFilters, onChange }: Fil
 
   return (
     <Flex direction="column" gap="3" overflow="auto">
+      {filtersWithIds.length > 0 ? (
+        <Grid columns={'2'} width={'auto'} gap={'3'}>
+          <Text size="1" weight="medium" color="gray">
+            Filter by
+          </Text>
+          <Text size="1" weight="medium" color="gray">
+            Include participants…
+          </Text>
+        </Grid>
+      ) : null}
       {filtersWithIds.map(({ id, filter }, index) => (
         <React.Fragment key={id}>
           <FilterRow

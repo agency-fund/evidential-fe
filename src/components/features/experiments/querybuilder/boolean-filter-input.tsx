@@ -11,7 +11,7 @@ export interface BooleanFilterProps {
 
 export function BooleanFilter({ filter, onChange }: BooleanFilterProps) {
   const hasValue = filter.value.some((v) => v !== null);
-  const selected = !hasValue ? undefined : filter.value.some((v) => v === true) ? 'true' : 'false';
+  const selected = !hasValue ? 'none' : filter.value.some((v) => v === true) ? 'true' : 'false';
 
   const handleChange = (choice: string) => {
     if (choice === 'none') {
@@ -23,11 +23,10 @@ export function BooleanFilter({ filter, onChange }: BooleanFilterProps) {
 
   return (
     <Flex gap="2" wrap="wrap">
-      {/* An empty string keeps the Select controlled while matching no item, so the placeholder shows. */}
-      <Select.Root value={selected ?? ''} onValueChange={handleChange}>
-        <Select.Trigger style={{ width: 160 }} placeholder="Add a constraint…" />
+      <Select.Root value={selected} onValueChange={handleChange}>
+        <Select.Trigger style={{ width: 160 }} />
         <Select.Content>
-          <Select.Item value="none">No constraint</Select.Item>
+          <Select.Item value="none">All participants</Select.Item>
           <Select.Separator />
           <Select.Item value="true">Is true</Select.Item>
           <Select.Item value="false">Is false</Select.Item>

@@ -1,32 +1,49 @@
 'use client';
 
-import { RadioCards, Text } from '@radix-ui/themes';
+import { Checkbox, Flex, Text } from '@radix-ui/themes';
+import { ReactNode } from 'react';
 import { MissingValuesOption } from '@/components/features/experiments/querybuilder/utils';
 
 interface MissingValuesPickerProps {
   value: MissingValuesOption;
   onChange: (value: MissingValuesOption) => void;
+  /** Value controls rendered inline after "with a value", which is the population they narrow. */
+  children?: ReactNode;
 }
 
-const OPTIONS: Array<{ value: MissingValuesOption; label: string }> = [
-  { value: 'has-value', label: 'Has a value' },
-  { value: 'any', label: 'Has a value or missing' },
-  { value: 'is-missing', label: 'Is missing' },
-];
+const toOption = (withValue: boolean, missingValue: boolean): MissingValuesOption => {
+  if (!withValue) return 'is-missing';
+  return missingValue ? 'any' : 'has-value';
+};
 
-export function MissingValuesPicker({ value, onChange }: MissingValuesPickerProps) {
+export function MissingValuesPicker({ value, onChange, children }: MissingValuesPickerProps) {
+  const withValue = value !== 'is-missing';
+  const missingValue = value !== 'has-value';
+
+  // Keep at least one population included: the last checked box can't be unchecked.
+  const handleChange = (nextWithValue: boolean, nextMissingValue: boolean) => {
+    if (!nextWithValue && !nextMissingValue) return;
+    onChange(toOption(nextWithValue, nextMissingValue));
+  };
+
   return (
-    <RadioCards.Root
-      value={value}
-      onValueChange={(next) => onChange(next as MissingValuesOption)}
-      size="2"
-      style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}
-    >
-      {OPTIONS.map((option) => (
-        <RadioCards.Item key={option.value} value={option.value} style={{ height: 'var(--space-6)', paddingBlock: 0 }}>
-          <Text size="2">{option.label}</Text>
-        </RadioCards.Item>
-      ))}
-    </RadioCards.Root>
+    <Flex direction="column" gap="2" align="start">
+      <Flex gap="3" align="start" wrap="wrap">
+        <Text as="label" size="2">
+          {/* The label matches the 32px control height so the checkbox centers on the select row. */}
+          <Flex gap="2" align="center" height="var(--space-6)">
+            <Checkbox checked={withValue} onCheckedChange={(checked) => handleChange(checked === true, missingValue)} />
+            with a value
+          </Flex>
+        </Text>
+        {children}
+      </Flex>
+      <Text as="label" size="2">
+        <Flex gap="2" align="center">
+          <Checkbox checked={missingValue} onCheckedChange={(checked) => handleChange(withValue, checked === true)} />
+          missing a value
+        </Flex>
+      </Text>
+    </Flex>
   );
 }
