@@ -23,7 +23,7 @@ const eslintConfig = defineConfig([
       'react-hooks/set-state-in-effect': 'off',
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-unused-vars': [
-        'warn',
+        'error',
         {
           caughtErrorsIgnorePattern: '^_',
         },
