@@ -17,8 +17,6 @@ const eslintConfig = defineConfig([
       },
     },
     rules: {
-      'react-hooks/immutability': 'off',
-      'react-hooks/purity': 'off',
       'react-hooks/refs': 'off',
       'react-hooks/set-state-in-effect': 'off',
       '@typescript-eslint/no-floating-promises': 'error',
