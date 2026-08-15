@@ -231,6 +231,8 @@ export type AssignmentObservedAt = string | null;
 
 export type AssignmentOutcome = number | null;
 
+export type AssignmentAutofailedOutcome = boolean | null;
+
 export type AssignmentContextValues = number[] | null;
 
 export interface Assignment {
@@ -244,6 +246,7 @@ export interface Assignment {
 	strata?: AssignmentStrata;
 	observed_at?: AssignmentObservedAt;
 	outcome?: AssignmentOutcome;
+	autofailed_outcome?: AssignmentAutofailedOutcome;
 	context_values?: AssignmentContextValues;
 }
 
@@ -316,6 +319,7 @@ export interface BanditExperimentAnalysisResponse {
 	experiment_id: string;
 	arm_analyses: BanditArmAnalysis[];
 	n_outcomes: number;
+	fraction_automatically_failed?: number;
 	created_at: string;
 	contexts?: BanditExperimentAnalysisResponseContexts;
 }
@@ -382,6 +386,10 @@ export interface CMABExperimentSpec {
 	contexts?: CMABExperimentSpecContexts;
 	prior_type?: PriorTypes;
 	reward_type?: LikelihoodTypes;
+	enable_autofail?: boolean;
+	/** @minimum 1 */
+	autofail_window?: number;
+	autofail_outcome_value?: number;
 }
 
 export interface CallbackRequest {
@@ -698,11 +706,9 @@ export type ExperimentState =
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ExperimentState = {
-	designing: "designing",
 	assigned: "assigned",
 	abandoned: "abandoned",
 	committed: "committed",
-	aborted: "aborted",
 } as const;
 
 export type FieldChangedTypeType =
@@ -1106,6 +1112,10 @@ export interface MABDwhExperimentSpec {
 	contexts?: MABDwhExperimentSpecContexts;
 	prior_type?: PriorTypes;
 	reward_type?: LikelihoodTypes;
+	enable_autofail?: boolean;
+	/** @minimum 1 */
+	autofail_window?: number;
+	autofail_outcome_value?: number;
 	/** @maxLength 100 */
 	table_name: string;
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
@@ -1143,6 +1153,10 @@ export interface MABExperimentSpec {
 	contexts?: MABExperimentSpecContexts;
 	prior_type?: PriorTypes;
 	reward_type?: LikelihoodTypes;
+	enable_autofail?: boolean;
+	/** @minimum 1 */
+	autofail_window?: number;
+	autofail_outcome_value?: number;
 }
 
 export interface MessageError {

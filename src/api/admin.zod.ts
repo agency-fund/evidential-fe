@@ -533,6 +533,10 @@ export const createExperimentBodyDesignSpecContextsItemContextDescriptionMaxOne 
 
 export const createExperimentBodyDesignSpecContextsMaxOne = 150;
 
+export const createExperimentBodyDesignSpecEnableAutofailDefault = false;
+export const createExperimentBodyDesignSpecAutofailWindowDefault = 24;
+
+export const createExperimentBodyDesignSpecAutofailOutcomeValueDefault = 0;
 export const createExperimentBodyDesignSpecExperimentNameMaxThree = 100;
 
 export const createExperimentBodyDesignSpecDescriptionMaxThree = 2000;
@@ -552,6 +556,10 @@ export const createExperimentBodyDesignSpecContextsItemContextDescriptionMaxFour
 
 export const createExperimentBodyDesignSpecContextsMaxFour = 150;
 
+export const createExperimentBodyDesignSpecEnableAutofailDefaultOne = false;
+export const createExperimentBodyDesignSpecAutofailWindowDefaultOne = 24;
+
+export const createExperimentBodyDesignSpecAutofailOutcomeValueDefaultOne = 0;
 export const createExperimentBodyDesignSpecTableNameMaxTwo = 100;
 
 export const createExperimentBodyDesignSpecPrimaryKeyRegExpTwo = new RegExp(
@@ -579,6 +587,10 @@ export const createExperimentBodyDesignSpecContextsItemContextDescriptionMaxSeve
 
 export const createExperimentBodyDesignSpecContextsMaxSeven = 150;
 
+export const createExperimentBodyDesignSpecEnableAutofailDefaultTwo = false;
+export const createExperimentBodyDesignSpecAutofailWindowDefaultTwo = 24;
+
+export const createExperimentBodyDesignSpecAutofailOutcomeValueDefaultTwo = 0;
 export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 export const createExperimentBodyPowerAnalysesAnalysesItemMsgHighClusterVariationDefault = false;
@@ -915,6 +927,12 @@ export const createExperimentBody = zod.object({
 					.optional(),
 				prior_type: zod.enum(["beta", "normal"]).optional(),
 				reward_type: zod.enum(["binary", "real-valued"]).optional(),
+				enable_autofail: zod.boolean().optional(),
+				autofail_window: zod
+					.number()
+					.min(1)
+					.default(createExperimentBodyDesignSpecAutofailWindowDefault),
+				autofail_outcome_value: zod.number().optional(),
 			}),
 			zod.object({
 				experiment_type: zod.enum(["mab_online_dwh"]),
@@ -998,6 +1016,12 @@ export const createExperimentBody = zod.object({
 					.optional(),
 				prior_type: zod.enum(["beta", "normal"]).optional(),
 				reward_type: zod.enum(["binary", "real-valued"]).optional(),
+				enable_autofail: zod.boolean().optional(),
+				autofail_window: zod
+					.number()
+					.min(1)
+					.default(createExperimentBodyDesignSpecAutofailWindowDefaultOne),
+				autofail_outcome_value: zod.number().optional(),
 				table_name: zod
 					.string()
 					.max(createExperimentBodyDesignSpecTableNameMaxTwo),
@@ -1090,6 +1114,12 @@ export const createExperimentBody = zod.object({
 					.optional(),
 				prior_type: zod.enum(["beta", "normal"]).optional(),
 				reward_type: zod.enum(["binary", "real-valued"]).optional(),
+				enable_autofail: zod.boolean().optional(),
+				autofail_window: zod
+					.number()
+					.min(1)
+					.default(createExperimentBodyDesignSpecAutofailWindowDefaultTwo),
+				autofail_outcome_value: zod.number().optional(),
 			}),
 		]),
 	]),
