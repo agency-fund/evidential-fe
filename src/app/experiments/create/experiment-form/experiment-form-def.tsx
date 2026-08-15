@@ -109,6 +109,19 @@ const abandonDraftExperiment = async (data: ExperimentFormData) => {
   }
 };
 
+const getAutofailValidationState = (data: ExperimentFormData) => {
+  const isEnabled = data.autofail?.enableAutofail === true;
+  const isOutcomeValueUndefined = isEnabled && data.autofail?.autofailOutcomeValue === undefined;
+  const isNonBinaryValue =
+    isEnabled &&
+    data.bandit?.outcomeType === 'binary' &&
+    !(data.autofail?.autofailOutcomeValue === 0 || data.autofail?.autofailOutcomeValue === 1);
+  const isWindowInvalid =
+    isEnabled && (data.autofail?.autofailWindow === undefined || data.autofail?.autofailWindow < 1);
+  const isAutofailOutcomeInvalid = isNonBinaryValue || isOutcomeValueUndefined;
+  return { isEnabled, isNonBinaryValue, isWindowInvalid, isAutofailOutcomeInvalid };
+};
+
 export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, undefined> = {
   initialData: () => ({
     name: 'New Hypothesis',
@@ -120,6 +133,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       { arm_name: 'Treatment', arm_description: 'Treatment' },
     ],
     bandit: createDefaultBanditParams('mab_online'),
+    autofail: { enableAutofail: false, autofailWindow: 24, autofailOutcomeValue: 0 },
     confidence: '95',
     power: '80',
   }),
@@ -294,7 +308,6 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
     }),
     'bandit-binary-or-real': screen({
       breadcrumbTitle: 'Outcomes',
-
       render: ExperimentSelectBinaryOrRealOutcomes,
       reducer: (data, msg) => {
         if (msg.type === 'set-outcome-type') {
@@ -309,7 +322,41 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
                 : toCmabBanditParams(msg.value, data.bandit.arms, data.bandit.contexts),
           };
         }
+        if (msg.type === 'set-autofail-enabled') {
+          return {
+            ...data,
+            autofail: { ...data.autofail, enableAutofail: msg.value },
+          };
+        }
+        if (msg.type === 'set-autofail-window') {
+          return {
+            ...data,
+            autofail: { ...data.autofail, autofailWindow: msg.value },
+          };
+        }
+        if (msg.type === 'set-autofail-outcome-value') {
+          return {
+            ...data,
+            autofail: { ...data.autofail, autofailOutcomeValue: msg.value },
+          };
+        }
         return data;
+      },
+
+      isNextEnabled: (data) => {
+        const { isEnabled, isWindowInvalid, isAutofailOutcomeInvalid } = getAutofailValidationState(data);
+        return !isEnabled || (!isWindowInvalid && !isAutofailOutcomeInvalid);
+      },
+      nextButtonTooltip: (data) => {
+        const { isEnabled, isNonBinaryValue, isWindowInvalid, isAutofailOutcomeInvalid } =
+          getAutofailValidationState(data);
+        if (!isEnabled) {
+          return undefined;
+        }
+        if (isWindowInvalid) return 'Autofail window must be greater than or equal to 1.';
+        if (isNonBinaryValue) return 'Autofail outcome value must be 0 or 1 for binary outcomes.';
+        if (isAutofailOutcomeInvalid) return 'Autofail outcome value is required.';
+        return undefined;
       },
     }),
     'describe-contexts': screen({

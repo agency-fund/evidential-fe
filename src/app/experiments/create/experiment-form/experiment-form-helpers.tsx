@@ -159,6 +159,7 @@ export function convertToBanditCreateRequest(data: ExperimentFormData): CreateEx
     throw new Error('Bandit configuration is required.');
   }
   const { experimentType, outcomeType, priorType, arms } = data.bandit;
+  const { enableAutofail, autofailWindow, autofailOutcomeValue } = data.autofail ?? {};
 
   // Map bandit arms to standard arms format with prior parameters
   const standardArms = arms.map((arm) => ({
@@ -196,6 +197,9 @@ export function convertToBanditCreateRequest(data: ExperimentFormData): CreateEx
     reward_type: outcomeType,
     contexts: standardContexts,
     desired_n: 0,
+    enable_autofail: enableAutofail ?? false,
+    autofail_window: autofailWindow ?? 24,
+    autofail_outcome_value: autofailOutcomeValue ?? 0,
   };
 
   // A MAB experiment bound to a DWH target column is created as the distinct mab_online_dwh spec,

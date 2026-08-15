@@ -54,7 +54,13 @@ export function TargetingDialog({ designSpec, webhookIds }: TargetingDialogProps
                 />
               )}
               {isBanditSpec(designSpec) && (
-                <OutcomesPriorSection priorType={designSpec.prior_type} rewardType={designSpec.reward_type} />
+                <OutcomesPriorSection
+                  priorType={designSpec.prior_type}
+                  rewardType={designSpec.reward_type}
+                  autofailEnabled={designSpec.enable_autofail}
+                  autofailWindow={designSpec.autofail_window}
+                  autofailOutcomeValue={designSpec.autofail_outcome_value}
+                />
               )}
               {isCmabSpec(designSpec) && <ContextsSection contexts={designSpec.contexts ?? []} />}
               {webhookIds.length > 0 && <WebhooksSection webhookIds={webhookIds} />}
