@@ -20,21 +20,9 @@ const bundleAnalyzer = withBundleAnalyzer({
 });
 
 export default withSentryConfig(bundleAnalyzer(nextConfig), {
-  // For all available options, see:
-  // https://github.com/getsentry/sentry-webpack-plugin#options
-  // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
-
   org: 'agency-fund',
   project: 'evidential-frontend',
   silent: !process.env.CI,
   widenClientFileUpload: true,
-  reactComponentAnnotation: {
-    enabled: true,
-  },
-  disableLogger: true,
-  automaticVercelMonitors: false,
   telemetry: false,
-  bundleSizeOptimizations: {
-    excludeTracing: true,
-  },
 });
