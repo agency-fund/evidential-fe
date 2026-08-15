@@ -16,6 +16,8 @@ import { ParticipantFieldsEditor } from '@/components/features/participants/part
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { useParams, useRouter } from 'next/navigation';
 
+import { sortFieldsForDisplay } from '@/app/datasources/[datasourceId]/participants/[participantTypeId]/participant-helpers';
+
 export default function EditParticipantTypePage() {
   const params = useParams();
   const router = useRouter();
@@ -33,7 +35,7 @@ export default function EditParticipantTypePage() {
         const hasSchemaDrift = response.drift.schema_diff?.length > 0;
         if (hasSchemaDrift) {
           // Initialize state to the proposed config for a quick save.
-          setEditedDef(response.proposed);
+          setEditedDef({ ...response.proposed, fields: sortFieldsForDisplay(response.proposed.fields) });
         }
       },
     },
@@ -115,7 +117,7 @@ export default function EditParticipantTypePage() {
           )}
 
           <ParticipantFieldsEditor
-            fields={(editedDef || participantConfig.proposed).fields}
+            fields={editedDef ? editedDef.fields : sortFieldsForDisplay(participantConfig.proposed.fields)}
             onFieldsChange={handleFieldsChange}
             allowFieldRemoval={false}
           />
