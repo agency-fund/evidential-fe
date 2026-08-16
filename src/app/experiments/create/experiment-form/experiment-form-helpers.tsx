@@ -224,7 +224,9 @@ export const ExperimentTypeOptions = [
     title: 'Preassigned A/B Testing',
     badge: 'A/B',
     description:
-      'Participants are assigned to experiment arms at design time. Suitable for controlled experiments with fixed sample sizes.',
+      'Participants are assigned to experiment arms up front. Use this when your sample size is fixed.\n\n' +
+      'If your intervention targets whole groups at a time, such as a school or village, ' +
+      'you can also assign all participants in a group to the same arm.',
   },
   {
     value: OnlineFrequentistExperimentSpecExperimentType.freq_online,
