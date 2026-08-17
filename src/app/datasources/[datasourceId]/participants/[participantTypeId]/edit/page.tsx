@@ -31,6 +31,11 @@ export default function EditParticipantTypePage() {
   } = useGetParticipantType(datasourceId!, participantType!, {
     swr: {
       enabled: datasourceId !== null && participantType !== null,
+      // Disable automatic revalidations to avoid corner case of user's edits being dropped if they switch tabs.
+      revalidateIfStale: false,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateOnMount: true,
       onSuccess: (response) => {
         const hasSchemaDrift = response.drift.schema_diff?.length > 0;
         if (hasSchemaDrift) {
