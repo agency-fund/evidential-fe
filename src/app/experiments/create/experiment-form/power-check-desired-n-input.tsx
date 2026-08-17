@@ -1,7 +1,7 @@
 'use client';
 
 import { Flex, Text, TextField } from '@radix-ui/themes';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { useDebounced } from '@/providers/use-debounced';
 
 const getValidDraftN = (input: string): number | undefined => {
@@ -25,27 +25,25 @@ interface PowerCheckDesiredNInputProps {
  * Semi-controlled number input with local draft state and debounced commits.
  *
  * - `value`: external sync/reset string (e.g. when parent changes desiredN from outside typing).
- * - `onChange`: latest ref called after debounce delay with a parsed positive integer, or
+ * - `onChange`: latest callback called after debounce delay with a parsed positive integer, or
  * `undefined` for empty/invalid input.
  *
  * Input field sets a min of 2 preventing arrow keys from decrementing below, but a user can type in
  * 1 to allow it to be a leading digit. Parent should handle the special case of 1.
  */
 export function PowerCheckDesiredNInput({ value, onChange, max, label, placeholder }: PowerCheckDesiredNInputProps) {
-  const [draftN, setDraftN] = useState(value);
-  // Guard against the onChange function changing between debounce calls with a ref.
-  const onChangeRef = useRef(onChange);
-  onChangeRef.current = onChange;
+  const [draft, setDraft] = useState(() => ({ externalValue: value, value }));
+  const notifyChange = useEffectEvent(onChange);
+  if (value !== draft.externalValue) {
+    setDraft({ externalValue: value, value });
+  }
+
+  const draftN = draft.value;
   const debouncedValidN = useDebounced(getValidDraftN(draftN), 400);
   const highlightInvalid = isInvalidDraftN(draftN);
 
-  // Allow updates to the input due to prop changes, as can happen if the user chose all samples.
   useEffect(() => {
-    setDraftN(value);
-  }, [value]);
-
-  useEffect(() => {
-    onChangeRef.current(debouncedValidN);
+    notifyChange(debouncedValidN);
   }, [debouncedValidN]);
 
   return (
@@ -63,7 +61,7 @@ export function PowerCheckDesiredNInput({ value, onChange, max, label, placehold
         max={max}
         color={highlightInvalid ? 'red' : undefined}
         value={draftN}
-        onChange={(e) => setDraftN(e.target.value)}
+        onChange={(event) => setDraft((current) => ({ ...current, value: event.target.value }))}
         placeholder={placeholder ?? 'Enter your desired N'}
       />
     </Flex>
