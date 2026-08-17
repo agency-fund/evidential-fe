@@ -89,7 +89,12 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
       {/* Filter options for the selected filter field or help text */}
       <Flex gap={'2'} align={'center'}>
         {exactMatchField ? (
-          <TypeSpecificFilter dataType={exactMatchField.data_type} filter={filter} onChange={onUpdate} />
+          <TypeSpecificFilter
+            key={`${filter.field_name}:${exactMatchField.data_type}`}
+            dataType={exactMatchField.data_type}
+            filter={filter}
+            onChange={onUpdate}
+          />
         ) : filter.field_name === '' ? (
           <Text size="2" color="gray">
             ← Select a field or type the name

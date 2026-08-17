@@ -4,7 +4,7 @@ import { EditExperimentImpact } from '@/components/features/experiments/edit-exp
 import { ExperimentImpactBadge } from '@/components/features/experiments/experiment-impact-badge';
 import { EditableTextArea } from '@/components/ui/inputs/editable-text-area';
 import { ReadMoreText } from '@/components/ui/read-more-text';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button, Flex, RadioCards, Text, TextArea } from '@radix-ui/themes';
 import { Impact } from '@/api/methods.schemas';
 import { IMPACT_LIST } from '@/services/impact-constants';
@@ -30,13 +30,13 @@ const defaultFormData = (impact: Impact | null | undefined, decision: string | n
   decision: decision ?? '',
 });
 
-export function DecisionAndImpactSection({ impact, decision, onUpdate }: DecisionAndImpactSectionProps) {
-  const [formData, setFormData] = useState<FormData>(defaultFormData(impact, decision));
+interface DecisionAndImpactFormProps {
+  decision: string | null | undefined;
+  onUpdate: DecisionAndImpactSectionProps['onUpdate'];
+}
 
-  useEffect(() => {
-    setFormData(defaultFormData(impact, decision));
-  }, [impact, decision]);
-
+function DecisionAndImpactForm({ decision, onUpdate }: DecisionAndImpactFormProps) {
+  const [formData, setFormData] = useState<FormData>(() => defaultFormData(null, decision));
   const canSave = formData.impact || formData.decision;
 
   const handleSave = async () => {
@@ -47,6 +47,68 @@ export function DecisionAndImpactSection({ impact, decision, onUpdate }: Decisio
   };
 
   return (
+    <form
+      onSubmit={async (event) => {
+        event.preventDefault();
+        await handleSave();
+      }}
+    >
+      <Flex direction="column" gap="4">
+        <Flex direction="column" gap="3">
+          <Flex direction="column" gap="1">
+            <Text as="label" size="2" weight="bold">
+              Impact
+            </Text>
+            <Text as="p" size="1" color="gray">
+              {IMPACT_HELP_TEXT}
+            </Text>
+          </Flex>
+          <RadioCards.Root
+            columns={{ initial: '1', sm: '5' }}
+            value={formData.impact}
+            onValueChange={(value) => setFormData((previous) => ({ ...previous, impact: value as Impact }))}
+          >
+            {IMPACT_LIST.filter((option) => option.value !== '').map((option) => (
+              <RadioCards.Item key={option.value} value={option.value}>
+                <Flex direction="column" gap="2">
+                  <ExperimentImpactBadge impact={option.value} size="3" />
+                  <Text size="1" color="gray">
+                    {option.description}
+                  </Text>
+                </Flex>
+              </RadioCards.Item>
+            ))}
+          </RadioCards.Root>
+        </Flex>
+
+        <Flex direction="column" gap="3">
+          <Flex direction="column" gap="1">
+            <Text as="label" size="2" weight="bold">
+              Decision
+            </Text>
+            <Text size="1" color="gray">
+              {DECISION_HELP_TEXT}
+            </Text>
+          </Flex>
+          <TextArea
+            value={formData.decision}
+            onChange={(event) => setFormData((previous) => ({ ...previous, decision: event.target.value }))}
+            rows={4}
+          />
+        </Flex>
+
+        <Flex justify="end" gap="3">
+          <Button type="submit" disabled={!canSave}>
+            Save
+          </Button>
+        </Flex>
+      </Flex>
+    </form>
+  );
+}
+
+export function DecisionAndImpactSection({ impact, decision, onUpdate }: DecisionAndImpactSectionProps) {
+  return (
     <SectionCard
       title="Decision and Impact"
       headerRight={
@@ -54,63 +116,7 @@ export function DecisionAndImpactSection({ impact, decision, onUpdate }: Decisio
       }
     >
       {!impact ? (
-        <form
-          onSubmit={async (e) => {
-            e.preventDefault();
-            await handleSave();
-          }}
-        >
-          <Flex direction="column" gap="4">
-            <Flex direction="column" gap="3">
-              <Flex direction="column" gap="1">
-                <Text as="label" size="2" weight="bold">
-                  Impact
-                </Text>
-                <Text as="p" size="1" color="gray">
-                  {IMPACT_HELP_TEXT}
-                </Text>
-              </Flex>
-              <RadioCards.Root
-                columns={{ initial: '1', sm: '5' }}
-                value={formData.impact}
-                onValueChange={(val) => setFormData((prev) => ({ ...prev, impact: val as Impact }))}
-              >
-                {IMPACT_LIST.filter((option) => option.value !== '').map((option) => (
-                  <RadioCards.Item key={option.value} value={option.value}>
-                    <Flex direction="column" gap="2">
-                      <ExperimentImpactBadge impact={option.value} size="3" />
-                      <Text size="1" color="gray">
-                        {option.description}
-                      </Text>
-                    </Flex>
-                  </RadioCards.Item>
-                ))}
-              </RadioCards.Root>
-            </Flex>
-
-            <Flex direction="column" gap="3">
-              <Flex direction="column" gap="1">
-                <Text as="label" size="2" weight="bold">
-                  Decision
-                </Text>
-                <Text size="1" color="gray">
-                  {DECISION_HELP_TEXT}
-                </Text>
-              </Flex>
-              <TextArea
-                value={formData.decision}
-                onChange={(e) => setFormData((prev) => ({ ...prev, decision: e.target.value }))}
-                rows={4}
-              />
-            </Flex>
-
-            <Flex justify="end" gap="3">
-              <Button type="submit" disabled={!canSave}>
-                Save
-              </Button>
-            </Flex>
-          </Flex>
-        </form>
+        <DecisionAndImpactForm key={decision ?? ''} decision={decision} onUpdate={onUpdate} />
       ) : (
         <EditableTextArea value={decision || ''} onSubmit={(value) => onUpdate({ decision: value })} size="2">
           {decision ? <ReadMoreText text={decision} maxWords={30} /> : <Text color={'gray'}>{DECISION_HELP_TEXT}</Text>}
