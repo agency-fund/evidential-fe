@@ -3,19 +3,17 @@ import { mutate } from 'swr';
 import { getListOrganizationExperimentsKey, useDeleteExperiment } from '@/api/admin';
 import { DeleteAlertDialog } from '@/components/ui/delete-alert-dialog';
 
-const DELETE_DESCRIPTION = 'Are you sure you want to delete this experiment? This action cannot be undone.';
-const DELETE_WARNING = 'Deleting an experiment will delete all associated assignments, state, and snapshots.';
-
 type DeleteExperimentDialogProps = {
   organizationId: string;
   datasourceId: string;
   experimentId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  experimentName?: string;
 };
 
 export function DeleteExperimentDialog(props: DeleteExperimentDialogProps) {
-  const { organizationId, datasourceId, experimentId, open, onOpenChange } = props;
+  const { organizationId, datasourceId, experimentId, open, onOpenChange, experimentName } = props;
   const { trigger, isMutating } = useDeleteExperiment(
     datasourceId,
     experimentId,
@@ -26,6 +24,9 @@ export function DeleteExperimentDialog(props: DeleteExperimentDialogProps) {
       },
     },
   );
+
+  const DELETE_DESCRIPTION = `Are you sure you want to delete the experiment '${experimentName ?? ''}'? This action cannot be undone.`;
+  const DELETE_WARNING = `Deleting this experiment will delete all associated assignments, state, and snapshots.`;
 
   return (
     <DeleteAlertDialog

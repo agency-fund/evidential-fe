@@ -8,9 +8,15 @@ interface ExperimentActionsMenuProps {
   organizationId: string;
   datasourceId: string;
   experimentId: string;
+  experimentName?: string;
 }
 
-export function ExperimentActionsMenu({ datasourceId, experimentId, organizationId }: ExperimentActionsMenuProps) {
+export function ExperimentActionsMenu({
+  datasourceId,
+  experimentId,
+  organizationId,
+  experimentName,
+}: ExperimentActionsMenuProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   return (
@@ -34,6 +40,7 @@ export function ExperimentActionsMenu({ datasourceId, experimentId, organization
         experimentId={experimentId}
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
+        experimentName={experimentName}
       />
     </>
   );

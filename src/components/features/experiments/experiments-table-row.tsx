@@ -80,6 +80,7 @@ export function ExperimentsTableRow({ experiment, organizationId }: ExperimentTa
         experimentId={experimentId}
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
+        experimentName={design_spec.experiment_name}
       />
     </>
   );
