@@ -126,18 +126,15 @@ export function Combobox<TOption = string, TKey extends React.Key = string>({
   shouldFilter = true,
 }: ComboboxProps<TOption, TKey>) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [popoverHighlightedIndex, setPopoverHighlightedIndex] = useState(-1);
+  const [popoverHighlightedKey, setPopoverHighlightedKey] = useState<TKey | null>(null);
   const popoverItemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Filter options based on case-insensitive substring match with the input value
   const filteredOptions = filterOptions(shouldFilter ? value : '', options, getDisplayTextForOption);
-
-  // If filteredOptions changes, existing refs and highlight indexes will be potentially stale,
-  // so we clear them.
-  useEffect(() => {
-    setPopoverHighlightedIndex(-1);
-    popoverItemRefs.current = [];
-  }, [filteredOptions.length]);
+  const popoverHighlightedIndex =
+    popoverHighlightedKey === null
+      ? -1
+      : filteredOptions.findIndex((option) => getKeyForOption(option) === popoverHighlightedKey);
 
   // Scroll highlighted item into view
   useEffect(() => {
@@ -152,7 +149,7 @@ export function Combobox<TOption = string, TKey extends React.Key = string>({
   const handleSelect = (option: TOption) => {
     if (disabled) return;
     setIsPopoverOpen(false);
-    setPopoverHighlightedIndex(-1);
+    setPopoverHighlightedKey(null);
     onChange(getDisplayTextForOption(option), getKeyForOption(option));
   };
 
@@ -160,6 +157,7 @@ export function Combobox<TOption = string, TKey extends React.Key = string>({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (disabled) return;
     setIsPopoverOpen(true);
+    setPopoverHighlightedKey(null);
     const newValue = e.target.value;
     const firstIndex = options.findIndex(makeOptionFilter(newValue, getDisplayTextForOption, 0));
     const secondIndex =
@@ -183,10 +181,12 @@ export function Combobox<TOption = string, TKey extends React.Key = string>({
       if (!isPopoverOpen) {
         setIsPopoverOpen(true);
       }
-      setPopoverHighlightedIndex((prev) => (prev < filteredOptions.length - 1 ? prev + 1 : prev));
+      const nextIndex = Math.min(popoverHighlightedIndex + 1, filteredOptions.length - 1);
+      setPopoverHighlightedKey(nextIndex >= 0 ? getKeyForOption(filteredOptions[nextIndex]) : null);
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setPopoverHighlightedIndex((prev) => (prev > 0 ? prev - 1 : prev));
+      const nextIndex = popoverHighlightedIndex > 0 ? popoverHighlightedIndex - 1 : popoverHighlightedIndex;
+      setPopoverHighlightedKey(nextIndex >= 0 ? getKeyForOption(filteredOptions[nextIndex]) : null);
     } else if (e.key === 'Enter') {
       e.preventDefault();
       if (popoverHighlightedIndex >= 0 && popoverHighlightedIndex < filteredOptions.length) {
@@ -262,7 +262,7 @@ export function Combobox<TOption = string, TKey extends React.Key = string>({
                         popoverItemRefs.current[index] = el;
                       }}
                       onClick={() => handleSelect(option)}
-                      onMouseEnter={() => setPopoverHighlightedIndex(index)}
+                      onMouseEnter={() => setPopoverHighlightedKey(getKeyForOption(option))}
                       onPointerDown={(e) => e.preventDefault()}
                       py="2"
                       px="3"
