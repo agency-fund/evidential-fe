@@ -1,21 +1,26 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import { Flex, IconButton, Table, Text, Tooltip } from '@radix-ui/themes';
-import { FileTextIcon } from '@radix-ui/react-icons';
+import { FileTextIcon, TrashIcon } from '@radix-ui/react-icons';
 import { ExperimentStatusBadge } from '@/components/features/experiments/experiment-status-badge';
 import { ExperimentImpactBadge } from '@/components/features/experiments/experiment-impact-badge';
 import { ExperimentTypeBadge } from '@/components/features/experiments/experiment-type-badge';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { formatIsoDateLocal } from '@/services/date-utils';
 import { ExperimentWithStatus } from '@/components/features/experiments/types';
+import { DeleteExperimentDialog } from '@/components/features/experiments/delete-experiment-dialog';
 
 interface ExperimentTableRowProps {
   experiment: ExperimentWithStatus;
+  organizationId: string;
 }
 
-export function ExperimentsTableRow({ experiment }: ExperimentTableRowProps) {
+export function ExperimentsTableRow({ experiment, organizationId }: ExperimentTableRowProps) {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const { experiment_id: experimentId, datasource_id: datasourceId, design_spec } = experiment;
+
   return (
     <>
       <Table.Row>
@@ -60,9 +65,23 @@ export function ExperimentsTableRow({ experiment }: ExperimentTableRowProps) {
                 </IconButton>
               </Tooltip>
             )}
+
+            <Tooltip content="Delete experiment">
+              <IconButton variant="soft" color="red" size="2" onClick={() => setDeleteDialogOpen(true)}>
+                <TrashIcon />
+              </IconButton>
+            </Tooltip>
           </Flex>
         </Table.Cell>
       </Table.Row>
+      <DeleteExperimentDialog
+        organizationId={organizationId}
+        datasourceId={datasourceId}
+        experimentId={experimentId}
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        experimentName={design_spec.experiment_name}
+      />
     </>
   );
 }

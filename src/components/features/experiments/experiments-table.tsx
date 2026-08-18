@@ -106,7 +106,7 @@ const compareDates = (a: string, b: string): number => {
   return aDate.getTime() - bDate.getTime();
 };
 
-export function ExperimentsTable({ experiments }: ExperimentTableProps) {
+export function ExperimentsTable({ experiments, organizationId }: ExperimentTableProps) {
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection | null>(null);
 
@@ -186,7 +186,7 @@ export function ExperimentsTable({ experiments }: ExperimentTableProps) {
       </Table.Header>
       <Table.Body>
         {sortedExperiments.map((experiment) => (
-          <ExperimentsTableRow key={experiment.experiment_id} experiment={experiment} />
+          <ExperimentsTableRow key={experiment.experiment_id} experiment={experiment} organizationId={organizationId} />
         ))}
       </Table.Body>
     </Table.Root>
