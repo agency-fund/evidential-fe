@@ -102,6 +102,7 @@ export function ClusterStatisticsSection({ data, dispatch }: ClusterStatisticsSe
               type="number"
               min={0}
               size="2"
+              defaultEditing={manuallySetStats && data.clusterAvgClusterSize === undefined}
             >
               <Text size="2">{formatStatDisplay(data.clusterAvgClusterSize)}</Text>
             </EditableTextField>
@@ -128,6 +129,7 @@ export function ClusterStatisticsSection({ data, dispatch }: ClusterStatisticsSe
               step={0.005}
               size="2"
               minWidth="7ch"
+              defaultEditing={manuallySetStats && data.clusterIcc === undefined}
             >
               <Text size="2">{formatStatDisplay(data.clusterIcc, 3)}</Text>
             </EditableTextField>
@@ -147,6 +149,7 @@ export function ClusterStatisticsSection({ data, dispatch }: ClusterStatisticsSe
               min={0}
               step={0.05}
               size="2"
+              defaultEditing={manuallySetStats && data.clusterCv === undefined}
             >
               <Text size="2">{formatStatDisplay(data.clusterCv)}</Text>
             </EditableTextField>

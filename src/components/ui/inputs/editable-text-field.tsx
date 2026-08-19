@@ -21,6 +21,8 @@ interface EditableTextFieldProps {
   step?: number;
   /** Minimum width for the edit input (not the preview). */
   minWidth?: string;
+  /** When true, the field starts in edit mode instead of preview. */
+  defaultEditing?: boolean;
 }
 
 export function EditableTextField({
@@ -33,6 +35,7 @@ export function EditableTextField({
   max,
   step,
   minWidth,
+  defaultEditing,
 }: EditableTextFieldProps) {
   const [error, setError] = useState<boolean>();
 
@@ -51,7 +54,7 @@ export function EditableTextField({
 
   return (
     <Flex direction="column" gap="2">
-      <EditableRoot value={value} onSubmit={handleSubmit}>
+      <EditableRoot value={value} onSubmit={handleSubmit} defaultEditing={defaultEditing}>
         <EditableArea>
           <Flex align="center" gap="2">
             <Flex align="center" gap="2">
