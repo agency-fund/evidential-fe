@@ -4,8 +4,6 @@ import Link from 'next/link';
 import { ActivityLogIcon, ExclamationTriangleIcon, ReloadIcon } from '@radix-ui/react-icons';
 import { Badge, Box, Flex, Heading, IconButton, Select, Spinner, Text, Tooltip } from '@radix-ui/themes';
 
-const SNAPSHOT_ERROR_ALERT_THRESHOLD_MS = 8 * 60 * 60 * 1000;
-
 type AnalysisOption = {
   key: string;
   label: string;
@@ -19,6 +17,7 @@ interface AnalysisSnapshotSelectorProps {
   activeAnalysisKey: string;
   onSelectAnalysis: (key: string) => void;
   lastErrorTimestamp: Date | null;
+  isLastSnapshotErrorRelevant: boolean;
   isRefreshingLiveAnalysis: boolean;
   onRefreshLiveAnalysis: () => void;
 }
@@ -31,12 +30,10 @@ export function AnalysisSnapshotSelector({
   activeAnalysisKey,
   onSelectAnalysis,
   lastErrorTimestamp,
+  isLastSnapshotErrorRelevant,
   isRefreshingLiveAnalysis,
   onRefreshLiveAnalysis,
 }: AnalysisSnapshotSelectorProps) {
-  const isLastSnapshotErrorRelevant =
-    lastErrorTimestamp !== null && Date.now() - lastErrorTimestamp.getTime() <= SNAPSHOT_ERROR_ALERT_THRESHOLD_MS;
-
   const snapshotsHref = `/datasources/${datasourceId}/experiments/${experimentId}/snapshots`;
 
   return (

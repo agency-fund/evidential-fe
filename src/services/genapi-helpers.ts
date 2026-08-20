@@ -1,4 +1,4 @@
-import { DataType, DatasourceSummary } from '@/api/methods.schemas';
+import { DatasourceSummary, DataType } from '@/api/methods.schemas';
 
 export const isUsableDatasource = (ds: DatasourceSummary): boolean => ds.driver !== 'none';
 
