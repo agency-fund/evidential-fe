@@ -10,9 +10,15 @@ import {
   useGetDatasource,
   useUpdateDatasource,
 } from '@/api/admin';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { mutate } from 'swr';
-import { GcpServiceAccount, Hidden, RevealedStr, UpdateDatasourceRequest } from '@/api/methods.schemas';
+import {
+  GcpServiceAccount,
+  GetDatasourceResponse,
+  Hidden,
+  RevealedStr,
+  UpdateDatasourceRequest,
+} from '@/api/methods.schemas';
 import { PostgresSslModes } from '@/services/typehelper';
 import { XNGIN_API_DOCS_LINK } from '@/services/constants';
 import { ApiError } from '@/services/orval-fetch';
@@ -45,6 +51,51 @@ const defaultFormData = (): FormFields => ({
   credentials_json: { type: 'hidden' },
 });
 
+const formDataForDatasource = (data: GetDatasourceResponse): FormFields => {
+  const dsn = data.dsn;
+  let formData: FormFields = {
+    ...defaultFormData(),
+    name: data.name,
+  };
+
+  if (dsn.type === 'api_only') {
+    return formData;
+  }
+  if (dsn.type === 'bigquery') {
+    return {
+      ...formData,
+      project_id: dsn.project_id,
+      dataset: dsn.dataset_id,
+      credentials_json: dsn.credentials,
+    };
+  }
+  if (dsn.type === 'postgres' || dsn.type === 'redshift') {
+    formData = {
+      ...formData,
+      host: dsn.host,
+      port: dsn.port ? dsn.port.toString() : '5432',
+      dbname: dsn.dbname,
+      user: dsn.user,
+      password: dsn.password,
+      search_path: dsn.search_path || '',
+    };
+    if (dsn.type === 'postgres') {
+      const fallbackType = 'require';
+      const obsoleteModes = ['prefer', 'allow'];
+      const sslmode = dsn.sslmode
+        ? obsoleteModes.includes(dsn.sslmode)
+          ? fallbackType
+          : (dsn.sslmode as PostgresSslModes)
+        : fallbackType;
+      formData = {
+        ...formData,
+        sslmode,
+      };
+    }
+  }
+  return formData;
+};
+
 export const EditDatasourceDialog = ({
   organizationId,
   datasourceId,
@@ -56,7 +107,7 @@ export const EditDatasourceDialog = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState(defaultFormData());
+  const [formData, setFormData] = useState(defaultFormData);
 
   const { data, isLoading } = useGetDatasource(datasourceId);
   const {
@@ -76,55 +127,6 @@ export const EditDatasourceDialog = ({
     },
   });
 
-  useEffect(() => {
-    if (open && data) {
-      const dsn = data.dsn;
-      let newFormData: FormFields = {
-        ...defaultFormData(),
-        name: data.name,
-      };
-
-      if (dsn.type === 'api_only') {
-        setFormData(newFormData);
-        return;
-      }
-      if (dsn.type === 'bigquery') {
-        newFormData = {
-          ...newFormData,
-          project_id: dsn.project_id,
-          dataset: dsn.dataset_id,
-          credentials_json: dsn.credentials,
-        };
-      } else if (dsn.type === 'postgres' || dsn.type == 'redshift') {
-        newFormData = {
-          ...newFormData,
-          host: dsn.host,
-          port: dsn.port ? dsn.port.toString() : '5432',
-          dbname: dsn.dbname,
-          user: dsn.user,
-          password: dsn.password,
-          search_path: dsn.search_path || '',
-        };
-        // Only send sslmode for postgres.
-        if (dsn.type === 'postgres') {
-          // Only use a subset of the possible configuration options.
-          const fallbackType = 'require';
-          const obsolete_modes = ['prefer', 'allow'];
-          const sslmode = dsn.sslmode
-            ? obsolete_modes.includes(dsn.sslmode)
-              ? fallbackType
-              : (dsn.sslmode as PostgresSslModes)
-            : fallbackType;
-          newFormData = {
-            ...newFormData,
-            sslmode,
-          };
-        }
-      }
-      setFormData(newFormData);
-    }
-  }, [open, data]);
-
   if (isLoading || !data) {
     return null;
   }
@@ -139,6 +141,15 @@ export const EditDatasourceDialog = ({
     setShowPassword(false);
     reset();
     setOpen(false);
+  };
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) {
+      setFormData(formDataForDatasource(data));
+      setOpen(true);
+    } else {
+      handleClose();
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -187,16 +198,7 @@ export const EditDatasourceDialog = ({
   };
 
   return (
-    <Dialog.Root
-      open={open}
-      onOpenChange={(op) => {
-        if (!op) {
-          handleClose();
-        } else {
-          setOpen(op);
-        }
-      }}
-    >
+    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Trigger>
         {variant === 'icon' ? (
           <IconButton color="gray" variant="soft">

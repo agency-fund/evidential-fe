@@ -1,6 +1,6 @@
 'use client';
 import { Button, Dialog, Flex, Grid, Text, TextField } from '@radix-ui/themes';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Arm } from '@/api/methods.schemas';
 import { Pencil1Icon } from '@radix-ui/react-icons';
 
@@ -10,6 +10,15 @@ interface ArmWeightsDialogProps {
   disabled?: boolean;
   button_text?: string;
 }
+
+const defaultWeights = (arms: ArmWeightsDialogProps['arms']): string[] => {
+  const hasWeights = arms.some((arm) => arm.arm_weight != null);
+  if (hasWeights) {
+    return arms.map((arm) => (arm.arm_weight ?? 0).toFixed(1));
+  }
+  const balancedWeight = (100 / arms.length).toFixed(1);
+  return arms.map(() => balancedWeight);
+};
 
 export function ArmWeightsDialog({
   arms,
@@ -21,20 +30,13 @@ export function ArmWeightsDialog({
   const [localWeights, setLocalWeights] = useState<string[]>([]);
   const [weightsError, setWeightsError] = useState<string | null>(null);
 
-  // Initialize local weights when dialog opens
-  useEffect(() => {
-    if (open) {
-      const hasWeights = arms.some((a) => a.arm_weight != null);
-      if (hasWeights) {
-        setLocalWeights(arms.map((a) => (a.arm_weight ?? 0).toFixed(1)));
-      } else {
-        // Initialize with balanced allocation
-        const balancedWeight = (100 / arms.length).toFixed(1);
-        setLocalWeights(arms.map(() => balancedWeight));
-      }
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) {
+      setLocalWeights(defaultWeights(arms));
       setWeightsError(null);
     }
-  }, [open, arms]);
+    setOpen(nextOpen);
+  };
 
   const validateWeights = (weights: string[]): boolean => {
     const numWeights = weights.map((w) => parseFloat(w) || 0);
@@ -74,7 +76,7 @@ export function ArmWeightsDialog({
   };
 
   return (
-    <Dialog.Root open={open} onOpenChange={setOpen}>
+    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Trigger>
         <Button size="1" variant="soft" disabled={disabled}>
           <Pencil1Icon />
