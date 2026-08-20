@@ -30,10 +30,7 @@ const defaultFormData = (impact: Impact | null | undefined, decision: string | n
   decision: decision ?? '',
 });
 
-interface DecisionAndImpactFormProps {
-  decision: string | null | undefined;
-  onUpdate: DecisionAndImpactSectionProps['onUpdate'];
-}
+type DecisionAndImpactFormProps = Pick<DecisionAndImpactSectionProps, 'decision' | 'onUpdate'>;
 
 function DecisionAndImpactForm({ decision, onUpdate }: DecisionAndImpactFormProps) {
   const [formData, setFormData] = useState<FormData>(() => defaultFormData(null, decision));
