@@ -1,11 +1,8 @@
 'use client';
 
-import { Flex, IconButton, Select, TextField } from '@radix-ui/themes';
-import { Cross2Icon } from '@radix-ui/react-icons';
+import { Flex, Select } from '@radix-ui/themes';
 import { Filter } from '@/api/methods.schemas';
 import { TypedFilter } from '@/components/features/experiments/querybuilder/utils';
-import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
-import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
 
 export interface BooleanFilterProps {
   filter: Filter & TypedFilter<boolean>;
@@ -13,86 +10,28 @@ export interface BooleanFilterProps {
 }
 
 export function BooleanFilter({ filter, onChange }: BooleanFilterProps) {
-  const nonNullValues = filter.value.filter((v) => v !== null);
-  const hasTrue = filter.value.some((v) => v === true);
-  const includesNull = filter.value.some((v) => v === null);
+  const hasValue = filter.value.some((v) => v !== null);
+  const selected = !hasValue ? 'none' : filter.value.some((v) => v === true) ? 'true' : 'false';
 
-  const handleValueChange = (newValue: boolean) => {
-    onChange({
-      ...filter,
-      relation: 'includes',
-      value: includesNull ? [newValue, null] : [newValue],
-    });
-  };
-
-  const addValue = (e: React.MouseEvent) => {
-    e.preventDefault();
-    // Add a default boolean value (true) when none exists
-    onChange({
-      ...filter,
-      value: includesNull ? [true, null] : [true],
-    });
-  };
-
-  const removeValue = (e: React.MouseEvent) => {
-    e.preventDefault();
-    // Remove the non-null value, leaving only null
-    onChange({
-      ...filter,
-      value: [null],
-    });
-  };
-
-  const handleNullChange = (includeNull: boolean) => {
-    const value = filter.value.filter((v) => v !== null);
-    const newValue = includeNull ? [...value, null] : value;
-    onChange({
-      ...filter,
-      value: newValue,
-    });
-  };
-
-  const renderValueInputs = () => {
-    if (nonNullValues.length > 0) {
-      return (
-        <Flex direction="column" gap="1">
-          <Flex gap="1" align="center">
-            <Select.Root value={hasTrue ? 'true' : 'false'} onValueChange={(v) => handleValueChange(v === 'true')}>
-              <Select.Trigger style={{ width: 128 }} />
-              <Select.Content>
-                <Select.Item value="true">True</Select.Item>
-                <Select.Item value="false">False</Select.Item>
-              </Select.Content>
-            </Select.Root>
-
-            {/* Only show the remove button if null is included */}
-            {includesNull && (
-              <IconButton variant="soft" size="1" onClick={removeValue}>
-                <Cross2Icon />
-              </IconButton>
-            )}
-          </Flex>
-
-          <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="128px" />
-        </Flex>
-      );
+  const handleChange = (choice: string) => {
+    if (choice === 'none') {
+      onChange({ ...filter, relation: 'includes', value: [] });
+      return;
     }
-
-    /* Also show "Add value" button when there are no non-null values */
-    return (
-      <Flex direction="column" gap="1">
-        <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="128px" singularValue={true} />
-
-        <AddValueButton minWidth="128px" onClick={addValue} />
-      </Flex>
-    );
+    onChange({ ...filter, relation: 'includes', value: [choice === 'true'] });
   };
 
   return (
     <Flex gap="2" wrap="wrap">
-      <TextField.Root value="Is" disabled style={{ width: 128 }} />
-
-      {renderValueInputs()}
+      <Select.Root value={selected} onValueChange={handleChange}>
+        <Select.Trigger style={{ width: 160 }} />
+        <Select.Content>
+          <Select.Item value="none">All participants</Select.Item>
+          <Select.Separator />
+          <Select.Item value="true">Is true</Select.Item>
+          <Select.Item value="false">Is false</Select.Item>
+        </Select.Content>
+      </Select.Root>
     </Flex>
   );
 }

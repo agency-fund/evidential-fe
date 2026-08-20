@@ -4,6 +4,12 @@ import { Flex, Grid, IconButton, Text } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
 import { DataType, Filter } from '@/api/methods.schemas';
 import { TypeSpecificFilter } from '@/components/features/experiments/querybuilder/type-specific-filter-input';
+import { MissingValuesPicker } from '@/components/features/experiments/querybuilder/missing-values-picker';
+import {
+  applyMissingValuesOption,
+  getMissingValuesOption,
+  MissingValuesOption,
+} from '@/components/features/experiments/querybuilder/utils';
 import { DataTypeBadge } from '@/components/ui/data-type-badge';
 import { Combobox } from '@/components/ui/combobox';
 
@@ -40,6 +46,21 @@ const ComboboxRow = ({ field_name, data_type }: ComboboxRowProps) => {
 
 export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpdate, onRemove }: FilterRowProps) {
   const exactMatchField = availableOptions.find((f) => f.field_name === filter.field_name);
+  const missingValuesOption = getMissingValuesOption(filter);
+
+  const handleMissingValuesChange = (option: MissingValuesOption) => {
+    // Re-checking "with a value" starts from a clean predicate (its value was irrelevant while
+    // unchecked), so the row returns to the neutral "All participants" default.
+    const baseFilter =
+      missingValuesOption === 'is-missing' ? { ...filter, relation: 'includes' as const, value: [] } : filter;
+    onUpdate(applyMissingValuesOption(baseFilter, option));
+  };
+
+  // The type-specific inputs manage only the value predicate; FilterRow re-applies the current
+  // missing-values choice so the NULL stays consistent whenever the predicate changes.
+  const handlePredicateChange = (predicateFilter: Filter) => {
+    onUpdate(applyMissingValuesOption(predicateFilter, missingValuesOption));
+  };
 
   const handleComboboxChange = (value: string) => {
     // User selected the current value.
@@ -79,7 +100,7 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
           getDisplayTextForOption={getSearchTextFromOption}
           getKeyForOption={getSearchTextFromOption}
           autoFocus={isNewRow}
-          placeholder="Search fields..."
+          placeholder="Select or type a field…"
           noMatchText="No matching fields"
           rightSlot={exactMatchField && <DataTypeBadge type={exactMatchField.data_type} />}
           dropdownRow={({ option }) => <ComboboxRow field_name={option.field_name} data_type={option.data_type} />}
@@ -87,14 +108,19 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
       </Flex>
 
       {/* Filter options for the selected filter field or help text */}
-      <Flex gap={'2'} align={'center'}>
+      <Flex direction={'column'} gap={'3'} align={'start'}>
         {exactMatchField ? (
-          <TypeSpecificFilter dataType={exactMatchField.data_type} filter={filter} onChange={onUpdate} />
-        ) : filter.field_name === '' ? (
-          <Text size="2" color="gray">
-            ← Select a field or type the name
-          </Text>
-        ) : (
+          <MissingValuesPicker value={missingValuesOption} onChange={handleMissingValuesChange}>
+            {missingValuesOption !== 'is-missing' ? (
+              <TypeSpecificFilter
+                key={exactMatchField.field_name}
+                dataType={exactMatchField.data_type}
+                filter={filter}
+                onChange={handlePredicateChange}
+              />
+            ) : null}
+          </MissingValuesPicker>
+        ) : filter.field_name === '' ? null : (
           <Text size="2" color="red">
             Invalid field
           </Text>
