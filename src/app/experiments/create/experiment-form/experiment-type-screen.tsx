@@ -21,12 +21,12 @@ export const ExperimentTypeScreen = ({
     >
       {ExperimentTypeOptions.map((option) => (
         <RadioCards.Item key={option.value} value={option.value}>
-          <Flex direction="column" gap="1">
+          <Flex direction="column" gap="1" height="100%">
             <Flex align="center" gap="2">
               <Text weight="bold">{option.title}</Text>
               <Badge>{option.badge}</Badge>
             </Flex>
-            <Text size="2" color="gray">
+            <Text size="2" color="gray" style={{ whiteSpace: 'pre-wrap' }}>
               {option.description}
             </Text>
           </Flex>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Button, Flex, Grid, Text, TextField, Tooltip } from '@radix-ui/themes';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData } from './experiment-form-types';
@@ -53,8 +54,11 @@ interface ClusterStatisticsSectionProps {
 }
 
 export function ClusterStatisticsSection({ data, dispatch }: ClusterStatisticsSectionProps) {
+  const [manuallySetStats, setManuallySetStats] = useState(false);
+
   const hasClusterStatValues =
     data.clusterIcc !== undefined || data.clusterCv !== undefined || data.clusterAvgClusterSize !== undefined;
+  const showHiddenStats = hasClusterStatValues || manuallySetStats;
 
   return (
     <Flex direction="column" gap="3">
@@ -68,77 +72,87 @@ export function ClusterStatisticsSection({ data, dispatch }: ClusterStatisticsSe
           Cluster ID field:
         </Text>
         <TextField.Root value={data.clusterKey ?? ''} readOnly />
-        <Button
-          type="button"
-          variant="soft"
-          disabled={!hasClusterStatValues}
-          onClick={() => dispatch({ type: 'clear-cluster-stats' })}
-        >
-          Reset stats
-        </Button>
+        {showHiddenStats ? (
+          <>
+            <Button
+              type="button"
+              variant="soft"
+              disabled={!hasClusterStatValues}
+              onClick={() => dispatch({ type: 'clear-cluster-stats' })}
+            >
+              Reset stats
+            </Button>
+          </>
+        ) : (
+          <Button type="button" variant="soft" onClick={() => setManuallySetStats(true)}>
+            Manually set stats
+          </Button>
+        )}
       </Flex>
 
-      <Grid columns={{ initial: '1', sm: '3' }} gap="4">
-        <Flex direction="column" gap="1">
-          <LabelWithTooltip label="Average Cluster Size" tooltip="The average number of participants per cluster." />
-          <EditableTextField
-            value={formatStatValue(data.clusterAvgClusterSize, 2)}
-            onSubmit={(value) => {
-              dispatch({ type: 'set-cluster-avg-size', value: parseStatValue(value, { min: 0 }) });
-            }}
-            type="number"
-            min={0}
-            size="2"
-          >
-            <Text size="2">{formatStatDisplay(data.clusterAvgClusterSize)}</Text>
-          </EditableTextField>
-        </Flex>
+      {showHiddenStats ? (
+        <Grid columns={{ initial: '1', sm: '3' }} gap="4">
+          <Flex direction="column" gap="1">
+            <LabelWithTooltip label="Average Cluster Size" tooltip="The average number of participants per cluster." />
+            <EditableTextField
+              value={formatStatValue(data.clusterAvgClusterSize, 2)}
+              onSubmit={(value) => {
+                dispatch({ type: 'set-cluster-avg-size', value: parseStatValue(value, { min: 0 }) });
+              }}
+              type="number"
+              min={0}
+              size="2"
+            >
+              <Text size="2">{formatStatDisplay(data.clusterAvgClusterSize)}</Text>
+            </EditableTextField>
+          </Flex>
 
-        <Flex direction="column" gap="1">
-          <LabelWithTooltip
-            label="Intracluster Correlation Coefficient"
-            tooltip={
-              'How similar individual primary metric values are within the same cluster. ' +
-              'Values range from 0 to 1; higher values mean more similarity within clusters, ' +
-              'which increases the total sample size you need. ' +
-              'This value will be applied to all metrics.'
-            }
-          />
-          <EditableTextField
-            value={formatStatValue(data.clusterIcc, 3)}
-            onSubmit={(value) => {
-              dispatch({ type: 'set-cluster-icc', value: parseStatValue(value, { min: 0, max: 1 }) });
-            }}
-            type="number"
-            min={0}
-            max={1}
-            step={0.005}
-            size="2"
-            minWidth="7ch"
-          >
-            <Text size="2">{formatStatDisplay(data.clusterIcc, 3)}</Text>
-          </EditableTextField>
-        </Flex>
+          <Flex direction="column" gap="1">
+            <LabelWithTooltip
+              label="Intracluster Correlation Coefficient"
+              tooltip={
+                'How similar individual primary metric values are within the same cluster. ' +
+                'Values range from 0 to 1; higher values mean more similarity within clusters, ' +
+                'which increases the total sample size you need. ' +
+                'This value will be applied to all metrics.'
+              }
+            />
+            <EditableTextField
+              value={formatStatValue(data.clusterIcc, 3)}
+              onSubmit={(value) => {
+                dispatch({ type: 'set-cluster-icc', value: parseStatValue(value, { min: 0, max: 1 }) });
+              }}
+              type="number"
+              min={0}
+              max={1}
+              step={0.005}
+              size="2"
+              minWidth="7ch"
+            >
+              <Text size="2">{formatStatDisplay(data.clusterIcc, 3)}</Text>
+            </EditableTextField>
+          </Flex>
 
-        <Flex direction="column" gap="1">
-          <LabelWithTooltip
-            label="Coefficient of Variation"
-            tooltip="How much your cluster sizes vary from one another. A value of 0 means all are of equal size; higher values mean more variability, which increases the total sample size you need."
-          />
-          <EditableTextField
-            value={formatStatValue(data.clusterCv, 2)}
-            onSubmit={(value) => {
-              dispatch({ type: 'set-cluster-cv', value: parseStatValue(value, { min: 0 }) });
-            }}
-            type="number"
-            min={0}
-            step={0.05}
-            size="2"
-          >
-            <Text size="2">{formatStatDisplay(data.clusterCv)}</Text>
-          </EditableTextField>
-        </Flex>
-      </Grid>
+          <Flex direction="column" gap="1">
+            <LabelWithTooltip
+              label="Coefficient of Variation"
+              tooltip="How much your cluster sizes vary from one another. A value of 0 means all are of equal size; higher values mean more variability, which increases the total sample size you need."
+            />
+            <EditableTextField
+              value={formatStatValue(data.clusterCv, 2)}
+              onSubmit={(value) => {
+                dispatch({ type: 'set-cluster-cv', value: parseStatValue(value, { min: 0 }) });
+              }}
+              type="number"
+              min={0}
+              step={0.05}
+              size="2"
+            >
+              <Text size="2">{formatStatDisplay(data.clusterCv)}</Text>
+            </EditableTextField>
+          </Flex>
+        </Grid>
+      ) : null}
     </Flex>
   );
 }
