@@ -64,7 +64,7 @@ export function GenericErrorCallout({ title, message, error }: { title: string; 
         </Callout.Icon>
         <Callout.Text>{title}</Callout.Text>
       </Callout.Root>
-      <Code style={{ whiteSpace: 'pre', fontFamily: 'monospace' }} variant={'outline'} m={'3'}>
+      <Code style={{ whiteSpace: 'pre' }} variant={'outline'} m={'3'}>
         {message ? message : <></>}
         {error && <FormattedError error={error} />}
       </Code>

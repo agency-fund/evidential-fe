@@ -49,6 +49,7 @@ function CodeBlock({ content }: { content: string }) {
         padding: 'var(--space-2)',
         background: 'var(--gray-a3)',
         borderRadius: 'var(--radius-2)',
+        fontFamily: 'var(--code-font-family)',
         fontSize: 'var(--font-size-1)',
         overflowX: 'auto',
       }}

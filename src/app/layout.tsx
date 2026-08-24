@@ -1,8 +1,9 @@
 'use client';
 import '@radix-ui/themes/styles.css';
+import './theme.css';
 import '@/services/feature-flags/feature-flag-dev-tools';
 
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 import { Container, Flex, Theme } from '@radix-ui/themes';
 import { OrganizationProvider } from '@/providers/organization-provider';
 import GoogleAuthProvider from '@/providers/auth-provider';
@@ -12,14 +13,15 @@ import { NavigationBarNoCompact } from '@/components/layout/nav/navigation-curta
 import { HeaderBar } from '@/components/layout/header/header-bar';
 import RequireLogin from '@/components/require-login';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const inter = Inter({
+  variable: '--font-inter',
   subsets: ['latin'],
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const jetbrainsMono = JetBrains_Mono({
+  variable: '--font-jetbrains-mono',
   subsets: ['latin'],
+  preload: false,
 });
 
 export default function RootLayout({
@@ -28,8 +30,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`} style={{ margin: 0, padding: 0 }}>
+    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+      <body style={{ margin: 0, padding: 0 }}>
         <Theme appearance="light" accentColor="indigo" grayColor="slate" radius="large">
           <Suspense>
             <GoogleAuthProvider>
