@@ -35,7 +35,7 @@ export const ExperimentMetadataScreen = ({
         </Text>
         <TextArea
           placeholder="Describe your hypothesis..."
-          value={data.hypothesis}
+          value={data.hypothesis ?? ''}
           onChange={(e) => dispatch({ type: 'set-hypothesis', value: e.target.value })}
           rows={3}
         />
