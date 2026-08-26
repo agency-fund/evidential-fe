@@ -9,7 +9,7 @@ interface ServiceAccountJsonFieldProps {
   onProjectIdFound?: (projectId: string) => void;
   placeholder?: string;
   required: boolean;
-  value?: string;
+  value: string;
 }
 
 export function ServiceAccountJsonField({
