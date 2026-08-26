@@ -35,7 +35,7 @@ export const ExperimentMetadataScreen = ({
         </Text>
         <TextArea
           placeholder="Describe your hypothesis..."
-          value={data.hypothesis ?? ''}
+          value={data.hypothesis}
           onChange={(e) => dispatch({ type: 'set-hypothesis', value: e.target.value })}
           rows={3}
         />
@@ -48,7 +48,7 @@ export const ExperimentMetadataScreen = ({
           </Text>
           <TextField.Root
             type="date"
-            value={data.startDate || ''}
+            value={data.startDate}
             onChange={(e) => dispatch({ type: 'set-start-date', value: e.target.value })}
           />
         </Box>
@@ -58,7 +58,7 @@ export const ExperimentMetadataScreen = ({
           </Text>
           <TextField.Root
             type="date"
-            value={data.endDate || ''}
+            value={data.endDate}
             onChange={(e) => dispatch({ type: 'set-end-date', value: e.target.value })}
           />
         </Box>
@@ -69,7 +69,7 @@ export const ExperimentMetadataScreen = ({
           Design Document URL (optional)
         </Text>
         <TextField.Root
-          value={data.designUrl || ''}
+          value={data.designUrl}
           onChange={(e) => dispatch({ type: 'set-design-url', value: e.target.value })}
           placeholder="https://docs.google.com/document/..."
         />
