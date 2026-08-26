@@ -86,8 +86,8 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
   if (!isFreqExperimentType(data.experimentType)) {
     throw new Error('Frequentist configuration is required.');
   }
-  if (!data.name || !data.tableName || !data.primaryKey) {
-    throw new Error('Experiment name, table name, and primary key are all required.');
+  if (!data.name || !data.startDate || !data.endDate || !data.tableName || !data.primaryKey) {
+    throw new Error('Experiment name, start date, end date, table name, and primary key are all required.');
   }
 
   const metrics: DesignSpecMetricRequest[] = [];
@@ -157,6 +157,9 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
 export function convertToBanditCreateRequest(data: ExperimentFormData): CreateExperimentRequest {
   if (data.bandit === undefined) {
     throw new Error('Bandit configuration is required.');
+  }
+  if (!data.name || !data.startDate || !data.endDate) {
+    throw new Error('Experiment name, start date, and end date are all required.');
   }
   const { experimentType, outcomeType, priorType, arms } = data.bandit;
   const { enableAutofail, autofailWindow, autofailOutcomeValue } = data.autofail ?? {};
