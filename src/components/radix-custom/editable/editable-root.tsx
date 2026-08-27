@@ -24,10 +24,12 @@ interface EditableRootProps {
   children: ReactNode;
   value: string;
   onSubmit?: (value: string) => Promise<void> | void;
+  /** When true, the field starts in edit mode instead of preview. */
+  defaultEditing?: boolean;
 }
 
-export function EditableRoot({ children, value, onSubmit }: EditableRootProps) {
-  const [isEditing, setIsEditing] = useState(false);
+export function EditableRoot({ children, value, onSubmit, defaultEditing = false }: EditableRootProps) {
+  const [isEditing, setIsEditing] = useState(defaultEditing);
   const [draftValue, setDraftValue] = useState(value);
   const inputValue = isEditing ? draftValue : value;
 
