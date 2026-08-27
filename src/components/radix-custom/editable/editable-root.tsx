@@ -30,7 +30,20 @@ interface EditableRootProps {
 
 export function EditableRoot({ children, value, onSubmit, defaultEditing = false }: EditableRootProps) {
   const [isEditing, setIsEditing] = useState(defaultEditing);
+  // draftValue is the in-progress edit; prevValue is the last committed `value` prop.
+  // Both start as `value`, then diverge: typing updates only the draft, external
+  // commits update only prevValue. A pristine draft still equals prevValue.
   const [draftValue, setDraftValue] = useState(value);
+  const [prevValue, setPrevValue] = useState(value);
+
+  // If the committed value changes and the user has not typed, leave edit mode.
+  if (value !== prevValue) {
+    setPrevValue(value);
+    if (isEditing && draftValue === prevValue) {
+      setIsEditing(false);
+    }
+  }
+
   const inputValue = isEditing ? draftValue : value;
 
   const edit = () => {
