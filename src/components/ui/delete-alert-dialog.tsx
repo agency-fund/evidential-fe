@@ -1,6 +1,6 @@
 'use client';
 import { AlertDialog, Button, Flex, Text, TextField } from '@radix-ui/themes';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { GenericErrorCallout } from './generic-error';
 
 /**
@@ -74,6 +74,93 @@ type ControlledDeleteAlertDialogProps = BaseDeleteAlertDialogProps & {
 
 type DeleteAlertDialogProps = UncontrolledDeleteAlertDialogProps | ControlledDeleteAlertDialogProps;
 
+type DeleteAlertDialogFormProps = BaseDeleteAlertDialogProps & {
+  onOpenChange: (open: boolean) => void;
+};
+
+function DeleteAlertDialogForm({
+  title,
+  description,
+  children,
+  trigger,
+  loading,
+  error,
+  onOpenChange,
+}: DeleteAlertDialogFormProps) {
+  const [confirmationText, setConfirmationText] = useState('');
+  const [errorDismissed, setErrorDismissed] = useState(true);
+  const isConfirmed = confirmationText === 'delete';
+
+  const handleConfirm = async () => {
+    setErrorDismissed(false);
+    try {
+      await trigger();
+      onOpenChange(false);
+    } catch {
+      // Parent's `error` prop will populate; keep dialog open.
+    }
+  };
+
+  return (
+    <>
+      <AlertDialog.Title>{title}</AlertDialog.Title>
+      <AlertDialog.Description>{description}</AlertDialog.Description>
+
+      <Flex direction={'column'} mt={'4'}>
+        {children && (
+          <Text as="p" mb={'3'}>
+            {children}
+          </Text>
+        )}
+        <Text as="p" mb={'3'}>
+          Please type &apos;delete&apos; in this text box to confirm.
+        </Text>
+        <TextField.Root
+          value={confirmationText}
+          autoFocus={true}
+          onChange={(e) => {
+            setErrorDismissed(true);
+            setConfirmationText(e.target.value);
+          }}
+          onKeyDown={async (e) => {
+            if (e.key === 'Enter' && isConfirmed) {
+              e.preventDefault();
+              await handleConfirm();
+            }
+          }}
+          placeholder="delete"
+        />
+        {!errorDismissed && error && <GenericErrorCallout title={`Failed: ${title}`} error={error} />}
+      </Flex>
+
+      <Flex gap="3" mt="4" justify="end">
+        <AlertDialog.Cancel>
+          <Button variant="soft" color="gray">
+            Cancel
+          </Button>
+        </AlertDialog.Cancel>
+        <AlertDialog.Action>
+          <Button
+            variant="solid"
+            color="red"
+            disabled={!isConfirmed}
+            loading={loading}
+            onClick={async (e) => {
+              e.preventDefault(); // Prevent Radix's handlers from closing the dialog
+              if (!isConfirmed) {
+                return;
+              }
+              await handleConfirm();
+            }}
+          >
+            Delete
+          </Button>
+        </AlertDialog.Action>
+      </Flex>
+    </>
+  );
+}
+
 export function DeleteAlertDialog({
   title,
   description,
@@ -85,113 +172,32 @@ export function DeleteAlertDialog({
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
 }: DeleteAlertDialogProps) {
-  const [confirmation, setConfirmation] = useState<{ dialog: 'closed' } | { dialog: 'open'; text: string }>({
-    dialog: 'closed',
-  });
-  const [errorDismissed, setErrorDismissed] = useState<boolean>(true);
-
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const isControlled = controlledOpen !== undefined;
-
-  // Sync confirmation state with controlled open prop
-  useEffect(() => {
-    if (!isControlled) {
-      return;
-    }
-    if (controlledOpen && confirmation.dialog === 'closed') {
-      setConfirmation({ dialog: 'open', text: '' });
-    } else if (!controlledOpen && confirmation.dialog === 'open') {
-      setConfirmation({ dialog: 'closed' });
-    }
-  }, [isControlled, controlledOpen, confirmation.dialog]);
-
-  const isOpen = isControlled ? controlledOpen : confirmation.dialog === 'open';
-  const isConfirmed = confirmation.dialog === 'open' && confirmation.text === 'delete';
-
-  const handleConfirm = async () => {
-    setErrorDismissed(false);
-    try {
-      await trigger();
-      setErrorDismissed(true);
-      setConfirmation({ dialog: 'closed' });
-      if (isControlled) {
-        controlledOnOpenChange?.(false);
-      }
-    } catch {
-      // Parent's `error` prop will populate; keep dialog open.
-    }
-  };
+  const isOpen = isControlled ? controlledOpen : uncontrolledOpen;
 
   const handleOpenChange = (open: boolean) => {
     if (isControlled) {
       controlledOnOpenChange?.(open);
     } else {
-      if (open) {
-        setConfirmation({ dialog: 'open', text: '' });
-      } else {
-        setConfirmation({ dialog: 'closed' });
-      }
+      setUncontrolledOpen(open);
     }
   };
 
   return (
     <AlertDialog.Root open={isOpen} onOpenChange={handleOpenChange}>
       {renderTrigger && <AlertDialog.Trigger>{renderTrigger()}</AlertDialog.Trigger>}
-      <AlertDialog.Content
-        onKeyDown={async (e) => {
-          if (e.key === 'Enter' && isConfirmed) {
-            e.preventDefault();
-            await handleConfirm();
-          }
-        }}
-      >
-        <AlertDialog.Title>{title}</AlertDialog.Title>
-        <AlertDialog.Description>{description}</AlertDialog.Description>
-
-        <Flex direction={'column'} mt={'4'}>
-          {children && (
-            <Text as="p" mb={'3'}>
-              {children}
-            </Text>
-          )}
-          <Text as="p" mb={'3'}>
-            Please type &apos;delete&apos; in this text box to confirm.
-          </Text>
-          <TextField.Root
-            value={confirmation.dialog === 'open' ? confirmation.text : ''}
-            autoFocus={true}
-            onChange={(e) => {
-              setErrorDismissed(true);
-              setConfirmation({ dialog: 'open', text: e.target.value });
-            }}
-            placeholder="delete"
-          />
-          {!errorDismissed && error && <GenericErrorCallout title={`Failed: ${title}`} error={error} />}
-        </Flex>
-
-        <Flex gap="3" mt="4" justify="end">
-          <AlertDialog.Cancel>
-            <Button variant="soft" color="gray">
-              Cancel
-            </Button>
-          </AlertDialog.Cancel>
-          <AlertDialog.Action>
-            <Button
-              variant="solid"
-              color="red"
-              disabled={!isConfirmed}
-              loading={loading}
-              onClick={async (e) => {
-                e.preventDefault(); // Prevent Radix's handlers from closing the dialog
-                if (!isConfirmed) {
-                  return;
-                }
-                await handleConfirm();
-              }}
-            >
-              Delete
-            </Button>
-          </AlertDialog.Action>
-        </Flex>
+      <AlertDialog.Content>
+        <DeleteAlertDialogForm
+          title={title}
+          description={description}
+          trigger={trigger}
+          loading={loading}
+          error={error}
+          onOpenChange={handleOpenChange}
+        >
+          {children}
+        </DeleteAlertDialogForm>
       </AlertDialog.Content>
     </AlertDialog.Root>
   );

@@ -65,6 +65,7 @@ export function ExperimentCard({
                 organizationId={organizationId}
                 datasourceId={datasourceId}
                 experimentId={experimentId}
+                experimentName={title}
               />
             </Flex>
           </Flex>

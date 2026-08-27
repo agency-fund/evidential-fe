@@ -68,6 +68,13 @@ import { TableNameBadge } from '@/components/features/participants/table-name-ba
 import { TargetingDialog } from '@/components/features/experiments/targeting-dialog';
 import { FreqDesignDetailsDialog } from '@/components/features/experiments/freq-design-details-dialog';
 
+const SNAPSHOT_ERROR_ALERT_THRESHOLD_MS = 8 * 60 * 60 * 1000;
+
+/** Whether a snapshot failure is recent enough to be worth calling out to the user. */
+function isSnapshotFailureRecent(latestFailure: Date | null): boolean {
+  return latestFailure !== null && Date.now() - latestFailure.getTime() <= SNAPSHOT_ERROR_ALERT_THRESHOLD_MS;
+}
+
 /**
  * Returns the metric's analysis corresponding to the selectedMetricName from a list of analyses.
  * This list should normally come from the selected AnalysisState.
@@ -127,6 +134,7 @@ export default function ExperimentViewPage() {
   const datasourceId = (params.datasourceId as string) || '';
   const experimentId = (params.experimentId as string) || '';
   const [lastErrorTimestamp, setLastErrorTimestamp] = useState<null | Date>(null);
+  const [isLastSnapshotErrorRelevant, setIsLastSnapshotErrorRelevant] = useState(false);
 
   const [analysisHistory, setAnalysisHistory] = useState<AnalysisState[]>([]);
   const [liveAnalysis, setLiveAnalysis] = useState<AnalysisState>({
@@ -251,7 +259,9 @@ export default function ExperimentViewPage() {
             };
           });
 
-          setLastErrorTimestamp(data.latest_failure === null ? null : new Date(data.latest_failure));
+          const latestFailure = data.latest_failure === null ? null : new Date(data.latest_failure);
+          setLastErrorTimestamp(latestFailure);
+          setIsLastSnapshotErrorRelevant(isSnapshotFailureRecent(latestFailure));
           setAnalysisHistory(history);
         },
         onError: async () => {
@@ -514,6 +524,7 @@ export default function ExperimentViewPage() {
                 activeAnalysisKey={activeAnalysisKey}
                 onSelectAnalysis={handleSelectAnalysis}
                 lastErrorTimestamp={lastErrorTimestamp}
+                isLastSnapshotErrorRelevant={isLastSnapshotErrorRelevant}
                 isRefreshingLiveAnalysis={isLoadingLiveAnalysis || isLoadingLiveCmabAnalysis}
                 onRefreshLiveAnalysis={() => triggerLiveAnalysis()}
               />

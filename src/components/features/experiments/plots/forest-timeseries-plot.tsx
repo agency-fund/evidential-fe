@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Box, Callout, Card, Flex, Heading, Text } from '@radix-ui/themes';
 import {
   CartesianGrid,
@@ -92,17 +92,8 @@ export default function ForestTimeseriesPlot({
   onPointClick,
 }: ForestTimeseriesPlotProps) {
   const [selectedArmId, setSelectedArmId] = useState<string | null>(null);
-
-  // Default selected arm to the baseline if there is one, else fallback to the first arm.
-  // useEffect to avoid state update during render phase.
-  useEffect(() => {
-    if (!selectedArmId && armMetadata.length > 0) {
-      const baselineArm = armMetadata.find((arm) => arm.isBaseline);
-      setSelectedArmId(baselineArm?.id ?? armMetadata[0]?.id ?? null);
-    }
-  }, [selectedArmId, armMetadata]);
-
-  const selectedArmName = armMetadata.find((arm) => arm.id === selectedArmId)?.name || null;
+  const fallbackArmId = armMetadata.find((arm) => arm.isBaseline)?.id ?? armMetadata[0]?.id ?? null;
+  const effectiveSelectedArmId = armMetadata.some((arm) => arm.id === selectedArmId) ? selectedArmId : fallbackArmId;
 
   // Updates the plot and tooltip, and notifies parent of what snapshot was clicked.
   const handlePointClick = (armId: string, snapshotKey: string) => {
@@ -200,7 +191,7 @@ export default function ForestTimeseriesPlot({
             />
             <Tooltip
               content={(props) => (
-                <CustomTimeseriesTooltip {...props} armMetadata={armMetadata} selectedArmId={selectedArmId} />
+                <CustomTimeseriesTooltip {...props} armMetadata={armMetadata} selectedArmId={effectiveSelectedArmId} />
               )}
             />
             <Legend
@@ -220,7 +211,7 @@ export default function ForestTimeseriesPlot({
                 const index = armMetadata.findIndex((arm) => arm.id === value);
                 const arm = armMetadata[index];
                 const textColorEnum = getArmColorEnumForText(index, arm.isBaseline);
-                const selected = arm.name === selectedArmName;
+                const selected = arm.id === effectiveSelectedArmId;
                 return (
                   <Text size="3" weight={selected ? 'bold' : 'regular'} color={textColorEnum} key={arm.id}>
                     {arm.name}
@@ -234,7 +225,7 @@ export default function ForestTimeseriesPlot({
 
             {/* Render jittered line segments with dots for each arm */}
             {armMetadata.map((armInfo, index) => {
-              const selected = selectedArmId === armInfo.id;
+              const selected = effectiveSelectedArmId === armInfo.id;
               // Always emphasize dots (use true for isSelected in getArmColor)
               const baseDotColor = getArmColor(index, armInfo.isBaseline, true);
               const fillDotColor = getColorWithSignificance(baseDotColor, Significance.No, selected);
@@ -257,7 +248,7 @@ export default function ForestTimeseriesPlot({
 
             {/* Render confidence intervals for each arm */}
             {armMetadata.map((armInfo, index) => {
-              const selected = selectedArmId === armInfo.id;
+              const selected = effectiveSelectedArmId === armInfo.id;
               return (
                 <ConfidenceInterval
                   key={`ci_${armInfo.id}`}

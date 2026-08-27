@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useState, ReactNode, useContext, useEffect } from 'react';
+import { createContext, useState, ReactNode, useContext } from 'react';
 
 interface EditableContextType {
   isEditing: boolean;
@@ -30,19 +30,17 @@ interface EditableRootProps {
 
 export function EditableRoot({ children, value, onSubmit, defaultEditing = false }: EditableRootProps) {
   const [isEditing, setIsEditing] = useState(defaultEditing);
-  const [inputValue, setInputValue] = useState(value);
+  const [draftValue, setDraftValue] = useState(value);
+  const inputValue = isEditing ? draftValue : value;
 
-  useEffect(() => {
-    if (!isEditing) {
-      setInputValue(value);
-    }
-  }, [value, isEditing]);
-
-  const edit = () => setIsEditing(true);
+  const edit = () => {
+    setDraftValue(value);
+    setIsEditing(true);
+  };
   const submit = async () => {
     if (onSubmit) {
       try {
-        await onSubmit(inputValue);
+        await onSubmit(draftValue);
       } catch (error) {
         console.error('Submit failed:', error);
         return;
@@ -58,7 +56,7 @@ export function EditableRoot({ children, value, onSubmit, defaultEditing = false
     submit,
     cancel,
     inputValue,
-    setInputValue,
+    setInputValue: setDraftValue,
   };
 
   return <EditableContext.Provider value={contextValue}>{children}</EditableContext.Provider>;

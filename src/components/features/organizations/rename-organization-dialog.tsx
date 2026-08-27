@@ -1,6 +1,6 @@
 'use client';
 import { getGetOrganizationKey, getListOrganizationsKey, useUpdateOrganization } from '@/api/admin';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button, Dialog, Flex, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GearIcon } from '@radix-ui/react-icons';
@@ -34,12 +34,6 @@ export function RenameOrganizationDialog({
     },
   });
 
-  useEffect(() => {
-    if (open && currentName) {
-      setFormData(defaultFormData(currentName));
-    }
-  }, [open, currentName]);
-
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     await trigger({
@@ -52,17 +46,17 @@ export function RenameOrganizationDialog({
     setOpen(false);
   };
 
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) {
+      setFormData(defaultFormData(currentName));
+      setOpen(true);
+    } else {
+      handleClose();
+    }
+  };
+
   return (
-    <Dialog.Root
-      open={open}
-      onOpenChange={(op) => {
-        if (!op) {
-          handleClose();
-        } else {
-          setOpen(op);
-        }
-      }}
-    >
+    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Trigger>
         <Button>
           <GearIcon />

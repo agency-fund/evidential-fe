@@ -10,7 +10,7 @@ import {
   BETWEEN_BASED_OPS,
   BETWEEN_WITH_NULL_LENGTH,
 } from '@/components/features/experiments/querybuilder/utils';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
 import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
 
@@ -48,30 +48,26 @@ export function NumericFilter({ filter, onChange, dataType }: NumericFilterProps
   );
   const [listValues, setListValues] = useState<string[]>(() => filter.value.filter((v) => v !== null).map(String));
 
-  // Update string states when filter changes externally
-  useEffect(() => {
-    if (operator === 'gte') {
-      setGreaterThanValue(filter.value[0] !== null ? String(filter.value[0]) : '');
-    } else if (operator === 'lte') {
-      setLessThanValue(filter.value[1] !== null ? String(filter.value[1]) : '');
-    } else if (operator === 'between') {
-      setBetweenMinValue(filter.value[0] !== null ? String(filter.value[0]) : '');
-      setBetweenMaxValue(filter.value[1] !== null ? String(filter.value[1]) : '');
-    } else if (['in-list', 'not-in-list'].includes(operator)) {
-      setListValues(filter.value.filter((v) => v !== null).map(String));
-    }
-  }, [filter.value, operator]);
-
   const includesNull = BETWEEN_BASED_OPS.has(operator)
     ? filter.value.length === BETWEEN_WITH_NULL_LENGTH && filter.value[2] === null
     : filter.value.includes(null);
   const includesNullValue = includesNull ? [null] : [];
 
   const handleOperatorChange = (newOperator: string) => {
-    setOperator(newOperator);
     const relation = operatorToRelation(newOperator);
     const defaultValue = createDefaultValueForOperator(newOperator, dataType);
 
+    setOperator(newOperator);
+    if (newOperator === 'gte') {
+      setGreaterThanValue(defaultValue[0] !== null ? String(defaultValue[0]) : '');
+    } else if (newOperator === 'lte') {
+      setLessThanValue(defaultValue[1] !== null ? String(defaultValue[1]) : '');
+    } else if (newOperator === 'between') {
+      setBetweenMinValue(defaultValue[0] !== null ? String(defaultValue[0]) : '');
+      setBetweenMaxValue(defaultValue[1] !== null ? String(defaultValue[1]) : '');
+    } else {
+      setListValues(defaultValue.filter((value) => value !== null).map(String));
+    }
     onChange({
       ...filter,
       relation,

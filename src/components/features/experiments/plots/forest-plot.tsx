@@ -11,6 +11,7 @@ import {
   TooltipContentProps,
   XAxis,
   YAxis,
+  YAxisTickContentProps,
 } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import {
@@ -119,18 +120,7 @@ function getYAxisNameWidthPx(freqEffects?: EffectSizeData[], banditEffects?: Ban
   return maxArmNameLength > 20 ? longerNameWidth : defaultWidth;
 }
 
-// Unfortunately Recharts doesn't have an explicit type for the props it passes to a tick function.
-// So just spread these on our custom tick component, by composing just the fields we use from
-// Recharts, with extra props we want to pass to our component.
-interface RechartsTickPropsWeUse {
-  // {x,y} are pixel coordinates for the start of the tick for this row
-  x?: number;
-  y?: number;
-  // The payload specified by the YAxis dataKey, i.e. the arm name.
-  payload?: { value: string };
-  // The index of the tick in the YAxis ticks array.
-  index?: number;
-}
+type RechartsTickPropsWeUse = Pick<YAxisTickContentProps, 'index' | 'payload' | 'x' | 'y'>;
 // Additional props we want to pass along to CustomFreqYAxisTick
 interface CustomYAxisTickProps<T extends EffectSizeData | BanditEffectData> extends RechartsTickPropsWeUse {
   allArmEffects: T[];
@@ -149,7 +139,7 @@ function CustomFreqYAxisTick({
   nameWidthPx,
   totalWidthPx,
 }: CustomYAxisTickProps<EffectSizeData>) {
-  const armName = payload?.value ?? '';
+  const armName = String(payload.value ?? '');
   const armData = allArmEffects.find((e) => e.armName === armName);
   if (!armData) return null;
 
@@ -158,13 +148,19 @@ function CustomFreqYAxisTick({
     ? { color: armData.absDifference > 0 ? COLORS.POSITIVE_CI : COLORS.NEGATIVE_CI }
     : undefined;
 
-  const startX = x - totalWidthPx;
+  const startX = Number(x) - totalWidthPx;
+  const yPosition = Number(y);
 
   return (
     <g>
       {isTopmost && (
         // Position header row by specifying the top-left corner of the svg container and its size.
-        <foreignObject x={startX} y={y - HEADER_HEIGHT - ROW_HEIGHT / 2} width={totalWidthPx} height={HEADER_HEIGHT}>
+        <foreignObject
+          x={startX}
+          y={yPosition - HEADER_HEIGHT - ROW_HEIGHT / 2}
+          width={totalWidthPx}
+          height={HEADER_HEIGHT}
+        >
           <Box>
             <Flex align="center" justify="between" height="100%">
               <Box width={`${nameWidthPx}px`}>
@@ -193,7 +189,7 @@ function CustomFreqYAxisTick({
         </foreignObject>
       )}
 
-      <foreignObject x={startX} y={y - ROW_HEIGHT / 2} width={totalWidthPx} height={ROW_HEIGHT}>
+      <foreignObject x={startX} y={yPosition - ROW_HEIGHT / 2} width={totalWidthPx} height={ROW_HEIGHT}>
         <Separator size="4" />
         <Flex align="center" height="100%">
           {/* Text truncate was not working nested under Box, so use a fix-width Flex */}
@@ -230,16 +226,22 @@ function CustomBanditYAxisTick({
   nameWidthPx,
   totalWidthPx,
 }: CustomYAxisTickProps<BanditEffectData>) {
-  const armName = payload?.value ?? '';
+  const armName = String(payload.value ?? '');
   const armData = allArmEffects.find((e) => e.armName === armName);
   if (!armData) return null;
 
-  const startX = x - totalWidthPx;
+  const startX = Number(x) - totalWidthPx;
+  const yPosition = Number(y);
 
   return (
     <g>
       {isTopmost && (
-        <foreignObject x={startX} y={y - HEADER_HEIGHT - ROW_HEIGHT / 2} width={totalWidthPx} height={HEADER_HEIGHT}>
+        <foreignObject
+          x={startX}
+          y={yPosition - HEADER_HEIGHT - ROW_HEIGHT / 2}
+          width={totalWidthPx}
+          height={HEADER_HEIGHT}
+        >
           <Box>
             <Flex align="center" justify="between" height="100%">
               <Box width={`${nameWidthPx}px`}>
@@ -263,7 +265,7 @@ function CustomBanditYAxisTick({
         </foreignObject>
       )}
 
-      <foreignObject x={startX} y={y - ROW_HEIGHT / 2} width={totalWidthPx} height={ROW_HEIGHT}>
+      <foreignObject x={startX} y={yPosition - ROW_HEIGHT / 2} width={totalWidthPx} height={ROW_HEIGHT}>
         <Separator size="4" />
         <Flex align="center" height="100%">
           <Flex width={`${nameWidthPx}px`} minWidth="0">
@@ -365,6 +367,10 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
 
   const handleShowTooltip = (payload: EffectSizeData | BanditEffectData | null) => {
     setTooltipState({ active: true, payload });
+  };
+  const handleScatterMouseEnter = (point: ScatterPointItem) => {
+    const payload = point.payload as EffectSizeData | BanditEffectData | undefined;
+    handleShowTooltip(payload ?? null);
   };
   const handleHideTooltip = () => setTooltipState({ active: false, payload: null });
 
@@ -518,7 +524,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
 
               {/* Points showing the arm mean differences from the baseline, and the baseline reference mean */}
               <Scatter
-                onMouseEnter={handleShowTooltip}
+                onMouseEnter={handleScatterMouseEnter}
                 data={effectSizes}
                 dataKey={(dataPoint: EffectSizeData) => dataPoint.absDifference}
                 yAxisId="left"
@@ -632,7 +638,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
 
               {/* Points showing the arm mean outcomes. */}
               <Scatter
-                onMouseEnter={handleShowTooltip}
+                onMouseEnter={handleScatterMouseEnter}
                 data={banditEffects}
                 dataKey={(dataPoint: BanditEffectData) => dataPoint.postPredMean}
                 yAxisId="left"

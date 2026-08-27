@@ -3,7 +3,7 @@
 import { Button, Dialog, Flex, IconButton, Text, TextField } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { Pencil2Icon } from '@radix-ui/react-icons';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { WebhookSummary } from '@/api/methods.schemas';
 import { getListOrganizationWebhooksKey, useUpdateOrganizationWebhook } from '@/api/admin';
 import { mutate } from 'swr';
@@ -37,15 +37,18 @@ export function EditWebhookDialog({ organizationId, webhook }: EditWebhookDialog
     },
   });
 
-  useEffect(() => {
-    if (open && webhook) {
-      setFormData(defaultFormData(webhook));
-    }
-  }, [open, webhook]);
-
   const handleClose = () => {
     reset();
     setOpen(false);
+  };
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) {
+      setFormData(defaultFormData(webhook));
+      setOpen(true);
+    } else {
+      handleClose();
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -54,16 +57,7 @@ export function EditWebhookDialog({ organizationId, webhook }: EditWebhookDialog
   };
 
   return (
-    <Dialog.Root
-      open={open}
-      onOpenChange={(op) => {
-        if (!op) {
-          handleClose();
-        } else {
-          setOpen(op);
-        }
-      }}
-    >
+    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Trigger>
         <IconButton color="gray" variant="soft">
           <Pencil2Icon />
