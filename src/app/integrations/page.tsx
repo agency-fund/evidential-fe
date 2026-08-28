@@ -139,13 +139,14 @@ export default function IntegrationsPage() {
                       2. On Turn.io, go to Apps &gt; Installed Apps &gt; Upload app. Upload the .zip file you downloaded
                       and click `Install app`.
                       <br />
-                      3. Go to the Settings page of the App. Paste the Webhook ID and Webhook Auth Token from the
-                      section below.
+                      3. Note down the Webhook ID and Webhook Auth Token from the section below.
                       <br />
-                      4. Generate the Evidential API Key from your experiment&apos;s Integration Guide. Paste it into
-                      the app Settings as well.
+                      4. Generate the Evidential API Key from your experiment&apos;s Integration Guide and note it down.
                       <br />
-                      5. Follow the instructions on the app About page for further setup.
+                      5. Go to the Settings page of the App on Turn.io. Paste the Evidential API Key, Webhook ID, and
+                      Webhook Auth Token into the appropriate fields.
+                      <br />
+                      6. Follow the instructions on the app About page for further setup.
                     </Callout.Text>
                   </Callout.Root>
                   <Heading size="3">Turn.io Evidential App</Heading>
@@ -155,7 +156,7 @@ export default function IntegrationsPage() {
                   <Flex direction="row">
                     <Button radius="full" variant="soft" color="blue" asChild>
                       <a
-                        href="https://github.com/IDinsight/evidential-turn-app/raw/builds/evidential.zip"
+                        href="https://github.com/IDinsight/evidential-turn-app/releases/latest/download/evidential.zip"
                         target="_blank"
                         rel="noopener noreferrer"
                         download
