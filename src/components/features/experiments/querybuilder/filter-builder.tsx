@@ -149,7 +149,7 @@ export function FilterBuilder({ availableFields, initialFilters, onChange }: Fil
             isNewRow={index === filtersWithIds.length - 1 && filter.field_name === ''}
             onSelect={(selectedOption) => {
               // Reset the filter with appropriate defaults for the new field type
-              const defaultFilter = getDefaultFilterForType(selectedOption.field_name);
+              const defaultFilter = getDefaultFilterForType(selectedOption.field_name, selectedOption.data_type);
               updateFilter(id, defaultFilter);
             }}
             onUpdate={(updatedFilter) => updateFilter(id, updatedFilter)}

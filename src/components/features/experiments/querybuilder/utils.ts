@@ -55,10 +55,29 @@ export function applyMissingValuesOption(filter: Filter, option: MissingValuesOp
   return { ...filter, value: (wantMissing ? [...base, null] : base) as Filter['value'] };
 }
 
-// New filters default to "Has a value" (IS NOT NULL): adding a filter excludes rows missing a
-// value for the field, matching the previous behavior, now shown by the include-checkboxes.
-export function getDefaultFilterForType(fieldName: string): Filter {
-  return { field_name: fieldName, relation: 'excludes', value: [null] };
+// New filters default to "with a value" (IS NOT NULL). Numeric fields also pre-select the most
+// common operator (>= 0) so the frequent case needs no extra clicks, matching the classic UI;
+// other types start with no value predicate ("All participants").
+export function getDefaultFilterForType(fieldName: string, dataType: DataType): Filter {
+  switch (dataType) {
+    case 'integer':
+    case 'double precision':
+    case 'numeric':
+      return { field_name: fieldName, relation: 'between', value: [0, null] };
+    case 'bigint':
+      return { field_name: fieldName, relation: 'between', value: ['0', null] };
+    case 'boolean':
+    case 'character varying':
+    case 'date':
+    case 'json':
+    case 'jsonb':
+    case 'timestamp with time zone':
+    case 'timestamp without time zone':
+    case 'unknown':
+    case 'uuid':
+    default:
+      return { field_name: fieldName, relation: 'excludes', value: [null] };
+  }
 }
 
 // Convert user-friendly operator to API relation
