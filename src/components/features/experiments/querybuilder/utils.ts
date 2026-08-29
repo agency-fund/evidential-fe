@@ -55,28 +55,31 @@ export function applyMissingValuesOption(filter: Filter, option: MissingValuesOp
   return { ...filter, value: (wantMissing ? [...base, null] : base) as Filter['value'] };
 }
 
-// New filters default to "with a value" (IS NOT NULL). Numeric fields also pre-select the most
-// common operator (>= 0) so the frequent case needs no extra clicks, matching the classic UI;
-// other types start with no value predicate ("All participants").
+// Per-type defaults identical to the classic UI (pre-selected operator and starter value), so the
+// checkbox variant costs no extra clicks for the common cases. All of these carry no missing
+// marker, so the checkboxes read them as "with a value".
 export function getDefaultFilterForType(fieldName: string, dataType: DataType): Filter {
   switch (dataType) {
+    case 'boolean':
+      return { field_name: fieldName, relation: 'includes', value: [true] };
+    case 'bigint':
+      return { field_name: fieldName, relation: 'includes', value: ['0'] };
     case 'integer':
+      return { field_name: fieldName, relation: 'includes', value: [0] };
     case 'double precision':
     case 'numeric':
-      return { field_name: fieldName, relation: 'between', value: [0, null] };
-    case 'bigint':
-      return { field_name: fieldName, relation: 'between', value: ['0', null] };
-    case 'boolean':
-    case 'character varying':
+      return { field_name: fieldName, relation: 'between', value: [0.0, null] };
     case 'date':
+    case 'timestamp without time zone':
+      return { field_name: fieldName, relation: 'includes', value: [formatDateUtcYYYYMMDD(new Date())] };
+    case 'character varying':
     case 'json':
     case 'jsonb':
     case 'timestamp with time zone':
-    case 'timestamp without time zone':
     case 'unknown':
     case 'uuid':
     default:
-      return { field_name: fieldName, relation: 'excludes', value: [null] };
+      return { field_name: fieldName, relation: 'includes', value: [''] };
   }
 }
 
