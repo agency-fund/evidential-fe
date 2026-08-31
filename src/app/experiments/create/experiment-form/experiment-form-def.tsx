@@ -109,6 +109,16 @@ const abandonDraftExperiment = async (data: ExperimentFormData) => {
   }
 };
 
+const isMetadataScreenComplete = (data: ExperimentFormData) => {
+  if (!data.name) {
+    return false;
+  }
+  if (!data.startDate || !data.endDate) {
+    return false;
+  }
+  return data.endDate > data.startDate;
+};
+
 const getAutofailValidationState = (data: ExperimentFormData) => {
   const isEnabled = data.autofail?.enableAutofail === true;
   const isOutcomeValueUndefined = isEnabled && data.autofail?.autofailOutcomeValue === undefined;
@@ -154,15 +164,11 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         if (msg.type === 'set-webhook-ids') return { ...data, selectedWebhookIds: msg.value };
         return data;
       },
-      isNextEnabled: (data) => {
-        if (!data.name) return false;
-        if (!data.startDate || !data.endDate) return false;
-        if (data.endDate <= data.startDate) return false;
-        return true;
-      },
+      isNextEnabled: isMetadataScreenComplete,
     }),
     'experiment-type': screen({
       breadcrumbTitle: 'Type',
+      isBreadcrumbClickable: isMetadataScreenComplete,
       render: ExperimentTypeScreen,
       reducer: (data, msg) => {
         if (msg.type === 'set-experiment-type') {
@@ -240,6 +246,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         return data;
       },
       isNextEnabled: (data) => !!data.datasourceId && !!data.tableName,
+      isBreadcrumbClickable: isMetadataScreenComplete,
 
       hideNavigation: () => true, // hide navigation because this screen uses a nested wizard.
     }),
@@ -304,12 +311,13 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         }
         return data;
       },
-      isBreadcrumbClickable: ({ bandit }) => bandit !== undefined,
+      isBreadcrumbClickable: (data) => data.bandit !== undefined && isMetadataScreenComplete(data),
       // Next needs a complete target if connecting DWH; no DWH lets it through without one.
       isNextEnabled: (data) => data.dwhMode === 'none' || getMabDwhTarget(data) !== null,
     }),
     'bandit-binary-or-real': screen({
       breadcrumbTitle: 'Outcomes',
+      isBreadcrumbClickable: isMetadataScreenComplete,
       render: ExperimentSelectBinaryOrRealOutcomes,
       reducer: (data, msg) => {
         if (msg.type === 'set-outcome-type') {
@@ -403,7 +411,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         const contexts = data.bandit?.experimentType === 'cmab_online' ? data.bandit.contexts : [];
         return contexts.length >= 1 && contexts.every((c) => c.name.trim() !== '');
       },
-      isBreadcrumbClickable: ({ bandit }) => bandit !== undefined,
+      isBreadcrumbClickable: (data) => data.bandit !== undefined && isMetadataScreenComplete(data),
       nextButtonTooltip: (data) => {
         const contexts = data.bandit?.experimentType === 'cmab_online' ? data.bandit.contexts : [];
         if (contexts.length < 1) return 'At least one context is required.';
@@ -463,10 +471,11 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       },
 
       hideNavigation: () => true, // screen handles next to handle CreateExperiment API call
-      isBreadcrumbClickable: ({ bandit }) => bandit !== undefined,
+      isBreadcrumbClickable: (data) => data.bandit !== undefined && isMetadataScreenComplete(data),
     }),
     'describe-arms': screen({
       breadcrumbTitle: 'Arms',
+      isBreadcrumbClickable: isMetadataScreenComplete,
       render: ExperimentDescribeArmsScreen,
       reducer: (data, msg: ExperimentDescribeArmsMessage) => {
         const arms = data.arms ?? [];
@@ -767,7 +776,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       },
 
       hideNavigation: () => true, // screen handles next to handle CreateExperiment API call
-      isBreadcrumbClickable: (data) => !!(data.datasourceId && data.tableName),
+      isBreadcrumbClickable: (data) => !!(data.datasourceId && data.tableName) && isMetadataScreenComplete(data),
     }),
     'summarize-freq': screen({
       breadcrumbTitle: 'Summary',
