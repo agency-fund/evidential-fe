@@ -49,7 +49,7 @@ export function HeaderBar() {
       }}
     >
       <Link href="/" style={{ textDecoration: 'none', color: 'inherit', lineHeight: '0' }}>
-        <Image src="/evidential-logo.svg" alt="Evidential Logo" width={200} height={35} />
+        <Image src="/evidential-logo.svg" alt="Evidential Logo" width={200} height={35} loading={'eager'} />
       </Link>
       <DropdownMenu.Root
         open={dropdownOpen !== 'closed'}
