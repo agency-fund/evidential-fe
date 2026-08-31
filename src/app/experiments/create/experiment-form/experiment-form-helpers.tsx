@@ -123,10 +123,10 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
 
   const designSpec: Record<string, unknown> = {
     experiment_name: data.name,
-    description: data.hypothesis ?? '',
-    design_url: data.designUrl ?? null,
-    start_date: new Date(Date.parse(data.startDate!)).toISOString(),
-    end_date: new Date(Date.parse(data.endDate!)).toISOString(),
+    description: data.hypothesis,
+    design_url: data.designUrl || null,
+    start_date: new Date(Date.parse(data.startDate)).toISOString(),
+    end_date: new Date(Date.parse(data.endDate)).toISOString(),
     arms: (data.arms ?? []).map((arm) => ({ ...arm, arm_id: null })),
     table_name: data.tableName,
     primary_key: data.primaryKey,
@@ -186,13 +186,13 @@ export function convertToBanditCreateRequest(data: ExperimentFormData): CreateEx
   }
 
   const designSpec: Record<string, unknown> = {
-    experiment_name: data.name!,
+    experiment_name: data.name,
     experiment_type: experimentType,
     arms: standardArms,
-    end_date: new Date(Date.parse(data.endDate!)).toISOString(),
-    start_date: new Date(Date.parse(data.startDate!)).toISOString(),
-    description: data.hypothesis ?? '',
-    design_url: data.designUrl ?? null,
+    end_date: new Date(Date.parse(data.endDate)).toISOString(),
+    start_date: new Date(Date.parse(data.startDate)).toISOString(),
+    description: data.hypothesis,
+    design_url: data.designUrl || null,
     prior_type: priorType,
     reward_type: outcomeType,
     contexts: standardContexts,

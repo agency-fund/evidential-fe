@@ -83,11 +83,11 @@ export type MetricWithMDE = {
 // Defines the entirety of the editable data collected via this wizard flow.
 export type ExperimentFormData = {
   // experiment-metadata-screen
-  name?: string;
-  hypothesis?: string;
-  designUrl?: string;
-  startDate?: string;
-  endDate?: string;
+  name: string;
+  hypothesis: string;
+  designUrl: string;
+  startDate: string;
+  endDate: string;
 
   // experiment-type-screen
   experimentType?: ExperimentType;

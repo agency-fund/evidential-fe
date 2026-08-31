@@ -134,7 +134,7 @@ export const SelectTableFields = ({
             Select a table
           </Text>
           <Flex direction="row" gap="3">
-            <Select.Root value={tableName} onValueChange={handleTableChange}>
+            <Select.Root value={tableName ?? ''} onValueChange={handleTableChange}>
               <Select.Trigger placeholder="Select a table" />
               <Select.Content>
                 {tables.map((table) => (

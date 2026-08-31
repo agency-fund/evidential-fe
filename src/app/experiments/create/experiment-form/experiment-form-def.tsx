@@ -125,6 +125,8 @@ const getAutofailValidationState = (data: ExperimentFormData) => {
 export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, undefined> = {
   initialData: () => ({
     name: 'New Hypothesis',
+    hypothesis: '',
+    designUrl: '',
     experimentType: 'freq_online',
     startDate: getReasonableStartDate(),
     endDate: getReasonableEndDate(),
@@ -146,7 +148,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       reducer: (data, msg: ExperimentMetadataMessages) => {
         if (msg.type === 'set-name') return { ...data, name: msg.value };
         if (msg.type === 'set-hypothesis') return { ...data, hypothesis: msg.value };
-        if (msg.type === 'set-design-url') return { ...data, designUrl: msg.value || undefined };
+        if (msg.type === 'set-design-url') return { ...data, designUrl: msg.value };
         if (msg.type === 'set-start-date') return { ...data, startDate: msg.value };
         if (msg.type === 'set-end-date') return { ...data, endDate: msg.value };
         if (msg.type === 'set-webhook-ids') return { ...data, selectedWebhookIds: msg.value };
