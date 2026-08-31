@@ -10,8 +10,10 @@ export const BETWEEN_WITH_NULL_LENGTH = 3;
 export type SingleTypeArray<T> = Array<T | null>;
 export type TypedFilter<T> = Filter & { value: SingleTypeArray<T> };
 
-// How a filter treats participants that are missing a value for the field.
-export type MissingValuesOption = 'any' | 'has-value' | 'is-missing';
+// How a filter treats participants that are missing a value for the field. 'neither' means no
+// population is included yet (both checkboxes unchecked); such a row is shown as inactive and
+// never sent.
+export type MissingValuesOption = 'any' | 'has-value' | 'is-missing' | 'neither';
 
 // Whether a filter's value array carries the "missing" NULL. For between-based operators the
 // missing NULL only lives at the third position; positional NULLs at 0/1 are open bounds, not
@@ -27,6 +29,11 @@ function filterIncludesMissing(filter: Filter): boolean {
 // on `includes`/`between` a present NULL includes missing rows; on `excludes` a present NULL
 // excludes them (see the backend query constructors), so the mapping is relation-aware.
 export function getMissingValuesOption(filter: Filter): MissingValuesOption {
+  if (filter.value.length === 0) {
+    // {excludes, []} is "match everyone" (both boxes, no narrowing); {includes, []} is the
+    // inactive state (no box checked).
+    return filter.relation === 'excludes' ? 'any' : 'neither';
+  }
   if (filter.relation === 'includes' && filter.value.length === 1 && filter.value[0] === null) {
     return 'is-missing';
   }
@@ -41,6 +48,9 @@ export function getMissingValuesOption(filter: Filter): MissingValuesOption {
 // so it compiles to the intended SQL regardless of the operator. Callers that also need to restore
 // a hidden predicate after leaving 'is-missing' must stash it separately (the value is replaced here).
 export function applyMissingValuesOption(filter: Filter, option: MissingValuesOption): Filter {
+  if (option === 'neither') {
+    return { ...filter, relation: 'includes', value: [] as Filter['value'] };
+  }
   if (option === 'is-missing') {
     return { ...filter, relation: 'includes', value: [null] as Filter['value'] };
   }

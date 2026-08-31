@@ -12,19 +12,13 @@ interface MissingValuesPickerProps {
 }
 
 const toOption = (withValue: boolean, missingValue: boolean): MissingValuesOption => {
-  if (!withValue) return 'is-missing';
-  return missingValue ? 'any' : 'has-value';
+  if (withValue) return missingValue ? 'any' : 'has-value';
+  return missingValue ? 'is-missing' : 'neither';
 };
 
 export function MissingValuesPicker({ value, onChange, children }: MissingValuesPickerProps) {
-  const withValue = value !== 'is-missing';
-  const missingValue = value !== 'has-value';
-
-  // Keep at least one population included: the last checked box can't be unchecked.
-  const handleChange = (nextWithValue: boolean, nextMissingValue: boolean) => {
-    if (!nextWithValue && !nextMissingValue) return;
-    onChange(toOption(nextWithValue, nextMissingValue));
-  };
+  const withValue = value === 'has-value' || value === 'any';
+  const missingValue = value === 'any' || value === 'is-missing';
 
   return (
     <Flex direction="column" gap="2" align="start">
@@ -32,7 +26,10 @@ export function MissingValuesPicker({ value, onChange, children }: MissingValues
         <Text as="label" size="2">
           {/* The label matches the 32px control height so the checkbox centers on the select row. */}
           <Flex gap="2" align="center" height="var(--space-6)">
-            <Checkbox checked={withValue} onCheckedChange={(checked) => handleChange(checked === true, missingValue)} />
+            <Checkbox
+              checked={withValue}
+              onCheckedChange={(checked) => onChange(toOption(checked === true, missingValue))}
+            />
             with a value
           </Flex>
         </Text>
@@ -40,10 +37,18 @@ export function MissingValuesPicker({ value, onChange, children }: MissingValues
       </Flex>
       <Text as="label" size="2">
         <Flex gap="2" align="center">
-          <Checkbox checked={missingValue} onCheckedChange={(checked) => handleChange(withValue, checked === true)} />
+          <Checkbox
+            checked={missingValue}
+            onCheckedChange={(checked) => onChange(toOption(withValue, checked === true))}
+          />
           missing a value
         </Flex>
       </Text>
+      {value === 'neither' ? (
+        <Text size="1" color="amber">
+          Select at least one option to apply this filter.
+        </Text>
+      ) : null}
     </Flex>
   );
 }

@@ -7,6 +7,7 @@ import { TypeSpecificFilter } from '@/components/features/experiments/querybuild
 import { MissingValuesPicker } from '@/components/features/experiments/querybuilder/missing-values-picker';
 import {
   applyMissingValuesOption,
+  getDefaultFilterForType,
   getMissingValuesOption,
   MissingValuesOption,
 } from '@/components/features/experiments/querybuilder/utils';
@@ -49,10 +50,11 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
   const missingValuesOption = getMissingValuesOption(filter);
 
   const handleMissingValuesChange = (option: MissingValuesOption) => {
-    // Re-checking "with a value" starts from a clean predicate (its value was irrelevant while
-    // unchecked), so the row returns to the neutral "All participants" default.
+    // While "with a value" is unchecked the row has no usable predicate, so re-checking it
+    // restores the same per-type default a freshly selected field gets.
+    const hasPredicate = missingValuesOption === 'has-value' || missingValuesOption === 'any';
     const baseFilter =
-      missingValuesOption === 'is-missing' ? { ...filter, relation: 'includes' as const, value: [] } : filter;
+      !hasPredicate && exactMatchField ? getDefaultFilterForType(filter.field_name, exactMatchField.data_type) : filter;
     onUpdate(applyMissingValuesOption(baseFilter, option));
   };
 
@@ -111,7 +113,7 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
       <Flex direction={'column'} gap={'3'} align={'start'}>
         {exactMatchField ? (
           <MissingValuesPicker value={missingValuesOption} onChange={handleMissingValuesChange}>
-            {missingValuesOption !== 'is-missing' ? (
+            {missingValuesOption === 'has-value' || missingValuesOption === 'any' ? (
               <TypeSpecificFilter
                 key={exactMatchField.field_name}
                 dataType={exactMatchField.data_type}
