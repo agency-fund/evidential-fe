@@ -2,7 +2,7 @@
 
 import { Badge, Flex, Grid, IconButton, Table, Text, TextField, Tooltip } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
-import { GetMetricsResponseElement } from '@/api/methods.schemas';
+import { FieldMetadata } from '@/api/methods.schemas';
 import { ClickableBadge } from '@/components/features/experiments/clickable-badge';
 import FieldDataCard from '@/components/ui/cards/field-data-card';
 import { MetricWithMDE } from '@/app/experiments/create/experiment-form/experiment-form-types';
@@ -21,7 +21,7 @@ type MetricBuilderProps = {
   primaryMetric: MetricWithMDE | undefined;
   secondaryMetrics: MetricWithMDE[];
   dispatch: (action: MetricBuilderAction) => void;
-  metricFields: GetMetricsResponseElement[];
+  metricFields: FieldMetadata[];
   excludeKeys?: string[];
 };
 
@@ -32,7 +32,7 @@ export function MetricBuilder({
   metricFields,
   excludeKeys,
 }: MetricBuilderProps) {
-  const handlePrimaryMetricSelect = (metric: GetMetricsResponseElement) => {
+  const handlePrimaryMetricSelect = (metric: FieldMetadata) => {
     dispatch({ type: 'primary-metric-select', primaryMetric: { metric, mde: DEFAULT_MDE } });
   };
 
@@ -72,7 +72,7 @@ export function MetricBuilder({
     });
   };
 
-  const handleSecondaryMetricAdd = (metric: GetMetricsResponseElement) => {
+  const handleSecondaryMetricAdd = (metric: FieldMetadata) => {
     const newSecondaryMetrics = [...secondaryMetrics, { metric, mde: DEFAULT_MDE }];
     dispatch({ type: 'secondary-metric-add', secondaryMetrics: newSecondaryMetrics });
   };
@@ -228,7 +228,7 @@ export function MetricBuilder({
                 ))}
                 {metricFields.length === 0 && (
                   <Text color="gray" size="2">
-                    No metrics available for this participant type.
+                    No metrics available for this table.
                   </Text>
                 )}
               </Flex>
