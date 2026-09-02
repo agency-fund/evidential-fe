@@ -2,6 +2,9 @@ strictPeerDependencies: true
 saveExact: true
 # min age is in minutes for pnpm; 5d=7200
 minimumReleaseAge: 7200
+# Admitted before aging out of minimumReleaseAge; drop entries once they are older than the minimum.
+minimumReleaseAgeExclude:
+- '@types/node@26.4.1'
 publicHoistPattern:
 - "*import-in-the-middle*"
 - "*require-in-the-middle*"
