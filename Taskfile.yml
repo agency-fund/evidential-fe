@@ -36,17 +36,13 @@ tasks:
     deps:
       - check-pre-commit
     cmd: |
-      command -v node >/dev/null 2>&1 || error "Node.js is not installed or not in PATH. Tip: install nvm then run 'nvm install'."
-      CURRENT_NODE_MAJOR=$(node --version | sed -E 's/^v?([0-9]+).*/\1/')
-      REQUIRED_NODE_MAJOR=$(sed -E 's/^v?([0-9]+).*/\1/' .nvmrc)
-      echo Current node major version: "${CURRENT_NODE_MAJOR}"
-      echo Required node major version: "${REQUIRED_NODE_MAJOR}"
-      if [ "${CURRENT_NODE_MAJOR}" != "${REQUIRED_NODE_MAJOR}" ]; then
-        echo "Error: node $(node --version) does not satisfy major version ${REQUIRED_NODE_MAJOR} from .nvmrc"
-        echo "Tip: Run 'nvm install' from the repo root to install and then run 'nvm use' to switch to the correct version."
+      # pnpm downloads the node version pinned by devEngines in package.json, so node need not be installed separately.
+      if ! command -v pnpm >/dev/null 2>&1; then
+        echo "Error: pnpm is not installed or not in PATH."
+        echo "Tip: Install it from https://pnpm.io/installation."
         exit 1
       fi
-      corepack pnpm install --frozen-lockfile --yes
+      pnpm install --frozen-lockfile
   start:
     desc: 'Starts the development server'
     interactive: true
@@ -55,7 +51,7 @@ tasks:
     deps:
       - nodedeps
     cmd: |
-      corepack pnpm run dev
+      pnpm run dev
   start-airplane:
     desc: "Like start, but runs the frontend in airplane mode. The UI will identify you as testing@example.com automatically."
     env:
@@ -68,12 +64,12 @@ tasks:
       curl --no-progress-meter --retry 10 --retry-connrefused --max-time 3 \
         -o /tmp/apispec.json http://localhost:8000/openapi.json
       jq . /tmp/apispec.json > openapi.json
-      corepack pnpm exec orval --config orval.config.ts
+      pnpm exec orval --config orval.config.ts
       if [ $? -eq 0 ]; then
         task lint
       fi
-  lint-next: corepack pnpm run lint
-  lint-tsc: corepack pnpm exec tsc --noemit
+  lint-next: pnpm run lint
+  lint-tsc: pnpm exec tsc --noemit
   lint:
     deps:
       - lint-tsc
@@ -81,12 +77,12 @@ tasks:
     desc: 'Runs the NextJS-managed linter'
   build:
     desc: 'Production build of the NextJS application'
-    cmd: corepack pnpm run build
+    cmd: pnpm run build
   analyze:
     desc: 'Production build with bundle-analyzer reports written to .next/analyze/{client,nodejs,edge}.html'
     env:
       ANALYZE: 'true'
-    cmd: corepack pnpm run build
+    cmd: pnpm run build
   railway-build:
     desc: 'Builds the Docker image used by the Railway deployment.'
     cmd: docker build -t evidential-fe -f Dockerfile.railway .
