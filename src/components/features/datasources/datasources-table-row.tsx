@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { DeleteDatasourceDialog } from '@/components/features/datasources/delete-datasource-dialog';
 import { EditDatasourceDialog } from '@/components/features/datasources/edit-datasource-dialog';
 import { CreateApiKeyDialog } from '@/components/features/datasources/create-api-key-dialog';
-import { useListApiKeys, useListParticipantTypes } from '@/api/admin';
+import { useListApiKeys } from '@/api/admin';
 import { LockClosedIcon, PlusIcon } from '@radix-ui/react-icons';
 
 export default function DatasourceRow({
@@ -21,7 +21,6 @@ export default function DatasourceRow({
   organizationId: string;
 }) {
   const [createApiKeyDialogOpen, setCreateApiKeyDialogOpen] = useState(false);
-  const { data: participantTypesData, isLoading, error } = useListParticipantTypes(datasource.id);
   const { data: apiKeysData, isLoading: isApiKeysLoading, error: apiKeysError } = useListApiKeys(datasource.id);
   return (
     <>
@@ -56,29 +55,6 @@ export default function DatasourceRow({
             </Button>
           )}
         </Table.Cell>
-        <Table.Cell>
-          {datasource.driver === 'none' ? (
-            <Text color="gray">Not applicable</Text>
-          ) : isLoading ? (
-            <Text color="gray">Loading...</Text>
-          ) : error ? (
-            <Text color="red">Error loading types</Text>
-          ) : participantTypesData?.items.length ? (
-            <Flex direction="column" gap="1">
-              {participantTypesData.items.map((participantType) => (
-                <Link
-                  href={`/datasources/${datasource.id}/participants/${participantType.participant_type}`}
-                  key={participantType.participant_type}
-                >
-                  {participantType.participant_type}
-                </Link>
-              ))}
-            </Flex>
-          ) : (
-            <Text color="gray">Not applicable</Text>
-          )}
-        </Table.Cell>
-
         <Table.Cell>
           {datasource.driver === 'bigquery' && 'Google BigQuery'}
           {datasource.driver === 'postgresql+psycopg' && 'PostgreSQL'}

@@ -3,14 +3,13 @@ import { Callout, Flex, Heading, Text } from '@radix-ui/themes';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { ApiKeysTable } from '@/components/features/datasources/api-keys-table';
-import { useGetDatasource, useInspectDatasource, useListParticipantTypes } from '@/api/admin';
+import { useGetDatasource, useInspectDatasource } from '@/api/admin';
 import { useParams, useRouter } from 'next/navigation';
 import { EditDatasourceDialog } from '@/components/features/datasources/edit-datasource-dialog';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { useEffect } from 'react';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
-import { ParticipantTypesSection } from '@/components/features/participants/participant-types-section';
 
 export default function Page() {
   const params = useParams();
@@ -39,17 +38,7 @@ export default function Page() {
     },
   });
 
-  const {
-    data: participantTypesData,
-    isLoading: isParticipantTypesLoading,
-    error: participantTypesError,
-  } = useListParticipantTypes(datasourceId, {
-    swr: {
-      enabled: datasourceId !== null,
-    },
-  });
-
-  const isLoading = inspectDatasourceLoading || datasourceDetailsLoading || isParticipantTypesLoading;
+  const isLoading = inspectDatasourceLoading || datasourceDetailsLoading;
   const datasourceName = datasourceMetadata?.name;
   const isNoDWH = datasourceMetadata?.dsn.type === 'api_only';
   const editDatasourceDialogComponent = <EditDatasourceDialog datasourceId={datasourceId!} variant="button" />;
@@ -125,13 +114,6 @@ export default function Page() {
         </>
       )}
       <ApiKeysTable datasourceId={datasourceId} />
-
-      {participantTypesError && (
-        <GenericErrorCallout title={'Failed to load (deprecated) participant types'} error={participantTypesError} />
-      )}
-      {participantTypesData?.items && participantTypesData.items.length > 0 && (
-        <ParticipantTypesSection datasourceId={datasourceId} />
-      )}
     </Flex>
   );
 }

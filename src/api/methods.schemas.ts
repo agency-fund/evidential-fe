@@ -419,20 +419,6 @@ export interface CallerIdentity {
 	is_privileged: boolean;
 }
 
-export type ColumnDeletedType =
-	(typeof ColumnDeletedType)[keyof typeof ColumnDeletedType];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const ColumnDeletedType = {
-	column_deleted: "column_deleted",
-} as const;
-
-export interface ColumnDeleted {
-	type: ColumnDeletedType;
-	table_name: string;
-	column_name: string;
-}
-
 export type ContextContextId = string | null;
 
 export type ContextContextDescription = string | null;
@@ -516,18 +502,6 @@ export interface CreateOrganizationRequest {
 export interface CreateOrganizationResponse {
 	/** @maxLength 64 */
 	id: string;
-}
-
-export interface CreateParticipantsTypeRequest {
-	/** @maxLength 100 */
-	participant_type: string;
-	schema_def: ParticipantsSchema;
-}
-
-export interface CreateParticipantsTypeResponse {
-	/** @maxLength 100 */
-	participant_type: string;
-	schema_def: ParticipantsSchema;
 }
 
 export interface CreateSnapshotResponse {
@@ -642,10 +616,6 @@ export interface DesignSpecMetricRequest {
 	cv?: DesignSpecMetricRequestCv;
 }
 
-export interface Drift {
-	schema_diff: TableDiff[];
-}
-
 export type Dsn = ApiOnlyDsn | PostgresDsn | BqDsn | RedshiftDsn;
 
 export type EventSummaryLink = string | null;
@@ -710,22 +680,6 @@ export const ExperimentState = {
 	abandoned: "abandoned",
 	committed: "committed",
 } as const;
-
-export type FieldChangedTypeType =
-	(typeof FieldChangedTypeType)[keyof typeof FieldChangedTypeType];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const FieldChangedTypeType = {
-	column_changed_type: "column_changed_type",
-} as const;
-
-export interface FieldChangedType {
-	type: FieldChangedTypeType;
-	table_name: string;
-	column_name: string;
-	old_type: DataType;
-	new_type: DataType;
-}
 
 export type FieldDescriptorExtraAnyOf = { [key: string]: string };
 
@@ -855,63 +809,6 @@ export interface GetExperimentResponse {
 	impact?: Impact;
 }
 
-export type GetFiltersResponseDiscreteDistinctValues = string[] | null;
-
-export interface GetFiltersResponseDiscrete {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-	field_name: string;
-	data_type: DataType;
-	/**
-	 * @minItems 1
-	 * @maxItems 20
-	 */
-	relations: Relation[];
-	/** @maxLength 2000 */
-	description: string;
-	distinct_values: GetFiltersResponseDiscreteDistinctValues;
-}
-
-export type GetFiltersResponseElement =
-	| GetFiltersResponseNumericOrDate
-	| GetFiltersResponseDiscrete;
-
-export type GetFiltersResponseNumericOrDateMin =
-	| string
-	| string
-	| number
-	| number
-	| null;
-
-export type GetFiltersResponseNumericOrDateMax =
-	| string
-	| string
-	| number
-	| number
-	| null;
-
-export interface GetFiltersResponseNumericOrDate {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-	field_name: string;
-	data_type: DataType;
-	/**
-	 * @minItems 1
-	 * @maxItems 20
-	 */
-	relations: Relation[];
-	/** @maxLength 2000 */
-	description: string;
-	min: GetFiltersResponseNumericOrDateMin;
-	max: GetFiltersResponseNumericOrDateMax;
-}
-
-export interface GetMetricsResponseElement {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-	field_name: string;
-	data_type: DataType;
-	/** @maxLength 2000 */
-	description: string;
-}
-
 export interface GetOrganizationResponse {
 	/** @maxLength 64 */
 	id: string;
@@ -929,22 +826,8 @@ export interface GetParticipantAssignmentResponse {
 	assignment: GetParticipantAssignmentResponseAssignment;
 }
 
-export interface GetParticipantsTypeResponse {
-	current: ParticipantsDef;
-	proposed: ParticipantsDef;
-	drift: Drift;
-}
-
 export interface GetSnapshotResponse {
 	snapshot: Snapshot;
-}
-
-export interface GetStrataResponseElement {
-	data_type: DataType;
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
-	field_name: string;
-	/** @maxLength 2000 */
-	description: string;
 }
 
 export type GetTurnArmJourneyMappingResponseArmToJourneys = {
@@ -1019,12 +902,6 @@ export interface InspectDatasourceTableResponse {
 	fields: FieldMetadata[];
 }
 
-export interface InspectParticipantTypesResponse {
-	filters: GetFiltersResponseElement[];
-	metrics: GetMetricsResponseElement[];
-	strata: GetStrataResponseElement[];
-}
-
 export interface Journey {
 	name: string;
 	uuid: string;
@@ -1059,11 +936,6 @@ export interface ListOrganizationEventsResponse {
 export interface ListOrganizationsResponse {
 	next_page_token?: string;
 	items: OrganizationListItem[];
-}
-
-export interface ListParticipantsTypeResponse {
-	items: ParticipantsDef[];
-	has_hidden: boolean;
 }
 
 export type ListSnapshotsResponseLatestFailure = string | null;
@@ -1332,14 +1204,6 @@ export interface ParticipantProperty {
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
 	value: PropertyValueTypes;
-}
-
-export interface ParticipantsDef {
-	table_name: string;
-	fields: FieldDescriptor[];
-	type: "schema";
-	participant_type: string;
-	hidden?: boolean;
 }
 
 export interface ParticipantsSchema {
@@ -1614,21 +1478,6 @@ export type StrictFloat = number | null;
 
 export type StrictInt = number | null;
 
-export type TableDeletedType =
-	(typeof TableDeletedType)[keyof typeof TableDeletedType];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const TableDeletedType = {
-	table_deleted: "table_deleted",
-} as const;
-
-export interface TableDeleted {
-	type: TableDeletedType;
-	table_name: string;
-}
-
-export type TableDiff = ColumnDeleted | FieldChangedType | TableDeleted;
-
 export type TurnConfigResponseArmJourneyMap = { [key: string]: string };
 
 export interface TurnConfigResponse {
@@ -1694,29 +1543,6 @@ export interface UpdateOrganizationWebhookRequest {
 	name: string;
 	/** @maxLength 500 */
 	url: string;
-}
-
-export type UpdateParticipantsTypeRequestParticipantType = string | null;
-
-export type UpdateParticipantsTypeRequestTableName = string | null;
-
-export type UpdateParticipantsTypeRequestFields = FieldDescriptor[] | null;
-
-export interface UpdateParticipantsTypeRequest {
-	participant_type?: UpdateParticipantsTypeRequestParticipantType;
-	table_name?: UpdateParticipantsTypeRequestTableName;
-	fields?: UpdateParticipantsTypeRequestFields;
-}
-
-export type UpdateParticipantsTypeResponseTableName = string | null;
-
-export type UpdateParticipantsTypeResponseFields = FieldDescriptor[] | null;
-
-export interface UpdateParticipantsTypeResponse {
-	/** @maxLength 100 */
-	participant_type: string;
-	table_name?: UpdateParticipantsTypeResponseTableName;
-	fields?: UpdateParticipantsTypeResponseFields;
 }
 
 export interface UserDetail {
@@ -1878,15 +1704,6 @@ export type InspectTableInDatasourceParams = {
 };
 
 export type DeleteDatasourceParams = {
-	allow_missing?: boolean;
-};
-
-export type InspectParticipantTypesParams = {
-	refresh?: boolean;
-	expensive?: boolean;
-};
-
-export type DeleteParticipantParams = {
 	allow_missing?: boolean;
 };
 
