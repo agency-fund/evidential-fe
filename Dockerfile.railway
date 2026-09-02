@@ -1,4 +1,4 @@
-FROM docker.io/node:26-bookworm AS build
+FROM docker.io/node:26.8-bookworm AS build
 # These variables must be defined in the Railway settings with values appropriate for the deployment environment.
 # The default values are used when running this image to validate it in a local development environment. These defaults
 # will not work in production.
@@ -28,7 +28,7 @@ COPY public ./public
 RUN pnpm run build
 
 # Defines a next server that delivers the compiled output of the build step.
-FROM docker.io/node:26-bookworm
+FROM docker.io/node:26.8-bookworm
 ENV HOSTNAME="0.0.0.0"
 ENV NODE_ENV=production
 ENV PORT=3000

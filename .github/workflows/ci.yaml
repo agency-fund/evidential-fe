@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
-    branches: [main]
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
@@ -24,18 +24,15 @@ jobs:
       - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
         with:
           persist-credentials: false
-      # Installs the pnpm from packageManager and the node from devEngines.runtime, both in package.json.
       - uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
         with:
           cache: true
-          install: false
+          require-lockfile: true
       - uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: |
-          task nodedeps
-          task lint
+      - run: task lint
 
   pre-commit:
     runs-on: ubuntu-24.04
@@ -50,7 +47,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: astral-sh/setup-uv@e06108dd0aef18192324c70427afc47652e63a82 # v7.5.0
-      - run: echo PYTHON_DIR=$(uv python dir) | tee -a $GITHUB_ENV
+      - run: echo PYTHON_DIR="$(uv python dir)" | tee -a "$GITHUB_ENV"
       - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.cache/pre-commit
