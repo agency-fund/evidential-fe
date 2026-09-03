@@ -1,4 +1,4 @@
-FROM docker.io/node:22-bookworm AS build
+FROM docker.io/node:26.8-bookworm AS build
 # These variables must be defined in the Railway settings with values appropriate for the deployment environment.
 # The default values are used when running this image to validate it in a local development environment. These defaults
 # will not work in production.
@@ -15,19 +15,20 @@ ENV CI=true
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV SENTRY_RELEASE=${RAILWAY_GIT_COMMIT_SHA}
 WORKDIR /app
+RUN npm install -g pnpm@12.2.1
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 # Note: Railway builders will error if the id= is set via build variables.
 RUN --mount=type=cache,id=s/c2dbd22d-5c79-4173-be42-e99daa009a7c-/pnpm/store,target=/pnpm/store \
-    corepack pnpm config set store-dir /pnpm/store && \
-    corepack pnpm install --frozen-lockfile
+    pnpm config set store-dir /pnpm/store && \
+    pnpm install --frozen-lockfile
 COPY next.config.ts tsconfig.json ./
 COPY sentry.*.config.ts ./
 COPY src ./src
 COPY public ./public
-RUN corepack pnpm run build
+RUN pnpm run build
 
 # Defines a next server that delivers the compiled output of the build step.
-FROM docker.io/node:22-bookworm
+FROM docker.io/node:26.8-bookworm
 ENV HOSTNAME="0.0.0.0"
 ENV NODE_ENV=production
 ENV PORT=3000
