@@ -125,6 +125,8 @@ export type ExperimentFormData = {
   powerCheckResponse?: PowerResponse;
   // Populated by the MDE estimate for the currently-active custom N (ENTER_OWN or USE_ALL_NON_NULL_SAMPLES).
   mdePowerCheckResponse?: PowerResponse;
+  // Populated by the MDE-curve follow-up request issued after a successful power check.
+  powerCurveResponse?: PowerResponse;
   createExperimentResponse?: CreateExperimentResponse;
   createExperimentError?: ErrorType<unknown>;
   // Values needed for cluster-randomized experiments
