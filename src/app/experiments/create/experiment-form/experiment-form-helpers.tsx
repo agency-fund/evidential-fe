@@ -154,6 +154,115 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
   return spec;
 }
 
+/** Number of points requested for the MDE-vs-sample-size power curve. */
+export const POWER_CURVE_POINTS = 10;
+
+/**
+ * Sample sizes spaced uniformly in 1/sqrt(n) from minN to maxN inclusive, ascending, deduplicated
+ * after rounding. Because MDE is proportional to 1/sqrt(n), the resulting curve points are evenly
+ * spaced vertically, which keeps the plotted curve smooth with few points at any range width.
+ */
+export function sqrtSpacedSampleSizes(minN: number, maxN: number, count: number): number[] {
+  if (count < 2 || maxN <= minN) return [Math.round(maxN)];
+  const uStart = 1 / Math.sqrt(minN);
+  const uEnd = 1 / Math.sqrt(maxN);
+  const sizes: number[] = [];
+  for (let i = 0; i < count; i++) {
+    const u = uStart + (i * (uEnd - uStart)) / (count - 1);
+    sizes.push(Math.round(1 / (u * u)));
+  }
+  return [...new Set(sizes)];
+}
+
+/** The next round axis endpoint at or above value, on a 1 / 2 / 2.5 / 5 / 10 ladder. */
+function niceCeiling(value: number): number {
+  const decade = 10 ** Math.floor(Math.log10(value));
+  for (const mult of [1, 2, 2.5, 5, 10]) {
+    if (value <= mult * decade) return mult * decade;
+  }
+  return 10 * decade;
+}
+
+/**
+ * The sample sizes to request for the power curve, sqrt-spaced between a range chosen so the
+ * curve visibly crosses the user's target MDE:
+ *
+ * - Normal case (minimum within the available population): from the required minimum to the
+ *   available population, with a short overhang on each side (a fifth past the available
+ *   population, and the same ratio below the minimum) so the curve does not end abruptly at
+ *   either landmark. Custom selections below the minimum are drawn by the chart itself.
+ * - Under-powered case (minimum beyond the available population): from a tenth of the available
+ *   population to a round number covering the required minimum, so the user sees both what is
+ *   detectable now and where their target sits. Only a truly far-off requirement (beyond 50x
+ *   the available population) falls back to a 10x axis, so an unreachable landmark cannot crush
+ *   the readable region.
+ *
+ * The available population and the required minimum are inserted as explicit points: the first
+ * is "what can I detect with everyone I have," the second makes the curve meet the target MDE
+ * exactly.
+ */
+export function powerCurveSizes(targetN: number | undefined, availableN: number): number[] {
+  if (availableN < 2) return [];
+  const underPowered = targetN === undefined || targetN >= availableN;
+  if (!underPowered) {
+    const sizes = sqrtSpacedSampleSizes(targetN, availableN, POWER_CURVE_POINTS);
+    sizes.unshift(Math.max(2, Math.round(targetN / 1.2)));
+    sizes.push(Math.round(availableN * 1.2));
+    return [...new Set(sizes)].sort((a, b) => a - b);
+  }
+  const minN = Math.max(2, Math.round(availableN / 10));
+  const maxN =
+    targetN === undefined ? availableN : targetN > availableN * 50 ? availableN * 10 : Math.round(niceCeiling(targetN));
+  const sizes = sqrtSpacedSampleSizes(minN, maxN, POWER_CURVE_POINTS);
+  for (const size of [availableN, targetN]) {
+    if (size !== undefined && size >= minN && size <= maxN && !sizes.includes(size)) {
+      sizes.push(size);
+    }
+  }
+  sizes.sort((a, b) => a - b);
+  return sizes;
+}
+
+/**
+ * Returns a copy of the design spec whose metrics carry the baseline stats (and, for cluster
+ * designs, ICC/CV/average cluster size) from a prior power check response, so the server reuses
+ * them instead of re-querying the data warehouse. Metrics without usable stats in the response
+ * are passed through unchanged; the caller must only echo a response produced by the same design.
+ */
+export function withEchoedBaselineStats(
+  spec: AnyFrequentistDesignSpec,
+  response: PowerResponse,
+): AnyFrequentistDesignSpec {
+  const statsByName = new Map(response.analyses.map((a) => [a.metric_spec.field_name, a.metric_spec]));
+  const metrics = spec.metrics.map((metric) => {
+    const stats = statsByName.get(metric.field_name);
+    if (
+      stats == null ||
+      stats.metric_type == null ||
+      stats.metric_baseline == null ||
+      stats.available_n == null ||
+      stats.available_nonnull_n == null
+    ) {
+      return metric;
+    }
+    const echoed: DesignSpecMetricRequest = {
+      ...metric,
+      metric_type: stats.metric_type,
+      metric_baseline: stats.metric_baseline,
+      metric_stddev: stats.metric_stddev ?? null,
+      available_n: stats.available_n,
+      available_nonnull_n: stats.available_nonnull_n,
+    };
+    if (metric.icc == null && stats.icc != null && stats.avg_cluster_size != null && stats.cv != null) {
+      echoed.icc = stats.icc;
+      echoed.avg_cluster_size = stats.avg_cluster_size;
+      echoed.cv = stats.cv;
+    }
+    return echoed;
+  });
+  return { ...spec, metrics };
+}
+
 export function convertToBanditCreateRequest(data: ExperimentFormData): CreateExperimentRequest {
   if (data.bandit === undefined) {
     throw new Error('Bandit configuration is required.');
