@@ -22,7 +22,7 @@ import {
 import { CheckCircledIcon, CrossCircledIcon, ExclamationTriangleIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData, isClusteredExperimentFormData, PowerCheckOption } from './experiment-form-types';
 import { usePowerCheck } from '@/api/admin';
-import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
+import { convertToFrequentistDesignSpec, toPowerRequest } from './experiment-form-helpers';
 import { getPowerAnalysis, metricHasMissingValues } from '@/services/experiment-utils';
 import { MetricSampleSizeDisplay } from '@/components/features/experiments/metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -120,7 +120,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
         desiredN: undefined,
         desiredNClusters: undefined,
       });
-      const response = await triggerEstimateSampleSize({ design_spec: designSpec });
+      const response = await triggerEstimateSampleSize(toPowerRequest(designSpec));
 
       const primary = getPowerAnalysis(response, data.primaryMetric.metric.field_name);
       const desiredN = primary?.sufficient_n ? (primary.target_n ?? undefined) : undefined;
