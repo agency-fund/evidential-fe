@@ -1255,8 +1255,25 @@ export interface PostgresDsn {
 	search_path: PostgresDsnSearchPath;
 }
 
+export type PowerRequestClusterKey = string | null;
+
+export type PowerRequestArmWeights = number[] | null;
+
+export type PowerRequestDesiredN = number | null;
+
+export type PowerRequestDesiredNClusters = number | null;
+
 export interface PowerRequest {
-	design_spec: AnyFrequentistDesignSpec;
+	table_name: string;
+	cluster_key?: PowerRequestClusterKey;
+	filters?: Filter[];
+	metrics: DesignSpecMetricRequest[];
+	n_arms: number;
+	arm_weights?: PowerRequestArmWeights;
+	power?: number;
+	alpha?: number;
+	desired_n?: PowerRequestDesiredN;
+	desired_n_clusters?: PowerRequestDesiredNClusters;
 }
 
 export interface PowerResponse {
