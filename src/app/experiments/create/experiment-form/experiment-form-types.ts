@@ -5,8 +5,6 @@ import {
   DataType,
   FieldMetadata,
   Filter,
-  GetFiltersResponseElement,
-  GetMetricsResponseElement,
   LikelihoodTypes,
   MABExperimentSpec,
   PowerResponse,
@@ -76,7 +74,7 @@ export type BanditParams =
     };
 
 export type MetricWithMDE = {
-  metric: GetMetricsResponseElement;
+  metric: FieldMetadata;
   mde: string; // desired minimum detectable effect as a percentage of the metric's baseline value
 };
 
@@ -111,7 +109,7 @@ export type ExperimentFormData = {
   secondaryMetrics?: MetricWithMDE[];
   filters?: Filter[];
   // Cache of available filter fields (and their data types) for lookup/display/search
-  availableFilterFields?: GetFiltersResponseElement[];
+  availableFilterFields?: FieldMetadata[];
   strata?: FieldMetadata[];
   // These next 2 Experiment Parameters are strings to allow for empty values,
   // which should be converted to numbers when making power or experiment creation requests.

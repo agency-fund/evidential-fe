@@ -1,6 +1,6 @@
 'use client';
 
-import { GetMetricsResponseElement, GetStrataResponseElement, DataType } from '@/api/methods.schemas';
+import { DataType } from '@/api/methods.schemas';
 import { Badge, Text } from '@radix-ui/themes';
 import { PlusIcon } from '@radix-ui/react-icons';
 import FieldDataCard from '@/components/ui/cards/field-data-card';
@@ -10,7 +10,7 @@ type MinimalClickableBadgeInput = {
   data_type: DataType;
   description: string;
 };
-type ClickableBadgeInput = MinimalClickableBadgeInput | GetMetricsResponseElement | GetStrataResponseElement;
+type ClickableBadgeInput = MinimalClickableBadgeInput;
 
 type ClickableBadgeProps<TInput extends ClickableBadgeInput> = {
   input: TInput;
