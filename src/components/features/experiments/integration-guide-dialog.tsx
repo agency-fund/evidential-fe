@@ -1,5 +1,5 @@
 'use client';
-import { Button, Callout, Card, DataList, Dialog, Flex, Select, Text, Tooltip } from '@radix-ui/themes';
+import { Button, Callout, Card, Code, DataList, Dialog, Flex, Select, Text, Tooltip } from '@radix-ui/themes';
 import {
   ChevronDownIcon,
   ChevronRightIcon,
@@ -149,7 +149,7 @@ export function IntegrationGuideDialog({
                   <DataList.Label>Organization ID</DataList.Label>
                   <DataList.Value>
                     <Flex justify="between" width="100%">
-                      {organizationId}
+                      <Code variant="ghost">{organizationId}</Code>
                       <CopyToClipBoard content={organizationId} tooltipContent="Copy Organization ID" />
                     </Flex>
                   </DataList.Value>
@@ -159,7 +159,7 @@ export function IntegrationGuideDialog({
                   <DataList.Label>Datasource ID</DataList.Label>
                   <DataList.Value>
                     <Flex justify="between" width="100%">
-                      {datasourceId}
+                      <Code variant="ghost">{datasourceId}</Code>
                       <CopyToClipBoard content={datasourceId} tooltipContent="Copy Datasource ID" />
                     </Flex>
                   </DataList.Value>
@@ -169,7 +169,7 @@ export function IntegrationGuideDialog({
                   <DataList.Label>Experiment ID</DataList.Label>
                   <DataList.Value>
                     <Flex justify="between" width="100%">
-                      {experimentId}
+                      <Code variant="ghost">{experimentId}</Code>
                       <CopyToClipBoard content={experimentId} tooltipContent="Copy Experiment ID" />
                     </Flex>
                   </DataList.Value>
@@ -197,7 +197,7 @@ export function IntegrationGuideDialog({
                           </Button>
                         ) : (
                           <>
-                            {createdKey.key}
+                            <Code variant="ghost">{createdKey.key}</Code>
                             <CopyToClipBoard content={createdKey.key} tooltipContent="Copy API Key" />
                           </>
                         )}
@@ -219,7 +219,7 @@ export function IntegrationGuideDialog({
                     <DataList.Label>{arm.arm_name}</DataList.Label>
                     <DataList.Value>
                       <Flex justify="between" width="100%">
-                        {arm.arm_id}
+                        <Code variant="ghost">{arm.arm_id}</Code>
                         <CopyToClipBoard content={arm.arm_id ?? ''} tooltipContent={`Copy ${arm.arm_name} ID`} />
                       </Flex>
                     </DataList.Value>
@@ -239,7 +239,7 @@ export function IntegrationGuideDialog({
                       <DataList.Label>{context.context_name}</DataList.Label>
                       <DataList.Value>
                         <Flex justify="between" width="100%">
-                          {context.context_id}
+                          <Code variant="ghost">{context.context_id}</Code>
                           <CopyToClipBoard
                             content={context.context_id ?? ''}
                             tooltipContent={`Copy ${context.context_name} ID`}
@@ -341,9 +341,9 @@ export function IntegrationGuideDialog({
                                     <Text size="2" weight="medium" mt="2">
                                       {arm.arm_name}
                                     </Text>
-                                    <Text size="1" color="gray">
+                                    <Code size="1" variant="ghost" color="gray">
                                       {armId}
-                                    </Text>
+                                    </Code>
                                   </Flex>
                                 </DataList.Label>
                                 <DataList.Value>
@@ -370,9 +370,9 @@ export function IntegrationGuideDialog({
                                       )}
                                     </Flex>
                                     {armJourneyDraft[armId] && (
-                                      <Text size="1" color="gray">
+                                      <Code size="1" variant="ghost" color="gray">
                                         {armJourneyDraft[armId]}
-                                      </Text>
+                                      </Code>
                                     )}
                                   </Flex>
                                 </DataList.Value>
