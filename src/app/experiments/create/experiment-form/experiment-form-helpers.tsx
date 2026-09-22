@@ -160,8 +160,10 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
  * power calculation itself consumes, so everything else in the spec is dropped.
  */
 export function toPowerRequest(spec: AnyFrequentistDesignSpec): PowerRequest {
-  // Arm weights are all-or-nothing: PowerRequest has no server-side equivalent of the design
-  // spec's get_validated_arm_weights(), so only send them when every arm has one.
+  // Arm weights are all-or-nothing: PowerRequest.validate_arm_weights() rejects a list that
+  // doesn't match n_arms or sum to 100, so only send them when every arm has one. The arm
+  // reducers set weights for every arm at once or clear them all, so a partial set shouldn't
+  // reach here; if one did, we'd fall back to an equal split rather than error.
   const armWeights = spec.arms.map((arm) => arm.arm_weight);
   const hasAllWeights = armWeights.length > 0 && armWeights.every((weight) => weight != null);
 
