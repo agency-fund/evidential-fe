@@ -40,12 +40,12 @@ const PendingAuthSchema = z.object({
 
 type PendingAuth = z.infer<typeof PendingAuthSchema>;
 
-const GoogleAuthContext = createContext<AuthContext | null>(null);
+const AuthStateContext = createContext<AuthContext | null>(null);
 
 export const useAuth = () => {
-  const context = useContext(GoogleAuthContext);
+  const context = useContext(AuthStateContext);
   if (context === null) {
-    throw new Error('useAuth can only be used within GoogleAuthProvider');
+    throw new Error('useAuth can only be used within AuthProvider');
   }
   return context;
 };
@@ -77,13 +77,22 @@ const setPendingAuth = (pendingAuth: PendingAuth) =>
 
 const clearPendingAuth = () => sessionStorage.removeItem(PENDING_AUTH_KEY);
 
-export default function GoogleAuthProvider({ children }: PropsWithChildren) {
+// The redirect URI is the SPA root without a query string, so every parameter on the landing URL was appended by the
+// identity provider. Replace the history entry so the code, state, and any error details do not linger in browser
+// history.
+const removeRedirectParamsFromHistory = () => {
+  window.history.replaceState(null, '', window.location.pathname);
+};
+
+export default function AuthProvider({ children }: PropsWithChildren) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [user, setUser] = useAuthStorage();
   const [fetching, setFetching] = useState<boolean>(false);
-  const isGoogleLoginRedirect =
-    user === null && searchParams.has('code') && searchParams.has('scope') && searchParams.has('state');
+  // Identity providers redirect back with state plus either code or error; Google also appends scope, but Okta and
+  // Clerk do not.
+  const isLoginRedirect =
+    user === null && searchParams.has('state') && (searchParams.has('code') || searchParams.has('error'));
   const [userIsMissingInvite, setUserIsMissingInvite] = useState(false);
 
   const logout = useCallback(async () => {
@@ -105,31 +114,45 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
   useCustomEventListener(API_401_EVENT, logout);
 
   const startLogin = useCallback(async () => {
-    const { codeVerifier, state, nonce, loginUrl } = await generatePkceLoginInfo();
-    setPendingAuth({ codeVerifier, state, nonce });
-    router.push(loginUrl);
-  }, [router]);
+    try {
+      const { codeVerifier, state, nonce, loginUrl } = await generatePkceLoginInfo();
+      setPendingAuth({ codeVerifier, state, nonce });
+      // The identity provider is another origin, so this is a full navigation rather than a client-side route change.
+      window.location.assign(loginUrl);
+    } catch (error) {
+      console.error('Unable to start login:', error);
+    }
+  }, []);
 
   useEffect(() => {
-    if (!isGoogleLoginRedirect) {
+    if (!isLoginRedirect) {
       return;
     }
     const pendingAuth = getPendingAuth();
     const code = searchParams.get('code');
+    const error = searchParams.get('error');
     const state = searchParams.get('state');
-    if (!pendingAuth || code === null || state === null) {
+    if (!pendingAuth || state === null) {
       return;
     }
+    // Consume the pending login before any async work. An authorization code can be exchanged only once, and React
+    // runs effects twice in development (Strict Mode); a second run must find nothing to do rather than send the
+    // same code again and log the user out when that exchange fails.
+    clearPendingAuth();
     (async () => {
       if (state !== pendingAuth.state) {
         console.log('state mismatch');
         await logout();
         return;
       }
+      removeRedirectParamsFromHistory();
+      if (code === null) {
+        console.log(`identity provider returned an error: ${error}`);
+        return;
+      }
       setFetching(true);
       try {
         const tokens = await exchangeCodeForTokens(code, pendingAuth.codeVerifier, pendingAuth.nonce);
-        clearPendingAuth();
         const newToken = tokens.session_token ?? null;
         if (newToken === null) {
           console.log('exchangeCodeForTokens failed to return a usable token');
@@ -144,7 +167,7 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
             email: callerIdentity['email'],
             isPrivileged: callerIdentity['is_privileged'],
           });
-          router.push('/');
+          router.replace('/');
         } else if (response.status === 401) {
           console.log('exchangeCodeForTokens succeeded but checkCallerIdentity failed');
           setUserIsMissingInvite(true);
@@ -157,7 +180,7 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
         setFetching(false);
       }
     })().catch(console.error);
-  }, [router, searchParams, setUser, isGoogleLoginRedirect, logout]);
+  }, [router, searchParams, setUser, isLoginRedirect, logout]);
 
   useEffect(() => {
     if (!user) {
@@ -210,6 +233,6 @@ export default function GoogleAuthProvider({ children }: PropsWithChildren) {
   return fetching ? (
     <XSpinner message="Authenticating..." />
   ) : (
-    <GoogleAuthContext.Provider value={contextValue}>{children}</GoogleAuthContext.Provider>
+    <AuthStateContext.Provider value={contextValue}>{children}</AuthStateContext.Provider>
   );
 }

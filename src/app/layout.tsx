@@ -6,7 +6,7 @@ import '@/services/feature-flags/feature-flag-dev-tools';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import { Container, Flex, Theme } from '@radix-ui/themes';
 import { OrganizationProvider } from '@/providers/organization-provider';
-import GoogleAuthProvider from '@/providers/auth-provider';
+import AuthProvider from '@/providers/auth-provider';
 import OurSwrConfig from '@/providers/our-swr-config';
 import { Suspense } from 'react';
 import { NavigationBarNoCompact } from '@/components/layout/nav/navigation-curtain-no-compact';
@@ -34,7 +34,7 @@ export default function RootLayout({
       <body style={{ margin: 0, padding: 0 }}>
         <Theme appearance="light" accentColor="indigo" grayColor="slate" radius="large">
           <Suspense>
-            <GoogleAuthProvider>
+            <AuthProvider>
               <OurSwrConfig>
                 <RequireLogin>
                   <OrganizationProvider>
@@ -59,7 +59,7 @@ export default function RootLayout({
                   </OrganizationProvider>
                 </RequireLogin>
               </OurSwrConfig>
-            </GoogleAuthProvider>
+            </AuthProvider>
           </Suspense>
         </Theme>
       </body>
