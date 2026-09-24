@@ -1,14 +1,6 @@
-import { z } from 'zod';
+import { authCallbackResponse, oidcClientConfigResponse } from '@/api/auth.zod';
+import type { CallbackResponse, OidcClientConfigResponse } from '@/api/methods.schemas';
 import { OIDC_BASE_URL } from '@/services/constants';
-
-const OidcClientConfigSchema = z.object({
-  authorization_endpoint: z.string(),
-  client_id: z.string(),
-  redirect_uri: z.string(),
-  scope: z.string(),
-});
-
-type OidcClientConfig = z.infer<typeof OidcClientConfigSchema>;
 
 // The browser navigates to the authorization endpoint, so its scheme is an allowlist rather than a format check: a
 // javascript: URL would run in our origin. Plain http is tolerated only for local development identity providers.
@@ -44,7 +36,7 @@ const createNonce = () => createBase64UrlToken(32);
  * Fetches the identity provider settings from the backend, which is the only place the identity provider is
  * configured.
  */
-const fetchOidcClientConfig = async (): Promise<OidcClientConfig> => {
+const fetchOidcClientConfig = async (): Promise<OidcClientConfigResponse> => {
   if (!OIDC_BASE_URL) {
     throw new Error('NEXT_PUBLIC_XNGIN_OIDC_BASE_URL is not set.');
   }
@@ -52,7 +44,7 @@ const fetchOidcClientConfig = async (): Promise<OidcClientConfig> => {
   if (!response.ok) {
     throw new Error(`Fetching the login configuration failed with status ${response.status}.`);
   }
-  return OidcClientConfigSchema.parse(await response.json());
+  return oidcClientConfigResponse.parse(await response.json());
 };
 
 /**
@@ -60,7 +52,7 @@ const fetchOidcClientConfig = async (): Promise<OidcClientConfig> => {
  *
  * https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
  */
-const createLoginUrl = (config: OidcClientConfig, codeChallenge: string, state: string, nonce: string) => {
+const createLoginUrl = (config: OidcClientConfigResponse, codeChallenge: string, state: string, nonce: string) => {
   const url = new URL(config.authorization_endpoint);
   if (!ALLOWED_AUTHORIZATION_SCHEMES.has(url.protocol)) {
     throw new Error(`Refusing to use an authorization endpoint with scheme ${url.protocol}`);
@@ -90,11 +82,18 @@ export async function generatePkceLoginInfo() {
   return { codeVerifier, state, nonce, loginUrl: createLoginUrl(config, codeChallenge, state, nonce) };
 }
 
-export async function exchangeCodeForTokens(authCode: string, codeVerifier: string, nonce: string) {
+export async function exchangeCodeForTokens(
+  authCode: string,
+  codeVerifier: string,
+  nonce: string,
+): Promise<CallbackResponse> {
   const response = await fetch(`${OIDC_BASE_URL}/callback`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ code: authCode, code_verifier: codeVerifier, nonce }),
   });
-  return await response.json();
+  if (!response.ok) {
+    throw new Error(`Exchanging the login code failed with status ${response.status}.`);
+  }
+  return authCallbackResponse.parse(await response.json());
 }

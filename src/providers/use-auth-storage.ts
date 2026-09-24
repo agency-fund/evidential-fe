@@ -37,7 +37,7 @@ const setSessionToken = (newValue: SessionTokenStored | null) => {
   window.dispatchEvent(new StorageEvent(SESSION_TOKEN_EVENT));
 };
 
-interface SessionTokenStored {
+export interface SessionTokenStored {
   sessionToken: string;
   email: string;
   isPrivileged?: boolean;
