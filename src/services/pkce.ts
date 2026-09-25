@@ -1,7 +1,11 @@
-import { OIDC_CLIENT_ID, OIDC_BASE_URL, OIDC_REDIRECT_URI } from '@/services/constants';
+import { authCallbackResponse, oidcClientConfigResponse } from '@/api/auth.zod';
+import type { CallbackResponse, OidcClientConfigResponse } from '@/api/methods.schemas';
+import { OIDC_BASE_URL } from '@/services/constants';
 
-// Google's OAuth login endpoint is declared in https://accounts.google.com/.well-known/openid-configuration.
-const GOOGLE_AUTHORIZATION_ENDPOINT = 'https://accounts.google.com/o/oauth2/v2/auth';
+// The browser navigates to the authorization endpoint, so its scheme is an allowlist rather than a format check: a
+// javascript: URL would run in our origin. Plain http is tolerated only for local development identity providers.
+const ALLOWED_AUTHORIZATION_SCHEMES =
+  process.env.NODE_ENV === 'development' ? new Set(['https:', 'http:']) : new Set(['https:']);
 
 const base64urlEncode = (buffer: ArrayBuffer | Uint8Array) =>
   btoa(String.fromCharCode(...new Uint8Array(buffer)))
@@ -27,49 +31,69 @@ const createCodeChallenge = async (codeVerifier: string) => {
 const createState = () => createBase64UrlToken(32);
 
 const createNonce = () => createBase64UrlToken(32);
-/**
- * Generates a login URL given a PKCE code challenge.
- *
- * Docs on login URLs:
- * https://developers.google.com/identity/openid-connect/openid-connect#sendauthrequest
- * https://developers.google.com/identity/openid-connect/openid-connect#authenticationuriparameters
- */
 
-const createGoogleLoginUrl = (code_challenge: string, state: string, nonce: string) => {
-  if (!OIDC_CLIENT_ID) {
-    throw new Error('NEXT_PUBLIC_XNGIN_GOOGLE_CLIENT_ID is not set.');
+/**
+ * Fetches the identity provider settings from the backend, which is the only place the identity provider is
+ * configured.
+ */
+const fetchOidcClientConfig = async (): Promise<OidcClientConfigResponse> => {
+  if (!OIDC_BASE_URL) {
+    throw new Error('NEXT_PUBLIC_XNGIN_OIDC_BASE_URL is not set.');
   }
-  if (!OIDC_REDIRECT_URI) {
-    throw new Error('NEXT_PUBLIC_XNGIN_OIDC_REDIRECT_URI is unset.');
+  const response = await fetch(`${OIDC_BASE_URL}/config`);
+  if (!response.ok) {
+    throw new Error(`Fetching the login configuration failed with status ${response.status}.`);
+  }
+  return oidcClientConfigResponse.parse(await response.json());
+};
+
+/**
+ * Generates the authorization request URL for the authorization code flow with PKCE.
+ *
+ * https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
+ */
+const createLoginUrl = (config: OidcClientConfigResponse, codeChallenge: string, state: string, nonce: string) => {
+  const url = new URL(config.authorization_endpoint);
+  if (!ALLOWED_AUTHORIZATION_SCHEMES.has(url.protocol)) {
+    throw new Error(`Refusing to use an authorization endpoint with scheme ${url.protocol}`);
   }
   const params = {
-    client_id: OIDC_CLIENT_ID,
-    code_challenge: code_challenge,
+    client_id: config.client_id,
+    code_challenge: codeChallenge,
     code_challenge_method: 'S256',
     nonce: nonce,
-    redirect_uri: OIDC_REDIRECT_URI,
+    redirect_uri: config.redirect_uri,
     response_type: 'code',
-    scope: 'openid email',
+    scope: config.scope,
     state: state,
   };
-  const url = new URL(GOOGLE_AUTHORIZATION_ENDPOINT);
-  url.search = new URLSearchParams(params).toString();
+  for (const [key, value] of Object.entries(params)) {
+    url.searchParams.set(key, value);
+  }
   return url.toString();
 };
 
 export async function generatePkceLoginInfo() {
+  const config = await fetchOidcClientConfig();
   const codeVerifier = createCodeVerifier();
   const codeChallenge = await createCodeChallenge(codeVerifier);
   const state = createState();
   const nonce = createNonce();
-  return { codeVerifier, state, nonce, loginUrl: createGoogleLoginUrl(codeChallenge, state, nonce) };
+  return { codeVerifier, state, nonce, loginUrl: createLoginUrl(config, codeChallenge, state, nonce) };
 }
 
-export async function exchangeCodeForTokens(authCode: string, codeVerifier: string, nonce: string) {
+export async function exchangeCodeForTokens(
+  authCode: string,
+  codeVerifier: string,
+  nonce: string,
+): Promise<CallbackResponse> {
   const response = await fetch(`${OIDC_BASE_URL}/callback`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ code: authCode, code_verifier: codeVerifier, nonce }),
   });
-  return await response.json();
+  if (!response.ok) {
+    throw new Error(`Exchanging the login code failed with status ${response.status}.`);
+  }
+  return authCallbackResponse.parse(await response.json());
 }
