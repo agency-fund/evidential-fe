@@ -213,6 +213,9 @@ export function convertToBanditCreateRequest(data: ExperimentFormData): CreateEx
     designSpec.table_name = dwhTarget.tableName;
     designSpec.primary_key = dwhTarget.primaryKey;
     designSpec.target_field_name = dwhTarget.targetFieldName;
+    designSpec.enable_autofail = false;
+    designSpec.autofail_window = 24;
+    designSpec.autofail_outcome_value = 0;
   }
 
   return createExperimentBody.strict().parse({
