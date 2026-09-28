@@ -123,6 +123,9 @@ export type ExperimentFormData = {
   powerCheckResponse?: PowerResponse;
   // Populated by the MDE estimate for the currently-active custom N (ENTER_OWN or USE_ALL_NON_NULL_SAMPLES).
   mdePowerCheckResponse?: PowerResponse;
+  // Field names of metrics the user switched to one-time metric mode (assign only participants missing a value).
+  // Only honored for metrics the latest power check marks is_one_time_eligible.
+  oneTimeMetrics?: string[];
   createExperimentResponse?: CreateExperimentResponse;
   createExperimentError?: ErrorType<unknown>;
   // Values needed for cluster-randomized experiments
