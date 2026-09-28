@@ -54,6 +54,15 @@ export const metricHasMissingValues = (analysis: MetricPowerAnalysis): boolean =
 };
 
 /**
+ * Number of participants that meet the filters but have no value for the metric. In one-time metric mode, only these
+ * participants are assigned. Returns undefined when either count is missing.
+ */
+export const metricNullN = (analysis: MetricPowerAnalysis): number | undefined => {
+  const { available_n, available_nonnull_n } = analysis.metric_spec;
+  return available_n != null && available_nonnull_n != null ? available_n - available_nonnull_n : undefined;
+};
+
+/**
  * Whether the chosen sample size reaches the minimum required to detect the metric's target MDE.
  * Assignment enrolls exactly the chosen sample (including participants with missing values),
  * regardless of how many participants the datasource could supply.
