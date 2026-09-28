@@ -594,6 +594,8 @@ export interface DesignSpecMetric {
 	metric_stddev?: DesignSpecMetricMetricStddev;
 	available_nonnull_n?: DesignSpecMetricAvailableNonnullN;
 	available_n?: DesignSpecMetricAvailableN;
+	is_one_time_eligible?: boolean;
+	use_one_time_metric?: boolean;
 }
 
 export type DesignSpecMetricRequestMetricPctChange = number | null;
@@ -629,6 +631,8 @@ export interface DesignSpecMetricRequest {
 	metric_stddev?: DesignSpecMetricRequestMetricStddev;
 	available_nonnull_n?: DesignSpecMetricRequestAvailableNonnullN;
 	available_n?: DesignSpecMetricRequestAvailableN;
+	is_one_time_eligible?: boolean;
+	use_one_time_metric?: boolean;
 }
 
 export type Dsn = ApiOnlyDsn | PostgresDsn | BqDsn | RedshiftDsn;

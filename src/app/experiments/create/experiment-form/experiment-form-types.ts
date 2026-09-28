@@ -125,6 +125,9 @@ export type ExperimentFormData = {
   mdePowerCheckResponse?: PowerResponse;
   // Populated by the MDE-curve follow-up request issued after a successful power check.
   powerCurveResponse?: PowerResponse;
+  // Field names of metrics the user switched to one-time metric mode (assign only participants missing a value).
+  // Only honored for metrics the latest power check marks is_one_time_eligible.
+  oneTimeMetrics?: string[];
   createExperimentResponse?: CreateExperimentResponse;
   createExperimentError?: ErrorType<unknown>;
   // Values needed for cluster-randomized experiments
