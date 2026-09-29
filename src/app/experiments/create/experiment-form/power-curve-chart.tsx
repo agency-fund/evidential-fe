@@ -189,7 +189,7 @@ export function PowerCurveChart({
   // The selected size lies on the same curve (it comes from the same calculation), so merge it
   // into the line's data: it renders as a larger dot and shares the one tooltip layer. When the
   // selected size coincides with a computed curve point, the curve's own MDE wins — the passed
-  // estimate can disagree, e.g. the target MDE at a floor-clamped minimum. A custom size left of
+  // estimate can disagree, e.g. the target MDE at the rounded-up minimum. A custom size left of
   // the curve may stretch the plot down to a quarter of its first point, i.e. an MDE of twice the
   // curve's highest (MDE scales with 1/sqrt(n)), which bounds the stretch of both axes in normal
   // and under-powered designs alike; anything more extreme stays off-chart (footnote below) so
@@ -224,8 +224,8 @@ export function PowerCurveChart({
     Math.log(size / plottedPoints[0].size) / Math.log(maxPlottedSize / plottedPoints[0].size);
   // The curve descends, so the space above-right of any point on it is free. Only when the text
   // would run past the right edge does it run leftward instead, where the flattened curve leaves
-  // room above it. The same
-  // placement serves the bottom-of-plot variant below: above-right of the leader line's foot.
+  // room above it. The same placement serves the bottom-of-plot variant below: above-right of the
+  // leader line's foot.
   const selectionLabelPlacement: LabelPlacement = {
     anchor:
       selectedPoint !== undefined && axisFraction(selectedPoint.size) > 1 - LABEL_WIDTH_AXIS_FRACTION ? 'end' : 'start',
