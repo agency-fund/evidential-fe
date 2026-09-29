@@ -25,6 +25,10 @@ const UNATTAINABLE_FILL = 'var(--gray-4)';
 // The largest MDE worth plotting: beyond a 100% change, points carry no information.
 const MAX_PLOTTED_MDE_PCT = 100;
 
+// Roughly the width of a curve label as a fraction of the plot width: labels anchored closer
+// together than this can overlap.
+const LABEL_WIDTH_AXIS_FRACTION = 0.12;
+
 interface CurvePoint {
   size: number;
   mdePct: number;
@@ -62,24 +66,39 @@ function AvailableSizeLabel({ viewBox, sizeLabel }: { viewBox?: { x?: number; y?
   );
 }
 
+/** Where a label sits relative to its anchor point: which way the text runs, and above or below. */
+interface LabelPlacement {
+  anchor: 'start' | 'end';
+  below: boolean;
+}
+
 /**
- * Label for the target-MDE line, anchored at its intersection with the curve, on the side away
- * from the curve: above the line to the point's right when the curve dives below the line
- * (normal case), below the line to the point's left when the curve rises above it
- * (under-powered case). The chosen side always has room: the intersection hugs the opposite
- * edge of the chart in each case.
+ * Text label next to an anchor point, offset diagonally so it clears the point: text running
+ * right ('start') or left ('end') of the point, above or below it.
  */
-function TargetMdeLabel({ viewBox, side }: { viewBox?: { x?: number; y?: number }; side?: 'left' | 'right' }) {
-  const x = (viewBox?.x ?? 0) + (side === 'left' ? -8 : 8);
-  const y = (viewBox?.y ?? 0) + (side === 'left' ? 16 : -8);
+function PointLabel({
+  viewBox,
+  placement,
+  text,
+  fill,
+}: {
+  viewBox?: { x?: number; y?: number };
+  placement?: LabelPlacement;
+  text?: string;
+  fill?: string;
+}) {
+  const x = (viewBox?.x ?? 0) + (placement?.anchor === 'end' ? -8 : 8);
+  const y = (viewBox?.y ?? 0) + (placement?.below ? 16 : -10);
   return (
-    <text x={x} y={y} textAnchor={side === 'left' ? 'end' : 'start'} fill="var(--gray-11)" fontSize={12}>
-      Target MDE
+    <text x={x} y={y} textAnchor={placement?.anchor ?? 'start'} fill={fill} fontSize={12}>
+      {text}
     </text>
   );
 }
 
-/** Line dot renderer: the user's currently selected size is drawn larger, with a surface ring. */
+/**
+ * Line dot renderer: the user's currently selected size is drawn larger, with a surface ring.
+ */
 function CurveDot({ cx, cy, payload }: { cx?: number; cy?: number; payload?: CurvePoint }) {
   if (cx == null || cy == null || payload == null) return <g key="curve-dot-empty" />;
   if (payload.selected) {
@@ -138,10 +157,10 @@ function CurveTooltip({ active, payload, sizeLabel }: CurveTooltipProps) {
 
 /**
  * Plots the minimum detectable effect against sample size for the primary metric, so users can
- * see what precision their sample buys before choosing a target size. Vertical references mark
- * the minimum required and available sizes, a horizontal reference marks the user's target MDE,
- * and a dot tracks the currently selected size. The region beyond the available population is
- * shaded as unattainable.
+ * see what precision their sample buys before choosing a target size. A vertical reference marks
+ * the available size, a horizontal reference marks the user's target MDE, and a labeled dot tracks
+ * the currently selected size. The region beyond the available population is shaded as
+ * unattainable.
  */
 export function PowerCurveChart({
   curveAnalysis,
@@ -171,12 +190,14 @@ export function PowerCurveChart({
   // The selected size lies on the same curve (it comes from the same calculation), so merge it
   // into the line's data: it renders as a larger dot and shares the one tooltip layer. When the
   // selected size coincides with a computed curve point, the curve's own MDE wins — the passed
-  // estimate can disagree, e.g. the target MDE at a floor-clamped minimum. A custom size below
-  // the required minimum may stretch the plot down to an MDE of twice the target; anything more
-  // extreme stays off-chart (footnote below) so it cannot crush the axes.
+  // estimate can disagree, e.g. the target MDE at a floor-clamped minimum. A custom size left of
+  // the curve may stretch the plot down to a quarter of its first point, i.e. an MDE of twice the
+  // curve's highest (MDE scales with 1/sqrt(n)), which bounds the stretch of both axes in normal
+  // and under-powered designs alike; anything more extreme stays off-chart (footnote below) so
+  // it cannot crush the axes.
   const selectedOnCurve = selectedSize !== undefined ? points.find((p) => p.size === selectedSize) : undefined;
   const effectiveSelectedMdePct = selectedOnCurve?.mdePct ?? selectedMdePct;
-  const minSelectableSize = minSize !== undefined ? Math.min(points[0].size, Math.ceil(minSize / 4)) : points[0].size;
+  const minSelectableSize = Math.ceil(points[0].size / 4);
   const selectedPoint: CurvePoint | undefined =
     selectedSize !== undefined &&
     effectiveSelectedMdePct !== undefined &&
@@ -199,13 +220,48 @@ export function PowerCurveChart({
     targetMdePct !== undefined && minSize !== undefined && minSize >= points[0].size && minSize <= maxPlottedSize
       ? { size: minSize, mdePct: targetMdePct }
       : undefined;
-  // Label on the side with room: the crossing hugs one edge of the log axis, so anchor the
-  // label toward the opposite one (above-right of a left-edge crossing, below-left of a
-  // right-edge crossing).
-  const targetLabelSide: 'left' | 'right' =
-    targetIntersection !== undefined && targetIntersection.size > Math.sqrt(plottedPoints[0].size * maxPlottedSize)
-      ? 'left'
-      : 'right';
+  // Position of a size along the log axis, from 0 (left edge) to 1 (right edge).
+  const axisFraction = (size: number) =>
+    Math.log(size / plottedPoints[0].size) / Math.log(maxPlottedSize / plottedPoints[0].size);
+  // The curve descends, so the space above-right of any point on it is free. Only when the text
+  // would run past the right edge does it run leftward instead, where the flattened curve leaves
+  // room above it. The same
+  // placement serves the bottom-of-plot variant below: above-right of the leader line's foot.
+  const selectionLabelPlacement: LabelPlacement = {
+    anchor:
+      selectedPoint !== undefined && axisFraction(selectedPoint.size) > 1 - LABEL_WIDTH_AXIS_FRACTION ? 'end' : 'start',
+    below: false,
+  };
+  // The target line crosses the curve near one edge of the chart (left when the design is
+  // adequately powered, right when under-powered), and its label marks the crossing, on the side
+  // away from the curve: above-right of a left crossing, below-left of a right one. When the
+  // crossing is off-chart, the label goes to the end of the line where the curve is not.
+  const crossingOnLeft =
+    targetIntersection !== undefined ? axisFraction(targetIntersection.size) <= 0.5 : !curveStartsAboveTarget;
+  const targetLabel =
+    targetIntersection !== undefined
+      ? {
+          ...targetIntersection,
+          placement: crossingOnLeft
+            ? ({ anchor: 'start', below: false } as const)
+            : ({ anchor: 'end', below: true } as const),
+        }
+      : targetMdePct !== undefined
+        ? {
+            size: crossingOnLeft ? maxPlottedSize : plottedPoints[0].size,
+            mdePct: targetMdePct,
+            placement: { anchor: crossingOnLeft ? 'end' : 'start', below: true } as const,
+          }
+        : undefined;
+  // A selection near a left crossing (by default the selection is the required minimum, i.e.
+  // the crossing itself) would put its label on top of the target label. Its label then moves
+  // to the bottom of the plot, joined to the dot by a leader line: the curve is high at the left
+  // edge, so the bottom-left of the plot is always free.
+  const selectionLabelAtBottom =
+    selectedPoint !== undefined &&
+    targetIntersection !== undefined &&
+    crossingOnLeft &&
+    Math.abs(axisFraction(selectedPoint.size) - axisFraction(targetIntersection.size)) < LABEL_WIDTH_AXIS_FRACTION;
 
   return (
     <Flex direction="column" gap="1" width="100%">
@@ -242,28 +298,32 @@ export function PowerCurveChart({
               />
             ) : null}
             {targetMdePct !== undefined ? (
-              <ReferenceLine
-                y={targetMdePct}
-                stroke={REFERENCE_COLOR}
-                strokeDasharray="4 4"
-                label={
-                  targetIntersection === undefined
-                    ? {
-                        value: 'Target MDE',
-                        position: curveStartsAboveTarget ? 'insideBottomLeft' : 'insideTopRight',
-                        fill: 'var(--gray-11)',
-                        fontSize: 12,
-                      }
-                    : undefined
-                }
+              <ReferenceLine y={targetMdePct} stroke={REFERENCE_COLOR} strokeDasharray="4 4" />
+            ) : null}
+            {targetLabel !== undefined ? (
+              <ReferenceDot
+                x={targetLabel.size}
+                y={targetLabel.mdePct}
+                r={0}
+                label={<PointLabel placement={targetLabel.placement} text="Target MDE" fill="var(--gray-11)" />}
               />
             ) : null}
-            {targetIntersection !== undefined ? (
+            {selectedPoint !== undefined && selectionLabelAtBottom ? (
+              <ReferenceLine
+                segment={[
+                  { x: selectedPoint.size, y: 0 },
+                  { x: selectedPoint.size, y: selectedPoint.mdePct },
+                ]}
+                stroke={CURVE_COLOR}
+                strokeDasharray="2 3"
+              />
+            ) : null}
+            {selectedPoint !== undefined ? (
               <ReferenceDot
-                x={targetIntersection.size}
-                y={targetIntersection.mdePct}
+                x={selectedPoint.size}
+                y={selectionLabelAtBottom ? 0 : selectedPoint.mdePct}
                 r={0}
-                label={<TargetMdeLabel side={targetLabelSide} />}
+                label={<PointLabel placement={selectionLabelPlacement} text="Your selection" fill="var(--blue-11)" />}
               />
             ) : null}
             <Line
