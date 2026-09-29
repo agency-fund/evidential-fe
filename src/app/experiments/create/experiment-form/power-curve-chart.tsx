@@ -147,7 +147,6 @@ function CurveTooltip({ active, payload, sizeLabel }: CurveTooltipProps) {
       <Flex direction="column" gap="1">
         <Text size="2" weight="bold">
           {point.size.toLocaleString()} {sizeLabel}
-          {point.selected ? ' (selected)' : ''}
         </Text>
         <Text size="2">Detectable effect: {point.mdePct.toFixed(1)}%</Text>
       </Flex>
