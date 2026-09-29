@@ -193,11 +193,6 @@ export function PowerCurveChart({
     selectedSize !== undefined && effectiveSelectedMdePct !== undefined && selectedPoint === undefined;
   const maxPlottedSize = points[points.length - 1].size;
   const showUnattainableRegion = availableSize !== undefined && maxPlottedSize > availableSize;
-  // Shade the under-powered region left of the required minimum — but only when the minimum is
-  // within the available population; otherwise it would overlap the unattainable region and
-  // tile the whole chart gray.
-  const showInsufficientRegion =
-    minSize !== undefined && availableSize !== undefined && minSize < availableSize && minSize > plottedPoints[0].size;
   // Where the curve crosses the target MDE: at the minimum required size, when on-chart.
   const curveStartsAboveTarget = targetMdePct !== undefined && points[0].mdePct > targetMdePct;
   const targetIntersection =
@@ -237,9 +232,6 @@ export function PowerCurveChart({
             <Tooltip content={(props) => <CurveTooltip {...props} sizeLabel={sizeLabel} />} />
             {showUnattainableRegion ? (
               <ReferenceArea x1={availableSize} x2={maxPlottedSize} fill={UNATTAINABLE_FILL} fillOpacity={0.35} />
-            ) : null}
-            {showInsufficientRegion ? (
-              <ReferenceArea x1={plottedPoints[0].size} x2={minSize} fill={UNATTAINABLE_FILL} fillOpacity={0.35} />
             ) : null}
             {availableSize !== undefined ? (
               <ReferenceLine
