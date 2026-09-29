@@ -705,6 +705,15 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             createExperimentError: undefined,
           };
         }
+        // One-time metric mode doesn't change the power check inputs, so the existing response stays valid.
+        if (msg.type === 'set-one-time-metric') {
+          const others = (data.oneTimeMetrics ?? []).filter((fieldName) => fieldName !== msg.fieldName);
+          return {
+            ...data,
+            oneTimeMetrics: msg.enabled ? [...others, msg.fieldName] : others,
+            createExperimentError: undefined,
+          };
+        }
         if (msg.type === 'set-chosen-n' || msg.type === 'set-power-check-response') {
           const clusterStatsFromPowerCheck =
             msg.type === 'set-power-check-response' && msg.response
