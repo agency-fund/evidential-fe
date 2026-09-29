@@ -22,7 +22,7 @@ import {
 import { CheckCircledIcon, CrossCircledIcon, ExclamationTriangleIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData, isClusteredExperimentFormData, PowerCheckOption } from './experiment-form-types';
 import { usePowerCheck } from '@/api/admin';
-import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
+import { convertToFrequentistDesignSpec, toPowerRequest } from './experiment-form-helpers';
 import { getPowerAnalysis, metricHasMissingValues } from '@/services/experiment-utils';
 import { MetricSampleSizeDisplay } from '@/components/features/experiments/metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -103,11 +103,13 @@ function RunPowerCheckButton({ enabled, onClick, loading, disabledReason }: Powe
 
 export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const [validationError, setValidationError] = useState<ZodError | null>(null);
+  const [validationErrorMessage, setValidationErrorMessage] = useState<string | null>(null);
   const { trigger: triggerEstimateSampleSize, isMutating, error } = usePowerCheck(data.datasourceId!);
   const { enabled, reason } = isPowerCheckButtonEnabled(isMutating, data);
 
   const handlePowerCheck = async () => {
     setValidationError(null);
+    setValidationErrorMessage(null);
 
     if (!data.tableName || !data.primaryKey || !data.primaryMetric) {
       return;
@@ -120,7 +122,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
         desiredN: undefined,
         desiredNClusters: undefined,
       });
-      const response = await triggerEstimateSampleSize({ design_spec: designSpec });
+      const response = await triggerEstimateSampleSize(toPowerRequest(designSpec));
 
       const primary = getPowerAnalysis(response, data.primaryMetric.metric.field_name);
       const desiredN = primary?.sufficient_n ? (primary.target_n ?? undefined) : undefined;
@@ -136,6 +138,10 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     } catch (err) {
       if (err instanceof ZodError) {
         setValidationError(err);
+        return;
+      }
+      if (err instanceof Error) {
+        setValidationErrorMessage(err.message);
         return;
       }
       throw err;
@@ -163,12 +169,13 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
   const primaryMetricFieldName = data.primaryMetric?.metric.field_name ?? '';
   const isClustered = isClusteredExperimentFormData(data);
+  const hasValidationError = validationError || validationErrorMessage;
   const primaryPower =
-    data.powerCheckResponse !== undefined && !validationError
+    data.powerCheckResponse !== undefined && !hasValidationError
       ? getPowerAnalysis(data.powerCheckResponse, primaryMetricFieldName)
       : undefined;
   const restPowerAnalyses =
-    data.powerCheckResponse !== undefined && !validationError
+    data.powerCheckResponse !== undefined && !hasValidationError
       ? data.powerCheckResponse.analyses.filter((a) => a.metric_spec.field_name !== primaryMetricFieldName)
       : undefined;
   const restPower = restPowerAnalyses !== undefined && restPowerAnalyses.length > 0 ? restPowerAnalyses : undefined;
@@ -238,6 +245,12 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                 title={'Validation failed'}
                 message={validationError.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('\n')}
               />
+            </Flex>
+          )}
+
+          {validationErrorMessage && (
+            <Flex align="center" gap="2">
+              <GenericErrorCallout title={'Validation failed'} message={validationErrorMessage} />
             </Flex>
           )}
 
@@ -398,7 +411,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
         </Flex>
       </SectionCard>
 
-      {data.powerCheckResponse !== undefined && !validationError && (
+      {data.powerCheckResponse !== undefined && !hasValidationError && (
         <SectionCard title="Select Target Sample Size">
           <Flex direction="column" gap="3" align="start" width="100%">
             <Text>Choose the total number of participants to distribute across all arms:</Text>

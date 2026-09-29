@@ -11,6 +11,7 @@ import {
 } from '@/components/features/experiments/metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { getPowerAnalysis } from '@/services/experiment-utils';
+import { toPowerRequest } from './experiment-form-helpers';
 
 /**
  * `sampleSizeOption` is the selected sample size option.
@@ -147,7 +148,7 @@ export function PowerCheckSampleSizeSelector({
   const estimateMde = (sampleSizeOption: PowerCheckOption, desiredN: number, desiredNClusters?: number) => {
     const designSpec = makeDesignSpec(desiredN, desiredNClusters);
     void (async () => {
-      const response = await triggerEstimateMde({ design_spec: designSpec });
+      const response = await triggerEstimateMde(toPowerRequest(designSpec));
       if (!response) {
         // Can happen if this request has gone stale and failed, superceded by a more recent request.
         // Stale requests that succeed will be handled by the parent.

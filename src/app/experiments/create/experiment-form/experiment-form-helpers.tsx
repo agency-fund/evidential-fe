@@ -8,6 +8,7 @@ import {
   MABDwhExperimentSpecExperimentType,
   MABExperimentSpecExperimentType,
   OnlineFrequentistExperimentSpecExperimentType,
+  PowerRequest,
   PowerResponse,
   PreassignedFrequentistExperimentSpecExperimentType,
   Stratum,
@@ -152,6 +153,37 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
     throw new Error('Frequentist configuration is required.');
   }
   return spec;
+}
+
+/**
+ * Derives the power check request from a design spec. The power endpoint takes only the fields the
+ * power calculation itself consumes, so everything else in the spec is dropped.
+ */
+export function toPowerRequest(spec: AnyFrequentistDesignSpec): PowerRequest {
+  // Arm weights are all-or-nothing: PowerRequest.validate_arm_weights() rejects a list that
+  // doesn't match n_arms or sum to 100, so only send them when every arm has one. The arm
+  // reducers set weights for every arm at once or clear them all.
+  const armWeights = spec.arms.map((arm) => arm.arm_weight);
+  const hasAllWeights = armWeights.length > 0 && armWeights.every((weight) => weight != null);
+  const hasPartialWeights = armWeights.some((weight) => weight != null) && !hasAllWeights;
+
+  if (hasPartialWeights) {
+    throw new Error('arm_weights: All arms must have weights set, or none should have weights.');
+  }
+
+  return {
+    table_name: spec.table_name,
+    // Only preassigned specs can be cluster-randomized.
+    cluster_key: 'cluster_key' in spec ? (spec.cluster_key ?? null) : null,
+    filters: spec.filters,
+    metrics: spec.metrics,
+    n_arms: spec.arms.length,
+    arm_weights: hasAllWeights ? (armWeights as number[]) : null,
+    power: spec.power ?? 0.8,
+    alpha: spec.alpha ?? 0.05,
+    desired_n: spec.desired_n ?? null,
+    desired_n_clusters: 'desired_n_clusters' in spec ? (spec.desired_n_clusters ?? null) : null,
+  };
 }
 
 export function convertToBanditCreateRequest(data: ExperimentFormData): CreateExperimentRequest {
