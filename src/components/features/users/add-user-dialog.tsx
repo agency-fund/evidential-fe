@@ -63,8 +63,8 @@ export function AddUserDialog() {
           <form onSubmit={handleSubmit}>
             <Dialog.Title>Add User</Dialog.Title>
             <Dialog.Description size="2" mb="4">
-              Creates a user record by email. The user will be able to log in via Google and will land on a welcome
-              screen if they are not yet a member of any organization. No email is sent; you must inform them
+              Creates a user record by email. The user will be able to log in with single sign-on and will land on a
+              welcome screen if they are not yet a member of any organization. No email is sent; you must inform them
               out-of-band.
             </Dialog.Description>
 

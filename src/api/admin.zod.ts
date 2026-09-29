@@ -6,6 +6,14 @@
  */
 import * as zod from "zod";
 
+export const callerIdentityResponse = zod.object({
+	email: zod.string(),
+	iss: zod.string(),
+	sub: zod.string(),
+	hd: zod.string(),
+	is_privileged: zod.boolean(),
+});
+
 export const createUserBodyEmailMax = 64;
 
 export const createUserBody = zod.object({

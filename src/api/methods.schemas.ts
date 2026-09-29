@@ -1114,6 +1114,13 @@ export const MetricType = {
 	numeric: "numeric",
 } as const;
 
+export interface OidcClientConfigResponse {
+	authorization_endpoint: string;
+	client_id: string;
+	redirect_uri: string;
+	scope: string;
+}
+
 export interface OnlineAssignmentWithFiltersRequest {
 	/** Participant properties to match against the experiment's filters. */
 	properties: ParticipantProperty[];
