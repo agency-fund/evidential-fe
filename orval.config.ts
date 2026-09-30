@@ -94,7 +94,7 @@ export default defineConfig({
       target: 'openapi.json',
       filters: {
         mode: 'include',
-        tags: ['Admin'],
+        tags: ['Admin', 'Auth'],
       },
       override: {
         transformer: removeOpenApiDocsZodCannotTreeshake,
@@ -108,6 +108,32 @@ export default defineConfig({
       fileExtension: '.zod.ts',
       biome: true,
       override: {
+        operations: {
+          oidc_client_config: {
+            zod: {
+              generate: {
+                body: false,
+                response: true,
+              },
+            },
+          },
+          auth_callback: {
+            zod: {
+              generate: {
+                body: false,
+                response: true,
+              },
+            },
+          },
+          caller_identity: {
+            zod: {
+              generate: {
+                body: false,
+                response: true,
+              },
+            },
+          },
+        },
         zod: {
           generate: {
             header: false,
