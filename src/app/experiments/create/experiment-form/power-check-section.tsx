@@ -22,7 +22,17 @@ import {
 import { CheckCircledIcon, CrossCircledIcon, ExclamationTriangleIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData, isClusteredExperimentFormData, PowerCheckOption } from './experiment-form-types';
 import { usePowerCheck } from '@/api/admin';
-import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
+import {
+  AnyFrequentistDesignSpec,
+  PowerResponse,
+  PreassignedFrequentistExperimentSpecExperimentType,
+} from '@/api/methods.schemas';
+import {
+  convertToFrequentistDesignSpec,
+  getClusterStatsFromPowerCheckResponse,
+  powerCurveSizes,
+  withEchoedBaselineStats,
+} from './experiment-form-helpers';
 import { getPowerAnalysis, metricHasMissingValues } from '@/services/experiment-utils';
 import { MetricSampleSizeDisplay } from '@/components/features/experiments/metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -31,12 +41,14 @@ import { ZodError } from 'zod';
 import { useState } from 'react';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { ClusterStatisticsSection, ClusterStatisticsSectionAction } from './cluster-statistics-section';
+import { PowerCurveChart } from './power-curve-chart';
 
 export type PowerCheckSectionAction =
   | { type: 'set-confidence'; value: string }
   | { type: 'set-power'; value: string }
   | ({ type: 'set-chosen-n' } & PowerCheckSampleOptionChange)
-  | ({ type: 'set-power-check-response' } & PowerCheckResponseChange);
+  | ({ type: 'set-power-check-response' } & PowerCheckResponseChange)
+  | { type: 'set-power-curve-response'; response: PowerResponse; designSpec: AnyFrequentistDesignSpec };
 
 interface PowerCheckSectionProps {
   data: ExperimentFormData;
@@ -104,7 +116,71 @@ function RunPowerCheckButton({ enabled, onClick, loading, disabledReason }: Powe
 export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const [validationError, setValidationError] = useState<ZodError | null>(null);
   const { trigger: triggerEstimateSampleSize, isMutating, error } = usePowerCheck(data.datasourceId!);
+  const { trigger: triggerPowerCurve } = usePowerCheck(data.datasourceId!, {
+    swr: { swrKey: `${data.datasourceId}/power/curve` },
+  });
   const { enabled, reason } = isPowerCheckButtonEnabled(isMutating, data);
+
+  /**
+   * Fires the follow-up MDE-curve request for a just-received power check response. Best-effort:
+   * the response's stats are echoed back so the server computes every point without re-querying
+   * the data warehouse, and any failure just leaves the chart unrendered.
+   */
+  const fetchPowerCurve = async (response: PowerResponse) => {
+    if (!data.primaryMetric) {
+      return;
+    }
+    const primary = getPowerAnalysis(response, data.primaryMetric.metric.field_name);
+    if (!primary) {
+      return;
+    }
+    // Build the spec as the form will look after the reducer stores this response: for cluster
+    // designs that back-fills the derived cluster stats, and the reducer's staleness check for
+    // the curve response compares against exactly that. Without this, the cluster back-fill
+    // would make the curve response look stale and it would be dropped.
+    const clusterStats = getClusterStatsFromPowerCheckResponse(data, response);
+    let designSpec: AnyFrequentistDesignSpec;
+    try {
+      designSpec = convertToFrequentistDesignSpec({
+        ...data,
+        ...clusterStats,
+        desiredN: undefined,
+        desiredNClusters: undefined,
+      });
+    } catch {
+      // The curve is enrichment: a spec that no longer converts just means no chart.
+      return;
+    }
+    const availableN = primary.metric_spec.available_n ?? 0;
+    const avgClusterSize = primary.metric_spec.avg_cluster_size ?? 0;
+    const echoedSpec = withEchoedBaselineStats(designSpec, response);
+
+    let curveSpec: AnyFrequentistDesignSpec;
+    if (
+      isClusteredExperimentFormData(data) &&
+      avgClusterSize > 0 &&
+      echoedSpec.experiment_type === PreassignedFrequentistExperimentSpecExperimentType.freq_preassigned
+    ) {
+      const maxClusters = Math.floor(availableN / avgClusterSize);
+      const sizes = powerCurveSizes(primary.num_clusters_total ?? undefined, maxClusters);
+      if (!sizes.length) {
+        return;
+      }
+      curveSpec = { ...echoedSpec, desired_ns_clusters: sizes };
+    } else {
+      const sizes = powerCurveSizes(primary.target_n ?? undefined, availableN);
+      if (!sizes.length) {
+        return;
+      }
+      curveSpec = { ...echoedSpec, desired_ns: sizes };
+    }
+
+    const curveResponse = await triggerPowerCurve({ design_spec: curveSpec }, { throwOnError: false });
+    if (!curveResponse) {
+      return;
+    }
+    dispatch({ type: 'set-power-curve-response', response: curveResponse, designSpec });
+  };
 
   const handlePowerCheck = async () => {
     setValidationError(null);
@@ -133,6 +209,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
         sampleSizeOption,
         designSpec,
       });
+      void fetchPowerCurve(response);
     } catch (err) {
       if (err instanceof ZodError) {
         setValidationError(err);
@@ -179,6 +256,32 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     ...(primaryPower != null && primaryHasMissingValues ? [`${primaryPower.metric_spec.field_name} (primary)`] : []),
     ...(restPower ?? []).filter(metricHasMissingValues).map((analysis) => analysis.metric_spec.field_name),
   ];
+
+  // Power curve chart inputs, all in the chart's x unit (clusters for cluster designs).
+  const curveAnalysis =
+    data.powerCurveResponse !== undefined && !validationError
+      ? getPowerAnalysis(data.powerCurveResponse, primaryMetricFieldName)
+      : undefined;
+  const primaryAvailableN = primaryPower?.metric_spec.available_n ?? undefined;
+  const primaryAvgClusterSize = primaryPower?.metric_spec.avg_cluster_size ?? undefined;
+  const curveAvailableSize = isClustered
+    ? primaryAvailableN !== undefined && primaryAvgClusterSize
+      ? Math.floor(primaryAvailableN / primaryAvgClusterSize)
+      : undefined
+    : primaryAvailableN;
+  const curveMinSize = isClustered
+    ? (primaryPower?.num_clusters_total ?? undefined)
+    : (primaryPower?.target_n ?? undefined);
+  const targetMdePct = data.primaryMetric?.mde !== undefined ? Number(data.primaryMetric.mde) : undefined;
+  const mdeAnalysisForDot = getPowerAnalysis(data.mdePowerCheckResponse, primaryMetricFieldName);
+  const selectedMdePct =
+    data.sampleSizeOption === PowerCheckOption.USE_POWER_CHECK
+      ? targetMdePct
+      : mdeAnalysisForDot?.pct_change_with_desired_n != null
+        ? // Magnitude: binary metrics may report the detectable change with a negative sign.
+          Math.abs(mdeAnalysisForDot.pct_change_with_desired_n) * 100
+        : undefined;
+  const selectedSize = isClustered ? data.desiredNClusters : data.desiredN;
 
   return (
     <Flex direction="column" gap={'3'}>
@@ -401,6 +504,17 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
       {data.powerCheckResponse !== undefined && !validationError && (
         <SectionCard title="Select Target Sample Size">
           <Flex direction="column" gap="3" align="start" width="100%">
+            {curveAnalysis ? (
+              <PowerCurveChart
+                curveAnalysis={curveAnalysis}
+                isClustered={isClustered}
+                minSize={curveMinSize}
+                availableSize={curveAvailableSize}
+                targetMdePct={targetMdePct}
+                selectedSize={selectedSize}
+                selectedMdePct={selectedMdePct}
+              />
+            ) : null}
             <Text>Choose the total number of participants to distribute across all arms:</Text>
             <Flex direction="column" gap="2" align="center" width="100%">
               {!data.powerCheckResponse.analyses.map((a) => a.sufficient_n).every((sufficient) => sufficient) && (
@@ -424,9 +538,14 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                 desiredN={data.desiredN}
                 desiredNClusters={data.desiredNClusters}
                 mdePowerCheckResponse={data.mdePowerCheckResponse}
-                makeDesignSpec={(desiredN, desiredNClusters) =>
-                  convertToFrequentistDesignSpec({ ...data, desiredN, desiredNClusters })
-                }
+                makeDesignSpec={(desiredN, desiredNClusters) => {
+                  const spec = convertToFrequentistDesignSpec({ ...data, desiredN, desiredNClusters });
+                  // Echo the stats from the current power check so the server skips the dwh. Any
+                  // design edit wipes powerCheckResponse, so a present response matches the design.
+                  return data.powerCheckResponse !== undefined
+                    ? withEchoedBaselineStats(spec, data.powerCheckResponse)
+                    : spec;
+                }}
                 onOptionChange={handleSampleOptionChange}
                 onEstimatedMDEChange={handleEstimatedMDEChange}
               />

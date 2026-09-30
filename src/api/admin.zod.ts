@@ -361,6 +361,8 @@ export const createExperimentBodyDesignSpecFiltersMax = 20;
 
 export const createExperimentBodyDesignSpecDesiredNMinOne = 0;
 
+export const createExperimentBodyDesignSpecDesiredNsMaxOne = 100;
+
 export const createExperimentBodyDesignSpecPowerDefault = 0.8;
 export const createExperimentBodyDesignSpecPowerMin = 0;
 export const createExperimentBodyDesignSpecPowerMax = 1;
@@ -372,6 +374,8 @@ export const createExperimentBodyDesignSpecAlphaMax = 1;
 export const createExperimentBodyDesignSpecFstatThreshDefault = 0.6;
 export const createExperimentBodyDesignSpecFstatThreshMin = 0;
 export const createExperimentBodyDesignSpecFstatThreshMax = 1;
+
+export const createExperimentBodyDesignSpecDesiredNsClustersMaxOne = 100;
 
 export const createExperimentBodyDesignSpecExperimentNameMaxOne = 100;
 
@@ -404,6 +408,8 @@ export const createExperimentBodyDesignSpecFiltersItemFieldNameRegExpOne =
 export const createExperimentBodyDesignSpecFiltersMaxOne = 20;
 
 export const createExperimentBodyDesignSpecDesiredNMinFour = 0;
+
+export const createExperimentBodyDesignSpecDesiredNsMaxFour = 100;
 
 export const createExperimentBodyDesignSpecPowerDefaultOne = 0.8;
 export const createExperimentBodyDesignSpecPowerMinOne = 0;
@@ -578,6 +584,15 @@ export const createExperimentBody = zod.object({
 								.union([zod.number(), zod.null()])
 								.optional(),
 							cv: zod.union([zod.number(), zod.null()]).optional(),
+							metric_type: zod
+								.union([zod.enum(["binary", "numeric"]), zod.null()])
+								.optional(),
+							metric_baseline: zod.union([zod.number(), zod.null()]).optional(),
+							metric_stddev: zod.union([zod.number(), zod.null()]).optional(),
+							available_nonnull_n: zod
+								.union([zod.number(), zod.null()])
+								.optional(),
+							available_n: zod.union([zod.number(), zod.null()]).optional(),
 						}),
 					)
 					.min(1)
@@ -606,6 +621,14 @@ export const createExperimentBody = zod.object({
 						zod.null(),
 					])
 					.optional(),
+				desired_ns: zod
+					.union([
+						zod
+							.array(zod.number().min(1))
+							.max(createExperimentBodyDesignSpecDesiredNsMaxOne),
+						zod.null(),
+					])
+					.optional(),
 				power: zod
 					.number()
 					.min(createExperimentBodyDesignSpecPowerMin)
@@ -624,6 +647,14 @@ export const createExperimentBody = zod.object({
 				cluster_key: zod.union([zod.string(), zod.null()]).optional(),
 				desired_n_clusters: zod
 					.union([zod.number().min(1), zod.null()])
+					.optional(),
+				desired_ns_clusters: zod
+					.union([
+						zod
+							.array(zod.number().min(1))
+							.max(createExperimentBodyDesignSpecDesiredNsClustersMaxOne),
+						zod.null(),
+					])
 					.optional(),
 			}),
 			zod.object({
@@ -702,6 +733,15 @@ export const createExperimentBody = zod.object({
 								.union([zod.number(), zod.null()])
 								.optional(),
 							cv: zod.union([zod.number(), zod.null()]).optional(),
+							metric_type: zod
+								.union([zod.enum(["binary", "numeric"]), zod.null()])
+								.optional(),
+							metric_baseline: zod.union([zod.number(), zod.null()]).optional(),
+							metric_stddev: zod.union([zod.number(), zod.null()]).optional(),
+							available_nonnull_n: zod
+								.union([zod.number(), zod.null()])
+								.optional(),
+							available_n: zod.union([zod.number(), zod.null()]).optional(),
 						}),
 					)
 					.min(1)
@@ -727,6 +767,14 @@ export const createExperimentBody = zod.object({
 				desired_n: zod
 					.union([
 						zod.number().min(createExperimentBodyDesignSpecDesiredNMinFour),
+						zod.null(),
+					])
+					.optional(),
+				desired_ns: zod
+					.union([
+						zod
+							.array(zod.number().min(1))
+							.max(createExperimentBodyDesignSpecDesiredNsMaxFour),
 						zod.null(),
 					])
 					.optional(),
@@ -1068,6 +1116,22 @@ export const createExperimentBody = zod.object({
 							pct_change_with_desired_n: zod
 								.union([zod.number(), zod.null()])
 								.optional(),
+							mde_curve: zod
+								.union([
+									zod.array(
+										zod.object({
+											desired_n: zod.number(),
+											desired_n_clusters: zod
+												.union([zod.number(), zod.null()])
+												.optional(),
+											pct_change: zod
+												.union([zod.number(), zod.null()])
+												.optional(),
+										}),
+									),
+									zod.null(),
+								])
+								.optional(),
 							msg: zod
 								.union([
 									zod.object({
@@ -1220,6 +1284,8 @@ export const powerCheckBodyDesignSpecFiltersMax = 20;
 
 export const powerCheckBodyDesignSpecDesiredNMinOne = 0;
 
+export const powerCheckBodyDesignSpecDesiredNsMaxOne = 100;
+
 export const powerCheckBodyDesignSpecPowerDefault = 0.8;
 export const powerCheckBodyDesignSpecPowerMin = 0;
 export const powerCheckBodyDesignSpecPowerMax = 1;
@@ -1231,6 +1297,8 @@ export const powerCheckBodyDesignSpecAlphaMax = 1;
 export const powerCheckBodyDesignSpecFstatThreshDefault = 0.6;
 export const powerCheckBodyDesignSpecFstatThreshMin = 0;
 export const powerCheckBodyDesignSpecFstatThreshMax = 1;
+
+export const powerCheckBodyDesignSpecDesiredNsClustersMaxOne = 100;
 
 export const powerCheckBodyDesignSpecExperimentNameMaxOne = 100;
 
@@ -1266,6 +1334,8 @@ export const powerCheckBodyDesignSpecFiltersItemFieldNameRegExpOne = new RegExp(
 export const powerCheckBodyDesignSpecFiltersMaxOne = 20;
 
 export const powerCheckBodyDesignSpecDesiredNMinFour = 0;
+
+export const powerCheckBodyDesignSpecDesiredNsMaxFour = 100;
 
 export const powerCheckBodyDesignSpecPowerDefaultOne = 0.8;
 export const powerCheckBodyDesignSpecPowerMinOne = 0;
@@ -1341,6 +1411,15 @@ export const powerCheckBody = zod.object({
 						icc: zod.union([zod.number(), zod.null()]).optional(),
 						avg_cluster_size: zod.union([zod.number(), zod.null()]).optional(),
 						cv: zod.union([zod.number(), zod.null()]).optional(),
+						metric_type: zod
+							.union([zod.enum(["binary", "numeric"]), zod.null()])
+							.optional(),
+						metric_baseline: zod.union([zod.number(), zod.null()]).optional(),
+						metric_stddev: zod.union([zod.number(), zod.null()]).optional(),
+						available_nonnull_n: zod
+							.union([zod.number(), zod.null()])
+							.optional(),
+						available_n: zod.union([zod.number(), zod.null()]).optional(),
 					}),
 				)
 				.min(1)
@@ -1367,6 +1446,14 @@ export const powerCheckBody = zod.object({
 					zod.null(),
 				])
 				.optional(),
+			desired_ns: zod
+				.union([
+					zod
+						.array(zod.number().min(1))
+						.max(powerCheckBodyDesignSpecDesiredNsMaxOne),
+					zod.null(),
+				])
+				.optional(),
 			power: zod
 				.number()
 				.min(powerCheckBodyDesignSpecPowerMin)
@@ -1385,6 +1472,14 @@ export const powerCheckBody = zod.object({
 			cluster_key: zod.union([zod.string(), zod.null()]).optional(),
 			desired_n_clusters: zod
 				.union([zod.number().min(1), zod.null()])
+				.optional(),
+			desired_ns_clusters: zod
+				.union([
+					zod
+						.array(zod.number().min(1))
+						.max(powerCheckBodyDesignSpecDesiredNsClustersMaxOne),
+					zod.null(),
+				])
 				.optional(),
 		}),
 		zod.object({
@@ -1449,6 +1544,15 @@ export const powerCheckBody = zod.object({
 						icc: zod.union([zod.number(), zod.null()]).optional(),
 						avg_cluster_size: zod.union([zod.number(), zod.null()]).optional(),
 						cv: zod.union([zod.number(), zod.null()]).optional(),
+						metric_type: zod
+							.union([zod.enum(["binary", "numeric"]), zod.null()])
+							.optional(),
+						metric_baseline: zod.union([zod.number(), zod.null()]).optional(),
+						metric_stddev: zod.union([zod.number(), zod.null()]).optional(),
+						available_nonnull_n: zod
+							.union([zod.number(), zod.null()])
+							.optional(),
+						available_n: zod.union([zod.number(), zod.null()]).optional(),
 					}),
 				)
 				.min(1)
@@ -1472,6 +1576,14 @@ export const powerCheckBody = zod.object({
 			desired_n: zod
 				.union([
 					zod.number().min(powerCheckBodyDesignSpecDesiredNMinFour),
+					zod.null(),
+				])
+				.optional(),
+			desired_ns: zod
+				.union([
+					zod
+						.array(zod.number().min(1))
+						.max(powerCheckBodyDesignSpecDesiredNsMaxFour),
 					zod.null(),
 				])
 				.optional(),
