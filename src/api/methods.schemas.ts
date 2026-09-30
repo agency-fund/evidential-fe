@@ -1293,8 +1293,49 @@ export interface PostgresDsn {
 	search_path: PostgresDsnSearchPath;
 }
 
+export type PowerRequestClusterKey = string | null;
+
+export type PowerRequestArmWeights = ArmWeight[] | null;
+
+export type PowerRequestDesiredN = number | null;
+
+export type PowerRequestDesiredNClusters = number | null;
+
+export type PowerRequestDesiredNs = number[] | null;
+
+export type PowerRequestDesiredNsClusters = number[] | null;
+
 export interface PowerRequest {
-	design_spec: AnyFrequentistDesignSpec;
+	/** @maxLength 100 */
+	table_name: string;
+	cluster_key?: PowerRequestClusterKey;
+	/**
+	 * @minItems 1
+	 * @maxItems 150
+	 */
+	metrics: DesignSpecMetricRequest[];
+	/** @maxItems 20 */
+	filters?: Filter[];
+	/**
+	 * @minimum 2
+	 * @maximum 20
+	 */
+	n_arms: number;
+	arm_weights?: PowerRequestArmWeights;
+	/**
+	 * @minimum 0
+	 * @maximum 1
+	 */
+	power?: number;
+	/**
+	 * @minimum 0
+	 * @maximum 1
+	 */
+	alpha?: number;
+	desired_n?: PowerRequestDesiredN;
+	desired_n_clusters?: PowerRequestDesiredNClusters;
+	desired_ns?: PowerRequestDesiredNs;
+	desired_ns_clusters?: PowerRequestDesiredNsClusters;
 }
 
 export interface PowerResponse {
