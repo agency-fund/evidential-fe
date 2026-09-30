@@ -22,7 +22,6 @@ import {
 import { CheckCircledIcon, CrossCircledIcon, ExclamationTriangleIcon, LightningBoltIcon } from '@radix-ui/react-icons';
 import { ExperimentFormData, isClusteredExperimentFormData, PowerCheckOption } from './experiment-form-types';
 import { usePowerCheck } from '@/api/admin';
-import { convertToFrequentistDesignSpec, toPowerRequest } from './experiment-form-helpers';
 import {
   AnyFrequentistDesignSpec,
   PowerResponse,
@@ -30,6 +29,7 @@ import {
 } from '@/api/methods.schemas';
 import {
   convertToFrequentistDesignSpec,
+  toPowerRequest,
   getClusterStatsFromPowerCheckResponse,
   powerCurveSizes,
   withEchoedBaselineStats,
@@ -177,7 +177,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
       curveSpec = { ...echoedSpec, desired_ns: sizes };
     }
 
-    const curveResponse = await triggerPowerCurve({ design_spec: curveSpec }, { throwOnError: false });
+    const curveResponse = await triggerPowerCurve(toPowerRequest(curveSpec), { throwOnError: false });
     if (!curveResponse) {
       return;
     }

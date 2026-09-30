@@ -183,6 +183,8 @@ export function toPowerRequest(spec: AnyFrequentistDesignSpec): PowerRequest {
     alpha: spec.alpha ?? 0.05,
     desired_n: spec.desired_n ?? null,
     desired_n_clusters: 'desired_n_clusters' in spec ? (spec.desired_n_clusters ?? null) : null,
+    desired_ns: spec.desired_ns ?? null,
+    desired_ns_clusters: 'desired_ns_clusters' in spec ? (spec.desired_ns_clusters ?? null) : null,
   };
 }
 
