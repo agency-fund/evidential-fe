@@ -8,6 +8,7 @@ import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { SelectPrimaryKey } from './select-primary-key';
 import { SelectClusterKey } from './select-cluster-key';
 import { SelectTargetField } from './select-target-field';
+import { TableInspectionErrorCallout } from './table-inspection-error-callout';
 import { useState } from 'react';
 
 interface SelectTableFieldsProps {
@@ -69,24 +70,23 @@ export const SelectTableFields = ({
     },
   });
 
-  const { data: tableData, isLoading: loadingTable } = useInspectTableInDatasource(
-    datasourceId,
-    tableName!,
-    undefined,
-    {
-      swr: {
-        enabled: !!datasourceId && !!tableName,
-        onSuccess: (response) => {
-          if (!primaryKey) {
-            const detectedPrimaryKey = response.primary_key_fields[0] ?? response.detected_unique_id_fields[0];
-            if (detectedPrimaryKey) {
-              handlePrimaryKeyChange(detectedPrimaryKey, detectedPrimaryKey);
-            }
+  const {
+    data: tableData,
+    isLoading: loadingTable,
+    error: tableError,
+  } = useInspectTableInDatasource(datasourceId, tableName!, undefined, {
+    swr: {
+      enabled: !!datasourceId && !!tableName,
+      onSuccess: (response) => {
+        if (!primaryKey) {
+          const detectedPrimaryKey = response.primary_key_fields[0] ?? response.detected_unique_id_fields[0];
+          if (detectedPrimaryKey) {
+            handlePrimaryKeyChange(detectedPrimaryKey, detectedPrimaryKey);
           }
-        },
+        }
       },
     },
-  );
+  });
 
   const tables = inspectData?.tables ?? [];
   const disabled = !tableName || !inspectData;
@@ -151,40 +151,46 @@ export const SelectTableFields = ({
         </Flex>
       </Box>
 
-      <Box maxWidth="50%">
-        <SelectPrimaryKey
-          tableData={tableData}
-          isLoading={loadingTable}
-          inputValue={primaryKeyInput}
-          onChange={handlePrimaryKeyChange}
-          disabled={disabled}
-        />
-      </Box>
+      {tableName && tableError && !tableData ? (
+        <TableInspectionErrorCallout tableName={tableName} error={tableError} />
+      ) : (
+        <>
+          <Box maxWidth="50%">
+            <SelectPrimaryKey
+              tableData={tableData}
+              isLoading={loadingTable}
+              inputValue={primaryKeyInput}
+              onChange={handlePrimaryKeyChange}
+              disabled={disabled}
+            />
+          </Box>
 
-      {showClusterKey && (
-        <Box maxWidth="50%">
-          <SelectClusterKey
-            tableData={tableData}
-            isLoading={loadingTable}
-            inputValue={clusterKeyInput}
-            onChange={handleClusterKeyChange}
-            disabled={disabled}
-            excludeFieldName={primaryKey}
-          />
-        </Box>
-      )}
+          {showClusterKey && (
+            <Box maxWidth="50%">
+              <SelectClusterKey
+                tableData={tableData}
+                isLoading={loadingTable}
+                inputValue={clusterKeyInput}
+                onChange={handleClusterKeyChange}
+                disabled={disabled}
+                excludeFieldName={primaryKey}
+              />
+            </Box>
+          )}
 
-      {showTargetField && (
-        <Box maxWidth="50%">
-          <SelectTargetField
-            tableData={tableData}
-            isLoading={loadingTable}
-            inputValue={targetFieldInput}
-            onChange={handleTargetFieldChange}
-            disabled={disabled}
-            excludeFieldName={primaryKey}
-          />
-        </Box>
+          {showTargetField && (
+            <Box maxWidth="50%">
+              <SelectTargetField
+                tableData={tableData}
+                isLoading={loadingTable}
+                inputValue={targetFieldInput}
+                onChange={handleTargetFieldChange}
+                disabled={disabled}
+                excludeFieldName={primaryKey}
+              />
+            </Box>
+          )}
+        </>
       )}
     </Flex>
   );
