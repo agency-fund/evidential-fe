@@ -1,10 +1,11 @@
 'use client';
 import { useInspectDatasource, useInspectTableInDatasource } from '@/api/admin';
 import { DataType } from '@/api/methods.schemas';
-import { Box, Flex, IconButton, Select, Text } from '@radix-ui/themes';
-import { ReloadIcon } from '@radix-ui/react-icons';
+import { Box, Callout, Flex, IconButton, Select, Text } from '@radix-ui/themes';
+import { ExclamationTriangleIcon, ReloadIcon } from '@radix-ui/react-icons';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { ApiValidationError } from '@/services/orval-fetch';
 import { SelectPrimaryKey } from './select-primary-key';
 import { SelectClusterKey } from './select-cluster-key';
 import { SelectTargetField } from './select-target-field';
@@ -26,6 +27,32 @@ interface SelectTableFieldsProps {
   showTargetField?: boolean;
   onTargetFieldChange?: (fieldName: string | undefined, dataType: DataType | undefined) => void;
 }
+
+/**
+ * Explains why a table's fields failed to load. A 422 carries the backend's own explanation (e.g. the
+ * table has nested columns), so its messages are shown as written; other failures get the generic error.
+ */
+const TableInspectionErrorCallout = ({ tableName, error }: { tableName: string; error: Error }) => {
+  const messages = error instanceof ApiValidationError ? (error.data.detail ?? []).map((detail) => detail.msg) : [];
+
+  if (messages.length === 0) {
+    return <GenericErrorCallout title={`Failed to load fields for table ${tableName}`} error={error} />;
+  }
+
+  return (
+    <Callout.Root color="amber" role="alert">
+      <Callout.Icon>
+        <ExclamationTriangleIcon />
+      </Callout.Icon>
+      <Flex direction="column" gap="2">
+        <Callout.Text weight="bold">Can&apos;t load fields for table {tableName}</Callout.Text>
+        {messages.map((message, index) => (
+          <Callout.Text key={index}>{message}</Callout.Text>
+        ))}
+      </Flex>
+    </Callout.Root>
+  );
+};
 
 /**
  * Table selection plus its dependent field pickers (primary key, and optionally a cluster key or a
@@ -69,24 +96,23 @@ export const SelectTableFields = ({
     },
   });
 
-  const { data: tableData, isLoading: loadingTable } = useInspectTableInDatasource(
-    datasourceId,
-    tableName!,
-    undefined,
-    {
-      swr: {
-        enabled: !!datasourceId && !!tableName,
-        onSuccess: (response) => {
-          if (!primaryKey) {
-            const detectedPrimaryKey = response.primary_key_fields[0] ?? response.detected_unique_id_fields[0];
-            if (detectedPrimaryKey) {
-              handlePrimaryKeyChange(detectedPrimaryKey, detectedPrimaryKey);
-            }
+  const {
+    data: tableData,
+    isLoading: loadingTable,
+    error: tableError,
+  } = useInspectTableInDatasource(datasourceId, tableName!, undefined, {
+    swr: {
+      enabled: !!datasourceId && !!tableName,
+      onSuccess: (response) => {
+        if (!primaryKey) {
+          const detectedPrimaryKey = response.primary_key_fields[0] ?? response.detected_unique_id_fields[0];
+          if (detectedPrimaryKey) {
+            handlePrimaryKeyChange(detectedPrimaryKey, detectedPrimaryKey);
           }
-        },
+        }
       },
     },
-  );
+  });
 
   const tables = inspectData?.tables ?? [];
   const disabled = !tableName || !inspectData;
@@ -151,40 +177,46 @@ export const SelectTableFields = ({
         </Flex>
       </Box>
 
-      <Box maxWidth="50%">
-        <SelectPrimaryKey
-          tableData={tableData}
-          isLoading={loadingTable}
-          inputValue={primaryKeyInput}
-          onChange={handlePrimaryKeyChange}
-          disabled={disabled}
-        />
-      </Box>
+      {tableName && tableError && !tableData ? (
+        <TableInspectionErrorCallout tableName={tableName} error={tableError} />
+      ) : (
+        <>
+          <Box maxWidth="50%">
+            <SelectPrimaryKey
+              tableData={tableData}
+              isLoading={loadingTable}
+              inputValue={primaryKeyInput}
+              onChange={handlePrimaryKeyChange}
+              disabled={disabled}
+            />
+          </Box>
 
-      {showClusterKey && (
-        <Box maxWidth="50%">
-          <SelectClusterKey
-            tableData={tableData}
-            isLoading={loadingTable}
-            inputValue={clusterKeyInput}
-            onChange={handleClusterKeyChange}
-            disabled={disabled}
-            excludeFieldName={primaryKey}
-          />
-        </Box>
-      )}
+          {showClusterKey && (
+            <Box maxWidth="50%">
+              <SelectClusterKey
+                tableData={tableData}
+                isLoading={loadingTable}
+                inputValue={clusterKeyInput}
+                onChange={handleClusterKeyChange}
+                disabled={disabled}
+                excludeFieldName={primaryKey}
+              />
+            </Box>
+          )}
 
-      {showTargetField && (
-        <Box maxWidth="50%">
-          <SelectTargetField
-            tableData={tableData}
-            isLoading={loadingTable}
-            inputValue={targetFieldInput}
-            onChange={handleTargetFieldChange}
-            disabled={disabled}
-            excludeFieldName={primaryKey}
-          />
-        </Box>
+          {showTargetField && (
+            <Box maxWidth="50%">
+              <SelectTargetField
+                tableData={tableData}
+                isLoading={loadingTable}
+                inputValue={targetFieldInput}
+                onChange={handleTargetFieldChange}
+                disabled={disabled}
+                excludeFieldName={primaryKey}
+              />
+            </Box>
+          )}
+        </>
       )}
     </Flex>
   );
