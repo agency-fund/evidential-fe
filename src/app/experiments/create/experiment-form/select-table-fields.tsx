@@ -45,7 +45,7 @@ const TableInspectionErrorCallout = ({ tableName, error }: { tableName: string; 
         <ExclamationTriangleIcon />
       </Callout.Icon>
       <Flex direction="column" gap="2">
-        <Callout.Text weight="bold">Can&apos;t load fields for table {tableName}</Callout.Text>
+        <Callout.Text weight="bold">Cannot load fields for table {tableName}</Callout.Text>
         {messages.map((message, index) => (
           <Callout.Text key={index}>{message}</Callout.Text>
         ))}
