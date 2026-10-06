@@ -86,8 +86,8 @@ export const ExperimentSelectBinaryOrRealOutcomes = ({
               </Flex>
             </Text>
             <Text size="1" color="gray">
-              Automatically assigns an outcome to participants for whom we have not recorded an outcome within a set
-              time window.
+              Automatically assigns an outcome to participants who have an assignment, but have not recorded an outcome
+              within a set time window.
             </Text>
           </Flex>
           {autofailEnabled && (
