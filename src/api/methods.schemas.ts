@@ -606,6 +606,16 @@ export type DesignSpecMetricRequestAvgClusterSize = number | null;
 
 export type DesignSpecMetricRequestCv = number | null;
 
+export type DesignSpecMetricRequestMetricType = MetricType | null;
+
+export type DesignSpecMetricRequestMetricBaseline = number | null;
+
+export type DesignSpecMetricRequestMetricStddev = number | null;
+
+export type DesignSpecMetricRequestAvailableNonnullN = number | null;
+
+export type DesignSpecMetricRequestAvailableN = number | null;
+
 export interface DesignSpecMetricRequest {
 	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
 	field_name: string;
@@ -614,6 +624,11 @@ export interface DesignSpecMetricRequest {
 	icc?: DesignSpecMetricRequestIcc;
 	avg_cluster_size?: DesignSpecMetricRequestAvgClusterSize;
 	cv?: DesignSpecMetricRequestCv;
+	metric_type?: DesignSpecMetricRequestMetricType;
+	metric_baseline?: DesignSpecMetricRequestMetricBaseline;
+	metric_stddev?: DesignSpecMetricRequestMetricStddev;
+	available_nonnull_n?: DesignSpecMetricRequestAvailableNonnullN;
+	available_n?: DesignSpecMetricRequestAvailableN;
 }
 
 export type Dsn = ApiOnlyDsn | PostgresDsn | BqDsn | RedshiftDsn;
@@ -1031,6 +1046,16 @@ export interface MABExperimentSpec {
 	autofail_outcome_value?: number;
 }
 
+export type MdeCurvePointDesiredNClusters = number | null;
+
+export type MdeCurvePointPctChange = number | null;
+
+export interface MdeCurvePoint {
+	desired_n: number;
+	desired_n_clusters?: MdeCurvePointDesiredNClusters;
+	pct_change?: MdeCurvePointPctChange;
+}
+
 export interface MessageError {
 	message: string;
 }
@@ -1051,6 +1076,8 @@ export type MetricPowerAnalysisPctChangePossible = number | null;
 
 export type MetricPowerAnalysisPctChangeWithDesiredN = number | null;
 
+export type MetricPowerAnalysisMdeCurve = MdeCurvePoint[] | null;
+
 export type MetricPowerAnalysisMsg = MetricPowerAnalysisMessage | null;
 
 export type MetricPowerAnalysisNumClustersTotal = number | null;
@@ -1070,6 +1097,7 @@ export interface MetricPowerAnalysis {
 	target_possible?: MetricPowerAnalysisTargetPossible;
 	pct_change_possible?: MetricPowerAnalysisPctChangePossible;
 	pct_change_with_desired_n?: MetricPowerAnalysisPctChangeWithDesiredN;
+	mde_curve?: MetricPowerAnalysisMdeCurve;
 	msg?: MetricPowerAnalysisMsg;
 	num_clusters_total?: MetricPowerAnalysisNumClustersTotal;
 	clusters_per_arm?: MetricPowerAnalysisClustersPerArm;
@@ -1114,6 +1142,13 @@ export const MetricType = {
 	numeric: "numeric",
 } as const;
 
+export interface OidcClientConfigResponse {
+	authorization_endpoint: string;
+	client_id: string;
+	redirect_uri: string;
+	scope: string;
+}
+
 export interface OnlineAssignmentWithFiltersRequest {
 	/** Participant properties to match against the experiment's filters. */
 	properties: ParticipantProperty[];
@@ -1130,6 +1165,8 @@ export const OnlineFrequentistExperimentSpecExperimentType = {
 export type OnlineFrequentistExperimentSpecDesignUrl = string | null;
 
 export type OnlineFrequentistExperimentSpecDesiredN = number | null;
+
+export type OnlineFrequentistExperimentSpecDesiredNs = number[] | null;
 
 export interface OnlineFrequentistExperimentSpec {
 	experiment_type: OnlineFrequentistExperimentSpecExperimentType;
@@ -1159,6 +1196,7 @@ export interface OnlineFrequentistExperimentSpec {
 	/** @maxItems 20 */
 	filters: Filter[];
 	desired_n?: OnlineFrequentistExperimentSpecDesiredN;
+	desired_ns?: OnlineFrequentistExperimentSpecDesiredNs;
 	/**
 	 * @minimum 0
 	 * @maximum 1
@@ -1255,8 +1293,49 @@ export interface PostgresDsn {
 	search_path: PostgresDsnSearchPath;
 }
 
+export type PowerRequestClusterKey = string | null;
+
+export type PowerRequestArmWeights = ArmWeight[] | null;
+
+export type PowerRequestDesiredN = number | null;
+
+export type PowerRequestDesiredNClusters = number | null;
+
+export type PowerRequestDesiredNs = number[] | null;
+
+export type PowerRequestDesiredNsClusters = number[] | null;
+
 export interface PowerRequest {
-	design_spec: AnyFrequentistDesignSpec;
+	/** @maxLength 100 */
+	table_name: string;
+	cluster_key?: PowerRequestClusterKey;
+	/**
+	 * @minItems 1
+	 * @maxItems 150
+	 */
+	metrics: DesignSpecMetricRequest[];
+	/** @maxItems 20 */
+	filters?: Filter[];
+	/**
+	 * @minimum 2
+	 * @maximum 20
+	 */
+	n_arms: number;
+	arm_weights?: PowerRequestArmWeights;
+	/**
+	 * @minimum 0
+	 * @maximum 1
+	 */
+	power?: number;
+	/**
+	 * @minimum 0
+	 * @maximum 1
+	 */
+	alpha?: number;
+	desired_n?: PowerRequestDesiredN;
+	desired_n_clusters?: PowerRequestDesiredNClusters;
+	desired_ns?: PowerRequestDesiredNs;
+	desired_ns_clusters?: PowerRequestDesiredNsClusters;
 }
 
 export interface PowerResponse {
@@ -1276,10 +1355,16 @@ export type PreassignedFrequentistExperimentSpecDesignUrl = string | null;
 
 export type PreassignedFrequentistExperimentSpecDesiredN = number | null;
 
+export type PreassignedFrequentistExperimentSpecDesiredNs = number[] | null;
+
 export type PreassignedFrequentistExperimentSpecClusterKey = string | null;
 
 export type PreassignedFrequentistExperimentSpecDesiredNClusters =
 	| number
+	| null;
+
+export type PreassignedFrequentistExperimentSpecDesiredNsClusters =
+	| number[]
 	| null;
 
 export interface PreassignedFrequentistExperimentSpec {
@@ -1310,6 +1395,7 @@ export interface PreassignedFrequentistExperimentSpec {
 	/** @maxItems 20 */
 	filters: Filter[];
 	desired_n?: PreassignedFrequentistExperimentSpecDesiredN;
+	desired_ns?: PreassignedFrequentistExperimentSpecDesiredNs;
 	/**
 	 * @minimum 0
 	 * @maximum 1
@@ -1327,6 +1413,7 @@ export interface PreassignedFrequentistExperimentSpec {
 	fstat_thresh?: number;
 	cluster_key?: PreassignedFrequentistExperimentSpecClusterKey;
 	desired_n_clusters?: PreassignedFrequentistExperimentSpecDesiredNClusters;
+	desired_ns_clusters?: PreassignedFrequentistExperimentSpecDesiredNsClusters;
 }
 
 export type PriorTypes = (typeof PriorTypes)[keyof typeof PriorTypes];
