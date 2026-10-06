@@ -86,8 +86,8 @@ export const ExperimentSelectBinaryOrRealOutcomes = ({
               </Flex>
             </Text>
             <Text size="1" color="gray">
-              Automatically assigns an outcome to participants who don&apos;t complete the experiment within a set time
-              window.
+              Automatically assigns an outcome to participants for whom we have not recorded an outcome within a set
+              time window.
             </Text>
           </Flex>
           {autofailEnabled && (
@@ -110,7 +110,7 @@ export const ExperimentSelectBinaryOrRealOutcomes = ({
                   }}
                 />
                 <Text size="1" color="gray" id="autofail-window-description">
-                  Participants who haven&apos;t completed the experiment after this many hours are assigned an outcome
+                  Participants for whom we have not recorded an outcome after this many hours are assigned an outcome
                   automatically.
                 </Text>
               </Flex>
@@ -130,7 +130,7 @@ export const ExperimentSelectBinaryOrRealOutcomes = ({
                   }
                 />
                 <Text size="1" color="gray" id="autofail-outcome-value-description">
-                  The value automatically assigned as the outcome when a participant doesn&apos;t complete in time.
+                  The value automatically assigned as the outcome when the autofail time window has elapsed.
                 </Text>
               </Flex>
             </Flex>
