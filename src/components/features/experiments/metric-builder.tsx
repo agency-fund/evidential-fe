@@ -1,9 +1,11 @@
 'use client';
 
-import { Badge, Flex, Grid, IconButton, Table, Text, TextField, Tooltip } from '@radix-ui/themes';
+import { useState } from 'react';
+import { Badge, Box, Flex, IconButton, Table, Text, TextField, Tooltip } from '@radix-ui/themes';
 import { TrashIcon } from '@radix-ui/react-icons';
 import { FieldMetadata } from '@/api/methods.schemas';
-import { ClickableBadge } from '@/components/features/experiments/clickable-badge';
+import { Combobox } from '@/components/ui/combobox';
+import { DataTypeBadge } from '@/components/ui/data-type-badge';
 import FieldDataCard from '@/components/ui/cards/field-data-card';
 import { MetricWithMDE } from '@/app/experiments/create/experiment-form/experiment-form-types';
 
@@ -16,6 +18,21 @@ export type MetricBuilderAction =
   | { type: 'secondary-metric-add'; secondaryMetrics: MetricWithMDE[] }
   | { type: 'secondary-metric-remove'; secondaryMetrics: MetricWithMDE[] }
   | { type: 'mde-change'; primaryMetric?: MetricWithMDE; secondaryMetrics?: MetricWithMDE[] };
+
+const getSearchTextFromOption = (option: FieldMetadata) => option.field_name;
+
+interface MetricComboboxRowProps {
+  metric: FieldMetadata;
+}
+
+const MetricComboboxRow = ({ metric }: MetricComboboxRowProps) => {
+  return (
+    <Flex gap="2" align="center" justify="between" wrap="nowrap">
+      <Text size="2">{metric.field_name}</Text>
+      <DataTypeBadge type={metric.data_type} />
+    </Flex>
+  );
+};
 
 type MetricBuilderProps = {
   primaryMetric: MetricWithMDE | undefined;
@@ -32,6 +49,18 @@ export function MetricBuilder({
   metricFields,
   excludeKeys,
 }: MetricBuilderProps) {
+  const [searchText, setSearchText] = useState('');
+
+  // Fields not yet selected as a metric and not otherwise excluded (e.g. primary key).
+  const comboboxOptions = metricFields
+    .filter(
+      (m) =>
+        m.field_name !== primaryMetric?.metric.field_name &&
+        !excludeKeys?.includes(m.field_name) &&
+        !secondaryMetrics.some((sm) => sm.metric.field_name === m.field_name),
+    )
+    .toSorted((a, b) => a.field_name.localeCompare(b.field_name));
+
   const handlePrimaryMetricSelect = (metric: FieldMetadata) => {
     dispatch({ type: 'primary-metric-select', primaryMetric: { metric, mde: DEFAULT_MDE } });
   };
@@ -97,155 +126,150 @@ export function MetricBuilder({
     }
   };
 
-  const isExcludedMetric = (fieldName: string) =>
-    excludeKeys?.includes(fieldName) || secondaryMetrics.some((sm) => sm.metric.field_name === fieldName);
+  // The first metric added becomes the primary metric; later ones are secondary.
+  const handleMetricAdd = (value: string, fieldName?: string) => {
+    setSearchText(value);
+    if (!fieldName) return;
+    const toAdd = comboboxOptions.find((f) => f.field_name === fieldName);
+    if (!toAdd) return;
 
-  // Determine metrics available for primary selection
-  const availablePrimaryMetricBadges = metricFields
-    .filter((m) => !isExcludedMetric(m.field_name))
-    .toSorted((a, b) => a.field_name.localeCompare(b.field_name));
+    if (primaryMetric) {
+      handleSecondaryMetricAdd(toAdd);
+    } else {
+      handlePrimaryMetricSelect(toAdd);
+    }
+    setSearchText('');
+  };
 
-  // Determine metrics available for secondary selection
-  const availableSecondaryMetricBadges = metricFields
-    .filter((m) => m.field_name !== primaryMetric?.metric.field_name && !isExcludedMetric(m.field_name))
-    .toSorted((a, b) => a.field_name.localeCompare(b.field_name));
-
-  return (
-    <Grid columns="2" gap="4">
-      <Table.Root layout="fixed">
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeaderCell width="50%">Metric</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Minimum Effect (% change)</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          <>
-            {!primaryMetric && !secondaryMetrics.length && (
-              <Table.Row>
-                <Table.Cell>(no metrics selected)</Table.Cell>
-                <Table.Cell></Table.Cell>
-                <Table.Cell></Table.Cell>
-              </Table.Row>
-            )}
-            {primaryMetric && (
-              <Table.Row>
-                <Table.Cell>
-                  <FieldDataCard
-                    field={primaryMetric.metric}
-                    trigger={
-                      <Flex gap="2">
-                        <Text style={{ cursor: 'pointer' }}>{primaryMetric.metric.field_name}</Text>
-                        <Badge color="green">{'\u24F5'} Primary</Badge>
-                      </Flex>
-                    }
-                  />
-                </Table.Cell>
-                <Table.Cell>
-                  <TextField.Root
-                    type="number"
-                    value={primaryMetric?.mde}
-                    onChange={(e) => handleMdeChange('primary', primaryMetric!.metric.field_name, e.target.value)}
-                    placeholder="MDE %"
-                  />
-                </Table.Cell>
-                <Table.Cell>
-                  <IconButton
-                    variant="soft"
-                    color="red"
-                    onClick={(event) => {
-                      event.preventDefault();
-                      handlePrimaryMetricDeselect();
-                    }}
-                  >
-                    <TrashIcon />
-                  </IconButton>
-                </Table.Cell>
-              </Table.Row>
-            )}
-            {secondaryMetrics
-              .toSorted((a, b) => a.metric.field_name.localeCompare(b.metric.field_name))
-              .map((selectedMetric) => (
-                <Table.Row key={selectedMetric.metric.field_name}>
+  return metricFields.length === 0 ? (
+    <Text color="gray" size="2">
+      No metrics available for this table.
+    </Text>
+  ) : (
+    <Flex direction="column" gap="3" overflowX="auto">
+      <Flex gap="2" align="center">
+        <Text as="label" size="2" weight="bold">
+          Add metric:
+        </Text>
+        <Combobox<FieldMetadata>
+          value={searchText}
+          onChange={handleMetricAdd}
+          options={comboboxOptions}
+          getDisplayTextForOption={getSearchTextFromOption}
+          getKeyForOption={getSearchTextFromOption}
+          placeholder="Search fields..."
+          noMatchText="No available metrics"
+          dropdownRow={({ option }) => <MetricComboboxRow metric={option} />}
+          disabled={comboboxOptions.length === 0}
+        />
+      </Flex>
+      <Box maxWidth="50%">
+        <Table.Root layout="fixed">
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeaderCell width="104px">Actions</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Metric</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="150px">
+                Minimum Effect
+                <br />
+                (% change)
+              </Table.ColumnHeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            <>
+              {!primaryMetric && !secondaryMetrics.length && (
+                <Table.Row>
+                  <Table.Cell></Table.Cell>
+                  <Table.Cell>(no metrics selected)</Table.Cell>
+                  <Table.Cell></Table.Cell>
+                </Table.Row>
+              )}
+              {primaryMetric && (
+                <Table.Row>
+                  <Table.Cell>
+                    <IconButton
+                      variant="soft"
+                      color="red"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        handlePrimaryMetricDeselect();
+                      }}
+                    >
+                      <TrashIcon />
+                    </IconButton>
+                  </Table.Cell>
                   <Table.Cell>
                     <FieldDataCard
-                      field={selectedMetric.metric}
-                      trigger={<Text style={{ cursor: 'pointer' }}>{selectedMetric.metric.field_name}</Text>}
+                      field={primaryMetric.metric}
+                      trigger={
+                        <Flex gap="2">
+                          <Text style={{ cursor: 'pointer' }}>{primaryMetric.metric.field_name}</Text>
+                          <Badge color="green">{'\u24F5'} Primary</Badge>
+                        </Flex>
+                      }
                     />
                   </Table.Cell>
                   <Table.Cell>
                     <TextField.Root
                       type="number"
-                      value={selectedMetric.mde}
-                      onChange={(e) => handleMdeChange('secondary', selectedMetric.metric.field_name, e.target.value)}
+                      value={primaryMetric?.mde}
+                      onChange={(e) => handleMdeChange('primary', primaryMetric!.metric.field_name, e.target.value)}
                       placeholder="MDE %"
                     />
                   </Table.Cell>
-                  <Table.Cell>
-                    <Flex gap="2">
-                      <Tooltip content="Make Primary">
+                </Table.Row>
+              )}
+              {secondaryMetrics
+                .toSorted((a, b) => a.metric.field_name.localeCompare(b.metric.field_name))
+                .map((selectedMetric) => (
+                  <Table.Row key={selectedMetric.metric.field_name}>
+                    <Table.Cell>
+                      <Flex gap="2">
                         <IconButton
                           variant="soft"
-                          color="green"
+                          color="red"
                           onClick={(event) => {
                             event.preventDefault();
-                            handlePromoteSecondaryToPrimary(selectedMetric.metric.field_name);
+                            handleSecondaryMetricRemove(selectedMetric.metric.field_name);
                           }}
                         >
-                          {'\u24F5'}
+                          <TrashIcon />
                         </IconButton>
-                      </Tooltip>
-                      <IconButton
-                        variant="soft"
-                        color="red"
-                        onClick={(event) => {
-                          event.preventDefault();
-                          handleSecondaryMetricRemove(selectedMetric.metric.field_name);
-                        }}
-                      >
-                        <TrashIcon />
-                      </IconButton>
-                    </Flex>
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-          </>
-        </Table.Body>
-      </Table.Root>
-      <Flex direction="column" gap="3" overflowX="auto">
-        <Flex direction="column" gap="2">
-          <Flex gap="2">
-            <Text as="label" size="2" weight="bold">
-              Select a metric:
-            </Text>
-          </Flex>
-          {!primaryMetric ? (
-            <>
-              <Flex gap="2" wrap="wrap">
-                {availablePrimaryMetricBadges.map((metric) => (
-                  <ClickableBadge key={metric.field_name} input={metric} onClick={handlePrimaryMetricSelect} />
+                        <Tooltip content="Make Primary">
+                          <IconButton
+                            variant="soft"
+                            color="green"
+                            onClick={(event) => {
+                              event.preventDefault();
+                              handlePromoteSecondaryToPrimary(selectedMetric.metric.field_name);
+                            }}
+                          >
+                            {'\u24F5'}
+                          </IconButton>
+                        </Tooltip>
+                      </Flex>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <FieldDataCard
+                        field={selectedMetric.metric}
+                        trigger={<Text style={{ cursor: 'pointer' }}>{selectedMetric.metric.field_name}</Text>}
+                      />
+                    </Table.Cell>
+                    <Table.Cell>
+                      <TextField.Root
+                        type="number"
+                        value={selectedMetric.mde}
+                        onChange={(e) => handleMdeChange('secondary', selectedMetric.metric.field_name, e.target.value)}
+                        placeholder="MDE %"
+                      />
+                    </Table.Cell>
+                  </Table.Row>
                 ))}
-                {metricFields.length === 0 && (
-                  <Text color="gray" size="2">
-                    No metrics available for this table.
-                  </Text>
-                )}
-              </Flex>
             </>
-          ) : availableSecondaryMetricBadges.length > 0 && primaryMetric ? (
-            <>
-              <Flex gap="2" wrap="wrap">
-                {availableSecondaryMetricBadges.map((metric) => (
-                  <ClickableBadge key={metric.field_name} input={metric} onClick={handleSecondaryMetricAdd} />
-                ))}
-              </Flex>
-            </>
-          ) : (
-            <></>
-          )}
-        </Flex>
-      </Flex>
-    </Grid>
+          </Table.Body>
+        </Table.Root>
+      </Box>
+    </Flex>
   );
 }
