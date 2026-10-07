@@ -163,30 +163,23 @@ export function MetricBuilder({
           disabled={comboboxOptions.length === 0}
         />
       </Flex>
-      <Box maxWidth="50%">
-        <Table.Root layout="fixed">
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeaderCell width="104px">Actions</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Metric</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="150px">
-                Minimum Effect
-                <br />
-                (% change)
-              </Table.ColumnHeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            <>
-              {!primaryMetric && !secondaryMetrics.length && (
-                <Table.Row>
-                  <Table.Cell></Table.Cell>
-                  <Table.Cell>(no metrics selected)</Table.Cell>
-                  <Table.Cell></Table.Cell>
-                </Table.Row>
-              )}
-              {primaryMetric && (
-                <Table.Row>
+      {primaryMetric ? (
+        <Box maxWidth="50%">
+          <Table.Root layout="fixed">
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeaderCell width="104px">Actions</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Metric</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell width="150px">
+                  Minimum Effect
+                  <br />
+                  (% change)
+                </Table.ColumnHeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              <>
+                <Table.Row align="center">
                   <Table.Cell>
                     <IconButton
                       variant="soft"
@@ -203,7 +196,7 @@ export function MetricBuilder({
                     <FieldDataCard
                       field={primaryMetric.metric}
                       trigger={
-                        <Flex gap="2">
+                        <Flex gap="2" align="center">
                           <Text style={{ cursor: 'pointer' }}>{primaryMetric.metric.field_name}</Text>
                           <Badge color="green">{'\u24F5'} Primary</Badge>
                         </Flex>
@@ -213,63 +206,65 @@ export function MetricBuilder({
                   <Table.Cell>
                     <TextField.Root
                       type="number"
-                      value={primaryMetric?.mde}
-                      onChange={(e) => handleMdeChange('primary', primaryMetric!.metric.field_name, e.target.value)}
+                      value={primaryMetric.mde}
+                      onChange={(e) => handleMdeChange('primary', primaryMetric.metric.field_name, e.target.value)}
                       placeholder="MDE %"
                     />
                   </Table.Cell>
                 </Table.Row>
-              )}
-              {secondaryMetrics
-                .toSorted((a, b) => a.metric.field_name.localeCompare(b.metric.field_name))
-                .map((selectedMetric) => (
-                  <Table.Row key={selectedMetric.metric.field_name}>
-                    <Table.Cell>
-                      <Flex gap="2">
-                        <IconButton
-                          variant="soft"
-                          color="red"
-                          onClick={(event) => {
-                            event.preventDefault();
-                            handleSecondaryMetricRemove(selectedMetric.metric.field_name);
-                          }}
-                        >
-                          <TrashIcon />
-                        </IconButton>
-                        <Tooltip content="Make Primary">
+                {secondaryMetrics
+                  .toSorted((a, b) => a.metric.field_name.localeCompare(b.metric.field_name))
+                  .map((selectedMetric) => (
+                    <Table.Row key={selectedMetric.metric.field_name} align="center">
+                      <Table.Cell>
+                        <Flex gap="2">
                           <IconButton
                             variant="soft"
-                            color="green"
+                            color="red"
                             onClick={(event) => {
                               event.preventDefault();
-                              handlePromoteSecondaryToPrimary(selectedMetric.metric.field_name);
+                              handleSecondaryMetricRemove(selectedMetric.metric.field_name);
                             }}
                           >
-                            {'\u24F5'}
+                            <TrashIcon />
                           </IconButton>
-                        </Tooltip>
-                      </Flex>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <FieldDataCard
-                        field={selectedMetric.metric}
-                        trigger={<Text style={{ cursor: 'pointer' }}>{selectedMetric.metric.field_name}</Text>}
-                      />
-                    </Table.Cell>
-                    <Table.Cell>
-                      <TextField.Root
-                        type="number"
-                        value={selectedMetric.mde}
-                        onChange={(e) => handleMdeChange('secondary', selectedMetric.metric.field_name, e.target.value)}
-                        placeholder="MDE %"
-                      />
-                    </Table.Cell>
-                  </Table.Row>
-                ))}
-            </>
-          </Table.Body>
-        </Table.Root>
-      </Box>
+                          <Tooltip content="Make Primary">
+                            <IconButton
+                              variant="soft"
+                              color="green"
+                              onClick={(event) => {
+                                event.preventDefault();
+                                handlePromoteSecondaryToPrimary(selectedMetric.metric.field_name);
+                              }}
+                            >
+                              {'\u24F5'}
+                            </IconButton>
+                          </Tooltip>
+                        </Flex>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <FieldDataCard
+                          field={selectedMetric.metric}
+                          trigger={<Text style={{ cursor: 'pointer' }}>{selectedMetric.metric.field_name}</Text>}
+                        />
+                      </Table.Cell>
+                      <Table.Cell>
+                        <TextField.Root
+                          type="number"
+                          value={selectedMetric.mde}
+                          onChange={(e) =>
+                            handleMdeChange('secondary', selectedMetric.metric.field_name, e.target.value)
+                          }
+                          placeholder="MDE %"
+                        />
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
+              </>
+            </Table.Body>
+          </Table.Root>
+        </Box>
+      ) : null}
     </Flex>
   );
 }
