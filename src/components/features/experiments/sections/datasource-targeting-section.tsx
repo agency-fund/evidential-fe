@@ -15,30 +15,44 @@ interface DatasourceTargetingSectionProps {
   onEditFilters?: () => void;
 }
 
-const formatFilterValue = (value: Array<string | number | boolean | null>) =>
-  value.map((v) => (v === null ? '(null)' : String(v))).join(', ');
+// The operator labels and NULL wording below mirror the filter builder (querybuilder/*-filter-input.tsx),
+// so a filter reads the same here as where it was defined.
+const isDateString = (v: unknown) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v);
 
 const getFilterOperatorLabel = (filter: Filter) => {
+  const nonNullValues = filter.value.filter((v) => v !== null);
   if (filter.relation === 'between') {
     const min = filter.value[0] ?? null;
     const max = filter.value[1] ?? null;
-    if (min !== null && max === null) return '≥';
-    if (min === null && max !== null) return '≤';
-    return 'between';
+    const isDate = nonNullValues.some(isDateString);
+    if (min !== null && max === null) return isDate ? 'On or After' : '≥';
+    if (min === null && max !== null) return isDate ? 'On or Before' : '≤';
+    return 'Between';
   }
-  if (filter.relation === 'excludes') return 'excludes';
-  return 'includes';
+  // The field's data type isn't available here; booleans are recognized by their values.
+  const isBoolean = nonNullValues.some((v) => typeof v === 'boolean');
+  if (filter.relation === 'excludes') return isBoolean ? 'Is not' : 'is not one of';
+  return isBoolean ? 'Is' : 'Is one of';
 };
+
+const formatBooleanOrValue = (v: string | number | boolean) =>
+  typeof v === 'boolean' ? (v ? 'True' : 'False') : String(v);
 
 const formatFilterValueDisplay = (filter: Filter) => {
   if (filter.relation === 'between') {
     const min = filter.value[0] ?? null;
     const max = filter.value[1] ?? null;
-    if (min !== null && max === null) return String(min);
-    if (min === null && max !== null) return String(max);
-    return `${min === null ? '-' : String(min)} to ${max === null ? '-' : String(max)}`;
+    // A third, null element means rows with NULL are included as well.
+    const orNull = filter.value.length === 3 && filter.value[2] === null ? ' OR NULL' : '';
+    if (min !== null && max === null) return `${String(min)}${orNull}`;
+    if (min === null && max !== null) return `${String(max)}${orNull}`;
+    return `${min === null ? '-' : String(min)} and ${max === null ? '-' : String(max)}${orNull}`;
   }
-  return formatFilterValue(filter.value);
+  const nonNullValues = filter.value.filter((v) => v !== null).map(formatBooleanOrValue);
+  if (!filter.value.includes(null)) return nonNullValues.join(', ');
+  if (nonNullValues.length === 0) return 'NULL';
+  // Under "is not" operators, NULL is one more value being excluded.
+  return `${nonNullValues.join(', ')} ${filter.relation === 'excludes' ? 'AND NOT NULL' : 'OR NULL'}`;
 };
 
 export function DatasourceTargetingSection({

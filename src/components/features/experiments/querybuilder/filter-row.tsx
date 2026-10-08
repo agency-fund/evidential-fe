@@ -40,6 +40,8 @@ const ComboboxRow = ({ field_name, data_type }: ComboboxRowProps) => {
 
 export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpdate, onRemove }: FilterRowProps) {
   const exactMatchField = availableOptions.find((f) => f.field_name === filter.field_name);
+  // A row without any value is a draft: it isn't applied until a value or NULL is added.
+  const hasNoValues = filter.value.length === 0;
 
   const handleComboboxChange = (value: string) => {
     // User selected the current value.
@@ -89,12 +91,19 @@ export function FilterRow({ filter, availableOptions, isNewRow, onSelect, onUpda
       {/* Filter options for the selected filter field or help text */}
       <Flex gap={'2'} align={'center'}>
         {exactMatchField ? (
-          <TypeSpecificFilter
-            key={`${filter.field_name}:${exactMatchField.data_type}`}
-            dataType={exactMatchField.data_type}
-            filter={filter}
-            onChange={onUpdate}
-          />
+          <Flex direction="column" gap="1">
+            <TypeSpecificFilter
+              key={`${filter.field_name}:${exactMatchField.data_type}`}
+              dataType={exactMatchField.data_type}
+              filter={filter}
+              onChange={onUpdate}
+            />
+            {hasNoValues ? (
+              <Text size="1" color="gray">
+                Add a value or NULL to apply this filter.
+              </Text>
+            ) : null}
+          </Flex>
         ) : filter.field_name === '' ? (
           <Text size="2" color="gray">
             ← Select a field or type the name

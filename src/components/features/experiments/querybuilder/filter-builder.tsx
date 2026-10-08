@@ -57,8 +57,9 @@ export function FilterBuilder({ availableFields, initialFilters, onChange }: Fil
   });
 
   const commitFilters = (filtersWithIds: FilterWithId[]) => {
-    // Strip the IDs before passing to parent.
-    onChange(filtersWithIds.map((item) => item.filter));
+    // Strip the IDs before passing to parent. Rows without any value don't constrain anything yet
+    // (and are rejected by the API), so they are kept as drafts here and not passed on.
+    onChange(filtersWithIds.map((item) => item.filter).filter((filter) => filter.value.length > 0));
   };
 
   const addFilter = (e: React.MouseEvent) => {

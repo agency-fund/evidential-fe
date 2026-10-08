@@ -153,3 +153,13 @@ export function createDefaultValueForOperator(operator: string, dataType: DataTy
       return [''];
   }
 }
+
+// Returns a focus handler that selects an input's content when it was filled in by the app, so
+// typing replaces it instead of appending to it.
+export function selectOnFocusIf(shouldSelect: boolean) {
+  return (e: React.FocusEvent<HTMLInputElement>) => {
+    if (shouldSelect) {
+      e.target.select();
+    }
+  };
+}

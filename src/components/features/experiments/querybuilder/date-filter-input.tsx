@@ -81,13 +81,7 @@ export function DateFilter({ filter, onChange, dataType }: DateFilterProps) {
     const nonNullFilterValues = filter.value.filter((v) => v !== null);
     // Next remove the value at the given index from the non-null values, as it is safe to assume
     // the ordering now is aligned with the old listValues.
-    let newNonNullFilterValues = nonNullFilterValues.filter((_, i) => i !== index);
-
-    // Don't allow removing all values (unless NULL is included) - add a default
-    if (newNonNullFilterValues.length === 0 && !includesNull) {
-      const today = formatDateUtcYYYYMMDD(new Date());
-      newNonNullFilterValues = [today];
-    }
+    const newNonNullFilterValues = nonNullFilterValues.filter((_, i) => i !== index);
 
     onChange({
       ...filter,
@@ -95,7 +89,36 @@ export function DateFilter({ filter, onChange, dataType }: DateFilterProps) {
     });
   };
 
+  // Between-based operators can't express "only NULL", so that case is an 'Is one of' list holding
+  // only NULL.
+  const switchToOnlyNull = () => {
+    setOperator('in-list');
+    onChange({ ...filter, relation: 'includes', value: [null] });
+  };
+
+  // Removing the bound(s) leaves only NULL if it was included. Otherwise the operator is kept and
+  // the row becomes a draft without input(s) until a value is added back.
+  const removeValueForBetweenBasedOp = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (includesNull) {
+      switchToOnlyNull();
+      return;
+    }
+    onChange({ ...filter, value: [] });
+  };
+
+  // Brings back the input(s) of a draft between-based row, filled with the operator's defaults.
+  const addValueForBetweenBasedOp = (e: React.MouseEvent) => {
+    e.preventDefault();
+    handleOperatorChange(operator);
+  };
+
   const handleNullChange = (includeNull: boolean) => {
+    // A draft between-based row has no bounds to combine NULL with.
+    if (includeNull && BETWEEN_BASED_OPS.has(operator) && filter.value.length === 0) {
+      switchToOnlyNull();
+      return;
+    }
     let baseValues: typeof filter.value;
     if (BETWEEN_BASED_OPS.has(operator)) {
       // Ensure we have valid values for between-based operators
@@ -110,6 +133,17 @@ export function DateFilter({ filter, onChange, dataType }: DateFilterProps) {
   };
 
   const renderValueInputs = () => {
+    // A draft between-based row has no bounds: offer to add them back, or to keep only NULL.
+    if (BETWEEN_BASED_OPS.has(operator) && filter.value.length === 0) {
+      return (
+        <Flex direction="column" gap="1">
+          <IncludeNullButton checked={false} onChange={handleNullChange} minWidth="145px" />
+
+          <AddValueButton minWidth="145px" onClick={addValueForBetweenBasedOp} />
+        </Flex>
+      );
+    }
+
     switch (operator) {
       case 'after':
         return (
@@ -123,6 +157,9 @@ export function DateFilter({ filter, onChange, dataType }: DateFilterProps) {
                 }}
               />
               {dataType.includes('timestamp') && <Text size="2">00:00:00 UTC</Text>}
+              <IconButton variant="soft" size="1" onClick={removeValueForBetweenBasedOp}>
+                <Cross2Icon />
+              </IconButton>
             </Flex>
             <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="145px" />
           </Flex>
@@ -140,6 +177,9 @@ export function DateFilter({ filter, onChange, dataType }: DateFilterProps) {
                 }}
               />
               {dataType.includes('timestamp') && <Text size="2">00:00:00 UTC</Text>}
+              <IconButton variant="soft" size="1" onClick={removeValueForBetweenBasedOp}>
+                <Cross2Icon />
+              </IconButton>
             </Flex>
             <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="145px" />
           </Flex>
@@ -164,6 +204,9 @@ export function DateFilter({ filter, onChange, dataType }: DateFilterProps) {
                   onChange({ ...filter, value: [filter.value[0], e.target.value, ...includesNullValue] });
                 }}
               />
+              <IconButton variant="soft" size="1" onClick={removeValueForBetweenBasedOp}>
+                <Cross2Icon />
+              </IconButton>
             </Flex>
             <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="334px" />
           </Flex>
@@ -182,13 +225,9 @@ export function DateFilter({ filter, onChange, dataType }: DateFilterProps) {
                   value={val as string}
                   onChange={(e) => handleValueChange(idx, e.target.value)}
                 />
-                {/* Only show the remove button if there are multiple non-null values or if null
-                    is included, since we allow a single null value. */}
-                {(nonNullValues.length > 1 || includesNull) && (
-                  <IconButton variant="soft" size="1" onClick={(e) => removeValueForListBasedOp(idx, e)}>
-                    <Cross2Icon />
-                  </IconButton>
-                )}
+                <IconButton variant="soft" size="1" onClick={(e) => removeValueForListBasedOp(idx, e)}>
+                  <Cross2Icon />
+                </IconButton>
               </Flex>
             ))}
 
@@ -196,6 +235,7 @@ export function DateFilter({ filter, onChange, dataType }: DateFilterProps) {
               checked={includesNull}
               onChange={handleNullChange}
               singularValue={nonNullValues.length === 0}
+              negated={operator === 'not-in-list'}
               minWidth="145px"
             />
 

@@ -71,12 +71,7 @@ export function StringFilter({ filter, onChange, dataType }: StringFilterProps) 
     const nonNullFilterValues = filter.value.filter((v) => v !== null);
     // Next remove the value at the given index from the non-null values, as it is safe to assume
     // the ordering now is aligned with the displayed values.
-    let newNonNullFilterValues = nonNullFilterValues.filter((_, i) => i !== index);
-
-    // Don't allow removing all values (unless NULL is included) - add a default
-    if (newNonNullFilterValues.length === 0 && !includesNull) {
-      newNonNullFilterValues = [''];
-    }
+    const newNonNullFilterValues = nonNullFilterValues.filter((_, i) => i !== index);
 
     onChange({
       ...filter,
@@ -110,13 +105,9 @@ export function StringFilter({ filter, onChange, dataType }: StringFilterProps) 
               style={{ width: '20ch' }}
               onChange={(e) => handleValueChange(idx, e.target.value)}
             />
-            {/* Only show the remove button if there are multiple non-null values or if null
-                is included, since we allow a single null value. */}
-            {(nonNullValues.length > 1 || includesNull) && (
-              <IconButton variant="soft" size="1" onClick={(e) => removeValue(idx, e)}>
-                <Cross2Icon />
-              </IconButton>
-            )}
+            <IconButton variant="soft" size="1" onClick={(e) => removeValue(idx, e)}>
+              <Cross2Icon />
+            </IconButton>
           </Flex>
         ))}
 
@@ -124,6 +115,7 @@ export function StringFilter({ filter, onChange, dataType }: StringFilterProps) 
           checked={includesNull}
           onChange={handleNullChange}
           singularValue={nonNullValues.length === 0}
+          negated={operator === 'not-in-list'}
           minWidth="176px"
         />
 
