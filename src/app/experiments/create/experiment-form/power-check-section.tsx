@@ -25,7 +25,6 @@ import { ExperimentFormData, isClusteredExperimentFormData, PowerCheckOption } f
 import { usePowerCheck } from '@/api/admin';
 import {
   AnyFrequentistDesignSpec,
-  MetricPowerAnalysis,
   PowerResponse,
   PreassignedFrequentistExperimentSpecExperimentType,
 } from '@/api/methods.schemas';
@@ -36,7 +35,7 @@ import {
   powerCurveSizes,
   withEchoedBaselineStats,
 } from './experiment-form-helpers';
-import { getPowerAnalysis, metricHasMissingValues, metricNullN } from '@/services/experiment-utils';
+import { getPowerAnalysis, metricHasMissingValues } from '@/services/experiment-utils';
 import { MetricSampleSizeDisplay } from '@/components/features/experiments/metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { InfoBadge } from '@/components/ui/info-badge';
@@ -49,7 +48,7 @@ import { PowerCurveChart } from './power-curve-chart';
 export type PowerCheckSectionAction =
   | { type: 'set-confidence'; value: string }
   | { type: 'set-power'; value: string }
-  | { type: 'set-one-time-metric'; fieldName: string; enabled: boolean }
+  | { type: 'set-one-time-metric'; enabled: boolean }
   | ({ type: 'set-chosen-n' } & PowerCheckSampleOptionChange)
   | ({ type: 'set-power-check-response' } & PowerCheckResponseChange)
   | { type: 'set-power-curve-response'; response: PowerResponse; designSpec: AnyFrequentistDesignSpec };
@@ -94,31 +93,6 @@ interface PowerCheckButtonProps {
   onClick: () => Promise<void>;
   loading: boolean;
   disabledReason?: string;
-}
-
-interface OneTimeMetricSwitchProps {
-  analysis: MetricPowerAnalysis;
-  checked: boolean;
-  onCheckedChange: (checked: boolean) => void;
-}
-
-// Lets the user assign only participants who don't have a value yet for this metric. Only rendered for metrics the
-// power check marks is_one_time_eligible.
-function OneTimeMetricSwitch({ analysis, checked, onCheckedChange }: OneTimeMetricSwitchProps) {
-  const nullN = metricNullN(analysis);
-  const participants = nullN !== undefined ? `the ${nullN.toLocaleString()} participants` : 'participants';
-  return (
-    <Tooltip
-      content={`Assign only ${participants} who don't have a value for this metric yet. Baseline stats still come from participants who do.`}
-    >
-      <Text as="label" size="2">
-        <Flex gap="2" align="center">
-          <Switch size="1" checked={checked} onCheckedChange={onCheckedChange} />
-          {nullN !== undefined ? `Assign only ${nullN.toLocaleString()} without a value` : 'Assign only missing values'}
-        </Flex>
-      </Text>
-    </Tooltip>
-  );
 }
 
 function RunPowerCheckButton({ enabled, onClick, loading, disabledReason }: PowerCheckButtonProps) {
@@ -288,12 +262,6 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const primaryPowerClusterSizeCv = primaryPower?.msg?.values?.cluster_size_cv ?? primaryPower?.metric_spec.cv;
   const primaryHasMissingValues = primaryPower != null && metricHasMissingValues(primaryPower);
   const secondaryHasMissingValues = (restPower ?? []).some(metricHasMissingValues);
-  const isOneTimeEligible = (analysis: MetricPowerAnalysis) => analysis.metric_spec.is_one_time_eligible === true;
-  const secondaryHasOneTimeEligible = (restPower ?? []).some(isOneTimeEligible);
-  const isOneTimeEnabled = (analysis: MetricPowerAnalysis) =>
-    data.oneTimeMetrics?.includes(analysis.metric_spec.field_name) ?? false;
-  const setOneTimeEnabled = (analysis: MetricPowerAnalysis, enabled: boolean) =>
-    dispatch({ type: 'set-one-time-metric', fieldName: analysis.metric_spec.field_name, enabled });
   const metricsWithMissingValues = [
     ...(primaryPower != null && primaryHasMissingValues ? [`${primaryPower.metric_spec.field_name} (primary)`] : []),
     ...(restPower ?? []).filter(metricHasMissingValues).map((analysis) => analysis.metric_spec.field_name),
@@ -477,15 +445,21 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                           </DataList.Value>
                         </DataList.Item>
                       ) : null}
-                      {isOneTimeEligible(primaryPower) ? (
+                      {/* The backend decides eligibility; we only show the switch when it says yes. */}
+                      {primaryPower.metric_spec.is_one_time_eligible ? (
                         <DataList.Item>
                           <DataList.Label>One-time metric</DataList.Label>
                           <DataList.Value>
-                            <OneTimeMetricSwitch
-                              analysis={primaryPower}
-                              checked={isOneTimeEnabled(primaryPower)}
-                              onCheckedChange={(checked) => setOneTimeEnabled(primaryPower, checked)}
-                            />
+                            <Text as="label" size="2">
+                              <Flex gap="2" align="center">
+                                <Switch
+                                  size="1"
+                                  checked={data.useOneTimeMetric ?? false}
+                                  onCheckedChange={(enabled) => dispatch({ type: 'set-one-time-metric', enabled })}
+                                />
+                                Assign only participants without a value
+                              </Flex>
+                            </Text>
                           </DataList.Value>
                         </DataList.Item>
                       ) : null}
@@ -515,9 +489,6 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                         </Table.ColumnHeaderCell>
                         {secondaryHasMissingValues ? (
                           <Table.ColumnHeaderCell>Available with values</Table.ColumnHeaderCell>
-                        ) : null}
-                        {secondaryHasOneTimeEligible ? (
-                          <Table.ColumnHeaderCell>One-Time Metric</Table.ColumnHeaderCell>
                         ) : null}
                       </Table.Row>
                     </Table.Header>
@@ -551,17 +522,6 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                                 isClustered={isClustered}
                                 variant="available-nonnull"
                               />
-                            </Table.Cell>
-                          ) : null}
-                          {secondaryHasOneTimeEligible ? (
-                            <Table.Cell>
-                              {isOneTimeEligible(metricAnalysis) ? (
-                                <OneTimeMetricSwitch
-                                  analysis={metricAnalysis}
-                                  checked={isOneTimeEnabled(metricAnalysis)}
-                                  onCheckedChange={(checked) => setOneTimeEnabled(metricAnalysis, checked)}
-                                />
-                              ) : null}
                             </Table.Cell>
                           ) : null}
                         </Table.Row>
