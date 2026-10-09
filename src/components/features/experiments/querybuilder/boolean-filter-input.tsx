@@ -1,6 +1,6 @@
 'use client';
 
-import { Flex, IconButton, Select, TextField } from '@radix-ui/themes';
+import { Flex, IconButton, Select } from '@radix-ui/themes';
 import { Cross2Icon } from '@radix-ui/react-icons';
 import { Filter } from '@/api/methods.schemas';
 import { TypedFilter } from '@/components/features/experiments/querybuilder/utils';
@@ -16,11 +16,18 @@ export function BooleanFilter({ filter, onChange }: BooleanFilterProps) {
   const nonNullValues = filter.value.filter((v) => v !== null);
   const hasTrue = filter.value.some((v) => v === true);
   const includesNull = filter.value.some((v) => v === null);
+  const operator = filter.relation === 'excludes' ? 'is-not' : 'is';
+
+  const handleOperatorChange = (newOperator: string) => {
+    onChange({
+      ...filter,
+      relation: newOperator === 'is-not' ? 'excludes' : 'includes',
+    });
+  };
 
   const handleValueChange = (newValue: boolean) => {
     onChange({
       ...filter,
-      relation: 'includes',
       value: includesNull ? [newValue, null] : [newValue],
     });
   };
@@ -90,7 +97,13 @@ export function BooleanFilter({ filter, onChange }: BooleanFilterProps) {
 
   return (
     <Flex gap="2" wrap="wrap">
-      <TextField.Root value="Is" disabled style={{ width: 128 }} />
+      <Select.Root value={operator} onValueChange={handleOperatorChange}>
+        <Select.Trigger style={{ width: 128 }} />
+        <Select.Content>
+          <Select.Item value="is">Is</Select.Item>
+          <Select.Item value="is-not">Is not</Select.Item>
+        </Select.Content>
+      </Select.Root>
 
       {renderValueInputs()}
     </Flex>

@@ -95,6 +95,14 @@ export function DateFilter({ filter, onChange, dataType }: DateFilterProps) {
     });
   };
 
+  // Between-based operators can't express "only NULL", so removing the value(s) while NULL is
+  // included switches to an 'Is one of' list holding only NULL.
+  const removeValueForBetweenBasedOp = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setOperator('in-list');
+    onChange({ ...filter, relation: 'includes', value: [null] });
+  };
+
   const handleNullChange = (includeNull: boolean) => {
     let baseValues: typeof filter.value;
     if (BETWEEN_BASED_OPS.has(operator)) {
@@ -123,6 +131,12 @@ export function DateFilter({ filter, onChange, dataType }: DateFilterProps) {
                 }}
               />
               {dataType.includes('timestamp') && <Text size="2">00:00:00 UTC</Text>}
+              {/* Only show the remove button if null is included, since we allow a single null value. */}
+              {includesNull && (
+                <IconButton variant="soft" size="1" onClick={removeValueForBetweenBasedOp}>
+                  <Cross2Icon />
+                </IconButton>
+              )}
             </Flex>
             <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="145px" />
           </Flex>
@@ -140,6 +154,12 @@ export function DateFilter({ filter, onChange, dataType }: DateFilterProps) {
                 }}
               />
               {dataType.includes('timestamp') && <Text size="2">00:00:00 UTC</Text>}
+              {/* Only show the remove button if null is included, since we allow a single null value. */}
+              {includesNull && (
+                <IconButton variant="soft" size="1" onClick={removeValueForBetweenBasedOp}>
+                  <Cross2Icon />
+                </IconButton>
+              )}
             </Flex>
             <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="145px" />
           </Flex>
@@ -164,6 +184,12 @@ export function DateFilter({ filter, onChange, dataType }: DateFilterProps) {
                   onChange({ ...filter, value: [filter.value[0], e.target.value, ...includesNullValue] });
                 }}
               />
+              {/* Only show the remove button if null is included, since we allow a single null value. */}
+              {includesNull && (
+                <IconButton variant="soft" size="1" onClick={removeValueForBetweenBasedOp}>
+                  <Cross2Icon />
+                </IconButton>
+              )}
             </Flex>
             <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="334px" />
           </Flex>
