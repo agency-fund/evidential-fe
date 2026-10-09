@@ -83,20 +83,6 @@ export const getClusterStatsFromPowerCheckResponse = (
   };
 };
 
-/**
- * One-time metric flags for a metric in the design spec. The backend rejects use_one_time_metric unless
- * is_one_time_eligible is also set, so we send both, and only when the latest power check marked the metric eligible
- * and the user switched it on. Otherwise we send nothing and the backend defaults both to false.
- */
-const getOneTimeMetricFlags = (
-  data: ExperimentFormData,
-  fieldName: string,
-): Pick<DesignSpecMetricRequest, 'is_one_time_eligible' | 'use_one_time_metric'> => {
-  const isEligible = getPowerAnalysis(data.powerCheckResponse, fieldName)?.metric_spec.is_one_time_eligible === true;
-  const isEnabled = data.oneTimeMetrics?.includes(fieldName) ?? false;
-  return isEligible && isEnabled ? { is_one_time_eligible: true, use_one_time_metric: true } : {};
-};
-
 export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFrequentistDesignSpec {
   if (!isFreqExperimentType(data.experimentType)) {
     throw new Error('Frequentist configuration is required.');
@@ -121,7 +107,12 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
             avg_cluster_size: primaryClusterStats.avg_cluster_size ?? null,
           }
         : {}),
-      ...getOneTimeMetricFlags(data, data.primaryMetric.metric.field_name),
+      // The backend validates and applies one-time mode. Only send true while the switch is actually shown (the
+      // latest power check marked the metric eligible), so a stale choice from an earlier check isn't sent.
+      use_one_time_metric:
+        data.useOneTimeMetric === true &&
+        getPowerAnalysis(data.powerCheckResponse, data.primaryMetric.metric.field_name)?.metric_spec
+          .is_one_time_eligible === true,
     });
   }
 
@@ -130,7 +121,6 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
     metrics.push({
       field_name: metric.metric.field_name,
       metric_pct_change: Number(metric.mde) / 100.0,
-      ...getOneTimeMetricFlags(data, metric.metric.field_name),
     });
   });
 
@@ -192,14 +182,7 @@ export function toPowerRequest(spec: AnyFrequentistDesignSpec): PowerRequest {
     // Only preassigned specs can be cluster-randomized.
     cluster_key: 'cluster_key' in spec ? (spec.cluster_key ?? null) : null,
     filters: spec.filters,
-    // Drop the one-time metric flags: the power check computes is_one_time_eligible itself, but it only ever sets it
-    // to true, so echoing back a stale true would keep a metric eligible after its missing values are filtered out.
-    metrics: spec.metrics.map((metric) => {
-      const powerMetric = { ...metric };
-      delete powerMetric.is_one_time_eligible;
-      delete powerMetric.use_one_time_metric;
-      return powerMetric;
-    }),
+    metrics: spec.metrics,
     n_arms: spec.arms.length,
     arm_weights: hasAllWeights ? (armWeights as number[]) : null,
     power: spec.power ?? 0.8,
