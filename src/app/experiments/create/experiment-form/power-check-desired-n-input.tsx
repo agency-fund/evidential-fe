@@ -19,6 +19,7 @@ interface PowerCheckDesiredNInputProps {
   max?: number;
   label?: string;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 /**
@@ -31,7 +32,14 @@ interface PowerCheckDesiredNInputProps {
  * Input field sets a min of 2 preventing arrow keys from decrementing below, but a user can type in
  * 1 to allow it to be a leading digit. Parent should handle the special case of 1.
  */
-export function PowerCheckDesiredNInput({ value, onChange, max, label, placeholder }: PowerCheckDesiredNInputProps) {
+export function PowerCheckDesiredNInput({
+  value,
+  onChange,
+  max,
+  label,
+  placeholder,
+  disabled,
+}: PowerCheckDesiredNInputProps) {
   const [draft, setDraft] = useState(() => ({ externalValue: value, value }));
   const notifyChange = useEffectEvent(onChange);
   if (value !== draft.externalValue) {
@@ -59,6 +67,7 @@ export function PowerCheckDesiredNInput({ value, onChange, max, label, placehold
         type="number"
         min={2}
         max={max}
+        disabled={disabled}
         color={highlightInvalid ? 'red' : undefined}
         value={draftN}
         onChange={(event) => setDraft((current) => ({ ...current, value: event.target.value }))}
