@@ -107,12 +107,11 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
             avg_cluster_size: primaryClusterStats.avg_cluster_size ?? null,
           }
         : {}),
-      // The backend validates and applies one-time mode. Only send true while the switch is actually shown (the
-      // latest power check marked the metric eligible), so a stale choice from an earlier check isn't sent.
-      use_one_time_metric:
-        data.useOneTimeMetric === true &&
-        getPowerAnalysis(data.powerCheckResponse, data.primaryMetric.metric.field_name)?.metric_spec
-          .is_one_time_eligible === true,
+      // Send exactly what the switch says, so every spec built from the same form (power check, curve, MDE estimate,
+      // create, and the stale-response checks) agrees. The backend validates the choice, and the reducer syncs the
+      // switch from each power check response (e.g. off when the column has no nulls left) and clears it when the
+      // primary metric changes, so a stale choice isn't carried over.
+      use_one_time_metric: data.useOneTimeMetric === true,
     });
   }
 
