@@ -14,7 +14,7 @@ import {
   convertToFrequentistDesignSpec,
   removeFieldByName,
 } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
-import { getPowerAnalysis } from '@/services/experiment-utils';
+import { getAssignableN, getPowerAnalysis } from '@/services/experiment-utils';
 import { createExperimentBody } from '@/api/admin.zod';
 import { ErrorType } from '@/services/orval-fetch';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -31,7 +31,8 @@ export type ExperimentFreqStackScreenMessage =
 const getPrimaryAnalysisAvailableN = (data: ExperimentFormData): number | undefined => {
   if (!data.powerCheckResponse || !data.primaryMetric) return undefined;
   const primaryAnalysis = getPowerAnalysis(data.powerCheckResponse, data.primaryMetric.metric.field_name);
-  return primaryAnalysis?.metric_spec.available_n ?? undefined;
+  // In one-time mode only participants with no value for the primary metric can be assigned.
+  return getAssignableN(primaryAnalysis);
 };
 
 const getNextDisabledReasons = (data: ExperimentFormData): string[] => {
