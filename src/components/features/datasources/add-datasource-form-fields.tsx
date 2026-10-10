@@ -341,12 +341,7 @@ export function AddDatasourceFormFields({
             />
           </label>
           <Text size="2" color="gray">
-            For preassigned A/B demos. Set sharing to “Anyone with the link → Viewer” and allow downloads. No Google
-            credentials needed. Copy the URL of the tab you want to use; it appears as linked_sheet. Use row 1 for
-            column names such as participant_id, region, minutes_on_site_last_7_days, and customer_satisfaction_1_to_5.
-            Outcome cells can be blank until results arrive. Participant IDs must be unique. After saving the
-            experiment, download the demo CSV and import it into this tab, then edit outcomes to watch the analysis
-            update. Supports up to 5,000 rows.
+            Set sharing to “Anyone with the link → Viewer” and allow downloads.
           </Text>
         </>
       ) : (
