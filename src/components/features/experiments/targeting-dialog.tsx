@@ -18,10 +18,11 @@ import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 
 interface TargetingDialogProps {
   designSpec: DesignSpec;
+  tableDisplayName?: string;
   webhookIds: string[];
 }
 
-export function TargetingDialog({ designSpec, webhookIds }: TargetingDialogProps) {
+export function TargetingDialog({ designSpec, tableDisplayName, webhookIds }: TargetingDialogProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -38,7 +39,7 @@ export function TargetingDialog({ designSpec, webhookIds }: TargetingDialogProps
             <Flex direction="column" gap="3">
               {isFrequentistSpec(designSpec) && (
                 <DatasourceTargetingSection
-                  tableName={designSpec.table_name}
+                  tableName={tableDisplayName ?? designSpec.table_name}
                   primaryKey={designSpec.primary_key}
                   clusterKey={
                     isClusteredPreassignedSpec(designSpec) ? (designSpec.cluster_key ?? undefined) : undefined
@@ -48,7 +49,7 @@ export function TargetingDialog({ designSpec, webhookIds }: TargetingDialogProps
               )}
               {isMabDwhSpec(designSpec) && (
                 <DatasourceTargetingSection
-                  tableName={designSpec.table_name}
+                  tableName={tableDisplayName ?? designSpec.table_name}
                   primaryKey={designSpec.primary_key}
                   targetField={designSpec.target_field_name}
                 />

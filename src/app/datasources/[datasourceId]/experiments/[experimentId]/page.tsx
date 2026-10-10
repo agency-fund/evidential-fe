@@ -13,6 +13,7 @@ import {
   useGetExperimentForUi,
   useGetDatasource,
   useListSnapshots,
+  useInspectTableInDatasource,
   useUpdateExperiment,
 } from '@/api/admin';
 import {
@@ -183,6 +184,14 @@ export default function ExperimentViewPage() {
   const { data: datasource } = useGetDatasource(datasourceId, { swr: { enabled: !!datasourceId } });
   const isSheetsDemo = isGoogleSheetsDemoExperiment(datasource, experiment?.config.design_spec);
   const googleSheetsExperimentUrl = experiment?.config.google_sheets_experiment_url ?? null;
+  const sheetTableName =
+    experiment && isFrequentistSpec(experiment.config.design_spec)
+      ? experiment.config.design_spec.table_name
+      : undefined;
+  const { data: sheetTableMetadata } = useInspectTableInDatasource(datasourceId, sheetTableName ?? '', undefined, {
+    swr: { enabled: isSheetsDemo && !!sheetTableName },
+  });
+  const tableDisplayName = sheetTableMetadata?.display_name ?? undefined;
   // Wait for the datasource before deciding whether an outcomes connection is required.
   const canAnalyzeLive = !!datasource && !!experiment && (!isSheetsDemo || !!googleSheetsExperimentUrl);
   const liveAnalysisConnectionKey = `${datasourceId}/${experimentId}/${isSheetsDemo ? (googleSheetsExperimentUrl ?? 'disconnected') : 'datasource'}`;
@@ -429,12 +438,16 @@ export default function ExperimentViewPage() {
           <Separator orientation="vertical" />
           {isFrequentistSpec(design_spec) && (
             <>
-              <TableNameBadge tableName={design_spec.table_name} />
+              <TableNameBadge tableName={tableDisplayName ?? design_spec.table_name} />
               <Separator orientation="vertical" />
             </>
           )}
           <>
-            <TargetingDialog designSpec={design_spec} webhookIds={experiment.config.webhooks ?? []} />
+            <TargetingDialog
+              designSpec={design_spec}
+              tableDisplayName={tableDisplayName}
+              webhookIds={experiment.config.webhooks ?? []}
+            />
             <Separator orientation="vertical" />
           </>
           <Flex align="center" gap="2">
@@ -517,6 +530,7 @@ export default function ExperimentViewPage() {
             key={`${datasourceId}/${experimentId}`}
             datasourceId={datasourceId}
             experimentId={experimentId}
+            experimentName={experiment_name}
             rawSpreadsheetUrl={datasource.dsn.spreadsheet_url}
             experimentSpreadsheetUrl={googleSheetsExperimentUrl}
             onRefresh={async (signal) => {

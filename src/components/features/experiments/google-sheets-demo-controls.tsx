@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
-import { Button, Card, Flex, Link, Text } from '@radix-ui/themes';
-import { ReloadIcon } from '@radix-ui/react-icons';
+import { Badge, Button, Card, Flex, Text } from '@radix-ui/themes';
+import { ExternalLinkIcon, PlayIcon, ReloadIcon, StopIcon } from '@radix-ui/react-icons';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
 import { GoogleSheetsExperimentDialog } from '@/components/features/experiments/google-sheets-experiment-dialog';
@@ -15,12 +15,14 @@ function SheetDemoPolling({
   experimentSpreadsheetUrl,
   datasourceId,
   experimentId,
+  experimentName,
   onRefresh,
 }: {
   rawSpreadsheetUrl: string;
   experimentSpreadsheetUrl: string | null;
   datasourceId: string;
   experimentId: string;
+  experimentName: string;
   onRefresh: (signal: AbortSignal) => Promise<void>;
 }) {
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
@@ -113,23 +115,14 @@ function SheetDemoPolling({
           “Convert text to numbers, dates, and formulas” to preserve IDs.
         </Text>
         <Flex align="center" gap="3" wrap="wrap">
-          <Text size="2">3. Connect the Experiment tab’s URL in this experiment’s settings.</Text>
+          <Text size="2">3. Connect a separate Experiment tab for outcomes.</Text>
           <GoogleSheetsExperimentDialog
             datasourceId={datasourceId}
             experimentId={experimentId}
+            experimentName={experimentName}
             rawSpreadsheetUrl={rawSpreadsheetUrl}
             experimentSpreadsheetUrl={experimentSpreadsheetUrl}
           />
-        </Flex>
-        <Flex align="center" gap="3" wrap="wrap">
-          <Link href={rawSpreadsheetUrl} target="_blank" rel="noopener noreferrer">
-            Open Raw tab (datasource)
-          </Link>
-          {experimentSpreadsheetUrl && (
-            <Link href={experimentSpreadsheetUrl} target="_blank" rel="noopener noreferrer">
-              Open Experiment tab (outcomes)
-            </Link>
-          )}
         </Flex>
         {!experimentSpreadsheetUrl && (
           <Text size="2" color="gray">
@@ -140,41 +133,65 @@ function SheetDemoPolling({
           4. Enter outcomes in the Experiment tab, then Refresh. Blank means missing; zero is a result. Comparisons need
           results in both arms.
         </Text>
-        <Flex align="center" gap="3" wrap="wrap">
-          <Button
-            type="button"
-            size="2"
-            variant="soft"
-            onClick={handleRefresh}
-            loading={isRefreshing}
-            disabled={!experimentSpreadsheetUrl}
-          >
-            <ReloadIcon />
-            Refresh
-          </Button>
-          <Button
-            type="button"
-            size="2"
-            variant="soft"
-            disabled={!experimentSpreadsheetUrl || (expiresAt === null && isRefreshing)}
-            onClick={() => {
-              setError(null);
-              setExpiresAt(expiresAt === null ? Date.now() + DEMO_DURATION_MS : null);
-            }}
-          >
-            {expiresAt === null ? 'Start live demo' : 'Stop live demo'}
-          </Button>
-          <Text size="2" color="gray">
-            {expiresAt === null
-              ? 'Live demo: refreshes every 10 seconds for 15 minutes.'
-              : 'Live demo running. Edit sheet outcomes to update the analysis.'}
-          </Text>
+        <Flex direction={{ initial: 'column', sm: 'row' }} justify="between" gap="3">
+          <Flex align="center" gap="2" wrap="wrap">
+            <Button
+              type="button"
+              size="2"
+              variant="soft"
+              onClick={handleRefresh}
+              loading={isRefreshing}
+              disabled={!experimentSpreadsheetUrl}
+            >
+              <ReloadIcon />
+              Refresh
+            </Button>
+            <Button
+              type="button"
+              size="2"
+              variant="soft"
+              disabled={!experimentSpreadsheetUrl || (expiresAt === null && isRefreshing)}
+              onClick={() => {
+                setError(null);
+                setExpiresAt(expiresAt === null ? Date.now() + DEMO_DURATION_MS : null);
+              }}
+            >
+              {expiresAt === null ? <PlayIcon /> : <StopIcon />}
+              {expiresAt === null ? 'Start live demo' : 'Stop live demo'}
+            </Button>
+          </Flex>
+          <Flex align="center" gap="2" wrap="wrap">
+            <Button asChild size="2" variant="soft">
+              <a href={rawSpreadsheetUrl} target="_blank" rel="noopener noreferrer">
+                <ExternalLinkIcon />
+                Open Raw tab
+              </a>
+            </Button>
+            {experimentSpreadsheetUrl && (
+              <Button asChild size="2" variant="soft">
+                <a href={experimentSpreadsheetUrl} target="_blank" rel="noopener noreferrer">
+                  <ExternalLinkIcon />
+                  Open Experiment tab
+                </a>
+              </Button>
+            )}
+          </Flex>
         </Flex>
-        {lastRefreshedAt !== null && (
+        <Flex align="center" gap="2" wrap="wrap">
+          <Badge color={expiresAt === null ? 'gray' : 'green'}>
+            {expiresAt === null ? 'Live demo off' : 'Live demo running'}
+          </Badge>
           <Text size="1" color="gray">
-            Last refreshed at {lastRefreshedAt.toLocaleTimeString()}.
+            {expiresAt === null
+              ? 'Refreshes every 10 seconds for up to 15 minutes.'
+              : 'Edit outcomes to update the analysis.'}
           </Text>
-        )}
+          {lastRefreshedAt !== null && (
+            <Text size="1" color="gray">
+              Last refreshed at {lastRefreshedAt.toLocaleTimeString()}.
+            </Text>
+          )}
+        </Flex>
         <Text size="1" color="gray">
           Each refresh saves a snapshot to the history chart.
         </Text>
@@ -190,12 +207,14 @@ function SheetDemoPolling({
 export function GoogleSheetsDemoControls({
   datasourceId,
   experimentId,
+  experimentName,
   rawSpreadsheetUrl,
   experimentSpreadsheetUrl,
   onRefresh,
 }: {
   datasourceId: string;
   experimentId: string;
+  experimentName: string;
   rawSpreadsheetUrl: string;
   experimentSpreadsheetUrl: string | null;
   onRefresh: (signal: AbortSignal) => Promise<void>;
@@ -207,6 +226,7 @@ export function GoogleSheetsDemoControls({
       experimentSpreadsheetUrl={experimentSpreadsheetUrl}
       datasourceId={datasourceId}
       experimentId={experimentId}
+      experimentName={experimentName}
       onRefresh={onRefresh}
     />
   );

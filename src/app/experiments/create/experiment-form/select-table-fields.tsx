@@ -165,7 +165,7 @@ export const SelectTableFields = ({
               <Select.Content>
                 {tables.map((table) => (
                   <Select.Item key={table} value={table}>
-                    {table}
+                    {table === tableName ? (tableData?.display_name ?? table) : table}
                   </Select.Item>
                 ))}
               </Select.Content>

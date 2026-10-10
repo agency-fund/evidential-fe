@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button, Dialog, Flex, Text, TextField } from '@radix-ui/themes';
-import { GearIcon } from '@radix-ui/react-icons';
+import { GearIcon, LockClosedIcon } from '@radix-ui/react-icons';
 import { mutate } from 'swr';
 import { getGetExperimentForUiKey, useUpdateExperiment } from '@/api/admin';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -10,11 +10,13 @@ import { GenericErrorCallout } from '@/components/ui/generic-error';
 export function GoogleSheetsExperimentDialog({
   datasourceId,
   experimentId,
+  experimentName,
   rawSpreadsheetUrl,
   experimentSpreadsheetUrl,
 }: {
   datasourceId: string;
   experimentId: string;
+  experimentName: string;
   rawSpreadsheetUrl: string;
   experimentSpreadsheetUrl: string | null;
 }) {
@@ -63,17 +65,24 @@ export function GoogleSheetsExperimentDialog({
       </Dialog.Trigger>
       <Dialog.Content>
         <form onSubmit={handleSubmit}>
-          <Dialog.Title>Experiment tab settings</Dialog.Title>
+          <Dialog.Title>Experiment tab connection</Dialog.Title>
+          <Text as="p" size="3" weight="medium" mb="2">
+            {experimentName}
+          </Text>
           <Dialog.Description size="2" mb="4">
-            The Raw tab stays connected to the datasource. This outcomes connection applies only to this experiment.
+            Only this experiment’s outcomes tab changes. The raw datasource stays connected.
           </Dialog.Description>
           <Flex direction="column" gap="3">
             {error && <GenericErrorCallout title="Could not connect Experiment tab" error={error} />}
             <label>
-              <Text as="div" size="2" mb="1" weight="bold">
-                Raw tab URL (datasource)
+              <Text as="div" size="2" mb="1" weight="bold" color="gray">
+                Raw datasource tab (locked)
               </Text>
-              <TextField.Root type="url" value={rawSpreadsheetUrl} readOnly />
+              <TextField.Root type="url" value={rawSpreadsheetUrl} disabled variant="soft" color="gray">
+                <TextField.Slot>
+                  <LockClosedIcon />
+                </TextField.Slot>
+              </TextField.Root>
             </label>
             <label>
               <Text as="div" size="2" mb="1" weight="bold">
@@ -93,7 +102,7 @@ export function GoogleSheetsExperimentDialog({
               Cancel
             </Button>
             <Button type="submit" loading={isMutating}>
-              Save connection
+              Save experiment tab
             </Button>
           </Flex>
         </form>
