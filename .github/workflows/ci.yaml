@@ -33,6 +33,7 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: task lint
+      - run: pnpm exec node --test tests/forest-timeseries.test.mjs
 
   prek:
     runs-on: ubuntu-24.04

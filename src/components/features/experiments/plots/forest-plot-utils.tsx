@@ -204,13 +204,13 @@ const _generateFreqEffectSizeData = (analysis: MetricAnalysis, alpha: number): E
     const absDifference = isBaseline ? 0 : estimate;
     const absEffect = absDifference + controlEstimate;
     const relEffectPct = ((absEffect - controlEstimate) / controlEstimate) * 100;
-    // Calculate 95% confidence interval
-    // TODO: backend should return CIs; this approximation is for z-tests, and not appropriate for small sample sizes.
+    // Normal approximation for coefficient uncertainty in the difference plot.
     const ci95 = stdError === null ? NaN : 1.96 * stdError;
     const ci95Lower = absDifference - ci95;
     const ci95Upper = absDifference + ci95;
-    const absCI95Lower = absEffect - ci95;
-    const absCI95Upper = absEffect + ci95;
+    // Mean uncertainty comes from the fitted prediction, not the treatment coefficient's SE.
+    const meanCILower = armAnalysis.mean_ci_lower ?? NaN;
+    const meanCIUpper = armAnalysis.mean_ci_upper ?? NaN;
 
     return {
       isBaseline,
@@ -224,8 +224,8 @@ const _generateFreqEffectSizeData = (analysis: MetricAnalysis, alpha: number): E
       ci95,
       ci95Lower,
       ci95Upper,
-      absCI95Lower,
-      absCI95Upper,
+      meanCILower,
+      meanCIUpper,
       pValue,
       significant,
       invalidStatTest,
@@ -291,6 +291,9 @@ const _generateBanditEffectData = (analysis: BanditExperimentAnalysisResponse): 
 
   return effects;
 };
+
+export const hasConfidenceInterval = (arm: ArmDataPoint): boolean =>
+  Number.isFinite(arm.lowerCI) && Number.isFinite(arm.upperCI) && arm.lowerCI <= arm.upperCI;
 
 /**
  * Computes axis bounds (min/max) from an array of numeric values with padding and rounding.
@@ -471,8 +474,8 @@ export const transformAnalysisForForestTimeseriesPlot = (
 
         armEffects.set(effectSize.armId, {
           absMean: effectSize.absEffect,
-          upperCI: effectSize.absCI95Upper,
-          lowerCI: effectSize.absCI95Lower,
+          upperCI: effectSize.meanCIUpper,
+          lowerCI: effectSize.meanCILower,
           significance,
         });
       }

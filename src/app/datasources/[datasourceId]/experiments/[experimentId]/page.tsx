@@ -661,6 +661,7 @@ export default function ExperimentViewPage() {
                         armMetadata={armMetadata}
                         minDate={minDate}
                         maxDate={maxDate}
+                        confidenceLevel={1 - (alpha ?? 0.05)}
                         onPointClick={handleSelectAnalysis}
                       />
                     )}
