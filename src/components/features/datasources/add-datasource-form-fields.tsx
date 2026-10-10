@@ -1,7 +1,15 @@
 'use client';
 import { Button, Flex, RadioGroup, Text, TextField } from '@radix-ui/themes';
 import { EyeClosedIcon, EyeOpenIcon, InfoCircledIcon } from '@radix-ui/react-icons';
-import { ApiOnlyDsn, BqDsn, Dsn, PostgresDsn, PostgresDsnSslmode, RedshiftDsn } from '@/api/methods.schemas';
+import {
+  ApiOnlyDsn,
+  BqDsn,
+  Dsn,
+  GoogleSheetsDsn,
+  PostgresDsn,
+  PostgresDsnSslmode,
+  RedshiftDsn,
+} from '@/api/methods.schemas';
 import { PostgresSslModes } from '@/services/typehelper';
 import { ServiceAccountJsonField } from '@/components/features/datasources/service-account-json-field';
 
@@ -24,6 +32,7 @@ export interface DatasourceFormData {
   project_id: string;
   dataset: string;
   credentials_json: string;
+  spreadsheet_url: string;
   // UI state
   dwhType: AllowedDwhTypes;
   showPassword: boolean;
@@ -41,6 +50,7 @@ export type AddDatasourceFormMessage =
   | { type: 'set-project-id'; value: string }
   | { type: 'set-dataset'; value: string }
   | { type: 'set-credentials-json'; value: string }
+  | { type: 'set-spreadsheet-url'; value: string }
   | { type: 'set-dwh-type'; value: AllowedDwhTypes }
   | { type: 'toggle-show-password' }
   | { type: 'reset' };
@@ -58,6 +68,7 @@ export function defaultDatasourceFormData(): DatasourceFormData {
     project_id: '',
     dataset: '',
     credentials_json: '',
+    spreadsheet_url: '',
     dwhType: 'postgres',
     showPassword: false,
   };
@@ -87,6 +98,8 @@ export function datasourceFormReducer(data: DatasourceFormData, msg: AddDatasour
       return { ...data, dataset: msg.value };
     case 'set-credentials-json':
       return { ...data, credentials_json: msg.value };
+    case 'set-spreadsheet-url':
+      return { ...data, spreadsheet_url: msg.value };
     case 'set-dwh-type': {
       const currentPortIsDefault = Object.values(portMap).includes(data.port);
       const newPort = currentPortIsDefault && portMap[msg.value] ? portMap[msg.value] : data.port;
@@ -101,7 +114,10 @@ export function datasourceFormReducer(data: DatasourceFormData, msg: AddDatasour
   }
 }
 
-export function buildDsn(data: DatasourceFormData): PostgresDsn | RedshiftDsn | BqDsn {
+export function buildDsn(data: DatasourceFormData): PostgresDsn | RedshiftDsn | BqDsn | GoogleSheetsDsn {
+  if (data.dwhType === 'google_sheets') {
+    return { type: 'google_sheets', spreadsheet_url: data.spreadsheet_url.trim() };
+  }
   if (data.dwhType === 'postgres') {
     return {
       type: 'postgres',
@@ -140,9 +156,15 @@ interface AddDatasourceFormFieldsProps {
   data: DatasourceFormData;
   dispatch: (msg: AddDatasourceFormMessage) => void;
   isDNSError?: boolean;
+  allowGoogleSheets?: boolean;
 }
 
-export function AddDatasourceFormFields({ data, dispatch, isDNSError }: AddDatasourceFormFieldsProps) {
+export function AddDatasourceFormFields({
+  data,
+  dispatch,
+  isDNSError,
+  allowGoogleSheets = true,
+}: AddDatasourceFormFieldsProps) {
   const { dwhType, showPassword } = data;
 
   return (
@@ -183,6 +205,13 @@ export function AddDatasourceFormFields({ data, dispatch, isDNSError }: AddDatas
                 <RadioGroup.Item value="bigquery" /> Google BigQuery
               </Flex>
             </Text>
+            {allowGoogleSheets && (
+              <Text as="label" size="2">
+                <Flex gap="2">
+                  <RadioGroup.Item value="google_sheets" /> Google Sheets (demo)
+                </Flex>
+              </Text>
+            )}
           </Flex>
         </RadioGroup.Root>
       </label>
@@ -296,6 +325,29 @@ export function AddDatasourceFormFields({ data, dispatch, isDNSError }: AddDatas
               onChange={(e) => dispatch({ type: 'set-search-path', value: e.target.value })}
             />
           </label>
+        </>
+      ) : dwhType === 'google_sheets' ? (
+        <>
+          <label>
+            <Text as="div" size="2" mb="1" weight="bold">
+              Spreadsheet URL
+            </Text>
+            <TextField.Root
+              type="url"
+              required
+              placeholder="https://docs.google.com/spreadsheets/d/…/edit#gid=0"
+              value={data.spreadsheet_url}
+              onChange={(e) => dispatch({ type: 'set-spreadsheet-url', value: e.target.value })}
+            />
+          </label>
+          <Text size="2" color="gray">
+            For preassigned A/B demos. Set sharing to “Anyone with the link → Viewer” and allow downloads. No Google
+            credentials needed. Copy the URL of the tab you want to use; it appears as linked_sheet. Use row 1 for
+            column names such as participant_id, region, minutes_on_site_last_7_days, and customer_satisfaction_1_to_5.
+            Outcome cells can be blank until results arrive. Participant IDs must be unique. After saving the
+            experiment, download the demo CSV and import it into this tab, then edit outcomes to watch the analysis
+            update. Supports up to 5,000 rows.
+          </Text>
         </>
       ) : (
         <>

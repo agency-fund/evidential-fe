@@ -25,6 +25,18 @@ export const formatUtcDownToMinuteLabel = (date: Date): string => {
   return `${datePart}, ${timePart}`;
 };
 
+export const extractUtcHHMMSSLabel = (date: Date): string =>
+  `${date.toLocaleTimeString(undefined, {
+    timeZone: 'UTC',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  })} UTC`;
+
+export const formatUtcDownToSecondLabel = (date: Date): string =>
+  `${date.toLocaleDateString(undefined, { timeZone: 'UTC' })}, ${extractUtcHHMMSSLabel(date)}`;
+
 /**
  * Converts a date object to YYYY-MM-DD format (UTC)
  */

@@ -3,23 +3,28 @@ import { Button, Dialog, Flex, IconButton, Tooltip } from '@radix-ui/themes';
 import { useState } from 'react';
 import { getExperimentAssignmentsAsCsvForUi } from '@/api/admin';
 import { DownloadIcon } from '@radix-ui/react-icons';
+import { GenericErrorCallout } from '@/components/ui/generic-error';
 
 interface DownloadAssignmentsCsvButtonProps {
   datasourceId: string;
   experimentId: string;
   children?: React.ReactNode;
+  label?: string;
 }
 
 export function DownloadAssignmentsCsvButton({
   datasourceId,
   experimentId,
   children,
+  label,
 }: DownloadAssignmentsCsvButtonProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [noDataDialog, setNoDataDialog] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   const handleDownload = async () => {
     setIsDownloading(true);
+    setError(null);
     try {
       const response = await getExperimentAssignmentsAsCsvForUi(datasourceId, experimentId);
 
@@ -37,8 +42,8 @@ export function DownloadAssignmentsCsvButton({
         console.log('No data available');
         setNoDataDialog(true);
       }
-    } catch (error) {
-      console.error('Error downloading CSV:', error);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error(String(err)));
     } finally {
       setIsDownloading(false);
     }
@@ -46,7 +51,11 @@ export function DownloadAssignmentsCsvButton({
 
   return (
     <>
-      {children ? (
+      {label ? (
+        <Button size="2" variant="soft" onClick={handleDownload} loading={isDownloading}>
+          <DownloadIcon /> {label}
+        </Button>
+      ) : children ? (
         <span onClick={handleDownload}>{children}</span>
       ) : (
         <Tooltip content="Download CSV of participant arm assignments">
@@ -62,6 +71,22 @@ export function DownloadAssignmentsCsvButton({
           <Dialog.Description size="2" mb="4">
             There are no assignments to download for this experiment yet.
           </Dialog.Description>
+          <Flex gap="3" mt="4" justify="end">
+            <Dialog.Close>
+              <Button>Close</Button>
+            </Dialog.Close>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
+      <Dialog.Root
+        open={error !== null}
+        onOpenChange={(open) => {
+          if (!open) setError(null);
+        }}
+      >
+        <Dialog.Content>
+          <Dialog.Title>CSV download failed</Dialog.Title>
+          {error !== null && <GenericErrorCallout title="Check the spreadsheet and try again" error={error} />}
           <Flex gap="3" mt="4" justify="end">
             <Dialog.Close>
               <Button>Close</Button>

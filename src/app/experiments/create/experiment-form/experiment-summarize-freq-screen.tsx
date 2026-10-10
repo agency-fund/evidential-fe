@@ -10,6 +10,7 @@ import { ErrorType } from '@/services/orval-fetch';
 import { ExperimentConfirmationDisplayProps } from '@/components/features/experiments/experiment-confirmation-display';
 import { ExperimentsSummarizeScreenBase } from '@/app/experiments/create/experiment-form/experiment-summarize-screen-base';
 import { isChosenSampleSufficient, metricHasMissingValues } from '@/services/experiment-utils';
+import { useGetDatasource } from '@/api/admin';
 
 type ExperimentsSummarizeFreqScreenMessage = { type: 'set-commit-error'; response: ErrorType<unknown> };
 
@@ -20,6 +21,8 @@ export const ExperimentsSummarizeFreqScreen = ({
   dispatch,
 }: ScreenProps<ExperimentFormData, ExperimentsSummarizeFreqScreenMessage, ExperimentScreenId>) => {
   const isFreqPreassigned = data.experimentType === 'freq_preassigned';
+  const { data: datasource } = useGetDatasource(data.datasourceId ?? '');
+  const isSheetsDemo = isFreqPreassigned && datasource?.dsn.type === 'google_sheets';
 
   const estimatedMdeByField = new Map(
     (data.mdePowerCheckResponse?.analyses ?? []).map((a) => [a.metric_spec.field_name, a.pct_change_with_desired_n]),
@@ -68,10 +71,13 @@ export const ExperimentsSummarizeFreqScreen = ({
       navigatePrev={navigatePrev}
       navigateTo={navigateTo}
       onCommitError={(response) => dispatch({ type: 'set-commit-error', response })}
+      openExperimentOnSave={isSheetsDemo}
       infoCalloutText={
-        isFreqPreassigned
-          ? 'Assignments will be downloadable after the experiment is saved.'
-          : 'For online A/B testing, assignments are generated on the fly as users enter the experiment. No power analysis or sample size planning is required.'
+        isSheetsDemo
+          ? 'After saving, download the Experiment CSV, import it into a new Experiment tab, and connect that tab’s URL. Then fill in outcomes and click Refresh or start the live demo.'
+          : isFreqPreassigned
+            ? 'Assignments will be downloadable after the experiment is saved.'
+            : 'For online A/B testing, assignments are generated on the fly as users enter the experiment. No power analysis or sample size planning is required.'
       }
       editTargets={{
         metadata: 'metadata',

@@ -631,7 +631,12 @@ export interface DesignSpecMetricRequest {
 	available_n?: DesignSpecMetricRequestAvailableN;
 }
 
-export type Dsn = ApiOnlyDsn | PostgresDsn | BqDsn | RedshiftDsn;
+export type Dsn =
+	| ApiOnlyDsn
+	| PostgresDsn
+	| BqDsn
+	| RedshiftDsn
+	| GoogleSheetsDsn;
 
 export type EventSummaryLink = string | null;
 
@@ -880,6 +885,20 @@ export interface GetUserResponse {
 	has_logged_in: boolean;
 	created_at: string;
 	organizations: OrganizationListItem[];
+}
+
+export type GoogleSheetsDsnType =
+	(typeof GoogleSheetsDsnType)[keyof typeof GoogleSheetsDsnType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const GoogleSheetsDsnType = {
+	google_sheets: "google_sheets",
+} as const;
+
+export interface GoogleSheetsDsn {
+	type: GoogleSheetsDsnType;
+	/** @maxLength 500 */
+	spreadsheet_url: string;
 }
 
 export interface HTTPExceptionError {

@@ -6,6 +6,7 @@ import {
   DesignSpec,
   ExperimentConfig,
   GetExperimentResponse,
+  GetDatasourceResponse,
   MABDwhExperimentSpec,
   MABDwhExperimentSpecExperimentType,
   MABExperimentSpec,
@@ -113,6 +114,11 @@ export const isFrequentistSpec = (
 
 export const isFreqPreassignedSpec = (spec: DesignSpec | undefined): spec is PreassignedFrequentistExperimentSpec =>
   !!spec && spec.experiment_type === PreassignedFrequentistExperimentSpecExperimentType.freq_preassigned;
+
+export const isGoogleSheetsDemoExperiment = (
+  datasource: GetDatasourceResponse | undefined,
+  spec: DesignSpec | undefined,
+): boolean => datasource?.dsn.type === 'google_sheets' && isFreqPreassignedSpec(spec);
 
 export const isClusteredPreassignedSpec = (
   spec: DesignSpec | undefined,

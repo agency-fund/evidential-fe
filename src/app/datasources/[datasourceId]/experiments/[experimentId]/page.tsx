@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { mutate } from 'swr';
@@ -10,6 +10,7 @@ import {
   useAnalyzeCmabExperiment,
   useAnalyzeExperiment,
   useGetExperimentForUi,
+  useGetDatasource,
   useListSnapshots,
   useUpdateExperiment,
 } from '@/api/admin';
@@ -20,11 +21,11 @@ import {
   ExperimentAnalysisResponse,
   MABExperimentSpec,
   MetricAnalysis,
-  Snapshot,
 } from '@/api/methods.schemas';
 import { ForestPlot } from '@/components/features/experiments/plots/forest-plot';
 import {
   AnalysisState,
+  buildSnapshotAnalysisHistory,
   computeBoundsForMetric,
   getAlphaAndPower,
   isBanditAnalysis,
@@ -61,12 +62,15 @@ import {
   isCmabExperiment,
   isCmabSpec,
   isFrequentistSpec,
+  isGoogleSheetsDemoExperiment,
 } from '@/services/experiment-utils';
-import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date-utils';
+import { extractUtcHHMMLabel } from '@/services/date-utils';
+import { createExperimentSnapshot } from '@/services/experiment-snapshots';
 import { ContextConfigBox } from '@/components/features/experiments/context-config-box';
 import { TableNameBadge } from '@/components/features/participants/table-name-badge';
 import { TargetingDialog } from '@/components/features/experiments/targeting-dialog';
 import { FreqDesignDetailsDialog } from '@/components/features/experiments/freq-design-details-dialog';
+import { GoogleSheetsDemoControls } from '@/components/features/experiments/google-sheets-demo-controls';
 
 const SNAPSHOT_ERROR_ALERT_THRESHOLD_MS = 8 * 60 * 60 * 1000;
 
@@ -136,7 +140,6 @@ export default function ExperimentViewPage() {
   const [lastErrorTimestamp, setLastErrorTimestamp] = useState<null | Date>(null);
   const [isLastSnapshotErrorRelevant, setIsLastSnapshotErrorRelevant] = useState(false);
 
-  const [analysisHistory, setAnalysisHistory] = useState<AnalysisState[]>([]);
   const [liveAnalysis, setLiveAnalysis] = useState<AnalysisState>({
     key: 'live',
     data: undefined,
@@ -175,6 +178,10 @@ export default function ExperimentViewPage() {
     },
   });
 
+  const { data: datasource } = useGetDatasource(datasourceId, { swr: { enabled: !!datasourceId } });
+  const isSheetsDemo = isGoogleSheetsDemoExperiment(datasource, experiment?.config.design_spec);
+  const { alpha } = getAlphaAndPower(experiment?.config);
+
   const {
     mutate: analyzeLive,
     data: analyzeExperimentData,
@@ -204,7 +211,12 @@ export default function ExperimentViewPage() {
     },
   });
 
-  const { isLoading: isLoadingHistory, error: analysisHistoryError } = useListSnapshots(
+  const {
+    data: snapshotList,
+    mutate: updateSnapshotHistory,
+    isLoading: isLoadingHistory,
+    error: analysisHistoryError,
+  } = useListSnapshots(
     organizationId,
     datasourceId,
     experimentId,
@@ -215,9 +227,6 @@ export default function ExperimentViewPage() {
         shouldRetryOnError: false,
         focusThrottleInterval: 15 * 60_000, // refresh on focus after 15 minutes
         onSuccess: async (data) => {
-          // Make human-readable labels for the dropdown, showing UTC down to the minute.
-          // Use the snapshot ID as the key, looking up the analysisState by ID upon selection.
-
           // Do live analysis if there are no snapshots and we don't have live analysis data already. This avoids
           // duplicating a potentially expensive query when useListSnapshots runs.
           if (data.items.length === 0) {
@@ -232,37 +241,9 @@ export default function ExperimentViewPage() {
             return;
           }
 
-          // Group snapshots by date and keep only the most recent one per date
-          const snapshotsByDate = new Map<string, Snapshot>();
-
-          for (const s of data.items) {
-            const dateKey = s.updated_at.split('T')[0]; // Get YYYY-MM-DD from ISO string
-            const existing = snapshotsByDate.get(dateKey);
-            if (!existing || s.updated_at > existing.updated_at) {
-              snapshotsByDate.set(dateKey, s);
-            }
-          }
-
-          // Convert to array
-          const filteredSnapshots = Array.from(snapshotsByDate.values());
-          const history: AnalysisState[] = filteredSnapshots.map((s) => {
-            // The results are guaranteed to be non-null because of the status filter.
-            const analysisData = s.data as ExperimentAnalysisResponse;
-            const date = new Date(s.updated_at);
-            return {
-              key: s.id,
-              data: analysisData,
-              updated_at: date,
-              label: formatUtcDownToMinuteLabel(date),
-              effectSizesByMetric: precomputeFreqEffectsByMetric(analysisData, alpha),
-              banditEffects: precomputeBanditEffects(analysisData),
-            };
-          });
-
           const latestFailure = data.latest_failure === null ? null : new Date(data.latest_failure);
           setLastErrorTimestamp(latestFailure);
           setIsLastSnapshotErrorRelevant(isSnapshotFailureRecent(latestFailure));
-          setAnalysisHistory(history);
         },
         onError: async () => {
           // Trigger live analysis if snapshot loading fails
@@ -270,6 +251,11 @@ export default function ExperimentViewPage() {
         },
       },
     },
+  );
+
+  const analysisHistory = useMemo(
+    () => buildSnapshotAnalysisHistory(snapshotList?.items ?? [], alpha, isSheetsDemo),
+    [snapshotList?.items, alpha, isSheetsDemo],
   );
 
   const { trigger: updateExperiment } = useUpdateExperiment(datasourceId, experimentId, {
@@ -360,7 +346,6 @@ export default function ExperimentViewPage() {
     return <Text>No experiment data found</Text>;
   }
   const { design_spec, assign_summary, decision, impact } = experiment.config;
-  const { alpha } = getAlphaAndPower(experiment.config); // undefined for non-frequentist experiments
   const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
   const isFrequentistExperiment = isFrequentistSpec(design_spec);
   const contexts = isBanditSpec(design_spec) ? (design_spec.contexts ?? []) : [];
@@ -387,6 +372,7 @@ export default function ExperimentViewPage() {
   const { timeseriesData, armMetadata, minDate, maxDate } = transformAnalysisForForestTimeseriesPlot(
     analysisHistory,
     activeMetricName,
+    isSheetsDemo,
   );
 
   return (
@@ -512,6 +498,26 @@ export default function ExperimentViewPage() {
         )}
 
         {/* Analysis Section */}
+        {experiment.config.state === 'committed' && design_spec.experiment_type === 'freq_preassigned' && (
+          <GoogleSheetsDemoControls
+            key={`${datasourceId}/${experimentId}`}
+            datasourceId={datasourceId}
+            experimentId={experimentId}
+            onRefresh={async (signal) => {
+              const snapshot = await createExperimentSnapshot(organizationId, datasourceId, experimentId, signal);
+              setSelectedAnalysisKey('live');
+              handleLiveAnalysisSuccess(snapshot.data!);
+              await updateSnapshotHistory(
+                (current) => ({
+                  ...current,
+                  items: [snapshot, ...(current?.items ?? []).filter((item) => item.id !== snapshot.id)],
+                  latest_failure: current?.latest_failure ?? null,
+                }),
+                { revalidate: false },
+              );
+            }}
+          />
+        )}
         <SectionCard
           headerLeft={
             <Flex gap="3" align="center" wrap="wrap">
@@ -661,6 +667,7 @@ export default function ExperimentViewPage() {
                         armMetadata={armMetadata}
                         minDate={minDate}
                         maxDate={maxDate}
+                        showTime={isSheetsDemo}
                         confidenceLevel={1 - (alpha ?? 0.05)}
                         onPointClick={handleSelectAnalysis}
                       />
