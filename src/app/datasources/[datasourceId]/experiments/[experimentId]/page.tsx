@@ -505,8 +505,6 @@ export default function ExperimentViewPage() {
             experimentId={experimentId}
             onRefresh={async (signal) => {
               const snapshot = await createExperimentSnapshot(organizationId, datasourceId, experimentId, signal);
-              setSelectedAnalysisKey('live');
-              handleLiveAnalysisSuccess(snapshot.data!);
               await updateSnapshotHistory(
                 (current) => ({
                   ...current,
@@ -515,6 +513,7 @@ export default function ExperimentViewPage() {
                 }),
                 { revalidate: false },
               );
+              setSelectedAnalysisKey(snapshot.id);
             }}
           />
         )}

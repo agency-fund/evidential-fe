@@ -26,7 +26,7 @@ import {
 } from './forest-plot-utils';
 import { JitteredLine, JitteredLineInputData, JitteredLinePayloadData } from './jittered-line';
 import { ConfidenceInterval } from './confidence-interval';
-import { extractUtcHHMMSSLabel, formatDateUtcYYYYMMDD } from '@/services/date-utils';
+import { extractUtcHHMMSSLabel, formatDateUtcYYYYMMDD, formatUtcDownToSecondLabel } from '@/services/date-utils';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 
 interface ForestTimeseriesPlotProps {
@@ -151,6 +151,7 @@ export default function ForestTimeseriesPlot({
     }),
   );
   const [minY, maxY] = computeAxisBounds(yAxisValues.filter(Number.isFinite));
+  const spansMultipleDays = showTime && formatDateUtcYYYYMMDD(minDate) !== formatDateUtcYYYYMMDD(maxDate);
 
   const allDateTicks: number[] = [];
   if (showTime) {
@@ -204,10 +205,11 @@ export default function ForestTimeseriesPlot({
               interval="preserveStartEnd"
               angle={-30}
               textAnchor="end"
-              height={40}
+              height={spansMultipleDays ? 80 : 40}
               tickFormatter={(timestamp) => {
                 const date = new Date(timestamp);
-                return showTime ? extractUtcHHMMSSLabel(date) : formatDateUtcYYYYMMDD(date);
+                if (!showTime) return formatDateUtcYYYYMMDD(date);
+                return spansMultipleDays ? formatUtcDownToSecondLabel(date) : extractUtcHHMMSSLabel(date);
               }}
             />
             <YAxis

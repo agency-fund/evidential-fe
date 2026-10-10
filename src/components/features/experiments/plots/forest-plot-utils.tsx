@@ -241,12 +241,11 @@ const _generateFreqEffectSizeData = (analysis: MetricAnalysis, alpha: number): E
     const absDifference = isBaseline ? 0 : estimate;
     const absEffect = absDifference + controlEstimate;
     const relEffectPct = ((absEffect - controlEstimate) / controlEstimate) * 100;
-    // Calculate 95% confidence interval
-    // The difference plot currently uses a normal approximation for coefficient uncertainty.
+    // Normal approximation for coefficient uncertainty in the difference plot.
     const ci95 = stdError === null ? NaN : 1.96 * stdError;
     const ci95Lower = absDifference - ci95;
     const ci95Upper = absDifference + ci95;
-    // Mean uncertainty must come from the fitted prediction, not the treatment coefficient's SE.
+    // Mean uncertainty comes from the fitted prediction, not the treatment coefficient's SE.
     const meanCILower = armAnalysis.mean_ci_lower ?? NaN;
     const meanCIUpper = armAnalysis.mean_ci_upper ?? NaN;
 

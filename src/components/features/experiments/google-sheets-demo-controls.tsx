@@ -99,9 +99,7 @@ function SheetDemoPolling({
       <Flex direction="column" gap="3">
         <Text weight="bold">Google Sheets demo</Text>
         <Flex align="center" gap="3" wrap="wrap">
-          <Text size="2">
-            1. Download participant IDs, selected metrics, grouping or filter columns, and assigned arms.
-          </Text>
+          <Text size="2">1. Download participants, experiment columns, and assigned arms.</Text>
           <DownloadAssignmentsCsvButton
             datasourceId={datasourceId}
             experimentId={experimentId}
@@ -109,17 +107,16 @@ function SheetDemoPolling({
           />
         </Flex>
         <Text size="2">
-          2. Keep your original setup tab. Choose File → Import → Upload → Insert new sheet(s), then rename the new tab
-          Experiment. Turn off “Convert text to numbers, dates, and formulas” to preserve participant IDs.
+          2. Keep the setup tab. Use File → Import → Upload → Insert new sheet(s); name the new tab Experiment. Disable
+          “Convert text to numbers, dates, and formulas” to preserve IDs.
         </Text>
         <Flex align="center" gap="3" wrap="wrap">
-          <Text size="2">3. Open the Experiment tab, copy its URL, and save it as the Spreadsheet URL here.</Text>
+          <Text size="2">3. Connect the Experiment tab’s URL.</Text>
           <EditDatasourceDialog datasourceId={datasourceId} variant="button" buttonLabel="Connect Experiment tab" />
         </Flex>
         <Text size="2">
-          4. Fill or edit your selected metric columns in the Experiment tab, then click Refresh to update the arm
-          comparison. Blank cells mean results haven’t arrived yet; zero counts as a result. Comparisons need observed
-          values in both arms.
+          4. Enter outcomes in the Experiment tab, then Refresh. Blank means missing; zero is a result. Comparisons need
+          results in both arms.
         </Text>
         <Flex align="center" gap="3" wrap="wrap">
           <Button type="button" size="2" variant="soft" onClick={handleRefresh} loading={isRefreshing}>
@@ -143,8 +140,8 @@ function SheetDemoPolling({
           </Link>
           <Text size="2" color="gray">
             {expiresAt === null
-              ? 'Start the live demo for automatic refreshes every 10 seconds for 15 minutes.'
-              : 'Live demo running. Edit outcomes in the sheet to update this analysis.'}
+              ? 'Live demo: refreshes every 10 seconds for 15 minutes.'
+              : 'Live demo running. Edit sheet outcomes to update the analysis.'}
           </Text>
         </Flex>
         {lastRefreshedAt !== null && (
@@ -153,11 +150,10 @@ function SheetDemoPolling({
           </Text>
         )}
         <Text size="1" color="gray">
-          Each demo refresh saves a timed snapshot, so the history chart builds as you edit and remains after reloading.
+          Each refresh saves a snapshot to the history chart.
         </Text>
         <Text size="1" color="gray">
-          Edit cells after connecting. If you replace or delete the tab, reconnect its current URL. Google’s CSV export
-          can take a little longer to reflect edits.
+          Reconnect if you replace or delete the tab. Google’s CSV export may lag behind edits.
         </Text>
         {error != null && <GenericErrorCallout title="Could not refresh sheet outcomes" error={error} />}
       </Flex>

@@ -74,7 +74,7 @@ export const ExperimentsSummarizeFreqScreen = ({
       openExperimentOnSave={isSheetsDemo}
       infoCalloutText={
         isSheetsDemo
-          ? 'After saving, download the Experiment CSV, import it into a new Experiment tab, and connect that tab’s URL. Then fill in outcomes and click Refresh or start the live demo.'
+          ? 'Save, then follow the experiment page’s steps to import assignments, connect the Experiment tab, and refresh outcomes.'
           : isFreqPreassigned
             ? 'Assignments will be downloadable after the experiment is saved.'
             : 'For online A/B testing, assignments are generated on the fly as users enter the experiment. No power analysis or sample size planning is required.'

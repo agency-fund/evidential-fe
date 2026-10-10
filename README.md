@@ -26,6 +26,12 @@ designs, partial cluster statistics are not sent as a complete estimate.
 GitHub Actions validates pull requests targeting any branch, including stacked PRs. Lint checks run sequentially to
 avoid concurrent pnpm installs.
 
+## Google Sheets demos
+
+The experiment page guides CSV import into a separate tab, reconnecting its URL, and refreshing outcomes. Each refresh
+selects a saved snapshot; live demo refreshes run every 10 seconds for up to 15 minutes. See the
+[backend setup guide](https://github.com/agency-fund/evidential-be#google-sheets-demos) for sheet requirements.
+
 ## How is it built?
 
 | Capability               | Libraries                                                                                                                     |

@@ -217,7 +217,7 @@ export const ExperimentFreqStackScreen = ({
             <Heading as="h3" size="3">
               Power Analysis
             </Heading>
-            <PowerCheckSection data={data} dispatch={dispatch} isGoogleSheetsDemo={isGoogleSheets} />
+            <PowerCheckSection data={data} dispatch={dispatch} />
           </Flex>
         )}
       </Flex>
