@@ -26,11 +26,6 @@ designs, partial cluster statistics are not sent as a complete estimate.
 GitHub Actions validates pull requests targeting any branch, including stacked PRs. Lint checks run sequentially to
 avoid concurrent pnpm installs.
 
-## Google Sheets demos
-
-See the [Google Sheets demo guide](https://docs.evidential.dev/integration/google-sheets/) for setup and the two-tab
-workflow.
-
 ## How is it built?
 
 | Capability               | Libraries                                                                                                                     |
