@@ -53,6 +53,11 @@ export const metricHasMissingValues = (analysis: MetricPowerAnalysis): boolean =
   return available_n != null && available_nonnull_n != null && available_n > available_nonnull_n;
 };
 
+export const metricHasNoObservedOutcomes = (analysis: MetricPowerAnalysis): boolean => {
+  const { available_n, available_nonnull_n } = analysis.metric_spec;
+  return available_n != null && available_n > 0 && available_nonnull_n === 0;
+};
+
 /**
  * Whether the chosen sample size reaches the minimum required to detect the metric's target MDE.
  * Assignment enrolls exactly the chosen sample (including participants with missing values),
