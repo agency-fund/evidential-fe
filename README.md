@@ -15,6 +15,12 @@
 
 1. Open [http://localhost:3000](http://localhost:3000) with your browser.
 
+## Sample size planning
+
+With participants but no observed outcomes, the wizard shows **Waiting for outcomes** rather than insufficient power.
+Choose the maximum available or a custom sample size; power and effect estimates remain unavailable. For clustered
+designs, partial cluster statistics are not sent as a complete estimate.
+
 ## How is it built?
 
 | Capability               | Libraries                                                                                                                     |
