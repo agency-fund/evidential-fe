@@ -152,8 +152,12 @@ export const computeBoundsForMetric = (
 
       for (const effectSize of effectSizes) {
         const { ci95Lower, ci95Upper } = effectSize;
-        minLower = minLower === undefined ? ci95Lower : Math.min(minLower, ci95Lower);
-        maxUpper = maxUpper === undefined ? ci95Upper : Math.max(maxUpper, ci95Upper);
+        if (Number.isFinite(ci95Lower)) {
+          minLower = minLower === undefined ? ci95Lower : Math.min(minLower, ci95Lower);
+        }
+        if (Number.isFinite(ci95Upper)) {
+          maxUpper = maxUpper === undefined ? ci95Upper : Math.max(maxUpper, ci95Upper);
+        }
       }
     }
   } else if (analysisStates.length > 0 && analysisStates[0].data?.type === 'bandit') {
@@ -311,16 +315,18 @@ export const computeAxisBounds = (
   maxProp?: number,
   padding: number = 0.1,
 ): [number, number] => {
-  if (values.length === 0) {
-    return [0, 1];
+  let min = Infinity;
+  let max = -Infinity;
+  for (const value of values) {
+    if (!Number.isFinite(value)) continue;
+    min = Math.min(min, value);
+    max = Math.max(max, value);
   }
+  if (min === Infinity) return [0, 1];
 
-  let min = Math.min(...values);
-  let max = Math.max(...values);
-
-  // Apply provided bounds hints if available
-  if (minProp !== undefined) min = Math.min(min, minProp);
-  if (maxProp !== undefined) max = Math.max(max, maxProp);
+  // Missing outcomes can leave non-finite historical hints; they must not invalidate the displayed intervals.
+  if (minProp !== undefined && Number.isFinite(minProp)) min = Math.min(min, minProp);
+  if (maxProp !== undefined && Number.isFinite(maxProp)) max = Math.max(max, maxProp);
 
   // Add padding so points to render on the edges of your domain
   const range = max - min;

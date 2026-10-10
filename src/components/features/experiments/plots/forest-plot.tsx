@@ -391,7 +391,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
 
   // Flatten effect sizes into array of CI bounds for axis calculation
   const xAxisValues = isFrequentist
-    ? effectSizes.flatMap((d) => [d.ci95Lower, d.ci95Upper])
+    ? effectSizes.flatMap((d) => [d.absDifference, d.ci95Lower, d.ci95Upper])
     : banditEffects!.flatMap((d) => [
         Math.min(d.postPredabsCI95Lower, d.priorPredabsCI95Lower),
         Math.max(d.postPredabsCI95Upper, d.priorPredabsCI95Upper),
