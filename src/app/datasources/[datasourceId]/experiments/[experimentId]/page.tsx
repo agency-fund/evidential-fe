@@ -13,9 +13,9 @@ import {
   useGetExperimentForUi,
   useGetDatasource,
   useListSnapshots,
-  useInspectTableInDatasource,
   useUpdateExperiment,
 } from '@/api/admin';
+import { useTableDisplayName } from '@/components/features/datasources/use-table-display-name';
 import {
   CMABContextInputRequest,
   CMABExperimentSpec,
@@ -188,10 +188,7 @@ export default function ExperimentViewPage() {
     experiment && isFrequentistSpec(experiment.config.design_spec)
       ? experiment.config.design_spec.table_name
       : undefined;
-  const { data: sheetTableMetadata } = useInspectTableInDatasource(datasourceId, sheetTableName ?? '', undefined, {
-    swr: { enabled: isSheetsDemo && !!sheetTableName },
-  });
-  const tableDisplayName = sheetTableMetadata?.display_name ?? undefined;
+  const tableDisplayName = useTableDisplayName(datasourceId, sheetTableName);
   // Wait for the datasource before deciding whether an outcomes connection is required.
   const canAnalyzeLive = !!datasource && !!experiment && (!isSheetsDemo || !!googleSheetsExperimentUrl);
   const liveAnalysisConnectionKey = `${datasourceId}/${experimentId}/${isSheetsDemo ? (googleSheetsExperimentUrl ?? 'disconnected') : 'datasource'}`;
@@ -436,9 +433,9 @@ export default function ExperimentViewPage() {
         <Flex gap="4" align="center">
           <ExperimentTypeBadge type={design_spec.experiment_type} />
           <Separator orientation="vertical" />
-          {isFrequentistSpec(design_spec) && (
+          {isFrequentistSpec(design_spec) && tableDisplayName && (
             <>
-              <TableNameBadge tableName={tableDisplayName ?? design_spec.table_name} />
+              <TableNameBadge tableName={tableDisplayName} />
               <Separator orientation="vertical" />
             </>
           )}

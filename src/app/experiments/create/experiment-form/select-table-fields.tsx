@@ -10,6 +10,7 @@ import { SelectPrimaryKey } from './select-primary-key';
 import { SelectClusterKey } from './select-cluster-key';
 import { SelectTargetField } from './select-target-field';
 import { useState } from 'react';
+import { useTableDisplayName } from '@/components/features/datasources/use-table-display-name';
 
 interface SelectTableFieldsProps {
   datasourceId: string;
@@ -115,6 +116,8 @@ export const SelectTableFields = ({
   });
 
   const tables = inspectData?.tables ?? [];
+  const displayedTable = tableName ?? tables[0];
+  const tableDisplayName = useTableDisplayName(datasourceId, displayedTable);
   const disabled = !tableName || !inspectData;
 
   function handleTableChange(newTableName: string) {
@@ -161,11 +164,11 @@ export const SelectTableFields = ({
           </Text>
           <Flex direction="row" gap="3">
             <Select.Root value={tableName ?? ''} onValueChange={handleTableChange}>
-              <Select.Trigger placeholder="Select a table" />
+              <Select.Trigger placeholder="Select a table">{tableName ? tableDisplayName : undefined}</Select.Trigger>
               <Select.Content>
                 {tables.map((table) => (
                   <Select.Item key={table} value={table}>
-                    {table === tableName ? (tableData?.display_name ?? table) : table}
+                    {table === displayedTable ? tableDisplayName : table}
                   </Select.Item>
                 ))}
               </Select.Content>
@@ -178,7 +181,7 @@ export const SelectTableFields = ({
       </Box>
 
       {tableName && tableError && !tableData ? (
-        <TableInspectionErrorCallout tableName={tableName} error={tableError} />
+        <TableInspectionErrorCallout tableName={tableDisplayName ?? ''} error={tableError} />
       ) : (
         <>
           <Box maxWidth="50%">
