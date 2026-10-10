@@ -12,6 +12,7 @@ import {
   ExperimentConfirmationDisplayProps,
 } from '@/components/features/experiments/experiment-confirmation-display';
 import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-types';
+import { useTableDisplayName } from '@/components/features/datasources/use-table-display-name';
 
 // The "Edit" buttons on the confirmation screen are temporarily disabled pending further UX effort.
 const FEATURE_EDIT_BUTTONS_ENABLED = false;
@@ -34,6 +35,7 @@ interface ExperimentsSummarizeScreenBaseProps {
   infoCalloutText: React.ReactNode;
   editTargets: EditTargets;
   frequentistInfo?: Pick<ExperimentConfirmationDisplayProps, 'metrics'>;
+  openExperimentOnSave?: boolean;
 }
 
 export function ExperimentsSummarizeScreenBase({
@@ -44,16 +46,18 @@ export function ExperimentsSummarizeScreenBase({
   infoCalloutText,
   editTargets,
   frequentistInfo,
+  openExperimentOnSave = false,
 }: ExperimentsSummarizeScreenBaseProps) {
   const router = useRouter();
 
   const experimentId = data.createExperimentResponse?.experiment_id ?? '';
   const datasourceId = data.datasourceId ?? '';
 
+  const tableDisplayName = useTableDisplayName(datasourceId, data.tableName);
   const { trigger: triggerCommit, isMutating: commitLoading } = useCommitExperiment(datasourceId, experimentId, {
     swr: {
       onSuccess: () => {
-        router.push('/experiments');
+        router.push(openExperimentOnSave ? `/datasources/${datasourceId}/experiments/${experimentId}` : '/experiments');
       },
       onError: async (response: ErrorType<unknown>) => {
         onCommitError(response);
@@ -92,6 +96,7 @@ export function ExperimentsSummarizeScreenBase({
           <>
             <ExperimentConfirmationDisplay
               response={data.createExperimentResponse}
+              tableDisplayName={tableDisplayName}
               metrics={frequentistInfo?.metrics}
               onEditMetadata={toEditHandler(editTargets.metadata)}
               onEditTreatmentArms={toEditHandler(editTargets.treatmentArms)}

@@ -57,6 +57,7 @@ export default function DatasourceRow({
         </Table.Cell>
         <Table.Cell>
           {datasource.driver === 'bigquery' && 'Google BigQuery'}
+          {datasource.driver === 'google_sheets' && 'Google Sheets (demo)'}
           {datasource.driver === 'postgresql+psycopg' && 'PostgreSQL'}
           {datasource.driver === 'postgresql+psycopg2' && 'Redshift'}
           {datasource.driver === 'none' && <em>no warehouse</em>}

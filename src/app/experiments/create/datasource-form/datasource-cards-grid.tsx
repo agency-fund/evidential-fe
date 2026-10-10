@@ -12,6 +12,8 @@ const getDriverDisplayName = (driver: string) => {
   switch (driver) {
     case 'bigquery':
       return 'Google BigQuery';
+    case 'google_sheets':
+      return 'Google Sheets (demo)';
     case 'postgresql+psycopg':
       return 'PostgreSQL';
     case 'postgresql+psycopg2':

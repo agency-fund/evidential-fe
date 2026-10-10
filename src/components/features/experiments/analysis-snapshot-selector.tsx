@@ -20,6 +20,7 @@ interface AnalysisSnapshotSelectorProps {
   isLastSnapshotErrorRelevant: boolean;
   isRefreshingLiveAnalysis: boolean;
   onRefreshLiveAnalysis: () => void;
+  isLiveAnalysisAvailable?: boolean;
 }
 
 export function AnalysisSnapshotSelector({
@@ -33,6 +34,7 @@ export function AnalysisSnapshotSelector({
   isLastSnapshotErrorRelevant,
   isRefreshingLiveAnalysis,
   onRefreshLiveAnalysis,
+  isLiveAnalysisAvailable = true,
 }: AnalysisSnapshotSelectorProps) {
   const snapshotsHref = `/datasources/${datasourceId}/experiments/${experimentId}/snapshots`;
 
@@ -47,7 +49,7 @@ export function AnalysisSnapshotSelector({
             <Select.Trigger style={{ height: 18 }} />
             <Select.Content>
               <Select.Group>
-                <Select.Item key="live" value="live">
+                <Select.Item key="live" value="live" disabled={!isLiveAnalysisAvailable}>
                   <Box minWidth="136px">{liveAnalysisLabel}</Box>
                 </Select.Item>
               </Select.Group>
@@ -66,12 +68,13 @@ export function AnalysisSnapshotSelector({
           isRefreshingLiveAnalysis ? (
             <Spinner size="1" />
           ) : (
-            <Tooltip content="Refresh live analysis">
+            <Tooltip content={isLiveAnalysisAvailable ? 'Refresh live analysis' : 'Live analysis is not available yet'}>
               <IconButton
                 size="1"
                 variant="ghost"
                 color="gray"
                 aria-label="Refresh live analysis"
+                disabled={!isLiveAnalysisAvailable}
                 // ensure we don't pass the click event to onRefreshLiveAnalysis
                 onClick={() => onRefreshLiveAnalysis()}
               >

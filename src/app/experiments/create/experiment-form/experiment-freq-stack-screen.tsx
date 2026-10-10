@@ -5,7 +5,7 @@ import { Card, Flex, Heading } from '@radix-ui/themes';
 import { MetricBuilder, MetricBuilderAction } from '@/components/features/experiments/metric-builder';
 import { FilterBuilder } from '@/components/features/experiments/querybuilder/filter-builder';
 import { StrataBuilder } from '@/components/features/experiments/strata-builder';
-import { useCreateExperiment, useInspectTableInDatasource } from '@/api/admin';
+import { useCreateExperiment, useGetDatasource, useInspectTableInDatasource } from '@/api/admin';
 import { CreateExperimentResponse, FieldMetadata, Filter } from '@/api/methods.schemas';
 import { PowerCheckSection, PowerCheckSectionAction } from './power-check-section';
 import { ClusterStatisticsSectionAction } from './cluster-statistics-section';
@@ -18,6 +18,10 @@ import { getPowerAnalysis } from '@/services/experiment-utils';
 import { createExperimentBody } from '@/api/admin.zod';
 import { ErrorType } from '@/services/orval-fetch';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
+import {
+  describeGoogleSheetsMetrics,
+  GoogleSheetsMetricGuide,
+} from '@/components/features/experiments/google-sheets-metric-guide';
 
 export type ExperimentFreqStackScreenMessage =
   | MetricBuilderAction
@@ -110,8 +114,12 @@ export const ExperimentFreqStackScreen = ({
   navigatePrev,
   navigateNext,
 }: ScreenProps<ExperimentFormData, ExperimentFreqStackScreenMessage, ExperimentScreenId>) => {
+  const { data: datasource } = useGetDatasource(data.datasourceId ?? '', {
+    swr: { enabled: !!data.datasourceId },
+  });
+  const isGoogleSheets = datasource?.dsn.type === 'google_sheets';
   const { data: tableData } = useInspectTableInDatasource(data.datasourceId ?? '', data.tableName ?? '', {
-    refresh: false,
+    refresh: isGoogleSheets,
   });
   const { trigger: triggerCreate, isMutating: triggerLoading } = useCreateExperiment(data.datasourceId!, undefined, {
     swr: {
@@ -128,9 +136,10 @@ export const ExperimentFreqStackScreen = ({
   const allTableFields = tableData?.fields ?? [];
 
   // Filter numeric and boolean fields for metrics
-  const metricFields = allTableFields.filter((f) =>
+  const numericFields = allTableFields.filter((f) =>
     ['integer', 'bigint', 'double precision', 'numeric', 'boolean'].includes(f.data_type),
   );
+  const metricFields = isGoogleSheets ? describeGoogleSheetsMetrics(numericFields) : numericFields;
   // Exclude primary key from stratum options.
   const availableStrata = removeFieldByName(allTableFields, data.primaryKey).toSorted((a, b) =>
     a.field_name.localeCompare(b.field_name),
@@ -166,6 +175,7 @@ export const ExperimentFreqStackScreen = ({
         <Heading as="h3" size="3">
           Metrics
         </Heading>
+        {isGoogleSheets && <GoogleSheetsMetricGuide metricFields={metricFields} />}
         <Card>
           <MetricBuilder
             primaryMetric={data.primaryMetric}

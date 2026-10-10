@@ -471,6 +471,8 @@ export interface CreateExperimentRequest {
 	webhooks?: string[];
 }
 
+export type CreateExperimentResponseGoogleSheetsExperimentUrl = string | null;
+
 export type CreateExperimentResponseStoppedAssignmentsAt = string | null;
 
 export type CreateExperimentResponseStoppedAssignmentsReason =
@@ -483,6 +485,7 @@ export type CreateExperimentResponseAssignSummary = AssignSummary | null;
 export interface CreateExperimentResponse {
 	experiment_id: string;
 	datasource_id: string;
+	google_sheets_experiment_url?: CreateExperimentResponseGoogleSheetsExperimentUrl;
 	state: ExperimentState;
 	stopped_assignments_at: CreateExperimentResponseStoppedAssignmentsAt;
 	stopped_assignments_reason: CreateExperimentResponseStoppedAssignmentsReason;
@@ -631,7 +634,12 @@ export interface DesignSpecMetricRequest {
 	available_n?: DesignSpecMetricRequestAvailableN;
 }
 
-export type Dsn = ApiOnlyDsn | PostgresDsn | BqDsn | RedshiftDsn;
+export type Dsn =
+	| ApiOnlyDsn
+	| PostgresDsn
+	| BqDsn
+	| RedshiftDsn
+	| GoogleSheetsDsn;
 
 export type EventSummaryLink = string | null;
 
@@ -663,6 +671,8 @@ export type ExperimentAnalysisResponse =
 	| FreqExperimentAnalysisResponse
 	| BanditExperimentAnalysisResponse;
 
+export type ExperimentConfigGoogleSheetsExperimentUrl = string | null;
+
 export type ExperimentConfigStoppedAssignmentsAt = string | null;
 
 export type ExperimentConfigStoppedAssignmentsReason =
@@ -675,6 +685,7 @@ export type ExperimentConfigAssignSummary = AssignSummary | null;
 export interface ExperimentConfig {
 	experiment_id: string;
 	datasource_id: string;
+	google_sheets_experiment_url?: ExperimentConfigGoogleSheetsExperimentUrl;
 	state: ExperimentState;
 	stopped_assignments_at: ExperimentConfigStoppedAssignmentsAt;
 	stopped_assignments_reason: ExperimentConfigStoppedAssignmentsReason;
@@ -801,6 +812,8 @@ export interface GetExperimentForUiResponse {
 	experiment_schema: GetExperimentForUiResponseExperimentSchema;
 }
 
+export type GetExperimentResponseGoogleSheetsExperimentUrl = string | null;
+
 export type GetExperimentResponseStoppedAssignmentsAt = string | null;
 
 export type GetExperimentResponseStoppedAssignmentsReason =
@@ -813,6 +826,7 @@ export type GetExperimentResponseAssignSummary = AssignSummary | null;
 export interface GetExperimentResponse {
 	experiment_id: string;
 	datasource_id: string;
+	google_sheets_experiment_url?: GetExperimentResponseGoogleSheetsExperimentUrl;
 	state: ExperimentState;
 	stopped_assignments_at: GetExperimentResponseStoppedAssignmentsAt;
 	stopped_assignments_reason: GetExperimentResponseStoppedAssignmentsReason;
@@ -882,6 +896,20 @@ export interface GetUserResponse {
 	organizations: OrganizationListItem[];
 }
 
+export type GoogleSheetsDsnType =
+	(typeof GoogleSheetsDsnType)[keyof typeof GoogleSheetsDsnType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const GoogleSheetsDsnType = {
+	google_sheets: "google_sheets",
+} as const;
+
+export interface GoogleSheetsDsn {
+	type: GoogleSheetsDsnType;
+	/** @maxLength 500 */
+	spreadsheet_url: string;
+}
+
 export interface HTTPExceptionError {
 	detail: string;
 }
@@ -911,10 +939,13 @@ export interface InspectDatasourceResponse {
 	tables: string[];
 }
 
+export type InspectDatasourceTableResponseDisplayName = string | null;
+
 export interface InspectDatasourceTableResponse {
 	primary_key_fields: string[];
 	detected_unique_id_fields: string[];
 	fields: FieldMetadata[];
+	display_name?: InspectDatasourceTableResponseDisplayName;
 }
 
 export interface Journey {
@@ -1601,6 +1632,8 @@ export type UpdateExperimentRequestDescription = string | null;
 
 export type UpdateExperimentRequestDesignUrl = string | null;
 
+export type UpdateExperimentRequestGoogleSheetsExperimentUrl = string | null;
+
 export type UpdateExperimentRequestStartDate = string | null;
 
 export type UpdateExperimentRequestEndDate = string | null;
@@ -1613,6 +1646,7 @@ export interface UpdateExperimentRequest {
 	name?: UpdateExperimentRequestName;
 	description?: UpdateExperimentRequestDescription;
 	design_url?: UpdateExperimentRequestDesignUrl;
+	google_sheets_experiment_url?: UpdateExperimentRequestGoogleSheetsExperimentUrl;
 	start_date?: UpdateExperimentRequestStartDate;
 	end_date?: UpdateExperimentRequestEndDate;
 	impact?: UpdateExperimentRequestImpact;

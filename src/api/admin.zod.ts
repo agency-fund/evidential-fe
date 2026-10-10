@@ -116,6 +116,7 @@ export const createDatasourceBodyDsnPortMaxOne = 65535;
 
 export const createDatasourceBodyDsnPasswordTypeDefaultTwo = "revealed";
 export const createDatasourceBodyDsnPasswordTypeDefaultThree = "hidden";
+export const createDatasourceBodyDsnSpreadsheetUrlMax = 500;
 
 export const createDatasourceBody = zod.object({
 	organization_id: zod.string().max(createDatasourceBodyOrganizationIdMax),
@@ -202,6 +203,12 @@ export const createDatasourceBody = zod.object({
 			dbname: zod.string(),
 			search_path: zod.union([zod.string(), zod.null()]),
 		}),
+		zod.object({
+			type: zod.enum(["google_sheets"]),
+			spreadsheet_url: zod
+				.string()
+				.max(createDatasourceBodyDsnSpreadsheetUrlMax),
+		}),
 	]),
 });
 
@@ -234,6 +241,7 @@ export const updateDatasourceBodyDsnPortMaxOne = 65535;
 
 export const updateDatasourceBodyDsnPasswordTypeDefaultTwo = "revealed";
 export const updateDatasourceBodyDsnPasswordTypeDefaultThree = "hidden";
+export const updateDatasourceBodyDsnSpreadsheetUrlMax = 500;
 
 export const updateDatasourceBody = zod.object({
 	name: zod
@@ -322,6 +330,12 @@ export const updateDatasourceBody = zod.object({
 					]),
 					dbname: zod.string(),
 					search_path: zod.union([zod.string(), zod.null()]),
+				}),
+				zod.object({
+					type: zod.enum(["google_sheets"]),
+					spreadsheet_url: zod
+						.string()
+						.max(updateDatasourceBodyDsnSpreadsheetUrlMax),
 				}),
 			]),
 			zod.null(),
@@ -1207,6 +1221,8 @@ export const updateExperimentBodyDescriptionMaxOne = 2000;
 
 export const updateExperimentBodyDesignUrlMaxOne = 500;
 
+export const updateExperimentBodyGoogleSheetsExperimentUrlMaxOne = 500;
+
 export const updateExperimentBody = zod.object({
 	name: zod
 		.union([zod.string().max(updateExperimentBodyNameMaxOne), zod.null()])
@@ -1219,6 +1235,12 @@ export const updateExperimentBody = zod.object({
 		.optional(),
 	design_url: zod
 		.union([zod.string().max(updateExperimentBodyDesignUrlMaxOne), zod.null()])
+		.optional(),
+	google_sheets_experiment_url: zod
+		.union([
+			zod.string().max(updateExperimentBodyGoogleSheetsExperimentUrlMaxOne),
+			zod.null(),
+		])
 		.optional(),
 	start_date: zod.union([zod.string().datetime({}), zod.null()]).optional(),
 	end_date: zod.union([zod.string().datetime({}), zod.null()]).optional(),

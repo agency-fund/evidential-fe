@@ -35,6 +35,7 @@ interface FormFields {
   project_id: string;
   dataset: string;
   credentials_json: GcpServiceAccount | Hidden;
+  spreadsheet_url: string;
 }
 
 const defaultFormData = (): FormFields => ({
@@ -49,6 +50,7 @@ const defaultFormData = (): FormFields => ({
   project_id: '',
   dataset: '',
   credentials_json: { type: 'hidden' },
+  spreadsheet_url: '',
 });
 
 const formDataForDatasource = (data: GetDatasourceResponse): FormFields => {
@@ -60,6 +62,9 @@ const formDataForDatasource = (data: GetDatasourceResponse): FormFields => {
 
   if (dsn.type === 'api_only') {
     return formData;
+  }
+  if (dsn.type === 'google_sheets') {
+    return { ...formData, spreadsheet_url: dsn.spreadsheet_url };
   }
   if (dsn.type === 'bigquery') {
     return {
@@ -133,9 +138,11 @@ export const EditDatasourceDialog = ({
 
   const dsn = data.dsn;
   const isBigQuery = dsn.type === 'bigquery';
+  const isGoogleSheets = dsn.type === 'google_sheets';
   const isNoDWH = dsn.type === 'api_only';
   const isRedshift = dsn.type === 'redshift';
-  const isDNSError = error instanceof ApiError && error.response.status === 400;
+  const isDNSError =
+    (dsn.type === 'postgres' || dsn.type === 'redshift') && error instanceof ApiError && error.response.status === 400;
 
   const handleClose = () => {
     setShowPassword(false);
@@ -162,6 +169,8 @@ export const EditDatasourceDialog = ({
       updateData.dsn = {
         type: 'api_only',
       };
+    } else if (isGoogleSheets) {
+      updateData.dsn = { type: 'google_sheets', spreadsheet_url: formData.spreadsheet_url.trim() };
     } else if (isBigQuery) {
       updateData.dsn = {
         type: 'bigquery',
@@ -249,7 +258,21 @@ export const EditDatasourceDialog = ({
               </label>
             )}
 
-            {!isNoDWH && !isBigQuery && (
+            {isGoogleSheets && (
+              <label>
+                <Text as="div" size="2" mb="1" weight="bold">
+                  Raw tab URL
+                </Text>
+                <TextField.Root
+                  type="url"
+                  required
+                  value={formData.spreadsheet_url}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, spreadsheet_url: e.target.value }))}
+                />
+              </label>
+            )}
+
+            {!isNoDWH && !isBigQuery && !isGoogleSheets && (
               <>
                 <label>
                   <Text as="div" size="2" mb="1" weight="bold">
