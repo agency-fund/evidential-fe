@@ -21,6 +21,10 @@ With participants but no observed outcomes, the wizard shows **Waiting for outco
 Choose the maximum available or a custom sample size; power and effect estimates remain unavailable. For clustered
 designs, partial cluster statistics are not sent as a complete estimate.
 
+## CI
+
+GitHub Actions validates pull requests targeting any branch, including stacked PRs.
+
 ## How is it built?
 
 | Capability               | Libraries                                                                                                                     |
