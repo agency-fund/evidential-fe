@@ -1221,6 +1221,8 @@ export const updateExperimentBodyDescriptionMaxOne = 2000;
 
 export const updateExperimentBodyDesignUrlMaxOne = 500;
 
+export const updateExperimentBodyGoogleSheetsExperimentUrlMaxOne = 500;
+
 export const updateExperimentBody = zod.object({
 	name: zod
 		.union([zod.string().max(updateExperimentBodyNameMaxOne), zod.null()])
@@ -1233,6 +1235,12 @@ export const updateExperimentBody = zod.object({
 		.optional(),
 	design_url: zod
 		.union([zod.string().max(updateExperimentBodyDesignUrlMaxOne), zod.null()])
+		.optional(),
+	google_sheets_experiment_url: zod
+		.union([
+			zod.string().max(updateExperimentBodyGoogleSheetsExperimentUrlMaxOne),
+			zod.null(),
+		])
 		.optional(),
 	start_date: zod.union([zod.string().datetime({}), zod.null()]).optional(),
 	end_date: zod.union([zod.string().datetime({}), zod.null()]).optional(),

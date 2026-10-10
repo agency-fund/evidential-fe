@@ -330,7 +330,7 @@ export function AddDatasourceFormFields({
         <>
           <label>
             <Text as="div" size="2" mb="1" weight="bold">
-              Spreadsheet URL
+              Raw tab URL
             </Text>
             <TextField.Root
               type="url"

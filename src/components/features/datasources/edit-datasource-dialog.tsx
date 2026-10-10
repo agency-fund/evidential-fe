@@ -105,12 +105,10 @@ export const EditDatasourceDialog = ({
   organizationId,
   datasourceId,
   variant = 'icon',
-  buttonLabel = 'Configure',
 }: {
   organizationId?: string;
   datasourceId: string;
   variant?: 'icon' | 'button';
-  buttonLabel?: string;
 }) => {
   const [open, setOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -218,7 +216,7 @@ export const EditDatasourceDialog = ({
         ) : (
           <Button>
             <GearIcon />
-            {buttonLabel}
+            Configure
           </Button>
         )}
       </Dialog.Trigger>
@@ -263,7 +261,7 @@ export const EditDatasourceDialog = ({
             {isGoogleSheets && (
               <label>
                 <Text as="div" size="2" mb="1" weight="bold">
-                  Spreadsheet URL
+                  Raw tab URL
                 </Text>
                 <TextField.Root
                   type="url"

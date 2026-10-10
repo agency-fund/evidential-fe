@@ -3,21 +3,22 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { Button, Card, Flex, Link, Text } from '@radix-ui/themes';
 import { ReloadIcon } from '@radix-ui/react-icons';
-import { useGetDatasource } from '@/api/admin';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
-import { EditDatasourceDialog } from '@/components/features/datasources/edit-datasource-dialog';
+import { GoogleSheetsExperimentDialog } from '@/components/features/experiments/google-sheets-experiment-dialog';
 
 const DEMO_DURATION_MS = 15 * 60 * 1000;
 const POLL_INTERVAL_MS = 10 * 1000;
 
 function SheetDemoPolling({
-  spreadsheetUrl,
+  rawSpreadsheetUrl,
+  experimentSpreadsheetUrl,
   datasourceId,
   experimentId,
   onRefresh,
 }: {
-  spreadsheetUrl: string;
+  rawSpreadsheetUrl: string;
+  experimentSpreadsheetUrl: string | null;
   datasourceId: string;
   experimentId: string;
   onRefresh: (signal: AbortSignal) => Promise<void>;
@@ -30,6 +31,7 @@ function SheetDemoPolling({
   const manualController = useRef<AbortController | null>(null);
 
   async function refreshAnalysis(signal: AbortSignal) {
+    if (!experimentSpreadsheetUrl) return;
     // Manual clicks and automatic polls share a single in-flight request.
     if (requestInFlight.current) return;
     requestInFlight.current = true;
@@ -107,19 +109,46 @@ function SheetDemoPolling({
           />
         </Flex>
         <Text size="2">
-          2. Keep the setup tab. Use File → Import → Upload → Insert new sheet(s); name the new tab Experiment. Disable
+          2. Keep the Raw tab. Use File → Import → Upload → Insert new sheet(s); name the new tab Experiment. Disable
           “Convert text to numbers, dates, and formulas” to preserve IDs.
         </Text>
         <Flex align="center" gap="3" wrap="wrap">
-          <Text size="2">3. Connect the Experiment tab’s URL.</Text>
-          <EditDatasourceDialog datasourceId={datasourceId} variant="button" buttonLabel="Connect Experiment tab" />
+          <Text size="2">3. Connect the Experiment tab’s URL in this experiment’s settings.</Text>
+          <GoogleSheetsExperimentDialog
+            datasourceId={datasourceId}
+            experimentId={experimentId}
+            rawSpreadsheetUrl={rawSpreadsheetUrl}
+            experimentSpreadsheetUrl={experimentSpreadsheetUrl}
+          />
         </Flex>
+        <Flex align="center" gap="3" wrap="wrap">
+          <Link href={rawSpreadsheetUrl} target="_blank" rel="noopener noreferrer">
+            Open Raw tab (datasource)
+          </Link>
+          {experimentSpreadsheetUrl && (
+            <Link href={experimentSpreadsheetUrl} target="_blank" rel="noopener noreferrer">
+              Open Experiment tab (outcomes)
+            </Link>
+          )}
+        </Flex>
+        {!experimentSpreadsheetUrl && (
+          <Text size="2" color="gray">
+            Connect an Experiment tab first to refresh outcomes or start the live demo.
+          </Text>
+        )}
         <Text size="2">
           4. Enter outcomes in the Experiment tab, then Refresh. Blank means missing; zero is a result. Comparisons need
           results in both arms.
         </Text>
         <Flex align="center" gap="3" wrap="wrap">
-          <Button type="button" size="2" variant="soft" onClick={handleRefresh} loading={isRefreshing}>
+          <Button
+            type="button"
+            size="2"
+            variant="soft"
+            onClick={handleRefresh}
+            loading={isRefreshing}
+            disabled={!experimentSpreadsheetUrl}
+          >
             <ReloadIcon />
             Refresh
           </Button>
@@ -127,7 +156,7 @@ function SheetDemoPolling({
             type="button"
             size="2"
             variant="soft"
-            disabled={expiresAt === null && isRefreshing}
+            disabled={!experimentSpreadsheetUrl || (expiresAt === null && isRefreshing)}
             onClick={() => {
               setError(null);
               setExpiresAt(expiresAt === null ? Date.now() + DEMO_DURATION_MS : null);
@@ -135,9 +164,6 @@ function SheetDemoPolling({
           >
             {expiresAt === null ? 'Start live demo' : 'Stop live demo'}
           </Button>
-          <Link href={spreadsheetUrl} target="_blank" rel="noopener noreferrer">
-            Open spreadsheet
-          </Link>
           <Text size="2" color="gray">
             {expiresAt === null
               ? 'Live demo: refreshes every 10 seconds for 15 minutes.'
@@ -164,18 +190,21 @@ function SheetDemoPolling({
 export function GoogleSheetsDemoControls({
   datasourceId,
   experimentId,
+  rawSpreadsheetUrl,
+  experimentSpreadsheetUrl,
   onRefresh,
 }: {
   datasourceId: string;
   experimentId: string;
+  rawSpreadsheetUrl: string;
+  experimentSpreadsheetUrl: string | null;
   onRefresh: (signal: AbortSignal) => Promise<void>;
 }) {
-  const { data } = useGetDatasource(datasourceId);
-  if (data?.dsn.type !== 'google_sheets') return null;
   return (
     <SheetDemoPolling
-      key={data.dsn.spreadsheet_url}
-      spreadsheetUrl={data.dsn.spreadsheet_url}
+      key={`${datasourceId}/${experimentId}/${experimentSpreadsheetUrl ?? 'disconnected'}`}
+      rawSpreadsheetUrl={rawSpreadsheetUrl}
+      experimentSpreadsheetUrl={experimentSpreadsheetUrl}
       datasourceId={datasourceId}
       experimentId={experimentId}
       onRefresh={onRefresh}

@@ -28,8 +28,9 @@ avoid concurrent pnpm installs.
 
 ## Google Sheets demos
 
-The experiment page guides CSV import into a separate tab, reconnecting its URL, and refreshing outcomes. Each refresh
-selects a saved snapshot; live demo refreshes run every 10 seconds for up to 15 minutes. See the
+Keep the Raw tab URL on the datasource; connect each Experiment tab separately through the experiment page. The
+connection dialog shows both URLs and updates only that experiment. Setup and CSV export keep using the raw tab. Each
+refresh selects a saved snapshot; live demo refreshes run every 10 seconds for up to 15 minutes. See the
 [backend setup guide](https://github.com/agency-fund/evidential-be#google-sheets-demos) for sheet requirements.
 
 ## How is it built?

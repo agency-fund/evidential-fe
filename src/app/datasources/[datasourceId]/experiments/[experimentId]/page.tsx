@@ -1,11 +1,12 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useEffect, useEffectEvent, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { mutate } from 'swr';
 import { Badge, Box, Flex, Heading, Select, Separator, Tabs, Text, Tooltip } from '@radix-ui/themes';
 import { CalendarIcon, CodeIcon, FileTextIcon, InfoCircledIcon, LayersIcon, PersonIcon } from '@radix-ui/react-icons';
 import {
+  getAnalyzeExperimentKey,
   getGetExperimentForUiKey,
   useAnalyzeCmabExperiment,
   useAnalyzeExperiment,
@@ -74,6 +75,15 @@ import { GoogleSheetsDemoControls } from '@/components/features/experiments/goog
 
 const SNAPSHOT_ERROR_ALERT_THRESHOLD_MS = 8 * 60 * 60 * 1000;
 
+const EMPTY_LIVE_ANALYSIS: AnalysisState = {
+  key: 'live',
+  data: undefined,
+  updated_at: new Date(0),
+  label: 'No live data yet',
+  effectSizesByMetric: undefined,
+  banditEffects: undefined,
+};
+
 /** Whether a snapshot failure is recent enough to be worth calling out to the user. */
 function isSnapshotFailureRecent(latestFailure: Date | null): boolean {
   return latestFailure !== null && Date.now() - latestFailure.getTime() <= SNAPSHOT_ERROR_ALERT_THRESHOLD_MS;
@@ -140,14 +150,6 @@ export default function ExperimentViewPage() {
   const [lastErrorTimestamp, setLastErrorTimestamp] = useState<null | Date>(null);
   const [isLastSnapshotErrorRelevant, setIsLastSnapshotErrorRelevant] = useState(false);
 
-  const [liveAnalysis, setLiveAnalysis] = useState<AnalysisState>({
-    key: 'live',
-    data: undefined,
-    updated_at: new Date(),
-    label: 'No live data yet',
-    effectSizesByMetric: undefined,
-    banditEffects: undefined,
-  });
   // The key of the selected analysis to display ('live' or a snapshot ID) in the Forest Plot.
   const [selectedAnalysisKey, setSelectedAnalysisKey] = useState<AnalysisState['key'] | null>(null);
   const [selectedMetricName, setSelectedMetricName] = useState<string | null>(null);
@@ -180,6 +182,26 @@ export default function ExperimentViewPage() {
 
   const { data: datasource } = useGetDatasource(datasourceId, { swr: { enabled: !!datasourceId } });
   const isSheetsDemo = isGoogleSheetsDemoExperiment(datasource, experiment?.config.design_spec);
+  const googleSheetsExperimentUrl = experiment?.config.google_sheets_experiment_url ?? null;
+  // Wait for the datasource before deciding whether an outcomes connection is required.
+  const canAnalyzeLive = !!datasource && !!experiment && (!isSheetsDemo || !!googleSheetsExperimentUrl);
+  const liveAnalysisConnectionKey = `${datasourceId}/${experimentId}/${isSheetsDemo ? (googleSheetsExperimentUrl ?? 'disconnected') : 'datasource'}`;
+  const isCmab = isCmabExperiment(experiment?.config);
+  const liveAnalysisKey = useMemo(
+    () =>
+      canAnalyzeLive && !isCmab
+        ? [...getAnalyzeExperimentKey(datasourceId, experimentId), ...(isSheetsDemo ? [googleSheetsExperimentUrl] : [])]
+        : null,
+    [canAnalyzeLive, isCmab, datasourceId, experimentId, isSheetsDemo, googleSheetsExperimentUrl],
+  );
+
+  useEffect(() => {
+    if (!isSheetsDemo || !liveAnalysisKey) return;
+    // Drop the previous tab's cached live result, including an in-flight revalidation.
+    return () => {
+      void mutate(liveAnalysisKey, undefined, { revalidate: false });
+    };
+  }, [isSheetsDemo, liveAnalysisKey]);
   const { alpha } = getAlphaAndPower(experiment?.config);
 
   const {
@@ -189,14 +211,14 @@ export default function ExperimentViewPage() {
     error: liveAnalysisError,
   } = useAnalyzeExperiment(datasourceId, experimentId, undefined, {
     swr: {
-      enabled: !!datasourceId && !!experiment && !isCmabExperiment(experiment.config),
+      enabled: canAnalyzeLive && !isCmabExperiment(experiment?.config),
+      swrKey: () => liveAnalysisKey,
       // Disable revalidation to only allow manual triggering of the live analysis
       revalidateIfStale: false,
       revalidateOnFocus: false,
       revalidateOnMount: false,
       revalidateOnReconnect: false,
       shouldRetryOnError: false,
-      onSuccess: (analysisData) => handleLiveAnalysisSuccess(analysisData),
     },
   });
 
@@ -205,11 +227,21 @@ export default function ExperimentViewPage() {
     data: analyzeCmabExperimentData,
     isMutating: isLoadingLiveCmabAnalysis,
     error: liveCmabAnalysisError,
-  } = useAnalyzeCmabExperiment(datasourceId, experimentId, {
-    swr: {
-      onSuccess: (analysisData) => handleLiveAnalysisSuccess(analysisData),
-    },
-  });
+  } = useAnalyzeCmabExperiment(datasourceId, experimentId);
+
+  const liveAnalysisData = isCmab ? analyzeCmabExperimentData : analyzeExperimentData;
+  const liveAnalysis = useMemo((): AnalysisState => {
+    if (!canAnalyzeLive || liveAnalysisData === undefined) return EMPTY_LIVE_ANALYSIS;
+    const date = new Date(liveAnalysisData.created_at);
+    return {
+      key: 'live',
+      data: liveAnalysisData,
+      updated_at: date,
+      label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
+      effectSizesByMetric: precomputeFreqEffectsByMetric(liveAnalysisData, alpha),
+      banditEffects: precomputeBanditEffects(liveAnalysisData),
+    };
+  }, [canAnalyzeLive, liveAnalysisData, alpha]);
 
   const {
     data: snapshotList,
@@ -226,28 +258,10 @@ export default function ExperimentViewPage() {
         enabled: !!organizationId && !!datasourceId && !!experimentId && !!experiment,
         shouldRetryOnError: false,
         focusThrottleInterval: 15 * 60_000, // refresh on focus after 15 minutes
-        onSuccess: async (data) => {
-          // Do live analysis if there are no snapshots and we don't have live analysis data already. This avoids
-          // duplicating a potentially expensive query when useListSnapshots runs.
-          if (data.items.length === 0) {
-            // No snapshots. First check if we have (cached) live analysis data. If so, use that for display.
-            if (isCmabExperiment(experiment?.config) && analyzeCmabExperimentData !== undefined) {
-              handleLiveAnalysisSuccess(analyzeCmabExperimentData);
-            } else if (analyzeExperimentData !== undefined) {
-              handleLiveAnalysisSuccess(analyzeExperimentData);
-            } else {
-              await triggerLiveAnalysis();
-            }
-            return;
-          }
-
+        onSuccess: (data) => {
           const latestFailure = data.latest_failure === null ? null : new Date(data.latest_failure);
           setLastErrorTimestamp(latestFailure);
           setIsLastSnapshotErrorRelevant(isSnapshotFailureRecent(latestFailure));
-        },
-        onError: async () => {
-          // Trigger live analysis if snapshot loading fails
-          await triggerLiveAnalysis();
         },
       },
     },
@@ -268,22 +282,22 @@ export default function ExperimentViewPage() {
 
   // Wrapper around the live analysis functions for CMAB and non-CMAB experiments.
   const triggerLiveAnalysis = async (requestOverride?: CMABContextInputRequest) => {
+    if (!canAnalyzeLive) return;
     const request = requestOverride ?? cmabAnalysisRequest;
     return isCmabExperiment(experiment?.config) ? await analyzeLiveCmab(request) : await analyzeLive();
   };
 
-  const handleLiveAnalysisSuccess = (analysisData: ExperimentAnalysisResponse) => {
-    const date = new Date();
-    const analysis: AnalysisState = {
-      key: 'live',
-      data: analysisData,
-      updated_at: date,
-      label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
-      effectSizesByMetric: precomputeFreqEffectsByMetric(analysisData, alpha),
-      banditEffects: precomputeBanditEffects(analysisData),
-    };
-    setLiveAnalysis(analysis);
-  };
+  const initializeLiveAnalysis = useEffectEvent(async () => {
+    if (canAnalyzeLive && liveAnalysisData === undefined) {
+      await triggerLiveAnalysis();
+    }
+  });
+
+  useEffect(() => {
+    // Use loaded history and config so an early snapshot response cannot race the datasource.
+    if (!canAnalyzeLive || (snapshotList?.items.length !== 0 && !analysisHistoryError)) return;
+    void initializeLiveAnalysis();
+  }, [canAnalyzeLive, liveAnalysisConnectionKey, snapshotList, analysisHistoryError]);
 
   const handleSelectAnalysis = async (key: string) => {
     setSelectedAnalysisKey(key);
@@ -498,13 +512,17 @@ export default function ExperimentViewPage() {
         )}
 
         {/* Analysis Section */}
-        {experiment.config.state === 'committed' && design_spec.experiment_type === 'freq_preassigned' && (
+        {experiment.config.state === 'committed' && isSheetsDemo && datasource?.dsn.type === 'google_sheets' && (
           <GoogleSheetsDemoControls
             key={`${datasourceId}/${experimentId}`}
             datasourceId={datasourceId}
             experimentId={experimentId}
+            rawSpreadsheetUrl={datasource.dsn.spreadsheet_url}
+            experimentSpreadsheetUrl={googleSheetsExperimentUrl}
             onRefresh={async (signal) => {
+              if (!canAnalyzeLive) return;
               const snapshot = await createExperimentSnapshot(organizationId, datasourceId, experimentId, signal);
+              signal.throwIfAborted();
               await updateSnapshotHistory(
                 (current) => ({
                   ...current,
@@ -513,6 +531,7 @@ export default function ExperimentViewPage() {
                 }),
                 { revalidate: false },
               );
+              signal.throwIfAborted();
               setSelectedAnalysisKey(snapshot.id);
             }}
           />
@@ -532,6 +551,7 @@ export default function ExperimentViewPage() {
                 isLastSnapshotErrorRelevant={isLastSnapshotErrorRelevant}
                 isRefreshingLiveAnalysis={isLoadingLiveAnalysis || isLoadingLiveCmabAnalysis}
                 onRefreshLiveAnalysis={() => triggerLiveAnalysis()}
+                isLiveAnalysisAvailable={canAnalyzeLive}
               />
               {isFrequentistSpec(design_spec) ? (
                 <Flex gap="3" align="center" wrap="wrap">
@@ -617,6 +637,12 @@ export default function ExperimentViewPage() {
           }
         >
           <Flex direction="column" gap="3">
+            {isSheetsDemo && !googleSheetsExperimentUrl && (
+              <Text size="2" color="gray">
+                Connect an Experiment tab in experiment settings to view live outcomes. Saved snapshots remain
+                available.
+              </Text>
+            )}
             <Tabs.Root defaultValue="leaderboard">
               <Tabs.List>
                 <Tabs.Trigger value="leaderboard">Leaderboard</Tabs.Trigger>
@@ -637,7 +663,7 @@ export default function ExperimentViewPage() {
                 <Tabs.Content value="leaderboard">
                   <Flex direction="column" gap="3" py="3">
                     {/* Analysis may not be available yet or the experiment hasn't collected enough data. */}
-                    {(liveAnalysisError || liveCmabAnalysisError) && (
+                    {canAnalyzeLive && (liveAnalysisError || liveCmabAnalysisError) && (
                       <GenericErrorCallout
                         title="Error loading live analysis"
                         error={liveAnalysisError ?? liveCmabAnalysisError}
