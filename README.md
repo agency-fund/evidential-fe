@@ -23,7 +23,8 @@ designs, partial cluster statistics are not sent as a complete estimate.
 
 ## CI
 
-GitHub Actions validates pull requests targeting any branch, including stacked PRs.
+GitHub Actions validates pull requests targeting any branch, including stacked PRs. Lint checks run sequentially to
+avoid concurrent pnpm installs.
 
 ## How is it built?
 
