@@ -12,8 +12,8 @@ export interface EffectSizeData {
   ci95: number; // for symmetric ErrorBars
   ci95Lower: number;
   ci95Upper: number;
-  absCI95Lower: number;
-  absCI95Upper: number;
+  meanCILower: number;
+  meanCIUpper: number;
   pValue: number | null;
   significant: boolean; // whether this non-baseline arm's effect is statistically significant
   invalidStatTest: boolean;
