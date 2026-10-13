@@ -1,4 +1,4 @@
-import { TimeSeriesDataPoint } from './forest-plot-utils';
+import { hasConfidenceInterval, TimeSeriesDataPoint } from './forest-plot-utils';
 import { useRechartScales } from './use-chart-scales';
 
 export interface ConfidenceIntervalProps {
@@ -38,14 +38,14 @@ export function ConfidenceInterval({
     <g>
       {chartData.map((dataPoint, pointIndex) => {
         const armData = dataPoint.armEffects.get(armId);
-        if (!armData) return null;
+        if (!armData || !hasConfidenceInterval(armData)) return null;
 
         // Rescale the x and y values to the pixel coordinates
         const x = scaleX(dataPoint.dateTimestampMs) + jitterOffset;
         const yLower = scaleY(armData.lowerCI);
         const yUpper = scaleY(armData.upperCI);
 
-        if (isNaN(x) || isNaN(yLower) || isNaN(yUpper)) return null;
+        if (!Number.isFinite(x) || !Number.isFinite(yLower) || !Number.isFinite(yUpper)) return null;
 
         return (
           <g

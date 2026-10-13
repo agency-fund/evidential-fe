@@ -14,6 +14,7 @@ import {
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import {
   computeAxisBounds,
+  hasConfidenceInterval,
   TimeSeriesDataPoint,
   ArmMetadata,
   calculateJitterOffset,
@@ -33,6 +34,7 @@ interface ForestTimeseriesPlotProps {
   armMetadata: ArmMetadata[];
   minDate: Date;
   maxDate: Date;
+  confidenceLevel?: number;
   // Can notify parent of what snapshot key was used for the data point that was clicked.
   onPointClick?: (key: string) => void;
 }
@@ -41,9 +43,16 @@ interface ForestTimeseriesPlotProps {
 interface CustomTimeseriesTooltipProps extends TooltipContentProps<ValueType, NameType> {
   armMetadata: ArmMetadata[];
   selectedArmId: string | null;
+  confidenceLevel: number;
 }
 
-function CustomTimeseriesTooltip({ active, payload, armMetadata, selectedArmId }: CustomTimeseriesTooltipProps) {
+function CustomTimeseriesTooltip({
+  active,
+  payload,
+  armMetadata,
+  selectedArmId,
+  confidenceLevel,
+}: CustomTimeseriesTooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
 
   // The payload we're expecting comes from JitteredLine, which uses the JitteredLinePayloadData
@@ -74,7 +83,9 @@ function CustomTimeseriesTooltip({ active, payload, armMetadata, selectedArmId }
                 <Text size="2"> {armData.absMean.toFixed(2)}</Text>
               </Flex>
               <Text size="1">
-                95% CI: [{armData.lowerCI.toFixed(2)}, {armData.upperCI.toFixed(2)}]
+                {hasConfidenceInterval(armData)
+                  ? `${confidenceLevel.toLocaleString(undefined, { style: 'percent', maximumFractionDigits: 2 })} CI: [${armData.lowerCI.toFixed(2)}, ${armData.upperCI.toFixed(2)}]`
+                  : 'Confidence interval unavailable'}
               </Text>
             </Flex>
           );
@@ -89,6 +100,7 @@ export default function ForestTimeseriesPlot({
   armMetadata,
   minDate,
   maxDate,
+  confidenceLevel = 0.95,
   onPointClick,
 }: ForestTimeseriesPlotProps) {
   const [selectedArmId, setSelectedArmId] = useState<string | null>(null);
@@ -126,8 +138,13 @@ export default function ForestTimeseriesPlot({
   });
 
   const yAxisValues: number[] = [];
-  chartData.forEach((point) => point.armEffects.forEach((arm) => yAxisValues.push(arm.lowerCI, arm.upperCI)));
-  const [minY, maxY] = computeAxisBounds(yAxisValues);
+  chartData.forEach((point) =>
+    point.armEffects.forEach((arm) => {
+      yAxisValues.push(arm.absMean);
+      if (hasConfidenceInterval(arm)) yAxisValues.push(arm.lowerCI, arm.upperCI);
+    }),
+  );
+  const [minY, maxY] = computeAxisBounds(yAxisValues.filter(Number.isFinite));
 
   // Generate all date ticks between minDate and maxDate for x-axis
   const allDateTicks: number[] = [];
@@ -191,7 +208,12 @@ export default function ForestTimeseriesPlot({
             />
             <Tooltip
               content={(props) => (
-                <CustomTimeseriesTooltip {...props} armMetadata={armMetadata} selectedArmId={effectiveSelectedArmId} />
+                <CustomTimeseriesTooltip
+                  {...props}
+                  armMetadata={armMetadata}
+                  selectedArmId={effectiveSelectedArmId}
+                  confidenceLevel={confidenceLevel}
+                />
               )}
             />
             <Legend
