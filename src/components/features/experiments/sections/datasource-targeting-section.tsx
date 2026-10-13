@@ -4,6 +4,7 @@ import { Button, DataList, Flex, Table, Text } from '@radix-ui/themes';
 import { Pencil2Icon } from '@radix-ui/react-icons';
 import { Filter } from '@/api/methods.schemas';
 import { SectionCard } from '@/components/ui/cards/section-card';
+import { BETWEEN_WITH_NULL_LENGTH } from '../querybuilder/utils';
 
 interface DatasourceTargetingSectionProps {
   tableName?: string;
@@ -34,9 +35,11 @@ const formatFilterValueDisplay = (filter: Filter) => {
   if (filter.relation === 'between') {
     const min = filter.value[0] ?? null;
     const max = filter.value[1] ?? null;
-    if (min !== null && max === null) return String(min);
-    if (min === null && max !== null) return String(max);
-    return `${min === null ? '-' : String(min)} to ${max === null ? '-' : String(max)}`;
+    // A third, null element means rows with NULL are included as well.
+    const withNull = filter.value.length === BETWEEN_WITH_NULL_LENGTH && filter.value[2] === null ? ', (null)' : '';
+    if (min !== null && max === null) return `${String(min)}${withNull}`;
+    if (min === null && max !== null) return `${String(max)}${withNull}`;
+    return `${min === null ? '-' : String(min)} to ${max === null ? '-' : String(max)}${withNull}`;
   }
   return formatFilterValue(filter.value);
 };

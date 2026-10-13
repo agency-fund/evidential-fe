@@ -1,7 +1,6 @@
 'use client';
 
-import { Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
-import { Cross2Icon } from '@radix-ui/react-icons';
+import { Flex, Select, Text, TextField } from '@radix-ui/themes';
 import { DataType, Filter } from '@/api/methods.schemas';
 import {
   createDefaultValueForOperator,
@@ -14,6 +13,7 @@ import React, { useState } from 'react';
 import { z } from 'zod';
 import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
 import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
+import { RemoveValueButton } from '@/components/features/experiments/querybuilder/remove-value-button';
 
 export interface BigIntFilterProps {
   filter: Filter & TypedFilter<string>;
@@ -162,6 +162,15 @@ export function BigIntFilter({ filter, onChange, dataType }: BigIntFilterProps) 
     });
   };
 
+  // Between-based operators can't express "only NULL", so removing the value(s) while NULL is
+  // included switches to an 'Is one of' list holding only NULL.
+  const removeValueForBetweenBasedOp = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setOperator('in-list');
+    setListValues([]);
+    onChange({ ...filter, relation: 'includes', value: [null] });
+  };
+
   const handleNullChange = (includeNull: boolean) => {
     let baseValues: (string | null)[];
     if (BETWEEN_BASED_OPS.has(operator)) {
@@ -181,30 +190,34 @@ export function BigIntFilter({ filter, onChange, dataType }: BigIntFilterProps) 
       case 'gte':
         return (
           <Flex direction="column" gap="1">
-            <TextField.Root
-              type="text"
-              inputMode="decimal"
-              step={getStepAttribute()}
-              value={greaterThanValue}
-              style={{ width: '20ch' }}
-              onChange={(e) => {
-                const inputValue = e.target.value;
-                setGreaterThanValue(inputValue);
+            <Flex gap="1" align="center">
+              <TextField.Root
+                type="text"
+                inputMode="decimal"
+                step={getStepAttribute()}
+                value={greaterThanValue}
+                style={{ width: '20ch' }}
+                onChange={(e) => {
+                  const inputValue = e.target.value;
+                  setGreaterThanValue(inputValue);
 
-                const parsedValue = parseValue(inputValue);
-                if (parsedValue !== null) {
-                  onChange({ ...filter, value: [parsedValue, null, ...includesNullValue] });
-                }
-              }}
-              onBlur={() => {
-                // On blur, if the field is empty, set a default value
-                if (greaterThanValue.trim() === '' || greaterThanValue === '-') {
-                  const defaultValue = '0';
-                  setGreaterThanValue(String(defaultValue));
-                  onChange({ ...filter, value: [defaultValue, null, ...includesNullValue] });
-                }
-              }}
-            />
+                  const parsedValue = parseValue(inputValue);
+                  if (parsedValue !== null) {
+                    onChange({ ...filter, value: [parsedValue, null, ...includesNullValue] });
+                  }
+                }}
+                onBlur={() => {
+                  // On blur, if the field is empty, set a default value
+                  if (greaterThanValue.trim() === '' || greaterThanValue === '-') {
+                    const defaultValue = '0';
+                    setGreaterThanValue(String(defaultValue));
+                    onChange({ ...filter, value: [defaultValue, null, ...includesNullValue] });
+                  }
+                }}
+              />
+              {/* Only show the remove button if null is included, since we allow a single null value. */}
+              {includesNull ? <RemoveValueButton onClick={removeValueForBetweenBasedOp} /> : null}
+            </Flex>
             <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="176px" />
           </Flex>
         );
@@ -212,30 +225,34 @@ export function BigIntFilter({ filter, onChange, dataType }: BigIntFilterProps) 
       case 'lte':
         return (
           <Flex direction="column" gap="1">
-            <TextField.Root
-              type="text"
-              inputMode="decimal"
-              step={getStepAttribute()}
-              value={lessThanValue}
-              style={{ width: '20ch' }}
-              onChange={(e) => {
-                const inputValue = e.target.value;
-                setLessThanValue(inputValue);
+            <Flex gap="1" align="center">
+              <TextField.Root
+                type="text"
+                inputMode="decimal"
+                step={getStepAttribute()}
+                value={lessThanValue}
+                style={{ width: '20ch' }}
+                onChange={(e) => {
+                  const inputValue = e.target.value;
+                  setLessThanValue(inputValue);
 
-                const parsedValue = parseValue(inputValue);
-                if (parsedValue !== null) {
-                  onChange({ ...filter, value: [null, parsedValue, ...includesNullValue] });
-                }
-              }}
-              onBlur={() => {
-                // On blur, if the field is empty, set a default value
-                if (lessThanValue.trim() === '' || lessThanValue === '-') {
-                  const defaultValue = '0';
-                  setLessThanValue(defaultValue);
-                  onChange({ ...filter, value: [null, defaultValue, ...includesNullValue] });
-                }
-              }}
-            />
+                  const parsedValue = parseValue(inputValue);
+                  if (parsedValue !== null) {
+                    onChange({ ...filter, value: [null, parsedValue, ...includesNullValue] });
+                  }
+                }}
+                onBlur={() => {
+                  // On blur, if the field is empty, set a default value
+                  if (lessThanValue.trim() === '' || lessThanValue === '-') {
+                    const defaultValue = '0';
+                    setLessThanValue(defaultValue);
+                    onChange({ ...filter, value: [null, defaultValue, ...includesNullValue] });
+                  }
+                }}
+              />
+              {/* Only show the remove button if null is included, since we allow a single null value. */}
+              {includesNull ? <RemoveValueButton onClick={removeValueForBetweenBasedOp} /> : null}
+            </Flex>
             <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="176px" />
           </Flex>
         );
@@ -292,6 +309,8 @@ export function BigIntFilter({ filter, onChange, dataType }: BigIntFilterProps) 
                   }
                 }}
               />
+              {/* Only show the remove button if null is included, since we allow a single null value. */}
+              {includesNull ? <RemoveValueButton onClick={removeValueForBetweenBasedOp} /> : null}
             </Flex>
             <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="375px" />
           </Flex>
@@ -329,17 +348,19 @@ export function BigIntFilter({ filter, onChange, dataType }: BigIntFilterProps) 
                     }
                   }}
                 />
-                {/* Only show the remove button if there are multiple non-null values or if null
-                    is included, since we allow a single null value. */}
-                {(nonNullValues.length > 1 || includesNull) && (
-                  <IconButton variant="soft" size="1" onClick={(e) => removeValueForListBasedOp(idx, e)}>
-                    <Cross2Icon />
-                  </IconButton>
-                )}
+                {/* Keep at least one value; NULL alone is enough. */}
+                {nonNullValues.length > 1 || includesNull ? (
+                  <RemoveValueButton onClick={(e) => removeValueForListBasedOp(idx, e)} />
+                ) : null}
               </Flex>
             ))}
 
-            <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="176px" />
+            <IncludeNullButton
+              checked={includesNull}
+              onChange={handleNullChange}
+              singularValue={listValues.length === 0}
+              minWidth="176px"
+            />
 
             {/* Always show add button for list operators, even when no values */}
             <AddValueButton minWidth="176px" onClick={addValueForListBasedOp} />
