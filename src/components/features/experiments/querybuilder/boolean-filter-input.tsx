@@ -1,11 +1,11 @@
 'use client';
 
-import { Flex, IconButton, Select, TextField } from '@radix-ui/themes';
-import { Cross2Icon } from '@radix-ui/react-icons';
+import { Flex, Select } from '@radix-ui/themes';
 import { Filter } from '@/api/methods.schemas';
 import { TypedFilter } from '@/components/features/experiments/querybuilder/utils';
 import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
 import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
+import { RemoveValueButton } from '@/components/features/experiments/querybuilder/remove-value-button';
 
 export interface BooleanFilterProps {
   filter: Filter & TypedFilter<boolean>;
@@ -16,11 +16,18 @@ export function BooleanFilter({ filter, onChange }: BooleanFilterProps) {
   const nonNullValues = filter.value.filter((v) => v !== null);
   const hasTrue = filter.value.some((v) => v === true);
   const includesNull = filter.value.some((v) => v === null);
+  const operator = filter.relation === 'excludes' ? 'is-not' : 'is';
+
+  const handleOperatorChange = (newOperator: string) => {
+    onChange({
+      ...filter,
+      relation: newOperator === 'is-not' ? 'excludes' : 'includes',
+    });
+  };
 
   const handleValueChange = (newValue: boolean) => {
     onChange({
       ...filter,
-      relation: 'includes',
       value: includesNull ? [newValue, null] : [newValue],
     });
   };
@@ -66,11 +73,7 @@ export function BooleanFilter({ filter, onChange }: BooleanFilterProps) {
             </Select.Root>
 
             {/* Only show the remove button if null is included */}
-            {includesNull && (
-              <IconButton variant="soft" size="1" onClick={removeValue}>
-                <Cross2Icon />
-              </IconButton>
-            )}
+            {includesNull ? <RemoveValueButton onClick={removeValue} /> : null}
           </Flex>
 
           <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="128px" />
@@ -90,7 +93,13 @@ export function BooleanFilter({ filter, onChange }: BooleanFilterProps) {
 
   return (
     <Flex gap="2" wrap="wrap">
-      <TextField.Root value="Is" disabled style={{ width: 128 }} />
+      <Select.Root value={operator} onValueChange={handleOperatorChange}>
+        <Select.Trigger style={{ width: 128 }} />
+        <Select.Content>
+          <Select.Item value="is">Is</Select.Item>
+          <Select.Item value="is-not">Is not</Select.Item>
+        </Select.Content>
+      </Select.Root>
 
       {renderValueInputs()}
     </Flex>
