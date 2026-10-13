@@ -1,11 +1,11 @@
 'use client';
 
-import { Flex, IconButton, Select } from '@radix-ui/themes';
-import { Cross2Icon } from '@radix-ui/react-icons';
+import { Flex, Select } from '@radix-ui/themes';
 import { Filter } from '@/api/methods.schemas';
 import { TypedFilter } from '@/components/features/experiments/querybuilder/utils';
 import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
 import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
+import { RemoveValueButton } from '@/components/features/experiments/querybuilder/remove-value-button';
 
 export interface BooleanFilterProps {
   filter: Filter & TypedFilter<boolean>;
@@ -73,11 +73,7 @@ export function BooleanFilter({ filter, onChange }: BooleanFilterProps) {
             </Select.Root>
 
             {/* Only show the remove button if null is included */}
-            {includesNull && (
-              <IconButton variant="soft" size="1" onClick={removeValue}>
-                <Cross2Icon />
-              </IconButton>
-            )}
+            {includesNull ? <RemoveValueButton onClick={removeValue} /> : null}
           </Flex>
 
           <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="128px" />

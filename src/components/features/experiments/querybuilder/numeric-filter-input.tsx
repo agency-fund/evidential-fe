@@ -1,7 +1,6 @@
 'use client';
 
-import { Flex, IconButton, Select, Text, TextField } from '@radix-ui/themes';
-import { Cross2Icon } from '@radix-ui/react-icons';
+import { Flex, Select, Text, TextField } from '@radix-ui/themes';
 import { DataType, Filter } from '@/api/methods.schemas';
 import {
   createDefaultValueForOperator,
@@ -13,6 +12,7 @@ import {
 import React, { useState } from 'react';
 import { IncludeNullButton } from '@/components/features/experiments/querybuilder/include-null-button';
 import { AddValueButton } from '@/components/features/experiments/querybuilder/add-value-button';
+import { RemoveValueButton } from '@/components/features/experiments/querybuilder/remove-value-button';
 
 export interface NumericFilterProps {
   filter: Filter & TypedFilter<number>;
@@ -219,11 +219,7 @@ export function NumericFilter({ filter, onChange, dataType }: NumericFilterProps
                 }}
               />
               {/* Only show the remove button if null is included, since we allow a single null value. */}
-              {includesNull && (
-                <IconButton variant="soft" size="1" onClick={removeValueForBetweenBasedOp}>
-                  <Cross2Icon />
-                </IconButton>
-              )}
+              {includesNull ? <RemoveValueButton onClick={removeValueForBetweenBasedOp} /> : null}
             </Flex>
             <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="176px" />
           </Flex>
@@ -258,11 +254,7 @@ export function NumericFilter({ filter, onChange, dataType }: NumericFilterProps
                 }}
               />
               {/* Only show the remove button if null is included, since we allow a single null value. */}
-              {includesNull && (
-                <IconButton variant="soft" size="1" onClick={removeValueForBetweenBasedOp}>
-                  <Cross2Icon />
-                </IconButton>
-              )}
+              {includesNull ? <RemoveValueButton onClick={removeValueForBetweenBasedOp} /> : null}
             </Flex>
             <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="176px" />
           </Flex>
@@ -321,11 +313,7 @@ export function NumericFilter({ filter, onChange, dataType }: NumericFilterProps
                 }}
               />
               {/* Only show the remove button if null is included, since we allow a single null value. */}
-              {includesNull && (
-                <IconButton variant="soft" size="1" onClick={removeValueForBetweenBasedOp}>
-                  <Cross2Icon />
-                </IconButton>
-              )}
+              {includesNull ? <RemoveValueButton onClick={removeValueForBetweenBasedOp} /> : null}
             </Flex>
             <IncludeNullButton checked={includesNull} onChange={handleNullChange} minWidth="375px" />
           </Flex>
@@ -363,13 +351,10 @@ export function NumericFilter({ filter, onChange, dataType }: NumericFilterProps
                     }
                   }}
                 />
-                {/* Only show the remove button if there are multiple non-null values or if null
-                    is included, since we allow a single null value. */}
-                {(nonNullValues.length > 1 || includesNull) && (
-                  <IconButton variant="soft" size="1" onClick={(e) => removeValueForListBasedOp(idx, e)}>
-                    <Cross2Icon />
-                  </IconButton>
-                )}
+                {/* Keep at least one value; NULL alone is enough. */}
+                {nonNullValues.length > 1 || includesNull ? (
+                  <RemoveValueButton onClick={(e) => removeValueForListBasedOp(idx, e)} />
+                ) : null}
               </Flex>
             ))}
 
