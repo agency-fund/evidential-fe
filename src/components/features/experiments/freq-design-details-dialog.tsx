@@ -57,7 +57,11 @@ export function FreqDesignDetailsDialog({
     const analysisByField = new Map(
       (powerAnalyses ?? []).map((analysis) => [analysis.metric_spec.field_name, analysis]),
     );
-    const toMetricDisplay = (fieldName: string, mdePct: number | null | undefined): MetricDisplay => {
+    const toMetricDisplay = (
+      fieldName: string,
+      mdePct: number | null | undefined,
+      useOneTimeMetric?: boolean,
+    ): MetricDisplay => {
       const analysis = analysisByField.get(fieldName);
       const estimatedRaw = analysis?.pct_change_with_desired_n;
       return {
@@ -67,10 +71,14 @@ export function FreqDesignDetailsDialog({
         estimatedMde: estimatedRaw != null ? (estimatedRaw * 100).toFixed(1) : null,
         hasMissingValues: analysis !== undefined && metricHasMissingValues(analysis),
         sufficientN: isChosenSampleSufficient(analysis, isClustered, desiredN, desiredNClusters),
+        // The saved design spec is the source of truth; fall back to the stored power analysis for older specs.
+        isOneTime: (useOneTimeMetric ?? analysis?.metric_spec.use_one_time_metric) === true,
       };
     };
     metrics = {
-      primary: primary ? toMetricDisplay(primary.field_name, primary.metric_pct_change) : undefined,
+      primary: primary
+        ? toMetricDisplay(primary.field_name, primary.metric_pct_change, primary.use_one_time_metric)
+        : undefined,
       secondary: secondary.map((m) => toMetricDisplay(m.field_name, m.metric_pct_change)),
     };
     strata = designSpec.strata?.map((s) => s.field_name) ?? [];
