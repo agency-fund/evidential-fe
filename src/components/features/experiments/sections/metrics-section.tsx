@@ -16,6 +16,8 @@ export interface MetricDisplay {
   hasMissingValues: boolean;
   /** Whether the chosen sample size reaches the minimum required to detect the target MDE. Omitted when unknown. */
   sufficientN?: boolean | null;
+  /** Whether the experiment assigns only participants without a value for this metric (one-time mode). */
+  isOneTime?: boolean;
 }
 
 interface SampleSufficiencyBadgeProps {
@@ -35,6 +37,26 @@ function SampleSufficiencyBadge({ sufficientN }: SampleSufficiencyBadgeProps) {
       color="red"
       tooltip="The chosen sample size is too small to detect this metric's target MDE."
     />
+  );
+}
+
+interface MetricHeaderProps {
+  metric: MetricDisplay;
+}
+
+function MetricHeader({ metric }: MetricHeaderProps) {
+  return (
+    <Flex direction="row" gap="2" align="center" wrap="wrap">
+      <Text>{metric.field_name}</Text>
+      <DataTypeBadge type={metric.data_type} />
+      {metric.isOneTime ? (
+        <InfoBadge
+          label="One-time metric"
+          color="purple"
+          tooltip="Only participants without a value for this metric were assigned to the experiment."
+        />
+      ) : null}
+    </Flex>
   );
 }
 
@@ -92,10 +114,7 @@ export function MetricsSection({ metrics, strata, onEdit, headerRight }: Metrics
           <DataList.Value>
             {metrics?.primary ? (
               <Flex direction="column" gap="2" width={'100%'}>
-                <Flex direction="row" gap="2" align="center">
-                  <Text>{metrics.primary.field_name}</Text>
-                  <DataTypeBadge type={metrics.primary.data_type} />
-                </Flex>
+                <MetricHeader metric={metrics.primary} />
                 <MetricBadges metric={metrics.primary} />
                 {metrics?.secondary && metrics.secondary.length >= 1 && <Separator orientation="horizontal" size="4" />}
               </Flex>
@@ -111,10 +130,7 @@ export function MetricsSection({ metrics, strata, onEdit, headerRight }: Metrics
               <Flex direction="column" gap="2" width={'100%'}>
                 {(metrics?.secondary ?? []).map((metric) => (
                   <Flex key={metric.field_name} direction="column" gap="2" width={'100%'}>
-                    <Flex direction="row" gap="2" align="center">
-                      <Text>{metric.field_name}</Text>
-                      <DataTypeBadge type={metric.data_type} />
-                    </Flex>
+                    <MetricHeader metric={metric} />
                     <MetricBadges metric={metric} />
                     <Separator orientation="horizontal" size="4" />
                   </Flex>

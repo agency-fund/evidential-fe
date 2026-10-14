@@ -353,6 +353,8 @@ export const createExperimentBodyDesignSpecStrataMax = 150;
 
 export const createExperimentBodyDesignSpecMetricsItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentBodyDesignSpecMetricsItemIsOneTimeEligibleDefault = false;
+export const createExperimentBodyDesignSpecMetricsItemUseOneTimeMetricDefault = false;
 export const createExperimentBodyDesignSpecMetricsMax = 150;
 
 export const createExperimentBodyDesignSpecFiltersItemFieldNameRegExp =
@@ -401,6 +403,8 @@ export const createExperimentBodyDesignSpecStrataMaxOne = 150;
 
 export const createExperimentBodyDesignSpecMetricsItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentBodyDesignSpecMetricsItemIsOneTimeEligibleDefaultOne = false;
+export const createExperimentBodyDesignSpecMetricsItemUseOneTimeMetricDefaultOne = false;
 export const createExperimentBodyDesignSpecMetricsMaxOne = 150;
 
 export const createExperimentBodyDesignSpecFiltersItemFieldNameRegExpOne =
@@ -502,6 +506,8 @@ export const createExperimentBodyDesignSpecAutofailWindowDefaultTwo = 24;
 export const createExperimentBodyDesignSpecAutofailOutcomeValueDefaultTwo = 0;
 export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecIsOneTimeEligibleDefault = false;
+export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecUseOneTimeMetricDefault = false;
 export const createExperimentBodyPowerAnalysesAnalysesItemMsgHighClusterVariationDefault = false;
 export const createExperimentBodyPowerAnalysesAnalysesMax = 150;
 
@@ -1260,6 +1266,8 @@ export const powerCheckBodyTableNameMax = 100;
 export const powerCheckBodyMetricsItemFieldNameRegExp = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
+export const powerCheckBodyMetricsItemIsOneTimeEligibleDefault = false;
+export const powerCheckBodyMetricsItemUseOneTimeMetricDefault = false;
 export const powerCheckBodyMetricsMax = 150;
 
 export const powerCheckBodyFiltersItemFieldNameRegExp = new RegExp(
