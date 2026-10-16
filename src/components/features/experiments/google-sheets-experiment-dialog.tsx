@@ -6,6 +6,7 @@ import { GearIcon, LockClosedIcon } from '@radix-ui/react-icons';
 import { mutate } from 'swr';
 import { getGetExperimentForUiKey, useUpdateExperiment } from '@/api/admin';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { useGoogleSheetsEnabled } from '@/services/feature-flags/use-google-sheets-enabled';
 
 export function GoogleSheetsExperimentDialog({
   datasourceId,
@@ -21,6 +22,7 @@ export function GoogleSheetsExperimentDialog({
   experimentSpreadsheetUrl: string | null;
 }) {
   const [open, setOpen] = useState(false);
+  const googleSheetsEnabled = useGoogleSheetsEnabled();
   const [spreadsheetUrl, setSpreadsheetUrl] = useState('');
   const {
     trigger: updateExperiment,
@@ -52,31 +54,34 @@ export function GoogleSheetsExperimentDialog({
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
+    if (!googleSheetsEnabled) return;
     await updateExperiment({ google_sheets_experiment_url: spreadsheetUrl.trim() }, { throwOnError: false });
   }
+
+  if (!googleSheetsEnabled) return null;
 
   return (
     <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Trigger>
-        <Button type="button">
+        <Button type="button" variant="soft">
           <GearIcon />
           {experimentSpreadsheetUrl ? 'Experiment tab settings' : 'Connect Experiment tab'}
         </Button>
       </Dialog.Trigger>
       <Dialog.Content>
         <form onSubmit={handleSubmit}>
-          <Dialog.Title>Experiment tab connection</Dialog.Title>
+          <Dialog.Title>Google Sheets connection</Dialog.Title>
           <Text as="p" size="3" weight="medium" mb="2">
             {experimentName}
           </Text>
           <Dialog.Description size="2" mb="4">
-            Only this experiment’s outcomes tab changes. The raw datasource stays connected.
+            Read-only access requires publicly accessible tabs with CSV downloads enabled.
           </Dialog.Description>
           <Flex direction="column" gap="3">
             {error && <GenericErrorCallout title="Could not connect Experiment tab" error={error} />}
             <label>
               <Text as="div" size="2" mb="1" weight="bold" color="gray">
-                Raw datasource tab (locked)
+                Raw datasource tab
               </Text>
               <TextField.Root type="url" value={rawSpreadsheetUrl} disabled variant="soft" color="gray">
                 <TextField.Slot>

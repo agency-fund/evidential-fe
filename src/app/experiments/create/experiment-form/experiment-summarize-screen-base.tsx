@@ -35,7 +35,6 @@ interface ExperimentsSummarizeScreenBaseProps {
   infoCalloutText: React.ReactNode;
   editTargets: EditTargets;
   frequentistInfo?: Pick<ExperimentConfirmationDisplayProps, 'metrics'>;
-  openExperimentOnSave?: boolean;
 }
 
 export function ExperimentsSummarizeScreenBase({
@@ -46,7 +45,6 @@ export function ExperimentsSummarizeScreenBase({
   infoCalloutText,
   editTargets,
   frequentistInfo,
-  openExperimentOnSave = false,
 }: ExperimentsSummarizeScreenBaseProps) {
   const router = useRouter();
 
@@ -57,7 +55,7 @@ export function ExperimentsSummarizeScreenBase({
   const { trigger: triggerCommit, isMutating: commitLoading } = useCommitExperiment(datasourceId, experimentId, {
     swr: {
       onSuccess: () => {
-        router.push(openExperimentOnSave ? `/datasources/${datasourceId}/experiments/${experimentId}` : '/experiments');
+        router.push('/experiments');
       },
       onError: async (response: ErrorType<unknown>) => {
         onCommitError(response);

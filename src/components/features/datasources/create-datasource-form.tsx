@@ -12,6 +12,7 @@ import {
   defaultDatasourceFormData,
 } from '@/components/features/datasources/add-datasource-form-fields';
 import { useReducer } from 'react';
+import { useGoogleSheetsEnabled } from '@/services/feature-flags/use-google-sheets-enabled';
 
 interface CreateDatasourceFormProps {
   onDatasourceCreated: (datasourceId: string) => void;
@@ -22,6 +23,7 @@ export const CreateDatasourceForm = ({ onDatasourceCreated, allowGoogleSheets = 
   const orgContext = useCurrentOrganization();
   const organizationId = orgContext!.current.id;
   const [formData, dispatch] = useReducer(datasourceFormReducer, defaultDatasourceFormData());
+  const googleSheetsEnabled = useGoogleSheetsEnabled();
 
   const { trigger, error, isMutating } = useCreateDatasource(
     { connectivity_check: true },
@@ -42,6 +44,7 @@ export const CreateDatasourceForm = ({ onDatasourceCreated, allowGoogleSheets = 
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (formData.dwhType === 'google_sheets' && (!allowGoogleSheets || !googleSheetsEnabled)) return;
 
     await trigger(
       {
@@ -67,7 +70,11 @@ export const CreateDatasourceForm = ({ onDatasourceCreated, allowGoogleSheets = 
       </Flex>
       {error && !isDNSError && <GenericErrorCallout title="Failed to add datasource" error={error} />}
       <Flex gap="3" mt="4" justify="end">
-        <Button type="submit" loading={isMutating}>
+        <Button
+          type="submit"
+          loading={isMutating}
+          disabled={formData.dwhType === 'google_sheets' && (!allowGoogleSheets || !googleSheetsEnabled)}
+        >
           Add Datasource
         </Button>
       </Flex>

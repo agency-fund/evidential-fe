@@ -12,6 +12,7 @@ import {
 } from '@/api/methods.schemas';
 import { PostgresSslModes } from '@/services/typehelper';
 import { ServiceAccountJsonField } from '@/components/features/datasources/service-account-json-field';
+import { useGoogleSheetsEnabled } from '@/services/feature-flags/use-google-sheets-enabled';
 
 const portMap: Record<string, string> = {
   postgres: '5432',
@@ -166,6 +167,7 @@ export function AddDatasourceFormFields({
   allowGoogleSheets = true,
 }: AddDatasourceFormFieldsProps) {
   const { dwhType, showPassword } = data;
+  const googleSheetsEnabled = useGoogleSheetsEnabled();
 
   return (
     <>
@@ -205,10 +207,10 @@ export function AddDatasourceFormFields({
                 <RadioGroup.Item value="bigquery" /> Google BigQuery
               </Flex>
             </Text>
-            {allowGoogleSheets && (
+            {allowGoogleSheets && googleSheetsEnabled && (
               <Text as="label" size="2">
                 <Flex gap="2">
-                  <RadioGroup.Item value="google_sheets" /> Google Sheets (demo)
+                  <RadioGroup.Item value="google_sheets" /> Google Sheets
                 </Flex>
               </Text>
             )}
@@ -341,7 +343,7 @@ export function AddDatasourceFormFields({
             />
           </label>
           <Text size="2" color="gray">
-            Set sharing to “Anyone with the link → Viewer” and allow downloads.
+            Read-only access requires a publicly accessible tab with CSV downloads enabled.
           </Text>
         </>
       ) : (

@@ -10,6 +10,7 @@ import { useCurrentOrganization } from '@/providers/organization-provider';
 import { useEffect } from 'react';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
+import { useGoogleSheetsEnabled } from '@/services/feature-flags/use-google-sheets-enabled';
 
 export default function Page() {
   const params = useParams();
@@ -17,6 +18,7 @@ export default function Page() {
   const orgContext = useCurrentOrganization();
   const currentOrgId = orgContext?.current?.id;
   const router = useRouter();
+  const googleSheetsEnabled = useGoogleSheetsEnabled();
 
   const {
     data: datasourceMetadata,
@@ -34,7 +36,7 @@ export default function Page() {
     error: inspectError,
   } = useInspectDatasource(datasourceId!, undefined, {
     swr: {
-      enabled: datasourceId !== null,
+      enabled: !!datasourceMetadata && (datasourceMetadata.dsn.type !== 'google_sheets' || googleSheetsEnabled),
     },
   });
 
@@ -50,6 +52,10 @@ export default function Page() {
       router.push('/');
     }
   }, [currentOrgId, datasourceMetadata, router]);
+
+  if (datasourceMetadata?.dsn.type === 'google_sheets' && !googleSheetsEnabled) {
+    return <Text>Datasource unavailable</Text>;
+  }
 
   if (isLoading) {
     return <XSpinner message="Loading datasource details..." />;
@@ -113,7 +119,7 @@ export default function Page() {
           )}
         </>
       )}
-      <ApiKeysTable datasourceId={datasourceId} />
+      {datasourceMetadata?.dsn.type !== 'google_sheets' && <ApiKeysTable datasourceId={datasourceId} />}
     </Flex>
   );
 }

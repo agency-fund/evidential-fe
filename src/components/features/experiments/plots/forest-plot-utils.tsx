@@ -15,7 +15,7 @@ import {
   Significance,
   TimeSeriesDataPoint,
 } from './forest-plot-models';
-import { formatDateUtcYYYYMMDD, formatUtcDownToMinuteLabel, formatUtcDownToSecondLabel } from '@/services/date-utils';
+import { formatDateUtcYYYYMMDD, formatUtcDownToMinuteLabel } from '@/services/date-utils';
 import { isFrequentistSpec } from '@/services/experiment-utils';
 
 // Base Radix colors for use as color props.
@@ -123,23 +123,19 @@ export const precomputeBanditEffects = (analysisData: ExperimentAnalysisResponse
   return _generateBanditEffectData(analysisData);
 };
 
-/** Daily history by default; demo history retains every saved refresh. */
+/** Retain the latest successful snapshot for each day. */
 export const buildSnapshotAnalysisHistory = (
   snapshots: Snapshot[],
   alpha: number | undefined,
-  preserveTimestamps = false,
 ): AnalysisState[] => {
   const successful = snapshots.filter((snapshot) => snapshot.status === 'success' && snapshot.data !== null);
   const byDate = new Map<string, Snapshot>();
-  if (!preserveTimestamps) {
-    for (const snapshot of successful) {
-      const dateKey = snapshot.updated_at.split('T')[0];
-      const existing = byDate.get(dateKey);
-      if (!existing || snapshot.updated_at > existing.updated_at) byDate.set(dateKey, snapshot);
-    }
+  for (const snapshot of successful) {
+    const dateKey = snapshot.updated_at.split('T')[0];
+    const existing = byDate.get(dateKey);
+    if (!existing || snapshot.updated_at > existing.updated_at) byDate.set(dateKey, snapshot);
   }
-  const selected = preserveTimestamps ? successful : Array.from(byDate.values());
-  return selected
+  return Array.from(byDate.values())
     .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
     .map((snapshot) => {
       const data = snapshot.data!;
@@ -148,7 +144,7 @@ export const buildSnapshotAnalysisHistory = (
         key: snapshot.id,
         data,
         updated_at: date,
-        label: preserveTimestamps ? formatUtcDownToSecondLabel(date) : formatUtcDownToMinuteLabel(date),
+        label: formatUtcDownToMinuteLabel(date),
         effectSizesByMetric: precomputeFreqEffectsByMetric(data, alpha),
         banditEffects: precomputeBanditEffects(data),
       };
@@ -456,7 +452,6 @@ export const getColorWithSignificance = (
 export const transformAnalysisForForestTimeseriesPlot = (
   analysisStates: AnalysisState[],
   metricName: string | undefined,
-  preserveTimestamps = false,
 ): {
   timeseriesData: TimeSeriesDataPoint[];
   armMetadata: ArmMetadata[];
@@ -472,12 +467,7 @@ export const transformAnalysisForForestTimeseriesPlot = (
   // Filter out states that don't have effect sizes for this metric
   let validStates: AnalysisState[] = [];
   if (isFrequentistAnalysis(sortedStates[0]?.data)) {
-    validStates = sortedStates.filter(
-      (state) =>
-        state.effectSizesByMetric?.has(metricName) &&
-        (!preserveTimestamps ||
-          state.effectSizesByMetric.get(metricName)?.some((effect) => !effect.isMissingAllValues)),
-    );
+    validStates = sortedStates.filter((state) => state.effectSizesByMetric?.has(metricName));
   } else if (isBanditAnalysis(sortedStates[0]?.data)) {
     validStates = sortedStates.filter((state) => state.banditEffects !== undefined);
   }
@@ -511,7 +501,7 @@ export const transformAnalysisForForestTimeseriesPlot = (
       if (!effectSizes) continue;
 
       for (const effectSize of effectSizes) {
-        if (preserveTimestamps && effectSize.isMissingAllValues) continue;
+        if (effectSize.isMissingAllValues) continue;
         // Determine significance based on the effect
         let significance = Significance.No;
         if (effectSize.significant) {
@@ -541,9 +531,9 @@ export const transformAnalysisForForestTimeseriesPlot = (
     }
 
     const pointDate = new Date(state.updated_at);
-    if (!preserveTimestamps) pointDate.setUTCHours(0, 0, 0, 0);
+    pointDate.setUTCHours(0, 0, 0, 0);
     timeseriesData.push({
-      date: preserveTimestamps ? formatUtcDownToSecondLabel(pointDate) : formatDateUtcYYYYMMDD(pointDate),
+      date: formatDateUtcYYYYMMDD(pointDate),
       dateTimestampMs: pointDate.getTime(),
       armEffects: armEffects,
       key: state.key,

@@ -26,7 +26,7 @@ import {
 } from './forest-plot-utils';
 import { JitteredLine, JitteredLineInputData, JitteredLinePayloadData } from './jittered-line';
 import { ConfidenceInterval } from './confidence-interval';
-import { extractUtcHHMMSSLabel, formatDateUtcYYYYMMDD, formatUtcDownToSecondLabel } from '@/services/date-utils';
+import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 
 interface ForestTimeseriesPlotProps {
@@ -34,7 +34,6 @@ interface ForestTimeseriesPlotProps {
   armMetadata: ArmMetadata[];
   minDate: Date;
   maxDate: Date;
-  showTime?: boolean;
   confidenceLevel?: number;
   // Can notify parent of what snapshot key was used for the data point that was clicked.
   onPointClick?: (key: string) => void;
@@ -101,7 +100,6 @@ export default function ForestTimeseriesPlot({
   armMetadata,
   minDate,
   maxDate,
-  showTime = false,
   confidenceLevel = 0.95,
   onPointClick,
 }: ForestTimeseriesPlotProps) {
@@ -118,15 +116,11 @@ export default function ForestTimeseriesPlot({
   // Early return if no data
   if (!chartData || chartData.length === 0) {
     return (
-      <Callout.Root color={showTime ? 'blue' : 'orange'}>
+      <Callout.Root color="orange">
         <Callout.Icon>
           <InfoCircledIcon />
         </Callout.Icon>
-        <Callout.Text>
-          {showTime
-            ? 'Record outcomes in the sheet and click Refresh to save a timed snapshot for this chart.'
-            : 'No timeseries data to display yet.'}
-        </Callout.Text>
+        <Callout.Text>No timeseries data to display yet.</Callout.Text>
       </Callout.Root>
     );
   }
@@ -151,36 +145,24 @@ export default function ForestTimeseriesPlot({
     }),
   );
   const [minY, maxY] = computeAxisBounds(yAxisValues.filter(Number.isFinite));
-  const spansMultipleDays = showTime && formatDateUtcYYYYMMDD(minDate) !== formatDateUtcYYYYMMDD(maxDate);
 
   const allDateTicks: number[] = [];
-  if (showTime) {
-    const count = Math.min(6, new Set(chartData.map((point) => point.dateTimestampMs)).size);
-    for (let i = 0; i < count; i++) {
-      allDateTicks.push(
-        minDate.getTime() + (count === 1 ? 0 : ((maxDate.getTime() - minDate.getTime()) * i) / (count - 1)),
-      );
-    }
-  } else {
-    const currentDate = new Date(minDate);
-    currentDate.setUTCHours(0, 0, 0, 0);
-    const endDate = new Date(maxDate);
-    endDate.setUTCHours(0, 0, 0, 0);
-    while (currentDate <= endDate) {
-      allDateTicks.push(currentDate.getTime());
-      currentDate.setUTCDate(currentDate.getUTCDate() + 1);
-    }
+  const currentDate = new Date(minDate);
+  currentDate.setUTCHours(0, 0, 0, 0);
+  const endDate = new Date(maxDate);
+  endDate.setUTCHours(0, 0, 0, 0);
+  while (currentDate <= endDate) {
+    allDateTicks.push(currentDate.getTime());
+    currentDate.setUTCDate(currentDate.getUTCDate() + 1);
   }
 
   // Grow the plot height to accommodate the tooltip
   const height = Math.max(400, armMetadata.length * 60);
-  const minWidth = showTime ? 480 : allDateTicks.length * armMetadata.length * 8;
+  const minWidth = allDateTicks.length * armMetadata.length * 8;
   // Normally the x-axis domain spans the set of date ticks, but in the edge case of a single data
   // point, we artificially expand the domain so that we can accommodate jittered arm data points.
-  const timePadding = Math.max(1000, (maxDate.getTime() - minDate.getTime()) * 0.1);
-  const domainXAxis: [number, number] = showTime
-    ? [minDate.getTime() - timePadding, maxDate.getTime() + timePadding]
-    : allDateTicks.length > 1
+  const domainXAxis: [number, number] =
+    allDateTicks.length > 1
       ? [allDateTicks[0], allDateTicks[allDateTicks.length - 1]]
       : [allDateTicks[0] - minWidth / 2, allDateTicks[0] + minWidth / 2];
 
@@ -205,12 +187,8 @@ export default function ForestTimeseriesPlot({
               interval="preserveStartEnd"
               angle={-30}
               textAnchor="end"
-              height={spansMultipleDays ? 80 : 40}
-              tickFormatter={(timestamp) => {
-                const date = new Date(timestamp);
-                if (!showTime) return formatDateUtcYYYYMMDD(date);
-                return spansMultipleDays ? formatUtcDownToSecondLabel(date) : extractUtcHHMMSSLabel(date);
-              }}
+              height={40}
+              tickFormatter={(timestamp) => formatDateUtcYYYYMMDD(new Date(timestamp))}
             />
             <YAxis
               domain={[minY, maxY]}

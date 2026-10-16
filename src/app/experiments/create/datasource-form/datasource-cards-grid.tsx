@@ -13,7 +13,7 @@ const getDriverDisplayName = (driver: string) => {
     case 'bigquery':
       return 'Google BigQuery';
     case 'google_sheets':
-      return 'Google Sheets (demo)';
+      return 'Google Sheets';
     case 'postgresql+psycopg':
       return 'PostgreSQL';
     case 'postgresql+psycopg2':

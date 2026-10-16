@@ -64,15 +64,14 @@ import {
   isCmabExperiment,
   isCmabSpec,
   isFrequentistSpec,
-  isGoogleSheetsDemoExperiment,
 } from '@/services/experiment-utils';
 import { extractUtcHHMMLabel } from '@/services/date-utils';
-import { createExperimentSnapshot } from '@/services/experiment-snapshots';
 import { ContextConfigBox } from '@/components/features/experiments/context-config-box';
 import { TableNameBadge } from '@/components/features/participants/table-name-badge';
 import { TargetingDialog } from '@/components/features/experiments/targeting-dialog';
 import { FreqDesignDetailsDialog } from '@/components/features/experiments/freq-design-details-dialog';
-import { GoogleSheetsDemoControls } from '@/components/features/experiments/google-sheets-demo-controls';
+import { GoogleSheetsExperimentDialog } from '@/components/features/experiments/google-sheets-experiment-dialog';
+import { useGoogleSheetsEnabled } from '@/services/feature-flags/use-google-sheets-enabled';
 
 const SNAPSHOT_ERROR_ALERT_THRESHOLD_MS = 8 * 60 * 60 * 1000;
 
@@ -148,6 +147,11 @@ export default function ExperimentViewPage() {
   const organizationId = orgCtx?.current.id || '';
   const datasourceId = (params.datasourceId as string) || '';
   const experimentId = (params.experimentId as string) || '';
+  const googleSheetsEnabled = useGoogleSheetsEnabled();
+  const { data: datasource, error: datasourceError } = useGetDatasource(datasourceId, {
+    swr: { enabled: !!datasourceId },
+  });
+  const canAccessDatasource = !!datasource && (datasource.dsn.type !== 'google_sheets' || googleSheetsEnabled);
   const [lastErrorTimestamp, setLastErrorTimestamp] = useState<null | Date>(null);
   const [isLastSnapshotErrorRelevant, setIsLastSnapshotErrorRelevant] = useState(false);
 
@@ -166,7 +170,7 @@ export default function ExperimentViewPage() {
     error: experimentError,
   } = useGetExperimentForUi(datasourceId, experimentId, {
     swr: {
-      enabled: !!datasourceId,
+      enabled: canAccessDatasource,
       onSuccess: (expForUi) => {
         const expConfig = expForUi.config;
         // Only initialize context input ids for CMAB experiments if they are not already set.
@@ -181,8 +185,7 @@ export default function ExperimentViewPage() {
     },
   });
 
-  const { data: datasource } = useGetDatasource(datasourceId, { swr: { enabled: !!datasourceId } });
-  const isSheetsDemo = isGoogleSheetsDemoExperiment(datasource, experiment?.config.design_spec);
+  const isGoogleSheets = datasource?.dsn.type === 'google_sheets';
   const googleSheetsExperimentUrl = experiment?.config.google_sheets_experiment_url ?? null;
   const sheetTableName =
     experiment && isFrequentistSpec(experiment.config.design_spec)
@@ -190,24 +193,24 @@ export default function ExperimentViewPage() {
       : undefined;
   const tableDisplayName = useTableDisplayName(datasourceId, sheetTableName);
   // Wait for the datasource before deciding whether an outcomes connection is required.
-  const canAnalyzeLive = !!datasource && !!experiment && (!isSheetsDemo || !!googleSheetsExperimentUrl);
-  const liveAnalysisConnectionKey = `${datasourceId}/${experimentId}/${isSheetsDemo ? (googleSheetsExperimentUrl ?? 'disconnected') : 'datasource'}`;
+  const canAnalyzeLive = canAccessDatasource && !!experiment && (!isGoogleSheets || !!googleSheetsExperimentUrl);
+  const liveAnalysisConnectionKey = `${datasourceId}/${experimentId}/${isGoogleSheets ? (googleSheetsExperimentUrl ?? 'disconnected') : 'datasource'}`;
   const isCmab = isCmabExperiment(experiment?.config);
   const liveAnalysisKey = useMemo(
     () =>
       canAnalyzeLive && !isCmab
-        ? [...getAnalyzeExperimentKey(datasourceId, experimentId), ...(isSheetsDemo ? [googleSheetsExperimentUrl] : [])]
+        ? [...getAnalyzeExperimentKey(datasourceId, experimentId), ...(isGoogleSheets ? [googleSheetsExperimentUrl] : [])]
         : null,
-    [canAnalyzeLive, isCmab, datasourceId, experimentId, isSheetsDemo, googleSheetsExperimentUrl],
+    [canAnalyzeLive, isCmab, datasourceId, experimentId, isGoogleSheets, googleSheetsExperimentUrl],
   );
 
   useEffect(() => {
-    if (!isSheetsDemo || !liveAnalysisKey) return;
+    if (!isGoogleSheets || !liveAnalysisKey) return;
     // Drop the previous tab's cached live result, including an in-flight revalidation.
     return () => {
       void mutate(liveAnalysisKey, undefined, { revalidate: false });
     };
-  }, [isSheetsDemo, liveAnalysisKey]);
+  }, [isGoogleSheets, liveAnalysisKey]);
   const { alpha } = getAlphaAndPower(experiment?.config);
 
   const {
@@ -251,7 +254,6 @@ export default function ExperimentViewPage() {
 
   const {
     data: snapshotList,
-    mutate: updateSnapshotHistory,
     isLoading: isLoadingHistory,
     error: analysisHistoryError,
   } = useListSnapshots(
@@ -261,7 +263,7 @@ export default function ExperimentViewPage() {
     { status: ['success'], page_size: Number.MAX_SAFE_INTEGER },
     {
       swr: {
-        enabled: !!organizationId && !!datasourceId && !!experimentId && !!experiment,
+        enabled: canAccessDatasource && !!organizationId && !!experimentId && !!experiment,
         shouldRetryOnError: false,
         focusThrottleInterval: 15 * 60_000, // refresh on focus after 15 minutes
         onSuccess: (data) => {
@@ -274,8 +276,8 @@ export default function ExperimentViewPage() {
   );
 
   const analysisHistory = useMemo(
-    () => buildSnapshotAnalysisHistory(snapshotList?.items ?? [], alpha, isSheetsDemo),
-    [snapshotList?.items, alpha, isSheetsDemo],
+    () => buildSnapshotAnalysisHistory(snapshotList?.items ?? [], alpha),
+    [snapshotList?.items, alpha],
   );
 
   const { trigger: updateExperiment } = useUpdateExperiment(datasourceId, experimentId, {
@@ -354,6 +356,16 @@ export default function ExperimentViewPage() {
 
   const showLoadingAnalysisSpinner = isLoadingLiveAnalysis || isLoadingLiveCmabAnalysis || isLoadingHistory;
 
+  if (datasourceError) {
+    return <GenericErrorCallout title="Error loading datasource" error={datasourceError} />;
+  }
+  if (!datasource) {
+    return <XSpinner message="Loading datasource..." />;
+  }
+  if (datasource && !canAccessDatasource) {
+    return <Text>Datasource unavailable</Text>;
+  }
+
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
   }
@@ -392,7 +404,6 @@ export default function ExperimentViewPage() {
   const { timeseriesData, armMetadata, minDate, maxDate } = transformAnalysisForForestTimeseriesPlot(
     analysisHistory,
     activeMetricName,
-    isSheetsDemo,
   );
 
   return (
@@ -522,31 +533,6 @@ export default function ExperimentViewPage() {
         )}
 
         {/* Analysis Section */}
-        {experiment.config.state === 'committed' && isSheetsDemo && datasource?.dsn.type === 'google_sheets' && (
-          <GoogleSheetsDemoControls
-            key={`${datasourceId}/${experimentId}`}
-            datasourceId={datasourceId}
-            experimentId={experimentId}
-            experimentName={experiment_name}
-            rawSpreadsheetUrl={datasource.dsn.spreadsheet_url}
-            experimentSpreadsheetUrl={googleSheetsExperimentUrl}
-            onRefresh={async (signal) => {
-              if (!canAnalyzeLive) return;
-              const snapshot = await createExperimentSnapshot(organizationId, datasourceId, experimentId, signal);
-              signal.throwIfAborted();
-              await updateSnapshotHistory(
-                (current) => ({
-                  ...current,
-                  items: [snapshot, ...(current?.items ?? []).filter((item) => item.id !== snapshot.id)],
-                  latest_failure: current?.latest_failure ?? null,
-                }),
-                { revalidate: false },
-              );
-              signal.throwIfAborted();
-              setSelectedAnalysisKey(snapshot.id);
-            }}
-          />
-        )}
         <SectionCard
           headerLeft={
             <Flex gap="3" align="center" wrap="wrap">
@@ -625,6 +611,16 @@ export default function ExperimentViewPage() {
           }
           headerRight={
             <Flex gap="3" wrap="wrap" align="center">
+              {canAccessDatasource && datasource?.dsn.type === 'google_sheets' && (
+                <GoogleSheetsExperimentDialog
+                  key={`${datasourceId}/${experimentId}`}
+                  datasourceId={datasourceId}
+                  experimentId={experimentId}
+                  experimentName={experiment_name}
+                  rawSpreadsheetUrl={datasource.dsn.spreadsheet_url}
+                  experimentSpreadsheetUrl={googleSheetsExperimentUrl}
+                />
+              )}
               {isFrequentistSpec(design_spec) ? (
                 <FreqDesignDetailsDialog
                   designSpec={design_spec}
@@ -648,10 +644,9 @@ export default function ExperimentViewPage() {
           }
         >
           <Flex direction="column" gap="3">
-            {isSheetsDemo && !googleSheetsExperimentUrl && (
+            {isGoogleSheets && !googleSheetsExperimentUrl && (
               <Text size="2" color="gray">
-                Connect an Experiment tab in experiment settings to view live outcomes. Saved snapshots remain
-                available.
+                Connect an outcomes tab in Experiment tab settings to view outcomes.
               </Text>
             )}
             <Tabs.Root defaultValue="leaderboard">
@@ -703,7 +698,6 @@ export default function ExperimentViewPage() {
                         armMetadata={armMetadata}
                         minDate={minDate}
                         maxDate={maxDate}
-                        showTime={isSheetsDemo}
                         confidenceLevel={1 - (alpha ?? 0.05)}
                         onPointClick={handleSelectAnalysis}
                       />

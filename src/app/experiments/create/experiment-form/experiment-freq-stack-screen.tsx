@@ -18,10 +18,6 @@ import { getPowerAnalysis } from '@/services/experiment-utils';
 import { createExperimentBody } from '@/api/admin.zod';
 import { ErrorType } from '@/services/orval-fetch';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-import {
-  describeGoogleSheetsMetrics,
-  GoogleSheetsMetricGuide,
-} from '@/components/features/experiments/google-sheets-metric-guide';
 
 export type ExperimentFreqStackScreenMessage =
   | MetricBuilderAction
@@ -139,7 +135,6 @@ export const ExperimentFreqStackScreen = ({
   const numericFields = allTableFields.filter((f) =>
     ['integer', 'bigint', 'double precision', 'numeric', 'boolean'].includes(f.data_type),
   );
-  const metricFields = isGoogleSheets ? describeGoogleSheetsMetrics(numericFields) : numericFields;
   // Exclude primary key from stratum options.
   const availableStrata = removeFieldByName(allTableFields, data.primaryKey).toSorted((a, b) =>
     a.field_name.localeCompare(b.field_name),
@@ -175,13 +170,12 @@ export const ExperimentFreqStackScreen = ({
         <Heading as="h3" size="3">
           Metrics
         </Heading>
-        {isGoogleSheets && <GoogleSheetsMetricGuide metricFields={metricFields} />}
         <Card>
           <MetricBuilder
             primaryMetric={data.primaryMetric}
             secondaryMetrics={data.secondaryMetrics ?? []}
             dispatch={dispatch}
-            metricFields={metricFields}
+            metricFields={numericFields}
             excludeKeys={[data.primaryKey, data.clusterKey].filter((key): key is string => key !== undefined)}
           />
         </Card>

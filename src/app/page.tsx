@@ -20,6 +20,7 @@ import type { ExperimentStatus, ExperimentWithStatus } from '@/components/featur
 import { getExperimentStatus } from '@/services/experiment-utils';
 import { isFrequentistSpec } from '@/services/experiment-utils';
 import type { ExperimentConfig } from '@/api/methods.schemas';
+import { useGoogleSheetsEnabled } from '@/services/feature-flags/use-google-sheets-enabled';
 
 // Returns the data warehouse field names an experiment references via its filters, metrics, or
 // strata.
@@ -47,6 +48,7 @@ function getFieldOptions(filteredExperiments: ExperimentConfig[], selectedFields
 
 export default function Page() {
   const router = useRouter();
+  const googleSheetsEnabled = useGoogleSheetsEnabled();
   const orgContext = useCurrentOrganization();
   const currentOrgId = orgContext!.current.id;
   const [selectedStatuses, setSelectedStatuses] = useState<ExperimentStatus[]>([]);
@@ -71,7 +73,15 @@ export default function Page() {
     swr: { enabled: !!currentOrgId },
   });
 
-  const committedExperiments = experimentsData?.items.filter((experiment) => experiment.state === 'committed') || [];
+  const visibleDatasourceIds = new Set(
+    datasourcesData?.items
+      .filter((datasource) => googleSheetsEnabled || datasource.driver !== 'google_sheets')
+      .map((datasource) => datasource.id),
+  );
+  const committedExperiments =
+    experimentsData?.items.filter(
+      (experiment) => experiment.state === 'committed' && visibleDatasourceIds.has(experiment.datasource_id),
+    ) || [];
 
   const experimentsWithStatus = committedExperiments.map((experiment) => ({
     ...experiment,
