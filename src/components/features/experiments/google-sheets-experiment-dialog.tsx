@@ -6,7 +6,7 @@ import { GearIcon, LockClosedIcon } from '@radix-ui/react-icons';
 import { mutate } from 'swr';
 import { getGetExperimentForUiKey, useUpdateExperiment } from '@/api/admin';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { useGoogleSheetsEnabled } from '@/services/feature-flags/use-google-sheets-enabled';
+import { useAuth } from '@/providers/auth-provider';
 
 export function GoogleSheetsExperimentDialog({
   datasourceId,
@@ -22,7 +22,7 @@ export function GoogleSheetsExperimentDialog({
   experimentSpreadsheetUrl: string | null;
 }) {
   const [open, setOpen] = useState(false);
-  const googleSheetsEnabled = useGoogleSheetsEnabled();
+  const { isPrivileged } = useAuth();
   const [spreadsheetUrl, setSpreadsheetUrl] = useState('');
   const {
     trigger: updateExperiment,
@@ -54,11 +54,11 @@ export function GoogleSheetsExperimentDialog({
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (!googleSheetsEnabled) return;
+    if (!isPrivileged) return;
     await updateExperiment({ google_sheets_experiment_url: spreadsheetUrl.trim() }, { throwOnError: false });
   }
 
-  if (!googleSheetsEnabled) return null;
+  if (!isPrivileged) return null;
 
   return (
     <Dialog.Root open={open} onOpenChange={handleOpenChange}>

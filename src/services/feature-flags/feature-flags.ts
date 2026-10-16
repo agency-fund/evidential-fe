@@ -1,7 +1,6 @@
 /** Feature flags for the application are all defined in this file. Only boolean flags support. */
 export const FLAGS = {
   CLUSTER_EXPERIMENTS: 'cluster_experiments',
-  GOOGLE_SHEETS: 'google_sheets',
 } as const;
 
 // Extract the union type of the FLAGS keys
@@ -13,5 +12,4 @@ export type FlagKey = (typeof FLAGS)[keyof typeof FLAGS];
  */
 export const FLAG_DEFAULTS: Record<FlagKey, boolean> = {
   [FLAGS.CLUSTER_EXPERIMENTS]: true,
-  [FLAGS.GOOGLE_SHEETS]: false,
 };

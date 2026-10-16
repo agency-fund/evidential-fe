@@ -10,7 +10,7 @@ import { DatasourceCardsGrid } from '@/app/experiments/create/datasource-form/da
 import { DatasourceModeSelector } from '@/app/experiments/create/datasource-form/datasource-mode-selector';
 import { DatasourceSummary } from '@/api/methods.schemas';
 import { isUsableDatasource } from '@/services/genapi-helpers';
-import { useGoogleSheetsEnabled } from '@/services/feature-flags/use-google-sheets-enabled';
+import { useAuth } from '@/providers/auth-provider';
 
 type SelectDatasourceMessages =
   | { type: 'set-datasource'; value: string }
@@ -27,7 +27,7 @@ export const SelectDatasourceScreen = ({
   navigateNext,
 }: ScreenProps<DatasourceFormData, SelectDatasourceMessages, DatasourceScreenId>) => {
   const orgContext = useCurrentOrganization();
-  const googleSheetsEnabled = useGoogleSheetsEnabled();
+  const { isPrivileged } = useAuth();
   const organizationId = orgContext!.current.id;
 
   const { data: datasourcesData, isLoading } = useListOrganizationDatasources(organizationId, {
@@ -37,7 +37,7 @@ export const SelectDatasourceScreen = ({
         if (!data.datasourceId && response.items.length > 0) {
           // Find the first remote DWH.
           const remoteId = response.items.find(
-            (ds) => supportsExperiment(ds, data.experimentType) && (googleSheetsEnabled || ds.driver !== 'google_sheets'),
+            (ds) => supportsExperiment(ds, data.experimentType) && (isPrivileged || ds.driver !== 'google_sheets'),
           )?.id;
           if (remoteId) {
             dispatch({ type: 'set-datasource', value: remoteId });
@@ -49,7 +49,7 @@ export const SelectDatasourceScreen = ({
 
   const availableDatasources =
     datasourcesData?.items?.filter(
-      (ds) => supportsExperiment(ds, data.experimentType) && (googleSheetsEnabled || ds.driver !== 'google_sheets'),
+      (ds) => supportsExperiment(ds, data.experimentType) && (isPrivileged || ds.driver !== 'google_sheets'),
     ) ?? [];
   const hasDatasources = availableDatasources.length > 0;
 

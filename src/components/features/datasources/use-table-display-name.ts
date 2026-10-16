@@ -1,10 +1,10 @@
 'use client';
 
 import { useGetDatasource, useInspectTableInDatasource } from '@/api/admin';
-import { useGoogleSheetsEnabled } from '@/services/feature-flags/use-google-sheets-enabled';
+import { useAuth } from '@/providers/auth-provider';
 
 export function useTableDisplayName(datasourceId: string, tableName: string | undefined): string | undefined {
-  const googleSheetsEnabled = useGoogleSheetsEnabled();
+  const { isPrivileged } = useAuth();
   const { data: datasource, error: datasourceError } = useGetDatasource(datasourceId, {
     swr: { enabled: !!datasourceId && !!tableName },
   });
@@ -13,13 +13,13 @@ export function useTableDisplayName(datasourceId: string, tableName: string | un
     datasourceId,
     tableName ?? '',
     undefined,
-    { swr: { enabled: googleSheetsEnabled && isSheets && !!tableName } },
+    { swr: { enabled: isPrivileged && isSheets && !!tableName } },
   );
 
   if (!tableName) return undefined;
   if (!datasource) return datasourceError ? 'Source name unavailable' : 'Loading source name…';
   if (!isSheets) return tableName;
-  if (!googleSheetsEnabled) return undefined;
+  if (!isPrivileged) return undefined;
   if (!tableMetadata) return tableError ? 'Spreadsheet name unavailable' : 'Loading spreadsheet name…';
   return tableMetadata.display_name || 'Spreadsheet name unavailable';
 }

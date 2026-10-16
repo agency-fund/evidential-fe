@@ -71,7 +71,7 @@ import { TableNameBadge } from '@/components/features/participants/table-name-ba
 import { TargetingDialog } from '@/components/features/experiments/targeting-dialog';
 import { FreqDesignDetailsDialog } from '@/components/features/experiments/freq-design-details-dialog';
 import { GoogleSheetsExperimentDialog } from '@/components/features/experiments/google-sheets-experiment-dialog';
-import { useGoogleSheetsEnabled } from '@/services/feature-flags/use-google-sheets-enabled';
+import { useAuth } from '@/providers/auth-provider';
 
 const SNAPSHOT_ERROR_ALERT_THRESHOLD_MS = 8 * 60 * 60 * 1000;
 
@@ -147,11 +147,11 @@ export default function ExperimentViewPage() {
   const organizationId = orgCtx?.current.id || '';
   const datasourceId = (params.datasourceId as string) || '';
   const experimentId = (params.experimentId as string) || '';
-  const googleSheetsEnabled = useGoogleSheetsEnabled();
+  const { isPrivileged } = useAuth();
   const { data: datasource, error: datasourceError } = useGetDatasource(datasourceId, {
     swr: { enabled: !!datasourceId },
   });
-  const canAccessDatasource = !!datasource && (datasource.dsn.type !== 'google_sheets' || googleSheetsEnabled);
+  const canAccessDatasource = !!datasource && (datasource.dsn.type !== 'google_sheets' || isPrivileged);
   const [lastErrorTimestamp, setLastErrorTimestamp] = useState<null | Date>(null);
   const [isLastSnapshotErrorRelevant, setIsLastSnapshotErrorRelevant] = useState(false);
 

@@ -10,7 +10,7 @@ import { useCurrentOrganization } from '@/providers/organization-provider';
 import { useEffect } from 'react';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { CopyToClipBoard } from '@/components/ui/buttons/copy-to-clipboard';
-import { useGoogleSheetsEnabled } from '@/services/feature-flags/use-google-sheets-enabled';
+import { useAuth } from '@/providers/auth-provider';
 
 export default function Page() {
   const params = useParams();
@@ -18,7 +18,7 @@ export default function Page() {
   const orgContext = useCurrentOrganization();
   const currentOrgId = orgContext?.current?.id;
   const router = useRouter();
-  const googleSheetsEnabled = useGoogleSheetsEnabled();
+  const { isPrivileged } = useAuth();
 
   const {
     data: datasourceMetadata,
@@ -36,7 +36,7 @@ export default function Page() {
     error: inspectError,
   } = useInspectDatasource(datasourceId!, undefined, {
     swr: {
-      enabled: !!datasourceMetadata && (datasourceMetadata.dsn.type !== 'google_sheets' || googleSheetsEnabled),
+      enabled: !!datasourceMetadata && (datasourceMetadata.dsn.type !== 'google_sheets' || isPrivileged),
     },
   });
 
@@ -53,7 +53,7 @@ export default function Page() {
     }
   }, [currentOrgId, datasourceMetadata, router]);
 
-  if (datasourceMetadata?.dsn.type === 'google_sheets' && !googleSheetsEnabled) {
+  if (datasourceMetadata?.dsn.type === 'google_sheets' && !isPrivileged) {
     return <Text>Datasource unavailable</Text>;
   }
 

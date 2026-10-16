@@ -12,7 +12,7 @@ import {
 } from '@/api/methods.schemas';
 import { PostgresSslModes } from '@/services/typehelper';
 import { ServiceAccountJsonField } from '@/components/features/datasources/service-account-json-field';
-import { useGoogleSheetsEnabled } from '@/services/feature-flags/use-google-sheets-enabled';
+import { useAuth } from '@/providers/auth-provider';
 
 const portMap: Record<string, string> = {
   postgres: '5432',
@@ -167,7 +167,7 @@ export function AddDatasourceFormFields({
   allowGoogleSheets = true,
 }: AddDatasourceFormFieldsProps) {
   const { dwhType, showPassword } = data;
-  const googleSheetsEnabled = useGoogleSheetsEnabled();
+  const { isPrivileged } = useAuth();
 
   return (
     <>
@@ -207,7 +207,7 @@ export function AddDatasourceFormFields({
                 <RadioGroup.Item value="bigquery" /> Google BigQuery
               </Flex>
             </Text>
-            {allowGoogleSheets && googleSheetsEnabled && (
+            {allowGoogleSheets && isPrivileged && (
               <Text as="label" size="2">
                 <Flex gap="2">
                   <RadioGroup.Item value="google_sheets" /> Google Sheets

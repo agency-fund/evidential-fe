@@ -12,7 +12,7 @@ import {
   defaultDatasourceFormData,
 } from '@/components/features/datasources/add-datasource-form-fields';
 import { useReducer } from 'react';
-import { useGoogleSheetsEnabled } from '@/services/feature-flags/use-google-sheets-enabled';
+import { useAuth } from '@/providers/auth-provider';
 
 interface CreateDatasourceFormProps {
   onDatasourceCreated: (datasourceId: string) => void;
@@ -23,7 +23,7 @@ export const CreateDatasourceForm = ({ onDatasourceCreated, allowGoogleSheets = 
   const orgContext = useCurrentOrganization();
   const organizationId = orgContext!.current.id;
   const [formData, dispatch] = useReducer(datasourceFormReducer, defaultDatasourceFormData());
-  const googleSheetsEnabled = useGoogleSheetsEnabled();
+  const { isPrivileged } = useAuth();
 
   const { trigger, error, isMutating } = useCreateDatasource(
     { connectivity_check: true },
@@ -44,7 +44,7 @@ export const CreateDatasourceForm = ({ onDatasourceCreated, allowGoogleSheets = 
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (formData.dwhType === 'google_sheets' && (!allowGoogleSheets || !googleSheetsEnabled)) return;
+    if (formData.dwhType === 'google_sheets' && (!allowGoogleSheets || !isPrivileged)) return;
 
     await trigger(
       {
@@ -73,7 +73,7 @@ export const CreateDatasourceForm = ({ onDatasourceCreated, allowGoogleSheets = 
         <Button
           type="submit"
           loading={isMutating}
-          disabled={formData.dwhType === 'google_sheets' && (!allowGoogleSheets || !googleSheetsEnabled)}
+          disabled={formData.dwhType === 'google_sheets' && (!allowGoogleSheets || !isPrivileged)}
         >
           Add Datasource
         </Button>

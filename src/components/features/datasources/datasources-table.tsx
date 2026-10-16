@@ -3,7 +3,7 @@ import { Flex, Heading, Table } from '@radix-ui/themes';
 import DatasourceRow from '@/components/features/datasources/datasources-table-row';
 import { EmptyStateCard } from '@/components/ui/cards/empty-state-card';
 import { AddDatasourceDialog } from '@/components/features/datasources/add-datasource-dialog';
-import { useGoogleSheetsEnabled } from '@/services/feature-flags/use-google-sheets-enabled';
+import { useAuth } from '@/providers/auth-provider';
 
 export function DatasourcesTable({
   datasources,
@@ -16,8 +16,8 @@ export function DatasourcesTable({
   }[];
   organizationId: string;
 }) {
-  const googleSheetsEnabled = useGoogleSheetsEnabled();
-  datasources = datasources.filter((datasource) => googleSheetsEnabled || datasource.driver !== 'google_sheets');
+  const { isPrivileged } = useAuth();
+  datasources = datasources.filter((datasource) => isPrivileged || datasource.driver !== 'google_sheets');
   const isEmpty = datasources.length === 0 || (datasources.length === 1 && datasources[0].driver === 'none');
 
   return (
