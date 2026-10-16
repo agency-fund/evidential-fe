@@ -3,7 +3,7 @@
 import { useGetDatasource, useInspectTableInDatasource } from '@/api/admin';
 import { useAuth } from '@/providers/auth-provider';
 
-export function useTableDisplayName(datasourceId: string, tableName: string | undefined): string | undefined {
+export function useTableDisplayName(datasourceId: string, tableName: string | undefined) {
   const { isPrivileged } = useAuth();
   const { data: datasource, error: datasourceError } = useGetDatasource(datasourceId, {
     swr: { enabled: !!datasourceId && !!tableName },
@@ -16,10 +16,20 @@ export function useTableDisplayName(datasourceId: string, tableName: string | un
     { swr: { enabled: isPrivileged && isSheets && !!tableName } },
   );
 
-  if (!tableName) return undefined;
-  if (!datasource) return datasourceError ? 'Source name unavailable' : 'Loading source name…';
-  if (!isSheets) return tableName;
-  if (!isPrivileged) return undefined;
-  if (!tableMetadata) return tableError ? 'Spreadsheet name unavailable' : 'Loading spreadsheet name…';
-  return tableMetadata.display_name || 'Spreadsheet name unavailable';
+  if (!tableName) return { displayName: undefined, isLoading: false };
+  if (!datasource) {
+    return {
+      displayName: datasourceError ? 'Source name unavailable' : 'Loading source name…',
+      isLoading: !datasourceError,
+    };
+  }
+  if (!isSheets) return { displayName: tableName, isLoading: false };
+  if (!isPrivileged) return { displayName: undefined, isLoading: false };
+  if (!tableMetadata) {
+    return {
+      displayName: tableError ? 'Spreadsheet name unavailable' : 'Loading spreadsheet name…',
+      isLoading: !tableError,
+    };
+  }
+  return { displayName: tableMetadata.display_name || 'Spreadsheet name unavailable', isLoading: false };
 }

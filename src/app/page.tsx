@@ -78,6 +78,11 @@ export default function Page() {
       .filter((datasource) => isPrivileged || datasource.driver !== 'google_sheets')
       .map((datasource) => datasource.id),
   );
+  const sheetsDatasourceIds = new Set(
+    datasourcesData?.items
+      .filter((datasource) => datasource.driver === 'google_sheets')
+      .map((datasource) => datasource.id),
+  );
   const committedExperiments =
     experimentsData?.items.filter(
       (experiment) => experiment.state === 'committed' && visibleDatasourceIds.has(experiment.datasource_id),
@@ -247,6 +252,11 @@ export default function Page() {
                     designUrl={experiment.design_spec.design_url || ''}
                     experimentId={experiment.experiment_id}
                     organizationId={currentOrgId}
+                    needsOutcomesConnection={
+                      isPrivileged &&
+                      sheetsDatasourceIds.has(experiment.datasource_id) &&
+                      !experiment.google_sheets_experiment_url
+                    }
                     status={experiment.status}
                     impact={experiment.impact}
                     decision={experiment.decision}

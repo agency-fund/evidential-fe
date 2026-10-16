@@ -117,7 +117,10 @@ export const SelectTableFields = ({
 
   const tables = inspectData?.tables ?? [];
   const displayedTable = tableName ?? tables[0];
-  const tableDisplayName = useTableDisplayName(datasourceId, displayedTable);
+  const { displayName: tableDisplayName, isLoading: isLoadingTableName } = useTableDisplayName(
+    datasourceId,
+    displayedTable,
+  );
   const disabled = !tableName || !inspectData;
 
   function handleTableChange(newTableName: string) {
@@ -163,16 +166,20 @@ export const SelectTableFields = ({
             Select a table
           </Text>
           <Flex direction="row" gap="3">
-            <Select.Root value={tableName ?? ''} onValueChange={handleTableChange}>
-              <Select.Trigger placeholder="Select a table">{tableName ? tableDisplayName : undefined}</Select.Trigger>
-              <Select.Content>
-                {tables.map((table) => (
-                  <Select.Item key={table} value={table}>
-                    {table === displayedTable ? tableDisplayName : table}
-                  </Select.Item>
-                ))}
-              </Select.Content>
-            </Select.Root>
+            {isLoadingTableName ? (
+              <XSpinner />
+            ) : (
+              <Select.Root value={tableName ?? ''} onValueChange={handleTableChange}>
+                <Select.Trigger placeholder="Select a table">{tableName ? tableDisplayName : undefined}</Select.Trigger>
+                <Select.Content>
+                  {tables.map((table) => (
+                    <Select.Item key={table} value={table}>
+                      {table === displayedTable ? tableDisplayName : table}
+                    </Select.Item>
+                  ))}
+                </Select.Content>
+              </Select.Root>
+            )}
             <IconButton size="2" variant="soft" onClick={() => setRefresh(true)} loading={isValidating}>
               <ReloadIcon />
             </IconButton>

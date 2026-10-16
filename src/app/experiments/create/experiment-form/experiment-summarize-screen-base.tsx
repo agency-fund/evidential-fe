@@ -51,7 +51,7 @@ export function ExperimentsSummarizeScreenBase({
   const experimentId = data.createExperimentResponse?.experiment_id ?? '';
   const datasourceId = data.datasourceId ?? '';
 
-  const tableDisplayName = useTableDisplayName(datasourceId, data.tableName);
+  const { displayName: tableDisplayName } = useTableDisplayName(datasourceId, data.tableName);
   const { trigger: triggerCommit, isMutating: commitLoading } = useCommitExperiment(datasourceId, experimentId, {
     swr: {
       onSuccess: () => {

@@ -4,26 +4,41 @@ import { useState } from 'react';
 import { Button, Dialog, Flex, Text, TextField } from '@radix-ui/themes';
 import { GearIcon, LockClosedIcon } from '@radix-ui/react-icons';
 import { mutate } from 'swr';
-import { getGetExperimentForUiKey, useUpdateExperiment } from '@/api/admin';
+import {
+  getGetExperimentForUiKey,
+  getListOrganizationExperimentsKey,
+  useGetDatasource,
+  useUpdateExperiment,
+} from '@/api/admin';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { useAuth } from '@/providers/auth-provider';
+import { XSpinner } from '@/components/ui/x-spinner';
 
 export function GoogleSheetsExperimentDialog({
   datasourceId,
   experimentId,
   experimentName,
+  organizationId,
   rawSpreadsheetUrl,
   experimentSpreadsheetUrl,
+  triggerLabel,
 }: {
   datasourceId: string;
   experimentId: string;
   experimentName: string;
-  rawSpreadsheetUrl: string;
+  organizationId: string;
+  rawSpreadsheetUrl?: string;
   experimentSpreadsheetUrl: string | null;
+  triggerLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const { isPrivileged } = useAuth();
   const [spreadsheetUrl, setSpreadsheetUrl] = useState('');
+  const { data: datasource, error: datasourceError } = useGetDatasource(datasourceId, {
+    swr: { enabled: open && isPrivileged && !rawSpreadsheetUrl },
+  });
+  const sourceUrl =
+    rawSpreadsheetUrl ?? (datasource?.dsn.type === 'google_sheets' ? datasource.dsn.spreadsheet_url : undefined);
   const {
     trigger: updateExperiment,
     isMutating,
@@ -34,6 +49,7 @@ export function GoogleSheetsExperimentDialog({
       onSuccess: async () => {
         await mutate(getGetExperimentForUiKey(datasourceId, experimentId));
         handleClose();
+        await mutate(getListOrganizationExperimentsKey(organizationId));
       },
     },
   });
@@ -54,7 +70,7 @@ export function GoogleSheetsExperimentDialog({
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (!isPrivileged) return;
+    if (!isPrivileged || !sourceUrl) return;
     await updateExperiment({ google_sheets_experiment_url: spreadsheetUrl.trim() }, { throwOnError: false });
   }
 
@@ -65,7 +81,7 @@ export function GoogleSheetsExperimentDialog({
       <Dialog.Trigger>
         <Button type="button" variant="soft">
           <GearIcon />
-          {experimentSpreadsheetUrl ? 'Experiment tab settings' : 'Connect Experiment tab'}
+          {triggerLabel ?? (experimentSpreadsheetUrl ? 'Experiment tab settings' : 'Connect Experiment tab')}
         </Button>
       </Dialog.Trigger>
       <Dialog.Content>
@@ -79,11 +95,13 @@ export function GoogleSheetsExperimentDialog({
           </Dialog.Description>
           <Flex direction="column" gap="3">
             {error && <GenericErrorCallout title="Could not connect Experiment tab" error={error} />}
+            {datasourceError && <GenericErrorCallout title="Could not load datasource" error={datasourceError} />}
+            {!sourceUrl && !datasourceError && <XSpinner />}
             <label>
               <Text as="div" size="2" mb="1" weight="bold" color="gray">
                 Raw datasource tab
               </Text>
-              <TextField.Root type="url" value={rawSpreadsheetUrl} disabled variant="soft" color="gray">
+              <TextField.Root type="url" value={sourceUrl ?? ''} disabled variant="soft" color="gray">
                 <TextField.Slot>
                   <LockClosedIcon />
                 </TextField.Slot>
@@ -106,7 +124,7 @@ export function GoogleSheetsExperimentDialog({
             <Button type="button" variant="soft" color="gray" onClick={handleClose} disabled={isMutating}>
               Cancel
             </Button>
-            <Button type="submit" loading={isMutating}>
+            <Button type="submit" loading={isMutating} disabled={!sourceUrl}>
               Save experiment tab
             </Button>
           </Flex>

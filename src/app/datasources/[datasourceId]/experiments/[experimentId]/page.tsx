@@ -191,7 +191,7 @@ export default function ExperimentViewPage() {
     experiment && isFrequentistSpec(experiment.config.design_spec)
       ? experiment.config.design_spec.table_name
       : undefined;
-  const tableDisplayName = useTableDisplayName(datasourceId, sheetTableName);
+  const { displayName: tableDisplayName } = useTableDisplayName(datasourceId, sheetTableName);
   // Wait for the datasource before deciding whether an outcomes connection is required.
   const canAnalyzeLive = canAccessDatasource && !!experiment && (!isGoogleSheets || !!googleSheetsExperimentUrl);
   const liveAnalysisConnectionKey = `${datasourceId}/${experimentId}/${isGoogleSheets ? (googleSheetsExperimentUrl ?? 'disconnected') : 'datasource'}`;
@@ -199,7 +199,10 @@ export default function ExperimentViewPage() {
   const liveAnalysisKey = useMemo(
     () =>
       canAnalyzeLive && !isCmab
-        ? [...getAnalyzeExperimentKey(datasourceId, experimentId), ...(isGoogleSheets ? [googleSheetsExperimentUrl] : [])]
+        ? [
+            ...getAnalyzeExperimentKey(datasourceId, experimentId),
+            ...(isGoogleSheets ? [googleSheetsExperimentUrl] : []),
+          ]
         : null,
     [canAnalyzeLive, isCmab, datasourceId, experimentId, isGoogleSheets, googleSheetsExperimentUrl],
   );
@@ -617,6 +620,7 @@ export default function ExperimentViewPage() {
                   datasourceId={datasourceId}
                   experimentId={experimentId}
                   experimentName={experiment_name}
+                  organizationId={organizationId}
                   rawSpreadsheetUrl={datasource.dsn.spreadsheet_url}
                   experimentSpreadsheetUrl={googleSheetsExperimentUrl}
                 />
