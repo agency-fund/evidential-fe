@@ -353,7 +353,6 @@ export const createExperimentBodyDesignSpecStrataMax = 150;
 
 export const createExperimentBodyDesignSpecMetricsItemFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentBodyDesignSpecMetricsItemIsOneTimeEligibleDefault = false;
 export const createExperimentBodyDesignSpecMetricsItemUseOneTimeMetricDefault = false;
 export const createExperimentBodyDesignSpecMetricsMax = 150;
 
@@ -403,7 +402,6 @@ export const createExperimentBodyDesignSpecStrataMaxOne = 150;
 
 export const createExperimentBodyDesignSpecMetricsItemFieldNameRegExpOne =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentBodyDesignSpecMetricsItemIsOneTimeEligibleDefaultOne = false;
 export const createExperimentBodyDesignSpecMetricsItemUseOneTimeMetricDefaultOne = false;
 export const createExperimentBodyDesignSpecMetricsMaxOne = 150;
 
@@ -506,8 +504,8 @@ export const createExperimentBodyDesignSpecAutofailWindowDefaultTwo = 24;
 export const createExperimentBodyDesignSpecAutofailOutcomeValueDefaultTwo = 0;
 export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
 	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
-export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecIsOneTimeEligibleDefault = false;
 export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecUseOneTimeMetricDefault = false;
+export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecIsOneTimeEligibleDefault = false;
 export const createExperimentBodyPowerAnalysesAnalysesItemMsgHighClusterVariationDefault = false;
 export const createExperimentBodyPowerAnalysesAnalysesMax = 150;
 
@@ -599,7 +597,6 @@ export const createExperimentBody = zod.object({
 								.union([zod.number(), zod.null()])
 								.optional(),
 							available_n: zod.union([zod.number(), zod.null()]).optional(),
-							is_one_time_eligible: zod.boolean().optional(),
 							use_one_time_metric: zod.boolean().optional(),
 						}),
 					)
@@ -750,7 +747,6 @@ export const createExperimentBody = zod.object({
 								.union([zod.number(), zod.null()])
 								.optional(),
 							available_n: zod.union([zod.number(), zod.null()]).optional(),
-							is_one_time_eligible: zod.boolean().optional(),
 							use_one_time_metric: zod.boolean().optional(),
 						}),
 					)
@@ -1116,8 +1112,8 @@ export const createExperimentBody = zod.object({
 									.union([zod.number(), zod.null()])
 									.optional(),
 								available_n: zod.union([zod.number(), zod.null()]).optional(),
-								is_one_time_eligible: zod.boolean().optional(),
 								use_one_time_metric: zod.boolean().optional(),
+								is_one_time_eligible: zod.boolean().optional(),
 							}),
 							target_n: zod.union([zod.number(), zod.null()]).optional(),
 							sufficient_n: zod.union([zod.boolean(), zod.null()]).optional(),
@@ -1266,7 +1262,6 @@ export const powerCheckBodyTableNameMax = 100;
 export const powerCheckBodyMetricsItemFieldNameRegExp = new RegExp(
 	"^[a-zA-Z_][a-zA-Z0-9_]*$",
 );
-export const powerCheckBodyMetricsItemIsOneTimeEligibleDefault = false;
 export const powerCheckBodyMetricsItemUseOneTimeMetricDefault = false;
 export const powerCheckBodyMetricsMax = 150;
 
@@ -1310,7 +1305,6 @@ export const powerCheckBody = zod.object({
 				metric_stddev: zod.union([zod.number(), zod.null()]).optional(),
 				available_nonnull_n: zod.union([zod.number(), zod.null()]).optional(),
 				available_n: zod.union([zod.number(), zod.null()]).optional(),
-				is_one_time_eligible: zod.boolean().optional(),
 				use_one_time_metric: zod.boolean().optional(),
 			}),
 		)
