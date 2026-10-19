@@ -164,8 +164,8 @@ export function MetricBuilder({
         />
       </Flex>
       {primaryMetric ? (
-        <Box maxWidth="50%" minWidth="480px">
-          <Table.Root layout="fixed">
+        <Box minWidth="max(50%, 480px)" maxWidth="100%" width="fit-content">
+          <Table.Root layout="auto">
             <Table.Header>
               <Table.Row>
                 <Table.ColumnHeaderCell width="104px">Actions</Table.ColumnHeaderCell>
