@@ -164,7 +164,7 @@ export function MetricBuilder({
         />
       </Flex>
       {primaryMetric ? (
-        <Box maxWidth="50%">
+        <Box maxWidth="50%" minWidth="480px">
           <Table.Root layout="fixed">
             <Table.Header>
               <Table.Row>
@@ -196,7 +196,7 @@ export function MetricBuilder({
                     <FieldDataCard
                       field={primaryMetric.metric}
                       trigger={
-                        <Flex gap="2" align="center">
+                        <Flex gap="2" align="center" wrap="wrap">
                           <Text style={{ cursor: 'pointer' }}>{primaryMetric.metric.field_name}</Text>
                           <Badge color="green">{'\u24F5'} Primary</Badge>
                         </Flex>
