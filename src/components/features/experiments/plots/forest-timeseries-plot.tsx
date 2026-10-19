@@ -116,7 +116,7 @@ export default function ForestTimeseriesPlot({
   // Early return if no data
   if (!chartData || chartData.length === 0) {
     return (
-      <Callout.Root color={'orange'}>
+      <Callout.Root color="orange">
         <Callout.Icon>
           <InfoCircledIcon />
         </Callout.Icon>
@@ -146,7 +146,6 @@ export default function ForestTimeseriesPlot({
   );
   const [minY, maxY] = computeAxisBounds(yAxisValues.filter(Number.isFinite));
 
-  // Generate all date ticks between minDate and maxDate for x-axis
   const allDateTicks: number[] = [];
   const currentDate = new Date(minDate);
   currentDate.setUTCHours(0, 0, 0, 0);
@@ -189,10 +188,7 @@ export default function ForestTimeseriesPlot({
               angle={-30}
               textAnchor="end"
               height={40}
-              tickFormatter={(timestamp) => {
-                const date = new Date(timestamp);
-                return formatDateUtcYYYYMMDD(date);
-              }}
+              tickFormatter={(timestamp) => formatDateUtcYYYYMMDD(new Date(timestamp))}
             />
             <YAxis
               domain={[minY, maxY]}

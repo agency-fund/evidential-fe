@@ -4,6 +4,7 @@ import {
   FreqExperimentAnalysisResponse,
   GetExperimentResponse,
   MetricAnalysis,
+  Snapshot,
 } from '@/api/methods.schemas';
 import {
   AnalysisState,
@@ -14,7 +15,7 @@ import {
   Significance,
   TimeSeriesDataPoint,
 } from './forest-plot-models';
-import { formatDateUtcYYYYMMDD } from '@/services/date-utils';
+import { formatDateUtcYYYYMMDD, formatUtcDownToMinuteLabel } from '@/services/date-utils';
 import { isFrequentistSpec } from '@/services/experiment-utils';
 
 // Base Radix colors for use as color props.
@@ -120,6 +121,31 @@ export const precomputeFreqEffectsByMetric = (
 export const precomputeBanditEffects = (analysisData: ExperimentAnalysisResponse): BanditEffectData[] | undefined => {
   if (!isBanditAnalysis(analysisData)) return undefined;
   return _generateBanditEffectData(analysisData);
+};
+
+/** Retain the latest successful snapshot for each day. */
+export const buildSnapshotAnalysisHistory = (snapshots: Snapshot[], alpha: number | undefined): AnalysisState[] => {
+  const successful = snapshots.filter((snapshot) => snapshot.status === 'success' && snapshot.data !== null);
+  const byDate = new Map<string, Snapshot>();
+  for (const snapshot of successful) {
+    const dateKey = snapshot.updated_at.split('T')[0];
+    const existing = byDate.get(dateKey);
+    if (!existing || snapshot.updated_at > existing.updated_at) byDate.set(dateKey, snapshot);
+  }
+  return Array.from(byDate.values())
+    .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+    .map((snapshot) => {
+      const data = snapshot.data!;
+      const date = new Date(snapshot.updated_at);
+      return {
+        key: snapshot.id,
+        data,
+        updated_at: date,
+        label: formatUtcDownToMinuteLabel(date),
+        effectSizesByMetric: precomputeFreqEffectsByMetric(data, alpha),
+        banditEffects: precomputeBanditEffects(data),
+      };
+    });
 };
 
 /**
@@ -472,6 +498,7 @@ export const transformAnalysisForForestTimeseriesPlot = (
       if (!effectSizes) continue;
 
       for (const effectSize of effectSizes) {
+        if (effectSize.isMissingAllValues) continue;
         // Determine significance based on the effect
         let significance = Significance.No;
         if (effectSize.significant) {
@@ -500,23 +527,18 @@ export const transformAnalysisForForestTimeseriesPlot = (
       }
     }
 
-    // Truncate timestamp to start of day UTC to align with ticks.
-    // If we need the precision in the future, just set updated_at directly.
-    const truncatedDate = new Date(state.updated_at);
-    truncatedDate.setUTCHours(0, 0, 0, 0);
+    const pointDate = new Date(state.updated_at);
+    pointDate.setUTCHours(0, 0, 0, 0);
     timeseriesData.push({
-      date: formatDateUtcYYYYMMDD(truncatedDate),
-      dateTimestampMs: truncatedDate.getTime(),
+      date: formatDateUtcYYYYMMDD(pointDate),
+      dateTimestampMs: pointDate.getTime(),
       armEffects: armEffects,
       key: state.key,
     });
   }
 
-  // Compute min and max dates for the axis domain (truncated to start of day)
-  const minDate = new Date(validStates[0].updated_at);
-  minDate.setUTCHours(0, 0, 0, 0);
-  const maxDate = new Date(validStates[validStates.length - 1].updated_at);
-  maxDate.setUTCHours(0, 0, 0, 0);
+  const minDate = new Date(timeseriesData[0].dateTimestampMs);
+  const maxDate = new Date(timeseriesData[timeseriesData.length - 1].dateTimestampMs);
 
   return { timeseriesData, armMetadata, minDate, maxDate };
 };

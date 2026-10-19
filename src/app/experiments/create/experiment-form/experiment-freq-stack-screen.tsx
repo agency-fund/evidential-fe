@@ -5,7 +5,7 @@ import { Card, Flex, Heading } from '@radix-ui/themes';
 import { MetricBuilder, MetricBuilderAction } from '@/components/features/experiments/metric-builder';
 import { FilterBuilder } from '@/components/features/experiments/querybuilder/filter-builder';
 import { StrataBuilder } from '@/components/features/experiments/strata-builder';
-import { useCreateExperiment, useInspectTableInDatasource } from '@/api/admin';
+import { useCreateExperiment, useGetDatasource, useInspectTableInDatasource } from '@/api/admin';
 import { CreateExperimentResponse, FieldMetadata, Filter } from '@/api/methods.schemas';
 import { PowerCheckSection, PowerCheckSectionAction } from './power-check-section';
 import { ClusterStatisticsSectionAction } from './cluster-statistics-section';
@@ -110,9 +110,15 @@ export const ExperimentFreqStackScreen = ({
   navigatePrev,
   navigateNext,
 }: ScreenProps<ExperimentFormData, ExperimentFreqStackScreenMessage, ExperimentScreenId>) => {
-  const { data: tableData } = useInspectTableInDatasource(data.datasourceId ?? '', data.tableName ?? '', {
-    refresh: false,
+  const { data: datasource } = useGetDatasource(data.datasourceId ?? '', {
+    swr: { enabled: !!data.datasourceId },
   });
+  const isGoogleSheets = datasource?.dsn.type === 'google_sheets';
+  const { data: tableData } = useInspectTableInDatasource(
+    data.datasourceId ?? '',
+    encodeURIComponent(data.tableName ?? ''),
+    { refresh: isGoogleSheets },
+  );
   const { trigger: triggerCreate, isMutating: triggerLoading } = useCreateExperiment(data.datasourceId!, undefined, {
     swr: {
       onSuccess: async (response) => {
@@ -128,7 +134,7 @@ export const ExperimentFreqStackScreen = ({
   const allTableFields = tableData?.fields ?? [];
 
   // Filter numeric and boolean fields for metrics
-  const metricFields = allTableFields.filter((f) =>
+  const numericFields = allTableFields.filter((f) =>
     ['integer', 'bigint', 'double precision', 'numeric', 'boolean'].includes(f.data_type),
   );
   // Exclude primary key from stratum options.
@@ -171,7 +177,7 @@ export const ExperimentFreqStackScreen = ({
             primaryMetric={data.primaryMetric}
             secondaryMetrics={data.secondaryMetrics ?? []}
             dispatch={dispatch}
-            metricFields={metricFields}
+            metricFields={numericFields}
             excludeKeys={[data.primaryKey, data.clusterKey].filter((key): key is string => key !== undefined)}
           />
         </Card>

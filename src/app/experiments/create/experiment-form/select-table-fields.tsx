@@ -89,7 +89,7 @@ export const SelectTableFields = ({
         if (refresh) {
           setRefresh(false);
         }
-        if (!tableName && response.tables.length > 0) {
+        if (response.tables.length > 0 && (!tableName || !response.tables.includes(tableName))) {
           handleTableChange(response.tables[0]);
         }
       },
@@ -100,7 +100,7 @@ export const SelectTableFields = ({
     data: tableData,
     isLoading: loadingTable,
     error: tableError,
-  } = useInspectTableInDatasource(datasourceId, tableName!, undefined, {
+  } = useInspectTableInDatasource(datasourceId, encodeURIComponent(tableName ?? ''), undefined, {
     swr: {
       enabled: !!datasourceId && !!tableName,
       onSuccess: (response) => {
@@ -161,7 +161,7 @@ export const SelectTableFields = ({
           </Text>
           <Flex direction="row" gap="3">
             <Select.Root value={tableName ?? ''} onValueChange={handleTableChange}>
-              <Select.Trigger placeholder="Select a table" />
+              <Select.Trigger placeholder="Select a table">{tableName}</Select.Trigger>
               <Select.Content>
                 {tables.map((table) => (
                   <Select.Item key={table} value={table}>

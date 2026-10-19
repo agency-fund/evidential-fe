@@ -7,6 +7,10 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useCurrentOrganization } from '@/providers/organization-provider';
 import { SnapshotTable } from './snapshot-table';
+import { useGetDatasource } from '@/api/admin';
+import { useAuth } from '@/providers/auth-provider';
+import { XSpinner } from '@/components/ui/x-spinner';
+import { GenericErrorCallout } from '@/components/ui/generic-error';
 
 export default function SnapshotsPage() {
   const org = useCurrentOrganization();
@@ -14,6 +18,15 @@ export default function SnapshotsPage() {
   const params = useParams();
   const datasourceId = params.datasourceId as string;
   const experimentId = params.experimentId as string;
+  const auth = useAuth();
+  const isPrivileged = auth.isAuthenticated && auth.isPrivileged;
+  const { data: datasource, error } = useGetDatasource(datasourceId, { swr: { enabled: !!datasourceId } });
+
+  if (error) return <GenericErrorCallout title="Error loading datasource" error={error} />;
+  if (!datasource) return <XSpinner message="Loading datasource..." />;
+  if (datasource.dsn.type === 'google_sheets' && !isPrivileged) {
+    return <Text>Datasource unavailable</Text>;
+  }
 
   if (!datasourceId || !experimentId) {
     return <Text>Error: Missing datasource or experiment ID</Text>;

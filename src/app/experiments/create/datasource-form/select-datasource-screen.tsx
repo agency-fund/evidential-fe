@@ -10,13 +10,16 @@ import { DatasourceCardsGrid } from '@/app/experiments/create/datasource-form/da
 import { DatasourceModeSelector } from '@/app/experiments/create/datasource-form/datasource-mode-selector';
 import { DatasourceSummary } from '@/api/methods.schemas';
 import { isUsableDatasource } from '@/services/genapi-helpers';
+import { useAuth } from '@/providers/auth-provider';
 
 type SelectDatasourceMessages =
   | { type: 'set-datasource'; value: string }
   | { type: 'set-mode'; value: 'existing' | 'create' }
   | { type: 'datasource-created'; datasourceId: string };
 
-const find_first_remote_datasource = (datasources: DatasourceSummary[]) => datasources.find(isUsableDatasource);
+const supportsExperiment = (datasource: DatasourceSummary, experimentType: DatasourceFormData['experimentType']) =>
+  isUsableDatasource(datasource) &&
+  (datasource.driver !== 'google_sheets' || experimentType === 'freq_preassigned' || experimentType === undefined);
 
 export const SelectDatasourceScreen = ({
   data,
@@ -24,6 +27,8 @@ export const SelectDatasourceScreen = ({
   navigateNext,
 }: ScreenProps<DatasourceFormData, SelectDatasourceMessages, DatasourceScreenId>) => {
   const orgContext = useCurrentOrganization();
+  const auth = useAuth();
+  const isPrivileged = auth.isAuthenticated && auth.isPrivileged;
   const organizationId = orgContext!.current.id;
 
   const { data: datasourcesData, isLoading } = useListOrganizationDatasources(organizationId, {
@@ -32,7 +37,9 @@ export const SelectDatasourceScreen = ({
       onSuccess: (response) => {
         if (!data.datasourceId && response.items.length > 0) {
           // Find the first remote DWH.
-          const remoteId = find_first_remote_datasource(response.items)?.id;
+          const remoteId = response.items.find(
+            (ds) => supportsExperiment(ds, data.experimentType) && (isPrivileged || ds.driver !== 'google_sheets'),
+          )?.id;
           if (remoteId) {
             dispatch({ type: 'set-datasource', value: remoteId });
           }
@@ -41,7 +48,10 @@ export const SelectDatasourceScreen = ({
     },
   });
 
-  const availableDatasources = datasourcesData?.items?.filter(isUsableDatasource) ?? [];
+  const availableDatasources =
+    datasourcesData?.items?.filter(
+      (ds) => supportsExperiment(ds, data.experimentType) && (isPrivileged || ds.driver !== 'google_sheets'),
+    ) ?? [];
   const hasDatasources = availableDatasources.length > 0;
 
   if (isLoading) {
@@ -53,6 +63,7 @@ export const SelectDatasourceScreen = ({
     return (
       <Flex direction="column" gap="3">
         <CreateDatasourceForm
+          allowGoogleSheets={data.experimentType === undefined || data.experimentType === 'freq_preassigned'}
           onDatasourceCreated={(id) => {
             dispatch({ type: 'datasource-created', datasourceId: id });
             navigateNext();
@@ -78,6 +89,7 @@ export const SelectDatasourceScreen = ({
       createContent={
         <Card>
           <CreateDatasourceForm
+            allowGoogleSheets={data.experimentType === undefined || data.experimentType === 'freq_preassigned'}
             onDatasourceCreated={(id) => {
               dispatch({ type: 'datasource-created', datasourceId: id });
               navigateNext();

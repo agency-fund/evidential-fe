@@ -3342,11 +3342,11 @@ export type GetExperimentAssignmentsAsCsvForUiQueryResult = NonNullable<
 	Awaited<ReturnType<typeof getExperimentAssignmentsAsCsvForUi>>
 >;
 export type GetExperimentAssignmentsAsCsvForUiQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
+	HTTPExceptionError | XHTTPValidationError | MessageError
 >;
 
 export const useGetExperimentAssignmentsAsCsvForUi = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+	TError = ErrorType<HTTPExceptionError | XHTTPValidationError | MessageError>,
 >(
 	datasourceId: string,
 	experimentId: string,

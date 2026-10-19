@@ -1,15 +1,17 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useEffectEvent, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { mutate } from 'swr';
 import { Badge, Box, Flex, Heading, Select, Separator, Tabs, Text, Tooltip } from '@radix-ui/themes';
 import { CalendarIcon, CodeIcon, FileTextIcon, InfoCircledIcon, LayersIcon, PersonIcon } from '@radix-ui/react-icons';
 import {
+  getAnalyzeExperimentKey,
   getGetExperimentForUiKey,
   useAnalyzeCmabExperiment,
   useAnalyzeExperiment,
   useGetExperimentForUi,
+  useGetDatasource,
   useListSnapshots,
   useUpdateExperiment,
 } from '@/api/admin';
@@ -20,11 +22,11 @@ import {
   ExperimentAnalysisResponse,
   MABExperimentSpec,
   MetricAnalysis,
-  Snapshot,
 } from '@/api/methods.schemas';
 import { ForestPlot } from '@/components/features/experiments/plots/forest-plot';
 import {
   AnalysisState,
+  buildSnapshotAnalysisHistory,
   computeBoundsForMetric,
   getAlphaAndPower,
   isBanditAnalysis,
@@ -62,13 +64,24 @@ import {
   isCmabSpec,
   isFrequentistSpec,
 } from '@/services/experiment-utils';
-import { extractUtcHHMMLabel, formatUtcDownToMinuteLabel } from '@/services/date-utils';
+import { extractUtcHHMMLabel } from '@/services/date-utils';
 import { ContextConfigBox } from '@/components/features/experiments/context-config-box';
 import { TableNameBadge } from '@/components/features/participants/table-name-badge';
 import { TargetingDialog } from '@/components/features/experiments/targeting-dialog';
 import { FreqDesignDetailsDialog } from '@/components/features/experiments/freq-design-details-dialog';
+import { GoogleSheetsExperimentDialog } from '@/components/features/experiments/google-sheets-experiment-dialog';
+import { useAuth } from '@/providers/auth-provider';
 
 const SNAPSHOT_ERROR_ALERT_THRESHOLD_MS = 8 * 60 * 60 * 1000;
+
+const EMPTY_LIVE_ANALYSIS: AnalysisState = {
+  key: 'live',
+  data: undefined,
+  updated_at: new Date(0),
+  label: 'No live data yet',
+  effectSizesByMetric: undefined,
+  banditEffects: undefined,
+};
 
 /** Whether a snapshot failure is recent enough to be worth calling out to the user. */
 function isSnapshotFailureRecent(latestFailure: Date | null): boolean {
@@ -133,18 +146,15 @@ export default function ExperimentViewPage() {
   const organizationId = orgCtx?.current.id || '';
   const datasourceId = (params.datasourceId as string) || '';
   const experimentId = (params.experimentId as string) || '';
+  const auth = useAuth();
+  const isPrivileged = auth.isAuthenticated && auth.isPrivileged;
+  const { data: datasource, error: datasourceError } = useGetDatasource(datasourceId, {
+    swr: { enabled: !!datasourceId },
+  });
+  const canAccessDatasource = !!datasource && (datasource.dsn.type !== 'google_sheets' || isPrivileged);
   const [lastErrorTimestamp, setLastErrorTimestamp] = useState<null | Date>(null);
   const [isLastSnapshotErrorRelevant, setIsLastSnapshotErrorRelevant] = useState(false);
 
-  const [analysisHistory, setAnalysisHistory] = useState<AnalysisState[]>([]);
-  const [liveAnalysis, setLiveAnalysis] = useState<AnalysisState>({
-    key: 'live',
-    data: undefined,
-    updated_at: new Date(),
-    label: 'No live data yet',
-    effectSizesByMetric: undefined,
-    banditEffects: undefined,
-  });
   // The key of the selected analysis to display ('live' or a snapshot ID) in the Forest Plot.
   const [selectedAnalysisKey, setSelectedAnalysisKey] = useState<AnalysisState['key'] | null>(null);
   const [selectedMetricName, setSelectedMetricName] = useState<string | null>(null);
@@ -160,7 +170,7 @@ export default function ExperimentViewPage() {
     error: experimentError,
   } = useGetExperimentForUi(datasourceId, experimentId, {
     swr: {
-      enabled: !!datasourceId,
+      enabled: canAccessDatasource,
       onSuccess: (expForUi) => {
         const expConfig = expForUi.config;
         // Only initialize context input ids for CMAB experiments if they are not already set.
@@ -175,6 +185,32 @@ export default function ExperimentViewPage() {
     },
   });
 
+  const isGoogleSheets = datasource?.dsn.type === 'google_sheets';
+  const googleSheetsExperimentUrl = experiment?.config.google_sheets_experiment_url ?? null;
+  // Wait for the datasource before deciding whether an outcomes connection is required.
+  const canAnalyzeLive = canAccessDatasource && !!experiment && (!isGoogleSheets || !!googleSheetsExperimentUrl);
+  const liveAnalysisConnectionKey = `${datasourceId}/${experimentId}/${isGoogleSheets ? (googleSheetsExperimentUrl ?? 'disconnected') : 'datasource'}`;
+  const isCmab = isCmabExperiment(experiment?.config);
+  const liveAnalysisKey = useMemo(
+    () =>
+      canAnalyzeLive && !isCmab
+        ? [
+            ...getAnalyzeExperimentKey(datasourceId, experimentId),
+            ...(isGoogleSheets ? [googleSheetsExperimentUrl] : []),
+          ]
+        : null,
+    [canAnalyzeLive, isCmab, datasourceId, experimentId, isGoogleSheets, googleSheetsExperimentUrl],
+  );
+
+  useEffect(() => {
+    if (!isGoogleSheets || !liveAnalysisKey) return;
+    // Drop the previous tab's cached live result, including an in-flight revalidation.
+    return () => {
+      void mutate(liveAnalysisKey, undefined, { revalidate: false });
+    };
+  }, [isGoogleSheets, liveAnalysisKey]);
+  const { alpha } = getAlphaAndPower(experiment?.config);
+
   const {
     mutate: analyzeLive,
     data: analyzeExperimentData,
@@ -182,14 +218,14 @@ export default function ExperimentViewPage() {
     error: liveAnalysisError,
   } = useAnalyzeExperiment(datasourceId, experimentId, undefined, {
     swr: {
-      enabled: !!datasourceId && !!experiment && !isCmabExperiment(experiment.config),
+      enabled: canAnalyzeLive && !isCmabExperiment(experiment?.config),
+      swrKey: () => liveAnalysisKey,
       // Disable revalidation to only allow manual triggering of the live analysis
       revalidateIfStale: false,
       revalidateOnFocus: false,
       revalidateOnMount: false,
       revalidateOnReconnect: false,
       shouldRetryOnError: false,
-      onSuccess: (analysisData) => handleLiveAnalysisSuccess(analysisData),
     },
   });
 
@@ -198,78 +234,48 @@ export default function ExperimentViewPage() {
     data: analyzeCmabExperimentData,
     isMutating: isLoadingLiveCmabAnalysis,
     error: liveCmabAnalysisError,
-  } = useAnalyzeCmabExperiment(datasourceId, experimentId, {
-    swr: {
-      onSuccess: (analysisData) => handleLiveAnalysisSuccess(analysisData),
-    },
-  });
+  } = useAnalyzeCmabExperiment(datasourceId, experimentId);
 
-  const { isLoading: isLoadingHistory, error: analysisHistoryError } = useListSnapshots(
+  const liveAnalysisData = isCmab ? analyzeCmabExperimentData : analyzeExperimentData;
+  const liveAnalysis = useMemo((): AnalysisState => {
+    if (!canAnalyzeLive || liveAnalysisData === undefined) return EMPTY_LIVE_ANALYSIS;
+    const date = new Date(liveAnalysisData.created_at);
+    return {
+      key: 'live',
+      data: liveAnalysisData,
+      updated_at: date,
+      label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
+      effectSizesByMetric: precomputeFreqEffectsByMetric(liveAnalysisData, alpha),
+      banditEffects: precomputeBanditEffects(liveAnalysisData),
+    };
+  }, [canAnalyzeLive, liveAnalysisData, alpha]);
+
+  const {
+    data: snapshotList,
+    isLoading: isLoadingHistory,
+    error: analysisHistoryError,
+  } = useListSnapshots(
     organizationId,
     datasourceId,
     experimentId,
     { status: ['success'], page_size: Number.MAX_SAFE_INTEGER },
     {
       swr: {
-        enabled: !!organizationId && !!datasourceId && !!experimentId && !!experiment,
+        enabled: canAccessDatasource && !!organizationId && !!experimentId && !!experiment,
         shouldRetryOnError: false,
         focusThrottleInterval: 15 * 60_000, // refresh on focus after 15 minutes
-        onSuccess: async (data) => {
-          // Make human-readable labels for the dropdown, showing UTC down to the minute.
-          // Use the snapshot ID as the key, looking up the analysisState by ID upon selection.
-
-          // Do live analysis if there are no snapshots and we don't have live analysis data already. This avoids
-          // duplicating a potentially expensive query when useListSnapshots runs.
-          if (data.items.length === 0) {
-            // No snapshots. First check if we have (cached) live analysis data. If so, use that for display.
-            if (isCmabExperiment(experiment?.config) && analyzeCmabExperimentData !== undefined) {
-              handleLiveAnalysisSuccess(analyzeCmabExperimentData);
-            } else if (analyzeExperimentData !== undefined) {
-              handleLiveAnalysisSuccess(analyzeExperimentData);
-            } else {
-              await triggerLiveAnalysis();
-            }
-            return;
-          }
-
-          // Group snapshots by date and keep only the most recent one per date
-          const snapshotsByDate = new Map<string, Snapshot>();
-
-          for (const s of data.items) {
-            const dateKey = s.updated_at.split('T')[0]; // Get YYYY-MM-DD from ISO string
-            const existing = snapshotsByDate.get(dateKey);
-            if (!existing || s.updated_at > existing.updated_at) {
-              snapshotsByDate.set(dateKey, s);
-            }
-          }
-
-          // Convert to array
-          const filteredSnapshots = Array.from(snapshotsByDate.values());
-          const history: AnalysisState[] = filteredSnapshots.map((s) => {
-            // The results are guaranteed to be non-null because of the status filter.
-            const analysisData = s.data as ExperimentAnalysisResponse;
-            const date = new Date(s.updated_at);
-            return {
-              key: s.id,
-              data: analysisData,
-              updated_at: date,
-              label: formatUtcDownToMinuteLabel(date),
-              effectSizesByMetric: precomputeFreqEffectsByMetric(analysisData, alpha),
-              banditEffects: precomputeBanditEffects(analysisData),
-            };
-          });
-
+        onSuccess: (data) => {
           const latestFailure = data.latest_failure === null ? null : new Date(data.latest_failure);
           setLastErrorTimestamp(latestFailure);
           setIsLastSnapshotErrorRelevant(isSnapshotFailureRecent(latestFailure));
-          setAnalysisHistory(history);
-        },
-        onError: async () => {
-          // Trigger live analysis if snapshot loading fails
-          await triggerLiveAnalysis();
         },
       },
     },
+  );
+
+  const analysisHistory = useMemo(
+    () => buildSnapshotAnalysisHistory(snapshotList?.items ?? [], alpha),
+    [snapshotList?.items, alpha],
   );
 
   const { trigger: updateExperiment } = useUpdateExperiment(datasourceId, experimentId, {
@@ -282,22 +288,24 @@ export default function ExperimentViewPage() {
 
   // Wrapper around the live analysis functions for CMAB and non-CMAB experiments.
   const triggerLiveAnalysis = async (requestOverride?: CMABContextInputRequest) => {
+    if (!canAnalyzeLive) return;
     const request = requestOverride ?? cmabAnalysisRequest;
-    return isCmabExperiment(experiment?.config) ? await analyzeLiveCmab(request) : await analyzeLive();
+    return isCmabExperiment(experiment?.config)
+      ? await analyzeLiveCmab(request, { throwOnError: false })
+      : await analyzeLive();
   };
 
-  const handleLiveAnalysisSuccess = (analysisData: ExperimentAnalysisResponse) => {
-    const date = new Date();
-    const analysis: AnalysisState = {
-      key: 'live',
-      data: analysisData,
-      updated_at: date,
-      label: `LIVE as of ${extractUtcHHMMLabel(date)}`,
-      effectSizesByMetric: precomputeFreqEffectsByMetric(analysisData, alpha),
-      banditEffects: precomputeBanditEffects(analysisData),
-    };
-    setLiveAnalysis(analysis);
-  };
+  const initializeLiveAnalysis = useEffectEvent(async () => {
+    if (canAnalyzeLive && liveAnalysisData === undefined) {
+      await triggerLiveAnalysis();
+    }
+  });
+
+  useEffect(() => {
+    // Use loaded history and config so an early snapshot response cannot race the datasource.
+    if (!canAnalyzeLive || (snapshotList?.items.length !== 0 && !analysisHistoryError)) return;
+    void initializeLiveAnalysis();
+  }, [canAnalyzeLive, liveAnalysisConnectionKey, snapshotList, analysisHistoryError]);
 
   const handleSelectAnalysis = async (key: string) => {
     setSelectedAnalysisKey(key);
@@ -348,6 +356,16 @@ export default function ExperimentViewPage() {
 
   const showLoadingAnalysisSpinner = isLoadingLiveAnalysis || isLoadingLiveCmabAnalysis || isLoadingHistory;
 
+  if (datasourceError) {
+    return <GenericErrorCallout title="Error loading datasource" error={datasourceError} />;
+  }
+  if (!datasource) {
+    return <XSpinner message="Loading datasource..." />;
+  }
+  if (datasource && !canAccessDatasource) {
+    return <Text>Datasource unavailable</Text>;
+  }
+
   if (isLoadingExperiment) {
     return <XSpinner message="Loading experiment details..." />;
   }
@@ -360,7 +378,6 @@ export default function ExperimentViewPage() {
     return <Text>No experiment data found</Text>;
   }
   const { design_spec, assign_summary, decision, impact } = experiment.config;
-  const { alpha } = getAlphaAndPower(experiment.config); // undefined for non-frequentist experiments
   const { experiment_name, description, start_date, end_date, arms, design_url } = design_spec;
   const isFrequentistExperiment = isFrequentistSpec(design_spec);
   const contexts = isBanditSpec(design_spec) ? (design_spec.contexts ?? []) : [];
@@ -427,7 +444,7 @@ export default function ExperimentViewPage() {
         <Flex gap="4" align="center">
           <ExperimentTypeBadge type={design_spec.experiment_type} />
           <Separator orientation="vertical" />
-          {isFrequentistSpec(design_spec) && (
+          {isFrequentistSpec(design_spec) && design_spec.table_name && (
             <>
               <TableNameBadge tableName={design_spec.table_name} />
               <Separator orientation="vertical" />
@@ -527,6 +544,7 @@ export default function ExperimentViewPage() {
                 isLastSnapshotErrorRelevant={isLastSnapshotErrorRelevant}
                 isRefreshingLiveAnalysis={isLoadingLiveAnalysis || isLoadingLiveCmabAnalysis}
                 onRefreshLiveAnalysis={() => triggerLiveAnalysis()}
+                isLiveAnalysisAvailable={canAnalyzeLive}
               />
               {isFrequentistSpec(design_spec) ? (
                 <Flex gap="3" align="center" wrap="wrap">
@@ -589,6 +607,17 @@ export default function ExperimentViewPage() {
           }
           headerRight={
             <Flex gap="3" wrap="wrap" align="center">
+              {canAccessDatasource && datasource?.dsn.type === 'google_sheets' && (
+                <GoogleSheetsExperimentDialog
+                  key={`${datasourceId}/${experimentId}`}
+                  datasourceId={datasourceId}
+                  experimentId={experimentId}
+                  experimentName={experiment_name}
+                  organizationId={organizationId}
+                  rawSpreadsheetUrl={datasource.dsn.spreadsheet_url}
+                  experimentSpreadsheetUrl={googleSheetsExperimentUrl}
+                />
+              )}
               {isFrequentistSpec(design_spec) ? (
                 <FreqDesignDetailsDialog
                   designSpec={design_spec}
@@ -612,6 +641,11 @@ export default function ExperimentViewPage() {
           }
         >
           <Flex direction="column" gap="3">
+            {isGoogleSheets && !googleSheetsExperimentUrl && (
+              <Text size="2" color="gray">
+                Connect an outcomes tab in Experiment tab settings to view outcomes.
+              </Text>
+            )}
             <Tabs.Root defaultValue="leaderboard">
               <Tabs.List>
                 <Tabs.Trigger value="leaderboard">Leaderboard</Tabs.Trigger>
@@ -632,7 +666,7 @@ export default function ExperimentViewPage() {
                 <Tabs.Content value="leaderboard">
                   <Flex direction="column" gap="3" py="3">
                     {/* Analysis may not be available yet or the experiment hasn't collected enough data. */}
-                    {(liveAnalysisError || liveCmabAnalysisError) && (
+                    {canAnalyzeLive && (liveAnalysisError || liveCmabAnalysisError) && (
                       <GenericErrorCallout
                         title="Error loading live analysis"
                         error={liveAnalysisError ?? liveCmabAnalysisError}

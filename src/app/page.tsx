@@ -20,6 +20,7 @@ import type { ExperimentStatus, ExperimentWithStatus } from '@/components/featur
 import { getExperimentStatus } from '@/services/experiment-utils';
 import { isFrequentistSpec } from '@/services/experiment-utils';
 import type { ExperimentConfig } from '@/api/methods.schemas';
+import { useAuth } from '@/providers/auth-provider';
 
 // Returns the data warehouse field names an experiment references via its filters, metrics, or
 // strata.
@@ -47,6 +48,8 @@ function getFieldOptions(filteredExperiments: ExperimentConfig[], selectedFields
 
 export default function Page() {
   const router = useRouter();
+  const auth = useAuth();
+  const isPrivileged = auth.isAuthenticated && auth.isPrivileged;
   const orgContext = useCurrentOrganization();
   const currentOrgId = orgContext!.current.id;
   const [selectedStatuses, setSelectedStatuses] = useState<ExperimentStatus[]>([]);
@@ -71,7 +74,20 @@ export default function Page() {
     swr: { enabled: !!currentOrgId },
   });
 
-  const committedExperiments = experimentsData?.items.filter((experiment) => experiment.state === 'committed') || [];
+  const visibleDatasourceIds = new Set(
+    datasourcesData?.items
+      .filter((datasource) => isPrivileged || datasource.driver !== 'google_sheets')
+      .map((datasource) => datasource.id),
+  );
+  const sheetsDatasourceIds = new Set(
+    datasourcesData?.items
+      .filter((datasource) => datasource.driver === 'google_sheets')
+      .map((datasource) => datasource.id),
+  );
+  const committedExperiments =
+    experimentsData?.items.filter(
+      (experiment) => experiment.state === 'committed' && visibleDatasourceIds.has(experiment.datasource_id),
+    ) || [];
 
   const experimentsWithStatus = committedExperiments.map((experiment) => ({
     ...experiment,
@@ -237,6 +253,11 @@ export default function Page() {
                     designUrl={experiment.design_spec.design_url || ''}
                     experimentId={experiment.experiment_id}
                     organizationId={currentOrgId}
+                    needsOutcomesConnection={
+                      isPrivileged &&
+                      sheetsDatasourceIds.has(experiment.datasource_id) &&
+                      !experiment.google_sheets_experiment_url
+                    }
                     status={experiment.status}
                     impact={experiment.impact}
                     decision={experiment.decision}

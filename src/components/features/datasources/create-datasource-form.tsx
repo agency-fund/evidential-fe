@@ -12,15 +12,19 @@ import {
   defaultDatasourceFormData,
 } from '@/components/features/datasources/add-datasource-form-fields';
 import { useReducer } from 'react';
+import { useAuth } from '@/providers/auth-provider';
 
 interface CreateDatasourceFormProps {
   onDatasourceCreated: (datasourceId: string) => void;
+  allowGoogleSheets?: boolean;
 }
 
-export const CreateDatasourceForm = ({ onDatasourceCreated }: CreateDatasourceFormProps) => {
+export const CreateDatasourceForm = ({ onDatasourceCreated, allowGoogleSheets = true }: CreateDatasourceFormProps) => {
   const orgContext = useCurrentOrganization();
   const organizationId = orgContext!.current.id;
   const [formData, dispatch] = useReducer(datasourceFormReducer, defaultDatasourceFormData());
+  const auth = useAuth();
+  const isPrivileged = auth.isAuthenticated && auth.isPrivileged;
 
   const { trigger, error, isMutating } = useCreateDatasource(
     { connectivity_check: true },
@@ -34,10 +38,14 @@ export const CreateDatasourceForm = ({ onDatasourceCreated }: CreateDatasourceFo
     },
   );
 
-  const isDNSError = error instanceof ApiError && error.response.status === 400;
+  const isDNSError =
+    (formData.dwhType === 'postgres' || formData.dwhType === 'redshift') &&
+    error instanceof ApiError &&
+    error.response.status === 400;
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (formData.dwhType === 'google_sheets' && (!allowGoogleSheets || !isPrivileged)) return;
 
     await trigger(
       {
@@ -54,11 +62,20 @@ export const CreateDatasourceForm = ({ onDatasourceCreated }: CreateDatasourceFo
   return (
     <form onSubmit={handleSubmit}>
       <Flex direction="column" gap="2">
-        <AddDatasourceFormFields data={formData} dispatch={dispatch} isDNSError={isDNSError} />
+        <AddDatasourceFormFields
+          data={formData}
+          dispatch={dispatch}
+          isDNSError={isDNSError}
+          allowGoogleSheets={allowGoogleSheets}
+        />
       </Flex>
       {error && !isDNSError && <GenericErrorCallout title="Failed to add datasource" error={error} />}
       <Flex gap="3" mt="4" justify="end">
-        <Button type="submit" loading={isMutating}>
+        <Button
+          type="submit"
+          loading={isMutating}
+          disabled={formData.dwhType === 'google_sheets' && (!allowGoogleSheets || !isPrivileged)}
+        >
           Add Datasource
         </Button>
       </Flex>
