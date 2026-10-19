@@ -27,7 +27,8 @@ export const SelectDatasourceScreen = ({
   navigateNext,
 }: ScreenProps<DatasourceFormData, SelectDatasourceMessages, DatasourceScreenId>) => {
   const orgContext = useCurrentOrganization();
-  const { isPrivileged } = useAuth();
+  const auth = useAuth();
+  const isPrivileged = auth.isAuthenticated && auth.isPrivileged;
   const organizationId = orgContext!.current.id;
 
   const { data: datasourcesData, isLoading } = useListOrganizationDatasources(organizationId, {

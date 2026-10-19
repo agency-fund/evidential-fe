@@ -18,7 +18,8 @@ export default function Page() {
   const orgContext = useCurrentOrganization();
   const currentOrgId = orgContext?.current?.id;
   const router = useRouter();
-  const { isPrivileged } = useAuth();
+  const auth = useAuth();
+  const isPrivileged = auth.isAuthenticated && auth.isPrivileged;
 
   const {
     data: datasourceMetadata,

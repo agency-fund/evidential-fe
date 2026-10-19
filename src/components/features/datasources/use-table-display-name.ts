@@ -4,7 +4,8 @@ import { useGetDatasource, useInspectTableInDatasource } from '@/api/admin';
 import { useAuth } from '@/providers/auth-provider';
 
 export function useTableDisplayName(datasourceId: string, tableName: string | undefined) {
-  const { isPrivileged } = useAuth();
+  const auth = useAuth();
+  const isPrivileged = auth.isAuthenticated && auth.isPrivileged;
   const { data: datasource, error: datasourceError } = useGetDatasource(datasourceId, {
     swr: { enabled: !!datasourceId && !!tableName },
   });
@@ -19,7 +20,7 @@ export function useTableDisplayName(datasourceId: string, tableName: string | un
   if (!tableName) return { displayName: undefined, isLoading: false };
   if (!datasource) {
     return {
-      displayName: datasourceError ? 'Source name unavailable' : 'Loading source name…',
+      displayName: datasourceError ? 'Source name unavailable' : undefined,
       isLoading: !datasourceError,
     };
   }
@@ -27,7 +28,7 @@ export function useTableDisplayName(datasourceId: string, tableName: string | un
   if (!isPrivileged) return { displayName: undefined, isLoading: false };
   if (!tableMetadata) {
     return {
-      displayName: tableError ? 'Spreadsheet name unavailable' : 'Loading spreadsheet name…',
+      displayName: tableError ? 'Spreadsheet name unavailable' : undefined,
       isLoading: !tableError,
     };
   }

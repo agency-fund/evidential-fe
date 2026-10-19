@@ -125,6 +125,17 @@ export const EditDatasourceDialog = ({
         handleClose();
         await Promise.all([
           mutate(getGetDatasourceKey(datasourceId)),
+          ...(data?.dsn.type === 'google_sheets'
+            ? [
+                mutate(
+                  (key) =>
+                    Array.isArray(key) &&
+                    typeof key[0] === 'string' &&
+                    key[0].startsWith(`${getInspectDatasourceKey(datasourceId)[0]}/`),
+                  undefined,
+                ),
+              ]
+            : []),
           mutate(getInspectDatasourceKey(datasourceId)),
           ...(organizationId ? [mutate(getGetOrganizationKey(organizationId))] : []),
         ]);

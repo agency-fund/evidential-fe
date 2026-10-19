@@ -167,7 +167,8 @@ export function AddDatasourceFormFields({
   allowGoogleSheets = true,
 }: AddDatasourceFormFieldsProps) {
   const { dwhType, showPassword } = data;
-  const { isPrivileged } = useAuth();
+  const auth = useAuth();
+  const isPrivileged = auth.isAuthenticated && auth.isPrivileged;
 
   return (
     <>

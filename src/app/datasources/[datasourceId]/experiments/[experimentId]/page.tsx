@@ -147,7 +147,8 @@ export default function ExperimentViewPage() {
   const organizationId = orgCtx?.current.id || '';
   const datasourceId = (params.datasourceId as string) || '';
   const experimentId = (params.experimentId as string) || '';
-  const { isPrivileged } = useAuth();
+  const auth = useAuth();
+  const isPrivileged = auth.isAuthenticated && auth.isPrivileged;
   const { data: datasource, error: datasourceError } = useGetDatasource(datasourceId, {
     swr: { enabled: !!datasourceId },
   });
@@ -191,7 +192,10 @@ export default function ExperimentViewPage() {
     experiment && isFrequentistSpec(experiment.config.design_spec)
       ? experiment.config.design_spec.table_name
       : undefined;
-  const { displayName: tableDisplayName } = useTableDisplayName(datasourceId, sheetTableName);
+  const { displayName: tableDisplayName, isLoading: isLoadingTableName } = useTableDisplayName(
+    datasourceId,
+    sheetTableName,
+  );
   // Wait for the datasource before deciding whether an outcomes connection is required.
   const canAnalyzeLive = canAccessDatasource && !!experiment && (!isGoogleSheets || !!googleSheetsExperimentUrl);
   const liveAnalysisConnectionKey = `${datasourceId}/${experimentId}/${isGoogleSheets ? (googleSheetsExperimentUrl ?? 'disconnected') : 'datasource'}`;
@@ -295,7 +299,9 @@ export default function ExperimentViewPage() {
   const triggerLiveAnalysis = async (requestOverride?: CMABContextInputRequest) => {
     if (!canAnalyzeLive) return;
     const request = requestOverride ?? cmabAnalysisRequest;
-    return isCmabExperiment(experiment?.config) ? await analyzeLiveCmab(request) : await analyzeLive();
+    return isCmabExperiment(experiment?.config)
+      ? await analyzeLiveCmab(request, { throwOnError: false })
+      : await analyzeLive();
   };
 
   const initializeLiveAnalysis = useEffectEvent(async () => {
@@ -447,9 +453,9 @@ export default function ExperimentViewPage() {
         <Flex gap="4" align="center">
           <ExperimentTypeBadge type={design_spec.experiment_type} />
           <Separator orientation="vertical" />
-          {isFrequentistSpec(design_spec) && tableDisplayName && (
+          {isFrequentistSpec(design_spec) && (tableDisplayName || isLoadingTableName) && (
             <>
-              <TableNameBadge tableName={tableDisplayName} />
+              {isLoadingTableName ? <XSpinner /> : tableDisplayName && <TableNameBadge tableName={tableDisplayName} />}
               <Separator orientation="vertical" />
             </>
           )}
@@ -457,6 +463,7 @@ export default function ExperimentViewPage() {
             <TargetingDialog
               designSpec={design_spec}
               tableDisplayName={tableDisplayName}
+              isLoadingTableName={isLoadingTableName}
               webhookIds={experiment.config.webhooks ?? []}
             />
             <Separator orientation="vertical" />

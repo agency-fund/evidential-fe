@@ -86,7 +86,7 @@ export function DownloadAssignmentsCsvButton({
       >
         <Dialog.Content>
           <Dialog.Title>CSV download failed</Dialog.Title>
-          {error !== null && <GenericErrorCallout title="Check the spreadsheet and try again" error={error} />}
+          {error !== null && <GenericErrorCallout title="Could not download assignments" error={error} />}
           <Flex gap="3" mt="4" justify="end">
             <Dialog.Close>
               <Button>Close</Button>

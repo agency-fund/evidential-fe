@@ -124,10 +124,7 @@ export const precomputeBanditEffects = (analysisData: ExperimentAnalysisResponse
 };
 
 /** Retain the latest successful snapshot for each day. */
-export const buildSnapshotAnalysisHistory = (
-  snapshots: Snapshot[],
-  alpha: number | undefined,
-): AnalysisState[] => {
+export const buildSnapshotAnalysisHistory = (snapshots: Snapshot[], alpha: number | undefined): AnalysisState[] => {
   const successful = snapshots.filter((snapshot) => snapshot.status === 'success' && snapshot.data !== null);
   const byDate = new Map<string, Snapshot>();
   for (const snapshot of successful) {

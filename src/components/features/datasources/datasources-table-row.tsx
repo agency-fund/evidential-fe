@@ -21,14 +21,23 @@ export default function DatasourceRow({
   organizationId: string;
 }) {
   const [createApiKeyDialogOpen, setCreateApiKeyDialogOpen] = useState(false);
-  const { data: apiKeysData, isLoading: isApiKeysLoading, error: apiKeysError } = useListApiKeys(datasource.id);
+  const supportsApiKeys = datasource.driver !== 'google_sheets';
+  const {
+    data: apiKeysData,
+    isLoading: isApiKeysLoading,
+    error: apiKeysError,
+  } = useListApiKeys(datasource.id, {
+    swr: { enabled: supportsApiKeys },
+  });
   return (
     <>
-      <CreateApiKeyDialog
-        datasourceId={datasource.id}
-        open={createApiKeyDialogOpen}
-        onOpenChange={setCreateApiKeyDialogOpen}
-      />
+      {supportsApiKeys && (
+        <CreateApiKeyDialog
+          datasourceId={datasource.id}
+          open={createApiKeyDialogOpen}
+          onOpenChange={setCreateApiKeyDialogOpen}
+        />
+      )}
       <Table.Row key={datasource.id}>
         <Table.Cell>
           <Flex align="center" gap="2">
@@ -38,7 +47,9 @@ export default function DatasourceRow({
         </Table.Cell>
 
         <Table.Cell>
-          {isApiKeysLoading ? (
+          {!supportsApiKeys ? (
+            <Text color="gray">Not applicable</Text>
+          ) : isApiKeysLoading ? (
             <Text color="gray">Loading...</Text>
           ) : apiKeysError ? (
             <Text color="red">Error loading keys</Text>
@@ -64,11 +75,13 @@ export default function DatasourceRow({
         </Table.Cell>
         <Table.Cell>
           <Flex gap="2">
-            <Tooltip content="Add API Key">
-              <IconButton variant="soft" color="green" onClick={() => setCreateApiKeyDialogOpen(true)}>
-                <LockClosedIcon />
-              </IconButton>
-            </Tooltip>
+            {supportsApiKeys && (
+              <Tooltip content="Add API Key">
+                <IconButton variant="soft" color="green" onClick={() => setCreateApiKeyDialogOpen(true)}>
+                  <LockClosedIcon />
+                </IconButton>
+              </Tooltip>
+            )}
             <EditDatasourceDialog organizationId={organizationId} datasourceId={datasource.id} />
             <DeleteDatasourceDialog organizationId={organizationId} datasourceId={datasource.id} />
           </Flex>

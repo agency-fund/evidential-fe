@@ -51,7 +51,10 @@ export function ExperimentsSummarizeScreenBase({
   const experimentId = data.createExperimentResponse?.experiment_id ?? '';
   const datasourceId = data.datasourceId ?? '';
 
-  const { displayName: tableDisplayName } = useTableDisplayName(datasourceId, data.tableName);
+  const { displayName: tableDisplayName, isLoading: isLoadingTableName } = useTableDisplayName(
+    datasourceId,
+    data.tableName,
+  );
   const { trigger: triggerCommit, isMutating: commitLoading } = useCommitExperiment(datasourceId, experimentId, {
     swr: {
       onSuccess: () => {
@@ -95,6 +98,7 @@ export function ExperimentsSummarizeScreenBase({
             <ExperimentConfirmationDisplay
               response={data.createExperimentResponse}
               tableDisplayName={tableDisplayName}
+              isLoadingTableName={isLoadingTableName}
               metrics={frequentistInfo?.metrics}
               onEditMetadata={toEditHandler(editTargets.metadata)}
               onEditTreatmentArms={toEditHandler(editTargets.treatmentArms)}

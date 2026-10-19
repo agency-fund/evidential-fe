@@ -18,7 +18,8 @@ export default function SnapshotsPage() {
   const params = useParams();
   const datasourceId = params.datasourceId as string;
   const experimentId = params.experimentId as string;
-  const { isPrivileged } = useAuth();
+  const auth = useAuth();
+  const isPrivileged = auth.isAuthenticated && auth.isPrivileged;
   const { data: datasource, error } = useGetDatasource(datasourceId, { swr: { enabled: !!datasourceId } });
 
   if (error) return <GenericErrorCallout title="Error loading datasource" error={error} />;

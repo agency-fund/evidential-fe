@@ -32,7 +32,8 @@ export function GoogleSheetsExperimentDialog({
   triggerLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const { isPrivileged } = useAuth();
+  const auth = useAuth();
+  const isPrivileged = auth.isAuthenticated && auth.isPrivileged;
   const [spreadsheetUrl, setSpreadsheetUrl] = useState('');
   const { data: datasource, error: datasourceError } = useGetDatasource(datasourceId, {
     swr: { enabled: open && isPrivileged && !rawSpreadsheetUrl },

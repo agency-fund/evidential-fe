@@ -23,7 +23,8 @@ export const CreateDatasourceForm = ({ onDatasourceCreated, allowGoogleSheets = 
   const orgContext = useCurrentOrganization();
   const organizationId = orgContext!.current.id;
   const [formData, dispatch] = useReducer(datasourceFormReducer, defaultDatasourceFormData());
-  const { isPrivileged } = useAuth();
+  const auth = useAuth();
+  const isPrivileged = auth.isAuthenticated && auth.isPrivileged;
 
   const { trigger, error, isMutating } = useCreateDatasource(
     { connectivity_check: true },

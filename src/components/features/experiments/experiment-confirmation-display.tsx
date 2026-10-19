@@ -19,6 +19,7 @@ import { OutcomesPriorSection } from '@/components/features/experiments/sections
 export interface ExperimentConfirmationDisplayProps {
   response: CreateExperimentResponse;
   tableDisplayName?: string;
+  isLoadingTableName?: boolean;
   // Data not available in response (frequentist-specific)
   metrics?: {
     primary?: MetricDisplay;
@@ -38,6 +39,7 @@ export interface ExperimentConfirmationDisplayProps {
 export function ExperimentConfirmationDisplay({
   response,
   tableDisplayName,
+  isLoadingTableName,
   metrics,
   onEditMetadata,
   onEditTreatmentArms,
@@ -79,6 +81,7 @@ export function ExperimentConfirmationDisplay({
           <>
             <DatasourceTargetingSection
               tableName={tableDisplayName ?? designSpec.table_name}
+              isLoadingTableName={isLoadingTableName}
               primaryKey={designSpec.primary_key}
               clusterKey={clusterKey}
               filters={filters}
@@ -103,6 +106,7 @@ export function ExperimentConfirmationDisplay({
         {isMabDwh && (
           <DatasourceTargetingSection
             tableName={tableDisplayName ?? designSpec.table_name}
+            isLoadingTableName={isLoadingTableName}
             primaryKey={designSpec.primary_key}
             targetField={designSpec.target_field_name}
             onEditDatasource={onEditDatasource}

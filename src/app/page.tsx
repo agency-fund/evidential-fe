@@ -48,7 +48,8 @@ function getFieldOptions(filteredExperiments: ExperimentConfig[], selectedFields
 
 export default function Page() {
   const router = useRouter();
-  const { isPrivileged } = useAuth();
+  const auth = useAuth();
+  const isPrivileged = auth.isAuthenticated && auth.isPrivileged;
   const orgContext = useCurrentOrganization();
   const currentOrgId = orgContext!.current.id;
   const [selectedStatuses, setSelectedStatuses] = useState<ExperimentStatus[]>([]);

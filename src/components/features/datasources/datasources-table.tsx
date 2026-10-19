@@ -16,7 +16,8 @@ export function DatasourcesTable({
   }[];
   organizationId: string;
 }) {
-  const { isPrivileged } = useAuth();
+  const auth = useAuth();
+  const isPrivileged = auth.isAuthenticated && auth.isPrivileged;
   datasources = datasources.filter((datasource) => isPrivileged || datasource.driver !== 'google_sheets');
   const isEmpty = datasources.length === 0 || (datasources.length === 1 && datasources[0].driver === 'none');
 
