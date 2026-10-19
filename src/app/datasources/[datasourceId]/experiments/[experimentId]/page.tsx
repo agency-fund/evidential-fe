@@ -15,7 +15,6 @@ import {
   useListSnapshots,
   useUpdateExperiment,
 } from '@/api/admin';
-import { useTableDisplayName } from '@/components/features/datasources/use-table-display-name';
 import {
   CMABContextInputRequest,
   CMABExperimentSpec,
@@ -188,14 +187,6 @@ export default function ExperimentViewPage() {
 
   const isGoogleSheets = datasource?.dsn.type === 'google_sheets';
   const googleSheetsExperimentUrl = experiment?.config.google_sheets_experiment_url ?? null;
-  const sheetTableName =
-    experiment && isFrequentistSpec(experiment.config.design_spec)
-      ? experiment.config.design_spec.table_name
-      : undefined;
-  const { displayName: tableDisplayName, isLoading: isLoadingTableName } = useTableDisplayName(
-    datasourceId,
-    sheetTableName,
-  );
   // Wait for the datasource before deciding whether an outcomes connection is required.
   const canAnalyzeLive = canAccessDatasource && !!experiment && (!isGoogleSheets || !!googleSheetsExperimentUrl);
   const liveAnalysisConnectionKey = `${datasourceId}/${experimentId}/${isGoogleSheets ? (googleSheetsExperimentUrl ?? 'disconnected') : 'datasource'}`;
@@ -453,19 +444,14 @@ export default function ExperimentViewPage() {
         <Flex gap="4" align="center">
           <ExperimentTypeBadge type={design_spec.experiment_type} />
           <Separator orientation="vertical" />
-          {isFrequentistSpec(design_spec) && (tableDisplayName || isLoadingTableName) && (
+          {isFrequentistSpec(design_spec) && design_spec.table_name && (
             <>
-              {isLoadingTableName ? <XSpinner /> : tableDisplayName && <TableNameBadge tableName={tableDisplayName} />}
+              <TableNameBadge tableName={design_spec.table_name} />
               <Separator orientation="vertical" />
             </>
           )}
           <>
-            <TargetingDialog
-              designSpec={design_spec}
-              tableDisplayName={tableDisplayName}
-              isLoadingTableName={isLoadingTableName}
-              webhookIds={experiment.config.webhooks ?? []}
-            />
+            <TargetingDialog designSpec={design_spec} webhookIds={experiment.config.webhooks ?? []} />
             <Separator orientation="vertical" />
           </>
           <Flex align="center" gap="2">

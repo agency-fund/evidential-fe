@@ -4,11 +4,9 @@ import { Button, DataList, Flex, Table, Text } from '@radix-ui/themes';
 import { Pencil2Icon } from '@radix-ui/react-icons';
 import { Filter } from '@/api/methods.schemas';
 import { SectionCard } from '@/components/ui/cards/section-card';
-import { XSpinner } from '@/components/ui/x-spinner';
 
 interface DatasourceTargetingSectionProps {
   tableName?: string;
-  isLoadingTableName?: boolean;
   primaryKey?: string;
   clusterKey?: string;
   targetField?: string;
@@ -45,7 +43,6 @@ const formatFilterValueDisplay = (filter: Filter) => {
 
 export function DatasourceTargetingSection({
   tableName,
-  isLoadingTableName = false,
   primaryKey,
   clusterKey,
   targetField,
@@ -78,7 +75,7 @@ export function DatasourceTargetingSection({
       <DataList.Root>
         <DataList.Item>
           <DataList.Label>Table</DataList.Label>
-          <DataList.Value>{isLoadingTableName ? <XSpinner /> : tableName || '-'}</DataList.Value>
+          <DataList.Value>{tableName || '-'}</DataList.Value>
         </DataList.Item>
         <DataList.Item>
           <DataList.Label>Unique ID</DataList.Label>

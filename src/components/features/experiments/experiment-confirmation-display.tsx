@@ -18,8 +18,6 @@ import { FreqDesignDetailsDialog } from '@/components/features/experiments/freq-
 import { OutcomesPriorSection } from '@/components/features/experiments/sections/outcomes-prior-section';
 export interface ExperimentConfirmationDisplayProps {
   response: CreateExperimentResponse;
-  tableDisplayName?: string;
-  isLoadingTableName?: boolean;
   // Data not available in response (frequentist-specific)
   metrics?: {
     primary?: MetricDisplay;
@@ -38,8 +36,6 @@ export interface ExperimentConfirmationDisplayProps {
 
 export function ExperimentConfirmationDisplay({
   response,
-  tableDisplayName,
-  isLoadingTableName,
   metrics,
   onEditMetadata,
   onEditTreatmentArms,
@@ -80,8 +76,7 @@ export function ExperimentConfirmationDisplay({
         {isFreq && (
           <>
             <DatasourceTargetingSection
-              tableName={tableDisplayName ?? designSpec.table_name}
-              isLoadingTableName={isLoadingTableName}
+              tableName={designSpec.table_name}
               primaryKey={designSpec.primary_key}
               clusterKey={clusterKey}
               filters={filters}
@@ -105,8 +100,7 @@ export function ExperimentConfirmationDisplay({
         )}
         {isMabDwh && (
           <DatasourceTargetingSection
-            tableName={tableDisplayName ?? designSpec.table_name}
-            isLoadingTableName={isLoadingTableName}
+            tableName={designSpec.table_name}
             primaryKey={designSpec.primary_key}
             targetField={designSpec.target_field_name}
             onEditDatasource={onEditDatasource}

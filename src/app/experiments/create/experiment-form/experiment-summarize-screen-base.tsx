@@ -12,7 +12,6 @@ import {
   ExperimentConfirmationDisplayProps,
 } from '@/components/features/experiments/experiment-confirmation-display';
 import { ExperimentFormData, ExperimentScreenId } from '@/app/experiments/create/experiment-form/experiment-form-types';
-import { useTableDisplayName } from '@/components/features/datasources/use-table-display-name';
 
 // The "Edit" buttons on the confirmation screen are temporarily disabled pending further UX effort.
 const FEATURE_EDIT_BUTTONS_ENABLED = false;
@@ -51,10 +50,6 @@ export function ExperimentsSummarizeScreenBase({
   const experimentId = data.createExperimentResponse?.experiment_id ?? '';
   const datasourceId = data.datasourceId ?? '';
 
-  const { displayName: tableDisplayName, isLoading: isLoadingTableName } = useTableDisplayName(
-    datasourceId,
-    data.tableName,
-  );
   const { trigger: triggerCommit, isMutating: commitLoading } = useCommitExperiment(datasourceId, experimentId, {
     swr: {
       onSuccess: () => {
@@ -97,8 +92,6 @@ export function ExperimentsSummarizeScreenBase({
           <>
             <ExperimentConfirmationDisplay
               response={data.createExperimentResponse}
-              tableDisplayName={tableDisplayName}
-              isLoadingTableName={isLoadingTableName}
               metrics={frequentistInfo?.metrics}
               onEditMetadata={toEditHandler(editTargets.metadata)}
               onEditTreatmentArms={toEditHandler(editTargets.treatmentArms)}

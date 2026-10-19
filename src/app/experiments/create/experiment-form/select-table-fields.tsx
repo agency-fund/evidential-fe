@@ -10,7 +10,6 @@ import { SelectPrimaryKey } from './select-primary-key';
 import { SelectClusterKey } from './select-cluster-key';
 import { SelectTargetField } from './select-target-field';
 import { useState } from 'react';
-import { useTableDisplayName } from '@/components/features/datasources/use-table-display-name';
 
 interface SelectTableFieldsProps {
   datasourceId: string;
@@ -90,7 +89,7 @@ export const SelectTableFields = ({
         if (refresh) {
           setRefresh(false);
         }
-        if (!tableName && response.tables.length > 0) {
+        if (response.tables.length > 0 && (!tableName || !response.tables.includes(tableName))) {
           handleTableChange(response.tables[0]);
         }
       },
@@ -101,7 +100,7 @@ export const SelectTableFields = ({
     data: tableData,
     isLoading: loadingTable,
     error: tableError,
-  } = useInspectTableInDatasource(datasourceId, tableName!, undefined, {
+  } = useInspectTableInDatasource(datasourceId, encodeURIComponent(tableName ?? ''), undefined, {
     swr: {
       enabled: !!datasourceId && !!tableName,
       onSuccess: (response) => {
@@ -116,11 +115,6 @@ export const SelectTableFields = ({
   });
 
   const tables = inspectData?.tables ?? [];
-  const displayedTable = tableName ?? tables[0];
-  const { displayName: tableDisplayName, isLoading: isLoadingTableName } = useTableDisplayName(
-    datasourceId,
-    displayedTable,
-  );
   const disabled = !tableName || !inspectData;
 
   function handleTableChange(newTableName: string) {
@@ -166,20 +160,16 @@ export const SelectTableFields = ({
             Select a table
           </Text>
           <Flex direction="row" gap="3">
-            {isLoadingTableName ? (
-              <XSpinner />
-            ) : (
-              <Select.Root value={tableName ?? ''} onValueChange={handleTableChange}>
-                <Select.Trigger placeholder="Select a table">{tableName ? tableDisplayName : undefined}</Select.Trigger>
-                <Select.Content>
-                  {tables.map((table) => (
-                    <Select.Item key={table} value={table}>
-                      {table === displayedTable ? tableDisplayName : table}
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Root>
-            )}
+            <Select.Root value={tableName ?? ''} onValueChange={handleTableChange}>
+              <Select.Trigger placeholder="Select a table">{tableName}</Select.Trigger>
+              <Select.Content>
+                {tables.map((table) => (
+                  <Select.Item key={table} value={table}>
+                    {table}
+                  </Select.Item>
+                ))}
+              </Select.Content>
+            </Select.Root>
             <IconButton size="2" variant="soft" onClick={() => setRefresh(true)} loading={isValidating}>
               <ReloadIcon />
             </IconButton>
@@ -188,7 +178,7 @@ export const SelectTableFields = ({
       </Box>
 
       {tableName && tableError && !tableData ? (
-        <TableInspectionErrorCallout tableName={tableDisplayName ?? ''} error={tableError} />
+        <TableInspectionErrorCallout tableName={tableName} error={tableError} />
       ) : (
         <>
           <Box maxWidth="50%">

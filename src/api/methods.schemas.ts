@@ -939,13 +939,10 @@ export interface InspectDatasourceResponse {
 	tables: string[];
 }
 
-export type InspectDatasourceTableResponseDisplayName = string | null;
-
 export interface InspectDatasourceTableResponse {
 	primary_key_fields: string[];
 	detected_unique_id_fields: string[];
 	fields: FieldMetadata[];
-	display_name?: InspectDatasourceTableResponseDisplayName;
 }
 
 export interface Journey {

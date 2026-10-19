@@ -114,9 +114,11 @@ export const ExperimentFreqStackScreen = ({
     swr: { enabled: !!data.datasourceId },
   });
   const isGoogleSheets = datasource?.dsn.type === 'google_sheets';
-  const { data: tableData } = useInspectTableInDatasource(data.datasourceId ?? '', data.tableName ?? '', {
-    refresh: isGoogleSheets,
-  });
+  const { data: tableData } = useInspectTableInDatasource(
+    data.datasourceId ?? '',
+    encodeURIComponent(data.tableName ?? ''),
+    { refresh: isGoogleSheets },
+  );
   const { trigger: triggerCreate, isMutating: triggerLoading } = useCreateExperiment(data.datasourceId!, undefined, {
     swr: {
       onSuccess: async (response) => {
