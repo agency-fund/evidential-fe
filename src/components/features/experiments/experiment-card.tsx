@@ -92,13 +92,6 @@ export function ExperimentCard({
             <ExperimentImpactBadge impact={impact} />
           </Flex>
 
-          {needsOutcomesConnection && (
-            <Badge color="amber" style={{ alignSelf: 'flex-start' }}>
-              <ExclamationTriangleIcon />
-              Outcomes sheet not connected
-            </Badge>
-          )}
-
           <Separator size="4" />
 
           <Flex direction="column" gap="3">
@@ -121,9 +114,13 @@ export function ExperimentCard({
           </Flex>
         </Flex>
 
-        <Flex justify="end" gap="2" pt="4">
+        <Flex justify="end" align="end" gap="2" pt="4">
           {needsOutcomesConnection && (
-            <Flex mr="auto">
+            <Flex direction="column" align="start" gap="2" mr="auto">
+              <Badge color="amber">
+                <ExclamationTriangleIcon />
+                Outcomes sheet not connected
+              </Badge>
               <GoogleSheetsExperimentDialog
                 datasourceId={datasourceId}
                 experimentId={experimentId}
