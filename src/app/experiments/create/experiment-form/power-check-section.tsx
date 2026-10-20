@@ -116,7 +116,6 @@ function RunPowerCheckButton({ enabled, onClick, loading, disabledReason }: Powe
 
 export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const [validationError, setValidationError] = useState<ZodError | null>(null);
-  const [validationErrorMessage, setValidationErrorMessage] = useState<string | null>(null);
   const { trigger: triggerEstimateSampleSize, isMutating, error } = usePowerCheck(data.datasourceId!);
   const { trigger: triggerPowerCurve } = usePowerCheck(data.datasourceId!, {
     swr: { swrKey: `${data.datasourceId}/power/curve` },
@@ -186,44 +185,43 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
   const handlePowerCheck = async () => {
     setValidationError(null);
-    setValidationErrorMessage(null);
 
     if (!data.tableName || !data.primaryKey || !data.primaryMetric) {
       return;
     }
 
+    let designSpec: AnyFrequentistDesignSpec;
     try {
       // We always estimate the minimum sample size with this handler, so clear out selected sample size fields.
-      const designSpec = convertToFrequentistDesignSpec({
+      designSpec = convertToFrequentistDesignSpec({
         ...data,
         desiredN: undefined,
         desiredNClusters: undefined,
       });
-      const response = await triggerEstimateSampleSize(toPowerRequest(designSpec));
-
-      const primary = getPowerAnalysis(response, data.primaryMetric.metric.field_name);
-      const desiredN = primary?.sufficient_n ? (primary.target_n ?? undefined) : undefined;
-      const sampleSizeOption = desiredN === undefined ? PowerCheckOption.NONE : PowerCheckOption.USE_POWER_CHECK;
-      dispatch({
-        type: 'set-power-check-response',
-        response,
-        desiredN,
-        desiredNClusters: isClusteredExperimentFormData(data) ? (primary?.num_clusters_total ?? undefined) : undefined,
-        sampleSizeOption,
-        designSpec,
-      });
-      void fetchPowerCurve(response);
     } catch (err) {
       if (err instanceof ZodError) {
         setValidationError(err);
         return;
       }
-      if (err instanceof Error) {
-        setValidationErrorMessage(err.message);
-        return;
-      }
       throw err;
     }
+
+    const response = await triggerEstimateSampleSize(toPowerRequest(designSpec), { throwOnError: false });
+    if (!response) {
+      return;
+    }
+    const primary = getPowerAnalysis(response, data.primaryMetric.metric.field_name);
+    const desiredN = primary?.sufficient_n ? (primary.target_n ?? undefined) : undefined;
+    const sampleSizeOption = desiredN === undefined ? PowerCheckOption.NONE : PowerCheckOption.USE_POWER_CHECK;
+    dispatch({
+      type: 'set-power-check-response',
+      response,
+      desiredN,
+      desiredNClusters: isClusteredExperimentFormData(data) ? (primary?.num_clusters_total ?? undefined) : undefined,
+      sampleSizeOption,
+      designSpec,
+    });
+    void fetchPowerCurve(response);
   };
 
   const handleEstimatedMDEChange = ({
@@ -247,7 +245,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
   const primaryMetricFieldName = data.primaryMetric?.metric.field_name ?? '';
   const isClustered = isClusteredExperimentFormData(data);
-  const hasValidationError = validationError || validationErrorMessage;
+  const hasValidationError = validationError !== null;
   const primaryPower =
     data.powerCheckResponse !== undefined && !hasValidationError
       ? getPowerAnalysis(data.powerCheckResponse, primaryMetricFieldName)
@@ -349,12 +347,6 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                 title={'Validation failed'}
                 message={validationError.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('\n')}
               />
-            </Flex>
-          )}
-
-          {validationErrorMessage && (
-            <Flex align="center" gap="2">
-              <GenericErrorCallout title={'Validation failed'} message={validationErrorMessage} />
             </Flex>
           )}
 
