@@ -17,18 +17,54 @@ export class ApiValidationError extends Error {
   }
 }
 
+const messageFromBody = (status: number, data: unknown): string => {
+  if (data !== null && typeof data === 'object') {
+    const body = data as { message?: unknown; detail?: unknown };
+    if (typeof body.message === 'string') {
+      return body.message;
+    }
+    if (typeof body.detail === 'string') {
+      return body.detail;
+    }
+  }
+  return `HTTP ${status}`;
+};
+
 /**
  * Error raised when the FastAPI backend returned an unsuccessful response.
  */
 export class ApiError extends Error {
   constructor(public readonly response: { status: number; data: unknown }) {
-    super(`API Error: ${JSON.stringify(response)}`);
+    super(messageFromBody(response.status, response.data));
     Object.setPrototypeOf(this, ApiError.prototype);
     this.name = 'ApiError';
   }
 }
 
-const getBody = (c: Response) => {
+/**
+ * Error raised when fetch() rejected, which browsers do for network failures and for responses blocked by CORS. The
+ * browser does not tell us which of those happened.
+ */
+export class ApiNetworkError extends Error {
+  constructor(options?: { cause?: unknown }) {
+    super(
+      'The request did not complete. Check your connection and try again. If the problem continues, contact support.',
+      options,
+    );
+    Object.setPrototypeOf(this, ApiNetworkError.prototype);
+    this.name = 'ApiNetworkError';
+  }
+}
+
+export const isApiError = (err: unknown): err is ApiError => err instanceof ApiError;
+
+export const isApiValidationError = (err: unknown): err is ApiValidationError => err instanceof ApiValidationError;
+
+export const isApiNetworkError = (err: unknown): err is ApiNetworkError => err instanceof ApiNetworkError;
+
+export const getErrorMessage = (err: unknown): string => (err instanceof Error ? err.message : String(err));
+
+const getBody = async (c: Response): Promise<unknown> => {
   const contentType = c.headers.get('content-type');
   if (contentType && contentType.includes('application/json')) {
     return c.json();
@@ -43,7 +79,8 @@ const getBody = (c: Response) => {
     // not modified
     return null;
   }
-  throw Error('Backend returned unsupported content-type.');
+  const text = await c.text();
+  return text === '' ? null : text;
 };
 
 // Returns headers to send with API requests. If we currently have a session token in localStorage, we also send that. Note
@@ -77,6 +114,8 @@ const sendCustomLogoutEvent = () => {
  * - For data loading hooks: the error appears in the `error` property.
  * - For mutation triggers: the error is thrown when trigger is invoked.
  *
+ * When fetch() itself rejects (network failure or a CORS-blocked response), an ApiNetworkError is thrown.
+ *
  * The thrown error may be inspected; if it is an ApiValidationError, you can extract structured information from
  * the error.
  *
@@ -89,7 +128,15 @@ export const orvalFetch = async <T>(path: string, options: RequestInit): Promise
     headers: getHeaders(options),
   };
   const request = new Request(requestUrl, requestInit);
-  const response = await fetch(request);
+  let response: Response;
+  try {
+    response = await fetch(request);
+  } catch (err) {
+    if (err instanceof TypeError) {
+      throw new ApiNetworkError({ cause: err });
+    }
+    throw err;
+  }
   const data = await getBody(response);
 
   if (request.headers.has('Authorization') && response.status === 401) {
@@ -98,12 +145,12 @@ export const orvalFetch = async <T>(path: string, options: RequestInit): Promise
     sendCustomLogoutEvent();
   }
   const result = { status: response.status, data: data, headers: response.headers };
-  if (result.status === 422 && result.data.detail?.length > 0) {
-    throw new ApiValidationError({ ...result, status: 422 });
+  if (result.status === 422 && Array.isArray((data as { detail?: unknown } | null)?.detail)) {
+    throw new ApiValidationError({ ...result, status: 422, data: data as HTTPValidationError });
   } else if (response.status < 200 || response.status >= 300) {
     throw new ApiError(result);
   }
-  return data;
+  return data as T;
 };
 
 /**
@@ -117,8 +164,11 @@ export const orvalFetch = async <T>(path: string, options: RequestInit): Promise
  * cannot automatically generate error types for all possible errors.
  *
  * However, our backend can return errors that aren't explicitly defined in the API spec. So instead of using the
- * generated error types (which would be incomplete), we use our own custom error types (ApiError, ApiValidationError)
- * that can handle common error scenarios.
+ * generated error types (which would be incomplete), we use our own custom error types that can handle common error
+ * scenarios:
+ * - ApiNetworkError: the request did not complete (network failure or a CORS-blocked response).
+ * - ApiValidationError: a 422 whose body is a Pydantic HTTPValidationError (`detail` is an array).
+ * - ApiError: any other non-2xx response; `message` is human-readable and `response` holds the status and body.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export type ErrorType<GeneratedErrorPayload> = Error | ApiValidationError | ApiError;
+export type ErrorType<GeneratedErrorPayload> = Error | ApiNetworkError | ApiValidationError | ApiError;
