@@ -59,3 +59,24 @@ jobs:
           fail-on-leak: 'true'
           redact: 'true'
           verbose: 'true'
+
+  docker-build:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        with:
+          persist-credentials: false
+      - run: docker build -t evidential-fe -f Dockerfile.railway .
+      - run: docker run -d --rm --name evidential-fe -p 3000:3000 evidential-fe
+      - name: Smoke test
+        run: |
+          set -euo pipefail
+          curl -fsS --retry 10 --retry-delay 1 --retry-all-errors http://localhost:3000/health | grep -F '"health":"ok"'
+          curl -fsS http://localhost:3000/ > index.html
+          asset=$(grep -oE '/_next/static/[^"]+\.(css|js)' index.html | head -1)
+          test -n "${asset}"
+          curl -fsS -o /dev/null "http://localhost:3000${asset}"
+          curl -fsS -o /dev/null http://localhost:3000/evidential-logo.svg
+      - if: failure()
+        run: docker logs evidential-fe
