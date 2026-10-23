@@ -66,6 +66,7 @@ export interface MetricSampleSizeDisplayProps {
   isClustered: boolean;
   variant: MetricSampleSizeVariant;
   align?: 'start' | 'center' | 'end';
+  waitingForOutcomes?: boolean;
 }
 
 const getDisplayModel = (
@@ -123,6 +124,13 @@ export function MetricSampleSizeDisplay({
   isClustered,
   variant,
   align = 'end',
+  waitingForOutcomes = false,
 }: MetricSampleSizeDisplayProps) {
+  if (waitingForOutcomes && variant === 'required') {
+    return <Text color="gray">Not estimated</Text>;
+  }
+  if (waitingForOutcomes && variant === 'available-nonnull') {
+    return <Text color="gray">0</Text>;
+  }
   return <SampleSizeDisplayImpl {...getDisplayModel(isClustered, variant, analysis)} align={align} />;
 }
