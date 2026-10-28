@@ -79,6 +79,10 @@ const formatValue = (value: number): string => {
 
 const formatPct = (value: number): string => {
   if (!isFinite(value)) return '--';
+  // Cap large percentages so they fit in the table column; the tooltip shows the exact value.
+  // The cap starts at 999.5 because formatValue rounds 999.5 up to "1000".
+  if (value >= 999.5) return '>999%';
+  if (value <= -999.5) return '<-999%';
   return `${formatValue(value)}%`;
 };
 
