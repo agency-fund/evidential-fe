@@ -425,6 +425,37 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
       : effectSizes.filter((e) => e.isMissingAllValues || e.invalidStatTest);
     return (
       <Flex direction="column" gap="3">
+        {missingControlArm ? (
+          <Callout.Root color="orange" size="1">
+            <Callout.Icon>
+              <ExclamationTriangleIcon />
+            </Callout.Icon>
+            <Callout.Text>
+              The control arm (<Text weight="bold">{missingControlArm.armName}</Text>) has no values for this metric, so
+              the other arms can&apos;t be compared to it.
+            </Callout.Text>
+          </Callout.Root>
+        ) : null}
+        {armsWithIssues.map((arm) => (
+          <Callout.Root key={arm.armId} color="orange" size="1">
+            <Callout.Icon>
+              <ExclamationTriangleIcon />
+            </Callout.Icon>
+            <Callout.Text>
+              {arm.isMissingAllValues ? (
+                <>
+                  <Text weight="bold">{arm.armName}</Text> has no values for this metric.
+                </>
+              ) : (
+                <>
+                  <Text weight="bold">{arm.armName}</Text>: has invalid statistical results. The experiment might not
+                  have enough data or no variation in the metric right now.
+                </>
+              )}
+            </Callout.Text>
+          </Callout.Root>
+        ))}
+
         <Box height={`${chartHeightPx}px`}>
           <Heading size="2" align="center">
             Difference from {effectSizes[0].armName}
@@ -543,37 +574,6 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
             </ScatterChart>
           </ResponsiveContainer>
         </Box>
-
-        {missingControlArm ? (
-          <Callout.Root color="orange" size="1">
-            <Callout.Icon>
-              <ExclamationTriangleIcon />
-            </Callout.Icon>
-            <Callout.Text>
-              The control arm (<Text weight="bold">{missingControlArm.armName}</Text>) has no values for this metric, so
-              the other arms can&apos;t be compared to it.
-            </Callout.Text>
-          </Callout.Root>
-        ) : null}
-        {armsWithIssues.map((arm) => (
-          <Callout.Root key={arm.armId} color="orange" size="1">
-            <Callout.Icon>
-              <ExclamationTriangleIcon />
-            </Callout.Icon>
-            <Callout.Text>
-              {arm.isMissingAllValues ? (
-                <>
-                  <Text weight="bold">{arm.armName}</Text> has no values for this metric.
-                </>
-              ) : (
-                <>
-                  <Text weight="bold">{arm.armName}</Text>: has invalid statistical results. The experiment might not
-                  have enough data or no variation in the metric right now.
-                </>
-              )}
-            </Callout.Text>
-          </Callout.Root>
-        ))}
       </Flex>
     );
   } else if (isBandit) {
