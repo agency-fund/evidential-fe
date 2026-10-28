@@ -57,10 +57,11 @@ tasks:
   lint-next: pnpm run lint
   lint-tsc: pnpm exec tsc --noemit
   lint:
-    deps:
-      - lint-tsc
-      - lint-next
-    desc: 'Runs the NextJS-managed linter'
+    # pnpm may install dependencies on invocation; avoid concurrent node_modules writes.
+    cmds:
+      - task: lint-tsc
+      - task: lint-next
+    desc: 'Runs TypeScript and ESLint checks'
   build:
     desc: 'Production build of the NextJS application'
     cmd: pnpm run build
