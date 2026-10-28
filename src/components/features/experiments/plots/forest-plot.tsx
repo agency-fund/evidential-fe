@@ -68,14 +68,11 @@ const createDiamondShape = (cx: number = 0, cy: number = 0, size: number = 6) =>
 const formatValue = (value: number): string => {
   if (!Number.isFinite(value)) return '--';
   // Show <= 2 decimal places only for values < 100
-  const formatted =
-    Math.abs(value) >= 100 || value === 0
-      ? value.toFixed()
-      : Math.abs(value) >= 1
-        ? value.toFixed(1)
-        : value.toFixed(2);
-  // Drop the sign of tiny negative values that round to zero, e.g. "-0.00" from floating-point noise.
-  return formatted.replace(/^-(?=[0.]+$)/, '');
+  return Math.abs(value) >= 100 || value === 0
+    ? value.toFixed()
+    : Math.abs(value) >= 1
+      ? value.toFixed(1)
+      : value.toFixed(2);
 };
 
 const formatPct = (value: number): string => {
