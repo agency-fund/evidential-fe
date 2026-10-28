@@ -128,6 +128,8 @@ export type ArmAnalysisArmDescription = string | null;
 
 export type ArmAnalysisArmWeight = ArmWeight | null;
 
+export type ArmAnalysisEstimate = number | null;
+
 export type ArmAnalysisPValue = number | null;
 
 export type ArmAnalysisTStat = number | null;
@@ -137,6 +139,8 @@ export type ArmAnalysisStdError = number | null;
 export type ArmAnalysisCiLower = number | null;
 
 export type ArmAnalysisCiUpper = number | null;
+
+export type ArmAnalysisMean = number | null;
 
 export type ArmAnalysisMeanCiLower = number | null;
 
@@ -148,12 +152,13 @@ export interface ArmAnalysis {
 	arm_name: string;
 	arm_description?: ArmAnalysisArmDescription;
 	arm_weight?: ArmAnalysisArmWeight;
-	estimate: number;
+	estimate: ArmAnalysisEstimate;
 	p_value: ArmAnalysisPValue;
 	t_stat: ArmAnalysisTStat;
 	std_error: ArmAnalysisStdError;
 	ci_lower?: ArmAnalysisCiLower;
 	ci_upper?: ArmAnalysisCiUpper;
+	mean?: ArmAnalysisMean;
 	mean_ci_lower?: ArmAnalysisMeanCiLower;
 	mean_ci_upper?: ArmAnalysisMeanCiUpper;
 	/** @minimum -1 */

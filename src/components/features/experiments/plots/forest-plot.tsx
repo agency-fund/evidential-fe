@@ -66,6 +66,7 @@ const createDiamondShape = (cx: number = 0, cy: number = 0, size: number = 6) =>
 };
 
 const formatValue = (value: number): string => {
+  if (!Number.isFinite(value)) return '--';
   // Show <= 2 decimal places only for values < 100
   return Math.abs(value) >= 100 || value === 0
     ? value.toFixed()
@@ -416,10 +417,25 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
   const yLeftAxisWidthPx = 10 + totalWidthPx;
 
   if (isFrequentist) {
-    // Filter arms with issues and create specific messages for each
-    const armsWithIssues = effectSizes.filter((e) => e.isMissingAllValues || e.invalidStatTest);
+    const missingControlArm = effectSizes.find((e) => e.isBaseline && e.isMissingAllValues);
+    // Filter arms with issues and create specific messages for each. Without control values, no arm has
+    // statistical results, so a single message about the control replaces those warnings.
+    const armsWithIssues = missingControlArm
+      ? effectSizes.filter((e) => e.isMissingAllValues && !e.isBaseline)
+      : effectSizes.filter((e) => e.isMissingAllValues || e.invalidStatTest);
     return (
       <Flex direction="column" gap="3">
+        {missingControlArm ? (
+          <Callout.Root color="orange" size="1">
+            <Callout.Icon>
+              <ExclamationTriangleIcon />
+            </Callout.Icon>
+            <Callout.Text>
+              The control arm (<Text weight="bold">{missingControlArm.armName}</Text>) has no values for this metric, so
+              the other arms can&apos;t be compared to it.
+            </Callout.Text>
+          </Callout.Root>
+        ) : null}
         {armsWithIssues.map((arm) => (
           <Callout.Root key={arm.armId} color="orange" size="1">
             <Callout.Icon>
@@ -492,14 +508,16 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
               />
 
               {/* Control arm mean - vertical marker below points and CIs */}
-              <ReferenceLine
-                x={0}
-                yAxisId="left"
-                stroke={COLORS.BASELINE}
-                strokeWidth={6}
-                strokeDasharray="2 1"
-                onMouseEnter={() => handleShowTooltip(effectSizes[0])}
-              />
+              {missingControlArm ? null : (
+                <ReferenceLine
+                  x={0}
+                  yAxisId="left"
+                  stroke={COLORS.BASELINE}
+                  strokeWidth={6}
+                  strokeDasharray="2 1"
+                  onMouseEnter={() => handleShowTooltip(effectSizes[0])}
+                />
+              )}
 
               {/* Confidence intervals - place under points */}
               {effectSizes.map((d) => {
@@ -533,7 +551,8 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                   if (!props.payload) return <g />;
                   const { significant, isBaseline, absDifference, isMissingAllValues } =
                     props.payload as EffectSizeData;
-                  if (isMissingAllValues) return <g />;
+                  // No point when there's no difference to plot, e.g. when the control arm has no values.
+                  if (isMissingAllValues || !Number.isFinite(absDifference)) return <g />;
 
                   const { cx: centerX, cy: centerY } = props;
                   let fillColor: string = COLORS.DEFAULT;
