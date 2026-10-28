@@ -444,7 +444,8 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
             <Callout.Text>
               {arm.isMissingAllValues ? (
                 <>
-                  <Text weight="bold">{arm.armName}</Text> has no values for this metric.
+                  <Text weight="bold">{arm.armName}</Text>: assignments have no valid values for this metric. Please
+                  wait for values to be collected.
                 </>
               ) : (
                 <>
