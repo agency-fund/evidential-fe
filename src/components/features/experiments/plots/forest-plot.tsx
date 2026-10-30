@@ -67,15 +67,22 @@ const createDiamondShape = (cx: number = 0, cy: number = 0, size: number = 6) =>
 
 const formatValue = (value: number): string => {
   // Show <= 2 decimal places only for values < 100
-  return Math.abs(value) >= 100 || value === 0
-    ? value.toFixed()
-    : Math.abs(value) >= 1
-      ? value.toFixed(1)
-      : value.toFixed(2);
+  const formatted =
+    Math.abs(value) >= 100 || value === 0
+      ? value.toFixed()
+      : Math.abs(value) >= 1
+        ? value.toFixed(1)
+        : value.toFixed(2);
+  // Drop the sign of tiny negative values that round to zero, e.g. "-0.00" from floating-point noise.
+  return formatted.replace(/^-(?=[0.]+$)/, '');
 };
 
 const formatPct = (value: number): string => {
   if (!isFinite(value)) return '--';
+  // Cap large percentages so they fit in the table column; the tooltip shows the exact value.
+  // The cap starts at 999.5 because formatValue rounds 999.5 up to "1000".
+  if (value >= 999.5) return '>999%';
+  if (value <= -999.5) return '<-999%';
   return `${formatValue(value)}%`;
 };
 

@@ -207,7 +207,10 @@ const _generateFreqEffectSizeData = (analysis: MetricAnalysis, alpha: number): E
 
     const absDifference = isBaseline ? 0 : estimate;
     const absEffect = absDifference + controlEstimate;
-    const relEffectPct = ((absEffect - controlEstimate) / controlEstimate) * 100;
+    // A change relative to a control mean of 0 is undefined. Floating-point noise can turn an exact 0 into a
+    // tiny value such as -5e-17, which would otherwise produce a huge percentage.
+    const relEffectPct =
+      Math.abs(controlEstimate) < 1e-9 ? NaN : ((absEffect - controlEstimate) / controlEstimate) * 100;
     // Normal approximation for coefficient uncertainty in the difference plot.
     const ci95 = stdError === null ? NaN : 1.96 * stdError;
     const ci95Lower = absDifference - ci95;
