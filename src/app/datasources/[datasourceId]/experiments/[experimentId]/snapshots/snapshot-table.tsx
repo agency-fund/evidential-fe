@@ -29,8 +29,6 @@ const getStatusColor = (status: Snapshot['status']): 'red' | 'yellow' | 'green' 
   switch (status) {
     case 'failed':
       return 'red';
-    case 'running':
-      return 'yellow';
     case 'success':
       return 'green';
   }
