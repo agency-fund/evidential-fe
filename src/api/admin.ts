@@ -26,7 +26,6 @@ import type {
 	CreateExperimentResponse,
 	CreateOrganizationRequest,
 	CreateOrganizationResponse,
-	CreateSnapshotResponse,
 	CreateUserRequest,
 	CreateUserResponse,
 	DeleteApiKeyParams,
@@ -790,91 +789,6 @@ export const useListSnapshots = <
 		swrFn,
 		swrOptions,
 	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getCreateSnapshotUrl = (
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-) => {
-	return `/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots`;
-};
-
-export const createSnapshot = async (
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-	options?: RequestInit,
-): Promise<CreateSnapshotResponse> => {
-	return orvalFetch<CreateSnapshotResponse>(
-		getCreateSnapshotUrl(organizationId, datasourceId, experimentId),
-		{
-			...options,
-			method: "POST",
-		},
-	);
-};
-
-export const getCreateSnapshotMutationFetcher = (
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (_: Key, __: { arg: Arguments }) => {
-		return createSnapshot(organizationId, datasourceId, experimentId, options);
-	};
-};
-export const getCreateSnapshotMutationKey = (
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-) =>
-	[
-		`/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots`,
-	] as const;
-
-export type CreateSnapshotMutationResult = NonNullable<
-	Awaited<ReturnType<typeof createSnapshot>>
->;
-export type CreateSnapshotMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useCreateSnapshot = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof createSnapshot>>,
-			TError,
-			Key,
-			Arguments,
-			Awaited<ReturnType<typeof createSnapshot>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ??
-		getCreateSnapshotMutationKey(organizationId, datasourceId, experimentId);
-	const swrFn = getCreateSnapshotMutationFetcher(
-		organizationId,
-		datasourceId,
-		experimentId,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
 	return {
 		swrKey,
