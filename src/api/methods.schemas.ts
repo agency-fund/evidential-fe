@@ -504,10 +504,6 @@ export interface CreateOrganizationResponse {
 	id: string;
 }
 
-export interface CreateSnapshotResponse {
-	id: string;
-}
-
 export interface CreateUserRequest {
 	/** @maxLength 64 */
 	email: string;
@@ -594,6 +590,8 @@ export interface DesignSpecMetric {
 	metric_stddev?: DesignSpecMetricMetricStddev;
 	available_nonnull_n?: DesignSpecMetricAvailableNonnullN;
 	available_n?: DesignSpecMetricAvailableN;
+	use_one_time_metric?: boolean;
+	is_one_time_eligible?: boolean;
 }
 
 export type DesignSpecMetricRequestMetricPctChange = number | null;
@@ -629,6 +627,7 @@ export interface DesignSpecMetricRequest {
 	metric_stddev?: DesignSpecMetricRequestMetricStddev;
 	available_nonnull_n?: DesignSpecMetricRequestAvailableNonnullN;
 	available_n?: DesignSpecMetricRequestAvailableN;
+	use_one_time_metric?: boolean;
 }
 
 export type Dsn = ApiOnlyDsn | PostgresDsn | BqDsn | RedshiftDsn;
@@ -1074,6 +1073,10 @@ export type MetricPowerAnalysisTargetPossible = number | null;
 
 export type MetricPowerAnalysisPctChangePossible = number | null;
 
+export type MetricPowerAnalysisTargetPossibleLower = number | null;
+
+export type MetricPowerAnalysisPctChangePossibleLower = number | null;
+
 export type MetricPowerAnalysisPctChangeWithDesiredN = number | null;
 
 export type MetricPowerAnalysisMdeCurve = MdeCurvePoint[] | null;
@@ -1096,6 +1099,8 @@ export interface MetricPowerAnalysis {
 	sufficient_n?: MetricPowerAnalysisSufficientN;
 	target_possible?: MetricPowerAnalysisTargetPossible;
 	pct_change_possible?: MetricPowerAnalysisPctChangePossible;
+	target_possible_lower?: MetricPowerAnalysisTargetPossibleLower;
+	pct_change_possible_lower?: MetricPowerAnalysisPctChangePossibleLower;
 	pct_change_with_desired_n?: MetricPowerAnalysisPctChangeWithDesiredN;
 	mde_curve?: MetricPowerAnalysisMdeCurve;
 	msg?: MetricPowerAnalysisMsg;
@@ -1533,7 +1538,6 @@ export type SnapshotStatus =
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const SnapshotStatus = {
 	success: "success",
-	running: "running",
 	failed: "failed",
 } as const;
 
