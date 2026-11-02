@@ -50,6 +50,7 @@ export const ExperimentsSummarizeFreqScreen = ({
           estimatedMde: estimatedMdeFor(data.primaryMetric.metric.field_name),
           hasMissingValues: hasMissingValuesFor(data.primaryMetric.metric.field_name),
           sufficientN: sufficientNFor(data.primaryMetric.metric.field_name),
+          isOneTime: data.useOneTimeMetric === true,
         }
       : undefined,
     secondary: (data.secondaryMetrics ?? []).map((m) => ({
