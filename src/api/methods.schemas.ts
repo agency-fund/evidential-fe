@@ -578,7 +578,10 @@ export type DesignSpecMetricAvailableNonnullN = number | null;
 export type DesignSpecMetricAvailableN = number | null;
 
 export interface DesignSpecMetric {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	/**
+	 * @minLength 1
+	 * @maxLength 300
+	 */
 	field_name: string;
 	metric_pct_change?: DesignSpecMetricMetricPctChange;
 	metric_target?: DesignSpecMetricMetricTarget;
@@ -615,7 +618,10 @@ export type DesignSpecMetricRequestAvailableNonnullN = number | null;
 export type DesignSpecMetricRequestAvailableN = number | null;
 
 export interface DesignSpecMetricRequest {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	/**
+	 * @minLength 1
+	 * @maxLength 300
+	 */
 	field_name: string;
 	metric_pct_change?: DesignSpecMetricRequestMetricPctChange;
 	metric_target?: DesignSpecMetricRequestMetricTarget;
@@ -715,7 +721,10 @@ export interface FieldDescriptor {
 }
 
 export interface FieldMetadata {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	/**
+	 * @minLength 1
+	 * @maxLength 300
+	 */
 	field_name: string;
 	data_type: DataType;
 	/** @maxLength 2000 */
@@ -723,7 +732,10 @@ export interface FieldMetadata {
 }
 
 export interface Filter {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	/**
+	 * @minLength 1
+	 * @maxLength 300
+	 */
 	field_name: string;
 	relation: Relation;
 	value: FilterValueTypes;
@@ -1004,9 +1016,15 @@ export interface MABDwhExperimentSpec {
 	autofail_outcome_value?: number;
 	/** @maxLength 100 */
 	table_name: string;
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	/**
+	 * @minLength 1
+	 * @maxLength 300
+	 */
 	primary_key: string;
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	/**
+	 * @minLength 1
+	 * @maxLength 300
+	 */
 	target_field_name: string;
 }
 
@@ -1189,7 +1207,10 @@ export interface OnlineFrequentistExperimentSpec {
 	arms: Arm[];
 	/** @maxLength 100 */
 	table_name: string;
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	/**
+	 * @minLength 1
+	 * @maxLength 300
+	 */
 	primary_key: string;
 	/** @maxItems 150 */
 	strata: Stratum[];
@@ -1244,7 +1265,10 @@ export interface OrganizationSummary {
 }
 
 export interface ParticipantProperty {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	/**
+	 * @minLength 1
+	 * @maxLength 300
+	 */
 	field_name: string;
 	value: PropertyValueTypes;
 }
@@ -1388,7 +1412,10 @@ export interface PreassignedFrequentistExperimentSpec {
 	arms: Arm[];
 	/** @maxLength 100 */
 	table_name: string;
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	/**
+	 * @minLength 1
+	 * @maxLength 300
+	 */
 	primary_key: string;
 	/** @maxItems 150 */
 	strata: Stratum[];
@@ -1555,13 +1582,19 @@ export const StopAssignmentReason = {
 export type StrataStrataValue = string | null;
 
 export interface Strata {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	/**
+	 * @minLength 1
+	 * @maxLength 300
+	 */
 	field_name: string;
 	strata_value?: StrataStrataValue;
 }
 
 export interface Stratum {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	/**
+	 * @minLength 1
+	 * @maxLength 300
+	 */
 	field_name: string;
 }
 
