@@ -127,8 +127,7 @@ export function PowerCheckSampleSizeSelector({
   const targetNClusters = primaryAnalysis?.num_clusters_total ?? undefined;
   const allSamples = primaryAnalysis?.metric_spec.available_n ?? 0;
   const avgClusterSize = primaryAnalysis?.metric_spec.avg_cluster_size ?? undefined;
-  const maxClusters =
-    avgClusterSize !== undefined && avgClusterSize > 0 ? Math.floor(allSamples / avgClusterSize) : undefined;
+  const maxClusters = primaryAnalysis?.metric_spec.available_n_clusters ?? undefined;
   const clusterInputValue = desiredNClusters !== undefined ? String(desiredNClusters) : '';
   const showClusteredCustomInput = isClustered && avgClusterSize !== undefined && avgClusterSize > 0;
 
@@ -262,7 +261,10 @@ export function PowerCheckSampleSizeSelector({
       handleInputChange(undefined);
       return;
     }
-    handleInputChange(estimateParticipantNFromClusters(clusterN, avgClusterSize), clusterN);
+    // Selecting every cluster selects exactly the available participants; the estimate can overshoot from rounding.
+    const participantN =
+      clusterN === maxClusters ? allSamples : estimateParticipantNFromClusters(clusterN, avgClusterSize);
+    handleInputChange(participantN, clusterN);
   };
 
   return (

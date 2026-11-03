@@ -286,6 +286,7 @@ export function withEchoedBaselineStats(
       metric_stddev: stats.metric_stddev ?? null,
       available_n: stats.available_n,
       available_nonnull_n: stats.available_nonnull_n,
+      available_n_clusters: stats.available_n_clusters ?? null,
     };
     if (metric.icc == null && stats.icc != null && stats.avg_cluster_size != null && stats.cv != null) {
       echoed.icc = stats.icc;

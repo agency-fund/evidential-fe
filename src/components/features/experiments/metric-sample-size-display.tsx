@@ -96,7 +96,7 @@ const getDisplayModel = (
       const participantN = analysis.metric_spec.available_n ?? undefined;
       return {
         participantN,
-        clusterN: isClustered ? estimateClusterN(participantN, avgClusterSize) : undefined,
+        clusterN: isClustered ? (analysis.metric_spec.available_n_clusters ?? undefined) : undefined,
         color:
           participantN === undefined || participantN === 0 || (targetN != null && participantN < targetN)
             ? 'crimson'

@@ -163,7 +163,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
       avgClusterSize > 0 &&
       echoedSpec.experiment_type === PreassignedFrequentistExperimentSpecExperimentType.freq_preassigned
     ) {
-      const maxClusters = Math.floor(availableN / avgClusterSize);
+      const maxClusters = primary.metric_spec.available_n_clusters ?? 0;
       const sizes = powerCurveSizes(primary.num_clusters_total ?? undefined, maxClusters);
       if (!sizes.length) {
         return;
