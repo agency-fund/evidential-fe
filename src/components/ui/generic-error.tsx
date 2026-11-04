@@ -1,73 +1,82 @@
 'use client';
-import { Callout, Code, Flex, Text } from '@radix-ui/themes';
-import { InfoCircledIcon } from '@radix-ui/react-icons';
-import { ApiError, ApiValidationError } from '@/services/orval-fetch';
-import { HTTPValidationError } from '@/api/methods.schemas';
-import { prettyJSON } from '@/services/json-utils';
+import { Callout, Flex, Text } from '@radix-ui/themes';
+import { ApiError, ApiValidationError, getErrorMessage, isApiDwhError } from '@/services/orval-fetch';
+import { apiErrorDetails } from '@/services/error-report';
+import { DwhErrorCallout } from '@/components/ui/dwh-error-callout';
+import { ErrorCallout } from '@/components/ui/error-callout';
 
-const FormattedError = ({ error }: { error: Error }) => {
-  if (error instanceof ApiError && error.response) {
-    const response = error.response as { status: number; data: unknown };
-    return (
-      <Flex direction="column" gap="2">
-        <Text weight="bold">API Error: {response.status}</Text>
-        {response.data !== undefined && response.data !== null && (
-          <Flex direction="column" gap="1">
-            <Text size="2">Response data:</Text>
-            <Code style={{ whiteSpace: 'pre-wrap' }}>
-              {typeof response.data === 'object' ? prettyJSON(response.data) : String(response.data)}
-            </Code>
-          </Flex>
-        )}
+const ValidationErrorDetails = ({ error }: { error: ApiValidationError }) => (
+  <Flex direction="column" gap="2">
+    <Text weight="bold">Validation Error (422)</Text>
+    {error.data.detail ? (
+      <Flex direction="column" gap="1">
+        <Text size="2">Validation details:</Text>
+        <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
+          {error.data.detail.map((detail, index) => (
+            <li key={index}>
+              <Text size="2" wrap="wrap">
+                <strong>{detail.loc.join('.')}</strong>: {detail.msg} ({detail.type})
+              </Text>
+            </li>
+          ))}
+        </ul>
       </Flex>
-    );
-  }
+    ) : null}
+  </Flex>
+);
 
-  if (error instanceof ApiValidationError) {
-    const validationError = error.data as HTTPValidationError;
-    return (
-      <Flex direction="column" gap="2">
-        <Text weight="bold">Validation Error (422)</Text>
-        {validationError.detail && (
-          <Flex direction="column" gap="1">
-            <Text size="2">Validation details:</Text>
-            <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
-              {validationError.detail.map((detail, index) => (
-                <li key={index}>
-                  <Text size="2" wrap="wrap">
-                    <strong>{detail.loc.join('.')}</strong>: {detail.msg} ({detail.type})
-                  </Text>
-                </li>
-              ))}
-            </ul>
-          </Flex>
-        )}
-      </Flex>
-    );
-  }
+const validationLines = (error: ApiValidationError): string[] => [
+  'Validation Error (422)',
+  ...(error.data.detail ?? []).map((detail) => `${detail.loc.join('.')}: ${detail.msg} (${detail.type})`),
+];
 
-  // Default case for other errors
+/** The lines FormattedError shows, as plain text. */
+const formattedErrorLines = (error: Error): string[] =>
+  error instanceof ApiValidationError ? validationLines(error) : [getErrorMessage(error)];
+
+const FormattedError = ({ error }: { error: Error }) =>
+  error instanceof ApiValidationError ? (
+    <ValidationErrorDetails error={error} />
+  ) : (
+    <Callout.Text>{getErrorMessage(error)}</Callout.Text>
+  );
+
+interface PlainErrorCalloutProps {
+  title: string;
+  message?: string;
+  error?: Error;
+}
+
+const PlainErrorCallout = ({ title, message, error }: PlainErrorCalloutProps) => {
+  const messageLines = message === undefined ? [] : message.split('\n');
+  const bodyText = [...messageLines, ...(error === undefined ? [] : formattedErrorLines(error))];
+  const details = error instanceof ApiError ? () => apiErrorDetails(error, window.location.href) : undefined;
+
   return (
-    <Flex direction="column" gap="1">
-      <Text weight="bold">{error.name || 'Error'}</Text>
-      <Text>{error.message}</Text>
-    </Flex>
+    <ErrorCallout title={title} titleText={title} bodyText={bodyText} details={details}>
+      {messageLines.map((line, index) => (
+        <Callout.Text key={index}>{line}</Callout.Text>
+      ))}
+      {error === undefined ? null : <FormattedError error={error} />}
+    </ErrorCallout>
   );
 };
 
-export function GenericErrorCallout({ title, message, error }: { title: string; message?: string; error?: Error }) {
+interface GenericErrorCalloutProps {
+  title: string;
+  message?: string;
+  error?: Error;
+  datasourceId?: string;
+}
+
+export function GenericErrorCallout({ title, message, error, datasourceId }: GenericErrorCalloutProps) {
   return (
-    <Flex gap={'3'} direction={'column'} width={'100%'}>
-      <Callout.Root color={'red'}>
-        <Callout.Icon>
-          <InfoCircledIcon />
-        </Callout.Icon>
-        <Callout.Text>{title}</Callout.Text>
-      </Callout.Root>
-      <Code style={{ whiteSpace: 'pre' }} variant={'outline'} m={'3'}>
-        {message ? message : <></>}
-        {error && <FormattedError error={error} />}
-      </Code>
+    <Flex direction="column" width="100%">
+      {isApiDwhError(error) ? (
+        <DwhErrorCallout error={error} datasourceId={datasourceId} />
+      ) : (
+        <PlainErrorCallout title={title} message={message} error={error} />
+      )}
     </Flex>
   );
 }

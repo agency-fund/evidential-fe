@@ -84,12 +84,16 @@ function UserDetail() {
     return <Text>Error: Missing user ID.</Text>;
   }
 
+  if (error) {
+    return <GenericErrorCallout title="Failed to fetch user" error={error as Error} />;
+  }
+
   if (isLoading && !user) {
     return <XSpinner message="Loading user…" />;
   }
 
-  if (error || !user) {
-    return <GenericErrorCallout title="Failed to fetch user" error={error as Error | undefined} />;
+  if (!user) {
+    return <GenericErrorCallout title="Failed to fetch user" />;
   }
 
   const isSelf = auth.isAuthenticated && auth.userEmail === user.email;

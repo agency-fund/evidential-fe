@@ -643,6 +643,42 @@ export interface DesignSpecMetricRequest {
 
 export type Dsn = ApiOnlyDsn | PostgresDsn | BqDsn | RedshiftDsn;
 
+export type DwhErrorCode = (typeof DwhErrorCode)[keyof typeof DwhErrorCode];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const DwhErrorCode = {
+	dwh_connection: "dwh_connection",
+	dwh_dns: "dwh_dns",
+	dwh_authentication: "dwh_authentication",
+	dwh_database_not_found: "dwh_database_not_found",
+	dwh_table_not_found: "dwh_table_not_found",
+	dwh_column_not_found: "dwh_column_not_found",
+	dwh_permission_denied: "dwh_permission_denied",
+	dwh_timeout: "dwh_timeout",
+	dwh_query_failed: "dwh_query_failed",
+	dwh_configuration: "dwh_configuration",
+} as const;
+
+export type DwhErrorResponseHint = string | null;
+
+export type DwhErrorResponseHintCommand = string | null;
+
+export type DwhErrorResponseDwhMessage = string | null;
+
+export type DwhErrorResponseTableName = string | null;
+
+export type DwhErrorResponseRequestId = string | null;
+
+export interface DwhErrorResponse {
+	message: string;
+	code: DwhErrorCode;
+	hint?: DwhErrorResponseHint;
+	hint_command?: DwhErrorResponseHintCommand;
+	dwh_message?: DwhErrorResponseDwhMessage;
+	table_name?: DwhErrorResponseTableName;
+	request_id?: DwhErrorResponseRequestId;
+}
+
 export type EventSummaryLink = string | null;
 
 export type EventSummaryDetailsAnyOf = { [key: string]: unknown };
@@ -1076,10 +1112,6 @@ export interface MdeCurvePoint {
 	desired_n: number;
 	desired_n_clusters?: MdeCurvePointDesiredNClusters;
 	pct_change?: MdeCurvePointPctChange;
-}
-
-export interface MessageError {
-	message: string;
 }
 
 export interface MetricAnalysis {

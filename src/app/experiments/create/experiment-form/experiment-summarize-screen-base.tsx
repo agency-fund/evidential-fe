@@ -78,7 +78,11 @@ export function ExperimentsSummarizeScreenBase({
     return (
       <>
         <Flex direction="column" gap="3">
-          <GenericErrorCallout title="Failed to create experiment" error={data.commitError} />
+          <GenericErrorCallout
+            title="Failed to create experiment"
+            error={data.commitError}
+            datasourceId={data.datasourceId}
+          />
         </Flex>
         <NavigationButtons onPrev={navigatePrev} onNext={() => {}} nextDisabled />
       </>

@@ -31,11 +31,11 @@ export function UsersManagementTable() {
   const users = data?.items ?? [];
   const nextPageToken = data?.next_page_token || '';
 
-  if (isLoading && data === undefined) {
-    return <XSpinner message="Loading users…" />;
-  }
   if (error) {
     return <GenericErrorCallout title="Failed to fetch users" error={error as Error} />;
+  }
+  if (isLoading && data === undefined) {
+    return <XSpinner message="Loading users…" />;
   }
 
   return (

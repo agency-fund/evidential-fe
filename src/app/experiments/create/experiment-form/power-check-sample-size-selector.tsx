@@ -148,9 +148,9 @@ export function PowerCheckSampleSizeSelector({
   const estimateMde = (sampleSizeOption: PowerCheckOption, desiredN: number, desiredNClusters?: number) => {
     const designSpec = makeDesignSpec(desiredN, desiredNClusters);
     void (async () => {
-      const response = await triggerEstimateMde(toPowerRequest(designSpec));
+      const response = await triggerEstimateMde(toPowerRequest(designSpec), { throwOnError: false });
       if (!response) {
-        // Can happen if this request has gone stale and failed, superceded by a more recent request.
+        // The request failed; the hook's error is rendered in the MDE badge.
         // Stale requests that succeed will be handled by the parent.
         return;
       }
@@ -358,7 +358,7 @@ export function PowerCheckSampleSizeSelector({
           </RadioCards.Item>
         </Flex>
       </RadioCards.Root>
-      {error && <GenericErrorCallout title={'MDE estimate failed'} error={error} />}
+      {error && <GenericErrorCallout title={'MDE estimate failed'} error={error} datasourceId={datasourceId} />}
     </Flex>
   );
 }
