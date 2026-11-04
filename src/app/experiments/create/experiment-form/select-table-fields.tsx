@@ -154,12 +154,12 @@ export const SelectTableFields = ({
     onTargetFieldChange?.(selectedKey, dataType);
   }
 
-  if (loadingTables) {
-    return <XSpinner message="Loading tables..." />;
-  }
-
   if (error) {
     return <GenericErrorCallout title="Failed to fetch tables" error={error} datasourceId={datasourceId} />;
+  }
+
+  if (loadingTables) {
+    return <XSpinner message="Loading tables..." />;
   }
 
   if (tables.length === 0) {

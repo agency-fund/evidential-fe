@@ -39,11 +39,11 @@ export default function Page() {
   const items = data?.items ?? [];
   const nextPageToken = data?.next_page_token || '';
 
-  if (isLoading && data === undefined) {
-    return <XSpinner message="Loading organizations..." />;
-  }
   if (error) {
     return <GenericErrorCallout title="Failed to fetch organizations" error={error as Error} />;
+  }
+  if (isLoading && data === undefined) {
+    return <XSpinner message="Loading organizations..." />;
   }
 
   return (

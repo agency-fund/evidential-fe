@@ -51,10 +51,6 @@ export default function Page() {
     }
   }, [currentOrgId, datasourceMetadata, router]);
 
-  if (isLoading) {
-    return <XSpinner message="Loading datasource details..." />;
-  }
-
   if (!datasourceId) {
     return <Text>missing parameter</Text>;
   }
@@ -79,6 +75,10 @@ export default function Page() {
         {editDatasourceDialogComponent}
       </>
     );
+  }
+
+  if (isLoading) {
+    return <XSpinner message="Loading datasource details..." />;
   }
 
   if (!datasourceMetadata || !inspectDatasourceData) {
