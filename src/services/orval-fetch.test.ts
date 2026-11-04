@@ -114,3 +114,51 @@ test('an authenticated 401 dispatches the logout event even when the body is not
 test('getErrorMessage stringifies non-Error values', () => {
   expect(mod.getErrorMessage('oops')).toBe('oops');
 });
+
+test('a DwhErrorResponse body becomes an ApiDwhError with every field mapped', async () => {
+  const body = {
+    code: 'dwh_permission_denied',
+    message: 'Evidential cannot read the table.',
+    hint: 'Ask your database administrator to run the following statement.',
+    hint_command: 'GRANT SELECT ON t TO evidential;',
+    dwh_message: 'permission denied for table t',
+    table_name: 't',
+    request_id: 'req-1',
+  };
+  stubFetch(jsonResponse(body, 424));
+  const err = await fetchError();
+  expect(mod.isApiDwhError(err)).toBe(true);
+  expect(mod.isApiError(err)).toBe(true);
+  const dwhError = err as InstanceType<OrvalFetchModule['ApiDwhError']>;
+  expect(dwhError.response.status).toBe(424);
+  expect(dwhError.message).toBe('Evidential cannot read the table.');
+  expect(dwhError.code).toBe('dwh_permission_denied');
+  expect(dwhError.hint).toBe('Ask your database administrator to run the following statement.');
+  expect(dwhError.hintCommand).toBe('GRANT SELECT ON t TO evidential;');
+  expect(dwhError.dwhMessage).toBe('permission denied for table t');
+  expect(dwhError.tableName).toBe('t');
+  expect(dwhError.requestId).toBe('req-1');
+});
+
+test('a body with an unknown code is a plain ApiError, not an ApiDwhError', async () => {
+  stubFetch(jsonResponse({ code: 'dwh_unknown', message: 'x' }, 424));
+  const err = await fetchError();
+  expect(mod.isApiError(err)).toBe(true);
+  expect(mod.isApiDwhError(err)).toBe(false);
+  expect((err as Error).message).toBe('x');
+});
+
+test('a DwhErrorResponse with null or omitted optional fields maps them to null', async () => {
+  stubFetch(jsonResponse({ code: 'dwh_connection', message: 'x', hint: null, dwh_message: null }, 424));
+  const err = await fetchError();
+  expect(mod.isApiDwhError(err)).toBe(true);
+  const dwhError = err as InstanceType<OrvalFetchModule['ApiDwhError']>;
+  expect(dwhError.response.status).toBe(424);
+  expect(dwhError.code).toBe('dwh_connection');
+  expect(dwhError.message).toBe('x');
+  expect(dwhError.hint).toBeNull();
+  expect(dwhError.hintCommand).toBeNull();
+  expect(dwhError.dwhMessage).toBeNull();
+  expect(dwhError.tableName).toBeNull();
+  expect(dwhError.requestId).toBeNull();
+});

@@ -1,7 +1,7 @@
 import { currentSessionToken } from '@/providers/use-auth-storage';
 import { AIRPLANE_MODE, API_BASE_URL } from '@/services/constants';
 import { API_401_EVENT } from '@/providers/auth-provider';
-import { HTTPValidationError } from '@/api/methods.schemas';
+import { DwhErrorCode, DwhErrorResponse, HTTPValidationError } from '@/api/methods.schemas';
 
 /** Error raised when the FastAPI backend returned a Pydantic HTTPValidationError. */
 export class ApiValidationError extends Error {
@@ -42,6 +42,41 @@ export class ApiError extends Error {
 }
 
 /**
+ * Error raised when the backend classified a data warehouse failure and answered with a DwhErrorResponse. `message`
+ * is the response's user-facing summary; the other fields carry its structured detail.
+ */
+export class ApiDwhError extends ApiError {
+  public readonly code: DwhErrorCode;
+  public readonly hint: string | null;
+  public readonly hintCommand: string | null;
+  public readonly dwhMessage: string | null;
+  public readonly tableName: string | null;
+  public readonly requestId: string | null;
+
+  constructor(response: { status: number; data: DwhErrorResponse }) {
+    super(response);
+    Object.setPrototypeOf(this, ApiDwhError.prototype);
+    this.name = 'ApiDwhError';
+    this.code = response.data.code;
+    this.hint = response.data.hint ?? null;
+    this.hintCommand = response.data.hint_command ?? null;
+    this.dwhMessage = response.data.dwh_message ?? null;
+    this.tableName = response.data.table_name ?? null;
+    this.requestId = response.data.request_id ?? null;
+  }
+}
+
+const DWH_ERROR_CODES: readonly string[] = Object.values(DwhErrorCode);
+
+export const isDwhErrorResponse = (data: unknown): data is DwhErrorResponse => {
+  if (data === null || typeof data !== 'object') {
+    return false;
+  }
+  const body = data as { message?: unknown; code?: unknown };
+  return typeof body.message === 'string' && typeof body.code === 'string' && DWH_ERROR_CODES.includes(body.code);
+};
+
+/**
  * Error raised when fetch() rejected, which browsers do for network failures and for responses blocked by CORS. The
  * browser does not tell us which of those happened.
  */
@@ -57,6 +92,8 @@ export class ApiNetworkError extends Error {
 }
 
 export const isApiError = (err: unknown): err is ApiError => err instanceof ApiError;
+
+export const isApiDwhError = (err: unknown): err is ApiDwhError => err instanceof ApiDwhError;
 
 export const isApiValidationError = (err: unknown): err is ApiValidationError => err instanceof ApiValidationError;
 
@@ -116,8 +153,8 @@ const sendCustomLogoutEvent = () => {
  *
  * When fetch() itself rejects (network failure or a CORS-blocked response), an ApiNetworkError is thrown.
  *
- * The thrown error may be inspected; if it is an ApiValidationError, you can extract structured information from
- * the error.
+ * The thrown error may be inspected; if it is an ApiValidationError or an ApiDwhError, you can extract structured
+ * information from the error.
  *
  * See orval.config.ts for configuration details.
  */
@@ -148,6 +185,9 @@ export const orvalFetch = async <T>(path: string, options: RequestInit): Promise
   if (result.status === 422 && Array.isArray((data as { detail?: unknown } | null)?.detail)) {
     throw new ApiValidationError({ ...result, status: 422, data: data as HTTPValidationError });
   } else if (response.status < 200 || response.status >= 300) {
+    if (isDwhErrorResponse(data)) {
+      throw new ApiDwhError({ ...result, data });
+    }
     throw new ApiError(result);
   }
   return data as T;
@@ -168,7 +208,9 @@ export const orvalFetch = async <T>(path: string, options: RequestInit): Promise
  * scenarios:
  * - ApiNetworkError: the request did not complete (network failure or a CORS-blocked response).
  * - ApiValidationError: a 422 whose body is a Pydantic HTTPValidationError (`detail` is an array).
+ * - ApiDwhError: a non-2xx response whose body is a DwhErrorResponse; `code` classifies the data warehouse failure
+ *   and `hint`, `hintCommand`, `dwhMessage`, `tableName` and `requestId` carry its detail.
  * - ApiError: any other non-2xx response; `message` is human-readable and `response` holds the status and body.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export type ErrorType<GeneratedErrorPayload> = Error | ApiNetworkError | ApiValidationError | ApiError;
+export type ErrorType<GeneratedErrorPayload> = Error | ApiNetworkError | ApiDwhError | ApiValidationError | ApiError;
