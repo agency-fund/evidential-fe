@@ -10,6 +10,7 @@ import {
   useAnalyzeCmabExperiment,
   useAnalyzeExperiment,
   useGetExperimentForUi,
+  useInspectTableInDatasource,
   useListSnapshots,
   useUpdateExperiment,
 } from '@/api/admin';
@@ -67,6 +68,7 @@ import { ContextConfigBox } from '@/components/features/experiments/context-conf
 import { TableNameBadge } from '@/components/features/participants/table-name-badge';
 import { TargetingDialog } from '@/components/features/experiments/targeting-dialog';
 import { FreqDesignDetailsDialog } from '@/components/features/experiments/freq-design-details-dialog';
+import { GoogleSheetsExperimentTab } from '@/components/features/experiments/google-sheets-experiment-tab';
 
 const SNAPSHOT_ERROR_ALERT_THRESHOLD_MS = 8 * 60 * 60 * 1000;
 
@@ -173,6 +175,15 @@ export default function ExperimentViewPage() {
         }
       },
     },
+  });
+
+  // Only committed Google Sheets experiments have this link. Their table is a tab ID, so inspect
+  // the tab to show its readable name.
+  const googleSheetsExperimentUrl = experiment?.config.google_sheets_experiment_url ?? null;
+  const sheetsTabId =
+    experiment && isFrequentistSpec(experiment.config.design_spec) ? experiment.config.design_spec.table_name : '';
+  const { data: sheetsTab } = useInspectTableInDatasource(datasourceId, sheetsTabId, undefined, {
+    swr: { enabled: googleSheetsExperimentUrl !== null && !!sheetsTabId },
   });
 
   const {
@@ -429,7 +440,7 @@ export default function ExperimentViewPage() {
           <Separator orientation="vertical" />
           {isFrequentistSpec(design_spec) && (
             <>
-              <TableNameBadge tableName={design_spec.table_name} />
+              <TableNameBadge tableName={sheetsTab?.display_name ?? design_spec.table_name} />
               <Separator orientation="vertical" />
             </>
           )}
@@ -589,6 +600,9 @@ export default function ExperimentViewPage() {
           }
           headerRight={
             <Flex gap="3" wrap="wrap" align="center">
+              {googleSheetsExperimentUrl && (
+                <GoogleSheetsExperimentTab experimentSpreadsheetUrl={googleSheetsExperimentUrl} />
+              )}
               {isFrequentistSpec(design_spec) ? (
                 <FreqDesignDetailsDialog
                   designSpec={design_spec}

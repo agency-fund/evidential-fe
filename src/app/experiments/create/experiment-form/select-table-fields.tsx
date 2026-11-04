@@ -89,7 +89,7 @@ export const SelectTableFields = ({
         if (refresh) {
           setRefresh(false);
         }
-        if (!tableName && response.tables.length > 0) {
+        if (response.tables.length > 0 && (!tableName || !response.tables.includes(tableName))) {
           handleTableChange(response.tables[0]);
         }
       },
@@ -161,11 +161,14 @@ export const SelectTableFields = ({
           </Text>
           <Flex direction="row" gap="3">
             <Select.Root value={tableName ?? ''} onValueChange={handleTableChange}>
-              <Select.Trigger placeholder="Select a table" />
+              {/* Google Sheets tables are tab IDs; their inspection includes a readable name. */}
+              <Select.Trigger placeholder="Select a table">
+                {tableName && (tableData?.display_name ?? tableName)}
+              </Select.Trigger>
               <Select.Content>
                 {tables.map((table) => (
                   <Select.Item key={table} value={table}>
-                    {table}
+                    {(table === tableName && tableData?.display_name) || table}
                   </Select.Item>
                 ))}
               </Select.Content>
