@@ -509,10 +509,6 @@ export interface CreateOrganizationResponse {
 	id: string;
 }
 
-export interface CreateSnapshotResponse {
-	id: string;
-}
-
 export interface CreateUserRequest {
 	/** @maxLength 64 */
 	email: string;
@@ -587,7 +583,10 @@ export type DesignSpecMetricAvailableNonnullN = number | null;
 export type DesignSpecMetricAvailableN = number | null;
 
 export interface DesignSpecMetric {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	/**
+	 * @minLength 1
+	 * @maxLength 300
+	 */
 	field_name: string;
 	metric_pct_change?: DesignSpecMetricMetricPctChange;
 	metric_target?: DesignSpecMetricMetricTarget;
@@ -599,6 +598,8 @@ export interface DesignSpecMetric {
 	metric_stddev?: DesignSpecMetricMetricStddev;
 	available_nonnull_n?: DesignSpecMetricAvailableNonnullN;
 	available_n?: DesignSpecMetricAvailableN;
+	use_one_time_metric?: boolean;
+	is_one_time_eligible?: boolean;
 }
 
 export type DesignSpecMetricRequestMetricPctChange = number | null;
@@ -622,7 +623,10 @@ export type DesignSpecMetricRequestAvailableNonnullN = number | null;
 export type DesignSpecMetricRequestAvailableN = number | null;
 
 export interface DesignSpecMetricRequest {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	/**
+	 * @minLength 1
+	 * @maxLength 300
+	 */
 	field_name: string;
 	metric_pct_change?: DesignSpecMetricRequestMetricPctChange;
 	metric_target?: DesignSpecMetricRequestMetricTarget;
@@ -634,6 +638,7 @@ export interface DesignSpecMetricRequest {
 	metric_stddev?: DesignSpecMetricRequestMetricStddev;
 	available_nonnull_n?: DesignSpecMetricRequestAvailableNonnullN;
 	available_n?: DesignSpecMetricRequestAvailableN;
+	use_one_time_metric?: boolean;
 }
 
 export type Dsn = ApiOnlyDsn | PostgresDsn | BqDsn | RedshiftDsn;
@@ -721,7 +726,10 @@ export interface FieldDescriptor {
 }
 
 export interface FieldMetadata {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	/**
+	 * @minLength 1
+	 * @maxLength 300
+	 */
 	field_name: string;
 	data_type: DataType;
 	/** @maxLength 2000 */
@@ -729,7 +737,10 @@ export interface FieldMetadata {
 }
 
 export interface Filter {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	/**
+	 * @minLength 1
+	 * @maxLength 300
+	 */
 	field_name: string;
 	relation: Relation;
 	value: FilterValueTypes;
@@ -1010,9 +1021,15 @@ export interface MABDwhExperimentSpec {
 	autofail_outcome_value?: number;
 	/** @maxLength 100 */
 	table_name: string;
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	/**
+	 * @minLength 1
+	 * @maxLength 300
+	 */
 	primary_key: string;
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	/**
+	 * @minLength 1
+	 * @maxLength 300
+	 */
 	target_field_name: string;
 }
 
@@ -1079,6 +1096,10 @@ export type MetricPowerAnalysisTargetPossible = number | null;
 
 export type MetricPowerAnalysisPctChangePossible = number | null;
 
+export type MetricPowerAnalysisTargetPossibleLower = number | null;
+
+export type MetricPowerAnalysisPctChangePossibleLower = number | null;
+
 export type MetricPowerAnalysisPctChangeWithDesiredN = number | null;
 
 export type MetricPowerAnalysisMdeCurve = MdeCurvePoint[] | null;
@@ -1101,6 +1122,8 @@ export interface MetricPowerAnalysis {
 	sufficient_n?: MetricPowerAnalysisSufficientN;
 	target_possible?: MetricPowerAnalysisTargetPossible;
 	pct_change_possible?: MetricPowerAnalysisPctChangePossible;
+	target_possible_lower?: MetricPowerAnalysisTargetPossibleLower;
+	pct_change_possible_lower?: MetricPowerAnalysisPctChangePossibleLower;
 	pct_change_with_desired_n?: MetricPowerAnalysisPctChangeWithDesiredN;
 	mde_curve?: MetricPowerAnalysisMdeCurve;
 	msg?: MetricPowerAnalysisMsg;
@@ -1189,7 +1212,10 @@ export interface OnlineFrequentistExperimentSpec {
 	arms: Arm[];
 	/** @maxLength 100 */
 	table_name: string;
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	/**
+	 * @minLength 1
+	 * @maxLength 300
+	 */
 	primary_key: string;
 	/** @maxItems 150 */
 	strata: Stratum[];
@@ -1244,7 +1270,10 @@ export interface OrganizationSummary {
 }
 
 export interface ParticipantProperty {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	/**
+	 * @minLength 1
+	 * @maxLength 300
+	 */
 	field_name: string;
 	value: PropertyValueTypes;
 }
@@ -1388,7 +1417,10 @@ export interface PreassignedFrequentistExperimentSpec {
 	arms: Arm[];
 	/** @maxLength 100 */
 	table_name: string;
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	/**
+	 * @minLength 1
+	 * @maxLength 300
+	 */
 	primary_key: string;
 	/** @maxItems 150 */
 	strata: Stratum[];
@@ -1538,7 +1570,6 @@ export type SnapshotStatus =
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const SnapshotStatus = {
 	success: "success",
-	running: "running",
 	failed: "failed",
 } as const;
 
@@ -1556,13 +1587,19 @@ export const StopAssignmentReason = {
 export type StrataStrataValue = string | null;
 
 export interface Strata {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	/**
+	 * @minLength 1
+	 * @maxLength 300
+	 */
 	field_name: string;
 	strata_value?: StrataStrataValue;
 }
 
 export interface Stratum {
-	/** @pattern ^[a-zA-Z_][a-zA-Z0-9_]*$ */
+	/**
+	 * @minLength 1
+	 * @maxLength 300
+	 */
 	field_name: string;
 }
 
