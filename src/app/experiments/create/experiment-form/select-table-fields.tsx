@@ -160,7 +160,8 @@ export const SelectTableFields = ({
             Select a table
           </Text>
           <Flex direction="row" gap="3">
-            <Select.Root value={tableName ?? ''} onValueChange={handleTableChange}>
+            {/* Locked when there's only one table to choose. */}
+            <Select.Root value={tableName ?? ''} onValueChange={handleTableChange} disabled={tables.length <= 1}>
               {/* Google Sheets tables are tab IDs; their inspection includes a readable name. */}
               <Select.Trigger placeholder="Select a table">
                 {tableName && (tableData?.display_name ?? tableName)}
