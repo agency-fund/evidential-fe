@@ -140,6 +140,26 @@ test('a DwhErrorResponse body becomes an ApiDwhError with every field mapped', a
   expect(dwhError.requestId).toBe('req-1');
 });
 
+test('an ApiError records the method and path, with query string, of the request that failed', async () => {
+  stubFetch(jsonResponse({ message: 'nope' }, 500));
+  let err: unknown;
+  try {
+    await mod.orvalFetch('/v1/thing?page_size=5', { method: 'POST' });
+  } catch (caught) {
+    err = caught;
+  }
+  expect((err as InstanceType<OrvalFetchModule['ApiError']>).request).toEqual({
+    method: 'POST',
+    path: '/v1/thing?page_size=5',
+  });
+});
+
+test('an ApiDwhError records the request that failed', async () => {
+  stubFetch(jsonResponse({ code: 'dwh_timeout', message: 'x' }, 424));
+  const err = await fetchError();
+  expect((err as InstanceType<OrvalFetchModule['ApiDwhError']>).request).toEqual({ method: 'GET', path: '/v1/thing' });
+});
+
 test('a body with an unknown code is a plain ApiError, not an ApiDwhError', async () => {
   stubFetch(jsonResponse({ code: 'dwh_unknown', message: 'x' }, 424));
   const err = await fetchError();

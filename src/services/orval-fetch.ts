@@ -33,8 +33,17 @@ const messageFromBody = (status: number, data: unknown): string => {
 /**
  * Error raised when the FastAPI backend returned an unsuccessful response.
  */
+/** The API request that failed. path includes the query string. */
+export interface ApiRequestInfo {
+  method: string;
+  path: string;
+}
+
 export class ApiError extends Error {
-  constructor(public readonly response: { status: number; data: unknown }) {
+  constructor(
+    public readonly response: { status: number; data: unknown },
+    public readonly request: ApiRequestInfo | null = null,
+  ) {
     super(messageFromBody(response.status, response.data));
     Object.setPrototypeOf(this, ApiError.prototype);
     this.name = 'ApiError';
@@ -53,8 +62,8 @@ export class ApiDwhError extends ApiError {
   public readonly tableName: string | null;
   public readonly requestId: string | null;
 
-  constructor(response: { status: number; data: DwhErrorResponse }) {
-    super(response);
+  constructor(response: { status: number; data: DwhErrorResponse }, request: ApiRequestInfo | null = null) {
+    super(response, request);
     Object.setPrototypeOf(this, ApiDwhError.prototype);
     this.name = 'ApiDwhError';
     this.code = response.data.code;
@@ -182,13 +191,14 @@ export const orvalFetch = async <T>(path: string, options: RequestInit): Promise
     sendCustomLogoutEvent();
   }
   const result = { status: response.status, data: data, headers: response.headers };
+  const requestInfo: ApiRequestInfo = { method: request.method, path: requestUrl.pathname + requestUrl.search };
   if (result.status === 422 && Array.isArray((data as { detail?: unknown } | null)?.detail)) {
     throw new ApiValidationError({ ...result, status: 422, data: data as HTTPValidationError });
   } else if (response.status < 200 || response.status >= 300) {
     if (isDwhErrorResponse(data)) {
-      throw new ApiDwhError({ ...result, data });
+      throw new ApiDwhError({ ...result, data }, requestInfo);
     }
-    throw new ApiError(result);
+    throw new ApiError(result, requestInfo);
   }
   return data as T;
 };
