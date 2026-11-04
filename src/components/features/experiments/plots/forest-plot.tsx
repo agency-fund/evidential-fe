@@ -439,7 +439,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
             </Callout.Icon>
             <Callout.Text>
               The control arm (<Text weight="bold">{missingControlArm.armName}</Text>) has no values for this metric, so
-              the other arms can&apos;t be compared to it.
+              the other arms can&apos;t be compared to it. Please wait for values to be collected.
             </Callout.Text>
           </Callout.Root>
         ) : null}
