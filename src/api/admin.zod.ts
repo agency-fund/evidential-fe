@@ -594,6 +594,9 @@ export const createExperimentBody = zod.object({
 								.union([zod.number(), zod.null()])
 								.optional(),
 							available_n: zod.union([zod.number(), zod.null()]).optional(),
+							available_n_clusters: zod
+								.union([zod.number().min(1), zod.null()])
+								.optional(),
 							use_one_time_metric: zod.boolean().optional(),
 						}),
 					)
@@ -742,6 +745,9 @@ export const createExperimentBody = zod.object({
 								.union([zod.number(), zod.null()])
 								.optional(),
 							available_n: zod.union([zod.number(), zod.null()]).optional(),
+							available_n_clusters: zod
+								.union([zod.number().min(1), zod.null()])
+								.optional(),
 							use_one_time_metric: zod.boolean().optional(),
 						}),
 					)
@@ -1109,6 +1115,9 @@ export const createExperimentBody = zod.object({
 									.union([zod.number(), zod.null()])
 									.optional(),
 								available_n: zod.union([zod.number(), zod.null()]).optional(),
+								available_n_clusters: zod
+									.union([zod.number().min(1), zod.null()])
+									.optional(),
 								use_one_time_metric: zod.boolean().optional(),
 								is_one_time_eligible: zod.boolean().optional(),
 							}),
@@ -1307,6 +1316,7 @@ export const powerCheckBody = zod.object({
 				metric_stddev: zod.union([zod.number(), zod.null()]).optional(),
 				available_nonnull_n: zod.union([zod.number(), zod.null()]).optional(),
 				available_n: zod.union([zod.number(), zod.null()]).optional(),
+				available_n_clusters: zod.union([zod.number().min(1), zod.null()]).optional(),
 				use_one_time_metric: zod.boolean().optional(),
 			}),
 		)

@@ -34,6 +34,12 @@ const getPrimaryAnalysisAvailableN = (data: ExperimentFormData): number | undefi
   return primaryAnalysis?.metric_spec.available_n ?? undefined;
 };
 
+const getPrimaryAnalysisAvailableNClusters = (data: ExperimentFormData): number | undefined => {
+  if (!data.powerCheckResponse || !data.primaryMetric) return undefined;
+  const primaryAnalysis = getPowerAnalysis(data.powerCheckResponse, data.primaryMetric.metric.field_name);
+  return primaryAnalysis?.metric_spec.available_n_clusters ?? undefined;
+};
+
 const getNextDisabledReasons = (data: ExperimentFormData): string[] => {
   const reasons: string[] = [];
 
@@ -76,6 +82,18 @@ const getNextDisabledReasons = (data: ExperimentFormData): string[] => {
     if (data.desiredN !== undefined && hasAvailableN && data.desiredN > availableN) {
       reasons.push(
         `Desired N (${data.desiredN.toLocaleString()}) exceeds the primary metric's available samples (${availableN.toLocaleString()}).`,
+      );
+    }
+
+    const availableNClusters = getPrimaryAnalysisAvailableNClusters(data);
+    if (
+      data.clusterKey &&
+      data.desiredNClusters !== undefined &&
+      availableNClusters !== undefined &&
+      data.desiredNClusters > availableNClusters
+    ) {
+      reasons.push(
+        `Desired number of clusters (${data.desiredNClusters.toLocaleString()}) exceeds the available clusters (${availableNClusters.toLocaleString()}).`,
       );
     }
 
