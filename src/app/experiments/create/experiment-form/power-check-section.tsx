@@ -337,7 +337,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
           {error && (
             <Flex align="center" gap="2">
-              <GenericErrorCallout title={'Power check failed'} error={error} />
+              <GenericErrorCallout title={'Power check failed'} error={error} datasourceId={data.datasourceId} />
             </Flex>
           )}
 

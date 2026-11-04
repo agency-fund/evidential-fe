@@ -1,5 +1,5 @@
 import { prettyJSON } from '@/services/json-utils';
-import { ApiError } from '@/services/orval-fetch';
+import { ApiDwhError, ApiError } from '@/services/orval-fetch';
 
 /** One labeled value shown under Technical details. */
 export interface ReportField {
@@ -21,6 +21,15 @@ const requestFields = (error: ApiError, pageUrl: string): [string, string | null
   ['Page', pageUrl],
   ['API request', error.request === null ? null : `${error.request.method} ${error.request.path}`],
 ];
+
+export const dwhErrorDetails = (error: ApiDwhError, pageUrl: string): ReportField[] =>
+  presentFields([
+    ['Error code', error.code],
+    ['Table', error.tableName],
+    ...requestFields(error, pageUrl),
+    ['Request ID', error.requestId],
+    ['Data warehouse message', error.dwhMessage],
+  ]);
 
 export const apiErrorDetails = (error: ApiError, pageUrl: string): ReportField[] =>
   presentFields([

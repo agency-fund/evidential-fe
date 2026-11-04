@@ -1,7 +1,8 @@
 'use client';
 import { Callout, Flex, Text } from '@radix-ui/themes';
-import { ApiError, ApiValidationError, getErrorMessage } from '@/services/orval-fetch';
+import { ApiError, ApiValidationError, getErrorMessage, isApiDwhError } from '@/services/orval-fetch';
 import { apiErrorDetails } from '@/services/error-report';
+import { DwhErrorCallout } from '@/components/ui/dwh-error-callout';
 import { ErrorCallout } from '@/components/ui/error-callout';
 
 const ValidationErrorDetails = ({ error }: { error: ApiValidationError }) => (
@@ -65,12 +66,17 @@ interface GenericErrorCalloutProps {
   title: string;
   message?: string;
   error?: Error;
+  datasourceId?: string;
 }
 
-export function GenericErrorCallout({ title, message, error }: GenericErrorCalloutProps) {
+export function GenericErrorCallout({ title, message, error, datasourceId }: GenericErrorCalloutProps) {
   return (
     <Flex direction="column" width="100%">
-      <PlainErrorCallout title={title} message={message} error={error} />
+      {isApiDwhError(error) ? (
+        <DwhErrorCallout error={error} datasourceId={datasourceId} />
+      ) : (
+        <PlainErrorCallout title={title} message={message} error={error} />
+      )}
     </Flex>
   );
 }

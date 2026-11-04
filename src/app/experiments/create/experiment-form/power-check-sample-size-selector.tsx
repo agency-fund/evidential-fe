@@ -358,7 +358,7 @@ export function PowerCheckSampleSizeSelector({
           </RadioCards.Item>
         </Flex>
       </RadioCards.Root>
-      {error && <GenericErrorCallout title={'MDE estimate failed'} error={error} />}
+      {error && <GenericErrorCallout title={'MDE estimate failed'} error={error} datasourceId={datasourceId} />}
     </Flex>
   );
 }

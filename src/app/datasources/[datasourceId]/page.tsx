@@ -62,7 +62,11 @@ export default function Page() {
   if (datasourceError) {
     return (
       <>
-        <GenericErrorCallout title={'Failed to fetch datasource metadata'} error={datasourceError} />
+        <GenericErrorCallout
+          title={'Failed to fetch datasource metadata'}
+          error={datasourceError}
+          datasourceId={datasourceId}
+        />
         {editDatasourceDialogComponent}
       </>
     );
@@ -71,7 +75,7 @@ export default function Page() {
   if (inspectError) {
     return (
       <>
-        <GenericErrorCallout title={'Failed to inspect datasource'} error={inspectError} />
+        <GenericErrorCallout title={'Failed to inspect datasource'} error={inspectError} datasourceId={datasourceId} />
         {editDatasourceDialogComponent}
       </>
     );
