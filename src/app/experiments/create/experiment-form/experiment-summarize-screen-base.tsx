@@ -74,20 +74,15 @@ export function ExperimentsSummarizeScreenBase({
     ? (target?: ExperimentScreenId) => (target ? () => navigateTo(target) : undefined)
     : () => undefined;
 
-  if (data.commitError) {
-    return (
-      <>
-        <Flex direction="column" gap="3">
-          <GenericErrorCallout title="Failed to create experiment" error={data.commitError} />
-        </Flex>
-        <NavigationButtons onPrev={navigatePrev} onNext={() => {}} nextDisabled />
-      </>
-    );
-  }
-
   return (
     <>
       <Flex direction="column" gap="4">
+        {data.commitError && (
+          <GenericErrorCallout
+            title="Failed to save experiment. Fix the problem below, then press Save Experiment again."
+            error={data.commitError}
+          />
+        )}
         {data.createExperimentResponse !== undefined && (
           <>
             <ExperimentConfirmationDisplay

@@ -113,7 +113,7 @@ export default function Page() {
           )}
         </>
       )}
-      <ApiKeysTable datasourceId={datasourceId} />
+      {datasourceMetadata?.dsn.type !== 'google_sheets' && <ApiKeysTable datasourceId={datasourceId} />}
     </Flex>
   );
 }
