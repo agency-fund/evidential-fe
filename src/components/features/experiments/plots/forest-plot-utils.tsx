@@ -201,21 +201,22 @@ const _generateFreqEffectSizeData = (analysis: MetricAnalysis, alpha: number): E
     const stdError = armAnalysis.std_error;
     const pValue = armAnalysis.p_value;
     const tStat = armAnalysis.t_stat;
-    const significant = !isBaseline && !!(pValue !== null && pValue < alpha);
+    const significant = !isBaseline && !isControlMissing && !!(pValue !== null && pValue < alpha);
     const invalidStatTest =
       pValue === null || pValue === undefined || tStat === null || tStat === undefined || stdError === null;
     const isMissingAllValues = armAnalysis.num_missing_values < 0;
 
     // NaN marks values that can't be computed, which are displayed as '--'.
     const estimate = isMissingAllValues ? NaN : (armAnalysis.estimate ?? NaN); // regression coefficient
-    const absDifference = isBaseline ? 0 : estimate;
+    // Analyses saved before the API returned null here can hold made-up differences from a missing control.
+    const absDifference = isBaseline ? 0 : isControlMissing ? NaN : estimate;
     // Analyses saved before the API returned the arm's mean only have the difference from the control mean.
     const absEffect = isMissingAllValues ? NaN : (armAnalysis.mean ?? absDifference + controlEstimate);
     // A change relative to a control mean of 0 is undefined. Floating-point noise can turn an exact 0 into a
     // tiny value such as -5e-17, which would otherwise produce a huge percentage.
     const relEffectPct = Math.abs(controlEstimate) < 1e-9 ? NaN : (absDifference / controlEstimate) * 100;
     // Normal approximation for coefficient uncertainty in the difference plot.
-    const ci95 = stdError === null ? NaN : 1.96 * stdError;
+    const ci95 = stdError === null || isControlMissing ? NaN : 1.96 * stdError;
     const ci95Lower = absDifference - ci95;
     const ci95Upper = absDifference + ci95;
     // Mean uncertainty comes from the fitted prediction, not the treatment coefficient's SE.
