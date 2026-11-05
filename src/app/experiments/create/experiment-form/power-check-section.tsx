@@ -15,6 +15,7 @@ import {
   Tooltip,
 } from '@radix-ui/themes';
 import {
+  getSampleSizeLandmarks,
   PowerCheckResponseChange,
   PowerCheckSampleOptionChange,
   PowerCheckSampleSizeSelector,
@@ -35,7 +36,10 @@ import {
   withEchoedBaselineStats,
 } from './experiment-form-helpers';
 import { getPowerAnalysis, metricHasMissingValues } from '@/services/experiment-utils';
-import { MetricSampleSizeDisplay } from '@/components/features/experiments/metric-sample-size-display';
+import {
+  MetricSampleSizeDisplay,
+  estimateParticipantNFromClusters,
+} from '@/components/features/experiments/metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { InfoBadge } from '@/components/ui/info-badge';
 import { ZodError } from 'zod';
@@ -120,6 +124,13 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const { trigger: triggerEstimateSampleSize, isMutating, error } = usePowerCheck(data.datasourceId!);
   const { trigger: triggerPowerCurve } = usePowerCheck(data.datasourceId!, {
     swr: { swrKey: `${data.datasourceId}/power/curve` },
+  });
+  const {
+    trigger: triggerEstimateMde,
+    isMutating: isEstimatingMde,
+    error: mdeEstimateError,
+  } = usePowerCheck(data.datasourceId!, {
+    swr: { swrKey: `${data.datasourceId}/power/mde-estimate` },
   });
   const { enabled, reason } = isPowerCheckButtonEnabled(isMutating, data);
 
@@ -265,21 +276,17 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     ...(restPower ?? []).filter(metricHasMissingValues).map((analysis) => analysis.metric_spec.field_name),
   ];
 
+  const { targetN, targetNClusters, allSamples, avgClusterSize, maxClusters, isMinOptionDisabled } =
+    getSampleSizeLandmarks(primaryPower);
+  const selectedSampleOption = data.sampleSizeOption ?? PowerCheckOption.USE_POWER_CHECK;
+
   // Power curve chart inputs, all in the chart's x unit (clusters for cluster designs).
   const curveAnalysis =
     data.powerCurveResponse !== undefined && !validationError
       ? getPowerAnalysis(data.powerCurveResponse, primaryMetricFieldName)
       : undefined;
-  const primaryAvailableN = primaryPower?.metric_spec.available_n ?? undefined;
-  const primaryAvgClusterSize = primaryPower?.metric_spec.avg_cluster_size ?? undefined;
-  const curveAvailableSize = isClustered
-    ? primaryAvailableN !== undefined && primaryAvgClusterSize
-      ? Math.floor(primaryAvailableN / primaryAvgClusterSize)
-      : undefined
-    : primaryAvailableN;
-  const curveMinSize = isClustered
-    ? (primaryPower?.num_clusters_total ?? undefined)
-    : (primaryPower?.target_n ?? undefined);
+  const curveAvailableSize = isClustered ? maxClusters : (primaryPower?.metric_spec.available_n ?? undefined);
+  const curveMinSize = isClustered ? targetNClusters : targetN;
   const targetMdePct = data.primaryMetric?.mde !== undefined ? Number(data.primaryMetric.mde) : undefined;
   const mdeAnalysisForDot = getPowerAnalysis(data.mdePowerCheckResponse, primaryMetricFieldName);
   const selectedMdePct =
@@ -290,6 +297,149 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
           Math.abs(mdeAnalysisForDot.pct_change_with_desired_n) * 100
         : undefined;
   const selectedSize = isClustered ? data.desiredNClusters : data.desiredN;
+
+  const makeDesignSpec = (desiredN: number, desiredNClusters?: number): AnyFrequentistDesignSpec => {
+    const spec = convertToFrequentistDesignSpec({ ...data, desiredN, desiredNClusters });
+    // Echo the stats from the current power check so the server skips the dwh. Any design edit
+    // wipes powerCheckResponse, so a present response matches the design.
+    return data.powerCheckResponse !== undefined ? withEchoedBaselineStats(spec, data.powerCheckResponse) : spec;
+  };
+
+  /**
+   * Requests the MDE estimate for a chosen size. The response is dispatched even if stale: the
+   * reducer compares its design spec against the current form and drops it if they differ.
+   */
+  const estimateMde = (sampleSizeOption: PowerCheckOption, desiredN: number, desiredNClusters?: number) => {
+    const designSpec = makeDesignSpec(desiredN, desiredNClusters);
+    void (async () => {
+      const response = await triggerEstimateMde(toPowerRequest(designSpec));
+      if (!response) {
+        // Can happen if this request has gone stale and failed, superceded by a more recent request.
+        return;
+      }
+      handleEstimatedMDEChange({ sampleSizeOption, desiredN, desiredNClusters, response, designSpec });
+    })();
+  };
+
+  /**
+   * Records a card pick immediately, with the sizes that card stands for and its MDE response
+   * when already known (the power check's for the minimum, the last estimate when it was for
+   * the same size); otherwise a new estimate is requested.
+   */
+  const handleOptionSelect = (option: PowerCheckOption) => {
+    const lastEstimateMatches = (n: number | undefined, nClusters: number | undefined) =>
+      data.mdePowerCheckResponse !== undefined &&
+      data.desiredN === n &&
+      (!isClustered || data.desiredNClusters === nClusters);
+    switch (option) {
+      case PowerCheckOption.NONE:
+        handleSampleOptionChange({
+          sampleSizeOption: option,
+          desiredN: undefined,
+          desiredNClusters: undefined,
+          response: data.powerCheckResponse,
+        });
+        break;
+      case PowerCheckOption.USE_POWER_CHECK:
+        handleSampleOptionChange({
+          sampleSizeOption: option,
+          desiredN: targetN,
+          desiredNClusters: isClustered ? targetNClusters : undefined,
+          response: data.powerCheckResponse,
+        });
+        break;
+      case PowerCheckOption.USE_ALL_NON_NULL_SAMPLES: {
+        const useCachedResponse = lastEstimateMatches(allSamples, maxClusters);
+        handleSampleOptionChange({
+          sampleSizeOption: option,
+          desiredN: allSamples,
+          desiredNClusters: isClustered ? maxClusters : undefined,
+          response: useCachedResponse ? data.mdePowerCheckResponse : undefined,
+        });
+        if (!useCachedResponse) {
+          estimateMde(option, allSamples, isClustered ? maxClusters : undefined);
+        }
+        break;
+      }
+      case PowerCheckOption.ENTER_OWN: {
+        // Switching away from ENTER_OWN either keeps desiredN at allSamples or changes it, so
+        // switching back only ever reuses the all-samples estimate, never a stale custom one.
+        const useCachedResponse = lastEstimateMatches(allSamples, maxClusters);
+        handleSampleOptionChange({
+          sampleSizeOption: option,
+          desiredN: data.desiredN,
+          desiredNClusters: isClustered ? data.desiredNClusters : undefined,
+          response: useCachedResponse ? data.mdePowerCheckResponse : undefined,
+        });
+        if (!useCachedResponse && data.desiredN !== undefined) {
+          estimateMde(option, data.desiredN, isClustered ? data.desiredNClusters : undefined);
+        }
+        break;
+      }
+    }
+  };
+
+  /** Makes a custom size the selection and requests its MDE estimate. */
+  const selectCustomSize = (newN: number, newNClusters?: number) => {
+    // Record the size right away, wiping the old response, which is now stale.
+    handleSampleOptionChange({
+      sampleSizeOption: PowerCheckOption.ENTER_OWN,
+      desiredN: newN,
+      desiredNClusters: newNClusters,
+      response: undefined,
+    });
+    // But only estimate MDE for a valid value.
+    if (newN > 1 || (newNClusters && newNClusters > 1)) {
+      estimateMde(PowerCheckOption.ENTER_OWN, newN, newNClusters);
+    }
+  };
+
+  const handleCustomSizeChange = (newN: number | undefined, newNClusters?: number) => {
+    if (
+      selectedSampleOption !== PowerCheckOption.ENTER_OWN ||
+      (newN === data.desiredN && (!isClustered || newNClusters === data.desiredNClusters))
+    ) {
+      // User either switched selection or entered the same stored value, so nothing to change.
+      return;
+    }
+    if (newN === undefined) {
+      // Wipe the form data if the user entered an invalid newN.
+      handleSampleOptionChange({
+        sampleSizeOption: selectedSampleOption,
+        desiredN: undefined,
+        desiredNClusters: undefined,
+        response: undefined,
+      });
+      return;
+    }
+    selectCustomSize(newN, newNClusters);
+  };
+
+  /**
+   * A click on a curve point selects that size the way the cards would: the required minimum
+   * and the available population pick their own cards (the minimum only while that card is
+   * enabled), any other size goes into the custom card.
+   */
+  const handleCurveSelectSize = (size: number) => {
+    if (size === selectedSize) {
+      return;
+    }
+    if (size === curveMinSize && !isMinOptionDisabled) {
+      handleOptionSelect(PowerCheckOption.USE_POWER_CHECK);
+      return;
+    }
+    if (size === curveAvailableSize) {
+      handleOptionSelect(PowerCheckOption.USE_ALL_NON_NULL_SAMPLES);
+      return;
+    }
+    if (!isClustered) {
+      selectCustomSize(size);
+      return;
+    }
+    if (avgClusterSize !== undefined) {
+      selectCustomSize(estimateParticipantNFromClusters(size, avgClusterSize), size);
+    }
+  };
 
   return (
     <Flex direction="column" gap={'3'}>
@@ -527,6 +677,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                 targetMdePct={targetMdePct}
                 selectedSize={selectedSize}
                 selectedMdePct={selectedMdePct}
+                onSelectSize={handleCurveSelectSize}
               />
             ) : null}
             <Text>Choose the total number of participants to distribute across all arms:</Text>
@@ -543,25 +694,18 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                 </Callout.Root>
               )}
               <PowerCheckSampleSizeSelector
-                datasourceId={data.datasourceId!}
                 isClustered={isClustered}
                 powerCheckResponse={data.powerCheckResponse}
                 primaryMetricFieldName={primaryMetricFieldName}
                 targetMde={data.primaryMetric?.mde}
-                selectedSampleOption={data.sampleSizeOption ?? PowerCheckOption.USE_POWER_CHECK}
+                selectedSampleOption={selectedSampleOption}
                 desiredN={data.desiredN}
                 desiredNClusters={data.desiredNClusters}
                 mdePowerCheckResponse={data.mdePowerCheckResponse}
-                makeDesignSpec={(desiredN, desiredNClusters) => {
-                  const spec = convertToFrequentistDesignSpec({ ...data, desiredN, desiredNClusters });
-                  // Echo the stats from the current power check so the server skips the dwh. Any
-                  // design edit wipes powerCheckResponse, so a present response matches the design.
-                  return data.powerCheckResponse !== undefined
-                    ? withEchoedBaselineStats(spec, data.powerCheckResponse)
-                    : spec;
-                }}
-                onOptionChange={handleSampleOptionChange}
-                onEstimatedMDEChange={handleEstimatedMDEChange}
+                isEstimatingMde={isEstimatingMde}
+                mdeEstimateError={mdeEstimateError}
+                onOptionSelect={handleOptionSelect}
+                onCustomSizeChange={handleCustomSizeChange}
               />
             </Flex>
           </Flex>

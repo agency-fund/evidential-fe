@@ -96,25 +96,36 @@ function PointLabel({
   );
 }
 
+// Radius of the invisible click target around each dot: the dots themselves are too small to hit.
+const DOT_HIT_RADIUS = 12;
+
+interface CurveDotProps {
+  cx?: number;
+  cy?: number;
+  payload?: CurvePoint;
+  onSelectSize?: (size: number) => void;
+}
+
 /**
  * Line dot renderer: the user's currently selected size is drawn larger, with a surface ring.
+ * When the chart is selectable, each dot gets an invisible, larger click target around it.
  */
-function CurveDot({ cx, cy, payload }: { cx?: number; cy?: number; payload?: CurvePoint }) {
+function CurveDot({ cx, cy, payload, onSelectSize }: CurveDotProps) {
   if (cx == null || cy == null || payload == null) return <g key="curve-dot-empty" />;
-  if (payload.selected) {
-    return (
-      <circle
-        key={`curve-dot-${payload.size}`}
-        cx={cx}
-        cy={cy}
-        r={6}
-        fill={CURVE_COLOR}
-        stroke="var(--color-panel-solid)"
-        strokeWidth={2}
-      />
-    );
+  const dot = payload.selected ? (
+    <circle cx={cx} cy={cy} r={6} fill={CURVE_COLOR} stroke="var(--color-panel-solid)" strokeWidth={2} />
+  ) : (
+    <circle cx={cx} cy={cy} r={3} fill={CURVE_COLOR} />
+  );
+  if (onSelectSize === undefined) {
+    return <g key={`curve-dot-${payload.size}`}>{dot}</g>;
   }
-  return <circle key={`curve-dot-${payload.size}`} cx={cx} cy={cy} r={3} fill={CURVE_COLOR} />;
+  return (
+    <g key={`curve-dot-${payload.size}`} onClick={() => onSelectSize(payload.size)} style={{ cursor: 'pointer' }}>
+      <circle cx={cx} cy={cy} r={DOT_HIT_RADIUS} fill="transparent" />
+      {dot}
+    </g>
+  );
 }
 
 interface PowerCurveChartProps {
@@ -131,6 +142,11 @@ interface PowerCurveChartProps {
   selectedSize?: number;
   /** The MDE in percent at the selected size, if an estimate exists. */
   selectedMdePct?: number;
+  /**
+   * Called with a plotted point's size (in the chart's x unit) when the user clicks on or near
+   * that point. When omitted, the chart is display-only.
+   */
+  onSelectSize?: (size: number) => void;
 }
 
 interface CurveTooltipProps extends TooltipContentProps<ValueType, NameType> {
@@ -169,6 +185,7 @@ export function PowerCurveChart({
   targetMdePct,
   selectedSize,
   selectedMdePct,
+  onSelectSize,
 }: PowerCurveChartProps) {
   const points: CurvePoint[] = (curveAnalysis.mde_curve ?? [])
     .map((p) => ({
@@ -330,8 +347,9 @@ export function PowerCurveChart({
               dataKey="mdePct"
               stroke={CURVE_COLOR}
               strokeWidth={2}
-              dot={CurveDot}
-              activeDot={{ r: 5 }}
+              dot={(props: CurveDotProps) => <CurveDot {...props} onSelectSize={onSelectSize} />}
+              // The hover dot sits above the click targets; let clicks pass through it.
+              activeDot={{ r: 5, style: { pointerEvents: 'none' } }}
               isAnimationActive={false}
             />
           </LineChart>
