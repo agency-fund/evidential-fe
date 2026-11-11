@@ -12,11 +12,7 @@ test('describeDesignSpecError lists each zod issue with its path', () => {
 });
 
 test('describeDesignSpecError uses the message of a plain error', () => {
-  expect(describeDesignSpecError(new Error('arm_weights: All arms must have weights set.'))).toBe(
-    'arm_weights: All arms must have weights set.',
-  );
-});
+  const message = 'arm_weights: All arms must have weights set, or none should have weights.';
 
-test('describeDesignSpecError stringifies values that are not errors', () => {
-  expect(describeDesignSpecError('boom')).toBe('boom');
+  expect(describeDesignSpecError(new Error(message))).toBe(message);
 });

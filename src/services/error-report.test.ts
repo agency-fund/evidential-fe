@@ -10,10 +10,10 @@ test('dwhErrorDetails includes every field the response and request carry', () =
     {
       status: 424,
       data: {
-        message: 'The data warehouse user cannot read the table.',
+        message: 'User "evidential_ro" does not have permission to read the table "participants".',
         code: DwhErrorCode.dwh_permission_denied,
-        hint: 'Ask your database administrator to run the following statement.',
-        hint_command: 'GRANT SELECT ON participants TO evidential;',
+        hint: 'Ask your database administrator to replace <schema> with the schema containing this table and run the following statement.',
+        hint_command: 'GRANT SELECT ON <schema>.participants TO evidential_ro;',
         dwh_message: 'permission denied for table participants',
         table_name: 'participants',
         request_id: 'req-123',
@@ -35,7 +35,15 @@ test('dwhErrorDetails includes every field the response and request carry', () =
 test('dwhErrorDetails omits fields the response and request do not carry', () => {
   const error = new ApiDwhError({
     status: 424,
-    data: { message: 'The data warehouse did not respond in time.', code: DwhErrorCode.dwh_timeout },
+    data: {
+      message: 'The data warehouse canceled the query before it finished.',
+      code: DwhErrorCode.dwh_timeout,
+      hint: 'Try again, or ask your database administrator to raise the statement timeout.',
+      hint_command: null,
+      dwh_message: null,
+      table_name: null,
+      request_id: null,
+    },
   });
 
   expect(dwhErrorDetails(error, PAGE_URL)).toEqual([
@@ -46,15 +54,18 @@ test('dwhErrorDetails omits fields the response and request do not carry', () =>
 
 test('apiErrorDetails includes the status, request, and pretty-printed body', () => {
   const error = new ApiError(
-    { status: 500, data: { message: 'Internal error' } },
-    { method: 'POST', path: '/v1/m/experiments' },
+    { status: 409, data: { message: 'The request conflicted with a concurrent transaction and was rolled back.' } },
+    { method: 'POST', path: '/v1/m/datasources/ds-1/experiments' },
   );
 
   expect(apiErrorDetails(error, PAGE_URL)).toEqual([
-    { label: 'HTTP status', value: '500' },
+    { label: 'HTTP status', value: '409' },
     { label: 'Page', value: PAGE_URL },
-    { label: 'API request', value: 'POST /v1/m/experiments' },
-    { label: 'Response body', value: '{\n  "message": "Internal error"\n}' },
+    { label: 'API request', value: 'POST /v1/m/datasources/ds-1/experiments' },
+    {
+      label: 'Response body',
+      value: '{\n  "message": "The request conflicted with a concurrent transaction and was rolled back."\n}',
+    },
   ]);
 });
 
@@ -70,22 +81,24 @@ test('apiErrorDetails omits the request and body when there are none', () => {
 test('formatErrorReport lists the title, body, then details, with multi-line values after their label', () => {
   expect(
     formatErrorReport(
-      'Failed to load experiment',
-      ['Try again later.', 'Internal error'],
+      'Failed to create experiment',
+      ['The request conflicted with a concurrent transaction and was rolled back.'],
       [
-        { label: 'HTTP status', value: '500' },
-        { label: 'Response body', value: '{\n  "message": "Internal error"\n}' },
+        { label: 'HTTP status', value: '409' },
+        {
+          label: 'Response body',
+          value: '{\n  "message": "The request conflicted with a concurrent transaction and was rolled back."\n}',
+        },
       ],
     ),
   ).toBe(
     [
-      'Failed to load experiment',
-      'Try again later.',
-      'Internal error',
-      'HTTP status: 500',
+      'Failed to create experiment',
+      'The request conflicted with a concurrent transaction and was rolled back.',
+      'HTTP status: 409',
       'Response body:',
       '{',
-      '  "message": "Internal error"',
+      '  "message": "The request conflicted with a concurrent transaction and was rolled back."',
       '}',
     ].join('\n'),
   );

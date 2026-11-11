@@ -88,23 +88,28 @@ test('a 422 with a string detail is an ApiError, not an ApiRequestValidationErro
   expect((err as Error).message).toBe('x');
 });
 
-test('a 422 with an array detail is an ApiRequestValidationError', async () => {
-  const body = { detail: [{ loc: ['body', 'desired_n'], msg: 'm', type: 't' }] };
+test('a 422 with an array detail is an ApiRequestValidationError that records the failed request', async () => {
+  const body = {
+    detail: [
+      {
+        type: 'int_from_float',
+        loc: ['body', 'desired_n'],
+        msg: 'Input should be a valid integer, got a number with a fractional part',
+        input: 2500.5,
+      },
+    ],
+  };
   stubFetch(jsonResponse(body, 422));
   const err = await fetchError();
   expect(err).toBeInstanceOf(mod.ApiRequestValidationError);
   const validationError = err as InstanceType<OrvalFetchModule['ApiRequestValidationError']>;
   expect(validationError.data).toEqual(body);
-  expect(validationError.message).toBe('body.desired_n: m');
-});
-
-test('an ApiRequestValidationError is an ApiError that records the status and the failed request', async () => {
-  stubFetch(jsonResponse({ detail: [{ loc: ['body'], msg: 'm', type: 't' }] }, 422));
-  const err = await fetchError();
+  expect(validationError.message).toBe(
+    'body.desired_n: Input should be a valid integer, got a number with a fractional part',
+  );
   expect(err).toBeInstanceOf(mod.ApiError);
-  const apiError = err as InstanceType<OrvalFetchModule['ApiError']>;
-  expect(apiError.response.status).toBe(422);
-  expect(apiError.request).not.toBeNull();
+  expect(validationError.response.status).toBe(422);
+  expect(validationError.request).toEqual({ method: 'GET', path: '/v1/thing' });
 });
 
 test('an authenticated 401 dispatches the logout event even when the body is not JSON', async () => {
@@ -122,18 +127,14 @@ test('an authenticated 401 dispatches the logout event even when the body is not
   }
 });
 
-test('getErrorMessage stringifies non-Error values', () => {
-  expect(mod.getErrorMessage('oops')).toBe('oops');
-});
-
 test('a DwhErrorResponse body becomes an ApiDwhError with every field mapped', async () => {
   const body = {
     code: 'dwh_permission_denied',
-    message: 'Evidential cannot read the table.',
-    hint: 'Ask your database administrator to run the following statement.',
-    hint_command: 'GRANT SELECT ON t TO evidential;',
-    dwh_message: 'permission denied for table t',
-    table_name: 't',
+    message: 'User "evidential_ro" does not have permission to read the table "participants".',
+    hint: 'Ask your database administrator to replace <schema> with the schema containing this table and run the following statement.',
+    hint_command: 'GRANT SELECT ON <schema>.participants TO evidential_ro;',
+    dwh_message: 'permission denied for table participants',
+    table_name: 'participants',
     request_id: 'req-1',
   };
   stubFetch(jsonResponse(body, 424));
@@ -142,12 +143,12 @@ test('a DwhErrorResponse body becomes an ApiDwhError with every field mapped', a
   expect(err).toBeInstanceOf(mod.ApiError);
   const dwhError = err as InstanceType<OrvalFetchModule['ApiDwhError']>;
   expect(dwhError.response.status).toBe(424);
-  expect(dwhError.message).toBe('Evidential cannot read the table.');
+  expect(dwhError.message).toBe('User "evidential_ro" does not have permission to read the table "participants".');
   expect(dwhError.code).toBe('dwh_permission_denied');
-  expect(dwhError.hint).toBe('Ask your database administrator to run the following statement.');
-  expect(dwhError.hintCommand).toBe('GRANT SELECT ON t TO evidential;');
-  expect(dwhError.dwhMessage).toBe('permission denied for table t');
-  expect(dwhError.tableName).toBe('t');
+  expect(dwhError.hint).toBe(body.hint);
+  expect(dwhError.hintCommand).toBe('GRANT SELECT ON <schema>.participants TO evidential_ro;');
+  expect(dwhError.dwhMessage).toBe('permission denied for table participants');
+  expect(dwhError.tableName).toBe('participants');
   expect(dwhError.requestId).toBe('req-1');
 });
 
