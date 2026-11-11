@@ -10,7 +10,6 @@ export class ApiValidationError extends Error {
 
   constructor(response: { status: 422; data: HTTPValidationError }) {
     super(`API 422 Error: ${response.status}`);
-    Object.setPrototypeOf(this, ApiValidationError.prototype);
     this.data = response.data;
     this.status = response.status;
     this.name = 'ApiValidationError';
@@ -45,7 +44,6 @@ export class ApiError extends Error {
     public readonly request: ApiRequestInfo | null = null,
   ) {
     super(messageFromBody(response.status, response.data));
-    Object.setPrototypeOf(this, ApiError.prototype);
     this.name = 'ApiError';
   }
 }
@@ -64,7 +62,6 @@ export class ApiDwhError extends ApiError {
 
   constructor(response: { status: number; data: DwhErrorResponse }, request: ApiRequestInfo | null = null) {
     super(response, request);
-    Object.setPrototypeOf(this, ApiDwhError.prototype);
     this.name = 'ApiDwhError';
     this.code = response.data.code;
     this.hint = response.data.hint ?? null;
@@ -95,18 +92,11 @@ export class ApiNetworkError extends Error {
       'The request did not complete. Check your connection and try again. If the problem continues, contact support.',
       options,
     );
-    Object.setPrototypeOf(this, ApiNetworkError.prototype);
     this.name = 'ApiNetworkError';
   }
 }
 
-export const isApiError = (err: unknown): err is ApiError => err instanceof ApiError;
-
 export const isApiDwhError = (err: unknown): err is ApiDwhError => err instanceof ApiDwhError;
-
-export const isApiValidationError = (err: unknown): err is ApiValidationError => err instanceof ApiValidationError;
-
-export const isApiNetworkError = (err: unknown): err is ApiNetworkError => err instanceof ApiNetworkError;
 
 export const getErrorMessage = (err: unknown): string => (err instanceof Error ? err.message : String(err));
 

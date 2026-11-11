@@ -49,7 +49,7 @@ test('returns null for a 204 response', async () => {
 test('a text/plain 500 becomes an ApiError carrying the text', async () => {
   stubFetch(new Response('Internal Server Error', { status: 500, headers: { 'content-type': 'text/plain' } }));
   const err = await fetchError();
-  expect(mod.isApiError(err)).toBe(true);
+  expect(err).toBeInstanceOf(mod.ApiError);
   expect((err as InstanceType<OrvalFetchModule['ApiError']>).response).toMatchObject({
     status: 500,
     data: 'Internal Server Error',
@@ -60,15 +60,15 @@ test('a text/plain 500 becomes an ApiError carrying the text', async () => {
 test('a JSON error body supplies the ApiError message', async () => {
   stubFetch(jsonResponse({ message: 'x' }, 502));
   const err = await fetchError();
-  expect(mod.isApiError(err)).toBe(true);
+  expect(err).toBeInstanceOf(mod.ApiError);
   expect((err as Error).message).toBe('x');
 });
 
 test('a rejected fetch becomes an ApiNetworkError', async () => {
   stubFetch(Promise.reject(new TypeError('Failed to fetch')));
   const err = await fetchError();
-  expect(mod.isApiNetworkError(err)).toBe(true);
-  expect(mod.isApiError(err)).toBe(false);
+  expect(err).toBeInstanceOf(mod.ApiNetworkError);
+  expect(err).not.toBeInstanceOf(mod.ApiError);
   expect(mod.getErrorMessage(err)).toBe(
     'The request did not complete. Check your connection and try again. If the problem continues, contact support.',
   );
@@ -83,8 +83,8 @@ test('a non-TypeError rejection propagates unchanged', async () => {
 test('a 422 with a string detail is an ApiError, not an ApiValidationError', async () => {
   stubFetch(jsonResponse({ detail: 'x' }, 422));
   const err = await fetchError();
-  expect(mod.isApiError(err)).toBe(true);
-  expect(mod.isApiValidationError(err)).toBe(false);
+  expect(err).toBeInstanceOf(mod.ApiError);
+  expect(err).not.toBeInstanceOf(mod.ApiValidationError);
   expect((err as Error).message).toBe('x');
 });
 
@@ -92,7 +92,7 @@ test('a 422 with an array detail is an ApiValidationError', async () => {
   const body = { detail: [{ loc: [], msg: 'm', type: 't' }] };
   stubFetch(jsonResponse(body, 422));
   const err = await fetchError();
-  expect(mod.isApiValidationError(err)).toBe(true);
+  expect(err).toBeInstanceOf(mod.ApiValidationError);
   expect((err as InstanceType<OrvalFetchModule['ApiValidationError']>).data).toEqual(body);
 });
 
@@ -104,7 +104,7 @@ test('an authenticated 401 dispatches the logout event even when the body is not
   try {
     const err = await fetchError();
     expect((fetchMock.mock.calls[0] as unknown as [Request])[0].headers.get('Authorization')).toBe('Bearer token');
-    expect(mod.isApiError(err)).toBe(true);
+    expect(err).toBeInstanceOf(mod.ApiError);
     expect(listener).toHaveBeenCalledOnce();
   } finally {
     window.removeEventListener(API_401_EVENT, listener);
@@ -128,7 +128,7 @@ test('a DwhErrorResponse body becomes an ApiDwhError with every field mapped', a
   stubFetch(jsonResponse(body, 424));
   const err = await fetchError();
   expect(mod.isApiDwhError(err)).toBe(true);
-  expect(mod.isApiError(err)).toBe(true);
+  expect(err).toBeInstanceOf(mod.ApiError);
   const dwhError = err as InstanceType<OrvalFetchModule['ApiDwhError']>;
   expect(dwhError.response.status).toBe(424);
   expect(dwhError.message).toBe('Evidential cannot read the table.');
@@ -163,7 +163,7 @@ test('an ApiDwhError records the request that failed', async () => {
 test('a body with an unknown code is a plain ApiError, not an ApiDwhError', async () => {
   stubFetch(jsonResponse({ code: 'dwh_unknown', message: 'x' }, 424));
   const err = await fetchError();
-  expect(mod.isApiError(err)).toBe(true);
+  expect(err).toBeInstanceOf(mod.ApiError);
   expect(mod.isApiDwhError(err)).toBe(false);
   expect((err as Error).message).toBe('x');
 });
