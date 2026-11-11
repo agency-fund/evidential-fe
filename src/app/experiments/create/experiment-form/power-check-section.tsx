@@ -117,7 +117,12 @@ function RunPowerCheckButton({ enabled, onClick, loading, disabledReason }: Powe
 
 export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const [validationError, setValidationError] = useState<string | null>(null);
-  const { trigger: triggerEstimateSampleSize, isMutating, error } = usePowerCheck(data.datasourceId!);
+  const {
+    trigger: triggerEstimateSampleSize,
+    isMutating,
+    error,
+    reset: clearRequestError,
+  } = usePowerCheck(data.datasourceId!);
   const { trigger: triggerPowerCurve } = usePowerCheck(data.datasourceId!, {
     swr: { swrKey: `${data.datasourceId}/power/curve` },
   });
@@ -186,6 +191,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
   const handlePowerCheck = async () => {
     setValidationError(null);
+    clearRequestError();
 
     if (!data.tableName || !data.primaryKey || !data.primaryMetric) {
       return;

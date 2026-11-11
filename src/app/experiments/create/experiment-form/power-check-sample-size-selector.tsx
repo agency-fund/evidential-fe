@@ -120,6 +120,7 @@ export function PowerCheckSampleSizeSelector({
     trigger: triggerEstimateMde,
     isMutating: isEstimatingMde,
     error,
+    reset: clearRequestError,
   } = usePowerCheck(datasourceId, {
     swr: { swrKey: `${datasourceId}/power/mde-estimate` },
   });
@@ -149,6 +150,7 @@ export function PowerCheckSampleSizeSelector({
    */
   const estimateMde = (sampleSizeOption: PowerCheckOption, desiredN: number, desiredNClusters?: number) => {
     setValidationError(null);
+    clearRequestError();
     let designSpec: AnyFrequentistDesignSpec;
     let powerRequest: PowerRequest;
     try {
