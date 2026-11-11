@@ -30,7 +30,6 @@ const validationLines = (error: ApiRequestValidationError): string[] => [
   ...(error.data.detail ?? []).map((detail) => `${detail.loc.join('.')}: ${detail.msg} (${detail.type})`),
 ];
 
-/** The lines FormattedError shows, as plain text. */
 const formattedErrorLines = (error: Error): string[] =>
   error instanceof ApiRequestValidationError ? validationLines(error) : [getErrorMessage(error)];
 

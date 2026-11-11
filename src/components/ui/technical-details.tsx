@@ -29,11 +29,10 @@ const DetailsList = ({ fields }: { fields: ReportField[] }) => (
 );
 
 interface TechnicalDetailsProps {
-  /** Returns the fields to show. Called only once the section opens, so only on the client, and may read window. */
+  /** Called lazily, when the section is first opened. */
   details: () => ReportField[];
 }
 
-/** A collapsed section for diagnostic detail most users will not need, such as raw responses and request ids. */
 export function TechnicalDetails({ details }: TechnicalDetailsProps) {
   const [open, setOpen] = useState(false);
 
