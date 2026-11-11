@@ -24,11 +24,13 @@ import { ExperimentFormData, isClusteredExperimentFormData, PowerCheckOption } f
 import { usePowerCheck } from '@/api/admin';
 import {
   AnyFrequentistDesignSpec,
+  PowerRequest,
   PowerResponse,
   PreassignedFrequentistExperimentSpecExperimentType,
 } from '@/api/methods.schemas';
 import {
   convertToFrequentistDesignSpec,
+  describeDesignSpecError,
   toPowerRequest,
   getClusterStatsFromPowerCheckResponse,
   powerCurveSizes,
@@ -38,7 +40,6 @@ import { getPowerAnalysis, metricHasMissingValues } from '@/services/experiment-
 import { MetricSampleSizeDisplay } from '@/components/features/experiments/metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { InfoBadge } from '@/components/ui/info-badge';
-import { ZodError } from 'zod';
 import { useState } from 'react';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { ClusterStatisticsSection, ClusterStatisticsSectionAction } from './cluster-statistics-section';
@@ -115,7 +116,7 @@ function RunPowerCheckButton({ enabled, onClick, loading, disabledReason }: Powe
 }
 
 export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
-  const [validationError, setValidationError] = useState<ZodError | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const { trigger: triggerEstimateSampleSize, isMutating, error } = usePowerCheck(data.datasourceId!);
   const { trigger: triggerPowerCurve } = usePowerCheck(data.datasourceId!, {
     swr: { swrKey: `${data.datasourceId}/power/curve` },
@@ -191,6 +192,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     }
 
     let designSpec: AnyFrequentistDesignSpec;
+    let powerRequest: PowerRequest;
     try {
       // We always estimate the minimum sample size with this handler, so clear out selected sample size fields.
       designSpec = convertToFrequentistDesignSpec({
@@ -198,15 +200,13 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
         desiredN: undefined,
         desiredNClusters: undefined,
       });
+      powerRequest = toPowerRequest(designSpec);
     } catch (err) {
-      if (err instanceof ZodError) {
-        setValidationError(err);
-        return;
-      }
-      throw err;
+      setValidationError(describeDesignSpecError(err));
+      return;
     }
 
-    const response = await triggerEstimateSampleSize(toPowerRequest(designSpec), { throwOnError: false });
+    const response = await triggerEstimateSampleSize(powerRequest, { throwOnError: false });
     if (!response) {
       return;
     }
@@ -265,7 +265,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
   // Power curve chart inputs, all in the chart's x unit (clusters for cluster designs).
   const curveAnalysis =
-    data.powerCurveResponse !== undefined && !validationError
+    data.powerCurveResponse !== undefined && !hasValidationError
       ? getPowerAnalysis(data.powerCurveResponse, primaryMetricFieldName)
       : undefined;
   const primaryAvailableN = primaryPower?.metric_spec.available_n ?? undefined;
@@ -343,10 +343,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
           {validationError && (
             <Flex align="center" gap="2">
-              <GenericErrorCallout
-                title={'Validation failed'}
-                message={validationError.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('\n')}
-              />
+              <GenericErrorCallout title={'Validation failed'} message={validationError} />
             </Flex>
           )}
 
