@@ -1,11 +1,11 @@
 'use client';
 import { Callout, Flex, Text } from '@radix-ui/themes';
-import { ApiError, ApiValidationError, getErrorMessage, isApiDwhError } from '@/services/orval-fetch';
+import { ApiError, ApiRequestValidationError, getErrorMessage, isApiDwhError } from '@/services/orval-fetch';
 import { apiErrorDetails } from '@/services/error-report';
 import { DwhErrorCallout } from '@/components/ui/dwh-error-callout';
 import { ErrorCallout } from '@/components/ui/error-callout';
 
-const ValidationErrorDetails = ({ error }: { error: ApiValidationError }) => (
+const ValidationErrorDetails = ({ error }: { error: ApiRequestValidationError }) => (
   <Flex direction="column" gap="2">
     <Text weight="bold">Validation Error (422)</Text>
     {error.data.detail ? (
@@ -25,17 +25,17 @@ const ValidationErrorDetails = ({ error }: { error: ApiValidationError }) => (
   </Flex>
 );
 
-const validationLines = (error: ApiValidationError): string[] => [
+const validationLines = (error: ApiRequestValidationError): string[] => [
   'Validation Error (422)',
   ...(error.data.detail ?? []).map((detail) => `${detail.loc.join('.')}: ${detail.msg} (${detail.type})`),
 ];
 
 /** The lines FormattedError shows, as plain text. */
 const formattedErrorLines = (error: Error): string[] =>
-  error instanceof ApiValidationError ? validationLines(error) : [getErrorMessage(error)];
+  error instanceof ApiRequestValidationError ? validationLines(error) : [getErrorMessage(error)];
 
 const FormattedError = ({ error }: { error: Error }) =>
-  error instanceof ApiValidationError ? (
+  error instanceof ApiRequestValidationError ? (
     <ValidationErrorDetails error={error} />
   ) : (
     <Callout.Text>{getErrorMessage(error)}</Callout.Text>

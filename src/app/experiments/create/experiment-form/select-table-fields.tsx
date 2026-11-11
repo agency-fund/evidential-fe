@@ -5,7 +5,7 @@ import { Box, Callout, Flex, IconButton, Select, Text } from '@radix-ui/themes';
 import { ExclamationTriangleIcon, ReloadIcon } from '@radix-ui/react-icons';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { ApiValidationError } from '@/services/orval-fetch';
+import { ApiRequestValidationError } from '@/services/orval-fetch';
 import { SelectPrimaryKey } from './select-primary-key';
 import { SelectClusterKey } from './select-cluster-key';
 import { SelectTargetField } from './select-target-field';
@@ -41,7 +41,8 @@ const TableInspectionErrorCallout = ({
   tableName: string;
   error: Error;
 }) => {
-  const messages = error instanceof ApiValidationError ? (error.data.detail ?? []).map((detail) => detail.msg) : [];
+  const messages =
+    error instanceof ApiRequestValidationError ? (error.data.detail ?? []).map((detail) => detail.msg) : [];
 
   if (messages.length === 0) {
     return (

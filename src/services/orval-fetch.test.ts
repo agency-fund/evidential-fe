@@ -80,20 +80,31 @@ test('a non-TypeError rejection propagates unchanged', async () => {
   await expect(fetchError()).resolves.toBe(abort);
 });
 
-test('a 422 with a string detail is an ApiError, not an ApiValidationError', async () => {
+test('a 422 with a string detail is an ApiError, not an ApiRequestValidationError', async () => {
   stubFetch(jsonResponse({ detail: 'x' }, 422));
   const err = await fetchError();
   expect(err).toBeInstanceOf(mod.ApiError);
-  expect(err).not.toBeInstanceOf(mod.ApiValidationError);
+  expect(err).not.toBeInstanceOf(mod.ApiRequestValidationError);
   expect((err as Error).message).toBe('x');
 });
 
-test('a 422 with an array detail is an ApiValidationError', async () => {
-  const body = { detail: [{ loc: [], msg: 'm', type: 't' }] };
+test('a 422 with an array detail is an ApiRequestValidationError', async () => {
+  const body = { detail: [{ loc: ['body', 'desired_n'], msg: 'm', type: 't' }] };
   stubFetch(jsonResponse(body, 422));
   const err = await fetchError();
-  expect(err).toBeInstanceOf(mod.ApiValidationError);
-  expect((err as InstanceType<OrvalFetchModule['ApiValidationError']>).data).toEqual(body);
+  expect(err).toBeInstanceOf(mod.ApiRequestValidationError);
+  const validationError = err as InstanceType<OrvalFetchModule['ApiRequestValidationError']>;
+  expect(validationError.data).toEqual(body);
+  expect(validationError.message).toBe('body.desired_n: m');
+});
+
+test('an ApiRequestValidationError is an ApiError that records the status and the failed request', async () => {
+  stubFetch(jsonResponse({ detail: [{ loc: ['body'], msg: 'm', type: 't' }] }, 422));
+  const err = await fetchError();
+  expect(err).toBeInstanceOf(mod.ApiError);
+  const apiError = err as InstanceType<OrvalFetchModule['ApiError']>;
+  expect(apiError.response.status).toBe(422);
+  expect(apiError.request).not.toBeNull();
 });
 
 test('an authenticated 401 dispatches the logout event even when the body is not JSON', async () => {
