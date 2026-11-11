@@ -1,7 +1,6 @@
 import { prettyJSON } from '@/services/json-utils';
 import { ApiDwhError, ApiError } from '@/services/orval-fetch';
 
-/** One labeled value shown under Technical details. */
 export interface ReportField {
   label: string;
   value: string;
@@ -38,10 +37,7 @@ export const apiErrorDetails = (error: ApiError, pageUrl: string): ReportField[]
     ['Response body', formatBody(error.response.data)],
   ]);
 
-/**
- * Formats an error callout as plain text: its title, the lines of its body, then its technical details. A multi-line
- * value starts on the line after its label.
- */
+/** A multi-line value starts on the line after its label. */
 export const formatErrorReport = (title: string, body: string[], details: ReportField[]): string =>
   [
     title,

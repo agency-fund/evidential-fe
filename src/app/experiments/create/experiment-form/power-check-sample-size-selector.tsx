@@ -163,8 +163,6 @@ export function PowerCheckSampleSizeSelector({
     void (async () => {
       const response = await triggerEstimateMde(powerRequest, { throwOnError: false });
       if (!response) {
-        // The request failed; the hook's error is rendered in the MDE badge.
-        // Stale requests that succeed will be handled by the parent.
         return;
       }
       onEstimatedMDEChange({ sampleSizeOption, desiredN, desiredNClusters, response, designSpec });

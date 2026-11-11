@@ -6,7 +6,6 @@ import { CheckIcon, CopyIcon } from '@radix-ui/react-icons';
 import { transitions } from '@/services/transitions';
 
 interface CopyToClipboardProps {
-  /** The text to copy, or a function that computes it when the button is clicked. */
   content: string | (() => string);
   tooltipContent?: string;
   size?: '1' | '2' | '3' | '4';

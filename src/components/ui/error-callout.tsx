@@ -20,10 +20,6 @@ interface ErrorCalloutProps {
   children: ReactNode;
 }
 
-/**
- * A red callout for an error, with a button in its upper right that copies everything the callout shows, including
- * its technical details, as plain text for a support request.
- */
 export function ErrorCallout({ title, titleText, bodyText, details, children }: ErrorCalloutProps) {
   const copyText = () => formatErrorReport(titleText, bodyText, details?.() ?? []);
 

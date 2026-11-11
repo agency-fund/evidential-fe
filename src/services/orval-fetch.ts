@@ -16,15 +16,15 @@ const messageFromBody = (status: number, data: unknown): string => {
   return `HTTP ${status}`;
 };
 
-/**
- * Error raised when the FastAPI backend returned an unsuccessful response.
- */
 /** The API request that failed. path includes the query string. */
 export interface ApiRequestInfo {
   method: string;
   path: string;
 }
 
+/**
+ * Error raised when the FastAPI backend returned an unsuccessful response.
+ */
 export class ApiError extends Error {
   constructor(
     public readonly response: { status: number; data: unknown },
