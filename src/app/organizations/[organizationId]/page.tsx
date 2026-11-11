@@ -41,16 +41,12 @@ export default function Page() {
     return <Text>Error: Missing organization ID</Text>;
   }
 
-  if (error) {
-    return <GenericErrorCallout title={'Failed to fetch organizations'} error={error} />;
-  }
-
-  if (isLoading) {
+  if (isLoading && !error) {
     return <XSpinner message="Loading organization details..." />;
   }
 
-  if (organization === undefined) {
-    return <GenericErrorCallout title={'Failed to fetch organizations'} />;
+  if (error || organization === undefined) {
+    return <GenericErrorCallout title={'Failed to fetch organizations'} error={error} />;
   }
 
   return (

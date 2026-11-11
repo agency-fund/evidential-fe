@@ -23,16 +23,12 @@ export function ApiKeysTable({ datasourceId }: { datasourceId: string }) {
     },
   );
 
-  if (error) {
-    return <GenericErrorCallout title="Error loading API keys" error={error} />;
-  }
-
-  if (isLoading) {
+  if (isLoading && !error) {
     return <Spinner />;
   }
 
-  if (!data) {
-    return <GenericErrorCallout title="Error loading API keys" />;
+  if (error || !data) {
+    return <GenericErrorCallout title="Error loading API keys" error={error} />;
   }
 
   const filteredApiKeys = data.items.filter((key) => key.datasource_id === datasourceId);
