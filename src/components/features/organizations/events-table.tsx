@@ -43,20 +43,20 @@ export function EventsTable({ organizationId }: EventsTableProps) {
     );
   }
 
-  if (isLoading && eventsData === undefined) {
-    return (
-      <Flex direction="column" gap="3">
-        <Heading size="4">Recent Events</Heading>
-        <XSpinner message="Loading events..." />
-      </Flex>
-    );
-  }
-
   if (error) {
     return (
       <Flex direction="column" gap="3">
         <Heading size="4">Recent Events</Heading>
         <GenericErrorCallout title="Failed to fetch events" error={error as Error} />
+      </Flex>
+    );
+  }
+
+  if (isLoading && eventsData === undefined) {
+    return (
+      <Flex direction="column" gap="3">
+        <Heading size="4">Recent Events</Heading>
+        <XSpinner message="Loading events..." />
       </Flex>
     );
   }

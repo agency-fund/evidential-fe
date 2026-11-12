@@ -51,10 +51,6 @@ export default function Page() {
     }
   }, [currentOrgId, datasourceMetadata, router]);
 
-  if (isLoading) {
-    return <XSpinner message="Loading datasource details..." />;
-  }
-
   if (!datasourceId) {
     return <Text>missing parameter</Text>;
   }
@@ -62,7 +58,11 @@ export default function Page() {
   if (datasourceError) {
     return (
       <>
-        <GenericErrorCallout title={'Failed to fetch datasource metadata'} error={datasourceError} />
+        <GenericErrorCallout
+          title={'Failed to fetch datasource metadata'}
+          error={datasourceError}
+          datasourceId={datasourceId}
+        />
         {editDatasourceDialogComponent}
       </>
     );
@@ -71,10 +71,14 @@ export default function Page() {
   if (inspectError) {
     return (
       <>
-        <GenericErrorCallout title={'Failed to inspect datasource'} error={inspectError} />
+        <GenericErrorCallout title={'Failed to inspect datasource'} error={inspectError} datasourceId={datasourceId} />
         {editDatasourceDialogComponent}
       </>
     );
+  }
+
+  if (isLoading) {
+    return <XSpinner message="Loading datasource details..." />;
   }
 
   if (!datasourceMetadata || !inspectDatasourceData) {

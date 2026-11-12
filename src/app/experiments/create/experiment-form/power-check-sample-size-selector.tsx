@@ -1,8 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { Badge, Flex, RadioCards, Spinner, Text, TextField } from '@radix-ui/themes';
 import { usePowerCheck } from '@/api/admin';
-import { AnyFrequentistDesignSpec, PowerResponse } from '@/api/methods.schemas';
+import { AnyFrequentistDesignSpec, PowerRequest, PowerResponse } from '@/api/methods.schemas';
 import { PowerCheckDesiredNInput } from './power-check-desired-n-input';
 import { PowerCheckOption } from './experiment-form-types';
 import {
@@ -11,7 +12,7 @@ import {
 } from '@/components/features/experiments/metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { getPowerAnalysis } from '@/services/experiment-utils';
-import { toPowerRequest } from './experiment-form-helpers';
+import { describeDesignSpecError, toPowerRequest } from './experiment-form-helpers';
 
 /**
  * `sampleSizeOption` is the selected sample size option.
@@ -114,10 +115,12 @@ export function PowerCheckSampleSizeSelector({
   onOptionChange,
   onEstimatedMDEChange,
 }: PowerCheckSampleSizeSelectorProps) {
+  const [validationError, setValidationError] = useState<string | null>(null);
   const {
     trigger: triggerEstimateMde,
     isMutating: isEstimatingMde,
     error,
+    reset: clearRequestError,
   } = usePowerCheck(datasourceId, {
     swr: { swrKey: `${datasourceId}/power/mde-estimate` },
   });
@@ -146,12 +149,20 @@ export function PowerCheckSampleSizeSelector({
    * We always dispatch a valid response even if stale, letting the parent handle it.
    */
   const estimateMde = (sampleSizeOption: PowerCheckOption, desiredN: number, desiredNClusters?: number) => {
-    const designSpec = makeDesignSpec(desiredN, desiredNClusters);
+    setValidationError(null);
+    clearRequestError();
+    let designSpec: AnyFrequentistDesignSpec;
+    let powerRequest: PowerRequest;
+    try {
+      designSpec = makeDesignSpec(desiredN, desiredNClusters);
+      powerRequest = toPowerRequest(designSpec);
+    } catch (err) {
+      setValidationError(describeDesignSpecError(err));
+      return;
+    }
     void (async () => {
-      const response = await triggerEstimateMde(toPowerRequest(designSpec));
+      const response = await triggerEstimateMde(powerRequest, { throwOnError: false });
       if (!response) {
-        // Can happen if this request has gone stale and failed, superceded by a more recent request.
-        // Stale requests that succeed will be handled by the parent.
         return;
       }
       onEstimatedMDEChange({ sampleSizeOption, desiredN, desiredNClusters, response, designSpec });
@@ -358,7 +369,8 @@ export function PowerCheckSampleSizeSelector({
           </RadioCards.Item>
         </Flex>
       </RadioCards.Root>
-      {error && <GenericErrorCallout title={'MDE estimate failed'} error={error} />}
+      {error && <GenericErrorCallout title={'MDE estimate failed'} error={error} datasourceId={datasourceId} />}
+      {validationError !== null ? <GenericErrorCallout title={'Validation failed'} message={validationError} /> : null}
     </Flex>
   );
 }
