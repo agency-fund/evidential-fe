@@ -7,7 +7,7 @@ import { ErrorCallout } from '@/components/ui/error-callout';
 
 const ValidationErrorDetails = ({ error }: { error: ApiRequestValidationError }) => (
   <Flex direction="column" gap="2">
-    <Text weight="bold">Validation Error (422)</Text>
+    <Text weight="bold">Validation Error</Text>
     {error.data.detail ? (
       <Flex direction="column" gap="1">
         <Text size="2">Validation details:</Text>
@@ -26,7 +26,7 @@ const ValidationErrorDetails = ({ error }: { error: ApiRequestValidationError })
 );
 
 const validationLines = (error: ApiRequestValidationError): string[] => [
-  'Validation Error (422)',
+  'Validation Error',
   ...(error.data.detail ?? []).map((detail) => `${detail.loc.join('.')}: ${detail.msg} (${detail.type})`),
 ];
 
