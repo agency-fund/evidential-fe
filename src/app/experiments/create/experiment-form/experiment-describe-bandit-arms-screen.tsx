@@ -360,7 +360,11 @@ export const ExperimentDescribeBanditArmsScreen = ({
       </Flex>
 
       {data.createExperimentError && (
-        <GenericErrorCallout title="Failed to create experiment" error={data.createExperimentError} />
+        <GenericErrorCallout
+          title="Failed to create experiment"
+          error={data.createExperimentError}
+          datasourceId={datasource?.id}
+        />
       )}
 
       <NavigationButtons

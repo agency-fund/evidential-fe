@@ -25,11 +25,13 @@ import { ExperimentFormData, isClusteredExperimentFormData, PowerCheckOption } f
 import { usePowerCheck } from '@/api/admin';
 import {
   AnyFrequentistDesignSpec,
+  PowerRequest,
   PowerResponse,
   PreassignedFrequentistExperimentSpecExperimentType,
 } from '@/api/methods.schemas';
 import {
   convertToFrequentistDesignSpec,
+  describeDesignSpecError,
   toPowerRequest,
   getClusterStatsFromPowerCheckResponse,
   powerCurveSizes,
@@ -39,7 +41,6 @@ import { getAssignableN, getPowerAnalysis, metricHasMissingValues } from '@/serv
 import { MetricSampleSizeDisplay } from '@/components/features/experiments/metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
 import { InfoBadge } from '@/components/ui/info-badge';
-import { ZodError } from 'zod';
 import { useState } from 'react';
 import { SectionCard } from '@/components/ui/cards/section-card';
 import { ClusterStatisticsSection, ClusterStatisticsSectionAction } from './cluster-statistics-section';
@@ -117,9 +118,13 @@ function RunPowerCheckButton({ enabled, onClick, loading, disabledReason }: Powe
 }
 
 export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
-  const [validationError, setValidationError] = useState<ZodError | null>(null);
-  const [validationErrorMessage, setValidationErrorMessage] = useState<string | null>(null);
-  const { trigger: triggerEstimateSampleSize, isMutating, error } = usePowerCheck(data.datasourceId!);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const {
+    trigger: triggerEstimateSampleSize,
+    isMutating,
+    error,
+    reset: clearRequestError,
+  } = usePowerCheck(data.datasourceId!);
   const { trigger: triggerPowerCurve } = usePowerCheck(data.datasourceId!, {
     swr: { swrKey: `${data.datasourceId}/power/curve` },
   });
@@ -209,47 +214,46 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
    */
   const handlePowerCheck = async (formData: ExperimentFormData = data): Promise<boolean> => {
     setValidationError(null);
-    setValidationErrorMessage(null);
+    clearRequestError();
 
     if (!formData.tableName || !formData.primaryKey || !formData.primaryMetric) {
       return false;
     }
 
+    let designSpec: AnyFrequentistDesignSpec;
+    let powerRequest: PowerRequest;
     try {
       // We always estimate the minimum sample size with this handler, so clear out selected sample size fields.
-      const designSpec = convertToFrequentistDesignSpec({
+      designSpec = convertToFrequentistDesignSpec({
         ...formData,
         desiredN: undefined,
         desiredNClusters: undefined,
       });
-      const response = await triggerEstimateSampleSize(toPowerRequest(designSpec));
-
-      const primary = getPowerAnalysis(response, formData.primaryMetric.metric.field_name);
-      const desiredN = primary?.sufficient_n ? (primary.target_n ?? undefined) : undefined;
-      const sampleSizeOption = desiredN === undefined ? PowerCheckOption.NONE : PowerCheckOption.USE_POWER_CHECK;
-      dispatch({
-        type: 'set-power-check-response',
-        response,
-        desiredN,
-        desiredNClusters: isClusteredExperimentFormData(formData)
-          ? (primary?.num_clusters_total ?? undefined)
-          : undefined,
-        sampleSizeOption,
-        designSpec,
-      });
-      void fetchPowerCurve(response, formData);
-      return true;
+      powerRequest = toPowerRequest(designSpec);
     } catch (err) {
-      if (err instanceof ZodError) {
-        setValidationError(err);
-        return false;
-      }
-      if (err instanceof Error) {
-        setValidationErrorMessage(err.message);
-        return false;
-      }
-      throw err;
+      setValidationError(describeDesignSpecError(err));
+      return false;
     }
+
+    const response = await triggerEstimateSampleSize(powerRequest, { throwOnError: false });
+    if (!response) {
+      return false;
+    }
+    const primary = getPowerAnalysis(response, formData.primaryMetric.metric.field_name);
+    const desiredN = primary?.sufficient_n ? (primary.target_n ?? undefined) : undefined;
+    const sampleSizeOption = desiredN === undefined ? PowerCheckOption.NONE : PowerCheckOption.USE_POWER_CHECK;
+    dispatch({
+      type: 'set-power-check-response',
+      response,
+      desiredN,
+      desiredNClusters: isClusteredExperimentFormData(formData)
+        ? (primary?.num_clusters_total ?? undefined)
+        : undefined,
+      sampleSizeOption,
+      designSpec,
+    });
+    void fetchPowerCurve(response, formData);
+    return true;
   };
 
   const handleEstimatedMDEChange = ({
@@ -273,7 +277,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
   const primaryMetricFieldName = data.primaryMetric?.metric.field_name ?? '';
   const isClustered = isClusteredExperimentFormData(data);
-  const hasValidationError = validationError || validationErrorMessage;
+  const hasValidationError = validationError !== null;
   const primaryPower =
     data.powerCheckResponse !== undefined && !hasValidationError
       ? getPowerAnalysis(data.powerCheckResponse, primaryMetricFieldName)
@@ -293,7 +297,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
   // Power curve chart inputs, all in the chart's x unit (clusters for cluster designs).
   const curveAnalysis =
-    data.powerCurveResponse !== undefined && !validationError
+    data.powerCurveResponse !== undefined && !hasValidationError
       ? getPowerAnalysis(data.powerCurveResponse, primaryMetricFieldName)
       : undefined;
   // The chart's "available" marker. In one-time mode only participants with no value for the primary metric can be
@@ -372,7 +376,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
           {error && (
             <Flex align="center" gap="2">
-              <GenericErrorCallout title={'Power check failed'} error={error} />
+              <GenericErrorCallout title={'Power check failed'} error={error} datasourceId={data.datasourceId} />
             </Flex>
           )}
 

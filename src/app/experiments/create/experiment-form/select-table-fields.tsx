@@ -5,7 +5,7 @@ import { Box, Callout, Flex, IconButton, Select, Text } from '@radix-ui/themes';
 import { ExclamationTriangleIcon, ReloadIcon } from '@radix-ui/react-icons';
 import { XSpinner } from '@/components/ui/x-spinner';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { ApiValidationError } from '@/services/orval-fetch';
+import { ApiRequestValidationError } from '@/services/orval-fetch';
 import { SelectPrimaryKey } from './select-primary-key';
 import { SelectClusterKey } from './select-cluster-key';
 import { SelectTargetField } from './select-target-field';
@@ -32,11 +32,26 @@ interface SelectTableFieldsProps {
  * Explains why a table's fields failed to load. A 422 carries the backend's own explanation (e.g. the
  * table has nested columns), so its messages are shown as written; other failures get the generic error.
  */
-const TableInspectionErrorCallout = ({ tableName, error }: { tableName: string; error: Error }) => {
-  const messages = error instanceof ApiValidationError ? (error.data.detail ?? []).map((detail) => detail.msg) : [];
+const TableInspectionErrorCallout = ({
+  datasourceId,
+  tableName,
+  error,
+}: {
+  datasourceId: string;
+  tableName: string;
+  error: Error;
+}) => {
+  const messages =
+    error instanceof ApiRequestValidationError ? (error.data.detail ?? []).map((detail) => detail.msg) : [];
 
   if (messages.length === 0) {
-    return <GenericErrorCallout title={`Failed to load fields for table ${tableName}`} error={error} />;
+    return (
+      <GenericErrorCallout
+        title={`Failed to load fields for table ${tableName}`}
+        error={error}
+        datasourceId={datasourceId}
+      />
+    );
   }
 
   return (
@@ -140,12 +155,12 @@ export const SelectTableFields = ({
     onTargetFieldChange?.(selectedKey, dataType);
   }
 
-  if (loadingTables) {
-    return <XSpinner message="Loading tables..." />;
+  if (error) {
+    return <GenericErrorCallout title="Failed to fetch tables" error={error} datasourceId={datasourceId} />;
   }
 
-  if (error) {
-    return <GenericErrorCallout title="Failed to fetch tables" error={error} />;
+  if (loadingTables) {
+    return <XSpinner message="Loading tables..." />;
   }
 
   if (tables.length === 0) {
@@ -178,7 +193,7 @@ export const SelectTableFields = ({
       </Box>
 
       {tableName && tableError && !tableData ? (
-        <TableInspectionErrorCallout tableName={tableName} error={tableError} />
+        <TableInspectionErrorCallout datasourceId={datasourceId} tableName={tableName} error={tableError} />
       ) : (
         <>
           <Box maxWidth="50%">

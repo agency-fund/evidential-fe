@@ -231,7 +231,11 @@ export const ExperimentFreqStackScreen = ({
       </Flex>
 
       {data.createExperimentError && (
-        <GenericErrorCallout title={'Failed to create experiment'} error={data.createExperimentError} />
+        <GenericErrorCallout
+          title={'Failed to create experiment'}
+          error={data.createExperimentError}
+          datasourceId={data.datasourceId}
+        />
       )}
       <NavigationButtons
         onPrev={navigatePrev}
