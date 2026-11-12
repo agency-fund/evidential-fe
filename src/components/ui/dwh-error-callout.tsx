@@ -14,44 +14,6 @@ const CODES_FIXED_BY_EDITING_THE_DATA_SOURCE: ReadonlySet<DwhErrorCode> = new Se
   DwhErrorCode.dwh_configuration,
 ]);
 
-/** A title as text, with the table name kept apart so that it can be shown as code. */
-type TitlePart = string | { table: string };
-
-const titleParts = (error: ApiDwhError): TitlePart[] => {
-  const table = error.tableName === null ? null : { table: error.tableName };
-  switch (error.code) {
-    case DwhErrorCode.dwh_permission_denied:
-      return table === null
-        ? ["Evidential can't read from the data warehouse"]
-        : ["Evidential can't read table ", table];
-    case DwhErrorCode.dwh_table_not_found:
-      return table === null ? ["The table wasn't found"] : ['Table ', table, " wasn't found"];
-    case DwhErrorCode.dwh_column_not_found:
-      return ["A column wasn't found"];
-    case DwhErrorCode.dwh_database_not_found:
-      return ["The database wasn't found"];
-    case DwhErrorCode.dwh_authentication:
-      return ['The data warehouse rejected the credentials'];
-    case DwhErrorCode.dwh_connection:
-      return ["Evidential couldn't connect to the data warehouse"];
-    case DwhErrorCode.dwh_dns:
-      return ["The data warehouse hostname couldn't be resolved"];
-    case DwhErrorCode.dwh_timeout:
-      return ["The data warehouse didn't respond in time"];
-    case DwhErrorCode.dwh_query_failed:
-      return ["The data warehouse couldn't run the query"];
-    case DwhErrorCode.dwh_configuration:
-      return ["The data source configuration isn't valid"];
-  }
-};
-
-const titleText = (parts: TitlePart[]): string =>
-  parts.map((part) => (typeof part === 'string' ? part : part.table)).join('');
-
-const TitleView = ({ parts }: { parts: TitlePart[] }) => (
-  <>{parts.map((part) => (typeof part === 'string' ? part : <Code key={part.table}>{part.table}</Code>))}</>
-);
-
 const Hint = ({ hint, command }: { hint: string | null; command: string | null }) => (
   <Flex direction="column" gap="1">
     {hint === null ? null : <Text size="2">{hint}</Text>}
@@ -67,22 +29,17 @@ const Hint = ({ hint, command }: { hint: string | null; command: string | null }
 );
 
 interface DwhErrorCalloutProps {
+  title: string;
   error: ApiDwhError;
   datasourceId?: string;
 }
 
-export function DwhErrorCallout({ error, datasourceId }: DwhErrorCalloutProps) {
-  const title = titleParts(error);
+export function DwhErrorCallout({ title, error, datasourceId }: DwhErrorCalloutProps) {
   const showEditLink = datasourceId !== undefined && CODES_FIXED_BY_EDITING_THE_DATA_SOURCE.has(error.code);
   const bodyText = [error.message, error.hint, error.hintCommand].filter((line): line is string => line !== null);
 
   return (
-    <ErrorCallout
-      title={<TitleView parts={title} />}
-      titleText={titleText(title)}
-      bodyText={bodyText}
-      details={() => dwhErrorDetails(error, window.location.href)}
-    >
+    <ErrorCallout title={title} bodyText={bodyText} details={() => dwhErrorDetails(error, window.location.href)}>
       <Callout.Text>{error.message}</Callout.Text>
       {error.hint === null && error.hintCommand === null ? null : (
         <Hint hint={error.hint} command={error.hintCommand} />

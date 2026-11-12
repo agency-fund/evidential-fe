@@ -7,9 +7,7 @@ import { TechnicalDetails } from '@/components/ui/technical-details';
 import { formatErrorReport, ReportField } from '@/services/error-report';
 
 interface ErrorCalloutProps {
-  title: ReactNode;
-  /** The title as plain text, for the copy button. */
-  titleText: string;
+  title: string;
   /** The lines children show, as plain text, for the copy button. */
   bodyText: string[];
   /**
@@ -20,8 +18,8 @@ interface ErrorCalloutProps {
   children: ReactNode;
 }
 
-export function ErrorCallout({ title, titleText, bodyText, details, children }: ErrorCalloutProps) {
-  const copyText = () => formatErrorReport(titleText, bodyText, details?.() ?? []);
+export function ErrorCallout({ title, bodyText, details, children }: ErrorCalloutProps) {
+  const copyText = () => formatErrorReport(title, bodyText, details?.() ?? []);
 
   return (
     // Callout.Root places its icon at grid line -2 and its content at -1, in columns that fit their content. One

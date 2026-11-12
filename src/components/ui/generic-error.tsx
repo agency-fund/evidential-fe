@@ -52,7 +52,7 @@ const PlainErrorCallout = ({ title, message, error }: PlainErrorCalloutProps) =>
   const details = error instanceof ApiError ? () => apiErrorDetails(error, window.location.href) : undefined;
 
   return (
-    <ErrorCallout title={title} titleText={title} bodyText={bodyText} details={details}>
+    <ErrorCallout title={title} bodyText={bodyText} details={details}>
       {messageLines.map((line, index) => (
         <Callout.Text key={index}>{line}</Callout.Text>
       ))}
@@ -72,7 +72,7 @@ export function GenericErrorCallout({ title, message, error, datasourceId }: Gen
   return (
     <Flex direction="column" width="100%">
       {isApiDwhError(error) ? (
-        <DwhErrorCallout error={error} datasourceId={datasourceId} />
+        <DwhErrorCallout title={title} error={error} datasourceId={datasourceId} />
       ) : (
         <PlainErrorCallout title={title} message={message} error={error} />
       )}
