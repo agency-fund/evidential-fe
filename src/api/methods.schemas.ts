@@ -582,6 +582,8 @@ export type DesignSpecMetricAvailableNonnullN = number | null;
 
 export type DesignSpecMetricAvailableN = number | null;
 
+export type DesignSpecMetricAvailableNClusters = number | null;
+
 export interface DesignSpecMetric {
 	/**
 	 * @minLength 1
@@ -598,6 +600,7 @@ export interface DesignSpecMetric {
 	metric_stddev?: DesignSpecMetricMetricStddev;
 	available_nonnull_n?: DesignSpecMetricAvailableNonnullN;
 	available_n?: DesignSpecMetricAvailableN;
+	available_n_clusters?: DesignSpecMetricAvailableNClusters;
 	use_one_time_metric?: boolean;
 	is_one_time_eligible?: boolean;
 }
@@ -622,6 +625,8 @@ export type DesignSpecMetricRequestAvailableNonnullN = number | null;
 
 export type DesignSpecMetricRequestAvailableN = number | null;
 
+export type DesignSpecMetricRequestAvailableNClusters = number | null;
+
 export interface DesignSpecMetricRequest {
 	/**
 	 * @minLength 1
@@ -638,6 +643,7 @@ export interface DesignSpecMetricRequest {
 	metric_stddev?: DesignSpecMetricRequestMetricStddev;
 	available_nonnull_n?: DesignSpecMetricRequestAvailableNonnullN;
 	available_n?: DesignSpecMetricRequestAvailableN;
+	available_n_clusters?: DesignSpecMetricRequestAvailableNClusters;
 	use_one_time_metric?: boolean;
 }
 

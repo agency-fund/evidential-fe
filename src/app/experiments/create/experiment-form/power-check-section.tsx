@@ -168,7 +168,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
       avgClusterSize > 0 &&
       echoedSpec.experiment_type === PreassignedFrequentistExperimentSpecExperimentType.freq_preassigned
     ) {
-      const maxClusters = Math.floor(availableN / avgClusterSize);
+      const maxClusters = primary.metric_spec.available_n_clusters ?? 0;
       const sizes = powerCurveSizes(primary.num_clusters_total ?? undefined, maxClusters);
       if (!sizes.length) {
         return;
@@ -275,11 +275,8 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
       ? getPowerAnalysis(data.powerCurveResponse, primaryMetricFieldName)
       : undefined;
   const primaryAvailableN = primaryPower?.metric_spec.available_n ?? undefined;
-  const primaryAvgClusterSize = primaryPower?.metric_spec.avg_cluster_size ?? undefined;
   const curveAvailableSize = isClustered
-    ? primaryAvailableN !== undefined && primaryAvgClusterSize
-      ? Math.floor(primaryAvailableN / primaryAvgClusterSize)
-      : undefined
+    ? (primaryPower?.metric_spec.available_n_clusters ?? undefined)
     : primaryAvailableN;
   const curveMinSize = isClustered
     ? (primaryPower?.num_clusters_total ?? undefined)
@@ -413,6 +410,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                             analysis={primaryPower}
                             isClustered={isClustered}
                             variant="required"
+                            align="start"
                           />
                         </DataList.Value>
                       </DataList.Item>
@@ -423,6 +421,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                             analysis={primaryPower}
                             isClustered={isClustered}
                             variant="available"
+                            align="start"
                           />
                         </DataList.Value>
                       </DataList.Item>
@@ -434,6 +433,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                               analysis={primaryPower}
                               isClustered={isClustered}
                               variant="available-nonnull"
+                              align="start"
                             />
                           </DataList.Value>
                         </DataList.Item>
@@ -457,7 +457,6 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                     <Table.Header>
                       <Table.Row>
                         <Table.ColumnHeaderCell>Metric</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell></Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell>Required</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell>
                           {secondaryHasMissingValues ? 'All available' : 'Available'}
@@ -470,11 +469,13 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                     <Table.Body>
                       {restPower.map((metricAnalysis, i) => (
                         <Table.Row key={`rest${i}`}>
-                          <Table.Cell>{metricAnalysis.metric_spec.field_name}</Table.Cell>
                           <Table.Cell>
-                            {metricAnalysis.sufficient_n
-                              ? availableSampleSufficientBadge
-                              : availableSampleInsufficientBadge}
+                            <Flex gap="2" wrap="wrap">
+                              <Text>{metricAnalysis.metric_spec.field_name}</Text>
+                              {metricAnalysis.sufficient_n
+                                ? availableSampleSufficientBadge
+                                : availableSampleInsufficientBadge}
+                            </Flex>
                           </Table.Cell>
                           <Table.Cell align={'right'}>
                             <MetricSampleSizeDisplay
