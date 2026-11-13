@@ -86,7 +86,7 @@ interface PowerCheckSampleSizeSelectorProps {
 interface EstimatedMdeBadgeProps {
   isSelectedOption: boolean;
   isEstimatingMde: boolean;
-  estimatedMdePct: string | undefined;
+  estimatedMdePct: string | null | undefined;
   error: Error | undefined;
 }
 
@@ -101,7 +101,7 @@ function EstimatedMdeBadge({ isSelectedOption, isEstimatingMde, estimatedMdePct,
           </Badge>
         ) : estimatedMdePct !== undefined ? (
           <Badge variant="soft" size="2">
-            Estimated MDE: {estimatedMdePct}%
+            {estimatedMdePct === null ? 'MDE unavailable' : `Estimated MDE: ${estimatedMdePct}%`}
           </Badge>
         ) : error ? (
           <Badge color="red" variant="soft" size="2">
@@ -144,7 +144,7 @@ export function PowerCheckSampleSizeSelector({
       ? undefined
       : mdePrimaryAnalysis.pct_change_with_desired_n != null
         ? (mdePrimaryAnalysis.pct_change_with_desired_n * 100).toFixed(1)
-        : 'N/A';
+        : null;
 
   const handleClusterInputChange = (clusterN: number | undefined) => {
     if (avgClusterSize === undefined) {

@@ -20,11 +20,18 @@ import {
   PowerCheckSampleOptionChange,
   PowerCheckSampleSizeSelector,
 } from './power-check-sample-size-selector';
-import { CheckCircledIcon, CrossCircledIcon, ExclamationTriangleIcon, LightningBoltIcon } from '@radix-ui/react-icons';
+import {
+  CheckCircledIcon,
+  CrossCircledIcon,
+  ExclamationTriangleIcon,
+  InfoCircledIcon,
+  LightningBoltIcon,
+} from '@radix-ui/react-icons';
 import { ExperimentFormData, isClusteredExperimentFormData, PowerCheckOption } from './experiment-form-types';
 import { usePowerCheck } from '@/api/admin';
 import {
   AnyFrequentistDesignSpec,
+  MetricPowerAnalysis,
   PowerRequest,
   PowerResponse,
   PreassignedFrequentistExperimentSpecExperimentType,
@@ -37,7 +44,7 @@ import {
   powerCurveSizes,
   withEchoedBaselineStats,
 } from './experiment-form-helpers';
-import { getPowerAnalysis, metricHasMissingValues } from '@/services/experiment-utils';
+import { getPowerAnalysis, metricHasMissingValues, metricHasNoObservedOutcomes } from '@/services/experiment-utils';
 import {
   MetricSampleSizeDisplay,
   estimateParticipantNFromClusters,
@@ -77,6 +84,14 @@ const availableSampleInsufficientBadge = (
   />
 );
 
+const waitingForOutcomesBadge = (
+  <InfoBadge
+    label="Waiting for outcomes"
+    color="gray"
+    tooltip="Participants can enroll now. Power and sample size estimates need observed outcomes."
+  />
+);
+
 const isPowerCheckButtonEnabled = (isMutating: boolean, data: ExperimentFormData) => {
   const reasons = [];
   if (isMutating) {
@@ -87,6 +102,11 @@ const isPowerCheckButtonEnabled = (isMutating: boolean, data: ExperimentFormData
   }
   if (data.primaryMetric === undefined) {
     reasons.push('Please select a primary metric.');
+  }
+  const clusterStats = [data.clusterIcc, data.clusterCv, data.clusterAvgClusterSize];
+  const enteredClusterStatCount = clusterStats.filter((stat) => stat !== undefined).length;
+  if (data.clusterKey && enteredClusterStatCount > 0 && enteredClusterStatCount < clusterStats.length) {
+    reasons.push('Please set all three cluster statistics, or reset them.');
   }
   return { enabled: !reasons.length, reason: reasons.join('\n') };
 };
@@ -277,10 +297,27 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const primaryPowerClusterSizeCv = primaryPower?.msg?.values?.cluster_size_cv ?? primaryPower?.metric_spec.cv;
   const primaryHasMissingValues = primaryPower != null && metricHasMissingValues(primaryPower);
   const secondaryHasMissingValues = (restPower ?? []).some(metricHasMissingValues);
-  const metricsWithMissingValues = [
-    ...(primaryPower != null && primaryHasMissingValues ? [`${primaryPower.metric_spec.field_name} (primary)`] : []),
-    ...(restPower ?? []).filter(metricHasMissingValues).map((analysis) => analysis.metric_spec.field_name),
-  ];
+  const primaryWaitingForOutcomes = primaryPower != null && metricHasNoObservedOutcomes(primaryPower);
+  const analyses = [...(primaryPower ? [primaryPower] : []), ...(restPower ?? [])];
+  const metricsWaitingForOutcomes = analyses
+    .filter(metricHasNoObservedOutcomes)
+    .map((analysis) => analysis.metric_spec.field_name);
+  const metricsWithMissingValues = analyses
+    .filter((analysis) => metricHasMissingValues(analysis) && !metricHasNoObservedOutcomes(analysis))
+    .map((analysis) =>
+      analysis.metric_spec.field_name === primaryMetricFieldName
+        ? `${analysis.metric_spec.field_name} (primary)`
+        : analysis.metric_spec.field_name,
+    );
+  const hasInsufficientSample = analyses.some(
+    (analysis) => !analysis.sufficient_n && !metricHasNoObservedOutcomes(analysis),
+  );
+  const getSampleStatusBadge = (analysis: MetricPowerAnalysis) =>
+    metricHasNoObservedOutcomes(analysis)
+      ? waitingForOutcomesBadge
+      : analysis.sufficient_n
+        ? availableSampleSufficientBadge
+        : availableSampleInsufficientBadge;
 
   const { targetN, targetNClusters, allSamples, avgClusterSize, maxClusters, isMinOptionDisabled } =
     getSampleSizeLandmarks(primaryPower);
@@ -514,41 +551,54 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
             </Flex>
           )}
 
-          {primaryPower && (
+          {metricsWaitingForOutcomes.length > 0 && (
+            <Callout.Root color="blue">
+              <Callout.Icon>
+                <InfoCircledIcon />
+              </Callout.Icon>
+              <Callout.Text>
+                No outcomes yet for: {metricsWaitingForOutcomes.join(', ')}. Enrollment can proceed, but sample size and
+                effect estimates need observed values. Blank cells are missing, not zero.
+                {primaryWaitingForOutcomes && ' Choose the maximum available or a custom sample size below.'}
+              </Callout.Text>
+            </Callout.Root>
+          )}
+
+          {primaryPower && !primaryWaitingForOutcomes && (
             <Callout.Root color={primaryPower.sufficient_n ? 'green' : 'red'}>
               <Callout.Icon>{primaryPower.sufficient_n ? <CheckCircledIcon /> : <CrossCircledIcon />}</Callout.Icon>
-              <Flex direction="column" gap="2">
-                <Callout.Text>
-                  {primaryPower.msg?.msg ||
-                    (primaryPower.sufficient_n
-                      ? 'The experiment has sufficient power.'
-                      : 'The experiment does not have sufficient power.')}
-                </Callout.Text>
-                {primaryPower.msg?.high_cluster_variation && primaryPowerClusterSizeCv != null && (
-                  <Callout.Root color="amber" variant="surface" size="1">
-                    <Callout.Icon>
-                      <ExclamationTriangleIcon />
-                    </Callout.Icon>
-                    <Callout.Text>
-                      Because your cluster sizes vary so widely, your experiment is sensitive to enrolling fewer
-                      participants or clusters. Consider adding filters to exclude extreme cluster sizes or adding more
-                      clusters to be safer.
-                    </Callout.Text>
-                  </Callout.Root>
-                )}
-                {metricsWithMissingValues.length > 0 ? (
-                  <Callout.Root color="amber" variant="surface" size="1">
-                    <Callout.Icon>
-                      <ExclamationTriangleIcon />
-                    </Callout.Icon>
-                    <Callout.Text>
-                      Some participants are missing a value for: {metricsWithMissingValues.join(', ')}. Estimates assume
-                      that these participants will receive a value during the experiment. If you&apos;re unsure, add a
-                      filter to exclude these participants.
-                    </Callout.Text>
-                  </Callout.Root>
-                ) : null}
-              </Flex>
+              <Callout.Text>
+                {primaryPower.msg?.msg ||
+                  (primaryPower.sufficient_n
+                    ? 'The experiment has sufficient power.'
+                    : 'The experiment does not have sufficient power.')}
+              </Callout.Text>
+            </Callout.Root>
+          )}
+
+          {primaryPower?.msg?.high_cluster_variation && primaryPowerClusterSizeCv != null && (
+            <Callout.Root color="amber" variant="surface" size="1">
+              <Callout.Icon>
+                <ExclamationTriangleIcon />
+              </Callout.Icon>
+              <Callout.Text>
+                Because your cluster sizes vary so widely, your experiment is sensitive to enrolling fewer participants
+                or clusters. Consider adding filters to exclude extreme cluster sizes or adding more clusters to be
+                safer.
+              </Callout.Text>
+            </Callout.Root>
+          )}
+
+          {metricsWithMissingValues.length > 0 && (
+            <Callout.Root color="amber" variant="surface" size="1">
+              <Callout.Icon>
+                <ExclamationTriangleIcon />
+              </Callout.Icon>
+              <Callout.Text>
+                Some participants are missing a value for: {metricsWithMissingValues.join(', ')}. Estimates assume that
+                these participants will receive a value during the experiment. If you&apos;re unsure, add a filter to
+                exclude these participants.
+              </Callout.Text>
             </Callout.Root>
           )}
 
@@ -561,11 +611,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                     <DataList.Root>
                       <DataList.Item>
                         <DataList.Label>Status</DataList.Label>
-                        <DataList.Value>
-                          {primaryPower.sufficient_n
-                            ? availableSampleSufficientBadge
-                            : availableSampleInsufficientBadge}
-                        </DataList.Value>
+                        <DataList.Value>{getSampleStatusBadge(primaryPower)}</DataList.Value>
                       </DataList.Item>
                       <DataList.Item>
                         <DataList.Label>Required</DataList.Label>
@@ -632,11 +678,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                       {restPower.map((metricAnalysis, i) => (
                         <Table.Row key={`rest${i}`}>
                           <Table.Cell>{metricAnalysis.metric_spec.field_name}</Table.Cell>
-                          <Table.Cell>
-                            {metricAnalysis.sufficient_n
-                              ? availableSampleSufficientBadge
-                              : availableSampleInsufficientBadge}
-                          </Table.Cell>
+                          <Table.Cell>{getSampleStatusBadge(metricAnalysis)}</Table.Cell>
                           <Table.Cell align={'right'}>
                             <MetricSampleSizeDisplay
                               analysis={metricAnalysis}
@@ -688,7 +730,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
             ) : null}
             <Text>Choose the total number of participants to distribute across all arms:</Text>
             <Flex direction="column" gap="2" align="center" width="100%">
-              {!data.powerCheckResponse.analyses.map((a) => a.sufficient_n).every((sufficient) => sufficient) && (
+              {hasInsufficientSample && (
                 <Callout.Root color="orange">
                   <Callout.Icon>
                     <CrossCircledIcon />
