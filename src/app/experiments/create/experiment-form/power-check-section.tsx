@@ -621,7 +621,6 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                             analysis={primaryPower}
                             isClustered={isClustered}
                             variant="required"
-                            waitingForOutcomes={primaryWaitingForOutcomes}
                           />
                         </DataList.Value>
                       </DataList.Item>
@@ -643,7 +642,6 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                               analysis={primaryPower}
                               isClustered={isClustered}
                               variant="available-nonnull"
-                              waitingForOutcomes={primaryWaitingForOutcomes}
                             />
                           </DataList.Value>
                         </DataList.Item>
@@ -687,7 +685,6 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                               analysis={metricAnalysis}
                               isClustered={isClustered}
                               variant="required"
-                              waitingForOutcomes={metricHasNoObservedOutcomes(metricAnalysis)}
                             />
                           </Table.Cell>
                           <Table.Cell align={'right'}>
@@ -703,7 +700,6 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                                 analysis={metricAnalysis}
                                 isClustered={isClustered}
                                 variant="available-nonnull"
-                                waitingForOutcomes={metricHasNoObservedOutcomes(metricAnalysis)}
                               />
                             </Table.Cell>
                           ) : null}
@@ -752,7 +748,6 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                 powerCheckResponse={data.powerCheckResponse}
                 primaryMetricFieldName={primaryMetricFieldName}
                 targetMde={data.primaryMetric?.mde}
-                waitingForOutcomes={primaryWaitingForOutcomes}
                 selectedSampleOption={selectedSampleOption}
                 desiredN={data.desiredN}
                 desiredNClusters={data.desiredNClusters}

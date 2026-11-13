@@ -1,5 +1,6 @@
 import { Flex, Text } from '@radix-ui/themes';
 import { MetricPowerAnalysis } from '@/api/methods.schemas';
+import { metricHasNoObservedOutcomes } from '@/services/experiment-utils';
 
 export type MetricSampleSizeVariant = 'required' | 'available' | 'available-nonnull';
 
@@ -66,7 +67,6 @@ export interface MetricSampleSizeDisplayProps {
   isClustered: boolean;
   variant: MetricSampleSizeVariant;
   align?: 'start' | 'center' | 'end';
-  waitingForOutcomes?: boolean;
 }
 
 const getDisplayModel = (
@@ -124,8 +124,8 @@ export function MetricSampleSizeDisplay({
   isClustered,
   variant,
   align = 'end',
-  waitingForOutcomes = false,
 }: MetricSampleSizeDisplayProps) {
+  const waitingForOutcomes = analysis !== undefined && metricHasNoObservedOutcomes(analysis);
   if (waitingForOutcomes && variant === 'required') {
     return <Text color="gray">Not estimated</Text>;
   }

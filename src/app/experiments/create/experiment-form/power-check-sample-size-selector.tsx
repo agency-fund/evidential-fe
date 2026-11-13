@@ -61,7 +61,6 @@ interface PowerCheckSampleSizeSelectorProps {
   /** Values for display in sample size mode (USE_POWER_CHECK) */
   powerCheckResponse: PowerResponse;
   targetMde?: string;
-  waitingForOutcomes?: boolean;
   /**
    * Values for display in MDE mode (USE_ALL_NON_NULL_SAMPLES or ENTER_OWN).
    * desiredN should always correspond to the mdePowerCheckResponse if it exists.
@@ -125,7 +124,6 @@ export function PowerCheckSampleSizeSelector({
   isClustered,
   powerCheckResponse,
   targetMde,
-  waitingForOutcomes = false,
   mdePowerCheckResponse,
   desiredN,
   desiredNClusters,
@@ -172,7 +170,6 @@ export function PowerCheckSampleSizeSelector({
                   isClustered={isClustered}
                   variant="required"
                   align="center"
-                  waitingForOutcomes={waitingForOutcomes}
                 />
               </Flex>
               <Flex align="center" style={{ minHeight: '24px' }}>
