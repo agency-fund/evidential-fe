@@ -61,10 +61,10 @@ export function WebhooksTable({
         onOpenChange={setAddWebhookDialogOpen}
       />
 
-      {isLoading ? (
-        <XSpinner message="Loading webhooks..." />
-      ) : error ? (
+      {error ? (
         <GenericErrorCallout title="Failed to fetch webhooks" error={error} />
+      ) : isLoading ? (
+        <XSpinner message="Loading webhooks..." />
       ) : displayWebhooks.length === 0 ? (
         hasTurnWebhook ? (
           <EmptyStateCard

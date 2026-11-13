@@ -152,8 +152,12 @@ export const computeBoundsForMetric = (
 
       for (const effectSize of effectSizes) {
         const { ci95Lower, ci95Upper } = effectSize;
-        minLower = minLower === undefined ? ci95Lower : Math.min(minLower, ci95Lower);
-        maxUpper = maxUpper === undefined ? ci95Upper : Math.max(maxUpper, ci95Upper);
+        if (Number.isFinite(ci95Lower)) {
+          minLower = minLower === undefined ? ci95Lower : Math.min(minLower, ci95Lower);
+        }
+        if (Number.isFinite(ci95Upper)) {
+          maxUpper = maxUpper === undefined ? ci95Upper : Math.max(maxUpper, ci95Upper);
+        }
       }
     }
   } else if (analysisStates.length > 0 && analysisStates[0].data?.type === 'bandit') {
@@ -184,7 +188,9 @@ const _generateFreqEffectSizeData = (analysis: MetricAnalysis, alpha: number): E
   // Extract data for visualization
   const controlArmIndex = analysis.arm_analyses.findIndex((a) => a.is_baseline);
   const controlArmAnalysis = analysis.arm_analyses[controlArmIndex];
-  const controlEstimate = controlArmAnalysis.estimate; // regression intercept
+  // Without control values, no arm can be compared to the control: only each arm's own mean is known.
+  const isControlMissing = controlArmAnalysis.num_missing_values < 0;
+  const controlEstimate = isControlMissing ? NaN : (controlArmAnalysis.estimate ?? NaN); // regression intercept
 
   // Our data structure for visualization
   const effectSizes: EffectSizeData[] = analysis.arm_analyses.map((armAnalysis, index) => {
@@ -192,25 +198,30 @@ const _generateFreqEffectSizeData = (analysis: MetricAnalysis, alpha: number): E
     const armId = armAnalysis.arm_id || 'MISSING_ARM_ID'; // should be impossible
     const armName = armAnalysis.arm_name || `Arm ${index}`;
 
-    const estimate = armAnalysis.estimate; // regression coefficient
     const stdError = armAnalysis.std_error;
     const pValue = armAnalysis.p_value;
     const tStat = armAnalysis.t_stat;
-    const significant = !isBaseline && !!(pValue !== null && pValue < alpha);
+    const significant = !isBaseline && !isControlMissing && !!(pValue !== null && pValue < alpha);
     const invalidStatTest =
       pValue === null || pValue === undefined || tStat === null || tStat === undefined || stdError === null;
     const isMissingAllValues = armAnalysis.num_missing_values < 0;
 
-    const absDifference = isBaseline ? 0 : estimate;
-    const absEffect = absDifference + controlEstimate;
-    const relEffectPct = ((absEffect - controlEstimate) / controlEstimate) * 100;
-    // Calculate 95% confidence interval
-    // TODO: backend should return CIs; this approximation is for z-tests, and not appropriate for small sample sizes.
-    const ci95 = stdError === null ? NaN : 1.96 * stdError;
+    // NaN marks values that can't be computed, which are displayed as '--'.
+    const estimate = isMissingAllValues ? NaN : (armAnalysis.estimate ?? NaN); // regression coefficient
+    // Analyses saved before the API returned null here can hold made-up differences from a missing control.
+    const absDifference = isBaseline ? 0 : isControlMissing ? NaN : estimate;
+    // Analyses saved before the API returned the arm's mean only have the difference from the control mean.
+    const absEffect = isMissingAllValues ? NaN : (armAnalysis.mean ?? absDifference + controlEstimate);
+    // A change relative to a control mean of 0 is undefined. Floating-point noise can turn an exact 0 into a
+    // tiny value such as -5e-17, which would otherwise produce a huge percentage.
+    const relEffectPct = Math.abs(controlEstimate) < 1e-9 ? NaN : (absDifference / controlEstimate) * 100;
+    // Normal approximation for coefficient uncertainty in the difference plot.
+    const ci95 = stdError === null || isControlMissing ? NaN : 1.96 * stdError;
     const ci95Lower = absDifference - ci95;
     const ci95Upper = absDifference + ci95;
-    const absCI95Lower = absEffect - ci95;
-    const absCI95Upper = absEffect + ci95;
+    // Mean uncertainty comes from the fitted prediction, not the treatment coefficient's SE.
+    const meanCILower = armAnalysis.mean_ci_lower ?? NaN;
+    const meanCIUpper = armAnalysis.mean_ci_upper ?? NaN;
 
     return {
       isBaseline,
@@ -224,8 +235,8 @@ const _generateFreqEffectSizeData = (analysis: MetricAnalysis, alpha: number): E
       ci95,
       ci95Lower,
       ci95Upper,
-      absCI95Lower,
-      absCI95Upper,
+      meanCILower,
+      meanCIUpper,
       pValue,
       significant,
       invalidStatTest,
@@ -292,6 +303,9 @@ const _generateBanditEffectData = (analysis: BanditExperimentAnalysisResponse): 
   return effects;
 };
 
+export const hasConfidenceInterval = (arm: ArmDataPoint): boolean =>
+  Number.isFinite(arm.lowerCI) && Number.isFinite(arm.upperCI) && arm.lowerCI <= arm.upperCI;
+
 /**
  * Computes axis bounds (min/max) from an array of numeric values with padding and rounding.
  * This is used to create stable, nicely-formatted chart axes.
@@ -308,16 +322,18 @@ export const computeAxisBounds = (
   maxProp?: number,
   padding: number = 0.1,
 ): [number, number] => {
-  if (values.length === 0) {
-    return [0, 1];
+  let min = Infinity;
+  let max = -Infinity;
+  for (const value of values) {
+    if (!Number.isFinite(value)) continue;
+    min = Math.min(min, value);
+    max = Math.max(max, value);
   }
+  if (min === Infinity) return [0, 1];
 
-  let min = Math.min(...values);
-  let max = Math.max(...values);
-
-  // Apply provided bounds hints if available
-  if (minProp !== undefined) min = Math.min(min, minProp);
-  if (maxProp !== undefined) max = Math.max(max, maxProp);
+  // Missing outcomes can leave non-finite historical hints; they must not invalidate the displayed intervals.
+  if (minProp !== undefined && Number.isFinite(minProp)) min = Math.min(min, minProp);
+  if (maxProp !== undefined && Number.isFinite(maxProp)) max = Math.max(max, maxProp);
 
   // Add padding so points to render on the edges of your domain
   const range = max - min;
@@ -463,6 +479,8 @@ export const transformAnalysisForForestTimeseriesPlot = (
       if (!effectSizes) continue;
 
       for (const effectSize of effectSizes) {
+        // Skip arms without a mean, e.g. arms with no values for this metric.
+        if (!Number.isFinite(effectSize.absEffect)) continue;
         // Determine significance based on the effect
         let significance = Significance.No;
         if (effectSize.significant) {
@@ -471,8 +489,8 @@ export const transformAnalysisForForestTimeseriesPlot = (
 
         armEffects.set(effectSize.armId, {
           absMean: effectSize.absEffect,
-          upperCI: effectSize.absCI95Upper,
-          lowerCI: effectSize.absCI95Lower,
+          upperCI: effectSize.meanCIUpper,
+          lowerCI: effectSize.meanCILower,
           significance,
         });
       }

@@ -348,12 +348,12 @@ export default function ExperimentViewPage() {
 
   const showLoadingAnalysisSpinner = isLoadingLiveAnalysis || isLoadingLiveCmabAnalysis || isLoadingHistory;
 
-  if (isLoadingExperiment) {
-    return <XSpinner message="Loading experiment details..." />;
-  }
-
   if (experimentError) {
     return <GenericErrorCallout title="Error loading experiment" error={experimentError} />;
+  }
+
+  if (isLoadingExperiment) {
+    return <XSpinner message="Loading experiment details..." />;
   }
 
   if (!experiment) {
@@ -661,6 +661,7 @@ export default function ExperimentViewPage() {
                         armMetadata={armMetadata}
                         minDate={minDate}
                         maxDate={maxDate}
+                        confidenceLevel={1 - (alpha ?? 0.05)}
                         onPointClick={handleSelectAnalysis}
                       />
                     )}

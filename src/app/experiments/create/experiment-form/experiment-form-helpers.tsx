@@ -155,6 +155,13 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
   return spec;
 }
 
+export function describeDesignSpecError(err: unknown): string {
+  if (err instanceof z.ZodError) {
+    return err.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('\n');
+  }
+  return err instanceof Error ? err.message : String(err);
+}
+
 /**
  * Derives the power check request from a design spec. The power endpoint takes only the fields the
  * power calculation itself consumes, so everything else in the spec is dropped.

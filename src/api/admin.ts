@@ -26,7 +26,6 @@ import type {
 	CreateExperimentResponse,
 	CreateOrganizationRequest,
 	CreateOrganizationResponse,
-	CreateSnapshotResponse,
 	CreateUserRequest,
 	CreateUserResponse,
 	DeleteApiKeyParams,
@@ -35,6 +34,7 @@ import type {
 	DeleteExperimentParams,
 	DeleteSnapshotParams,
 	DeleteWebhookFromOrganizationParams,
+	DwhErrorResponse,
 	ExperimentAnalysisResponse,
 	GetDatasourceResponse,
 	GetExperimentForUiResponse,
@@ -59,7 +59,6 @@ import type {
 	ListUsersParams,
 	ListUsersResponse,
 	ListWebhooksResponse,
-	MessageError,
 	PatchUserRequest,
 	PowerRequest,
 	PowerResponse,
@@ -790,91 +789,6 @@ export const useListSnapshots = <
 		swrFn,
 		swrOptions,
 	);
-
-	return {
-		swrKey,
-		...query,
-	};
-};
-export const getCreateSnapshotUrl = (
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-) => {
-	return `/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots`;
-};
-
-export const createSnapshot = async (
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-	options?: RequestInit,
-): Promise<CreateSnapshotResponse> => {
-	return orvalFetch<CreateSnapshotResponse>(
-		getCreateSnapshotUrl(organizationId, datasourceId, experimentId),
-		{
-			...options,
-			method: "POST",
-		},
-	);
-};
-
-export const getCreateSnapshotMutationFetcher = (
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-	options?: SecondParameter<typeof orvalFetch>,
-) => {
-	return (_: Key, __: { arg: Arguments }) => {
-		return createSnapshot(organizationId, datasourceId, experimentId, options);
-	};
-};
-export const getCreateSnapshotMutationKey = (
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-) =>
-	[
-		`/v1/m/organizations/${organizationId}/datasources/${datasourceId}/experiments/${experimentId}/snapshots`,
-	] as const;
-
-export type CreateSnapshotMutationResult = NonNullable<
-	Awaited<ReturnType<typeof createSnapshot>>
->;
-export type CreateSnapshotMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
->;
-
-export const useCreateSnapshot = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
->(
-	organizationId: string,
-	datasourceId: string,
-	experimentId: string,
-	options?: {
-		swr?: SWRMutationConfiguration<
-			Awaited<ReturnType<typeof createSnapshot>>,
-			TError,
-			Key,
-			Arguments,
-			Awaited<ReturnType<typeof createSnapshot>>
-		> & { swrKey?: string };
-		request?: SecondParameter<typeof orvalFetch>;
-	},
-) => {
-	const { swr: swrOptions, request: requestOptions } = options ?? {};
-
-	const swrKey =
-		swrOptions?.swrKey ??
-		getCreateSnapshotMutationKey(organizationId, datasourceId, experimentId);
-	const swrFn = getCreateSnapshotMutationFetcher(
-		organizationId,
-		datasourceId,
-		experimentId,
-		requestOptions,
-	);
-
-	const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
 	return {
 		swrKey,
@@ -1960,11 +1874,13 @@ export type CreateDatasourceMutationResult = NonNullable<
 	Awaited<ReturnType<typeof createDatasource>>
 >;
 export type CreateDatasourceMutationError = ErrorType<
-	HTTPExceptionError | XHTTPValidationError | MessageError
+	HTTPExceptionError | XHTTPValidationError | DwhErrorResponse
 >;
 
 export const useCreateDatasource = <
-	TError = ErrorType<HTTPExceptionError | XHTTPValidationError | MessageError>,
+	TError = ErrorType<
+		HTTPExceptionError | XHTTPValidationError | DwhErrorResponse
+	>,
 >(
 	params?: CreateDatasourceParams,
 	options?: {
@@ -2157,11 +2073,13 @@ export type InspectDatasourceQueryResult = NonNullable<
 	Awaited<ReturnType<typeof inspectDatasource>>
 >;
 export type InspectDatasourceQueryError = ErrorType<
-	HTTPExceptionError | MessageError | XHTTPValidationError
+	HTTPExceptionError | XHTTPValidationError | DwhErrorResponse
 >;
 
 export const useInspectDatasource = <
-	TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>,
+	TError = ErrorType<
+		HTTPExceptionError | XHTTPValidationError | DwhErrorResponse
+	>,
 >(
 	datasourceId: string,
 	params?: InspectDatasourceParams,
@@ -2241,11 +2159,13 @@ export type InspectTableInDatasourceQueryResult = NonNullable<
 	Awaited<ReturnType<typeof inspectTableInDatasource>>
 >;
 export type InspectTableInDatasourceQueryError = ErrorType<
-	HTTPExceptionError | MessageError | XHTTPValidationError
+	HTTPExceptionError | XHTTPValidationError | DwhErrorResponse
 >;
 
 export const useInspectTableInDatasource = <
-	TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>,
+	TError = ErrorType<
+		HTTPExceptionError | XHTTPValidationError | DwhErrorResponse
+	>,
 >(
 	datasourceId: string,
 	tableName: string,
@@ -2647,11 +2567,13 @@ export type CreateExperimentMutationResult = NonNullable<
 	Awaited<ReturnType<typeof createExperiment>>
 >;
 export type CreateExperimentMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
+	HTTPExceptionError | XHTTPValidationError | DwhErrorResponse
 >;
 
 export const useCreateExperiment = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+	TError = ErrorType<
+		HTTPExceptionError | XHTTPValidationError | DwhErrorResponse
+	>,
 >(
 	datasourceId: string,
 	params?: CreateExperimentParams,
@@ -2732,11 +2654,13 @@ export type AnalyzeExperimentQueryResult = NonNullable<
 	Awaited<ReturnType<typeof analyzeExperiment>>
 >;
 export type AnalyzeExperimentQueryError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
+	HTTPExceptionError | XHTTPValidationError | DwhErrorResponse
 >;
 
 export const useAnalyzeExperiment = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+	TError = ErrorType<
+		HTTPExceptionError | XHTTPValidationError | DwhErrorResponse
+	>,
 >(
 	datasourceId: string,
 	experimentId: string,
@@ -3585,11 +3509,13 @@ export type PowerCheckMutationResult = NonNullable<
 	Awaited<ReturnType<typeof powerCheck>>
 >;
 export type PowerCheckMutationError = ErrorType<
-	HTTPExceptionError | MessageError | XHTTPValidationError
+	HTTPExceptionError | XHTTPValidationError | DwhErrorResponse
 >;
 
 export const usePowerCheck = <
-	TError = ErrorType<HTTPExceptionError | MessageError | XHTTPValidationError>,
+	TError = ErrorType<
+		HTTPExceptionError | XHTTPValidationError | DwhErrorResponse
+	>,
 >(
 	datasourceId: string,
 	options?: {

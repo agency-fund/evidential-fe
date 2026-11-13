@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   lint:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     env:
       NEXT_TELEMETRY_DISABLED: "1"
@@ -34,8 +34,25 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: task lint
 
+  test:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
+        with:
+          cache: true
+          require-lockfile: true
+      - uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: task test
+
   prek:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
@@ -45,7 +62,7 @@ jobs:
       - uses: j178/prek-action@4e14d07f9231acabce116ccfca13b13dd9755ece # v3.0.0
 
   secret-scan:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
@@ -59,3 +76,24 @@ jobs:
           fail-on-leak: 'true'
           redact: 'true'
           verbose: 'true'
+
+  docker-build:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        with:
+          persist-credentials: false
+      - run: docker build -t evidential-fe -f Dockerfile.railway .
+      - run: docker run -d --rm --name evidential-fe -p 3000:3000 evidential-fe
+      - name: Smoke test
+        run: |
+          set -euo pipefail
+          curl -fsS --retry 10 --retry-delay 1 --retry-all-errors http://localhost:3000/health | grep -F '"health":"ok"'
+          curl -fsS http://localhost:3000/ > index.html
+          asset=$(grep -oE '/_next/static/[^"]+\.(css|js)' index.html | head -1)
+          test -n "${asset}"
+          curl -fsS -o /dev/null "http://localhost:3000${asset}"
+          curl -fsS -o /dev/null http://localhost:3000/evidential-logo.svg
+      - if: failure()
+        run: docker logs evidential-fe

@@ -53,6 +53,8 @@ export function getSampleSizeLandmarks(primaryAnalysis: MetricPowerAnalysis | un
 }
 
 interface PowerCheckSampleSizeSelectorProps {
+  /** Passed to the MDE estimate error callout, which links to the datasource on warehouse errors. */
+  datasourceId?: string;
   selectedSampleOption: PowerCheckOption;
   primaryMetricFieldName: string;
   isClustered: boolean;
@@ -70,6 +72,8 @@ interface PowerCheckSampleSizeSelectorProps {
   isEstimatingMde: boolean;
   /** The error of the latest MDE estimate request, if it failed. */
   mdeEstimateError: Error | undefined;
+  /** Why the design could not be turned into an MDE estimate request, if it could not. */
+  mdeValidationError: string | null;
   /** Called immediately when the user picks a card. */
   onOptionSelect: (option: PowerCheckOption) => void;
   /**
@@ -114,6 +118,7 @@ function EstimatedMdeBadge({ isSelectedOption, isEstimatingMde, estimatedMdePct,
  * selection logic and the Minimum Detectable Effect re-estimation.
  */
 export function PowerCheckSampleSizeSelector({
+  datasourceId,
   selectedSampleOption,
   primaryMetricFieldName,
   isClustered,
@@ -124,6 +129,7 @@ export function PowerCheckSampleSizeSelector({
   desiredNClusters,
   isEstimatingMde,
   mdeEstimateError,
+  mdeValidationError,
   onOptionSelect,
   onCustomSizeChange,
 }: PowerCheckSampleSizeSelectorProps) {
@@ -241,7 +247,12 @@ export function PowerCheckSampleSizeSelector({
           </RadioCards.Item>
         </Flex>
       </RadioCards.Root>
-      {mdeEstimateError && <GenericErrorCallout title={'MDE estimate failed'} error={mdeEstimateError} />}
+      {mdeEstimateError && (
+        <GenericErrorCallout title={'MDE estimate failed'} error={mdeEstimateError} datasourceId={datasourceId} />
+      )}
+      {mdeValidationError !== null ? (
+        <GenericErrorCallout title={'Validation failed'} message={mdeValidationError} />
+      ) : null}
     </Flex>
   );
 }
