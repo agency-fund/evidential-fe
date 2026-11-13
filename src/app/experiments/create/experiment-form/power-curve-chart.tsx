@@ -347,7 +347,17 @@ export function PowerCurveChart({
               dataKey="mdePct"
               stroke={CURVE_COLOR}
               strokeWidth={2}
-              dot={(props: CurveDotProps) => <CurveDot {...props} onSelectSize={onSelectSize} />}
+              dot={(props: CurveDotProps) => (
+                <CurveDot
+                  {...props}
+                  // Sizes beyond the available population cannot be run, so they get no click target.
+                  onSelectSize={
+                    availableSize === undefined || (props.payload?.size ?? 0) <= availableSize
+                      ? onSelectSize
+                      : undefined
+                  }
+                />
+              )}
               // The hover dot sits above the click targets; let clicks pass through it.
               activeDot={{ r: 5, style: { pointerEvents: 'none' } }}
               isAnimationActive={false}
