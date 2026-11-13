@@ -84,7 +84,7 @@ function UserDetail() {
     return <Text>Error: Missing user ID.</Text>;
   }
 
-  if (isLoading && !user) {
+  if (isLoading && !error) {
     return <XSpinner message="Loading user…" />;
   }
 

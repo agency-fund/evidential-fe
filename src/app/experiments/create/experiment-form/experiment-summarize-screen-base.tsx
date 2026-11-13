@@ -81,6 +81,7 @@ export function ExperimentsSummarizeScreenBase({
           <GenericErrorCallout
             title="Failed to save experiment. Fix the problem below, then press Save Experiment again."
             error={data.commitError}
+            datasourceId={data.datasourceId}
           />
         )}
         {data.createExperimentResponse !== undefined && (

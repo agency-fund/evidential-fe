@@ -179,7 +179,7 @@ export default function ExperimentViewPage() {
 
   // Only committed Google Sheets experiments have this link. Their table is a tab ID, so inspect
   // the tab to show its readable name.
-  const googleSheetsExperimentUrl = experiment?.config.google_sheets_experiment_url ?? null;
+  const googleSheetsExperimentUrl = experiment?.config.spreadsheet_full_url ?? null;
   const sheetsTabId =
     experiment && isFrequentistSpec(experiment.config.design_spec) ? experiment.config.design_spec.table_name : '';
   const { data: sheetsTab } = useInspectTableInDatasource(datasourceId, sheetsTabId, undefined, {
@@ -359,12 +359,12 @@ export default function ExperimentViewPage() {
 
   const showLoadingAnalysisSpinner = isLoadingLiveAnalysis || isLoadingLiveCmabAnalysis || isLoadingHistory;
 
-  if (isLoadingExperiment) {
-    return <XSpinner message="Loading experiment details..." />;
-  }
-
   if (experimentError) {
     return <GenericErrorCallout title="Error loading experiment" error={experimentError} />;
+  }
+
+  if (isLoadingExperiment) {
+    return <XSpinner message="Loading experiment details..." />;
   }
 
   if (!experiment) {

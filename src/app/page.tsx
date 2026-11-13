@@ -237,7 +237,7 @@ export default function Page() {
                     designUrl={experiment.design_spec.design_url || ''}
                     experimentId={experiment.experiment_id}
                     organizationId={currentOrgId}
-                    experimentSpreadsheetUrl={experiment.google_sheets_experiment_url}
+                    experimentSpreadsheetUrl={experiment.spreadsheet_full_url}
                     status={experiment.status}
                     impact={experiment.impact}
                     decision={experiment.decision}
