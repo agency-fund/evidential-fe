@@ -11,7 +11,7 @@ import {
   estimateParticipantNFromClusters,
 } from '@/components/features/experiments/metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { getPowerAnalysis } from '@/services/experiment-utils';
+import { getAssignableN, getPowerAnalysis } from '@/services/experiment-utils';
 import { describeDesignSpecError, toPowerRequest } from './experiment-form-helpers';
 
 /**
@@ -65,6 +65,8 @@ interface PowerCheckSampleSizeSelectorProps {
    * Parent is responsible for handling potentially stale responses.
    */
   onEstimatedMDEChange: (change: PowerCheckResponseChange) => void;
+  /** True while the min sample size check is re-running; its stats are about to change, so block new picks. */
+  disabled?: boolean;
 }
 
 interface EstimatedMdeBadgeProps {
@@ -114,6 +116,7 @@ export function PowerCheckSampleSizeSelector({
   makeDesignSpec,
   onOptionChange,
   onEstimatedMDEChange,
+  disabled = false,
 }: PowerCheckSampleSizeSelectorProps) {
   const [validationError, setValidationError] = useState<string | null>(null);
   const {
@@ -128,7 +131,8 @@ export function PowerCheckSampleSizeSelector({
   const primaryAnalysis = getPowerAnalysis(powerCheckResponse, primaryMetricFieldName);
   const targetN = primaryAnalysis?.target_n ?? undefined;
   const targetNClusters = primaryAnalysis?.num_clusters_total ?? undefined;
-  const allSamples = primaryAnalysis?.metric_spec.available_n ?? 0;
+  // The most that can be assigned: in one-time mode only the participants with no value for the primary metric.
+  const allSamples = getAssignableN(primaryAnalysis) ?? 0;
   const avgClusterSize = primaryAnalysis?.metric_spec.avg_cluster_size ?? undefined;
   const maxClusters =
     avgClusterSize !== undefined && avgClusterSize > 0 ? Math.floor(allSamples / avgClusterSize) : undefined;
@@ -278,7 +282,7 @@ export function PowerCheckSampleSizeSelector({
 
   return (
     <Flex direction="column" gap="2" justify="center" width="100%">
-      <RadioCards.Root columns="1" value={selectedSampleOption} onValueChange={handleOptionChange}>
+      <RadioCards.Root columns="1" value={selectedSampleOption} onValueChange={handleOptionChange} disabled={disabled}>
         <Flex direction="row" gap="3" justify="center" wrap="wrap">
           <RadioCards.Item
             value={PowerCheckOption.USE_POWER_CHECK}
@@ -313,7 +317,7 @@ export function PowerCheckSampleSizeSelector({
                 <MetricSampleSizeDisplay
                   analysis={primaryAnalysis}
                   isClustered={isClustered}
-                  variant="available"
+                  variant="assignable"
                   align="center"
                 />
               </Flex>
@@ -336,6 +340,7 @@ export function PowerCheckSampleSizeSelector({
                     value={clusterInputValue}
                     onChange={handleClusterInputChange}
                     max={maxClusters}
+                    disabled={disabled}
                     placeholder="# of clusters"
                   />
                   <Flex direction="column" gap="1" align="start">
@@ -356,6 +361,7 @@ export function PowerCheckSampleSizeSelector({
                   value={String(desiredN ?? '')}
                   onChange={handleInputChange}
                   max={allSamples ?? undefined}
+                  disabled={disabled}
                   placeholder="# of participants"
                 />
               )}
