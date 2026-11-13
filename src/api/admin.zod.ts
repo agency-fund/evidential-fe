@@ -344,20 +344,19 @@ export const createExperimentBodyDesignSpecArmsMax = 20;
 
 export const createExperimentBodyDesignSpecTableNameMax = 100;
 
-export const createExperimentBodyDesignSpecPrimaryKeyRegExp = new RegExp(
-	"^[a-zA-Z_][a-zA-Z0-9_]*$",
-);
-export const createExperimentBodyDesignSpecStrataItemFieldNameRegExp =
-	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentBodyDesignSpecPrimaryKeyMax = 300;
+
+export const createExperimentBodyDesignSpecStrataItemFieldNameMax = 300;
+
 export const createExperimentBodyDesignSpecStrataMax = 150;
 
-export const createExperimentBodyDesignSpecMetricsItemFieldNameRegExp =
-	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentBodyDesignSpecMetricsItemFieldNameMax = 300;
+
 export const createExperimentBodyDesignSpecMetricsItemUseOneTimeMetricDefault = false;
 export const createExperimentBodyDesignSpecMetricsMax = 150;
 
-export const createExperimentBodyDesignSpecFiltersItemFieldNameRegExp =
-	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentBodyDesignSpecFiltersItemFieldNameMax = 300;
+
 export const createExperimentBodyDesignSpecFiltersMax = 20;
 
 export const createExperimentBodyDesignSpecDesiredNMinOne = 0;
@@ -393,20 +392,19 @@ export const createExperimentBodyDesignSpecArmsMaxOne = 20;
 
 export const createExperimentBodyDesignSpecTableNameMaxOne = 100;
 
-export const createExperimentBodyDesignSpecPrimaryKeyRegExpOne = new RegExp(
-	"^[a-zA-Z_][a-zA-Z0-9_]*$",
-);
-export const createExperimentBodyDesignSpecStrataItemFieldNameRegExpOne =
-	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentBodyDesignSpecPrimaryKeyMaxOne = 300;
+
+export const createExperimentBodyDesignSpecStrataItemFieldNameMaxOne = 300;
+
 export const createExperimentBodyDesignSpecStrataMaxOne = 150;
 
-export const createExperimentBodyDesignSpecMetricsItemFieldNameRegExpOne =
-	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentBodyDesignSpecMetricsItemFieldNameMaxOne = 300;
+
 export const createExperimentBodyDesignSpecMetricsItemUseOneTimeMetricDefaultOne = false;
 export const createExperimentBodyDesignSpecMetricsMaxOne = 150;
 
-export const createExperimentBodyDesignSpecFiltersItemFieldNameRegExpOne =
-	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentBodyDesignSpecFiltersItemFieldNameMaxOne = 300;
+
 export const createExperimentBodyDesignSpecFiltersMaxOne = 20;
 
 export const createExperimentBodyDesignSpecDesiredNMinFour = 0;
@@ -473,12 +471,10 @@ export const createExperimentBodyDesignSpecAutofailWindowDefaultOne = 24;
 export const createExperimentBodyDesignSpecAutofailOutcomeValueDefaultOne = 0;
 export const createExperimentBodyDesignSpecTableNameMaxTwo = 100;
 
-export const createExperimentBodyDesignSpecPrimaryKeyRegExpTwo = new RegExp(
-	"^[a-zA-Z_][a-zA-Z0-9_]*$",
-);
-export const createExperimentBodyDesignSpecTargetFieldNameRegExp = new RegExp(
-	"^[a-zA-Z_][a-zA-Z0-9_]*$",
-);
+export const createExperimentBodyDesignSpecPrimaryKeyMaxTwo = 300;
+
+export const createExperimentBodyDesignSpecTargetFieldNameMax = 300;
+
 export const createExperimentBodyDesignSpecExperimentNameMaxFour = 100;
 
 export const createExperimentBodyDesignSpecDescriptionMaxFour = 2000;
@@ -502,8 +498,8 @@ export const createExperimentBodyDesignSpecEnableAutofailDefaultTwo = false;
 export const createExperimentBodyDesignSpecAutofailWindowDefaultTwo = 24;
 
 export const createExperimentBodyDesignSpecAutofailOutcomeValueDefaultTwo = 0;
-export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp =
-	new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameMax = 300;
+
 export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecUseOneTimeMetricDefault = false;
 export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecIsOneTimeEligibleDefault = false;
 export const createExperimentBodyPowerAnalysesAnalysesItemMsgHighClusterVariationDefault = false;
@@ -561,13 +557,15 @@ export const createExperimentBody = zod.object({
 					.max(createExperimentBodyDesignSpecTableNameMax),
 				primary_key: zod
 					.string()
-					.regex(createExperimentBodyDesignSpecPrimaryKeyRegExp),
+					.min(1)
+					.max(createExperimentBodyDesignSpecPrimaryKeyMax),
 				strata: zod
 					.array(
 						zod.object({
 							field_name: zod
 								.string()
-								.regex(createExperimentBodyDesignSpecStrataItemFieldNameRegExp),
+								.min(1)
+								.max(createExperimentBodyDesignSpecStrataItemFieldNameMax),
 						}),
 					)
 					.max(createExperimentBodyDesignSpecStrataMax),
@@ -576,9 +574,8 @@ export const createExperimentBody = zod.object({
 						zod.object({
 							field_name: zod
 								.string()
-								.regex(
-									createExperimentBodyDesignSpecMetricsItemFieldNameRegExp,
-								),
+								.min(1)
+								.max(createExperimentBodyDesignSpecMetricsItemFieldNameMax),
 							metric_pct_change: zod
 								.union([zod.number(), zod.null()])
 								.optional(),
@@ -607,9 +604,8 @@ export const createExperimentBody = zod.object({
 						zod.object({
 							field_name: zod
 								.string()
-								.regex(
-									createExperimentBodyDesignSpecFiltersItemFieldNameRegExp,
-								),
+								.min(1)
+								.max(createExperimentBodyDesignSpecFiltersItemFieldNameMax),
 							relation: zod.enum(["includes", "excludes", "between"]),
 							value: zod.union([
 								zod.array(zod.union([zod.number(), zod.null()])),
@@ -709,15 +705,15 @@ export const createExperimentBody = zod.object({
 					.max(createExperimentBodyDesignSpecTableNameMaxOne),
 				primary_key: zod
 					.string()
-					.regex(createExperimentBodyDesignSpecPrimaryKeyRegExpOne),
+					.min(1)
+					.max(createExperimentBodyDesignSpecPrimaryKeyMaxOne),
 				strata: zod
 					.array(
 						zod.object({
 							field_name: zod
 								.string()
-								.regex(
-									createExperimentBodyDesignSpecStrataItemFieldNameRegExpOne,
-								),
+								.min(1)
+								.max(createExperimentBodyDesignSpecStrataItemFieldNameMaxOne),
 						}),
 					)
 					.max(createExperimentBodyDesignSpecStrataMaxOne),
@@ -726,9 +722,8 @@ export const createExperimentBody = zod.object({
 						zod.object({
 							field_name: zod
 								.string()
-								.regex(
-									createExperimentBodyDesignSpecMetricsItemFieldNameRegExpOne,
-								),
+								.min(1)
+								.max(createExperimentBodyDesignSpecMetricsItemFieldNameMaxOne),
 							metric_pct_change: zod
 								.union([zod.number(), zod.null()])
 								.optional(),
@@ -757,9 +752,8 @@ export const createExperimentBody = zod.object({
 						zod.object({
 							field_name: zod
 								.string()
-								.regex(
-									createExperimentBodyDesignSpecFiltersItemFieldNameRegExpOne,
-								),
+								.min(1)
+								.max(createExperimentBodyDesignSpecFiltersItemFieldNameMaxOne),
 							relation: zod.enum(["includes", "excludes", "between"]),
 							value: zod.union([
 								zod.array(zod.union([zod.number(), zod.null()])),
@@ -984,10 +978,12 @@ export const createExperimentBody = zod.object({
 					.max(createExperimentBodyDesignSpecTableNameMaxTwo),
 				primary_key: zod
 					.string()
-					.regex(createExperimentBodyDesignSpecPrimaryKeyRegExpTwo),
+					.min(1)
+					.max(createExperimentBodyDesignSpecPrimaryKeyMaxTwo),
 				target_field_name: zod
 					.string()
-					.regex(createExperimentBodyDesignSpecTargetFieldNameRegExp),
+					.min(1)
+					.max(createExperimentBodyDesignSpecTargetFieldNameMax),
 			}),
 			zod.object({
 				experiment_type: zod.enum(["cmab_online"]),
@@ -1089,8 +1085,9 @@ export const createExperimentBody = zod.object({
 							metric_spec: zod.object({
 								field_name: zod
 									.string()
-									.regex(
-										createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameRegExp,
+									.min(1)
+									.max(
+										createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameMax,
 									),
 								metric_pct_change: zod
 									.union([zod.number(), zod.null()])
@@ -1119,6 +1116,12 @@ export const createExperimentBody = zod.object({
 							sufficient_n: zod.union([zod.boolean(), zod.null()]).optional(),
 							target_possible: zod.union([zod.number(), zod.null()]).optional(),
 							pct_change_possible: zod
+								.union([zod.number(), zod.null()])
+								.optional(),
+							target_possible_lower: zod
+								.union([zod.number(), zod.null()])
+								.optional(),
+							pct_change_possible_lower: zod
 								.union([zod.number(), zod.null()])
 								.optional(),
 							pct_change_with_desired_n: zod
@@ -1259,15 +1262,13 @@ export const updateArmBody = zod.object({
 
 export const powerCheckBodyTableNameMax = 100;
 
-export const powerCheckBodyMetricsItemFieldNameRegExp = new RegExp(
-	"^[a-zA-Z_][a-zA-Z0-9_]*$",
-);
+export const powerCheckBodyMetricsItemFieldNameMax = 300;
+
 export const powerCheckBodyMetricsItemUseOneTimeMetricDefault = false;
 export const powerCheckBodyMetricsMax = 150;
 
-export const powerCheckBodyFiltersItemFieldNameRegExp = new RegExp(
-	"^[a-zA-Z_][a-zA-Z0-9_]*$",
-);
+export const powerCheckBodyFiltersItemFieldNameMax = 300;
+
 export const powerCheckBodyFiltersDefault = [];
 export const powerCheckBodyFiltersMax = 20;
 
@@ -1292,7 +1293,8 @@ export const powerCheckBody = zod.object({
 			zod.object({
 				field_name: zod
 					.string()
-					.regex(powerCheckBodyMetricsItemFieldNameRegExp),
+					.min(1)
+					.max(powerCheckBodyMetricsItemFieldNameMax),
 				metric_pct_change: zod.union([zod.number(), zod.null()]).optional(),
 				metric_target: zod.union([zod.number(), zod.null()]).optional(),
 				icc: zod.union([zod.number(), zod.null()]).optional(),
@@ -1315,7 +1317,8 @@ export const powerCheckBody = zod.object({
 			zod.object({
 				field_name: zod
 					.string()
-					.regex(powerCheckBodyFiltersItemFieldNameRegExp),
+					.min(1)
+					.max(powerCheckBodyFiltersItemFieldNameMax),
 				relation: zod.enum(["includes", "excludes", "between"]),
 				value: zod.union([
 					zod.array(zod.union([zod.number(), zod.null()])),

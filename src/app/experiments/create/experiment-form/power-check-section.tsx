@@ -382,16 +382,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
           {validationError && (
             <Flex align="center" gap="2">
-              <GenericErrorCallout
-                title={'Validation failed'}
-                message={validationError.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('\n')}
-              />
-            </Flex>
-          )}
-
-          {validationErrorMessage && (
-            <Flex align="center" gap="2">
-              <GenericErrorCallout title={'Validation failed'} message={validationErrorMessage} />
+              <GenericErrorCallout title={'Validation failed'} message={validationError} />
             </Flex>
           )}
 
