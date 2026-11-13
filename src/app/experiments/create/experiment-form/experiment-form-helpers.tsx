@@ -62,8 +62,7 @@ const getPrimaryMetricClusterStats = (data: ExperimentFormData) => {
   const icc = data.clusterIcc;
   const cv = data.clusterCv;
   const avgClusterSize = data.clusterAvgClusterSize;
-  // Size statistics can be known before outcomes allow an ICC estimate; only echo a complete bundle.
-  if (icc === undefined || cv === undefined || avgClusterSize === undefined) return undefined;
+  if (icc === undefined && cv === undefined && avgClusterSize === undefined) return undefined;
   return { icc, cv, avg_cluster_size: avgClusterSize };
 };
 

@@ -103,6 +103,11 @@ const isPowerCheckButtonEnabled = (isMutating: boolean, data: ExperimentFormData
   if (data.primaryMetric === undefined) {
     reasons.push('Please select a primary metric.');
   }
+  const clusterStats = [data.clusterIcc, data.clusterCv, data.clusterAvgClusterSize];
+  const enteredClusterStatCount = clusterStats.filter((stat) => stat !== undefined).length;
+  if (data.clusterKey && enteredClusterStatCount > 0 && enteredClusterStatCount < clusterStats.length) {
+    reasons.push('Please set all three cluster statistics, or reset them.');
+  }
   return { enabled: !reasons.length, reason: reasons.join('\n') };
 };
 
