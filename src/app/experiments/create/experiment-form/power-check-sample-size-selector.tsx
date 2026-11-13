@@ -61,6 +61,7 @@ interface PowerCheckSampleSizeSelectorProps {
   /** Values for display in sample size mode (USE_POWER_CHECK) */
   powerCheckResponse: PowerResponse;
   targetMde?: string;
+  waitingForOutcomes?: boolean;
   /**
    * Values for display in MDE mode (USE_ALL_NON_NULL_SAMPLES or ENTER_OWN).
    * desiredN should always correspond to the mdePowerCheckResponse if it exists.
@@ -86,7 +87,7 @@ interface PowerCheckSampleSizeSelectorProps {
 interface EstimatedMdeBadgeProps {
   isSelectedOption: boolean;
   isEstimatingMde: boolean;
-  estimatedMdePct: string | undefined;
+  estimatedMdePct: string | null | undefined;
   error: Error | undefined;
 }
 
@@ -101,7 +102,7 @@ function EstimatedMdeBadge({ isSelectedOption, isEstimatingMde, estimatedMdePct,
           </Badge>
         ) : estimatedMdePct !== undefined ? (
           <Badge variant="soft" size="2">
-            Estimated MDE: {estimatedMdePct}%
+            {estimatedMdePct === null ? 'MDE unavailable' : `Estimated MDE: ${estimatedMdePct}%`}
           </Badge>
         ) : error ? (
           <Badge color="red" variant="soft" size="2">
@@ -124,6 +125,7 @@ export function PowerCheckSampleSizeSelector({
   isClustered,
   powerCheckResponse,
   targetMde,
+  waitingForOutcomes = false,
   mdePowerCheckResponse,
   desiredN,
   desiredNClusters,
@@ -144,7 +146,7 @@ export function PowerCheckSampleSizeSelector({
       ? undefined
       : mdePrimaryAnalysis.pct_change_with_desired_n != null
         ? (mdePrimaryAnalysis.pct_change_with_desired_n * 100).toFixed(1)
-        : 'N/A';
+        : null;
 
   const handleClusterInputChange = (clusterN: number | undefined) => {
     if (avgClusterSize === undefined) {
@@ -170,6 +172,7 @@ export function PowerCheckSampleSizeSelector({
                   isClustered={isClustered}
                   variant="required"
                   align="center"
+                  waitingForOutcomes={waitingForOutcomes}
                 />
               </Flex>
               <Flex align="center" style={{ minHeight: '24px' }}>
