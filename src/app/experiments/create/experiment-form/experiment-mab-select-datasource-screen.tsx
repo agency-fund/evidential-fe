@@ -35,7 +35,8 @@ export const ExperimentMabSelectDatasourceScreen = ({
   const { data: datasourcesData, isLoading: loadingDatasources } = useListOrganizationDatasources(organizationId, {
     swr: { enabled: !!organizationId },
   });
-  const availableDatasources = datasourcesData?.items?.filter(isUsableDatasource) ?? [];
+  const availableDatasources =
+    datasourcesData?.items?.filter((ds) => isUsableDatasource(ds) && ds.driver !== 'google_sheets') ?? [];
 
   if (loadingDatasources) {
     return <XSpinner message="Loading datasources..." />;
@@ -87,6 +88,7 @@ export const ExperimentMabSelectDatasourceScreen = ({
             ) : (
               <Card>
                 <CreateDatasourceForm
+                  allowGoogleSheets={false}
                   onDatasourceCreated={(id) => dispatch({ type: 'set-datasource', datasourceId: id })}
                 />
               </Card>

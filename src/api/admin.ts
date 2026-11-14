@@ -2818,11 +2818,13 @@ export type CommitExperimentMutationResult = NonNullable<
 	Awaited<ReturnType<typeof commitExperiment>>
 >;
 export type CommitExperimentMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
+	HTTPExceptionError | XHTTPValidationError | DwhErrorResponse
 >;
 
 export const useCommitExperiment = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+	TError = ErrorType<
+		HTTPExceptionError | XHTTPValidationError | DwhErrorResponse
+	>,
 >(
 	datasourceId: string,
 	experimentId: string,
