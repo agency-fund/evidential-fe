@@ -206,6 +206,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             createExperimentResponse: undefined,
             createExperimentError: undefined,
             commitError: undefined,
+            ...(experimentType !== 'freq_preassigned' ? { useOneTimeMetric: false } : {}),
           };
 
           if (!isBanditExperimentType(experimentType)) {

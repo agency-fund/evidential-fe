@@ -44,6 +44,7 @@ import {
   estimateParticipantNFromClusters,
 } from '@/components/features/experiments/metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
+import { ApiRequestValidationError } from '@/services/orval-fetch';
 import { InfoBadge } from '@/components/ui/info-badge';
 import { useState } from 'react';
 import { SectionCard } from '@/components/ui/cards/section-card';
@@ -124,13 +125,14 @@ function RunPowerCheckButton({ enabled, onClick, loading, disabledReason }: Powe
 export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [mdeValidationError, setMdeValidationError] = useState<string | null>(null);
+  const [oneTimeUnavailable, setOneTimeUnavailable] = useState(false);
   const {
     trigger: triggerEstimateSampleSize,
     isMutating,
     error,
     reset: clearRequestError,
   } = usePowerCheck(data.datasourceId!);
-  const { trigger: triggerPowerCurve } = usePowerCheck(data.datasourceId!, {
+  const { trigger: triggerPowerCurve, isMutating: isPowerCurveMutating } = usePowerCheck(data.datasourceId!, {
     swr: { swrKey: `${data.datasourceId}/power/curve` },
   });
   const {
@@ -149,6 +151,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
    * re-run fails, flip the switch back so it matches the response still on screen.
    */
   const handleOneTimeMetricChange = async (enabled: boolean) => {
+    setOneTimeUnavailable(false);
     dispatch({ type: 'set-one-time-metric', enabled });
     const succeeded = await handlePowerCheck({ ...data, useOneTimeMetric: enabled });
     if (!succeeded) {
@@ -248,10 +251,20 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
       return false;
     }
 
-    const response = await triggerEstimateSampleSize(powerRequest, { throwOnError: false });
+    let response: PowerResponse | undefined;
+    try {
+      response = await triggerEstimateSampleSize(powerRequest);
+    } catch (requestError) {
+      if (formData.useOneTimeMetric && requestError instanceof ApiRequestValidationError) {
+        dispatch({ type: 'set-one-time-metric', enabled: false });
+        setOneTimeUnavailable(true);
+      }
+      return false;
+    }
     if (!response) {
       return false;
     }
+    setOneTimeUnavailable(false);
     const primary = getPowerAnalysis(response, formData.primaryMetric.metric.field_name);
     const desiredN = primary?.sufficient_n ? (primary.target_n ?? undefined) : undefined;
     const sampleSizeOption = desiredN === undefined ? PowerCheckOption.NONE : PowerCheckOption.USE_POWER_CHECK;
@@ -312,9 +325,13 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     getSampleSizeLandmarks(primaryPower);
   const selectedSampleOption = data.sampleSizeOption ?? PowerCheckOption.USE_POWER_CHECK;
 
+  const isPowerCheckForOtherOneTimeMode =
+    primaryPower !== undefined && (data.useOneTimeMetric ?? false) !== responseUsesOneTimeMetric;
+  const isTargetSampleSizeLoading = isMutating || isPowerCurveMutating;
+
   // Power curve chart inputs, all in the chart's x unit (clusters for cluster designs).
   const curveAnalysis =
-    data.powerCurveResponse !== undefined && !hasValidationError
+    data.powerCurveResponse !== undefined && !hasValidationError && !isPowerCheckForOtherOneTimeMode
       ? getPowerAnalysis(data.powerCurveResponse, primaryMetricFieldName)
       : undefined;
   // The chart's "available" marker. In one-time mode only participants with no value for the primary metric can be
@@ -322,7 +339,8 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const primaryAvailableN = getAssignableN(primaryPower);
   // Same count, for the one-time banner: the most a custom sample size can be. Read the mode from the response so it
   // matches the numbers being shown.
-  const oneTimeAvailableN = primaryPower?.metric_spec.use_one_time_metric ? primaryAvailableN : undefined;
+  const responseUsesOneTimeMetric = primaryPower?.metric_spec.use_one_time_metric === true;
+  const oneTimeAvailableN = responseUsesOneTimeMetric ? primaryAvailableN : undefined;
   const primaryAvgClusterSize = primaryPower?.metric_spec.avg_cluster_size ?? undefined;
   const curveAvailableSize = isClustered
     ? primaryAvailableN !== undefined && primaryAvgClusterSize
@@ -331,7 +349,9 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     : primaryAvailableN;
   const curveMinSize = isClustered ? targetNClusters : targetN;
   const targetMdePct = data.primaryMetric?.mde !== undefined ? Number(data.primaryMetric.mde) : undefined;
-  const mdeAnalysisForDot = getPowerAnalysis(data.mdePowerCheckResponse, primaryMetricFieldName);
+  const mdeAnalysisForDot = !isPowerCheckForOtherOneTimeMode
+    ? getPowerAnalysis(data.mdePowerCheckResponse, primaryMetricFieldName)
+    : undefined;
   const selectedMdePct =
     data.sampleSizeOption === PowerCheckOption.USE_POWER_CHECK
       ? targetMdePct
@@ -547,6 +567,18 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
             </Flex>
           )}
 
+          {oneTimeUnavailable && (
+            <Callout.Root color="orange">
+              <Callout.Icon>
+                <ExclamationTriangleIcon />
+              </Callout.Icon>
+              <Callout.Text>
+                One-time mode was turned off because the current filters make it unavailable. You can try enabling it
+                again after changing the filters.
+              </Callout.Text>
+            </Callout.Root>
+          )}
+
           {validationError && (
             <Flex align="center" gap="2">
               <GenericErrorCallout title={'Validation failed'} message={validationError} />
@@ -638,7 +670,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                           </DataList.Value>
                         </DataList.Item>
                       ) : null}
-                      {primaryPower.metric_spec.use_one_time_metric ? (
+                      {primaryPower.metric_spec.is_one_time_eligible ? (
                         // One-time mode can only assign these, so this is the number to compare with Required.
                         <DataList.Item>
                           <DataList.Label>Available without values</DataList.Label>
@@ -652,7 +684,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                         </DataList.Item>
                       ) : null}
                       {/* The backend decides eligibility; we only show the switch when it says yes. */}
-                      {primaryPower.metric_spec.is_one_time_eligible ? (
+                      {primaryPower.metric_spec.is_one_time_eligible || data.useOneTimeMetric === true ? (
                         <DataList.Item>
                           <DataList.Label>One-time metric</DataList.Label>
                           <DataList.Value>
@@ -743,7 +775,16 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
       </SectionCard>
 
       {data.powerCheckResponse !== undefined && !hasValidationError && (
-        <SectionCard title="Select Target Sample Size">
+        <SectionCard
+          headerLeft={
+            <Flex align="center" gap="2">
+              <Heading size="3" wrap="nowrap">
+                Select Target Sample Size
+              </Heading>
+              {isTargetSampleSizeLoading ? <Spinner size="2" /> : null}
+            </Flex>
+          }
+        >
           <Flex direction="column" gap="3" align="start" width="100%">
             {curveAnalysis ? (
               <PowerCurveChart
@@ -765,11 +806,11 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                     <CrossCircledIcon />
                   </Callout.Icon>
                   <Callout.Text>
-                    {oneTimeAvailableN !== undefined ? (
+                    {responseUsesOneTimeMetric && primaryAvailableN !== undefined ? (
                       <>
-                        Only {oneTimeAvailableN.toLocaleString()} participants have no value for the primary metric,
+                        Only {primaryAvailableN.toLocaleString()} participants are assignable for the primary metric,
                         which is not enough for one or more metrics. You can still proceed with a custom sample size of
-                        up to {oneTimeAvailableN.toLocaleString()}, or turn off one-time mode to include all
+                        up to {primaryAvailableN.toLocaleString()}, or turn off one-time mode to include all
                         participants.
                       </>
                     ) : (
