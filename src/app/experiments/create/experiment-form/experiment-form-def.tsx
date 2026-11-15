@@ -595,6 +595,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             clusterCv: undefined,
             clusterAvgClusterSize: undefined,
             ...resetPowerCheckState(),
+            useOneTimeMetric: false,
           };
         }
 

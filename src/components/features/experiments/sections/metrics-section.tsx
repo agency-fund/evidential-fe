@@ -51,7 +51,7 @@ function MetricHeader({ metric }: MetricHeaderProps) {
       <DataTypeBadge type={metric.data_type} />
       {metric.isOneTime ? (
         <InfoBadge
-          label="One-time metric"
+          label="One-time event"
           color="purple"
           tooltip="Only participants without a value for this metric were assigned to the experiment."
         />

@@ -325,6 +325,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     getSampleSizeLandmarks(primaryPower);
   const selectedSampleOption = data.sampleSizeOption ?? PowerCheckOption.USE_POWER_CHECK;
 
+  const responseUsesOneTimeMetric = primaryPower?.metric_spec.use_one_time_metric === true;
   const isPowerCheckForOtherOneTimeMode =
     primaryPower !== undefined && (data.useOneTimeMetric ?? false) !== responseUsesOneTimeMetric;
   const isTargetSampleSizeLoading = isMutating || isPowerCurveMutating;
@@ -337,7 +338,10 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   // The chart's "available" marker. In one-time mode only participants with no value for the primary metric can be
   // assigned, so it stops at that count, matching the sizes fetchPowerCurve requests.
   const primaryAvailableN = getAssignableN(primaryPower);
-  const responseUsesOneTimeMetric = primaryPower?.metric_spec.use_one_time_metric === true;
+  const availableWithoutValuesN =
+    primaryPower?.metric_spec.available_n !== undefined && primaryPower?.metric_spec.available_nonnull_n !== undefined
+      ? primaryPower.metric_spec.available_n - primaryPower.metric_spec.available_nonnull_n
+      : undefined;
   const primaryAvgClusterSize = primaryPower?.metric_spec.avg_cluster_size ?? undefined;
   const curveAvailableSize = isClustered
     ? primaryAvailableN !== undefined && primaryAvgClusterSize
@@ -668,15 +672,11 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                         </DataList.Item>
                       ) : null}
                       {primaryPower.metric_spec.is_one_time_eligible ? (
-                        // One-time mode can only assign these, so this is the number to compare with Required.
+                        // Participants who have no value for this metric (available_n - available_nonnull_n).
                         <DataList.Item>
                           <DataList.Label>Available without values</DataList.Label>
                           <DataList.Value>
-                            <MetricSampleSizeDisplay
-                              analysis={primaryPower}
-                              isClustered={isClustered}
-                              variant="assignable"
-                            />
+                            {availableWithoutValuesN !== undefined ? availableWithoutValuesN.toLocaleString() : '—'}
                           </DataList.Value>
                         </DataList.Item>
                       ) : null}
