@@ -47,6 +47,7 @@ import {
 } from '@/app/experiments/create/experiment-form/experiment-form-types';
 import {
   type ExperimentType,
+  getPowerAnalysis,
   isBanditExperimentType,
   isCmabExperimentType,
   isFreqExperimentType,
@@ -55,6 +56,23 @@ import {
 
 // Helper to create screens with proper type inference
 const screen = packScreen<ExperimentFormData, ExperimentScreenId>();
+
+/**
+ * Fields to spread into the form when a design edit invalidates the power check. Every edit that can change the power
+ * analysis clears the results and the chosen sample size. One-time mode is only turned off when the primary metric
+ * (or the table it comes from) changes: other edits, like confidence or power, don't change which participants have
+ * no value, and the next power check confirms or turns off the choice anyway.
+ */
+const resetPowerCheckState = ({ primaryMetricChanged = false } = {}): Partial<ExperimentFormData> => ({
+  powerCheckResponse: undefined,
+  mdePowerCheckResponse: undefined,
+  powerCurveResponse: undefined,
+  desiredN: undefined,
+  desiredNClusters: undefined,
+  sampleSizeOption: undefined,
+  createExperimentError: undefined,
+  ...(primaryMetricChanged ? { useOneTimeMetric: false } : {}),
+});
 
 const FREQUENTIST_BREADCRUMBS: Array<ExperimentScreenId> = [
   'metadata',
@@ -188,6 +206,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             createExperimentResponse: undefined,
             createExperimentError: undefined,
             commitError: undefined,
+            ...(experimentType !== 'freq_preassigned' ? { useOneTimeMetric: false } : {}),
           };
 
           if (!isBanditExperimentType(experimentType)) {
@@ -236,12 +255,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             clusterAvgClusterSize: shouldClearClusterStats ? undefined : data.clusterAvgClusterSize,
 
             // Changing datasource should clear power check
-            powerCheckResponse: undefined,
-            mdePowerCheckResponse: undefined,
-            powerCurveResponse: undefined,
-            desiredN: undefined,
-            desiredNClusters: undefined,
-            sampleSizeOption: undefined,
+            ...resetPowerCheckState({ primaryMetricChanged: true }),
           };
         }
         return data;
@@ -524,13 +538,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             clusterIcc: undefined,
             clusterCv: undefined,
             clusterAvgClusterSize: undefined,
-            powerCheckResponse: undefined,
-            mdePowerCheckResponse: undefined,
-            powerCurveResponse: undefined,
-            desiredN: undefined,
-            desiredNClusters: undefined,
-            sampleSizeOption: undefined,
-            createExperimentError: undefined,
+            ...resetPowerCheckState({ primaryMetricChanged: true }),
           };
         }
         if (msg.type === 'primary-metric-deselect') {
@@ -541,13 +549,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             clusterIcc: undefined,
             clusterCv: undefined,
             clusterAvgClusterSize: undefined,
-            powerCheckResponse: undefined,
-            mdePowerCheckResponse: undefined,
-            powerCurveResponse: undefined,
-            desiredN: undefined,
-            desiredNClusters: undefined,
-            sampleSizeOption: undefined,
-            createExperimentError: undefined,
+            ...resetPowerCheckState({ primaryMetricChanged: true }),
           };
         }
         if (msg.type === 'promote-secondary-to-primary') {
@@ -558,39 +560,21 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             clusterIcc: undefined,
             clusterCv: undefined,
             clusterAvgClusterSize: undefined,
-            powerCheckResponse: undefined,
-            mdePowerCheckResponse: undefined,
-            powerCurveResponse: undefined,
-            desiredN: undefined,
-            desiredNClusters: undefined,
-            sampleSizeOption: undefined,
-            createExperimentError: undefined,
+            ...resetPowerCheckState({ primaryMetricChanged: true }),
           };
         }
         if (msg.type === 'secondary-metric-add') {
           return {
             ...data,
             secondaryMetrics: msg.secondaryMetrics,
-            powerCheckResponse: undefined,
-            mdePowerCheckResponse: undefined,
-            powerCurveResponse: undefined,
-            desiredN: undefined,
-            desiredNClusters: undefined,
-            sampleSizeOption: undefined,
-            createExperimentError: undefined,
+            ...resetPowerCheckState(),
           };
         }
         if (msg.type === 'secondary-metric-remove') {
           return {
             ...data,
             secondaryMetrics: msg.secondaryMetrics,
-            powerCheckResponse: undefined,
-            mdePowerCheckResponse: undefined,
-            powerCurveResponse: undefined,
-            desiredN: undefined,
-            desiredNClusters: undefined,
-            sampleSizeOption: undefined,
-            createExperimentError: undefined,
+            ...resetPowerCheckState(),
           };
         }
         if (msg.type === 'mde-change') {
@@ -598,13 +582,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             ...data,
             primaryMetric: msg.primaryMetric ?? data.primaryMetric,
             secondaryMetrics: msg.secondaryMetrics ?? data.secondaryMetrics,
-            powerCheckResponse: undefined,
-            mdePowerCheckResponse: undefined,
-            powerCurveResponse: undefined,
-            desiredN: undefined,
-            desiredNClusters: undefined,
-            sampleSizeOption: undefined,
-            createExperimentError: undefined,
+            ...resetPowerCheckState(),
           };
         }
 
@@ -616,13 +594,8 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             clusterIcc: undefined,
             clusterCv: undefined,
             clusterAvgClusterSize: undefined,
-            powerCheckResponse: undefined,
-            mdePowerCheckResponse: undefined,
-            powerCurveResponse: undefined,
-            desiredN: undefined,
-            desiredNClusters: undefined,
-            sampleSizeOption: undefined,
-            createExperimentError: undefined,
+            ...resetPowerCheckState(),
+            useOneTimeMetric: false,
           };
         }
 
@@ -630,39 +603,21 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           return {
             ...data,
             clusterIcc: msg.value,
-            powerCheckResponse: undefined,
-            mdePowerCheckResponse: undefined,
-            powerCurveResponse: undefined,
-            desiredN: undefined,
-            desiredNClusters: undefined,
-            sampleSizeOption: undefined,
-            createExperimentError: undefined,
+            ...resetPowerCheckState(),
           };
         }
         if (msg.type === 'set-cluster-cv') {
           return {
             ...data,
             clusterCv: msg.value,
-            powerCheckResponse: undefined,
-            mdePowerCheckResponse: undefined,
-            powerCurveResponse: undefined,
-            desiredN: undefined,
-            desiredNClusters: undefined,
-            sampleSizeOption: undefined,
-            createExperimentError: undefined,
+            ...resetPowerCheckState(),
           };
         }
         if (msg.type === 'set-cluster-avg-size') {
           return {
             ...data,
             clusterAvgClusterSize: msg.value,
-            powerCheckResponse: undefined,
-            mdePowerCheckResponse: undefined,
-            powerCurveResponse: undefined,
-            desiredN: undefined,
-            desiredNClusters: undefined,
-            sampleSizeOption: undefined,
-            createExperimentError: undefined,
+            ...resetPowerCheckState(),
           };
         }
         if (msg.type === 'clear-cluster-stats') {
@@ -671,13 +626,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             clusterIcc: undefined,
             clusterCv: undefined,
             clusterAvgClusterSize: undefined,
-            powerCheckResponse: undefined,
-            mdePowerCheckResponse: undefined,
-            powerCurveResponse: undefined,
-            desiredN: undefined,
-            desiredNClusters: undefined,
-            sampleSizeOption: undefined,
-            createExperimentError: undefined,
+            ...resetPowerCheckState(),
           };
         }
 
@@ -697,26 +646,14 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           return {
             ...data,
             confidence: msg.value,
-            powerCheckResponse: undefined,
-            mdePowerCheckResponse: undefined,
-            powerCurveResponse: undefined,
-            desiredN: undefined,
-            desiredNClusters: undefined,
-            sampleSizeOption: undefined,
-            createExperimentError: undefined,
+            ...resetPowerCheckState(),
           };
         }
         if (msg.type === 'set-power') {
           return {
             ...data,
             power: msg.value,
-            powerCheckResponse: undefined,
-            mdePowerCheckResponse: undefined,
-            powerCurveResponse: undefined,
-            desiredN: undefined,
-            desiredNClusters: undefined,
-            sampleSizeOption: undefined,
-            createExperimentError: undefined,
+            ...resetPowerCheckState(),
           };
         }
         if (msg.type === 'set-power-curve-response') {
@@ -728,6 +665,16 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             return data;
           }
           return { ...data, powerCurveResponse: msg.response };
+        }
+        // The switch re-runs the power check with the new value. Keep the current min sample size response, curve,
+        // and custom MDE until the new ones arrive; if the re-run fails, the section flips the switch back and
+        // the previous responses remain intact without being lost.
+        if (msg.type === 'set-one-time-metric') {
+          return {
+            ...data,
+            useOneTimeMetric: msg.enabled,
+            createExperimentError: undefined,
+          };
         }
         if (msg.type === 'set-chosen-n' || msg.type === 'set-power-check-response') {
           const clusterStatsFromPowerCheck =
@@ -755,6 +702,15 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
                 desiredN: msg.desiredN,
                 desiredNClusters: msg.desiredNClusters,
                 powerCheckResponse: msg.response,
+                // The backend has the final say on one-time mode (it turns it off when the column has no nulls),
+                // so the switch, and what create sends, follow the response.
+                ...(msg.type === 'set-power-check-response' && msg.response
+                  ? {
+                      useOneTimeMetric:
+                        getPowerAnalysis(msg.response, data.primaryMetric?.metric.field_name)?.metric_spec
+                          .use_one_time_metric === true,
+                    }
+                  : {}),
                 createExperimentError: undefined,
                 ...clusterStatsFromPowerCheck,
               };

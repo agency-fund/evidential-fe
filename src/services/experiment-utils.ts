@@ -54,6 +54,21 @@ export const metricHasMissingValues = (analysis: MetricPowerAnalysis): boolean =
 };
 
 /**
+ * The most participants that can be assigned for this metric's analysis. Normally every participant that meets the
+ * filters (available_n). In one-time mode only participants with no value for the metric can be assigned, so it is
+ * available_n - available_nonnull_n; the backend rejects a larger sample size. Returns undefined when that can't be
+ * computed, rather than overstating it with available_n.
+ */
+export const getAssignableN = (analysis: MetricPowerAnalysis | undefined): number | undefined => {
+  const availableN = analysis?.metric_spec.available_n ?? undefined;
+  if (!analysis?.metric_spec.use_one_time_metric) {
+    return availableN;
+  }
+  const nonNullN = analysis.metric_spec.available_nonnull_n ?? undefined;
+  return availableN !== undefined && nonNullN !== undefined ? availableN - nonNullN : undefined;
+};
+
+/**
  * Whether the chosen sample size reaches the minimum required to detect the metric's target MDE.
  * Assignment enrolls exactly the chosen sample (including participants with missing values),
  * regardless of how many participants the datasource could supply.

@@ -9,7 +9,7 @@ import {
   estimateParticipantNFromClusters,
 } from '@/components/features/experiments/metric-sample-size-display';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
-import { getPowerAnalysis } from '@/services/experiment-utils';
+import { getAssignableN, getPowerAnalysis } from '@/services/experiment-utils';
 
 /**
  * `sampleSizeOption` is the selected sample size option.
@@ -43,7 +43,7 @@ export type PowerCheckResponseChange = PowerCheckSampleOptionChange & {
 export function getSampleSizeLandmarks(primaryAnalysis: MetricPowerAnalysis | undefined) {
   const targetN = primaryAnalysis?.target_n ?? undefined;
   const targetNClusters = primaryAnalysis?.num_clusters_total ?? undefined;
-  const allSamples = primaryAnalysis?.metric_spec.available_n ?? 0;
+  const allSamples = getAssignableN(primaryAnalysis) ?? 0;
   const avgClusterSize = primaryAnalysis?.metric_spec.avg_cluster_size ?? undefined;
   const maxClusters =
     avgClusterSize !== undefined && avgClusterSize > 0 ? Math.floor(allSamples / avgClusterSize) : undefined;
@@ -191,7 +191,7 @@ export function PowerCheckSampleSizeSelector({
                 <MetricSampleSizeDisplay
                   analysis={primaryAnalysis}
                   isClustered={isClustered}
-                  variant="available"
+                  variant="assignable"
                   align="center"
                 />
               </Flex>
