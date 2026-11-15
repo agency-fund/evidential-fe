@@ -337,10 +337,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   // The chart's "available" marker. In one-time mode only participants with no value for the primary metric can be
   // assigned, so it stops at that count, matching the sizes fetchPowerCurve requests.
   const primaryAvailableN = getAssignableN(primaryPower);
-  // Same count, for the one-time banner: the most a custom sample size can be. Read the mode from the response so it
-  // matches the numbers being shown.
   const responseUsesOneTimeMetric = primaryPower?.metric_spec.use_one_time_metric === true;
-  const oneTimeAvailableN = responseUsesOneTimeMetric ? primaryAvailableN : undefined;
   const primaryAvgClusterSize = primaryPower?.metric_spec.avg_cluster_size ?? undefined;
   const curveAvailableSize = isClustered
     ? primaryAvailableN !== undefined && primaryAvgClusterSize
