@@ -10,6 +10,7 @@ import type { ExperimentStatus } from '@/components/features/experiments/types';
 import { formatIsoDateLocal } from '@/services/date-utils';
 import Link from 'next/link';
 import { Impact } from '@/api/methods.schemas';
+import { GoogleSheetsExperimentTab } from '@/components/features/experiments/google-sheets-experiment-tab';
 
 interface ExperimentCardProps {
   title: string;
@@ -24,6 +25,7 @@ interface ExperimentCardProps {
   designUrl?: string;
   experimentId: string;
   organizationId: string;
+  experimentSpreadsheetUrl?: string | null;
 }
 
 export function ExperimentCard({
@@ -39,6 +41,7 @@ export function ExperimentCard({
   designUrl,
   experimentId,
   organizationId,
+  experimentSpreadsheetUrl,
 }: ExperimentCardProps) {
   return (
     <Card size="3">
@@ -106,6 +109,11 @@ export function ExperimentCard({
         </Flex>
 
         <Flex justify="end" gap="2" pt="4">
+          {experimentSpreadsheetUrl && (
+            <Flex mr="auto">
+              <GoogleSheetsExperimentTab experimentSpreadsheetUrl={experimentSpreadsheetUrl} />
+            </Flex>
+          )}
           {designUrl && (
             <Tooltip content="View design document">
               <IconButton variant="soft" color="blue" size="2" asChild>
