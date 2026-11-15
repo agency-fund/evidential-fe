@@ -666,15 +666,13 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           }
           return { ...data, powerCurveResponse: msg.response };
         }
-        // The switch re-runs the power check with the new value. Keep the current min sample size response until
-        // the new one arrives (the switch stays visible meanwhile); if the re-run fails, the section flips it back.
+        // The switch re-runs the power check with the new value. Keep the current min sample size response, curve,
+        // and custom MDE until the new ones arrive; if the re-run fails, the section flips the switch back and
+        // the previous responses remain intact without being lost.
         if (msg.type === 'set-one-time-metric') {
           return {
             ...data,
             useOneTimeMetric: msg.enabled,
-            // MDE estimates and the curve were computed for the other mode's population; don't reuse them.
-            mdePowerCheckResponse: undefined,
-            powerCurveResponse: undefined,
             createExperimentError: undefined,
           };
         }

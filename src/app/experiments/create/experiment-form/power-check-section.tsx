@@ -339,7 +339,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   // assigned, so it stops at that count, matching the sizes fetchPowerCurve requests.
   const primaryAvailableN = getAssignableN(primaryPower);
   const availableWithoutValuesN =
-    primaryPower?.metric_spec.available_n !== undefined && primaryPower?.metric_spec.available_nonnull_n !== undefined
+    primaryPower?.metric_spec.available_n != null && primaryPower?.metric_spec.available_nonnull_n != null
       ? primaryPower.metric_spec.available_n - primaryPower.metric_spec.available_nonnull_n
       : undefined;
   const primaryAvgClusterSize = primaryPower?.metric_spec.avg_cluster_size ?? undefined;
