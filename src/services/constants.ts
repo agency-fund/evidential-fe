@@ -1,4 +1,3 @@
-export const AIRPLANE_MODE = process.env.NEXT_PUBLIC_AIRPLANE_MODE;
 export const API_BASE_URL = process.env.NEXT_PUBLIC_XNGIN_API_BASE_URL;
 export const OIDC_BASE_URL = process.env.NEXT_PUBLIC_XNGIN_OIDC_BASE_URL;
 export const PRODUCT_NAME = 'Evidential';

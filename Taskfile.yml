@@ -38,12 +38,6 @@ tasks:
       - task: nodedeps
         silent: true
     cmd: pnpm run dev
-  start-airplane:
-    desc: "Like start, but runs the frontend in airplane mode. The UI will identify you as testing@example.com automatically."
-    env:
-      NEXT_PUBLIC_AIRPLANE_MODE: "true"
-    interactive: true
-    cmd: task start
   genapiclient:
     desc: 'Updates the generated API client from the apiserver running at http://localhost:8000'
     cmd: |
