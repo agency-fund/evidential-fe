@@ -61,6 +61,9 @@ tasks:
       - lint-tsc
       - lint-next
     desc: 'Runs the NextJS-managed linter'
+  test:
+    desc: 'Runs the unit tests'
+    cmd: pnpm run test
   build:
     desc: 'Production build of the NextJS application'
     cmd: pnpm run build

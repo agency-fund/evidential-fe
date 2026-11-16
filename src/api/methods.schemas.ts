@@ -476,6 +476,8 @@ export interface CreateExperimentRequest {
 	webhooks?: string[];
 }
 
+export type CreateExperimentResponseSpreadsheetFullUrl = string | null;
+
 export type CreateExperimentResponseStoppedAssignmentsAt = string | null;
 
 export type CreateExperimentResponseStoppedAssignmentsReason =
@@ -488,6 +490,7 @@ export type CreateExperimentResponseAssignSummary = AssignSummary | null;
 export interface CreateExperimentResponse {
 	experiment_id: string;
 	datasource_id: string;
+	spreadsheet_full_url?: CreateExperimentResponseSpreadsheetFullUrl;
 	state: ExperimentState;
 	stopped_assignments_at: CreateExperimentResponseStoppedAssignmentsAt;
 	stopped_assignments_reason: CreateExperimentResponseStoppedAssignmentsReason;
@@ -647,7 +650,48 @@ export interface DesignSpecMetricRequest {
 	use_one_time_metric?: boolean;
 }
 
-export type Dsn = ApiOnlyDsn | PostgresDsn | BqDsn | RedshiftDsn;
+export type Dsn =
+	| ApiOnlyDsn
+	| PostgresDsn
+	| BqDsn
+	| RedshiftDsn
+	| GoogleSheetsDsn;
+
+export type DwhErrorCode = (typeof DwhErrorCode)[keyof typeof DwhErrorCode];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const DwhErrorCode = {
+	dwh_connection: "dwh_connection",
+	dwh_dns: "dwh_dns",
+	dwh_authentication: "dwh_authentication",
+	dwh_database_not_found: "dwh_database_not_found",
+	dwh_table_not_found: "dwh_table_not_found",
+	dwh_column_not_found: "dwh_column_not_found",
+	dwh_permission_denied: "dwh_permission_denied",
+	dwh_timeout: "dwh_timeout",
+	dwh_query_failed: "dwh_query_failed",
+	dwh_configuration: "dwh_configuration",
+} as const;
+
+export type DwhErrorResponseHint = string | null;
+
+export type DwhErrorResponseHintCommand = string | null;
+
+export type DwhErrorResponseDwhMessage = string | null;
+
+export type DwhErrorResponseTableName = string | null;
+
+export type DwhErrorResponseRequestId = string | null;
+
+export interface DwhErrorResponse {
+	message: string;
+	code: DwhErrorCode;
+	hint?: DwhErrorResponseHint;
+	hint_command?: DwhErrorResponseHintCommand;
+	dwh_message?: DwhErrorResponseDwhMessage;
+	table_name?: DwhErrorResponseTableName;
+	request_id?: DwhErrorResponseRequestId;
+}
 
 export type EventSummaryLink = string | null;
 
@@ -679,6 +723,8 @@ export type ExperimentAnalysisResponse =
 	| FreqExperimentAnalysisResponse
 	| BanditExperimentAnalysisResponse;
 
+export type ExperimentConfigSpreadsheetFullUrl = string | null;
+
 export type ExperimentConfigStoppedAssignmentsAt = string | null;
 
 export type ExperimentConfigStoppedAssignmentsReason =
@@ -691,6 +737,7 @@ export type ExperimentConfigAssignSummary = AssignSummary | null;
 export interface ExperimentConfig {
 	experiment_id: string;
 	datasource_id: string;
+	spreadsheet_full_url?: ExperimentConfigSpreadsheetFullUrl;
 	state: ExperimentState;
 	stopped_assignments_at: ExperimentConfigStoppedAssignmentsAt;
 	stopped_assignments_reason: ExperimentConfigStoppedAssignmentsReason;
@@ -823,6 +870,8 @@ export interface GetExperimentForUiResponse {
 	experiment_schema: GetExperimentForUiResponseExperimentSchema;
 }
 
+export type GetExperimentResponseSpreadsheetFullUrl = string | null;
+
 export type GetExperimentResponseStoppedAssignmentsAt = string | null;
 
 export type GetExperimentResponseStoppedAssignmentsReason =
@@ -835,6 +884,7 @@ export type GetExperimentResponseAssignSummary = AssignSummary | null;
 export interface GetExperimentResponse {
 	experiment_id: string;
 	datasource_id: string;
+	spreadsheet_full_url?: GetExperimentResponseSpreadsheetFullUrl;
 	state: ExperimentState;
 	stopped_assignments_at: GetExperimentResponseStoppedAssignmentsAt;
 	stopped_assignments_reason: GetExperimentResponseStoppedAssignmentsReason;
@@ -904,6 +954,20 @@ export interface GetUserResponse {
 	organizations: OrganizationListItem[];
 }
 
+export type GoogleSheetsDsnType =
+	(typeof GoogleSheetsDsnType)[keyof typeof GoogleSheetsDsnType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const GoogleSheetsDsnType = {
+	google_sheets: "google_sheets",
+} as const;
+
+export interface GoogleSheetsDsn {
+	type: GoogleSheetsDsnType;
+	/** @maxLength 500 */
+	spreadsheet_url: string;
+}
+
 export interface HTTPExceptionError {
 	detail: string;
 }
@@ -933,10 +997,13 @@ export interface InspectDatasourceResponse {
 	tables: string[];
 }
 
+export type InspectDatasourceTableResponseDisplayName = string | null;
+
 export interface InspectDatasourceTableResponse {
 	primary_key_fields: string[];
 	detected_unique_id_fields: string[];
 	fields: FieldMetadata[];
+	display_name?: InspectDatasourceTableResponseDisplayName;
 }
 
 export interface Journey {
@@ -1082,10 +1149,6 @@ export interface MdeCurvePoint {
 	desired_n: number;
 	desired_n_clusters?: MdeCurvePointDesiredNClusters;
 	pct_change?: MdeCurvePointPctChange;
-}
-
-export interface MessageError {
-	message: string;
 }
 
 export interface MetricAnalysis {

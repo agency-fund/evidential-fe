@@ -6,7 +6,7 @@ import { CheckIcon, CopyIcon } from '@radix-ui/react-icons';
 import { transitions } from '@/services/transitions';
 
 interface CopyToClipboardProps {
-  content: string;
+  content: string | (() => string);
   tooltipContent?: string;
   size?: '1' | '2' | '3' | '4';
 }
@@ -16,7 +16,7 @@ export function CopyToClipBoard({ content, tooltipContent = 'Copy to clipboard',
   const timeoutRef = useRef<number | null>(null);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(content);
+    await navigator.clipboard.writeText(typeof content === 'function' ? content() : content);
     setCopied(true);
 
     if (timeoutRef.current) window.clearTimeout(timeoutRef.current);

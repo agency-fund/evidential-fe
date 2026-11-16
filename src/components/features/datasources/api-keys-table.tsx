@@ -23,7 +23,7 @@ export function ApiKeysTable({ datasourceId }: { datasourceId: string }) {
     },
   );
 
-  if (isLoading) {
+  if (isLoading && !error) {
     return <Spinner />;
   }
 

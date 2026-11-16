@@ -1,0 +1,46 @@
+import { prettyJSON } from '@/services/json-utils';
+import { ApiDwhError, ApiError } from '@/services/orval-fetch';
+
+export interface ReportField {
+  label: string;
+  value: string;
+}
+
+const presentFields = (entries: [label: string, value: string | null][]): ReportField[] =>
+  entries.flatMap(([label, value]) => (value === null ? [] : [{ label, value }]));
+
+const formatBody = (data: unknown): string | null => {
+  if (data === undefined || data === null) {
+    return null;
+  }
+  return typeof data === 'object' ? prettyJSON(data) : String(data);
+};
+
+const requestFields = (error: ApiError, pageUrl: string): [string, string | null][] => [
+  ['Page', pageUrl],
+  ['API request', error.request === null ? null : `${error.request.method} ${error.request.path}`],
+];
+
+export const dwhErrorDetails = (error: ApiDwhError, pageUrl: string): ReportField[] =>
+  presentFields([
+    ['Error code', error.code],
+    ['Table', error.tableName],
+    ...requestFields(error, pageUrl),
+    ['Request ID', error.requestId],
+    ['Data warehouse message', error.dwhMessage],
+  ]);
+
+export const apiErrorDetails = (error: ApiError, pageUrl: string): ReportField[] =>
+  presentFields([
+    ['HTTP status', String(error.response.status)],
+    ...requestFields(error, pageUrl),
+    ['Response body', formatBody(error.response.data)],
+  ]);
+
+/** A multi-line value starts on the line after its label. */
+export const formatErrorReport = (title: string, body: string[], details: ReportField[]): string =>
+  [
+    title,
+    ...body,
+    ...details.map(({ label, value }) => (value.includes('\n') ? `${label}:\n${value}` : `${label}: ${value}`)),
+  ].join('\n');

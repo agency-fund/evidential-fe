@@ -1,11 +1,12 @@
 'use client';
 import { useState } from 'react';
-import { AlertDialog, Button, Callout, Checkbox, DropdownMenu, Flex, IconButton, Text } from '@radix-ui/themes';
+import { AlertDialog, Box, Button, Callout, Checkbox, DropdownMenu, Flex, IconButton, Text } from '@radix-ui/themes';
 import { DotsVerticalIcon, TrashIcon } from '@radix-ui/react-icons';
 import { getGetExperimentForUiKey, useDeleteExperimentData } from '@/api/admin';
 import { DeleteExperimentDataRequest } from '@/api/methods.schemas';
 import { mutate } from 'swr';
 import { useAuth } from '@/providers/auth-provider';
+import { GenericErrorCallout } from '@/components/ui/generic-error';
 
 interface ExperimentDetailsDropdownMenuProps {
   datasourceId: string;
@@ -33,7 +34,7 @@ export function ExperimentDetailsDropdownMenu({ datasourceId, experimentId }: Ex
   });
 
   const handleDeleteData = async () => {
-    await deleteExperimentData(deleteDataRequest);
+    await deleteExperimentData(deleteDataRequest, { throwOnError: false });
   };
 
   // Only show dangerous options to privileged users.
@@ -101,9 +102,9 @@ export function ExperimentDetailsDropdownMenu({ datasourceId, experimentId }: Ex
           )}
 
           {deleteExperimentDataError && (
-            <Callout.Root color="red" my="4">
-              <Callout.Text>Error: {deleteExperimentDataError.message}</Callout.Text>
-            </Callout.Root>
+            <Box my="4">
+              <GenericErrorCallout title="Failed to delete data" error={deleteExperimentDataError} />
+            </Box>
           )}
 
           <Flex gap="3" mt="4" justify="end">
