@@ -15,10 +15,9 @@ ENV SENTRY_RELEASE=${RAILWAY_GIT_COMMIT_SHA}
 WORKDIR /app
 RUN npm install -g pnpm@12.2.1
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-# Note: Railway builders will error if the id= is set via build variables.
-RUN --mount=type=cache,id=s/c2dbd22d-5c79-4173-be42-e99daa009a7c-/pnpm/store,target=/pnpm/store \
-    pnpm config set store-dir /pnpm/store && \
-    pnpm install --frozen-lockfile
+# No build cache mount: Railway requires a cache mount's id= to embed the ID of the service being built, so the
+# mount used by the production service would fail the build of a service in another Railway project.
+RUN pnpm install --frozen-lockfile
 COPY next.config.ts tsconfig.json ./
 COPY sentry.*.config.ts ./
 COPY src ./src
