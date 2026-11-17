@@ -7,6 +7,7 @@ import {
   BackpackIcon,
   ExitIcon,
   GearIcon,
+  MixerHorizontalIcon,
   PersonIcon,
   RocketIcon,
 } from '@radix-ui/react-icons';
@@ -110,6 +111,9 @@ export function HeaderBar() {
                 </DropdownMenu.Label>
                 <DropdownMenu.Item onClick={() => router.push('/users')}>
                   <PersonIcon /> Manage Users
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onClick={() => router.push('/settings')}>
+                  <MixerHorizontalIcon /> Evidential Settings
                 </DropdownMenu.Item>
               </>
             )}
