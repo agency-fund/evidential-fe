@@ -468,6 +468,12 @@ export interface CreateDatasourceResponse {
 	id: string;
 }
 
+export interface CreateDomainSettingsRequest {
+	/** @maxLength 128 */
+	domain: string;
+	allow_signup?: boolean;
+}
+
 export type CreateExperimentRequestPowerAnalyses = PowerResponse | null;
 
 export interface CreateExperimentRequest {
@@ -648,6 +654,14 @@ export interface DesignSpecMetricRequest {
 	available_n?: DesignSpecMetricRequestAvailableN;
 	available_n_clusters?: DesignSpecMetricRequestAvailableNClusters;
 	use_one_time_metric?: boolean;
+}
+
+export interface DomainSettingsSummary {
+	/** @maxLength 64 */
+	id: string;
+	/** @maxLength 128 */
+	domain: string;
+	allow_signup: boolean;
 }
 
 export type Dsn =
@@ -913,6 +927,13 @@ export interface GetParticipantAssignmentResponse {
 	assignment: GetParticipantAssignmentResponseAssignment;
 }
 
+export type GetServerSettingsResponseUpdatedAt = string | null;
+
+export interface GetServerSettingsResponse {
+	signup: SignupSettings;
+	updated_at: GetServerSettingsResponseUpdatedAt;
+}
+
 export interface GetSnapshotResponse {
 	snapshot: Snapshot;
 }
@@ -1026,6 +1047,10 @@ export interface ListApiKeysResponse {
 
 export interface ListDatasourcesResponse {
 	items: DatasourceSummary[];
+}
+
+export interface ListDomainSettingsResponse {
+	items: DomainSettingsSummary[];
 }
 
 export interface ListExperimentsResponse {
@@ -1617,6 +1642,19 @@ export interface SetTurnArmJourneyMappingRequest {
 	arm_to_journeys: SetTurnArmJourneyMappingRequestArmToJourneys;
 }
 
+export type SignupMode = (typeof SignupMode)[keyof typeof SignupMode];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const SignupMode = {
+	existing: "existing",
+	existing_and_domains: "existing_and_domains",
+	anyone: "anyone",
+} as const;
+
+export interface SignupSettings {
+	mode: SignupMode;
+}
+
 export type SnapshotDetailsAnyOf = { [key: string]: unknown };
 
 export type SnapshotDetails = SnapshotDetailsAnyOf | null;
@@ -1706,6 +1744,12 @@ export interface UpdateDatasourceRequest {
 	dsn?: UpdateDatasourceRequestDsn;
 }
 
+export type UpdateDomainSettingsRequestAllowSignup = boolean | null;
+
+export interface UpdateDomainSettingsRequest {
+	allow_signup?: UpdateDomainSettingsRequestAllowSignup;
+}
+
 export type UpdateExperimentRequestName = string | null;
 
 export type UpdateExperimentRequestDescription = string | null;
@@ -1741,6 +1785,12 @@ export interface UpdateOrganizationWebhookRequest {
 	name: string;
 	/** @maxLength 500 */
 	url: string;
+}
+
+export type UpdateServerSettingsRequestSignup = SignupSettings | null;
+
+export interface UpdateServerSettingsRequest {
+	signup?: UpdateServerSettingsRequestSignup;
 }
 
 export interface UserDetail {
@@ -1821,6 +1871,10 @@ export const ListUsersScope = {
 	all: "all",
 	mine: "mine",
 } as const;
+
+export type DeleteDomainSettingsParams = {
+	allow_missing?: boolean;
+};
 
 export type DeleteSnapshotParams = {
 	allow_missing?: boolean;
