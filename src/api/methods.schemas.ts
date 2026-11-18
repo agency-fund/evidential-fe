@@ -395,6 +395,8 @@ export interface CMABExperimentSpec {
 	/** @minimum 1 */
 	autofail_window?: number;
 	autofail_outcome_value?: number;
+	/** @minimum 1 */
+	update_frequency_hours?: number;
 }
 
 export interface CallbackRequest {
@@ -1092,6 +1094,8 @@ export interface MABDwhExperimentSpec {
 	/** @minimum 1 */
 	autofail_window?: number;
 	autofail_outcome_value?: number;
+	/** @minimum 1 */
+	update_frequency_hours?: number;
 	/** @maxLength 100 */
 	table_name: string;
 	/**
@@ -1139,6 +1143,8 @@ export interface MABExperimentSpec {
 	/** @minimum 1 */
 	autofail_window?: number;
 	autofail_outcome_value?: number;
+	/** @minimum 1 */
+	update_frequency_hours?: number;
 }
 
 export type MdeCurvePointDesiredNClusters = number | null;
@@ -1697,6 +1703,10 @@ export interface UpdateBanditArmOutcomeRequest {
 	outcome: number;
 }
 
+export interface UpdateBanditArmsResponse {
+	arms: ArmBandit[];
+}
+
 export type UpdateDatasourceRequestName = string | null;
 
 export type UpdateDatasourceRequestDsn = Dsn | null;
@@ -1919,6 +1929,10 @@ export type AnalyzeExperimentParams = {
 
 export type DeleteExperimentParams = {
 	allow_missing?: boolean;
+};
+
+export type UpdateBanditArmsForUiParams = {
+	update_from_initial_prior?: boolean;
 };
 
 export type GetOrganizationTurnConnectionParams = {

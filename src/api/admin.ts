@@ -64,6 +64,7 @@ import type {
 	PowerResponse,
 	RemoveMemberFromOrganizationParams,
 	UpdateArmRequest,
+	UpdateBanditArmsForUiParams,
 	UpdateDatasourceRequest,
 	UpdateExperimentRequest,
 	UpdateOrganizationRequest,
@@ -3469,6 +3470,104 @@ export const useUpdateArm = <
 		datasourceId,
 		experimentId,
 		armId,
+		requestOptions,
+	);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+export const getUpdateBanditArmsForUiUrl = (
+	datasourceId: string,
+	experimentId: string,
+	params?: UpdateBanditArmsForUiParams,
+) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/arms/update?${stringifiedParams}`
+		: `/v1/m/datasources/${datasourceId}/experiments/${experimentId}/arms/update`;
+};
+
+export const updateBanditArmsForUi = async (
+	datasourceId: string,
+	experimentId: string,
+	params?: UpdateBanditArmsForUiParams,
+	options?: RequestInit,
+): Promise<void> => {
+	return orvalFetch<void>(
+		getUpdateBanditArmsForUiUrl(datasourceId, experimentId, params),
+		{
+			...options,
+			method: "POST",
+		},
+	);
+};
+
+export const getUpdateBanditArmsForUiMutationFetcher = (
+	datasourceId: string,
+	experimentId: string,
+	params?: UpdateBanditArmsForUiParams,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, __: { arg: Arguments }) => {
+		return updateBanditArmsForUi(datasourceId, experimentId, params, options);
+	};
+};
+export const getUpdateBanditArmsForUiMutationKey = (
+	datasourceId: string,
+	experimentId: string,
+	params?: UpdateBanditArmsForUiParams,
+) =>
+	[
+		`/v1/m/datasources/${datasourceId}/experiments/${experimentId}/arms/update`,
+		...(params ? [params] : []),
+	] as const;
+
+export type UpdateBanditArmsForUiMutationResult = NonNullable<
+	Awaited<ReturnType<typeof updateBanditArmsForUi>>
+>;
+export type UpdateBanditArmsForUiMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+export const useUpdateBanditArmsForUi = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	datasourceId: string,
+	experimentId: string,
+	params?: UpdateBanditArmsForUiParams,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof updateBanditArmsForUi>>,
+			TError,
+			Key,
+			Arguments,
+			Awaited<ReturnType<typeof updateBanditArmsForUi>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey =
+		swrOptions?.swrKey ??
+		getUpdateBanditArmsForUiMutationKey(datasourceId, experimentId, params);
+	const swrFn = getUpdateBanditArmsForUiMutationFetcher(
+		datasourceId,
+		experimentId,
+		params,
 		requestOptions,
 	);
 

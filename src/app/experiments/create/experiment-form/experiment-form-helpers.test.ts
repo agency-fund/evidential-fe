@@ -1,6 +1,31 @@
 import { expect, test } from 'vitest';
 import { z } from 'zod';
-import { describeDesignSpecError } from './experiment-form-helpers';
+import { createDefaultBanditParams } from './experiment-bandit-helpers';
+import { convertToBanditCreateRequest, describeDesignSpecError } from './experiment-form-helpers';
+import type { ExperimentFormData } from './experiment-form-types';
+
+const makeBanditFormData = (overrides: Partial<ExperimentFormData> = {}): ExperimentFormData => ({
+  name: 'Bandit',
+  hypothesis: '',
+  designUrl: '',
+  startDate: '2030-01-01T00:00:00Z',
+  endDate: '2030-02-01T00:00:00Z',
+  experimentType: 'mab_online',
+  bandit: createDefaultBanditParams('mab_online'),
+  ...overrides,
+});
+
+test('convertToBanditCreateRequest sends the chosen update frequency', () => {
+  const request = convertToBanditCreateRequest(makeBanditFormData({ updateFrequencyHours: 6 }));
+
+  expect(request.design_spec).toMatchObject({ update_frequency_hours: 6 });
+});
+
+test('convertToBanditCreateRequest defaults the update frequency to 24 hours', () => {
+  const request = convertToBanditCreateRequest(makeBanditFormData());
+
+  expect(request.design_spec).toMatchObject({ update_frequency_hours: 24 });
+});
 
 test('describeDesignSpecError lists each zod issue with its path', () => {
   const result = z.object({ arms: z.array(z.string()).min(2), power: z.number() }).safeParse({ arms: [] });

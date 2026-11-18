@@ -355,6 +355,7 @@ export function convertToBanditCreateRequest(data: ExperimentFormData): CreateEx
     enable_autofail: enableAutofail ?? false,
     autofail_window: autofailWindow ?? 24,
     autofail_outcome_value: autofailOutcomeValue ?? 0,
+    update_frequency_hours: data.updateFrequencyHours ?? 24,
   };
 
   // A MAB experiment bound to a DWH target column is created as the distinct mab_online_dwh spec,
