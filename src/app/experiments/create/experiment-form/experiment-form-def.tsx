@@ -74,6 +74,11 @@ const resetPowerCheckState = ({ primaryMetricChanged = false } = {}): Partial<Ex
   ...(primaryMetricChanged ? { useOneTimeMetric: false } : {}),
 });
 
+const hasPrimaryMetricFilter = (data: ExperimentFormData): boolean => {
+  const fieldName = data.primaryMetric?.metric.field_name;
+  return !!fieldName && (data.filters ?? []).some((filter) => filter.field_name === fieldName);
+};
+
 const FREQUENTIST_BREADCRUMBS: Array<ExperimentScreenId> = [
   'metadata',
   'experiment-type',
@@ -607,6 +612,8 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             clusterCv: undefined,
             clusterAvgClusterSize: undefined,
             ...resetPowerCheckState(),
+            // The backend rejects one-time mode when the primary metric itself is filtered.
+            useOneTimeMetric: hasPrimaryMetricFilter({ ...data, filters: msg.filters }) ? false : data.useOneTimeMetric,
           };
         }
 
@@ -682,7 +689,8 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
         if (msg.type === 'set-one-time-metric') {
           return {
             ...data,
-            useOneTimeMetric: msg.enabled,
+            // A late toggle rollback must not re-enable one-time mode after a conflicting filter was added.
+            useOneTimeMetric: msg.enabled && !hasPrimaryMetricFilter(data),
             createExperimentError: undefined,
           };
         }
