@@ -51,7 +51,11 @@ export type PowerCheckSectionAction =
   | { type: 'set-one-time-metric'; enabled: boolean }
   | ({ type: 'set-chosen-n' } & PowerCheckSampleOptionChange)
   | ({ type: 'set-power-check-response' } & PowerCheckResponseChange)
-  | { type: 'set-power-curve-response'; response: PowerResponse; designSpec: AnyFrequentistDesignSpec };
+  | {
+      type: 'set-power-curve-response';
+      response: PowerResponse | undefined;
+      designSpec: AnyFrequentistDesignSpec;
+    };
 
 interface PowerCheckSectionProps {
   data: ExperimentFormData;
@@ -119,11 +123,15 @@ function RunPowerCheckButton({ enabled, onClick, loading, disabledReason }: Powe
 export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const [validationError, setValidationError] = useState<ZodError | null>(null);
   const [validationErrorMessage, setValidationErrorMessage] = useState<string | null>(null);
-  const { trigger: triggerEstimateSampleSize, isMutating, error } = usePowerCheck(data.datasourceId!);
-  const { trigger: triggerPowerCurve } = usePowerCheck(data.datasourceId!, {
+  const {
+    trigger: triggerEstimateSampleSize,
+    isMutating: isEstimatingSampleSize,
+    error,
+  } = usePowerCheck(data.datasourceId!);
+  const { trigger: triggerPowerCurve, isMutating: isFetchingPowerCurve } = usePowerCheck(data.datasourceId!, {
     swr: { swrKey: `${data.datasourceId}/power/curve` },
   });
-  const { enabled, reason } = isPowerCheckButtonEnabled(isMutating, data);
+  const { enabled, reason } = isPowerCheckButtonEnabled(isEstimatingSampleSize, data);
 
   /**
    * One-time mode changes the power check itself: the backend checks sufficiency, and solves for the MDE, against
@@ -141,7 +149,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   /**
    * Fires the follow-up MDE-curve request for a just-received power check response. Best-effort:
    * the response's stats are echoed back so the server computes every point without re-querying
-   * the data warehouse, and any failure just leaves the chart unrendered.
+   * the data warehouse. Keep the previous curve until its replacement arrives, and clear it if the request fails.
    *
    * `formData` is the form as it will be once the response is stored; see handlePowerCheck.
    */
@@ -163,6 +171,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
       designSpec = convertToFrequentistDesignSpec({
         ...formData,
         ...clusterStats,
+        useOneTimeMetric: primary.metric_spec.use_one_time_metric === true,
         desiredN: undefined,
         desiredNClusters: undefined,
       });
@@ -170,6 +179,9 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
       // The curve is enrichment: a spec that no longer converts just means no chart.
       return;
     }
+    const setCurveResponse = (response: PowerResponse | undefined) => {
+      dispatch({ type: 'set-power-curve-response', response, designSpec });
+    };
     // One-time mode can only assign the rows with no value, so the curve stops at that count. The backend
     // reports an error for any size past it.
     const availableN = getAssignableN(primary) ?? 0;
@@ -185,22 +197,28 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
       const maxClusters = Math.floor(availableN / avgClusterSize);
       const sizes = powerCurveSizes(primary.num_clusters_total ?? undefined, maxClusters);
       if (!sizes.length) {
+        setCurveResponse(undefined);
         return;
       }
       curveSpec = { ...echoedSpec, desired_ns_clusters: sizes };
     } else {
       const sizes = powerCurveSizes(primary.target_n ?? undefined, availableN);
       if (!sizes.length) {
+        setCurveResponse(undefined);
         return;
       }
       curveSpec = { ...echoedSpec, desired_ns: sizes };
     }
 
-    const curveResponse = await triggerPowerCurve(toPowerRequest(curveSpec), { throwOnError: false });
-    if (!curveResponse) {
-      return;
+    try {
+      const curveResponse = await triggerPowerCurve(toPowerRequest(curveSpec));
+      // SWR returns undefined for a superseded request; let its replacement manage the displayed curve.
+      if (curveResponse) {
+        setCurveResponse(curveResponse);
+      }
+    } catch {
+      setCurveResponse(undefined);
     }
-    dispatch({ type: 'set-power-curve-response', response: curveResponse, designSpec });
   };
 
   /**
@@ -273,15 +291,11 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
 
   const primaryMetricFieldName = data.primaryMetric?.metric.field_name ?? '';
   const isClustered = isClusteredExperimentFormData(data);
-  const hasValidationError = validationError || validationErrorMessage;
-  const primaryPower =
-    data.powerCheckResponse !== undefined && !hasValidationError
-      ? getPowerAnalysis(data.powerCheckResponse, primaryMetricFieldName)
-      : undefined;
-  const restPowerAnalyses =
-    data.powerCheckResponse !== undefined && !hasValidationError
-      ? data.powerCheckResponse.analyses.filter((a) => a.metric_spec.field_name !== primaryMetricFieldName)
-      : undefined;
+  // A failed refresh doesn't invalidate the last successful analysis; design edits clear it in the reducer.
+  const primaryPower = getPowerAnalysis(data.powerCheckResponse, primaryMetricFieldName);
+  const restPowerAnalyses = data.powerCheckResponse?.analyses.filter(
+    (a) => a.metric_spec.field_name !== primaryMetricFieldName,
+  );
   const restPower = restPowerAnalyses !== undefined && restPowerAnalyses.length > 0 ? restPowerAnalyses : undefined;
   const primaryPowerClusterSizeCv = primaryPower?.msg?.values?.cluster_size_cv ?? primaryPower?.metric_spec.cv;
   const primaryHasMissingValues = primaryPower != null && metricHasMissingValues(primaryPower);
@@ -292,25 +306,23 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   ];
 
   // Power curve chart inputs, all in the chart's x unit (clusters for cluster designs).
-  const curveAnalysis =
-    data.powerCurveResponse !== undefined && !validationError
-      ? getPowerAnalysis(data.powerCurveResponse, primaryMetricFieldName)
-      : undefined;
-  // The chart's "available" marker. In one-time mode only participants with no value for the primary metric can be
-  // assigned, so it stops at that count, matching the sizes fetchPowerCurve requests.
-  const primaryAvailableN = getAssignableN(primaryPower);
-  // Same count, for the one-time banner: the most a custom sample size can be. Read the mode from the response so it
-  // matches the numbers being shown.
-  const oneTimeAvailableN = primaryPower?.metric_spec.use_one_time_metric ? primaryAvailableN : undefined;
-  const primaryAvgClusterSize = primaryPower?.metric_spec.avg_cluster_size ?? undefined;
+  const curveAnalysis = getPowerAnalysis(data.powerCurveResponse, primaryMetricFieldName);
+  // The one-time banner follows the latest sample-size response, independently of the curve being refreshed.
+  const oneTimeAvailableN = primaryPower?.metric_spec.use_one_time_metric ? getAssignableN(primaryPower) : undefined;
+  // While the replacement is loading, keep reference markers tied to the curve still on screen.
+  const curveAvailableN = getAssignableN(curveAnalysis);
+  const curveAvgClusterSize = curveAnalysis?.metric_spec.avg_cluster_size ?? undefined;
   const curveAvailableSize = isClustered
-    ? primaryAvailableN !== undefined && primaryAvgClusterSize
-      ? Math.floor(primaryAvailableN / primaryAvgClusterSize)
+    ? curveAvailableN !== undefined && curveAvgClusterSize
+      ? Math.floor(curveAvailableN / curveAvgClusterSize)
       : undefined
-    : primaryAvailableN;
+    : curveAvailableN;
   const curveMinSize = isClustered
-    ? (primaryPower?.num_clusters_total ?? undefined)
-    : (primaryPower?.target_n ?? undefined);
+    ? (curveAnalysis?.num_clusters_total ?? undefined)
+    : (curveAnalysis?.target_n ?? undefined);
+  const curveMatchesOneTimeMode =
+    (curveAnalysis?.metric_spec.use_one_time_metric === true) ===
+    (primaryPower?.metric_spec.use_one_time_metric === true);
   const targetMdePct = data.primaryMetric?.mde !== undefined ? Number(data.primaryMetric.mde) : undefined;
   const mdeAnalysisForDot = getPowerAnalysis(data.mdePowerCheckResponse, primaryMetricFieldName);
   const selectedMdePct =
@@ -366,7 +378,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
             onClick={async () => {
               await handlePowerCheck();
             }}
-            loading={isMutating}
+            loading={isEstimatingSampleSize}
             disabledReason={reason}
           />
 
@@ -499,7 +511,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                                 <Switch
                                   size="1"
                                   checked={data.useOneTimeMetric ?? false}
-                                  disabled={isMutating}
+                                  disabled={isEstimatingSampleSize}
                                   onCheckedChange={(enabled) => void handleOneTimeMetricChange(enabled)}
                                 />
                                 Assign only participants without a value
@@ -580,8 +592,18 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
         </Flex>
       </SectionCard>
 
-      {data.powerCheckResponse !== undefined && !hasValidationError && (
-        <SectionCard title="Select Target Sample Size">
+      {data.powerCheckResponse !== undefined && (
+        <SectionCard
+          headerLeft={
+            <Flex align="center" gap="2">
+              <Heading size="3">Select Target Sample Size</Heading>
+              <Spinner
+                loading={isEstimatingSampleSize || isFetchingPowerCurve}
+                aria-label="Updating sample size analysis"
+              />
+            </Flex>
+          }
+        >
           <Flex direction="column" gap="3" align="start" width="100%">
             {curveAnalysis ? (
               <PowerCurveChart
@@ -590,8 +612,8 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                 minSize={curveMinSize}
                 availableSize={curveAvailableSize}
                 targetMdePct={targetMdePct}
-                selectedSize={selectedSize}
-                selectedMdePct={selectedMdePct}
+                selectedSize={curveMatchesOneTimeMode ? selectedSize : undefined}
+                selectedMdePct={curveMatchesOneTimeMode ? selectedMdePct : undefined}
               />
             ) : null}
             <Text>Choose the total number of participants to distribute across all arms:</Text>
@@ -638,7 +660,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                 }}
                 onOptionChange={handleSampleOptionChange}
                 onEstimatedMDEChange={handleEstimatedMDEChange}
-                disabled={isMutating}
+                disabled={isEstimatingSampleSize}
               />
             </Flex>
           </Flex>

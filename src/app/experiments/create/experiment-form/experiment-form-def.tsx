@@ -59,8 +59,8 @@ const screen = packScreen<ExperimentFormData, ExperimentScreenId>();
 
 /**
  * Fields to spread into the form when a design edit invalidates the power check. Every edit that can change the power
- * analysis clears the results and the chosen sample size. One-time mode is only turned off when the primary metric
- * (or the table it comes from) changes: other edits, like confidence or power, don't change which participants have
+ * analysis clears the results and the chosen sample size. Primary metric or table changes turn off one-time mode:
+ * other edits, like confidence or power, don't change which participants have
  * no value, and the next power check confirms or turns off the choice anyway.
  */
 const resetPowerCheckState = ({ primaryMetricChanged = false } = {}): Partial<ExperimentFormData> => ({
@@ -196,7 +196,9 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             isBanditExperimentType(data.experimentType) != isBanditExperimentType(experimentType);
           const nextData = {
             ...data,
+            ...(data.experimentType !== experimentType ? resetPowerCheckState() : {}),
             experimentType,
+            useOneTimeMetric: experimentType === 'freq_preassigned' ? data.useOneTimeMetric : false,
             datasourceId: shouldClearDatasourceFields ? undefined : data.datasourceId,
             tableName: shouldClearDatasourceFields ? undefined : data.tableName,
             primaryKey: shouldClearDatasourceFields ? undefined : data.primaryKey,
@@ -529,6 +531,17 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
       breadcrumbTitle: 'Parameters',
       render: ExperimentFreqStackScreen,
       reducer: (data, msg: ExperimentFreqStackScreenMessage) => {
+        // Requests and debounced callbacks from this screen can finish after the experiment type changes.
+        if (
+          data.experimentType !== 'freq_preassigned' &&
+          (msg.type === 'set-power-check-response' ||
+            msg.type === 'set-power-curve-response' ||
+            msg.type === 'set-chosen-n' ||
+            msg.type === 'set-one-time-metric')
+        ) {
+          return data;
+        }
+
         // Metric builder actions - all metric changes invalidate power check
         if (msg.type === 'primary-metric-select') {
           return {
@@ -664,15 +677,12 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           }
           return { ...data, powerCurveResponse: msg.response };
         }
-        // The switch re-runs the power check with the new value. Keep the current min sample size response until
-        // the new one arrives (the switch stays visible meanwhile); if the re-run fails, the section flips it back.
+        // Keep the current results visible while the switch re-runs the power check. If it fails, restoring the
+        // switch also restores the mode these results describe.
         if (msg.type === 'set-one-time-metric') {
           return {
             ...data,
             useOneTimeMetric: msg.enabled,
-            // MDE estimates and the curve were computed for the other mode's population; don't reuse them.
-            mdePowerCheckResponse: undefined,
-            powerCurveResponse: undefined,
             createExperimentError: undefined,
           };
         }
@@ -706,6 +716,9 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
                 // so the switch, and what create sends, follow the response.
                 ...(msg.type === 'set-power-check-response' && msg.response
                   ? {
+                      // Custom MDE estimates belong to the previous population. Keep its curve visible until the
+                      // follow-up curve request replaces it or fails.
+                      mdePowerCheckResponse: undefined,
                       useOneTimeMetric:
                         getPowerAnalysis(msg.response, data.primaryMetric?.metric.field_name)?.metric_spec
                           .use_one_time_metric === true,
