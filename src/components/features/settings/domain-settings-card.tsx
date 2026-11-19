@@ -66,7 +66,7 @@ function DomainSettingsRow({ domainSettings }: DomainSettingsRowProps) {
           {domainSettings.domain}
         </Code>
         <Flex align="center" gap="3">
-          <Text as="label" size="2" color="gray">
+          <Text as="label" size="2">
             <Flex align="center" gap="2">
               <Switch
                 size="1"
@@ -74,7 +74,7 @@ function DomainSettingsRow({ domainSettings }: DomainSettingsRowProps) {
                 onCheckedChange={setAllowSignup}
                 disabled={isMutating}
               />
-              Allow sign-up
+              <Text color="gray">Allow sign-up</Text>
             </Flex>
           </Text>
           <IconButton type="button" variant="ghost" color="red" onClick={deleteDomain} disabled={isMutating}>
