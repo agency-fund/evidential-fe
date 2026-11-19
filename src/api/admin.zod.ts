@@ -24,6 +24,32 @@ export const patchUserBody = zod.object({
 	is_privileged: zod.union([zod.boolean(), zod.null()]).optional(),
 });
 
+export const updateServerSettingsBody = zod.object({
+	signup: zod
+		.union([
+			zod.object({
+				mode: zod.enum(["existing", "existing_and_domains", "anyone"]),
+			}),
+			zod.null(),
+		])
+		.optional(),
+});
+
+export const createDomainSettingsBodyDomainMax = 128;
+
+export const createDomainSettingsBodyAllowSignupDefault = true;
+
+export const createDomainSettingsBody = zod.object({
+	domain: zod.string().max(createDomainSettingsBodyDomainMax),
+	allow_signup: zod
+		.boolean()
+		.default(createDomainSettingsBodyAllowSignupDefault),
+});
+
+export const updateDomainSettingsBody = zod.object({
+	allow_signup: zod.union([zod.boolean(), zod.null()]).optional(),
+});
+
 export const createOrganizationsBodyNameMax = 100;
 
 export const createOrganizationsBody = zod.object({
