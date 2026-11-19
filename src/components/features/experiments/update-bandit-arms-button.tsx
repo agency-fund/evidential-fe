@@ -43,7 +43,7 @@ export function UpdateBanditArmsButton({ datasourceId, experimentId }: UpdateBan
     <Flex align="center" gap="2">
       <Button variant="soft" color="blue" size="2" loading={isMutating} onClick={handleClick}>
         <UpdateIcon width="16" height="16" />
-        Manually Update Bandits
+        Manually Update Arms
       </Button>
       <Text as="label" size="1">
         <Flex gap="1" align="center">

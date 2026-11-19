@@ -60,6 +60,7 @@ export function TargetingDialog({ designSpec, webhookIds }: TargetingDialogProps
                   autofailEnabled={designSpec.enable_autofail}
                   autofailWindow={designSpec.autofail_window}
                   autofailOutcomeValue={designSpec.autofail_outcome_value}
+                  updateFrequencyHours={designSpec.update_frequency_hours}
                 />
               )}
               {isCmabSpec(designSpec) && <ContextsSection contexts={designSpec.contexts ?? []} />}

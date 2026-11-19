@@ -11,13 +11,11 @@ import { formatIsoDateLocal } from '@/services/date-utils';
 import Link from 'next/link';
 import { Impact } from '@/api/methods.schemas';
 import { GoogleSheetsExperimentTab } from '@/components/features/experiments/google-sheets-experiment-tab';
-import { UpdateBanditArmsButton } from '@/components/features/experiments/update-bandit-arms-button';
-import { ExperimentType, isBanditExperimentType } from '@/services/experiment-utils';
 
 interface ExperimentCardProps {
   title: string;
   hypothesis: string;
-  type: ExperimentType;
+  type: string;
   startDate: string;
   endDate: string;
   status: ExperimentStatus;
@@ -45,8 +43,6 @@ export function ExperimentCard({
   organizationId,
   experimentSpreadsheetUrl,
 }: ExperimentCardProps) {
-  const isBandit = isBanditExperimentType(type);
-
   return (
     <Card size="3">
       <Flex height={'100%'} direction="column">
@@ -118,7 +114,6 @@ export function ExperimentCard({
               <GoogleSheetsExperimentTab experimentSpreadsheetUrl={experimentSpreadsheetUrl} />
             </Flex>
           )}
-          {isBandit ? <UpdateBanditArmsButton datasourceId={datasourceId} experimentId={experimentId} /> : null}
           {designUrl && (
             <Tooltip content="View design document">
               <IconButton variant="soft" color="blue" size="2" asChild>
