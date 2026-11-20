@@ -4,6 +4,9 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  experimental: {
+    agentUpgrade: 'security',
+  },
   async redirects() {
     return [
       {
