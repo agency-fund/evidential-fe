@@ -141,6 +141,7 @@ export type ExperimentFormData = {
   // bandit flow config
   bandit?: BanditParams;
   autofail?: AutofailConfig;
+  updateFrequencyHours?: number;
 
   // experiment-summarize-freq-screen (populated after createExperiment API call)
   experimentId?: string;

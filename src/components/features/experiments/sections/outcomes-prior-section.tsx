@@ -11,6 +11,7 @@ interface OutcomesPriorSectionProps {
   autofailEnabled?: boolean;
   autofailWindow?: number;
   autofailOutcomeValue?: number;
+  updateFrequencyHours?: number;
   onEdit?: () => void;
 }
 
@@ -20,6 +21,7 @@ export function OutcomesPriorSection({
   autofailEnabled,
   autofailWindow,
   autofailOutcomeValue,
+  updateFrequencyHours,
   onEdit,
 }: OutcomesPriorSectionProps) {
   const outcomeLabel = rewardType === 'binary' ? 'Binary' : 'Real-valued';
@@ -46,6 +48,14 @@ export function OutcomesPriorSection({
           <DataList.Label>Prior Distribution</DataList.Label>
           <DataList.Value>{priorLabel}</DataList.Value>
         </DataList.Item>
+        {updateFrequencyHours !== undefined ? (
+          <DataList.Item>
+            <DataList.Label>Update Frequency</DataList.Label>
+            <DataList.Value>
+              {updateFrequencyHours} {updateFrequencyHours === 1 ? 'hour' : 'hours'}
+            </DataList.Value>
+          </DataList.Item>
+        ) : null}
         {autofailEnabled && (
           <>
             <DataList.Item>
