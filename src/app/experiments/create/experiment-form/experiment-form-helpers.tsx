@@ -266,9 +266,10 @@ export function powerCurveSizes(targetN: number | undefined, availableN: number)
 
 /**
  * Returns a copy of the design spec whose metrics carry the baseline stats (and, for cluster
- * designs, ICC/CV/average cluster size) from a prior power check response, so the server reuses
- * them instead of re-querying the data warehouse. Metrics without usable stats in the response
- * are passed through unchanged; the caller must only echo a response produced by the same design.
+ * designs, ICC/CV/average cluster size/available_n_clusters) from a prior power check response, so
+ * the server reuses them instead of re-querying the data warehouse. Metrics without usable stats in
+ * the response are passed through unchanged; the caller must only echo a response produced by the
+ * same design.
  */
 export function withEchoedBaselineStats(
   spec: AnyFrequentistDesignSpec,
@@ -291,8 +292,9 @@ export function withEchoedBaselineStats(
       metric_type: stats.metric_type,
       metric_baseline: stats.metric_baseline,
       metric_stddev: stats.metric_stddev ?? null,
-      available_n: stats.available_n,
       available_nonnull_n: stats.available_nonnull_n,
+      available_n: stats.available_n,
+      available_n_clusters: stats.available_n_clusters ?? null,
     };
     if (metric.icc == null && stats.icc != null && stats.avg_cluster_size != null && stats.cv != null) {
       echoed.icc = stats.icc;

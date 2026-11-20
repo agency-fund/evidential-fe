@@ -1,5 +1,4 @@
-[![lint](https://github.com/agency-fund/evidential-fe/actions/workflows/lint.yaml/badge.svg?branch=main)](https://github.com/agency-fund/evidential-fe/actions/workflows/lint.yaml)
-[![precommit](https://github.com/agency-fund/evidential-fe/actions/workflows/precommit.yaml/badge.svg?branch=main)](https://github.com/agency-fund/evidential-fe/actions/workflows/precommit.yaml)
+[![CI](https://github.com/agency-fund/evidential-fe/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/agency-fund/evidential-fe/actions/workflows/ci.yaml)
 
 # Evidential Dashboard
 

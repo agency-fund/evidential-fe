@@ -45,8 +45,9 @@ export function getSampleSizeLandmarks(primaryAnalysis: MetricPowerAnalysis | un
   const targetNClusters = primaryAnalysis?.num_clusters_total ?? undefined;
   const allSamples = primaryAnalysis?.metric_spec.available_n ?? 0;
   const avgClusterSize = primaryAnalysis?.metric_spec.avg_cluster_size ?? undefined;
-  const maxClusters =
-    avgClusterSize !== undefined && avgClusterSize > 0 ? Math.floor(allSamples / avgClusterSize) : undefined;
+  // The server reports how many clusters the available rows cover. Estimating from the average
+  // cluster size can overshoot the available participants.
+  const maxClusters = primaryAnalysis?.metric_spec.available_n_clusters ?? undefined;
   // The minimum cannot be chosen when it is unknown or exceeds the available population.
   const isMinOptionDisabled = targetN === undefined || targetN === 0 || targetN > allSamples;
   return { targetN, targetNClusters, allSamples, avgClusterSize, maxClusters, isMinOptionDisabled };
@@ -154,7 +155,10 @@ export function PowerCheckSampleSizeSelector({
       onCustomSizeChange(undefined);
       return;
     }
-    onCustomSizeChange(estimateParticipantNFromClusters(clusterN, avgClusterSize), clusterN);
+    // Selecting every cluster selects exactly the available participants; the estimate can overshoot from rounding.
+    const participantN =
+      clusterN === maxClusters ? allSamples : estimateParticipantNFromClusters(clusterN, avgClusterSize);
+    onCustomSizeChange(participantN, clusterN);
   };
 
   return (

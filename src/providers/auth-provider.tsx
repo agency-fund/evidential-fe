@@ -3,7 +3,7 @@
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { SessionTokenStored, useAuthStorage } from '@/providers/use-auth-storage';
-import { AIRPLANE_MODE, API_BASE_URL } from '@/services/constants';
+import { API_BASE_URL } from '@/services/constants';
 import { checkCallerIdentity, clearPendingLogin } from '@/services/oidc-login';
 import { useCustomEventListener } from '@/providers/use-custom-event-handler';
 import { getLogoutUrl } from '@/api/admin';
@@ -70,15 +70,7 @@ export default function AuthProvider({ children }: PropsWithChildren) {
   }, [user, logout]);
 
   let contextValue: AuthContext;
-  if (AIRPLANE_MODE) {
-    contextValue = {
-      isAuthenticated: true,
-      isPrivileged: true,
-      sessionToken: 'airplane-mode-token',
-      userEmail: 'testing@example.com',
-      logout: () => console.log('Login and logout functionality is not available when AIRPLANE_MODE is set.'),
-    };
-  } else if (user) {
+  if (user) {
     contextValue = {
       isAuthenticated: true,
       sessionToken: user.sessionToken,

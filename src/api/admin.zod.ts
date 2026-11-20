@@ -24,6 +24,32 @@ export const patchUserBody = zod.object({
 	is_privileged: zod.union([zod.boolean(), zod.null()]).optional(),
 });
 
+export const updateServerSettingsBody = zod.object({
+	signup: zod
+		.union([
+			zod.object({
+				mode: zod.enum(["existing", "existing_and_domains", "anyone"]),
+			}),
+			zod.null(),
+		])
+		.optional(),
+});
+
+export const createDomainSettingsBodyDomainMax = 128;
+
+export const createDomainSettingsBodyAllowSignupDefault = true;
+
+export const createDomainSettingsBody = zod.object({
+	domain: zod.string().max(createDomainSettingsBodyDomainMax),
+	allow_signup: zod
+		.boolean()
+		.default(createDomainSettingsBodyAllowSignupDefault),
+});
+
+export const updateDomainSettingsBody = zod.object({
+	allow_signup: zod.union([zod.boolean(), zod.null()]).optional(),
+});
+
 export const createOrganizationsBodyNameMax = 100;
 
 export const createOrganizationsBody = zod.object({
@@ -116,6 +142,7 @@ export const createDatasourceBodyDsnPortMaxOne = 65535;
 
 export const createDatasourceBodyDsnPasswordTypeDefaultTwo = "revealed";
 export const createDatasourceBodyDsnPasswordTypeDefaultThree = "hidden";
+export const createDatasourceBodyDsnSpreadsheetUrlMax = 500;
 
 export const createDatasourceBody = zod.object({
 	organization_id: zod.string().max(createDatasourceBodyOrganizationIdMax),
@@ -202,6 +229,12 @@ export const createDatasourceBody = zod.object({
 			dbname: zod.string(),
 			search_path: zod.union([zod.string(), zod.null()]),
 		}),
+		zod.object({
+			type: zod.enum(["google_sheets"]),
+			spreadsheet_url: zod
+				.string()
+				.max(createDatasourceBodyDsnSpreadsheetUrlMax),
+		}),
 	]),
 });
 
@@ -234,6 +267,7 @@ export const updateDatasourceBodyDsnPortMaxOne = 65535;
 
 export const updateDatasourceBodyDsnPasswordTypeDefaultTwo = "revealed";
 export const updateDatasourceBodyDsnPasswordTypeDefaultThree = "hidden";
+export const updateDatasourceBodyDsnSpreadsheetUrlMax = 500;
 
 export const updateDatasourceBody = zod.object({
 	name: zod
@@ -322,6 +356,12 @@ export const updateDatasourceBody = zod.object({
 					]),
 					dbname: zod.string(),
 					search_path: zod.union([zod.string(), zod.null()]),
+				}),
+				zod.object({
+					type: zod.enum(["google_sheets"]),
+					spreadsheet_url: zod
+						.string()
+						.max(updateDatasourceBodyDsnSpreadsheetUrlMax),
 				}),
 			]),
 			zod.null(),
@@ -594,6 +634,9 @@ export const createExperimentBody = zod.object({
 								.union([zod.number(), zod.null()])
 								.optional(),
 							available_n: zod.union([zod.number(), zod.null()]).optional(),
+							available_n_clusters: zod
+								.union([zod.number().min(1), zod.null()])
+								.optional(),
 							use_one_time_metric: zod.boolean().optional(),
 						}),
 					)
@@ -742,6 +785,9 @@ export const createExperimentBody = zod.object({
 								.union([zod.number(), zod.null()])
 								.optional(),
 							available_n: zod.union([zod.number(), zod.null()]).optional(),
+							available_n_clusters: zod
+								.union([zod.number().min(1), zod.null()])
+								.optional(),
 							use_one_time_metric: zod.boolean().optional(),
 						}),
 					)
@@ -1109,6 +1155,9 @@ export const createExperimentBody = zod.object({
 									.union([zod.number(), zod.null()])
 									.optional(),
 								available_n: zod.union([zod.number(), zod.null()]).optional(),
+								available_n_clusters: zod
+									.union([zod.number().min(1), zod.null()])
+									.optional(),
 								use_one_time_metric: zod.boolean().optional(),
 								is_one_time_eligible: zod.boolean().optional(),
 							}),
@@ -1307,6 +1356,9 @@ export const powerCheckBody = zod.object({
 				metric_stddev: zod.union([zod.number(), zod.null()]).optional(),
 				available_nonnull_n: zod.union([zod.number(), zod.null()]).optional(),
 				available_n: zod.union([zod.number(), zod.null()]).optional(),
+				available_n_clusters: zod
+					.union([zod.number().min(1), zod.null()])
+					.optional(),
 				use_one_time_metric: zod.boolean().optional(),
 			}),
 		)

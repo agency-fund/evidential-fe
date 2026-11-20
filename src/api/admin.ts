@@ -21,6 +21,7 @@ import type {
 	CreateDatasourceParams,
 	CreateDatasourceRequest,
 	CreateDatasourceResponse,
+	CreateDomainSettingsRequest,
 	CreateExperimentParams,
 	CreateExperimentRequest,
 	CreateExperimentResponse,
@@ -30,15 +31,18 @@ import type {
 	CreateUserResponse,
 	DeleteApiKeyParams,
 	DeleteDatasourceParams,
+	DeleteDomainSettingsParams,
 	DeleteExperimentDataRequest,
 	DeleteExperimentParams,
 	DeleteSnapshotParams,
 	DeleteWebhookFromOrganizationParams,
+	DomainSettingsSummary,
 	DwhErrorResponse,
 	ExperimentAnalysisResponse,
 	GetDatasourceResponse,
 	GetExperimentForUiResponse,
 	GetOrganizationResponse,
+	GetServerSettingsResponse,
 	GetSnapshotResponse,
 	GetUserResponse,
 	HTTPExceptionError,
@@ -49,6 +53,7 @@ import type {
 	InspectTableInDatasourceParams,
 	ListApiKeysResponse,
 	ListDatasourcesResponse,
+	ListDomainSettingsResponse,
 	ListExperimentsResponse,
 	ListOrganizationEventsParams,
 	ListOrganizationEventsResponse,
@@ -65,9 +70,11 @@ import type {
 	RemoveMemberFromOrganizationParams,
 	UpdateArmRequest,
 	UpdateDatasourceRequest,
+	UpdateDomainSettingsRequest,
 	UpdateExperimentRequest,
 	UpdateOrganizationRequest,
 	UpdateOrganizationWebhookRequest,
+	UpdateServerSettingsRequest,
 	XHTTPValidationError,
 } from "./methods.schemas";
 
@@ -459,6 +466,375 @@ export const useDeleteUser = <
 
 	const swrKey = swrOptions?.swrKey ?? getDeleteUserMutationKey(userId);
 	const swrFn = getDeleteUserMutationFetcher(userId, requestOptions);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+export const getGetServerSettingsUrl = () => {
+	return `/v1/m/server-settings`;
+};
+
+export const getServerSettings = async (
+	options?: RequestInit,
+): Promise<GetServerSettingsResponse> => {
+	return orvalFetch<GetServerSettingsResponse>(getGetServerSettingsUrl(), {
+		...options,
+		method: "GET",
+	});
+};
+
+export const getGetServerSettingsKey = () => [`/v1/m/server-settings`] as const;
+
+export type GetServerSettingsQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getServerSettings>>
+>;
+export type GetServerSettingsQueryError = ErrorType<HTTPExceptionError>;
+
+export const useGetServerSettings = <
+	TError = ErrorType<HTTPExceptionError>,
+>(options?: {
+	swr?: SWRConfiguration<
+		Awaited<ReturnType<typeof getServerSettings>>,
+		TError
+	> & { swrKey?: Key; enabled?: boolean };
+	request?: SecondParameter<typeof orvalFetch>;
+}) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const isEnabled = swrOptions?.enabled !== false;
+	const swrKey =
+		swrOptions?.swrKey ??
+		(() => (isEnabled ? getGetServerSettingsKey() : null));
+	const swrFn = () => getServerSettings(requestOptions);
+
+	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
+		swrKey,
+		swrFn,
+		swrOptions,
+	);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+export const getUpdateServerSettingsUrl = () => {
+	return `/v1/m/server-settings`;
+};
+
+export const updateServerSettings = async (
+	updateServerSettingsRequest: UpdateServerSettingsRequest,
+	options?: RequestInit,
+): Promise<void> => {
+	return orvalFetch<void>(getUpdateServerSettingsUrl(), {
+		...options,
+		method: "PATCH",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(updateServerSettingsRequest),
+	});
+};
+
+export const getUpdateServerSettingsMutationFetcher = (
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, { arg }: { arg: UpdateServerSettingsRequest }) => {
+		return updateServerSettings(arg, options);
+	};
+};
+export const getUpdateServerSettingsMutationKey = () =>
+	[`/v1/m/server-settings`] as const;
+
+export type UpdateServerSettingsMutationResult = NonNullable<
+	Awaited<ReturnType<typeof updateServerSettings>>
+>;
+export type UpdateServerSettingsMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+export const useUpdateServerSettings = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(options?: {
+	swr?: SWRMutationConfiguration<
+		Awaited<ReturnType<typeof updateServerSettings>>,
+		TError,
+		Key,
+		UpdateServerSettingsRequest,
+		Awaited<ReturnType<typeof updateServerSettings>>
+	> & { swrKey?: string };
+	request?: SecondParameter<typeof orvalFetch>;
+}) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey = swrOptions?.swrKey ?? getUpdateServerSettingsMutationKey();
+	const swrFn = getUpdateServerSettingsMutationFetcher(requestOptions);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+export const getListDomainSettingsUrl = () => {
+	return `/v1/m/domain-settings`;
+};
+
+export const listDomainSettings = async (
+	options?: RequestInit,
+): Promise<ListDomainSettingsResponse> => {
+	return orvalFetch<ListDomainSettingsResponse>(getListDomainSettingsUrl(), {
+		...options,
+		method: "GET",
+	});
+};
+
+export const getListDomainSettingsKey = () =>
+	[`/v1/m/domain-settings`] as const;
+
+export type ListDomainSettingsQueryResult = NonNullable<
+	Awaited<ReturnType<typeof listDomainSettings>>
+>;
+export type ListDomainSettingsQueryError = ErrorType<HTTPExceptionError>;
+
+export const useListDomainSettings = <
+	TError = ErrorType<HTTPExceptionError>,
+>(options?: {
+	swr?: SWRConfiguration<
+		Awaited<ReturnType<typeof listDomainSettings>>,
+		TError
+	> & { swrKey?: Key; enabled?: boolean };
+	request?: SecondParameter<typeof orvalFetch>;
+}) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const isEnabled = swrOptions?.enabled !== false;
+	const swrKey =
+		swrOptions?.swrKey ??
+		(() => (isEnabled ? getListDomainSettingsKey() : null));
+	const swrFn = () => listDomainSettings(requestOptions);
+
+	const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
+		swrKey,
+		swrFn,
+		swrOptions,
+	);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+export const getCreateDomainSettingsUrl = () => {
+	return `/v1/m/domain-settings`;
+};
+
+export const createDomainSettings = async (
+	createDomainSettingsRequest: CreateDomainSettingsRequest,
+	options?: RequestInit,
+): Promise<DomainSettingsSummary> => {
+	return orvalFetch<DomainSettingsSummary>(getCreateDomainSettingsUrl(), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(createDomainSettingsRequest),
+	});
+};
+
+export const getCreateDomainSettingsMutationFetcher = (
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, { arg }: { arg: CreateDomainSettingsRequest }) => {
+		return createDomainSettings(arg, options);
+	};
+};
+export const getCreateDomainSettingsMutationKey = () =>
+	[`/v1/m/domain-settings`] as const;
+
+export type CreateDomainSettingsMutationResult = NonNullable<
+	Awaited<ReturnType<typeof createDomainSettings>>
+>;
+export type CreateDomainSettingsMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+export const useCreateDomainSettings = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(options?: {
+	swr?: SWRMutationConfiguration<
+		Awaited<ReturnType<typeof createDomainSettings>>,
+		TError,
+		Key,
+		CreateDomainSettingsRequest,
+		Awaited<ReturnType<typeof createDomainSettings>>
+	> & { swrKey?: string };
+	request?: SecondParameter<typeof orvalFetch>;
+}) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey = swrOptions?.swrKey ?? getCreateDomainSettingsMutationKey();
+	const swrFn = getCreateDomainSettingsMutationFetcher(requestOptions);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+export const getUpdateDomainSettingsUrl = (domainSettingsId: string) => {
+	return `/v1/m/domain-settings/${domainSettingsId}`;
+};
+
+export const updateDomainSettings = async (
+	domainSettingsId: string,
+	updateDomainSettingsRequest: UpdateDomainSettingsRequest,
+	options?: RequestInit,
+): Promise<void> => {
+	return orvalFetch<void>(getUpdateDomainSettingsUrl(domainSettingsId), {
+		...options,
+		method: "PATCH",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(updateDomainSettingsRequest),
+	});
+};
+
+export const getUpdateDomainSettingsMutationFetcher = (
+	domainSettingsId: string,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, { arg }: { arg: UpdateDomainSettingsRequest }) => {
+		return updateDomainSettings(domainSettingsId, arg, options);
+	};
+};
+export const getUpdateDomainSettingsMutationKey = (domainSettingsId: string) =>
+	[`/v1/m/domain-settings/${domainSettingsId}`] as const;
+
+export type UpdateDomainSettingsMutationResult = NonNullable<
+	Awaited<ReturnType<typeof updateDomainSettings>>
+>;
+export type UpdateDomainSettingsMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+export const useUpdateDomainSettings = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	domainSettingsId: string,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof updateDomainSettings>>,
+			TError,
+			Key,
+			UpdateDomainSettingsRequest,
+			Awaited<ReturnType<typeof updateDomainSettings>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey =
+		swrOptions?.swrKey ?? getUpdateDomainSettingsMutationKey(domainSettingsId);
+	const swrFn = getUpdateDomainSettingsMutationFetcher(
+		domainSettingsId,
+		requestOptions,
+	);
+
+	const query = useSWRMutation(swrKey, swrFn, swrOptions);
+
+	return {
+		swrKey,
+		...query,
+	};
+};
+export const getDeleteDomainSettingsUrl = (
+	domainSettingsId: string,
+	params?: DeleteDomainSettingsParams,
+) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/v1/m/domain-settings/${domainSettingsId}?${stringifiedParams}`
+		: `/v1/m/domain-settings/${domainSettingsId}`;
+};
+
+export const deleteDomainSettings = async (
+	domainSettingsId: string,
+	params?: DeleteDomainSettingsParams,
+	options?: RequestInit,
+): Promise<void> => {
+	return orvalFetch<void>(
+		getDeleteDomainSettingsUrl(domainSettingsId, params),
+		{
+			...options,
+			method: "DELETE",
+		},
+	);
+};
+
+export const getDeleteDomainSettingsMutationFetcher = (
+	domainSettingsId: string,
+	params?: DeleteDomainSettingsParams,
+	options?: SecondParameter<typeof orvalFetch>,
+) => {
+	return (_: Key, __: { arg: Arguments }) => {
+		return deleteDomainSettings(domainSettingsId, params, options);
+	};
+};
+export const getDeleteDomainSettingsMutationKey = (
+	domainSettingsId: string,
+	params?: DeleteDomainSettingsParams,
+) =>
+	[
+		`/v1/m/domain-settings/${domainSettingsId}`,
+		...(params ? [params] : []),
+	] as const;
+
+export type DeleteDomainSettingsMutationResult = NonNullable<
+	Awaited<ReturnType<typeof deleteDomainSettings>>
+>;
+export type DeleteDomainSettingsMutationError = ErrorType<
+	HTTPExceptionError | HTTPValidationError
+>;
+
+export const useDeleteDomainSettings = <
+	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+>(
+	domainSettingsId: string,
+	params?: DeleteDomainSettingsParams,
+	options?: {
+		swr?: SWRMutationConfiguration<
+			Awaited<ReturnType<typeof deleteDomainSettings>>,
+			TError,
+			Key,
+			Arguments,
+			Awaited<ReturnType<typeof deleteDomainSettings>>
+		> & { swrKey?: string };
+		request?: SecondParameter<typeof orvalFetch>;
+	},
+) => {
+	const { swr: swrOptions, request: requestOptions } = options ?? {};
+
+	const swrKey =
+		swrOptions?.swrKey ??
+		getDeleteDomainSettingsMutationKey(domainSettingsId, params);
+	const swrFn = getDeleteDomainSettingsMutationFetcher(
+		domainSettingsId,
+		params,
+		requestOptions,
+	);
 
 	const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
@@ -2818,11 +3194,13 @@ export type CommitExperimentMutationResult = NonNullable<
 	Awaited<ReturnType<typeof commitExperiment>>
 >;
 export type CommitExperimentMutationError = ErrorType<
-	HTTPExceptionError | HTTPValidationError
+	HTTPExceptionError | XHTTPValidationError | DwhErrorResponse
 >;
 
 export const useCommitExperiment = <
-	TError = ErrorType<HTTPExceptionError | HTTPValidationError>,
+	TError = ErrorType<
+		HTTPExceptionError | XHTTPValidationError | DwhErrorResponse
+	>,
 >(
 	datasourceId: string,
 	experimentId: string,

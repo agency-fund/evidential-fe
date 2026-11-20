@@ -468,6 +468,12 @@ export interface CreateDatasourceResponse {
 	id: string;
 }
 
+export interface CreateDomainSettingsRequest {
+	/** @maxLength 128 */
+	domain: string;
+	allow_signup?: boolean;
+}
+
 export type CreateExperimentRequestPowerAnalyses = PowerResponse | null;
 
 export interface CreateExperimentRequest {
@@ -475,6 +481,8 @@ export interface CreateExperimentRequest {
 	power_analyses?: CreateExperimentRequestPowerAnalyses;
 	webhooks?: string[];
 }
+
+export type CreateExperimentResponseSpreadsheetFullUrl = string | null;
 
 export type CreateExperimentResponseStoppedAssignmentsAt = string | null;
 
@@ -488,6 +496,7 @@ export type CreateExperimentResponseAssignSummary = AssignSummary | null;
 export interface CreateExperimentResponse {
 	experiment_id: string;
 	datasource_id: string;
+	spreadsheet_full_url?: CreateExperimentResponseSpreadsheetFullUrl;
 	state: ExperimentState;
 	stopped_assignments_at: CreateExperimentResponseStoppedAssignmentsAt;
 	stopped_assignments_reason: CreateExperimentResponseStoppedAssignmentsReason;
@@ -582,6 +591,8 @@ export type DesignSpecMetricAvailableNonnullN = number | null;
 
 export type DesignSpecMetricAvailableN = number | null;
 
+export type DesignSpecMetricAvailableNClusters = number | null;
+
 export interface DesignSpecMetric {
 	/**
 	 * @minLength 1
@@ -598,6 +609,7 @@ export interface DesignSpecMetric {
 	metric_stddev?: DesignSpecMetricMetricStddev;
 	available_nonnull_n?: DesignSpecMetricAvailableNonnullN;
 	available_n?: DesignSpecMetricAvailableN;
+	available_n_clusters?: DesignSpecMetricAvailableNClusters;
 	use_one_time_metric?: boolean;
 	is_one_time_eligible?: boolean;
 }
@@ -622,6 +634,8 @@ export type DesignSpecMetricRequestAvailableNonnullN = number | null;
 
 export type DesignSpecMetricRequestAvailableN = number | null;
 
+export type DesignSpecMetricRequestAvailableNClusters = number | null;
+
 export interface DesignSpecMetricRequest {
 	/**
 	 * @minLength 1
@@ -638,10 +652,24 @@ export interface DesignSpecMetricRequest {
 	metric_stddev?: DesignSpecMetricRequestMetricStddev;
 	available_nonnull_n?: DesignSpecMetricRequestAvailableNonnullN;
 	available_n?: DesignSpecMetricRequestAvailableN;
+	available_n_clusters?: DesignSpecMetricRequestAvailableNClusters;
 	use_one_time_metric?: boolean;
 }
 
-export type Dsn = ApiOnlyDsn | PostgresDsn | BqDsn | RedshiftDsn;
+export interface DomainSettingsSummary {
+	/** @maxLength 64 */
+	id: string;
+	/** @maxLength 128 */
+	domain: string;
+	allow_signup: boolean;
+}
+
+export type Dsn =
+	| ApiOnlyDsn
+	| PostgresDsn
+	| BqDsn
+	| RedshiftDsn
+	| GoogleSheetsDsn;
 
 export type DwhErrorCode = (typeof DwhErrorCode)[keyof typeof DwhErrorCode];
 
@@ -709,6 +737,8 @@ export type ExperimentAnalysisResponse =
 	| FreqExperimentAnalysisResponse
 	| BanditExperimentAnalysisResponse;
 
+export type ExperimentConfigSpreadsheetFullUrl = string | null;
+
 export type ExperimentConfigStoppedAssignmentsAt = string | null;
 
 export type ExperimentConfigStoppedAssignmentsReason =
@@ -721,6 +751,7 @@ export type ExperimentConfigAssignSummary = AssignSummary | null;
 export interface ExperimentConfig {
 	experiment_id: string;
 	datasource_id: string;
+	spreadsheet_full_url?: ExperimentConfigSpreadsheetFullUrl;
 	state: ExperimentState;
 	stopped_assignments_at: ExperimentConfigStoppedAssignmentsAt;
 	stopped_assignments_reason: ExperimentConfigStoppedAssignmentsReason;
@@ -853,6 +884,8 @@ export interface GetExperimentForUiResponse {
 	experiment_schema: GetExperimentForUiResponseExperimentSchema;
 }
 
+export type GetExperimentResponseSpreadsheetFullUrl = string | null;
+
 export type GetExperimentResponseStoppedAssignmentsAt = string | null;
 
 export type GetExperimentResponseStoppedAssignmentsReason =
@@ -865,6 +898,7 @@ export type GetExperimentResponseAssignSummary = AssignSummary | null;
 export interface GetExperimentResponse {
 	experiment_id: string;
 	datasource_id: string;
+	spreadsheet_full_url?: GetExperimentResponseSpreadsheetFullUrl;
 	state: ExperimentState;
 	stopped_assignments_at: GetExperimentResponseStoppedAssignmentsAt;
 	stopped_assignments_reason: GetExperimentResponseStoppedAssignmentsReason;
@@ -891,6 +925,13 @@ export interface GetParticipantAssignmentResponse {
 	experiment_id: string;
 	participant_id: string;
 	assignment: GetParticipantAssignmentResponseAssignment;
+}
+
+export type GetServerSettingsResponseUpdatedAt = string | null;
+
+export interface GetServerSettingsResponse {
+	signup: SignupSettings;
+	updated_at: GetServerSettingsResponseUpdatedAt;
 }
 
 export interface GetSnapshotResponse {
@@ -934,6 +975,20 @@ export interface GetUserResponse {
 	organizations: OrganizationListItem[];
 }
 
+export type GoogleSheetsDsnType =
+	(typeof GoogleSheetsDsnType)[keyof typeof GoogleSheetsDsnType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const GoogleSheetsDsnType = {
+	google_sheets: "google_sheets",
+} as const;
+
+export interface GoogleSheetsDsn {
+	type: GoogleSheetsDsnType;
+	/** @maxLength 500 */
+	spreadsheet_url: string;
+}
+
 export interface HTTPExceptionError {
 	detail: string;
 }
@@ -963,10 +1018,13 @@ export interface InspectDatasourceResponse {
 	tables: string[];
 }
 
+export type InspectDatasourceTableResponseDisplayName = string | null;
+
 export interface InspectDatasourceTableResponse {
 	primary_key_fields: string[];
 	detected_unique_id_fields: string[];
 	fields: FieldMetadata[];
+	display_name?: InspectDatasourceTableResponseDisplayName;
 }
 
 export interface Journey {
@@ -989,6 +1047,10 @@ export interface ListApiKeysResponse {
 
 export interface ListDatasourcesResponse {
 	items: DatasourceSummary[];
+}
+
+export interface ListDomainSettingsResponse {
+	items: DomainSettingsSummary[];
 }
 
 export interface ListExperimentsResponse {
@@ -1580,6 +1642,19 @@ export interface SetTurnArmJourneyMappingRequest {
 	arm_to_journeys: SetTurnArmJourneyMappingRequestArmToJourneys;
 }
 
+export type SignupMode = (typeof SignupMode)[keyof typeof SignupMode];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const SignupMode = {
+	existing: "existing",
+	existing_and_domains: "existing_and_domains",
+	anyone: "anyone",
+} as const;
+
+export interface SignupSettings {
+	mode: SignupMode;
+}
+
 export type SnapshotDetailsAnyOf = { [key: string]: unknown };
 
 export type SnapshotDetails = SnapshotDetailsAnyOf | null;
@@ -1669,6 +1744,12 @@ export interface UpdateDatasourceRequest {
 	dsn?: UpdateDatasourceRequestDsn;
 }
 
+export type UpdateDomainSettingsRequestAllowSignup = boolean | null;
+
+export interface UpdateDomainSettingsRequest {
+	allow_signup?: UpdateDomainSettingsRequestAllowSignup;
+}
+
 export type UpdateExperimentRequestName = string | null;
 
 export type UpdateExperimentRequestDescription = string | null;
@@ -1704,6 +1785,12 @@ export interface UpdateOrganizationWebhookRequest {
 	name: string;
 	/** @maxLength 500 */
 	url: string;
+}
+
+export type UpdateServerSettingsRequestSignup = SignupSettings | null;
+
+export interface UpdateServerSettingsRequest {
+	signup?: UpdateServerSettingsRequestSignup;
 }
 
 export interface UserDetail {
@@ -1784,6 +1871,10 @@ export const ListUsersScope = {
 	all: "all",
 	mine: "mine",
 } as const;
+
+export type DeleteDomainSettingsParams = {
+	allow_missing?: boolean;
+};
 
 export type DeleteSnapshotParams = {
 	allow_missing?: boolean;
