@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { MetricPowerAnalysis } from '@/api/methods.schemas';
-import { getAssignableN, isPowerAnalysisForOtherOneTimeMode } from './experiment-utils';
+import { getAssignableN, getAvailableWithoutValuesN, isPowerAnalysisForOtherOneTimeMode } from './experiment-utils';
 
 const analysis = (metricSpec: Partial<MetricPowerAnalysis['metric_spec']>): MetricPowerAnalysis => ({
   metric_spec: { field_name: 'converted', ...metricSpec },
@@ -48,5 +48,20 @@ describe('isPowerAnalysisForOtherOneTimeMode', () => {
 
   test('is false without an analysis', () => {
     expect(isPowerAnalysisForOtherOneTimeMode(undefined, true)).toBe(false);
+  });
+});
+
+describe('getAvailableWithoutValuesN', () => {
+  test('counts participants without a value whatever the one-time setting', () => {
+    expect(getAvailableWithoutValuesN(analysis({ available_n: 1000, available_nonnull_n: 400 }))).toBe(600);
+    expect(
+      getAvailableWithoutValuesN(analysis({ available_n: 1000, available_nonnull_n: 400, use_one_time_metric: true })),
+    ).toBe(600);
+  });
+
+  test('is undefined when either count is missing', () => {
+    expect(getAvailableWithoutValuesN(analysis({ available_n: 1000 }))).toBeUndefined();
+    expect(getAvailableWithoutValuesN(analysis({ available_nonnull_n: 400 }))).toBeUndefined();
+    expect(getAvailableWithoutValuesN(undefined)).toBeUndefined();
   });
 });

@@ -304,6 +304,23 @@ describe('isOneTimeMetricRejection', () => {
     ).toBe(true);
   });
 
+  test('is true when the field is named only in the error location', () => {
+    const error = new ApiRequestValidationError({
+      status: 422,
+      data: {
+        detail: [
+          {
+            loc: ['body', 'design_spec', 'metrics', 0, 'use_one_time_metric'],
+            msg: 'Value error, not supported here.',
+            type: 'value_error',
+          },
+        ],
+      },
+    });
+
+    expect(isOneTimeMetricRejection(error)).toBe(true);
+  });
+
   test('is false for other validation errors', () => {
     expect(isOneTimeMetricRejection(validationError('Value error, power must be between 0 and 1.'))).toBe(false);
   });

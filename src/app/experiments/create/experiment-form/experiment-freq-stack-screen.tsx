@@ -12,9 +12,10 @@ import { ClusterStatisticsSectionAction } from './cluster-statistics-section';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import {
   convertToFrequentistDesignSpec,
+  isPowerCheckForOtherOneTimeMode,
   removeFieldByName,
 } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
-import { getAssignableN, getPowerAnalysis, isPowerAnalysisForOtherOneTimeMode } from '@/services/experiment-utils';
+import { getAssignableN, getPowerAnalysis } from '@/services/experiment-utils';
 import { createExperimentBody } from '@/api/admin.zod';
 import { ErrorType } from '@/services/orval-fetch';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -34,13 +35,6 @@ const getPrimaryAnalysisAvailableN = (data: ExperimentFormData): number | undefi
   // In one-time mode only participants with no value for the primary metric can be assigned.
   return getAssignableN(primaryAnalysis);
 };
-
-/** True when the stored power check response was computed for a different one-time mode than the form now has. */
-const isPowerCheckForOtherOneTimeMode = (data: ExperimentFormData): boolean =>
-  isPowerAnalysisForOtherOneTimeMode(
-    getPowerAnalysis(data.powerCheckResponse, data.primaryMetric?.metric.field_name),
-    data.useOneTimeMetric,
-  );
 
 const getPrimaryAnalysisAvailableNClusters = (data: ExperimentFormData): number | undefined => {
   if (!data.powerCheckResponse || !data.primaryMetric) return undefined;

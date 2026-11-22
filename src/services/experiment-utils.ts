@@ -65,11 +65,19 @@ export const metricHasNoObservedOutcomes = (analysis: MetricPowerAnalysis): bool
  * computed, rather than overstating it with available_n.
  */
 export const getAssignableN = (analysis: MetricPowerAnalysis | undefined): number | undefined => {
-  const availableN = analysis?.metric_spec.available_n ?? undefined;
   if (!analysis?.metric_spec.use_one_time_metric) {
-    return availableN;
+    return analysis?.metric_spec.available_n ?? undefined;
   }
-  const nonNullN = analysis.metric_spec.available_nonnull_n ?? undefined;
+  return getAvailableWithoutValuesN(analysis);
+};
+
+/**
+ * Participants who meet the filters but have no value for this metric (available_n - available_nonnull_n), whatever
+ * the one-time setting. Returns undefined when either count is missing.
+ */
+export const getAvailableWithoutValuesN = (analysis: MetricPowerAnalysis | undefined): number | undefined => {
+  const availableN = analysis?.metric_spec.available_n ?? undefined;
+  const nonNullN = analysis?.metric_spec.available_nonnull_n ?? undefined;
   return availableN !== undefined && nonNullN !== undefined ? availableN - nonNullN : undefined;
 };
 

@@ -42,6 +42,7 @@ import {
   describeDesignSpecError,
   describeOneTimeMetricRejection,
   isOneTimeMetricRejection,
+  isPowerCheckForOtherOneTimeMode,
   toPowerRequest,
   getClusterStatsFromPowerCheckResponse,
   powerCurveSizes,
@@ -49,8 +50,8 @@ import {
 } from './experiment-form-helpers';
 import {
   getAssignableN,
+  getAvailableWithoutValuesN,
   getPowerAnalysis,
-  isPowerAnalysisForOtherOneTimeMode,
   metricHasMissingValues,
   metricHasNoObservedOutcomes,
 } from '@/services/experiment-utils';
@@ -392,26 +393,23 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const selectedSampleOption = data.sampleSizeOption ?? PowerCheckOption.USE_POWER_CHECK;
 
   const responseUsesOneTimeMetric = primaryPower?.metric_spec.use_one_time_metric === true;
-  const isPowerCheckForOtherOneTimeMode = isPowerAnalysisForOtherOneTimeMode(primaryPower, data.useOneTimeMetric);
+  const resultsAreForOtherOneTimeMode = isPowerCheckForOtherOneTimeMode(data);
   const isTargetSampleSizeLoading = isMutating || isPowerCurveMutating;
 
   // Power curve chart inputs, all in the chart's x unit (clusters for cluster designs).
   const curveAnalysis =
-    data.powerCurveResponse !== undefined && !hasValidationError && !isPowerCheckForOtherOneTimeMode
+    data.powerCurveResponse !== undefined && !hasValidationError && !resultsAreForOtherOneTimeMode
       ? getPowerAnalysis(data.powerCurveResponse, primaryMetricFieldName)
       : undefined;
   // The chart's "available" marker. In one-time mode only participants with no value for the primary metric can be
   // assigned, so it stops at that count, matching the sizes fetchPowerCurve requests.
   const primaryAvailableN = getAssignableN(primaryPower);
-  const availableWithoutValuesN =
-    primaryPower?.metric_spec.available_n != null && primaryPower?.metric_spec.available_nonnull_n != null
-      ? primaryPower.metric_spec.available_n - primaryPower.metric_spec.available_nonnull_n
-      : undefined;
+  const availableWithoutValuesN = getAvailableWithoutValuesN(primaryPower);
   // One-time metric isn't supported for cluster designs, so the cluster count is the backend's available_n_clusters.
   const curveAvailableSize = isClustered ? maxClusters : primaryAvailableN;
   const curveMinSize = isClustered ? targetNClusters : targetN;
   const targetMdePct = data.primaryMetric?.mde !== undefined ? Number(data.primaryMetric.mde) : undefined;
-  const mdeAnalysisForDot = !isPowerCheckForOtherOneTimeMode
+  const mdeAnalysisForDot = !resultsAreForOtherOneTimeMode
     ? getPowerAnalysis(data.mdePowerCheckResponse, primaryMetricFieldName)
     : undefined;
   const selectedMdePct =
@@ -874,7 +872,11 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                     <CrossCircledIcon />
                   </Callout.Icon>
                   <Callout.Text>
-                    {responseUsesOneTimeMetric && primaryAvailableN !== undefined ? (
+                    {/* Only blame one-time metric when the primary metric itself is short; a secondary metric
+                        that needs more participants isn't fixed by turning it off. */}
+                    {responseUsesOneTimeMetric &&
+                    primaryPower?.sufficient_n === false &&
+                    primaryAvailableN !== undefined ? (
                       <>
                         Only {primaryAvailableN.toLocaleString()} participants are assignable for the primary metric,
                         which is not enough for one or more metrics. You can still proceed with a custom sample size of
@@ -907,7 +909,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
                 onCustomSizeChange={handleCustomSizeChange}
                 // While a re-run is in flight, and especially after the one-time switch flips, the response on
                 // screen describes the old population: picking a size now would estimate an MDE that mixes the two.
-                disabled={isMutating || isPowerCheckForOtherOneTimeMode}
+                disabled={isMutating || resultsAreForOtherOneTimeMode}
               />
             </Flex>
           </Flex>

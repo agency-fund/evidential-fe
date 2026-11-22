@@ -16,7 +16,12 @@ import {
 import { createExperimentBody } from '@/api/admin.zod';
 import { ApiRequestValidationError } from '@/services/orval-fetch';
 import { ExperimentFormData, getMabDwhTarget } from './experiment-form-types';
-import { isFreqExperimentType, isFrequentistSpec, getPowerAnalysis } from '@/services/experiment-utils';
+import {
+  isFreqExperimentType,
+  isFrequentistSpec,
+  getPowerAnalysis,
+  isPowerAnalysisForOtherOneTimeMode,
+} from '@/services/experiment-utils';
 
 /**
  * Drops entries whose `field_name` matches `fieldNameToRemove` (e.g. exclude the primary key from
@@ -426,15 +431,32 @@ export function experimentTypeLabel(experimentType: string): string {
   return ExperimentTypeOptions.find((v) => v.value === experimentType)?.title ?? experimentType;
 }
 
+const ONE_TIME_METRIC_FIELD = 'use_one_time_metric';
+
 /**
  * Whether a failed power check request was the backend refusing one-time metric for this design, e.g. a filter on the
- * primary metric or a cluster design. The backend has no error code for these, so this matches the field name that
- * each of its one-time metric validation messages names. Any other validation error is left to the generic callout.
+ * primary metric or a cluster design. The backend has no error code for these, so this looks for the field name in
+ * each problem's location or message (its one-time metric validators name it in the message). Any other validation
+ * error is left to the generic callout.
  */
 export function isOneTimeMetricRejection(error: unknown): boolean {
   return (
     error instanceof ApiRequestValidationError &&
-    (error.data.detail ?? []).some((detail) => detail.msg.includes('use_one_time_metric'))
+    (error.data.detail ?? []).some(
+      (detail) => detail.loc.includes(ONE_TIME_METRIC_FIELD) || detail.msg.includes(ONE_TIME_METRIC_FIELD),
+    )
+  );
+}
+
+/**
+ * True when the stored power check response was computed for a different one-time setting than the form now has,
+ * e.g. while the power check re-runs after the switch flips. Next stays blocked and the results that depend on the
+ * response are hidden until they agree again.
+ */
+export function isPowerCheckForOtherOneTimeMode(data: ExperimentFormData): boolean {
+  return isPowerAnalysisForOtherOneTimeMode(
+    getPowerAnalysis(data.powerCheckResponse, data.primaryMetric?.metric.field_name),
+    data.useOneTimeMetric,
   );
 }
 
