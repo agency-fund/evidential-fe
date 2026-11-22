@@ -16,7 +16,7 @@ export interface MetricDisplay {
   hasMissingValues: boolean;
   /** Whether the chosen sample size reaches the minimum required to detect the target MDE. Omitted when unknown. */
   sufficientN?: boolean | null;
-  /** Whether the experiment assigns only participants without a value for this metric (one-time mode). */
+  /** Whether the experiment assigns only participants without a value for this metric (one-time metric). */
   isOneTime?: boolean;
 }
 

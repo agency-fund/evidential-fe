@@ -14,6 +14,7 @@ import {
   Stratum,
 } from '@/api/methods.schemas';
 import { createExperimentBody } from '@/api/admin.zod';
+import { ApiRequestValidationError } from '@/services/orval-fetch';
 import { ExperimentFormData, getMabDwhTarget } from './experiment-form-types';
 import { isFreqExperimentType, isFrequentistSpec, getPowerAnalysis } from '@/services/experiment-utils';
 
@@ -110,7 +111,7 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
       // Send exactly what the switch says, so every spec built from the same form (power check, curve, MDE estimate,
       // create, and the stale-response checks) agrees. The backend validates the choice, and the reducer syncs the
       // switch from each power check response (e.g. off when the column has no nulls left) and clears it when the
-      // primary metric changes, so a stale choice isn't carried over.
+      // primary metric or the filters change, so a stale choice isn't carried over.
       use_one_time_metric: data.useOneTimeMetric === true,
     });
   }
@@ -271,9 +272,10 @@ export function powerCurveSizes(targetN: number | undefined, availableN: number)
 
 /**
  * Returns a copy of the design spec whose metrics carry the baseline stats (and, for cluster
- * designs, ICC/CV/average cluster size) from a prior power check response, so the server reuses
- * them instead of re-querying the data warehouse. Metrics without usable stats in the response
- * are passed through unchanged; the caller must only echo a response produced by the same design.
+ * designs, ICC/CV/average cluster size/available_n_clusters) from a prior power check response, so
+ * the server reuses them instead of re-querying the data warehouse. Metrics without usable stats in
+ * the response are passed through unchanged; the caller must only echo a response produced by the
+ * same design.
  */
 export function withEchoedBaselineStats(
   spec: AnyFrequentistDesignSpec,
@@ -296,8 +298,9 @@ export function withEchoedBaselineStats(
       metric_type: stats.metric_type,
       metric_baseline: stats.metric_baseline,
       metric_stddev: stats.metric_stddev ?? null,
-      available_n: stats.available_n,
       available_nonnull_n: stats.available_nonnull_n,
+      available_n: stats.available_n,
+      available_n_clusters: stats.available_n_clusters ?? null,
     };
     if (metric.icc == null && stats.icc != null && stats.avg_cluster_size != null && stats.cv != null) {
       echoed.icc = stats.icc;
@@ -421,4 +424,28 @@ export function experimentTypeLabel(experimentType: string): string {
     return MAB_DWH_LABEL;
   }
   return ExperimentTypeOptions.find((v) => v.value === experimentType)?.title ?? experimentType;
+}
+
+/**
+ * Whether a failed power check request was the backend refusing one-time metric for this design, e.g. a filter on the
+ * primary metric or a cluster design. The backend has no error code for these, so this matches the field name that
+ * each of its one-time metric validation messages names. Any other validation error is left to the generic callout.
+ */
+export function isOneTimeMetricRejection(error: unknown): boolean {
+  return (
+    error instanceof ApiRequestValidationError &&
+    (error.data.detail ?? []).some((detail) => detail.msg.includes('use_one_time_metric'))
+  );
+}
+
+/** Explains why one-time metric was turned off after the backend refused it, using the form to name the cause. */
+export function describeOneTimeMetricRejection(data: ExperimentFormData): string {
+  const fieldName = data.primaryMetric?.metric.field_name;
+  if (fieldName && (data.filters ?? []).some((filter) => filter.field_name === fieldName)) {
+    return `One-time metric was turned off because it can't be combined with a filter on ${fieldName}. Remove that filter to use it.`;
+  }
+  if (data.clusterKey) {
+    return "One-time metric was turned off because it isn't supported for cluster-randomized experiments.";
+  }
+  return "One-time metric was turned off because it isn't supported with these experiment settings.";
 }

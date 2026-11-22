@@ -7,7 +7,7 @@ export default function RequirePrivileged({ children }: PropsWithChildren) {
   const auth = useAuth();
 
   if (!auth.isAuthenticated || !auth.isPrivileged) {
-    return <Text>Access denied. Only privileged users can manage users.</Text>;
+    return <Text>Access denied. This page is only available to privileged users.</Text>;
   }
 
   return children;

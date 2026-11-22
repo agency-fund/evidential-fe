@@ -45,8 +45,9 @@ export function getSampleSizeLandmarks(primaryAnalysis: MetricPowerAnalysis | un
   const targetNClusters = primaryAnalysis?.num_clusters_total ?? undefined;
   const allSamples = getAssignableN(primaryAnalysis) ?? 0;
   const avgClusterSize = primaryAnalysis?.metric_spec.avg_cluster_size ?? undefined;
-  const maxClusters =
-    avgClusterSize !== undefined && avgClusterSize > 0 ? Math.floor(allSamples / avgClusterSize) : undefined;
+  // The server reports how many clusters the available rows cover. Estimating from the average
+  // cluster size can overshoot the available participants.
+  const maxClusters = primaryAnalysis?.metric_spec.available_n_clusters ?? undefined;
   // The minimum cannot be chosen when it is unknown or exceeds the available population.
   const isMinOptionDisabled = targetN === undefined || targetN === 0 || targetN > allSamples;
   return { targetN, targetNClusters, allSamples, avgClusterSize, maxClusters, isMinOptionDisabled };
@@ -72,6 +73,8 @@ interface PowerCheckSampleSizeSelectorProps {
   isEstimatingMde: boolean;
   /** The error of the latest MDE estimate request, if it failed. */
   mdeEstimateError: Error | undefined;
+  /** True while the sample size options can't be changed, e.g. while the power check re-runs. */
+  disabled?: boolean;
   /** Why the design could not be turned into an MDE estimate request, if it could not. */
   mdeValidationError: string | null;
   /** Called immediately when the user picks a card. */
@@ -86,7 +89,7 @@ interface PowerCheckSampleSizeSelectorProps {
 interface EstimatedMdeBadgeProps {
   isSelectedOption: boolean;
   isEstimatingMde: boolean;
-  estimatedMdePct: string | undefined;
+  estimatedMdePct: string | null | undefined;
   error: Error | undefined;
 }
 
@@ -101,7 +104,7 @@ function EstimatedMdeBadge({ isSelectedOption, isEstimatingMde, estimatedMdePct,
           </Badge>
         ) : estimatedMdePct !== undefined ? (
           <Badge variant="soft" size="2">
-            Estimated MDE: {estimatedMdePct}%
+            {estimatedMdePct === null ? 'MDE unavailable' : `Estimated MDE: ${estimatedMdePct}%`}
           </Badge>
         ) : error ? (
           <Badge color="red" variant="soft" size="2">
@@ -132,6 +135,7 @@ export function PowerCheckSampleSizeSelector({
   mdeValidationError,
   onOptionSelect,
   onCustomSizeChange,
+  disabled = false,
 }: PowerCheckSampleSizeSelectorProps) {
   const primaryAnalysis = getPowerAnalysis(powerCheckResponse, primaryMetricFieldName);
   const { allSamples, avgClusterSize, maxClusters, isMinOptionDisabled } = getSampleSizeLandmarks(primaryAnalysis);
@@ -144,7 +148,7 @@ export function PowerCheckSampleSizeSelector({
       ? undefined
       : mdePrimaryAnalysis.pct_change_with_desired_n != null
         ? (mdePrimaryAnalysis.pct_change_with_desired_n * 100).toFixed(1)
-        : 'N/A';
+        : null;
 
   const handleClusterInputChange = (clusterN: number | undefined) => {
     if (avgClusterSize === undefined) {
@@ -154,14 +158,17 @@ export function PowerCheckSampleSizeSelector({
       onCustomSizeChange(undefined);
       return;
     }
-    onCustomSizeChange(estimateParticipantNFromClusters(clusterN, avgClusterSize), clusterN);
+    // Selecting every cluster selects exactly the available participants; the estimate can overshoot from rounding.
+    const participantN =
+      clusterN === maxClusters ? allSamples : estimateParticipantNFromClusters(clusterN, avgClusterSize);
+    onCustomSizeChange(participantN, clusterN);
   };
 
   return (
     <Flex direction="column" gap="2" justify="center" width="100%">
-      <RadioCards.Root columns="1" value={selectedSampleOption} onValueChange={onOptionSelect}>
+      <RadioCards.Root columns="1" value={selectedSampleOption} onValueChange={onOptionSelect} disabled={disabled}>
         <Flex direction="row" gap="3" justify="center" wrap="wrap">
-          <RadioCards.Item value={PowerCheckOption.USE_POWER_CHECK} disabled={isMinOptionDisabled}>
+          <RadioCards.Item value={PowerCheckOption.USE_POWER_CHECK} disabled={disabled || isMinOptionDisabled}>
             <Flex align="center" direction="column" gap="2">
               <Text size="2">Use the minimum required sample size:</Text>
               <Flex minHeight="32px" align="center">
@@ -183,7 +190,7 @@ export function PowerCheckSampleSizeSelector({
           </RadioCards.Item>
           <RadioCards.Item
             value={PowerCheckOption.USE_ALL_NON_NULL_SAMPLES}
-            disabled={allSamples === undefined || allSamples === 0}
+            disabled={disabled || allSamples === undefined || allSamples === 0}
           >
             <Flex align="center" direction="column" gap="2">
               <Text size="2">Use the maximum available sample size:</Text>
@@ -204,7 +211,10 @@ export function PowerCheckSampleSizeSelector({
               />
             </Flex>
           </RadioCards.Item>
-          <RadioCards.Item value={PowerCheckOption.ENTER_OWN} disabled={allSamples === undefined || allSamples === 0}>
+          <RadioCards.Item
+            value={PowerCheckOption.ENTER_OWN}
+            disabled={disabled || allSamples === undefined || allSamples === 0}
+          >
             <Flex align="center" direction="column" gap="2" style={{ pointerEvents: 'auto' }}>
               <Text size="2">Use a custom sample size:</Text>
               {showClusteredCustomInput ? (
@@ -215,6 +225,7 @@ export function PowerCheckSampleSizeSelector({
                     onChange={handleClusterInputChange}
                     max={maxClusters}
                     placeholder="# of clusters"
+                    disabled={disabled}
                   />
                   <Flex direction="column" gap="1" align="start">
                     <Text as="label" size="1" weight="medium">
@@ -235,6 +246,7 @@ export function PowerCheckSampleSizeSelector({
                   onChange={onCustomSizeChange}
                   max={allSamples ?? undefined}
                   placeholder="# of participants"
+                  disabled={disabled}
                 />
               )}
               <EstimatedMdeBadge

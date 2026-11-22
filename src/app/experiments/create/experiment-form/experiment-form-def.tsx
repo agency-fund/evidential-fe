@@ -5,7 +5,7 @@ import {
   ExperimentMetadataScreen,
 } from '@/app/experiments/create/experiment-form/experiment-metadata-screen';
 import { ExperimentTypeScreen } from '@/app/experiments/create/experiment-form/experiment-type-screen';
-import { ContextType } from '@/api/methods.schemas';
+import { ContextType, PowerResponse } from '@/api/methods.schemas';
 import { abandonExperiment } from '@/api/admin';
 import { ExperimentSelectDatasourceScreen } from '@/app/experiments/create/experiment-form/experiment-select-datasource-screen';
 import {
@@ -52,6 +52,7 @@ import {
   isCmabExperimentType,
   isFreqExperimentType,
   isMabExperimentType,
+  isPowerAnalysisForOtherOneTimeMode,
 } from '@/services/experiment-utils';
 
 // Helper to create screens with proper type inference
@@ -59,11 +60,12 @@ const screen = packScreen<ExperimentFormData, ExperimentScreenId>();
 
 /**
  * Fields to spread into the form when a design edit invalidates the power check. Every edit that can change the power
- * analysis clears the results and the chosen sample size. One-time mode is only turned off when the primary metric
- * (or the table it comes from) changes: other edits, like confidence or power, don't change which participants have
- * no value, and the next power check confirms or turns off the choice anyway.
+ * analysis clears the results and the chosen sample size. Pass `resetOneTimeMetric` for edits that change which
+ * participants have no value for the primary metric: a new primary metric, table, or datasource, or new filters.
+ * Clearing it on filter changes keeps a now-ineligible choice from making the next power check fail while the switch
+ * is hidden. Other edits, like confidence or power, keep the choice, and the next power check confirms it.
  */
-const resetPowerCheckState = ({ primaryMetricChanged = false } = {}): Partial<ExperimentFormData> => ({
+const resetPowerCheckState = ({ resetOneTimeMetric = false } = {}): Partial<ExperimentFormData> => ({
   powerCheckResponse: undefined,
   mdePowerCheckResponse: undefined,
   powerCurveResponse: undefined,
@@ -71,8 +73,26 @@ const resetPowerCheckState = ({ primaryMetricChanged = false } = {}): Partial<Ex
   desiredNClusters: undefined,
   sampleSizeOption: undefined,
   createExperimentError: undefined,
-  ...(primaryMetricChanged ? { useOneTimeMetric: false } : {}),
+  ...(resetOneTimeMetric ? { useOneTimeMetric: false } : {}),
 });
+
+/**
+ * Fields to spread into the form when a new min sample size response is stored. The backend has the final say on
+ * one-time metric (it turns it off when the column has no nulls), so the switch, and what create sends, follow the
+ * response. An MDE estimate made for the other setting described a different population, so it's dropped.
+ */
+const syncOneTimeMetricToResponse = (
+  data: ExperimentFormData,
+  response: PowerResponse,
+): Partial<ExperimentFormData> => {
+  const primaryFieldName = data.primaryMetric?.metric.field_name;
+  const useOneTimeMetric = getPowerAnalysis(response, primaryFieldName)?.metric_spec.use_one_time_metric === true;
+  const mdeAnalysis = getPowerAnalysis(data.mdePowerCheckResponse, primaryFieldName);
+  return {
+    useOneTimeMetric,
+    ...(isPowerAnalysisForOtherOneTimeMode(mdeAnalysis, useOneTimeMetric) ? { mdePowerCheckResponse: undefined } : {}),
+  };
+};
 
 const FREQUENTIST_BREADCRUMBS: Array<ExperimentScreenId> = [
   'metadata',
@@ -206,7 +226,11 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             createExperimentResponse: undefined,
             createExperimentError: undefined,
             commitError: undefined,
-            ...(experimentType !== 'freq_preassigned' ? { useOneTimeMetric: false } : {}),
+            // One-time metric is only for preassigned experiments. Turning it off also drops the power check results
+            // computed with it on; otherwise coming back to preassigned would leave the switch and results disagreeing.
+            ...(experimentType !== 'freq_preassigned' && data.useOneTimeMetric
+              ? resetPowerCheckState({ resetOneTimeMetric: true })
+              : {}),
           };
 
           if (!isBanditExperimentType(experimentType)) {
@@ -255,7 +279,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             clusterAvgClusterSize: shouldClearClusterStats ? undefined : data.clusterAvgClusterSize,
 
             // Changing datasource should clear power check
-            ...resetPowerCheckState({ primaryMetricChanged: true }),
+            ...resetPowerCheckState({ resetOneTimeMetric: true }),
           };
         }
         return data;
@@ -538,7 +562,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             clusterIcc: undefined,
             clusterCv: undefined,
             clusterAvgClusterSize: undefined,
-            ...resetPowerCheckState({ primaryMetricChanged: true }),
+            ...resetPowerCheckState({ resetOneTimeMetric: true }),
           };
         }
         if (msg.type === 'primary-metric-deselect') {
@@ -549,7 +573,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             clusterIcc: undefined,
             clusterCv: undefined,
             clusterAvgClusterSize: undefined,
-            ...resetPowerCheckState({ primaryMetricChanged: true }),
+            ...resetPowerCheckState({ resetOneTimeMetric: true }),
           };
         }
         if (msg.type === 'promote-secondary-to-primary') {
@@ -560,7 +584,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             clusterIcc: undefined,
             clusterCv: undefined,
             clusterAvgClusterSize: undefined,
-            ...resetPowerCheckState({ primaryMetricChanged: true }),
+            ...resetPowerCheckState({ resetOneTimeMetric: true }),
           };
         }
         if (msg.type === 'secondary-metric-add') {
@@ -594,8 +618,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             clusterIcc: undefined,
             clusterCv: undefined,
             clusterAvgClusterSize: undefined,
-            ...resetPowerCheckState(),
-            useOneTimeMetric: false,
+            ...resetPowerCheckState({ resetOneTimeMetric: true }),
           };
         }
 
@@ -667,13 +690,32 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           return { ...data, powerCurveResponse: msg.response };
         }
         // The switch re-runs the power check with the new value. Keep the current min sample size response, curve,
-        // and custom MDE until the new ones arrive; if the re-run fails, the section flips the switch back and
-        // the previous responses remain intact without being lost.
+        // and custom MDE until the new ones arrive; if the re-run fails, the section restores the switch (see
+        // 'restore-one-time-metric') and the previous responses remain intact without being lost.
         if (msg.type === 'set-one-time-metric') {
           return {
             ...data,
             useOneTimeMetric: msg.enabled,
             createExperimentError: undefined,
+          };
+        }
+        // A re-run failed: put the switch back to match the power check response still on screen. If an edit in the
+        // meantime cleared that response, the edit already decided the switch (e.g. filters turn it off), so keep it.
+        if (msg.type === 'restore-one-time-metric') {
+          const stored = getPowerAnalysis(data.powerCheckResponse, data.primaryMetric?.metric.field_name);
+          if (!stored) {
+            return data;
+          }
+          return { ...data, useOneTimeMetric: stored.metric_spec.use_one_time_metric === true };
+        }
+        // The backend refused one-time metric for this design. Turn it off, and drop power check results that were
+        // computed with it on: they no longer match the switch and would keep Next blocked until a re-run.
+        if (msg.type === 'one-time-metric-rejected') {
+          const stored = getPowerAnalysis(data.powerCheckResponse, data.primaryMetric?.metric.field_name);
+          return {
+            ...data,
+            useOneTimeMetric: false,
+            ...(stored?.metric_spec.use_one_time_metric === true ? resetPowerCheckState() : {}),
           };
         }
         if (msg.type === 'set-chosen-n' || msg.type === 'set-power-check-response') {
@@ -702,14 +744,8 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
                 desiredN: msg.desiredN,
                 desiredNClusters: msg.desiredNClusters,
                 powerCheckResponse: msg.response,
-                // The backend has the final say on one-time mode (it turns it off when the column has no nulls),
-                // so the switch, and what create sends, follow the response.
                 ...(msg.type === 'set-power-check-response' && msg.response
-                  ? {
-                      useOneTimeMetric:
-                        getPowerAnalysis(msg.response, data.primaryMetric?.metric.field_name)?.metric_spec
-                          .use_one_time_metric === true,
-                    }
+                  ? syncOneTimeMetricToResponse(data, msg.response)
                   : {}),
                 createExperimentError: undefined,
                 ...clusterStatsFromPowerCheck,

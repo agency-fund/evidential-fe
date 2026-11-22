@@ -1,5 +1,5 @@
 import { currentSessionToken } from '@/providers/use-auth-storage';
-import { AIRPLANE_MODE, API_BASE_URL } from '@/services/constants';
+import { API_BASE_URL } from '@/services/constants';
 import { API_401_EVENT } from '@/providers/auth-provider';
 import { DwhErrorCode, DwhErrorResponse, HTTPValidationError } from '@/api/methods.schemas';
 
@@ -128,7 +128,7 @@ const getBody = async (c: Response): Promise<unknown> => {
 // Returns headers to send with API requests. If we currently have a session token in localStorage, we also send that. Note
 // that this means we may generate requests that do not contain the session token.
 const getHeaders = (options: RequestInit) => {
-  const sessionToken = AIRPLANE_MODE ? 'airplane-mode-token' : currentSessionToken();
+  const sessionToken = currentSessionToken();
   return {
     ...options.headers,
     'Content-Type': 'application/json',

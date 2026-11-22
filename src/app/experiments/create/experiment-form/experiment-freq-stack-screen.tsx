@@ -14,7 +14,7 @@ import {
   convertToFrequentistDesignSpec,
   removeFieldByName,
 } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
-import { getAssignableN, getPowerAnalysis } from '@/services/experiment-utils';
+import { getAssignableN, getPowerAnalysis, isPowerAnalysisForOtherOneTimeMode } from '@/services/experiment-utils';
 import { createExperimentBody } from '@/api/admin.zod';
 import { ErrorType } from '@/services/orval-fetch';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -36,15 +36,19 @@ const getPrimaryAnalysisAvailableN = (data: ExperimentFormData): number | undefi
 };
 
 /** True when the stored power check response was computed for a different one-time mode than the form now has. */
-const isPowerCheckForOtherOneTimeMode = (data: ExperimentFormData): boolean => {
-  if (!data.powerCheckResponse || !data.primaryMetric) return false;
+const isPowerCheckForOtherOneTimeMode = (data: ExperimentFormData): boolean =>
+  isPowerAnalysisForOtherOneTimeMode(
+    getPowerAnalysis(data.powerCheckResponse, data.primaryMetric?.metric.field_name),
+    data.useOneTimeMetric,
+  );
+
+const getPrimaryAnalysisAvailableNClusters = (data: ExperimentFormData): number | undefined => {
+  if (!data.powerCheckResponse || !data.primaryMetric) return undefined;
   const primaryAnalysis = getPowerAnalysis(data.powerCheckResponse, data.primaryMetric.metric.field_name);
-  if (!primaryAnalysis) return false;
-  // Treat a missing flag (older backends) as off, matching how the reducer reads it.
-  return (primaryAnalysis.metric_spec.use_one_time_metric === true) !== (data.useOneTimeMetric === true);
+  return primaryAnalysis?.metric_spec.available_n_clusters ?? undefined;
 };
 
-const getNextDisabledReasons = (data: ExperimentFormData): string[] => {
+export const getNextDisabledReasons = (data: ExperimentFormData): string[] => {
   const reasons: string[] = [];
 
   // Must have primary metric selected
@@ -94,6 +98,18 @@ const getNextDisabledReasons = (data: ExperimentFormData): string[] => {
     if (data.desiredN !== undefined && hasAvailableN && data.desiredN > availableN) {
       reasons.push(
         `Desired N (${data.desiredN.toLocaleString()}) exceeds the primary metric's available samples (${availableN.toLocaleString()}).`,
+      );
+    }
+
+    const availableNClusters = getPrimaryAnalysisAvailableNClusters(data);
+    if (
+      data.clusterKey &&
+      data.desiredNClusters !== undefined &&
+      availableNClusters !== undefined &&
+      data.desiredNClusters > availableNClusters
+    ) {
+      reasons.push(
+        `Desired number of clusters (${data.desiredNClusters.toLocaleString()}) exceeds the available clusters (${availableNClusters.toLocaleString()}).`,
       );
     }
 

@@ -53,6 +53,11 @@ export const metricHasMissingValues = (analysis: MetricPowerAnalysis): boolean =
   return available_n != null && available_nonnull_n != null && available_n > available_nonnull_n;
 };
 
+export const metricHasNoObservedOutcomes = (analysis: MetricPowerAnalysis): boolean => {
+  const { available_n, available_nonnull_n } = analysis.metric_spec;
+  return available_n != null && available_n > 0 && available_nonnull_n === 0;
+};
+
 /**
  * The most participants that can be assigned for this metric's analysis. Normally every participant that meets the
  * filters (available_n). In one-time mode only participants with no value for the metric can be assigned, so it is
@@ -66,6 +71,19 @@ export const getAssignableN = (analysis: MetricPowerAnalysis | undefined): numbe
   }
   const nonNullN = analysis.metric_spec.available_nonnull_n ?? undefined;
   return availableN !== undefined && nonNullN !== undefined ? availableN - nonNullN : undefined;
+};
+
+/**
+ * True when the analysis was computed for a different one-time metric setting than `useOneTimeMetric`, e.g. while
+ * the power check re-runs after the switch flips. A missing flag (older backends) counts as off. False without an
+ * analysis, since there is nothing to disagree with.
+ */
+export const isPowerAnalysisForOtherOneTimeMode = (
+  analysis: MetricPowerAnalysis | undefined,
+  useOneTimeMetric: boolean | undefined,
+): boolean => {
+  if (!analysis) return false;
+  return (analysis.metric_spec.use_one_time_metric === true) !== (useOneTimeMetric === true);
 };
 
 /**
