@@ -1,4 +1,4 @@
-import { useRechartScales } from './use-chart-scales';
+import { useScaleX, useScaleY } from './use-chart-scales';
 
 export interface HorizontalConfidenceIntervalProps {
   lower: number;
@@ -31,13 +31,12 @@ export function HorizontalConfidenceInterval({
   yAxisId,
   xAxisId,
 }: HorizontalConfidenceIntervalProps) {
-  const { scaleX, scaleCategoricalY, isValid } = useRechartScales({ xAxisId, yAxisId });
-
-  if (!isValid) return null;
+  const scaleX = useScaleX(xAxisId);
+  const scaleY = useScaleY(yAxisId);
 
   const xLower = scaleX(lower);
   const xUpper = scaleX(upper);
-  const y = scaleCategoricalY(armName);
+  const y = scaleY(armName);
 
   if (isNaN(xLower) || isNaN(xUpper) || isNaN(y)) return null;
 

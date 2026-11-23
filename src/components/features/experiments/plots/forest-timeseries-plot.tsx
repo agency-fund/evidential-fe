@@ -182,8 +182,8 @@ export default function ForestTimeseriesPlot({
               domain={domainXAxis}
               ticks={allDateTicks}
               style={COMMON_AXIS_STYLE}
-              // WARNING: If we offset the axis with padding, we need to also factor in the reduced
-              // plot width in the lines and CIs! Arguably a bug in recharts' useOffset hook?
+              // WARNING: JitteredLine converts its pixel jitter assuming the domain spans the whole plot
+              // width, so axis padding would pull the lines slightly off their CIs (which use the axis scale).
               padding={{ left: 0, right: 0 }}
               interval="preserveStartEnd"
               angle={-30}
