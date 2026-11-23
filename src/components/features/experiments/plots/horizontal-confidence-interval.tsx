@@ -41,7 +41,7 @@ export function HorizontalConfidenceInterval({
   if (isNaN(xLower) || isNaN(xUpper) || isNaN(y)) return null;
 
   return (
-    <g onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
+    <g data-testid={`ci-${armName}`} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
       {/* Horizontal line from lower to upper CI */}
       <line
         x1={xLower}

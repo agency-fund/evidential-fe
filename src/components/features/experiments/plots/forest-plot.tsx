@@ -557,7 +557,7 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 shape={(props: ScatterPointItem) => {
                   // Always return an element even if empty.
                   if (!props.payload) return <g />;
-                  const { significant, isBaseline, absDifference, isMissingAllValues } =
+                  const { armName, significant, isBaseline, absDifference, isMissingAllValues } =
                     props.payload as EffectSizeData;
                   // No point when there's no difference to plot, e.g. when the control arm has no values.
                   if (isMissingAllValues || !Number.isFinite(absDifference)) return <g />;
@@ -571,13 +571,23 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                     // Mark the control arm with a larger diamond shape
                     return (
                       <polygon
+                        data-testid={`point-${armName}`}
                         points={createDiamondShape(centerX, centerY, 9)}
                         fill={COLORS.DEFAULT}
                         stroke={COLORS.DEFAULT_CI}
                       />
                     );
                   }
-                  return <circle cx={centerX} cy={centerY} r={6} fill={fillColor} stroke={COLORS.DEFAULT_CI} />;
+                  return (
+                    <circle
+                      data-testid={`point-${armName}`}
+                      cx={centerX}
+                      cy={centerY}
+                      r={6}
+                      fill={fillColor}
+                      stroke={COLORS.DEFAULT_CI}
+                    />
+                  );
                 }}
               />
             </ScatterChart>
@@ -673,9 +683,19 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                   if (!props.payload) return <g />;
 
                   const { cx: centerX, cy: centerY } = props;
+                  const { armName } = props.payload as BanditEffectData;
                   const fillColor: string = COLORS.DEFAULT;
 
-                  return <circle cx={centerX} cy={centerY} r={6} fill={fillColor} stroke={COLORS.DEFAULT_CI} />;
+                  return (
+                    <circle
+                      data-testid={`point-${armName}`}
+                      cx={centerX}
+                      cy={centerY}
+                      r={6}
+                      fill={fillColor}
+                      stroke={COLORS.DEFAULT_CI}
+                    />
+                  );
                 }}
               />
             </ScatterChart>

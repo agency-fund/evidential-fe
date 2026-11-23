@@ -51,6 +51,7 @@ export function ConfidenceInterval({
         return (
           <g
             key={`ci-${armId}-${pointIndex}`}
+            data-testid={`ci-${armId}-${dataPoint.key}`}
             onClick={() => onClick?.(dataPoint)}
             style={{ cursor: onClick ? 'pointer' : 'default' }}
           >
