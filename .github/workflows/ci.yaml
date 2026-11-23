@@ -14,6 +14,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # pnpm/setup installs with --no-runtime, leaving out the Node runtime pinned in devEngines.runtime. Depending on
+  # checkout timestamps, pnpm 12.2.1's dependency check before `pnpm run` / `pnpm exec` then installs it, and task lint's
+  # parallel steps did so at once and collided. Each job has just run a frozen install, so the check isn't needed here.
+  PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN: "false"
+
 jobs:
   lint:
     runs-on: ubuntu-26.04
