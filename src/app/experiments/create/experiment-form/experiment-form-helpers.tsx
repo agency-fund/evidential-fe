@@ -155,6 +155,30 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
   return spec;
 }
 
+/**
+ * Whether an in-flight power response should be ignored. True means the caller keeps the current
+ * form data.
+ *
+ * `designSpec` is the spec the request was sent with. Returns true when the form would now
+ * convert to a different spec. Also returns true when the form cannot be converted: a filter row
+ * can be saved with an empty field name while the user is still choosing a column, and parsing
+ * that throws.
+ * Desired sample size is left out of the comparison: those fields are filled in from the response
+ * and start out unset, so they cannot identify the request.
+ */
+export function isStaleDesignSpec(data: ExperimentFormData, designSpec: AnyFrequentistDesignSpec): boolean {
+  try {
+    const current = convertToFrequentistDesignSpec({
+      ...data,
+      desiredN: undefined,
+      desiredNClusters: undefined,
+    });
+    return JSON.stringify(current) !== JSON.stringify(designSpec);
+  } catch {
+    return true;
+  }
+}
+
 export function describeDesignSpecError(err: unknown): string {
   if (err instanceof z.ZodError) {
     return err.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('\n');

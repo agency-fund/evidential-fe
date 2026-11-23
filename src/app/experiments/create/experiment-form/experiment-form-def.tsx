@@ -26,10 +26,10 @@ import {
 } from '@/app/experiments/create/experiment-form/experiment-freq-stack-screen';
 import { ExperimentsSummarizeFreqScreen } from '@/app/experiments/create/experiment-form/experiment-summarize-freq-screen';
 import {
-  convertToFrequentistDesignSpec,
   getClusterStatsFromPowerCheckResponse,
   getReasonableEndDate,
   getReasonableStartDate,
+  isStaleDesignSpec,
   removeFieldByName,
 } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
 import {
@@ -720,11 +720,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           };
         }
         if (msg.type === 'set-power-curve-response') {
-          // Like min sample size responses, drop curve responses whose design spec has gone stale.
-          const expected_stringified_spec = JSON.stringify(
-            convertToFrequentistDesignSpec({ ...data, desiredN: undefined, desiredNClusters: undefined }),
-          );
-          if (JSON.stringify(msg.designSpec) !== expected_stringified_spec) {
+          if (isStaleDesignSpec(data, msg.designSpec)) {
             return data;
           }
           return { ...data, powerCurveResponse: msg.response };
@@ -737,17 +733,8 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           switch (msg.sampleSizeOption) {
             case PowerCheckOption.NONE:
             case PowerCheckOption.USE_POWER_CHECK:
-              if (msg.type === 'set-power-check-response') {
-                // For handling async min sample size responses, we check for stale requests by
-                // seeing if the spec used differs from what we would produce now, i.e. did the user
-                // change a value while the request was in flight?
-                // (We cannot check for sampleSizeOption && desiredN mismatches because they start off undefined.)
-                const expected_stringified_spec = JSON.stringify(
-                  convertToFrequentistDesignSpec({ ...data, desiredN: undefined, desiredNClusters: undefined }),
-                );
-                if (JSON.stringify(msg.designSpec) !== expected_stringified_spec) {
-                  return data;
-                }
+              if (msg.type === 'set-power-check-response' && isStaleDesignSpec(data, msg.designSpec)) {
+                return data;
               }
               return {
                 ...data,
