@@ -14,7 +14,6 @@ import {
   Stratum,
 } from '@/api/methods.schemas';
 import { createExperimentBody } from '@/api/admin.zod';
-import { ApiRequestValidationError } from '@/services/orval-fetch';
 import { ExperimentFormData, getMabDwhTarget } from './experiment-form-types';
 import {
   isFreqExperimentType,
@@ -113,10 +112,6 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
             avg_cluster_size: primaryClusterStats.avg_cluster_size ?? null,
           }
         : {}),
-      // Send exactly what the switch says, so every spec built from the same form (power check, curve, MDE estimate,
-      // create, and the stale-response checks) agrees. The backend validates the choice, and the reducer syncs the
-      // switch from each power check response (e.g. off when the column has no nulls left) and clears it when the
-      // primary metric or the filters change, so a stale choice isn't carried over.
       use_one_time_metric: data.useOneTimeMetric === true,
     });
   }
@@ -431,23 +426,6 @@ export function experimentTypeLabel(experimentType: string): string {
   return ExperimentTypeOptions.find((v) => v.value === experimentType)?.title ?? experimentType;
 }
 
-const ONE_TIME_METRIC_FIELD = 'use_one_time_metric';
-
-/**
- * Whether a failed power check request was the backend refusing one-time metric for this design, e.g. a filter on the
- * primary metric or a cluster design. The backend has no error code for these, so this looks for the field name in
- * each problem's location or message (its one-time metric validators name it in the message). Any other validation
- * error is left to the generic callout.
- */
-export function isOneTimeMetricRejection(error: unknown): boolean {
-  return (
-    error instanceof ApiRequestValidationError &&
-    (error.data.detail ?? []).some(
-      (detail) => detail.loc.includes(ONE_TIME_METRIC_FIELD) || detail.msg.includes(ONE_TIME_METRIC_FIELD),
-    )
-  );
-}
-
 /**
  * True when the stored power check response was computed for a different one-time setting than the form now has,
  * e.g. while the power check re-runs after the switch flips. Next stays blocked and the results that depend on the
@@ -458,16 +436,4 @@ export function isPowerCheckForOtherOneTimeMode(data: ExperimentFormData): boole
     getPowerAnalysis(data.powerCheckResponse, data.primaryMetric?.metric.field_name),
     data.useOneTimeMetric,
   );
-}
-
-/** Explains why one-time metric was turned off after the backend refused it, using the form to name the cause. */
-export function describeOneTimeMetricRejection(data: ExperimentFormData): string {
-  const fieldName = data.primaryMetric?.metric.field_name;
-  if (fieldName && (data.filters ?? []).some((filter) => filter.field_name === fieldName)) {
-    return `One-time metric was turned off because it can't be combined with a filter on ${fieldName}. Remove that filter to use it.`;
-  }
-  if (data.clusterKey) {
-    return "One-time metric was turned off because it isn't supported for cluster-randomized experiments.";
-  }
-  return "One-time metric was turned off because it isn't supported with these experiment settings.";
 }

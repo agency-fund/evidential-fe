@@ -58,13 +58,7 @@ import {
 // Helper to create screens with proper type inference
 const screen = packScreen<ExperimentFormData, ExperimentScreenId>();
 
-/**
- * Fields to spread into the form when a design edit invalidates the power check. Every edit that can change the power
- * analysis clears the results and the chosen sample size. Pass `resetOneTimeMetric` for edits that change which
- * participants have no value for the primary metric: a new primary metric, table, or datasource, or new filters.
- * Clearing it on filter changes keeps a now-ineligible choice from making the next power check fail while the switch
- * is hidden. Other edits, like confidence or power, keep the choice, and the next power check confirms it.
- */
+/** Fields to spread into the form when a design edit invalidates the power check. */
 const resetPowerCheckState = ({ resetOneTimeMetric = false } = {}): Partial<ExperimentFormData> => ({
   powerCheckResponse: undefined,
   mdePowerCheckResponse: undefined,
@@ -76,11 +70,6 @@ const resetPowerCheckState = ({ resetOneTimeMetric = false } = {}): Partial<Expe
   ...(resetOneTimeMetric ? { useOneTimeMetric: false } : {}),
 });
 
-/**
- * Fields to spread into the form when a new min sample size response is stored. The backend has the final say on
- * one-time metric (it turns it off when the column has no nulls), so the switch, and what create sends, follow the
- * response. An MDE estimate made for the other setting described a different population, so it's dropped.
- */
 const syncOneTimeMetricToResponse = (
   data: ExperimentFormData,
   response: PowerResponse,
@@ -689,9 +678,6 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
           }
           return { ...data, powerCurveResponse: msg.response };
         }
-        // The switch re-runs the power check with the new value. Keep the current min sample size response, curve,
-        // and custom MDE until the new ones arrive; if the re-run fails, the section restores the switch (see
-        // 'restore-one-time-metric') and the previous responses remain intact without being lost.
         if (msg.type === 'set-one-time-metric') {
           return {
             ...data,
@@ -707,16 +693,6 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             return data;
           }
           return { ...data, useOneTimeMetric: stored.metric_spec.use_one_time_metric === true };
-        }
-        // The backend refused one-time metric for this design. Turn it off, and drop power check results that were
-        // computed with it on: they no longer match the switch and would keep Next blocked until a re-run.
-        if (msg.type === 'one-time-metric-rejected') {
-          const stored = getPowerAnalysis(data.powerCheckResponse, data.primaryMetric?.metric.field_name);
-          return {
-            ...data,
-            useOneTimeMetric: false,
-            ...(stored?.metric_spec.use_one_time_metric === true ? resetPowerCheckState() : {}),
-          };
         }
         if (msg.type === 'set-chosen-n' || msg.type === 'set-power-check-response') {
           const clusterStatsFromPowerCheck =

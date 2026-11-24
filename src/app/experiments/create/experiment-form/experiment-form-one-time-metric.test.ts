@@ -1,12 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { DataType, PowerResponse } from '@/api/methods.schemas';
 import { ExperimentForm } from './experiment-form-def';
-import {
-  convertToFrequentistDesignSpec,
-  describeOneTimeMetricRejection,
-  isOneTimeMetricRejection,
-} from './experiment-form-helpers';
-import { ApiError, ApiRequestValidationError } from '@/services/orval-fetch';
+import { convertToFrequentistDesignSpec } from './experiment-form-helpers';
 import { ExperimentFormData, MetricWithMDE, PowerCheckOption } from './experiment-form-types';
 import { ExperimentFreqStackScreenMessage, getNextDisabledReasons } from './experiment-freq-stack-screen';
 
@@ -169,34 +164,6 @@ describe('freq-stack reducer: one-time metric failures', () => {
     expect(next.useOneTimeMetric).toBe(false);
   });
 
-  test('a rejection with one-time results on screen turns it off and clears them', () => {
-    const data = formData({
-      useOneTimeMetric: true,
-      powerCheckResponse: powerResponse({ useOneTimeMetric: true }),
-      desiredN: 200,
-    });
-
-    const next = reduceFreqStack(data, { type: 'one-time-metric-rejected' });
-
-    expect(next.useOneTimeMetric).toBe(false);
-    expect(next.powerCheckResponse).toBeUndefined();
-    expect(next.desiredN).toBeUndefined();
-    expect(getNextDisabledReasons(next)).not.toContain(
-      'Waiting for the sample size estimate to update for the one-time metric setting.',
-    );
-  });
-
-  test('a rejection while turning it on keeps the valid "off" results', () => {
-    const response = powerResponse({ useOneTimeMetric: false });
-    const data = formData({ useOneTimeMetric: true, powerCheckResponse: response, desiredN: 200 });
-
-    const next = reduceFreqStack(data, { type: 'one-time-metric-rejected' });
-
-    expect(next.useOneTimeMetric).toBe(false);
-    expect(next.powerCheckResponse).toBe(response);
-    expect(next.desiredN).toBe(200);
-  });
-
   test('a new response drops an MDE estimate made for the other setting', () => {
     const data = formData({
       useOneTimeMetric: true,
@@ -283,74 +250,5 @@ describe('getNextDisabledReasons: one-time metric', () => {
     expect(getNextDisabledReasons(data)).toEqual([
       "Desired N (700) exceeds the primary metric's available samples (600).",
     ]);
-  });
-});
-
-describe('isOneTimeMetricRejection', () => {
-  const validationError = (msg: string) =>
-    new ApiRequestValidationError({
-      status: 422,
-      data: { detail: [{ loc: ['body', 'design_spec'], msg, type: 'value_error' }] },
-    });
-
-  test('is true when the backend refused one-time metric', () => {
-    expect(
-      isOneTimeMetricRejection(
-        validationError(
-          'Value error, use_one_time_metric is not supported for cluster-randomized designs. ' +
-            'Turn off use_one_time_metric or remove cluster_key.',
-        ),
-      ),
-    ).toBe(true);
-  });
-
-  test('is true when the field is named only in the error location', () => {
-    const error = new ApiRequestValidationError({
-      status: 422,
-      data: {
-        detail: [
-          {
-            loc: ['body', 'design_spec', 'metrics', 0, 'use_one_time_metric'],
-            msg: 'Value error, not supported here.',
-            type: 'value_error',
-          },
-        ],
-      },
-    });
-
-    expect(isOneTimeMetricRejection(error)).toBe(true);
-  });
-
-  test('is false for other validation errors', () => {
-    expect(isOneTimeMetricRejection(validationError('Value error, power must be between 0 and 1.'))).toBe(false);
-  });
-
-  test('is false for errors that are not validation errors', () => {
-    expect(isOneTimeMetricRejection(new ApiError({ status: 500, data: 'use_one_time_metric' }))).toBe(false);
-    expect(isOneTimeMetricRejection(new Error('use_one_time_metric'))).toBe(false);
-  });
-});
-
-describe('describeOneTimeMetricRejection', () => {
-  test('names the filter on the primary metric', () => {
-    const data = formData({
-      filters: [{ field_name: primaryMetric.metric.field_name, relation: 'excludes', value: [null] }],
-    });
-
-    expect(describeOneTimeMetricRejection(data)).toBe(
-      "One-time metric was turned off because it can't be combined with a filter on converted. Remove that filter to use it.",
-    );
-  });
-
-  test('names cluster designs', () => {
-    expect(describeOneTimeMetricRejection(formData({ clusterKey: 'school_id' }))).toBe(
-      "One-time metric was turned off because it isn't supported for cluster-randomized experiments.",
-    );
-  });
-
-  test('falls back to a general explanation', () => {
-    expect(describeOneTimeMetricRejection(formData())).toBe(
-      "One-time metric was turned off because it isn't supported with these experiment settings.",
-    );
   });
 });
