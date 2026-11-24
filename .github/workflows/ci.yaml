@@ -14,6 +14,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # Avoid pnpm dependency checks colliding (from parallel run/exec) and ending the run.
+  # Each job has just run a frozen install via pnpm/setup, so this check isn't needed.
+  PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN: "false"
+
 jobs:
   lint:
     runs-on: ubuntu-26.04
