@@ -1,22 +1,15 @@
-## Ticket
-
-Fixes: \<issue number + link>
-
-## Related PRs
-
-Backend: \<PR number + link> Docs: \<PR number + link>
-
 ## Description
 
-### Goal
+1. State the goal and why,
+1. your key changes in brief,
+1. reference related frontend/backend PRs, and
+1. any ticket it may fix.
 
-### Changes
+### How has this been tested?
+
+### To-do before merge (optional)
 
 ### Future Tasks (optional)
-
-## How has this been tested?
-
-## To-do before merge (optional)
 
 ## Checklist
 
