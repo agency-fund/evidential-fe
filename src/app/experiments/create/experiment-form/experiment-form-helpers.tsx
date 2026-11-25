@@ -15,7 +15,12 @@ import {
 } from '@/api/methods.schemas';
 import { createExperimentBody } from '@/api/admin.zod';
 import { ExperimentFormData, getMabDwhTarget } from './experiment-form-types';
-import { isFreqExperimentType, isFrequentistSpec, getPowerAnalysis } from '@/services/experiment-utils';
+import {
+  isFreqExperimentType,
+  isFrequentistSpec,
+  getPowerAnalysis,
+  isPowerAnalysisForOtherOneTimeMode,
+} from '@/services/experiment-utils';
 
 /**
  * Drops entries whose `field_name` matches `fieldNameToRemove` (e.g. exclude the primary key from
@@ -107,6 +112,7 @@ export function convertToFrequentistDesignSpec(data: ExperimentFormData): AnyFre
             avg_cluster_size: primaryClusterStats.avg_cluster_size ?? null,
           }
         : {}),
+      use_one_time_metric: data.useOneTimeMetric === true,
     });
   }
 
@@ -418,4 +424,16 @@ export function experimentTypeLabel(experimentType: string): string {
     return MAB_DWH_LABEL;
   }
   return ExperimentTypeOptions.find((v) => v.value === experimentType)?.title ?? experimentType;
+}
+
+/**
+ * True when the stored power check response was computed for a different one-time setting than the form now has,
+ * e.g. while the power check re-runs after the switch flips. Next stays blocked and the results that depend on the
+ * response are hidden until they agree again.
+ */
+export function isPowerCheckForOtherOneTimeMode(data: ExperimentFormData): boolean {
+  return isPowerAnalysisForOtherOneTimeMode(
+    getPowerAnalysis(data.powerCheckResponse, data.primaryMetric?.metric.field_name),
+    data.useOneTimeMetric,
+  );
 }

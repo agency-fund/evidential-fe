@@ -1,8 +1,8 @@
 import { Flex, Text } from '@radix-ui/themes';
 import { MetricPowerAnalysis } from '@/api/methods.schemas';
-import { metricHasNoObservedOutcomes } from '@/services/experiment-utils';
+import { getAssignableN, metricHasNoObservedOutcomes } from '@/services/experiment-utils';
 
-export type MetricSampleSizeVariant = 'required' | 'available' | 'available-nonnull';
+export type MetricSampleSizeVariant = 'required' | 'available' | 'available-nonnull' | 'assignable';
 
 type SampleSizeColor = 'crimson' | 'green';
 
@@ -99,8 +99,12 @@ const getDisplayModel = (
         color: analysis.sufficient_n ? 'green' : undefined,
       };
     }
-    case 'available': {
-      const participantN = analysis.metric_spec.available_n ?? undefined;
+    case 'available':
+    case 'assignable': {
+      // 'available' is everyone who meets the filters. 'assignable' is who can actually be assigned: the same, except
+      // in one-time mode, where only participants with no value for the metric can be.
+      const participantN =
+        variant === 'assignable' ? getAssignableN(analysis) : (analysis.metric_spec.available_n ?? undefined);
       return {
         participantN,
         clusterN: isClustered ? (analysis.metric_spec.available_n_clusters ?? undefined) : undefined,

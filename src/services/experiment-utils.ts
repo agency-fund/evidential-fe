@@ -59,6 +59,51 @@ export const metricHasNoObservedOutcomes = (analysis: MetricPowerAnalysis): bool
 };
 
 /**
+ * True when the missing-values warning applies to a metric. Not for a metric with no outcomes yet, which has its own
+ * warning, nor for a one-time metric, where the participants without a value are the ones being assigned.
+ */
+export const metricNeedsMissingValuesWarning = (analysis: MetricPowerAnalysis): boolean =>
+  metricHasMissingValues(analysis) &&
+  !metricHasNoObservedOutcomes(analysis) &&
+  analysis.metric_spec.use_one_time_metric !== true;
+
+/**
+ * The most participants that can be assigned for this metric's analysis. Normally every participant that meets the
+ * filters (available_n). In one-time mode only participants with no value for the metric can be assigned, so it is
+ * available_n - available_nonnull_n. Returns undefined when that can't be computed, rather than overstating it with
+ * available_n.
+ */
+export const getAssignableN = (analysis: MetricPowerAnalysis | undefined): number | undefined => {
+  if (!analysis?.metric_spec.use_one_time_metric) {
+    return analysis?.metric_spec.available_n ?? undefined;
+  }
+  return getAvailableWithoutValuesN(analysis);
+};
+
+/**
+ * Participants who meet the filters but have no value for this metric (available_n - available_nonnull_n), whatever
+ * the one-time setting. Returns undefined when either count is missing.
+ */
+export const getAvailableWithoutValuesN = (analysis: MetricPowerAnalysis | undefined): number | undefined => {
+  const availableN = analysis?.metric_spec.available_n ?? undefined;
+  const nonNullN = analysis?.metric_spec.available_nonnull_n ?? undefined;
+  return availableN !== undefined && nonNullN !== undefined ? availableN - nonNullN : undefined;
+};
+
+/**
+ * True when the analysis was computed for a different one-time metric setting than `useOneTimeMetric`, e.g. while
+ * the power check re-runs after the switch flips. A missing flag counts as off. False without an
+ * analysis, since there is nothing to disagree with.
+ */
+export const isPowerAnalysisForOtherOneTimeMode = (
+  analysis: MetricPowerAnalysis | undefined,
+  useOneTimeMetric: boolean | undefined,
+): boolean => {
+  if (!analysis) return false;
+  return (analysis.metric_spec.use_one_time_metric === true) !== (useOneTimeMetric === true);
+};
+
+/**
  * Whether the chosen sample size reaches the minimum required to detect the metric's target MDE.
  * Assignment enrolls exactly the chosen sample (including participants with missing values),
  * regardless of how many participants the datasource could supply.

@@ -12,9 +12,10 @@ import { ClusterStatisticsSectionAction } from './cluster-statistics-section';
 import { NavigationButtons } from '@/components/features/experiments/navigation-buttons';
 import {
   convertToFrequentistDesignSpec,
+  isPowerCheckForOtherOneTimeMode,
   removeFieldByName,
 } from '@/app/experiments/create/experiment-form/experiment-form-helpers';
-import { getPowerAnalysis } from '@/services/experiment-utils';
+import { getAssignableN, getPowerAnalysis } from '@/services/experiment-utils';
 import { createExperimentBody } from '@/api/admin.zod';
 import { ErrorType } from '@/services/orval-fetch';
 import { GenericErrorCallout } from '@/components/ui/generic-error';
@@ -31,7 +32,8 @@ export type ExperimentFreqStackScreenMessage =
 const getPrimaryAnalysisAvailableN = (data: ExperimentFormData): number | undefined => {
   if (!data.powerCheckResponse || !data.primaryMetric) return undefined;
   const primaryAnalysis = getPowerAnalysis(data.powerCheckResponse, data.primaryMetric.metric.field_name);
-  return primaryAnalysis?.metric_spec.available_n ?? undefined;
+  // In one-time mode only participants with no value for the primary metric can be assigned.
+  return getAssignableN(primaryAnalysis);
 };
 
 const getPrimaryAnalysisAvailableNClusters = (data: ExperimentFormData): number | undefined => {
@@ -40,7 +42,7 @@ const getPrimaryAnalysisAvailableNClusters = (data: ExperimentFormData): number 
   return primaryAnalysis?.metric_spec.available_n_clusters ?? undefined;
 };
 
-const getNextDisabledReasons = (data: ExperimentFormData): string[] => {
+export const getNextDisabledReasons = (data: ExperimentFormData): string[] => {
   const reasons: string[] = [];
 
   // Must have primary metric selected
@@ -70,6 +72,14 @@ const getNextDisabledReasons = (data: ExperimentFormData): string[] => {
     // Batch the above checks into a single set of reasons if any are present.
     if (reasons.length > 0) {
       return reasons;
+    }
+
+    // Flipping the one-time switch stores the new mode right away but keeps the previous power check response
+    // until the re-run returns. While they disagree, the response (and the sample size picked from it) describes
+    // the other mode's population, so block creating until the reducer syncs them (on success) or the switch
+    // flips back (on failure).
+    if (isPowerCheckForOtherOneTimeMode(data)) {
+      return ['Waiting for the sample size estimate to update for the one-time metric setting.'];
     }
 
     // desiredN must not exceed the primary metric's available samples
