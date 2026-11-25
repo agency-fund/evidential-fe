@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'vitest';
 import { MetricPowerAnalysis } from '@/api/methods.schemas';
-import { getAssignableN, getAvailableWithoutValuesN, isPowerAnalysisForOtherOneTimeMode } from './experiment-utils';
+import {
+  getAssignableN,
+  getAvailableWithoutValuesN,
+  isPowerAnalysisForOtherOneTimeMode,
+  metricNeedsMissingValuesWarning,
+} from './experiment-utils';
 
 const analysis = (metricSpec: Partial<MetricPowerAnalysis['metric_spec']>): MetricPowerAnalysis => ({
   metric_spec: { field_name: 'converted', ...metricSpec },
@@ -63,5 +68,24 @@ describe('getAvailableWithoutValuesN', () => {
     expect(getAvailableWithoutValuesN(analysis({ available_n: 1000 }))).toBeUndefined();
     expect(getAvailableWithoutValuesN(analysis({ available_nonnull_n: 400 }))).toBeUndefined();
     expect(getAvailableWithoutValuesN(undefined)).toBeUndefined();
+  });
+});
+
+describe('metricNeedsMissingValuesWarning', () => {
+  test('is true when some participants are missing a value', () => {
+    expect(metricNeedsMissingValuesWarning(analysis({ available_n: 1000, available_nonnull_n: 400 }))).toBe(true);
+  });
+
+  test('is false for a one-time metric, whose participants without a value are the ones being assigned', () => {
+    expect(
+      metricNeedsMissingValuesWarning(
+        analysis({ available_n: 1000, available_nonnull_n: 400, use_one_time_metric: true }),
+      ),
+    ).toBe(false);
+  });
+
+  test('is false when every participant has a value or none do', () => {
+    expect(metricNeedsMissingValuesWarning(analysis({ available_n: 1000, available_nonnull_n: 1000 }))).toBe(false);
+    expect(metricNeedsMissingValuesWarning(analysis({ available_n: 1000, available_nonnull_n: 0 }))).toBe(false);
   });
 });

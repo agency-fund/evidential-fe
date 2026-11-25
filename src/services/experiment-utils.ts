@@ -59,10 +59,19 @@ export const metricHasNoObservedOutcomes = (analysis: MetricPowerAnalysis): bool
 };
 
 /**
+ * True when the missing-values warning applies to a metric. Not for a metric with no outcomes yet, which has its own
+ * warning, nor for a one-time metric, where the participants without a value are the ones being assigned.
+ */
+export const metricNeedsMissingValuesWarning = (analysis: MetricPowerAnalysis): boolean =>
+  metricHasMissingValues(analysis) &&
+  !metricHasNoObservedOutcomes(analysis) &&
+  analysis.metric_spec.use_one_time_metric !== true;
+
+/**
  * The most participants that can be assigned for this metric's analysis. Normally every participant that meets the
  * filters (available_n). In one-time mode only participants with no value for the metric can be assigned, so it is
- * available_n - available_nonnull_n; the backend rejects a larger sample size. Returns undefined when that can't be
- * computed, rather than overstating it with available_n.
+ * available_n - available_nonnull_n. Returns undefined when that can't be computed, rather than overstating it with
+ * available_n.
  */
 export const getAssignableN = (analysis: MetricPowerAnalysis | undefined): number | undefined => {
   if (!analysis?.metric_spec.use_one_time_metric) {
@@ -83,7 +92,7 @@ export const getAvailableWithoutValuesN = (analysis: MetricPowerAnalysis | undef
 
 /**
  * True when the analysis was computed for a different one-time metric setting than `useOneTimeMetric`, e.g. while
- * the power check re-runs after the switch flips. A missing flag (older backends) counts as off. False without an
+ * the power check re-runs after the switch flips. A missing flag counts as off. False without an
  * analysis, since there is nothing to disagree with.
  */
 export const isPowerAnalysisForOtherOneTimeMode = (

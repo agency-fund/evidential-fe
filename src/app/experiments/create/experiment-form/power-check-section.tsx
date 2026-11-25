@@ -53,6 +53,7 @@ import {
   getPowerAnalysis,
   metricHasMissingValues,
   metricHasNoObservedOutcomes,
+  metricNeedsMissingValuesWarning,
 } from '@/services/experiment-utils';
 import {
   MetricSampleSizeDisplay,
@@ -173,10 +174,8 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   const { enabled, reason } = isPowerCheckButtonEnabled(isMutating, data);
 
   /**
-   * One-time metric changes the power check itself: the backend checks sufficiency, and solves for the MDE, against
-   * only the participants with no value for the metric. So store the choice and re-run the check with it. If the
-   * re-run fails, put the switch back to match the response still on screen. The reducer does that from the form as
-   * it is when the failure arrives, so an edit made in the meantime (like a filter change turning it off) wins.
+   * Stores the one-time choice and re-runs the power check with it. If the re-run fails, the switch goes back to
+   * match the results still on screen.
    */
   const handleOneTimeMetricChange = async (enabled: boolean) => {
     dispatch({ type: 'set-one-time-metric', enabled });
@@ -201,11 +200,8 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     if (!primary) {
       return;
     }
-    // Build the spec as the form will look after the reducer stores this response: for cluster
-    // designs that back-fills the derived cluster stats, and the reducer's staleness check for
-    // the curve response compares against exactly that. Without this, the cluster back-fill
-    // would make the curve response look stale and it would be dropped. Likewise the reducer sets
-    // the one-time switch to what the response used, which the backend may have turned off.
+    // Build the spec the way the form will look once this response is stored, so the curve response isn't
+    // dropped as stale.
     const clusterStats = getClusterStatsFromPowerCheckResponse(formData, response);
     let designSpec: AnyFrequentistDesignSpec;
     try {
@@ -340,7 +336,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
     .filter(metricHasNoObservedOutcomes)
     .map((analysis) => analysis.metric_spec.field_name);
   const metricsWithMissingValues = analyses
-    .filter((analysis) => metricHasMissingValues(analysis) && !metricHasNoObservedOutcomes(analysis))
+    .filter(metricNeedsMissingValuesWarning)
     .map((analysis) =>
       analysis.metric_spec.field_name === primaryMetricFieldName
         ? `${analysis.metric_spec.field_name} (primary)`
@@ -373,7 +369,7 @@ export function PowerCheckSection({ data, dispatch }: PowerCheckSectionProps) {
   // assigned, so it stops at that count, matching the sizes fetchPowerCurve requests.
   const primaryAvailableN = getAssignableN(primaryPower);
   const availableWithoutValuesN = getAvailableWithoutValuesN(primaryPower);
-  // One-time metric isn't supported for cluster designs, so the cluster count is the backend's available_n_clusters.
+  // One-time metric isn't available for cluster designs, so clustered curves use the total cluster count.
   const curveAvailableSize = isClustered ? maxClusters : primaryAvailableN;
   const curveMinSize = isClustered ? targetNClusters : targetN;
   const targetMdePct = data.primaryMetric?.mde !== undefined ? Number(data.primaryMetric.mde) : undefined;

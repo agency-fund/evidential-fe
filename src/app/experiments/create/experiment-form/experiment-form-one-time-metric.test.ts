@@ -229,7 +229,7 @@ describe('getNextDisabledReasons: one-time metric', () => {
     expect(getNextDisabledReasons(data)).toEqual([]);
   });
 
-  test('treats a response without the flag (older backends) as one-time mode off', () => {
+  test('treats a response without the flag as one-time mode off', () => {
     const response = powerResponse({ useOneTimeMetric: false });
     delete response.analyses[0].metric_spec.use_one_time_metric;
 
