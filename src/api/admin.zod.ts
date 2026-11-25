@@ -486,6 +486,8 @@ export const createExperimentBodyDesignSpecEnableAutofailDefault = false;
 export const createExperimentBodyDesignSpecAutofailWindowDefault = 24;
 
 export const createExperimentBodyDesignSpecAutofailOutcomeValueDefault = 0;
+export const createExperimentBodyDesignSpecUpdateFrequencyHoursDefault = 24;
+
 export const createExperimentBodyDesignSpecExperimentNameMaxThree = 100;
 
 export const createExperimentBodyDesignSpecDescriptionMaxThree = 2000;
@@ -509,6 +511,8 @@ export const createExperimentBodyDesignSpecEnableAutofailDefaultOne = false;
 export const createExperimentBodyDesignSpecAutofailWindowDefaultOne = 24;
 
 export const createExperimentBodyDesignSpecAutofailOutcomeValueDefaultOne = 0;
+export const createExperimentBodyDesignSpecUpdateFrequencyHoursDefaultOne = 24;
+
 export const createExperimentBodyDesignSpecTableNameMaxTwo = 100;
 
 export const createExperimentBodyDesignSpecPrimaryKeyMaxTwo = 300;
@@ -538,6 +542,8 @@ export const createExperimentBodyDesignSpecEnableAutofailDefaultTwo = false;
 export const createExperimentBodyDesignSpecAutofailWindowDefaultTwo = 24;
 
 export const createExperimentBodyDesignSpecAutofailOutcomeValueDefaultTwo = 0;
+export const createExperimentBodyDesignSpecUpdateFrequencyHoursDefaultTwo = 24;
+
 export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecFieldNameMax = 300;
 
 export const createExperimentBodyPowerAnalysesAnalysesItemMetricSpecUseOneTimeMetricDefault = false;
@@ -930,6 +936,10 @@ export const createExperimentBody = zod.object({
 					.min(1)
 					.default(createExperimentBodyDesignSpecAutofailWindowDefault),
 				autofail_outcome_value: zod.number().optional(),
+				update_frequency_hours: zod
+					.number()
+					.min(1)
+					.default(createExperimentBodyDesignSpecUpdateFrequencyHoursDefault),
 			}),
 			zod.object({
 				experiment_type: zod.enum(["mab_online_dwh"]),
@@ -1019,6 +1029,12 @@ export const createExperimentBody = zod.object({
 					.min(1)
 					.default(createExperimentBodyDesignSpecAutofailWindowDefaultOne),
 				autofail_outcome_value: zod.number().optional(),
+				update_frequency_hours: zod
+					.number()
+					.min(1)
+					.default(
+						createExperimentBodyDesignSpecUpdateFrequencyHoursDefaultOne,
+					),
 				table_name: zod
 					.string()
 					.max(createExperimentBodyDesignSpecTableNameMaxTwo),
@@ -1119,6 +1135,12 @@ export const createExperimentBody = zod.object({
 					.min(1)
 					.default(createExperimentBodyDesignSpecAutofailWindowDefaultTwo),
 				autofail_outcome_value: zod.number().optional(),
+				update_frequency_hours: zod
+					.number()
+					.min(1)
+					.default(
+						createExperimentBodyDesignSpecUpdateFrequencyHoursDefaultTwo,
+					),
 			}),
 		]),
 	]),

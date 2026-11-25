@@ -42,6 +42,7 @@ import { AnalysisSnapshotSelector } from '@/components/features/experiments/anal
 import { ArmsAndAllocationsTable } from '@/components/features/experiments/arms-and-allocations-table';
 import { IntegrationGuideDialog } from '@/components/features/experiments/integration-guide-dialog';
 import { DownloadAssignmentsCsvButton } from '@/components/features/experiments/download-assignments-csv-button';
+import { UpdateBanditArmsButton } from '@/components/features/experiments/update-bandit-arms-button';
 import { ExperimentDetailsDropdownMenu } from '@/components/features/experiments/experiment-details-dropdown-menu';
 import { DecisionAndImpactSection } from '@/components/features/experiments/decision-and-impact-section';
 import { ExperimentCompletionCallout } from '@/components/features/experiments/experiment-completion-callout';
@@ -487,6 +488,9 @@ export default function ExperimentViewPage() {
                   datasourceId={experiment.config.datasource_id}
                   experimentId={experimentId}
                 />
+                {isBanditSpec(design_spec) ? (
+                  <UpdateBanditArmsButton datasourceId={experiment.config.datasource_id} experimentId={experimentId} />
+                ) : null}
               </Flex>
             }
             headerRight={

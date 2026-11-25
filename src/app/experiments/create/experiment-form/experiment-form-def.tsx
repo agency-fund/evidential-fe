@@ -132,6 +132,9 @@ const getAutofailValidationState = (data: ExperimentFormData) => {
   return { isEnabled, isNonBinaryValue, isWindowInvalid, isAutofailOutcomeInvalid };
 };
 
+const isUpdateFrequencyInvalid = (data: ExperimentFormData) =>
+  data.updateFrequencyHours === undefined || data.updateFrequencyHours < 1;
+
 export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, undefined> = {
   initialData: () => ({
     name: 'New Hypothesis',
@@ -146,6 +149,7 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
     ],
     bandit: createDefaultBanditParams('mab_online'),
     autofail: { enableAutofail: false, autofailWindow: 24, autofailOutcomeValue: 0 },
+    updateFrequencyHours: 24,
     confidence: '95',
     power: '80',
   }),
@@ -351,14 +355,23 @@ export const ExperimentForm: WizardForm<ExperimentFormData, ExperimentScreenId, 
             autofail: { ...data.autofail, autofailOutcomeValue: msg.value },
           };
         }
+        if (msg.type === 'set-update-frequency-hours') {
+          return { ...data, updateFrequencyHours: msg.value };
+        }
         return data;
       },
 
       isNextEnabled: (data) => {
+        if (isUpdateFrequencyInvalid(data)) {
+          return false;
+        }
         const { isEnabled, isWindowInvalid, isAutofailOutcomeInvalid } = getAutofailValidationState(data);
         return !isEnabled || (!isWindowInvalid && !isAutofailOutcomeInvalid);
       },
       nextButtonTooltip: (data) => {
+        if (isUpdateFrequencyInvalid(data)) {
+          return 'Update frequency must be at least 1 hour.';
+        }
         const { isEnabled, isNonBinaryValue, isWindowInvalid, isAutofailOutcomeInvalid } =
           getAutofailValidationState(data);
         if (!isEnabled) {

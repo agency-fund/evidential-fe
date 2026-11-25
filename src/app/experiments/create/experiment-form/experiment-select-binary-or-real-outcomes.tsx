@@ -13,7 +13,8 @@ type ExperimentSelectBinaryOrRealMessages =
   | { type: 'set-outcome-type'; value: LikelihoodTypes }
   | { type: 'set-autofail-enabled'; value: boolean }
   | { type: 'set-autofail-window'; value: number | undefined }
-  | { type: 'set-autofail-outcome-value'; value: number | undefined };
+  | { type: 'set-autofail-outcome-value'; value: number | undefined }
+  | { type: 'set-update-frequency-hours'; value: number | undefined };
 
 export const ExperimentSelectBinaryOrRealOutcomes = ({
   data,
@@ -69,6 +70,32 @@ export const ExperimentSelectBinaryOrRealOutcomes = ({
           </Flex>
         </RadioCards.Item>
       </RadioCards.Root>
+
+      <Heading as="h3" size={'3'} mt="2">
+        Arm Updates
+      </Heading>
+      <Flex direction="column" gap="1">
+        <Text as="label" htmlFor="update-frequency-hours" size="2" weight="medium">
+          Update frequency (hours)
+        </Text>
+        <TextField.Root
+          id="update-frequency-hours"
+          type="number"
+          step="1"
+          min="1"
+          value={data.updateFrequencyHours ?? ''}
+          onChange={(e) => {
+            const parsed = parseInt(e.target.value, 10);
+            dispatch({
+              type: 'set-update-frequency-hours',
+              value: Number.isNaN(parsed) ? undefined : parsed,
+            });
+          }}
+        />
+        <Text size="1" color="gray">
+          How often Evidential updates the arms from the outcomes recorded since the last update.
+        </Text>
+      </Flex>
 
       {!isDwhBandit && (
         <>
