@@ -1,7 +1,6 @@
 'use client';
 import { useCallback, useMemo } from 'react';
-import { ActiveDotProps, DotItemDotProps, Line } from 'recharts';
-import { useRechartScales } from './use-chart-scales';
+import { ActiveDotProps, DotItemDotProps, Line, usePlotArea } from 'recharts';
 
 export interface JitteredLineInputData<T> {
   x: number;
@@ -70,20 +69,22 @@ export function JitteredLine<T>({
   activeDotConfig,
   onPointClick,
 }: JitteredLineProps<T>) {
-  const { plotWidth, isValid } = useRechartScales();
+  const plotWidth = usePlotArea()?.width ?? 0;
 
   // Build line data with jitter applied when chart dimensions are available.
-  // If chart dimensions aren't ready (isValid=false), render without jitter to avoid blank chart.
+  // If chart dimensions aren't ready (plotWidth=0), render without jitter to avoid blank chart.
   // useMemo to prevent an infinite render loop (Maximum update depth exceeded).
-  // useRechartScales()'s hooks use Recharts context, so a new lineData ref passed to Line causes
-  // Recharts to update internal state => context update => re-render of JitteredLine.
+  // usePlotArea() reads Recharts state, so a new lineData ref passed to Line causes
+  // Recharts to update internal state => state update => re-render of JitteredLine.
+  // The jitter is converted with the xDomain prop rather than the live axis domain, because the
+  // jittered points themselves widen the live domain and would feed back into the jitter.
   const lineData = useMemo(() => {
     if (!inputDataPoints.length) return [];
 
     // Calculate jitter amount only when chart dimensions are valid and x-range is non-zero.
     // When xRange=0 (single data point), do not apply offset.
     let jitterAmount = 0;
-    if (isValid && plotWidth > 0) {
+    if (plotWidth > 0) {
       const [minTime, maxTime] = xDomain;
       const xRange = maxTime - minTime;
       if (xRange > 0) {
@@ -104,7 +105,7 @@ export function JitteredLine<T>({
         } as JitteredLinePayloadData<T>;
       })
       .filter((p): p is JitteredLinePayloadData<T> => p !== null);
-  }, [isValid, plotWidth, inputDataPoints, dataKey, xDomain, jitterOffset]);
+  }, [plotWidth, inputDataPoints, dataKey, xDomain, jitterOffset]);
 
   // Shared dot rendering logic. Returns null or a circle element.
   type DotProps = DotItemDotProps | ActiveDotProps;

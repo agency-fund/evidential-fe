@@ -1,5 +1,5 @@
 import { hasConfidenceInterval, TimeSeriesDataPoint } from './forest-plot-utils';
-import { useRechartScales } from './use-chart-scales';
+import { useScaleX, useScaleY } from './use-chart-scales';
 
 export interface ConfidenceIntervalProps {
   chartData: TimeSeriesDataPoint[];
@@ -29,9 +29,10 @@ export function ConfidenceInterval({
   opacity = 1,
   onClick,
 }: ConfidenceIntervalProps) {
-  const { scaleX, scaleY, isValid } = useRechartScales();
+  const scaleX = useScaleX();
+  const scaleY = useScaleY();
 
-  if (!isValid || !chartData.length) return null;
+  if (!chartData.length) return null;
 
   // Render confidence intervals for this arm at each data point
   return (

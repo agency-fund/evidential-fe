@@ -547,11 +547,12 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 );
               })}
 
-              {/* Points showing the arm mean differences from the baseline, and the baseline reference mean */}
+              {/* Points showing the arm mean differences from the baseline, and the baseline reference mean.
+                  No dataKey: since Recharts 3.11 a Scatter's dataKey overrides the YAxis dataKey, which would put
+                  the value on the arm axis. The XAxis and YAxis dataKeys position the points. */}
               <Scatter
                 onMouseEnter={handleScatterMouseEnter}
                 data={effectSizes}
-                dataKey={(dataPoint: EffectSizeData) => dataPoint.absDifference}
                 yAxisId="left"
                 shape={(props: ScatterPointItem) => {
                   // Always return an element even if empty.
@@ -662,11 +663,10 @@ export function ForestPlot({ effectSizes, banditEffects, minX: minXProp, maxX: m
                 );
               })}
 
-              {/* Points showing the arm mean outcomes. */}
+              {/* Points showing the arm mean outcomes. No dataKey, as above: the axes' dataKeys position the points. */}
               <Scatter
                 onMouseEnter={handleScatterMouseEnter}
                 data={banditEffects}
-                dataKey={(dataPoint: BanditEffectData) => dataPoint.postPredMean}
                 yAxisId="left"
                 shape={(props: ScatterPointItem) => {
                   // Always return an element even if empty.
